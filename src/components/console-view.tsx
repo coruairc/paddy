@@ -208,7 +208,7 @@ function EmptyState({
           </p>
           <p className="mt-2 text-sm leading-relaxed text-fg/90">
             Browse the local catalog. Sign in with ChatGPT or paste a Claude
-            setup-token in Models — or download Paddy and run it at home.
+            setup-token in Models — or download Paddy Irishman and run it at home.
           </p>
         </div>
       </div>

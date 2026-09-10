@@ -4,7 +4,7 @@ import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "Paddy";
+const APP_NAME = "Paddy Irishman";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -15,7 +15,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Paddy is an Irish-roots super harness: OpenClaw gateway presence fused with a Hermes learning loop. Independent — not affiliated with the OpenClaw Foundation, Nous Research, Guinness, or Paddy Irish Whiskey.",
+          "Paddy Irishman is an Irish-roots super harness: gateway presence fused with a closed learning loop. Independent — not affiliated with the OpenClaw Foundation, Nous Research, Guinness, or Paddy Irish Whiskey.",
       },
       { name: "theme-color", content: "#0a0a0b" },
     ],

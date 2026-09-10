@@ -8,7 +8,7 @@ export function CanvasStack({ cards }: { cards: CanvasCard[] }) {
       <div className="flex h-full min-h-40 flex-col justify-end rounded-xl bg-bg p-4">
         <p className="font-display text-lg text-fg">Canvas is quiet</p>
         <p className="mt-1 text-sm text-muted">
-          Structured output lands here — stats, diagrams, briefs. Ask Paddy to
+          Structured output lands here — stats, diagrams, briefs. Ask Paddy Irishman to
           draw the loop.
         </p>
       </div>

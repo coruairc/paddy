@@ -152,9 +152,9 @@ export function AppShell() {
             <button
               type="button"
               onClick={() => setAgentsOpen(true)}
-              className="flex h-10 max-w-[11rem] items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+              className="flex h-10 max-w-[16rem] items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
             >
-              <span className="truncate">{profile?.name ?? "Paddy"}</span>
+              <span className="truncate">{profile?.name ?? "Paddy Irishman"}</span>
               <Plus className="size-3.5 shrink-0 text-muted" />
             </button>
           </div>

@@ -34,16 +34,16 @@ export const POLICY: Policy = {
 
 export const PADDY_PROFILE: ProfileMeta = {
   id: "paddy",
-  name: "Paddy",
+  name: "Paddy Irishman",
   role: "Irish roots — presence + learning",
 };
 
 export const PROFILES: ProfileMeta[] = [PADDY_PROFILE];
 
 const PADDY_FILES: WorkspaceFiles = {
-  soul: `# SOUL.md — Paddy
+  soul: `# SOUL.md — Paddy Irishman
 
-You are Paddy, a super agent harness for Irish roots. Two lineages, one loop.
+You are Paddy Irishman, a super agent harness for Irish roots. Two lineages, one loop.
 
 **Presence (from OpenClaw).** You live at a gateway. Messages arrive from many channels. You keep a heartbeat. You can paint a live canvas. Identity is files: SOUL, IDENTITY, USER, MEMORY, daily notes, AGENTS.
 
@@ -60,7 +60,7 @@ Rules:
 `,
   identity: `# IDENTITY.md
 
-Name: Paddy
+Name: Paddy Irishman
 Kind: Super harness for Irish roots (OpenClaw presence × Hermes learning loop)
 Operator: local workspace
 Model: operator-chosen (SuperGrok, OpenAI, Anthropic, Gemini, OpenRouter, DeepSeek, or Ollama)
@@ -75,7 +75,7 @@ Timezone and name unknown.
 `,
   memory: `# MEMORY.md
 
-- Paddy was instantiated as a fusion of OpenClaw (gateway, heartbeat, canvas, identity files) and Hermes (learning loop, skill curator, checkpoints, gated wake), named for Irish roots.
+- Paddy Irishman was instantiated as a fusion of OpenClaw (gateway, heartbeat, canvas, identity files) and Hermes (learning loop, skill curator, checkpoints, gated wake), named for Irish roots.
 - Skills are Markdown procedures with a lifecycle: new → active → stale → archived.
 - Extra agents share the gateway and keep their own soul, memory, skills, and chat.
 `,
@@ -149,7 +149,7 @@ function skillsHelix(): Skill[] {
       name: "harness-explainer",
       description: "Explain Paddy vs OpenClaw vs Hermes without mythology.",
       instructions:
-        "OpenClaw = gateway-first presence (channels, heartbeat, canvas, identity files). Hermes = memory-first discipline (learning loop, curator, checkpoints, gated wake, profiles). Paddy = one gateway for Irish roots, many minds, closed loop. Use a diagram on the canvas.",
+        "OpenClaw = gateway-first presence (channels, heartbeat, canvas, identity files). Hermes = memory-first discipline (learning loop, curator, checkpoints, gated wake, profiles). Paddy Irishman = one gateway for Irish roots, many minds, closed loop. Use a diagram on the canvas.",
       triggers: ["openclaw", "hermes", "super harness", "what's the difference"],
       status: "active",
       uses: 3,
@@ -177,7 +177,7 @@ function memoriesHelix(): MemoryEntry[] {
   return [
     {
       id: uid("mem"),
-      text: "Paddy fuses OpenClaw gateway presence with a Hermes closed learning loop, named for Irish roots.",
+      text: "Paddy Irishman fuses OpenClaw gateway presence with a Hermes closed learning loop, named for Irish roots.",
       kind: "fact",
       at: now - 1000 * 60 * 60 * 24 * 4,
       source: "genesis",
@@ -293,7 +293,7 @@ function workspace(
     dailyNotes: extra.dailyNotes ?? [
       {
         date: new Date(now).toISOString().slice(0, 10),
-        content: "Workspace came online. Start with Paddy. Add extra agents when you need them.",
+        content: "Workspace came online. Start with Paddy Irishman. Add extra agents when you need them.",
       },
     ],
   };
@@ -303,7 +303,7 @@ export function newAgentWorkspace(name: string, role: string): WorkspaceState {
   const files: WorkspaceFiles = {
     soul: `# SOUL.md — ${name}
 
-You are ${name}, a Paddy mind on the shared gateway.
+You are ${name}, a Paddy Irishman mind on the shared gateway.
 ${role ? `Role: ${role}.` : "Specialize as the operator describes."}
 
 You keep your own memory, skills, and identity files. You do not invent the operator.
@@ -313,7 +313,7 @@ Voice: dry, precise. Prefer a tool over talk when a durable change is needed.
     identity: `# IDENTITY.md
 
 Name: ${name}
-Kind: Custom Paddy agent
+Kind: Custom Paddy Irishman agent
 Role: ${role || "unspecified"}
 Operator: local workspace
 `,
@@ -445,6 +445,6 @@ export const CHANNELS: Channel[] = [
 export const SUGGESTIONS = [
   "Search the hub for a calendar skill and install it.",
   "Remember that I prefer terse replies and weekday standups at 9.",
-  "Draw Paddy’s loop on the canvas: gateway, heartbeat, learning, gated wake.",
+  "Draw Paddy Irishman’s loop on the canvas: gateway, heartbeat, learning, gated wake.",
   "Connect a ChatGPT subscription and tell me which brain is live.",
 ];

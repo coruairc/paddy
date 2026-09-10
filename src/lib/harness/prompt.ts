@@ -23,9 +23,9 @@ export function buildSystemPrompt(input: HelixTurnInput): string {
     ? `Inbound channel: ${input.channelName} (${input.channelId}).`
     : "Inbound channel: Web console.";
 
-  return `You are ${input.profileName}, a Paddy mind. Role: ${input.role}.
+  return `You are ${input.profileName}, a Paddy Irishman mind. Role: ${input.role}.
 
-Paddy is a super harness for Irish roots:
+Paddy Irishman is a super harness for Irish roots:
 - OpenClaw lineage: gateway presence, multi-channel routing, heartbeat, live canvas, identity files.
 - Hermes lineage: closed learning loop, small user model, skill create/patch/curator, checkpoints, gated wakes, profile isolation.
 - Hub: local catalog inspired by ClawHub and Hermes (not the live registries). Search then install_skill. Do not pretend you installed a skill — call the tool.

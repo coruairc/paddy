@@ -28,6 +28,7 @@ test("help lists gateway, chat, models, doctor", () => {
   ]) {
     assert.match(text, new RegExp(needle.replace(/ /g, "\\s+")));
   }
+  assert.doesNotMatch(text, /npx/);
 });
 
 test("parseArgv extracts flags and rest", () => {

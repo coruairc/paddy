@@ -37,7 +37,7 @@ export async function sendTurn(text: string, channelId?: string) {
       : text;
 
   const payload: HelixTurnInput = {
-    profileName: profile?.name ?? "Paddy",
+    profileName: profile?.name ?? "Paddy Irishman",
     role: profile?.role ?? "operator",
     files: ws.files,
     skills: ws.skills.map((s) => ({

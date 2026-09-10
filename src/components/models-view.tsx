@@ -253,7 +253,7 @@ export function ModelsView() {
               <p className="text-[11px] font-medium tracking-wide text-accent uppercase">
                 Self-host
               </p>
-              <h2 className="mt-1 font-display text-xl">Take Paddy home</h2>
+              <h2 className="mt-1 font-display text-xl">Take Paddy Irishman home</h2>
               <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted">
                 One curl installs from git — same shape as the usual harness
                 installers. Or download the zip. Then paddy gateway, your

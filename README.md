@@ -1,4 +1,4 @@
-# Paddy
+# Paddy Irishman
 
 Irish-roots super harness. Gateway presence plus a closed learning loop.
 
@@ -51,9 +51,9 @@ Put keys or setup-tokens in `~/.paddy/src/selfhost.env` (copy `selfhost.env.exam
 ```bash
 git clone https://github.com/coruairc/paddy.git
 cd paddy
-npm install
-npx paddy onboard
-npx paddy gateway
+npm install          # puts `paddy` on PATH
+paddy onboard
+paddy gateway
 ```
 
 ## License

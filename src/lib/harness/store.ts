@@ -626,7 +626,7 @@ export const useHelix = create<HelixStore>()(
                 ? {
                     ...c,
                     lastMessage: {
-                      from: get().profiles.find((p) => p.id === id)?.name ?? "Paddy",
+                      from: get().profiles.find((p) => p.id === id)?.name ?? "Paddy Irishman",
                       text: pending.args.message ?? "",
                       at: Date.now(),
                     },
@@ -851,7 +851,13 @@ export const useHelix = create<HelixStore>()(
           workspaces.paddy = current.workspaces.paddy;
         }
         let profiles = (p.profiles ?? current.profiles)
-          .map((pr) => (pr.id === "helix" ? { ...pr, id: "paddy", name: "Paddy" } : pr))
+          .map((pr) => {
+            if (pr.id === "helix") return { ...pr, id: "paddy", name: "Paddy Irishman" };
+            if (pr.id === "paddy" && (pr.name === "Paddy" || !pr.name)) {
+              return { ...pr, name: "Paddy Irishman" };
+            }
+            return pr;
+          })
           .filter((pr) => pr.id !== "scout" && pr.id !== "forge" && pr.id !== "helix")
           .filter((pr) => pr.id === "paddy" || Boolean(workspaces[pr.id]));
         if (!profiles.some((pr) => pr.id === "paddy")) {

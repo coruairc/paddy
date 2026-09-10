@@ -78,7 +78,7 @@ export function parseArgv(argv) {
 }
 
 export function helpText() {
-  return `Paddy — Irish-roots super harness  v${VERSION}
+  return `Paddy Irishman — Irish-roots super harness  v${VERSION}
 
 Usage:
   paddy <command> [flags]
@@ -115,10 +115,8 @@ Keys live in the gateway environment (selfhost.env). Sign-in in the dashboard
 is for the browser; the CLI spends env subscriptions and keys.
 
 Quick start
-  unzip paddy-selfhost.zip && cd paddy-selfhost
-  npm install
-  npx paddy onboard
-  npx paddy gateway
+  curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
+  paddy gateway
 `;
 }
 

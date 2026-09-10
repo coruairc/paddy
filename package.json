@@ -19,6 +19,7 @@
     "preview:restart": "node scripts/preview.mjs restart",
     "preview:stop": "node scripts/preview.mjs stop",
     "paddy": "node bin/paddy.mjs",
+    "postinstall": "node scripts/link-cli.mjs",
     "typecheck": "tsc --noEmit",
     "check:auth": "node scripts/check-auth-invariant.mjs",
     "test": "node --test 'scripts/**/*.test.mjs' bin/paddy.test.mjs install.sh.test.mjs && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/app-data/readiness-schedule.test.ts src/lib/auth/gate-identity.test.ts src/lib/auth/sign-in-gate.test.ts",
@@ -99,7 +100,7 @@
     "typescript-eslint": "^8.56.1",
     "vite": "^8.2.0"
   },
-  "description": "Paddy \u2014 Irish-roots super harness. CLI: paddy gateway",
+  "description": "Paddy Irishman \u2014 Irish-roots super harness. CLI: paddy",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/coruairc/paddy.git"

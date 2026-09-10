@@ -1,4 +1,4 @@
-# Run Paddy on your machine
+# Run Paddy Irishman on your machine
 
 Paddy is a super harness: gateway presence plus a closed learning loop. This kit is the same app you tried in the preview. Hook **your** subscriptions and keys. The hosted demo’s SuperGrok quota is not yours.
 
@@ -31,21 +31,21 @@ Skip onboard: `bash -s -- --no-onboard`. Help: `bash -s -- --help`.
 ```bash
 unzip paddy-selfhost.zip
 cd paddy-selfhost
-npm install
-npx paddy onboard
-npx paddy gateway
+npm install            # puts `paddy` on PATH (~/.local/bin)
+paddy onboard
+paddy gateway
 ```
 
 In another terminal:
 
 ```bash
-npx paddy dashboard        # web console
-npx paddy chat "remember I prefer terse replies"
-npx paddy models
-npx paddy doctor
+paddy dashboard        # web console
+paddy chat "remember I prefer terse replies"
+paddy models
+paddy doctor
 ```
 
-`npx paddy gateway start` backgrounds it; `stop` / `restart` / `status` match the usual harness CLI. After `npm link` (or adding the kit to your PATH) the binary is just `paddy`.
+`paddy gateway start` backgrounds it; `stop` / `restart` / `status` match. The command is `paddy` — never npx.
 
 Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model in **Models**, or `paddy models prefer laguna-s`. Keys and session tokens in the UI stay in that browser’s localStorage. **The CLI spends the gateway’s environment** (`selfhost.env`) — sign-in in the dashboard is for the browser.
 

@@ -74,7 +74,7 @@ node_major() {
   node -p "parseInt(process.versions.node, 10)" 2>/dev/null || echo 0
 }
 
-log "Paddy · $REPO@$REF"
+log "Paddy Irishman · $REPO@$REF"
 
 need git
 need npm
@@ -113,12 +113,7 @@ log "wrapper → ${BIN_DIR}/paddy"
 if [ "$DRY_RUN" = 1 ]; then
   printf '[dry-run] write %s/paddy\n' "$BIN_DIR"
 else
-  mkdir -p "$BIN_DIR"
-  cat > "${BIN_DIR}/paddy" <<EOF
-#!/usr/bin/env bash
-exec node "${GIT_DIR}/bin/paddy.mjs" "\$@"
-EOF
-  chmod +x "${BIN_DIR}/paddy"
+  PADDY_BIN_DIR="$BIN_DIR" node "${GIT_DIR}/scripts/link-cli.mjs"
 fi
 
 path_has_bin=0
@@ -155,7 +150,7 @@ fi
 
 cat <<EOF
 
-Paddy is on this machine.
+Paddy Irishman is on this machine.
 
   paddy gateway          # start the control plane
   paddy dashboard        # web console
