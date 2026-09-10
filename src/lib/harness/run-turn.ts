@@ -1,15 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getHubSkill, searchHub } from "./hub";
-import { callBrain, envPresence, resolveBrain, type BrainRoute, type ChatMsg } from "./brain";
+import { callBrain, envPresence, listAvailableModels, resolveBrain, type BrainRoute, type ChatMsg } from "./brain";
 import { pollCodexDevice, startCodexDevice } from "./oauth-codex";
 import { pollXaiDevice, startXaiDevice } from "./oauth-xai";
-import { TOKEN_MAX, type BrainKeys, type ProviderId } from "./providers";
+import { TOKEN_MAX, type BrainKeys, type ModelOption, type ProviderId } from "./providers";
 import { buildSystemPrompt } from "./prompt";
 import type {
   HelixTurnInput,
   HelixTurnResult,
   MemoryKind,
   Mutation,
+  TicketStatus,
   ToolName,
   TraceEvent,
 } from "./types";
@@ -114,7 +115,7 @@ function sanitizeKeys(raw?: Record<string, string | undefined>): BrainKeys {
 
 export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult> {
     const preferred = (data.preferredProvider as ProviderId) || "supergrok";
-    const resolved = resolveBrain(preferred, sanitizeKeys(data.keys));
+    const resolved = resolveBrain(preferred, sanitizeKeys(data.keys), data.preferredModel);
     if (!resolved.ok) {
       return { ok: false, error: resolved.error };
     }
@@ -146,15 +147,33 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
     });
 
     let finalText = "";
+    let promptTokens = 0;
+    let completionTokens = 0;
+    let toolCallCount = 0;
+
+    const addUsage = (u: { promptTokens: number; completionTokens: number }) => {
+      promptTokens += u.promptTokens;
+      completionTokens += u.completionTokens;
+    };
+
+    const packUsage = () => ({
+      promptTokens,
+      completionTokens,
+      toolCalls: toolCallCount,
+      model: route.model,
+      provider: route.label,
+    });
 
     try {
       for (let round = 0; round < MAX_ROUNDS; round++) {
-        const { content, toolCalls } = await callBrain(
+        const { content, toolCalls, usage } = await callBrain(
           route,
           messages,
           true,
           MAX_TOKENS,
         );
+        addUsage(usage);
+        toolCallCount += toolCalls.length;
 
         if (!toolCalls.length) {
           finalText = content.trim();
@@ -250,11 +269,12 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
 
       if (!finalText) {
         const last = await callBrain(route, messages, false, 600);
+        addUsage(last.usage);
         finalText = last.content.trim();
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Model call failed";
-      return { ok: false, error: message, keyPatch: route.rotated };
+      return { ok: false, error: message, keyPatch: route.rotated, usage: packUsage() };
     }
 
     if (!finalText) {
@@ -270,6 +290,7 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
       traces,
       pendingApproval,
       keyPatch: route.rotated,
+      usage: packUsage(),
     };
 }
 
@@ -490,6 +511,44 @@ async function runTool(
         },
       };
     }
+    case "create_ticket": {
+      const title = str(args.title).slice(0, 120);
+      if (!title) return { result: "Ticket needs a title." };
+      const statusRaw = str(args.status, "backlog");
+      const status: TicketStatus =
+        statusRaw === "doing" || statusRaw === "done" ? statusRaw : "backlog";
+      return {
+        result: `Ticket “${title}” added to ${status}.`,
+        mutation: {
+          type: "create_ticket",
+          title,
+          body: str(args.body).slice(0, 800),
+          status,
+        },
+      };
+    }
+    case "update_ticket": {
+      const id = str(args.id);
+      if (!id) return { result: "Need a ticket id." };
+      const board = input.tickets ?? [];
+      const found = board.find((t) => t.id === id || t.title.toLowerCase() === id.toLowerCase());
+      if (!found) return { result: `No ticket ${id}.` };
+      const statusRaw = str(args.status);
+      const status: TicketStatus | undefined =
+        statusRaw === "backlog" || statusRaw === "doing" || statusRaw === "done"
+          ? statusRaw
+          : undefined;
+      return {
+        result: `Ticket “${found.title}” updated${status ? ` → ${status}` : ""}.`,
+        mutation: {
+          type: "update_ticket",
+          id: found.id,
+          title: str(args.title).slice(0, 120) || undefined,
+          body: str(args.body).slice(0, 800) || undefined,
+          status,
+        },
+      };
+    }
     default:
       return { result: `Unknown tool ${name}` };
   }
@@ -499,17 +558,24 @@ export const helixRuntime = createServerFn({ method: "GET" }).handler(async () =
   const env = envPresence();
   return {
     superGrok: env.xai,
-    model: "grok-4.5",
+    model: "grok-4.6",
     env,
   };
 });
 
 export const probeBrain = createServerFn({ method: "POST" })
-  .validator((input: { preferredProvider: string; keys?: Record<string, string | undefined> }) => input)
+  .validator(
+    (input: {
+      preferredProvider: string;
+      preferredModel?: string;
+      keys?: Record<string, string | undefined>;
+    }) => input,
+  )
   .handler(async ({ data }): Promise<{ ok: true; detail: string } | { ok: false; error: string }> => {
     const resolved = resolveBrain(
       (data.preferredProvider as ProviderId) || "supergrok",
       sanitizeKeys(data.keys),
+      data.preferredModel,
     );
     if (!resolved.ok) return { ok: false, error: resolved.error };
     try {
@@ -528,6 +594,41 @@ export const probeBrain = createServerFn({ method: "POST" })
       return { ok: false, error: err instanceof Error ? err.message : "Probe failed" };
     }
   });
+
+export const listBrainModels = createServerFn({ method: "POST" })
+  .validator(
+    (input: {
+      preferredProvider: string;
+      keys?: Record<string, string | undefined>;
+    }) => input,
+  )
+  .handler(
+    async ({
+      data,
+    }): Promise<
+      | { ok: true; models: ModelOption[]; source: "live" }
+      | { ok: false; error: string; models: ModelOption[] }
+    > => {
+      const resolved = resolveBrain(
+        (data.preferredProvider as ProviderId) || "supergrok",
+        sanitizeKeys(data.keys),
+      );
+      if (!resolved.ok) return { ok: false, error: resolved.error, models: [] };
+      try {
+        const models = await listAvailableModels(resolved.route);
+        if (!models.length) {
+          return { ok: false, error: "Provider returned no chat models.", models: [] };
+        }
+        return { ok: true, models, source: "live" };
+      } catch (err) {
+        return {
+          ok: false,
+          error: err instanceof Error ? err.message : "Could not list models",
+          models: [],
+        };
+      }
+    },
+  );
 
 export const runSubagent = createServerFn({ method: "POST" })
   .validator(

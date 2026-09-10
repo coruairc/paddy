@@ -2,7 +2,9 @@ import type { BrainKeys } from "./providers";
 
 export type ViewId =
   | "console"
+  | "sessions"
   | "gateway"
+  | "board"
   | "identity"
   | "skills"
   | "memory"
@@ -24,7 +26,9 @@ export type ToolName =
   | "schedule_wake"
   | "send_channel"
   | "hub_search"
-  | "install_skill";
+  | "install_skill"
+  | "create_ticket"
+  | "update_ticket";
 
 export type TraceKind =
   | "model"
@@ -41,6 +45,7 @@ export type TraceKind =
 export type SkillStatus = "new" | "active" | "stale" | "archived";
 export type MemoryKind = "fact" | "preference" | "lesson" | "episode";
 export type ChannelStatus = "connected" | "idle" | "pairing" | "offline";
+export type TicketStatus = "backlog" | "doing" | "done";
 
 export interface Policy {
   autoApprove: ToolName[];
@@ -90,7 +95,18 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   channelId?: string;
+  sessionId?: string;
   at: number;
+}
+
+export interface Session {
+  id: string;
+  channelId: string;
+  title: string;
+  peer?: string;
+  lastAt: number;
+  preview: string;
+  unread: number;
 }
 
 export interface TraceEvent {
@@ -128,6 +144,25 @@ export interface Wake {
   fired: boolean;
 }
 
+export interface Ticket {
+  id: string;
+  title: string;
+  body: string;
+  status: TicketStatus;
+  at: number;
+  updatedAt: number;
+}
+
+export interface UsageStats {
+  promptTokens: number;
+  completionTokens: number;
+  turns: number;
+  toolCalls: number;
+  lastModel: string;
+  lastProvider: string;
+  lastAt: number | null;
+}
+
 export interface DailyNote {
   date: string;
   content: string;
@@ -154,6 +189,9 @@ export interface WorkspaceState {
   checkpoints: Checkpoint[];
   wakes: Wake[];
   dailyNotes: DailyNote[];
+  tickets: Ticket[];
+  usage: UsageStats;
+  sessions: Session[];
 }
 
 export type Mutation =
@@ -183,7 +221,16 @@ export type Mutation =
       slug: string;
       registry: string;
       version: string;
-    };
+    }
+  | { type: "create_ticket"; title: string; body: string; status: TicketStatus }
+  | {
+      type: "update_ticket";
+      id: string;
+      title?: string;
+      body?: string;
+      status?: TicketStatus;
+    }
+  | { type: "remove_ticket"; id: string };
 
 export interface HelixTurnInput {
   profileName: string;
@@ -198,11 +245,24 @@ export interface HelixTurnInput {
   channelName?: string;
   policy: Policy;
   preferredProvider?: string;
+  preferredModel?: string;
   keys?: Record<string, string | undefined>;
+  tickets?: Pick<Ticket, "id" | "title" | "body" | "status">[];
 }
 
 export type HelixTurnResult =
-  | { ok: false; error: string; keyPatch?: BrainKeys }
+  | {
+      ok: false;
+      error: string;
+      keyPatch?: BrainKeys;
+      usage?: {
+        promptTokens: number;
+        completionTokens: number;
+        toolCalls: number;
+        model: string;
+        provider: string;
+      };
+    }
   | {
       ok: true;
       text: string;
@@ -214,4 +274,11 @@ export type HelixTurnResult =
         reason: string;
       };
       keyPatch?: BrainKeys;
+      usage?: {
+        promptTokens: number;
+        completionTokens: number;
+        toolCalls: number;
+        model: string;
+        provider: string;
+      };
     };

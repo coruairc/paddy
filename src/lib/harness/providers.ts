@@ -5,8 +5,7 @@ export type ProviderId =
   | "claude-pro"
   | "claude-max"
   | "gemini"
-  | "laguna-s"
-  | "laguna-xs"
+  | "laguna"
   | "openrouter"
   | "deepseek"
   | "local";
@@ -23,6 +22,11 @@ export type KeySlot =
   | "ollama";
 export type Compat = "openai" | "anthropic" | "xai" | "codex";
 export type SignInKind = "chatgpt" | "supergrok" | "claude-token";
+
+export interface ModelOption {
+  id: string;
+  name: string;
+}
 
 export const TOKEN_MAX = 8192;
 export const CODEX_VERIFY_URL = "https://auth.openai.com/codex/device";
@@ -69,6 +73,7 @@ export interface ProviderDef {
   signIn?: SignInKind;
   connectUrl?: string;
   connectLabel?: string;
+  models: ModelOption[];
 }
 
 export interface ProviderState {
@@ -76,6 +81,81 @@ export interface ProviderState {
   status: ProviderStatus;
   pairedAt: number | null;
 }
+
+const GROK_MODELS: ModelOption[] = [
+  { id: "grok-4.6", name: "Grok 4.6" },
+  { id: "grok-4.5", name: "Grok 4.5" },
+  { id: "grok-4-fast", name: "Grok 4 Fast" },
+  { id: "grok-4.1-fast", name: "Grok 4.1 Fast" },
+  { id: "grok-code-fast-1", name: "Grok Code Fast" },
+  { id: "grok-4", name: "Grok 4" },
+  { id: "grok-3", name: "Grok 3" },
+  { id: "grok-3-mini", name: "Grok 3 Mini" },
+];
+
+const CHATGPT_PLUS_MODELS: ModelOption[] = [
+  { id: "gpt-5.5", name: "GPT-5.5" },
+  { id: "gpt-5.1", name: "GPT-5.1" },
+  { id: "gpt-5", name: "GPT-5" },
+  { id: "gpt-4.1", name: "GPT-4.1" },
+  { id: "o4-mini", name: "o4-mini" },
+];
+
+const CHATGPT_PRO_MODELS: ModelOption[] = [
+  { id: "gpt-5.5", name: "GPT-5.5" },
+  { id: "gpt-5.1", name: "GPT-5.1" },
+  { id: "o3", name: "o3" },
+  { id: "gpt-5", name: "GPT-5" },
+  { id: "gpt-4.1", name: "GPT-4.1" },
+  { id: "o4-mini", name: "o4-mini" },
+];
+
+const CLAUDE_PRO_MODELS: ModelOption[] = [
+  { id: "claude-sonnet-4-5", name: "Sonnet 4.5" },
+  { id: "claude-haiku-4-5", name: "Haiku 4.5" },
+];
+
+const CLAUDE_MAX_MODELS: ModelOption[] = [
+  { id: "claude-opus-4-5", name: "Opus 4.5" },
+  { id: "claude-sonnet-4-5", name: "Sonnet 4.5" },
+  { id: "claude-haiku-4-5", name: "Haiku 4.5" },
+];
+
+const GEMINI_MODELS: ModelOption[] = [
+  { id: "gemini-2.5-pro", name: "2.5 Pro" },
+  { id: "gemini-2.5-flash", name: "2.5 Flash" },
+  { id: "gemini-2.5-flash-lite", name: "2.5 Flash-Lite" },
+  { id: "gemini-2.0-flash", name: "2.0 Flash" },
+];
+
+const LAGUNA_MODELS: ModelOption[] = [
+  { id: "poolside/laguna-s-2.1", name: "Laguna S 2.1" },
+  { id: "poolside/laguna-xs-2.1", name: "Laguna XS 2.1" },
+];
+
+const OPENROUTER_MODELS: ModelOption[] = [
+  { id: "openrouter/auto", name: "Auto" },
+  { id: "x-ai/grok-4.6", name: "Grok 4.6" },
+  { id: "x-ai/grok-4.5", name: "Grok 4.5" },
+  { id: "anthropic/claude-sonnet-4.5", name: "Sonnet 4.5" },
+  { id: "openai/gpt-5.5", name: "GPT-5.5" },
+  { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro" },
+  { id: "deepseek/deepseek-chat", name: "DeepSeek Chat" },
+];
+
+const DEEPSEEK_MODELS: ModelOption[] = [
+  { id: "deepseek-chat", name: "Chat" },
+  { id: "deepseek-reasoner", name: "Reasoner" },
+];
+
+const OLLAMA_MODELS: ModelOption[] = [
+  { id: "llama3.2", name: "Llama 3.2" },
+  { id: "llama3.1", name: "Llama 3.1" },
+  { id: "qwen2.5", name: "Qwen 2.5" },
+  { id: "mistral", name: "Mistral" },
+  { id: "deepseek-r1", name: "DeepSeek R1" },
+  { id: "phi4", name: "Phi-4" },
+];
 
 export const PROVIDER_DEFS: ProviderDef[] = [
   {
@@ -89,11 +169,12 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     pairHint: "Device-code sign-in at auth.x.ai.",
     slot: "xai",
     envVar: "XAI_API_KEY",
-    model: "grok-4.5",
+    model: "grok-4.6",
     baseUrl: "https://api.x.ai/v1",
     compat: "xai",
     keyLabel: "xAI API key (optional)",
     signIn: "supergrok",
+    models: GROK_MODELS,
   },
   {
     id: "chatgpt-plus",
@@ -111,6 +192,7 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     compat: "openai",
     keyLabel: "OpenAI API key (optional)",
     signIn: "chatgpt",
+    models: CHATGPT_PLUS_MODELS,
   },
   {
     id: "chatgpt-pro",
@@ -128,6 +210,7 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     compat: "openai",
     keyLabel: "OpenAI API key (optional)",
     signIn: "chatgpt",
+    models: CHATGPT_PRO_MODELS,
   },
   {
     id: "claude-pro",
@@ -145,6 +228,7 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     compat: "anthropic",
     keyLabel: "setup-token (sk-ant-oat…) or API key",
     signIn: "claude-token",
+    models: CLAUDE_PRO_MODELS,
   },
   {
     id: "claude-max",
@@ -162,6 +246,7 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     compat: "anthropic",
     keyLabel: "setup-token (sk-ant-oat…) or API key",
     signIn: "claude-token",
+    models: CLAUDE_MAX_MODELS,
   },
   {
     id: "gemini",
@@ -180,12 +265,13 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     keyLabel: "Google AI key (free or Pro/Ultra)",
     connectUrl: GEMINI_KEYS_URL,
     connectLabel: "Get a free Google key",
+    models: GEMINI_MODELS,
   },
   {
-    id: "laguna-s",
-    name: "Laguna S",
+    id: "laguna",
+    name: "Laguna",
     plan: "Poolside · free",
-    blurb: "Laguna S 2.1 — free agentic coding model. Get a free Poolside key, then prefer this brain.",
+    blurb: "Free agentic coding models from Poolside. One key, then pick S (stronger) or XS (faster).",
     kind: "subscription",
     liveHere: false,
     auth: "subscription",
@@ -198,24 +284,7 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     keyLabel: "Poolside API key (free)",
     connectUrl: POOLSIDE_KEYS_URL,
     connectLabel: "Get a free Poolside key",
-  },
-  {
-    id: "laguna-xs",
-    name: "Laguna XS",
-    plan: "Poolside · free",
-    blurb: "Laguna XS 2.1 — faster, lighter, also free. Shares the Poolside key with Laguna S.",
-    kind: "subscription",
-    liveHere: false,
-    auth: "subscription",
-    pairHint: "Shares the Poolside key from Laguna S.",
-    slot: "poolside",
-    envVar: "POOLSIDE_API_KEY",
-    model: "poolside/laguna-xs-2.1",
-    baseUrl: "https://inference.poolside.ai/v1",
-    compat: "openai",
-    keyLabel: "Poolside API key (free)",
-    connectUrl: POOLSIDE_KEYS_URL,
-    connectLabel: "Get a free Poolside key",
+    models: LAGUNA_MODELS,
   },
   {
     id: "openrouter",
@@ -234,6 +303,7 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     keyLabel: "OpenRouter key",
     connectUrl: "https://openrouter.ai/keys",
     connectLabel: "Get an OpenRouter key",
+    models: OPENROUTER_MODELS,
   },
   {
     id: "deepseek",
@@ -252,6 +322,7 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     keyLabel: "DeepSeek API key",
     connectUrl: "https://platform.deepseek.com/",
     connectLabel: "Get a DeepSeek key",
+    models: DEEPSEEK_MODELS,
   },
   {
     id: "local",
@@ -268,6 +339,7 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     baseUrl: "http://127.0.0.1:11434/v1",
     compat: "openai",
     keyLabel: "Ollama host",
+    models: OLLAMA_MODELS,
   },
 ];
 
@@ -291,6 +363,31 @@ export function maskKey(value?: string): string {
 
 export function defFor(id: ProviderId): ProviderDef | undefined {
   return PROVIDER_DEFS.find((d) => d.id === id);
+}
+
+export function normalizeProviderId(raw?: string): ProviderId {
+  const id = (raw ?? "").trim();
+  if (id === "laguna-s" || id === "laguna-xs" || id === "laguna") return "laguna";
+  if (PROVIDER_DEFS.some((d) => d.id === id)) return id as ProviderId;
+  return "supergrok";
+}
+
+export function aliasPreferredModel(raw?: string): string | undefined {
+  const id = (raw ?? "").trim();
+  if (id === "laguna-xs") return "poolside/laguna-xs-2.1";
+  if (id === "laguna-s") return "poolside/laguna-s-2.1";
+  return undefined;
+}
+
+export function canonicalizeModelId(id: string): string {
+  let s = id.replace(/^models\//, "").trim();
+  s = s.replace(/-(low|medium|high|max|xhigh)$/i, "");
+  s = s.replace(/(\d)-(\d)(?!\d)/g, "$1.$2");
+  return s;
+}
+
+export function modelIdsMatch(a: string, b: string): boolean {
+  return canonicalizeModelId(a).toLowerCase() === canonicalizeModelId(b).toLowerCase();
 }
 
 export function isAnthropicOAuth(token?: string): boolean {
@@ -334,4 +431,54 @@ export function slotForBrainKey(key: string): KeySlot | undefined {
 
 export function slotConnected(keys: BrainKeys, slot: KeySlot): boolean {
   return keysForSlot(slot).some((k) => Boolean(keys[k]?.trim()));
+}
+
+export function pickModel(def: ProviderDef, requested?: string, live?: ModelOption[]): string {
+  const pool = live && live.length > 0 ? live : def.models;
+  const want = (requested ?? "").trim();
+  if (want) {
+    const hit = pool.find((m) => modelIdsMatch(m.id, want));
+    if (hit) return hit.id;
+    if (def.models.some((m) => modelIdsMatch(m.id, want))) return canonicalizeModelId(want);
+    if (def.id === "local" || def.id === "openrouter") return want.slice(0, 120);
+    if (/^[a-zA-Z0-9_./:+-]{2,120}$/.test(want)) return want;
+  }
+  if (pool.some((m) => m.id === def.model)) return def.model;
+  return pool[0]?.id ?? def.model;
+}
+
+export function prettyModelName(id: string): string {
+  let s = id.replace(/^models\//, "");
+  if (s.startsWith("x-ai/")) s = s.slice(5);
+  else if (s.startsWith("openai/")) s = s.slice(7);
+  else if (s.startsWith("anthropic/")) s = s.slice(10);
+  else if (s.startsWith("google/")) s = s.slice(7);
+  else if (s.includes("/") && !s.startsWith("poolside/")) s = s.slice(s.lastIndexOf("/") + 1);
+  s = s.replace(/:latest$/, "");
+  s = s.replace(/(\d)-(\d)(?!\d)/g, "$1.$2");
+  return s
+    .split(/[-_]/g)
+    .filter(Boolean)
+    .map((w) => {
+      if (/^gpt$/i.test(w)) return "GPT";
+      if (/^tts$/i.test(w)) return "TTS";
+      if (/^o\d/i.test(w)) return w;
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    })
+    .join(" ");
+}
+
+export function modelLabel(def: ProviderDef, requested?: string, live?: ModelOption[]): string {
+  const id = pickModel(def, requested, live);
+  return (
+    live?.find((m) => m.id === id)?.name ??
+    def.models.find((m) => m.id === id)?.name ??
+    prettyModelName(id)
+  );
+}
+
+export function defaultModelByProvider(): Partial<Record<ProviderId, string>> {
+  const out: Partial<Record<ProviderId, string>> = {};
+  for (const d of PROVIDER_DEFS) out[d.id] = d.model;
+  return out;
 }

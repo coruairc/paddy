@@ -205,6 +205,34 @@ export const TOOL_CATALOG: {
       required: ["slug"],
     },
   },
+  {
+    name: "create_ticket",
+    description:
+      "Create a ticket on this mind’s kanban. Use for work to track — not for chat replies.",
+    parameters: {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        body: { type: "string", description: "Short description. Optional." },
+        status: { type: "string", enum: ["backlog", "doing", "done"], default: "backlog" },
+      },
+      required: ["title"],
+    },
+  },
+  {
+    name: "update_ticket",
+    description: "Move or edit a ticket by id (from the board in context).",
+    parameters: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        title: { type: "string" },
+        body: { type: "string" },
+        status: { type: "string", enum: ["backlog", "doing", "done"] },
+      },
+      required: ["id"],
+    },
+  },
 ];
 
 export function openaiTools() {

@@ -2,17 +2,19 @@ import { useEffect, useState } from "react";
 import {
   Activity,
   BookOpen,
+  Columns3,
   Cpu,
   Fingerprint,
   History,
+  Inbox,
   MessageSquare,
-  MoreHorizontal,
   Plus,
   Puzzle,
   Radio,
   Trash2,
 } from "lucide-react";
 import { HelixMark } from "@/components/helix-mark";
+import { BoardView } from "@/components/board-view";
 import { CheckpointsView } from "@/components/checkpoints-view";
 import { ConsoleView } from "@/components/console-view";
 import { GatewayView } from "@/components/gateway-view";
@@ -20,6 +22,7 @@ import { IdentityView } from "@/components/identity-view";
 import { MemoryView } from "@/components/memory-view";
 import { ModelsView } from "@/components/models-view";
 import { ObservatoryView } from "@/components/observatory-view";
+import { SessionsView } from "@/components/sessions-view";
 import { SkillsView } from "@/components/skills-view";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,30 +32,49 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { helixRuntime, runSubagent } from "@/lib/harness/run-turn";
 import { useHelix } from "@/lib/harness/store";
 import type { ProfileMeta, ViewId } from "@/lib/harness/types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-const NAV: { id: ViewId; label: string; icon: typeof MessageSquare; primary?: boolean }[] = [
-  { id: "console", label: "Console", icon: MessageSquare, primary: true },
-  { id: "gateway", label: "Gateway", icon: Radio, primary: true },
-  { id: "skills", label: "Skills", icon: Puzzle, primary: true },
-  { id: "memory", label: "Memory", icon: BookOpen, primary: true },
-  { id: "identity", label: "Identity", icon: Fingerprint },
-  { id: "models", label: "Models", icon: Cpu },
-  { id: "checkpoints", label: "Checkpoints", icon: History },
-  { id: "observatory", label: "Observatory", icon: Activity },
+const NAV_GROUPS: {
+  id: string;
+  items: { id: ViewId; label: string; icon: typeof MessageSquare }[];
+}[] = [
+  {
+    id: "desk",
+    items: [
+      { id: "console", label: "Console", icon: MessageSquare },
+      { id: "sessions", label: "Sessions", icon: Inbox },
+      { id: "gateway", label: "Gateway", icon: Radio },
+      { id: "board", label: "Board", icon: Columns3 },
+    ],
+  },
+  {
+    id: "mind",
+    items: [
+      { id: "skills", label: "Skills", icon: Puzzle },
+      { id: "memory", label: "Memory", icon: BookOpen },
+      { id: "identity", label: "Identity", icon: Fingerprint },
+    ],
+  },
+  {
+    id: "ops",
+    items: [
+      { id: "models", label: "Models", icon: Cpu },
+      { id: "checkpoints", label: "Checkpoints", icon: History },
+      { id: "observatory", label: "Observatory", icon: Activity },
+    ],
+  },
 ];
+
+const NAV = NAV_GROUPS.flatMap((g) => g.items);
 
 export function AppShell() {
   const setHydrated = useHelix((s) => s.setHydrated);
   const view = useHelix((s) => s.view);
   const setView = useHelix((s) => s.setView);
-  const moreOpen = useHelix((s) => s.moreOpen);
-  const setMoreOpen = useHelix((s) => s.setMoreOpen);
   const profiles = useHelix((s) => s.profiles);
   const activeProfileId = useHelix((s) => s.activeProfileId);
   const setProfile = useHelix((s) => s.setProfile);
@@ -98,46 +120,59 @@ export function AppShell() {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-bg text-fg">
-      <nav className="hidden w-[4.5rem] shrink-0 flex-col items-center border-r border-border py-3 lg:flex xl:w-52 xl:items-stretch xl:px-2">
-        <div className="mb-6 flex items-center justify-center gap-2 px-2 xl:justify-start">
-          <HelixMark className="size-8 text-accent" />
-          <span className="hidden font-display text-xl tracking-tight xl:inline">Paddy</span>
+      <nav
+        aria-label="Paddy Irishman"
+        className="flex w-44 shrink-0 flex-col border-r border-border bg-bg sm:w-52"
+      >
+        <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-3">
+          <HelixMark spinning={busy} className="size-7 shrink-0 text-accent" />
+          <div className="min-w-0">
+            <p className="truncate font-display text-lg leading-none tracking-tight">
+              Paddy
+            </p>
+            <p className="truncate text-xs text-muted">Irishman</p>
+          </div>
         </div>
-        <ul className="flex flex-1 flex-col gap-1">
-          {NAV.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => setView(item.id)}
-                className={cn(
-                  "flex w-full items-center justify-center gap-3 rounded-xl px-0 py-2.5 text-sm transition-colors xl:justify-start xl:px-3",
-                  view === item.id
-                    ? "bg-elevated text-fg"
-                    : "text-muted hover:bg-surface hover:text-fg",
-                )}
-              >
-                <item.icon className="size-5 shrink-0" />
-                <span className="hidden xl:inline">{item.label}</span>
-              </button>
-            </li>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-2">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={group.id} className={cn(gi > 0 && "mt-3")}>
+              {gi > 0 ? <div className="mb-2 h-px bg-border" role="separator" /> : null}
+              <ul className="flex flex-col gap-0.5">
+                {group.items.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => setView(item.id)}
+                      aria-current={view === item.id ? "page" : undefined}
+                      className={cn(
+                        "flex h-11 w-full items-center gap-2.5 rounded-xl px-2.5 text-sm transition-colors duration-150",
+                        view === item.id
+                          ? "bg-elevated text-fg"
+                          : "text-muted hover:bg-surface hover:text-fg",
+                      )}
+                    >
+                      <item.icon className="size-4 shrink-0" />
+                      <span className="truncate whitespace-nowrap">{item.label}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       </nav>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border px-3 sm:px-4">
-          <div className="flex min-w-0 items-center gap-2">
-            <HelixMark spinning={busy} className="size-6 text-accent lg:hidden" />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{NAV.find((n) => n.id === view)?.label}</p>
-              <p className="hidden truncate text-[11px] text-muted sm:block">{profile?.role}</p>
-            </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">{NAV.find((n) => n.id === view)?.label}</p>
+            <p className="hidden truncate text-xs text-muted sm:block">{profile?.role}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setView("models")}
-              className="flex items-center gap-1.5 text-[11px] text-muted hover:text-fg"
+              className="flex items-center gap-1.5 text-xs text-muted hover:text-fg"
             >
               <span
                 className={cn(
@@ -152,78 +187,29 @@ export function AppShell() {
             <button
               type="button"
               onClick={() => setAgentsOpen(true)}
-              className="flex h-10 max-w-[16rem] items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
+              className="flex h-10 max-w-[12rem] items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-sm text-fg"
             >
-              <span className="truncate">{profile?.name ?? "Paddy Irishman"}</span>
+              <span className="truncate">
+                {profile?.id === "paddy" || !profile ? "Paddy" : profile.name}
+              </span>
               <Plus className="size-3.5 shrink-0 text-muted" />
             </button>
           </div>
         </header>
 
-        <main className="flex min-h-0 flex-1 flex-col pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-0">
-          {view === "console" && <ConsoleView />}
+        <main className="flex min-h-0 flex-1 flex-col">
+          {view === "console" && <ConsoleView key={activeProfileId} />}
+          {view === "sessions" && <SessionsView key={activeProfileId} />}
           {view === "gateway" && <GatewayView />}
-          {view === "identity" && <IdentityView />}
-          {view === "skills" && <SkillsView />}
-          {view === "memory" && <MemoryView />}
-          {view === "checkpoints" && <CheckpointsView />}
-          {view === "observatory" && <ObservatoryView />}
+          {view === "board" && <BoardView key={activeProfileId} />}
+          {view === "identity" && <IdentityView key={activeProfileId} />}
+          {view === "skills" && <SkillsView key={activeProfileId} />}
+          {view === "memory" && <MemoryView key={activeProfileId} />}
+          {view === "checkpoints" && <CheckpointsView key={activeProfileId} />}
+          {view === "observatory" && <ObservatoryView key={activeProfileId} />}
           {view === "models" && <ModelsView />}
         </main>
       </div>
-
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] lg:hidden">
-        <ul className="grid grid-cols-5">
-          {NAV.filter((n) => n.primary).map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => setView(item.id)}
-                className={cn(
-                  "flex h-14 w-full flex-col items-center justify-center gap-0.5 text-[10px]",
-                  view === item.id ? "text-fg" : "text-muted",
-                )}
-              >
-                <item.icon className="size-5" />
-                {item.label}
-              </button>
-            </li>
-          ))}
-          <li>
-            <button
-              type="button"
-              onClick={() => setMoreOpen(true)}
-              className={cn(
-                "flex h-14 w-full flex-col items-center justify-center gap-0.5 text-[10px]",
-                !NAV.find((n) => n.primary && n.id === view) ? "text-fg" : "text-muted",
-              )}
-            >
-              <MoreHorizontal className="size-5" />
-              More
-            </button>
-          </li>
-        </ul>
-      </nav>
-
-      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-        <SheetContent side="bottom">
-          <SheetTitle className="mb-3">More</SheetTitle>
-          <ul className="grid grid-cols-3 gap-2 pb-2">
-            {NAV.filter((n) => !n.primary).map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => setView(item.id)}
-                  className="flex h-20 w-full flex-col items-center justify-center gap-2 rounded-xl bg-surface text-sm"
-                >
-                  <item.icon className="size-5 text-accent" />
-                  {item.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </SheetContent>
-      </Sheet>
 
       <AgentsDialog
         open={agentsOpen}
@@ -258,6 +244,7 @@ export function AppShell() {
             <Button
               onClick={() => {
                 const held = useHelix.getState().pendingApproval;
+                const profileId = useHelix.getState().activeProfileId;
                 resolveApproval(true);
                 if (held?.tool !== "spawn_subagent") return;
                 setBusy(true);
@@ -270,11 +257,11 @@ export function AppShell() {
                   },
                 })
                   .then((r) => {
-                    if (r.ok) applySubagent(r.text, true);
-                    else applySubagent(r.error, false);
+                    if (r.ok) applySubagent(r.text, true, profileId);
+                    else applySubagent(r.error, false, profileId);
                   })
                   .catch((err) => {
-                    applySubagent(err instanceof Error ? err.message : "Subagent failed", false);
+                    applySubagent(err instanceof Error ? err.message : "Subagent failed", false, profileId);
                   });
               }}
             >
@@ -324,8 +311,9 @@ function AgentsDialog({
       <DialogContent>
         <DialogTitle>Agents</DialogTitle>
         <DialogDescription>
-          Start with Paddy. Add extra minds when you want a specialist — each
-          keeps its own files.
+          Select a mind and you get its console, board, skills, memory, and
+          identity. Start with Paddy Irishman — add extras when you want a
+          specialist.
         </DialogDescription>
         <ul className="mt-4 space-y-2">
           {profiles.map((p) => (
@@ -339,7 +327,7 @@ function AgentsDialog({
                 className="min-w-0 flex-1 text-left"
               >
                 <p className="truncate text-sm text-fg">{p.name}</p>
-                <p className="truncate text-[11px] text-muted">{p.role}</p>
+                <p className="truncate text-xs text-muted">{p.role}</p>
               </button>
               {p.id === activeProfileId ? (
                 <span className="shrink-0 font-mono text-[10px] tracking-wide text-accent uppercase">

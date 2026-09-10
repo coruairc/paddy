@@ -15,6 +15,7 @@ import {
   mkdirSync,
   readFileSync,
   writeFileSync,
+  chmodSync,
   rmSync,
   openSync,
   closeSync,
@@ -30,6 +31,19 @@ import { createHash, randomBytes } from "node:crypto";
 export const VERSION = "0.1.0";
 const DEFAULT_PORT = 8080;
 const DEFAULT_HOST = "127.0.0.1";
+
+function preferAlias(id) {
+  const raw = String(id || "").trim();
+  if (raw === "laguna-s" || raw === "laguna-xs") return "laguna";
+  return raw;
+}
+
+function preferModel(id) {
+  const raw = String(id || "").trim();
+  if (raw === "laguna-xs") return "poolside/laguna-xs-2.1";
+  if (raw === "laguna-s") return "poolside/laguna-s-2.1";
+  return undefined;
+}
 
 export function kitRoot() {
   return resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -106,7 +120,7 @@ Setup
 Flags
   --port <n>     Gateway port (default ${DEFAULT_PORT})
   --host <h>     Bind / connect host (default ${DEFAULT_HOST})
-  --prefer <id>  Brain for this chat (supergrok, chatgpt-plus, laguna-s, …)
+  --prefer <id>  Brain for this chat (supergrok, chatgpt-plus, laguna, …)
   --json         Machine-readable output
   --yes          Non-interactive onboard
   --help
@@ -121,7 +135,8 @@ Quick start
 }
 
 function ensureHome() {
-  mkdirSync(paddyHome(), { recursive: true });
+  mkdirSync(paddyHome(), { recursive: true, mode: 0o700 });
+  try { chmodSync(paddyHome(), 0o700); } catch { /* already owned */ }
 }
 
 function readJson(path, fallback) {
@@ -134,7 +149,8 @@ function readJson(path, fallback) {
 
 function writeJson(path, data) {
   ensureHome();
-  writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
+  writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`, { mode: 0o600 });
+  try { chmodSync(path, 0o600); } catch { /* ignore */ }
 }
 
 export function loadConfig() {
@@ -143,7 +159,8 @@ export function loadConfig() {
     port: Number(raw.port) || DEFAULT_PORT,
     host: typeof raw.host === "string" && raw.host ? raw.host : DEFAULT_HOST,
     token: typeof raw.token === "string" ? raw.token : "",
-    preferredProvider: typeof raw.preferredProvider === "string" ? raw.preferredProvider : "supergrok",
+    preferredProvider: preferAlias(typeof raw.preferredProvider === "string" ? raw.preferredProvider : "supergrok"),
+    preferredModel: typeof raw.preferredModel === "string" ? raw.preferredModel : undefined,
     root: typeof raw.root === "string" ? raw.root : kitRoot(),
   };
 }
@@ -248,8 +265,15 @@ function fail(flags, error, code = 1) {
 export function baseUrl(cfg, flags) {
   const host = flags.host || cfg.host || DEFAULT_HOST;
   const port = flags.port || cfg.port || DEFAULT_PORT;
-  const hostname = host === "0.0.0.0" ? "127.0.0.1" : host;
-  return { host, port, hostname, origin: `http://${hostname}:${port}` };
+  const hostname = host === "0.0.0.0" || host === "::" ? "127.0.0.1" : host;
+  if (!/^[A-Za-z0-9.-]+$/.test(hostname)) {
+    throw new Error("host must be a hostname or IP");
+  }
+  const n = Number(port);
+  if (!Number.isInteger(n) || n < 1 || n > 65535) {
+    throw new Error("port must be 1–65535");
+  }
+  return { host, port: n, hostname, origin: `http://${hostname}:${n}` };
 }
 
 export async function fetchCli(cfg, flags, { method = "GET", body } = {}) {
@@ -548,11 +572,14 @@ async function cmdModels(rest, flags) {
       fail(flags, "Usage: paddy models prefer <id>", 2);
       return;
     }
-    const next = saveConfig({ preferredProvider: id });
+    const canonical = preferAlias(id);
+    const model = preferModel(id);
+    const next = saveConfig({ preferredProvider: canonical, preferredModel: model || undefined });
     const ws = loadWorkspace();
-    ws.preferredProvider = id;
+    ws.preferredProvider = canonical;
+    if (model) ws.preferredModel = model;
     saveWorkspace(ws);
-    out(flags, { ok: true, preferredProvider: next.preferredProvider }, `Preferred brain: ${id}`);
+    out(flags, { ok: true, preferredProvider: next.preferredProvider, model }, `Preferred brain: ${canonical}${model ? ` (${model})` : ""}`);
     return;
   }
 
@@ -589,7 +616,9 @@ async function cmdChat(rest, flags) {
     return;
   }
 
-  const preferred = flags.prefer || loadWorkspace().preferredProvider || cfg.preferredProvider;
+  const rawPrefer = flags.prefer || loadWorkspace().preferredProvider || cfg.preferredProvider;
+  const preferred = preferAlias(rawPrefer);
+  const model = flags.prefer ? preferModel(flags.prefer) : cfg.preferredModel || preferModel(rawPrefer);
   const oneShot = rest.join(" ").trim();
 
   async function turn(message) {
@@ -602,6 +631,7 @@ async function cmdChat(rest, flags) {
         history: (ws.history ?? []).slice(-10),
         files: ws.files && Object.keys(ws.files).length ? ws.files : undefined,
         preferredProvider: preferred,
+        model,
         profileName: "Paddy",
       },
     });
@@ -663,11 +693,13 @@ async function cmdDashboard(flags) {
     fail(flags, "Gateway is not running. Start it with: paddy gateway");
     return;
   }
-  const opener =
-    process.platform === "darwin" ? "open" : process.platform === "win32" ? "cmd" : "xdg-open";
-  const args = process.platform === "win32" ? ["/c", "start", "", origin] : [origin];
   try {
-    spawn(opener, args, { detached: true, stdio: "ignore" }).unref();
+    if (process.platform === "win32") {
+      spawn("cmd", ["/c", "start", "", origin], { detached: true, stdio: "ignore" }).unref();
+    } else {
+      const opener = process.platform === "darwin" ? "open" : "xdg-open";
+      spawn(opener, [origin], { detached: true, stdio: "ignore" }).unref();
+    }
   } catch {
     /* headless is fine */
   }
@@ -682,7 +714,8 @@ async function cmdOnboard(flags) {
   const homeEnv = homePath("selfhost.env");
   let copied = "";
   if (existsSync(example) && !existsSync(kitEnv) && !existsSync(homeEnv)) {
-    writeFileSync(homeEnv, readFileSync(example));
+    writeFileSync(homeEnv, readFileSync(example), { mode: 0o600 });
+    try { chmodSync(homeEnv, 0o600); } catch { /* ignore */ }
     copied = homeEnv;
   }
   let preferred = cfg.preferredProvider;

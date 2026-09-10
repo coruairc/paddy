@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, LoaderCircle, Sparkles } from "lucide-react";
+import { ArrowUp, LoaderCircle } from "lucide-react";
 import { CanvasStack } from "@/components/canvas-panel";
 import { HelixMark } from "@/components/helix-mark";
 import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
-import { SUGGESTIONS } from "@/lib/harness/defaults";
+import { WEB_SESSION_ID } from "@/lib/harness/defaults";
 import { sendTurn } from "@/lib/harness/send";
 import { useHelix } from "@/lib/harness/store";
-import type { TraceEvent, TraceKind } from "@/lib/harness/types";
-import { cn, formatTime } from "@/lib/utils";
+import type { ChatMessage, TraceEvent, TraceKind, UsageStats } from "@/lib/harness/types";
+import { cn, formatTime, formatTokens } from "@/lib/utils";
 
 const KIND_LABEL: Record<TraceKind, string> = {
   model: "model",
@@ -32,27 +32,34 @@ export function ConsoleView() {
   const [draft, setDraft] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
   const boxRef = useRef<HTMLTextAreaElement>(null);
+  const messages = ws.messages.filter(isWebMessage);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
-  }, [ws.messages.length, busy]);
+  }, [messages.length, busy]);
 
   async function submit(text?: string) {
     const value = (text ?? draft).trim();
     if (!value || busy) return;
     setDraft("");
-    await sendTurn(value);
+    await sendTurn(value, "web", WEB_SESSION_ID);
   }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-          {ws.messages.length === 0 ? (
-            <EmptyState onPick={submit} busy={busy} name={profile?.name ?? "Paddy"} />
+          {messages.length === 0 ? (
+            <EmptyState
+              name={profile?.name ?? "Paddy Irishman"}
+              usage={ws.usage}
+              skills={ws.skills.length}
+              memories={ws.memories.length}
+              tickets={(ws.tickets ?? []).filter((t) => t.status !== "done").length}
+            />
           ) : (
             <div className="mx-auto flex max-w-2xl flex-col gap-6">
-              {ws.messages.map((m) => (
+              {messages.map((m) => (
                 <article key={m.id} className="rise-in">
                   {m.role === "user" ? (
                     <div className="flex justify-end">
@@ -169,63 +176,81 @@ export function ConsoleView() {
   );
 }
 
+function isWebMessage(m: ChatMessage) {
+  const sid = m.sessionId ?? WEB_SESSION_ID;
+  return sid === WEB_SESSION_ID && (!m.channelId || m.channelId === "web");
+}
+
 function EmptyState({
-  onPick,
-  busy,
   name,
+  usage,
+  skills,
+  memories,
+  tickets,
 }: {
-  onPick: (text: string) => void;
-  busy: boolean;
   name: string;
+  usage?: UsageStats;
+  skills: number;
+  memories: number;
+  tickets: number;
 }) {
+  const tokensIn = usage?.promptTokens ?? 0;
+  const tokensOut = usage?.completionTokens ?? 0;
+  const total = tokensIn + tokensOut;
+  const turns = usage?.turns ?? 0;
+  const tools = usage?.toolCalls ?? 0;
+  const model = usage?.lastModel || "—";
+
+  const stats: { label: string; value: string; hint: string }[] = [
+    {
+      label: "Tokens",
+      value: formatTokens(total),
+      hint: turns ? `${formatTokens(tokensIn)} in · ${formatTokens(tokensOut)} out` : "No spend yet",
+    },
+    {
+      label: "Turns",
+      value: String(turns),
+      hint: tools ? `${tools} tool calls` : "Idle",
+    },
+    {
+      label: "Last model",
+      value: model,
+      hint: usage?.lastProvider || "Pick one in Models",
+    },
+    {
+      label: "Open tickets",
+      value: String(tickets),
+      hint: `${skills} skills · ${memories} memories`,
+    },
+  ];
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8 pt-4 sm:pt-10">
       <div className="rise-in">
-        <HelixMark className="size-20 text-accent" />
+        <HelixMark className="size-16 text-accent" />
         <h1 className="mt-5 font-display text-4xl tracking-tight sm:text-5xl">{name}</h1>
-        <p className="mt-2 text-sm text-muted">Irish roots. One gateway. Many minds.</p>
+        <p className="mt-2 text-sm text-muted">This mind’s usage. Chat below to spend tokens.</p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rise-in stagger-1 rounded-2xl bg-elevated p-4 shadow-[var(--shadow-border)]">
-          <p className="text-[11px] font-medium tracking-wide text-accent uppercase">
-            Presence
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-fg/90">
-            Gateway, channels, heartbeat, live canvas, identity files.
-          </p>
-        </div>
-        <div className="rise-in stagger-2 rounded-2xl bg-elevated p-4 shadow-[var(--shadow-border)]">
-          <p className="text-[11px] font-medium tracking-wide text-accent uppercase">
-            Discipline
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-fg/90">
-            Learning loop, curator, checkpoints, gated wake, profiles.
-          </p>
-        </div>
-        <div className="rise-in stagger-3 rounded-2xl bg-elevated p-4 shadow-[var(--shadow-border)] sm:col-span-2">
-          <p className="text-[11px] font-medium tracking-wide text-accent uppercase">
-            Skills × models
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-fg/90">
-            Browse the local catalog. Sign in with ChatGPT or paste a Claude
-            setup-token in Models — or download Paddy Irishman and run it at home.
-          </p>
-        </div>
-      </div>
-      <div className="rise-in stagger-4 flex flex-col gap-2">
-        {SUGGESTIONS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            disabled={busy}
-            onClick={() => onPick(s)}
-            className="flex items-start gap-3 rounded-xl bg-surface px-4 py-3 text-left text-sm text-fg/90 shadow-[var(--shadow-border)] transition-colors hover:bg-elevated"
+      <dl className="grid grid-cols-2 gap-3">
+        {stats.map((s, i) => (
+          <div
+            key={s.label}
+            className={cn(
+              "rise-in rounded-2xl bg-elevated px-4 py-4 shadow-[var(--shadow-border)]",
+              i === 0 && "stagger-1",
+              i === 1 && "stagger-2",
+              i === 2 && "stagger-3",
+              i === 3 && "stagger-4",
+            )}
           >
-            <Sparkles className="mt-0.5 size-4 shrink-0 text-accent" />
-            <span>{s}</span>
-          </button>
+            <dt className="text-xs font-medium tracking-wide text-muted uppercase">{s.label}</dt>
+            <dd className="mt-2 truncate font-display text-3xl tracking-tight tabular-nums">
+              {s.value}
+            </dd>
+            <p className="mt-1 truncate text-xs text-subtle">{s.hint}</p>
+          </div>
         ))}
-      </div>
+      </dl>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 {
-  "name": "paddy",
-  "private": false,
+  "name": "app-builder-workspace",
+  "private": true,
   "sideEffects": false,
   "type": "module",
   "version": "0.1.0",
@@ -99,15 +99,5 @@
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.2.0"
-  },
-  "description": "Paddy Irishman \u2014 Irish-roots super harness. CLI: paddy",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/coruairc/paddy.git"
-  },
-  "homepage": "https://github.com/coruairc/paddy",
-  "bugs": {
-    "url": "https://github.com/coruairc/paddy/issues"
-  },
-  "license": "MIT"
+  }
 }

@@ -15,6 +15,7 @@ import {
   pollCodexAuth,
   pollXaiAuth,
   probeBrain,
+  listBrainModels,
   startCodexAuth,
   startXaiAuth,
 } from "@/lib/harness/run-turn";
@@ -24,12 +25,17 @@ import {
   XAI_VERIFY_URL,
   isAnthropicOAuth,
   maskKey,
+  modelIdsMatch,
+  modelLabel,
+  pickModel,
   slotConnected,
+  type BrainKeys,
   type KeySlot,
+  type ModelOption,
   type ProviderId,
 } from "@/lib/harness/providers";
 import { useHelix } from "@/lib/harness/store";
-import { formatRelative } from "@/lib/utils";
+import { cn, formatRelative } from "@/lib/utils";
 
 type DeviceFlow = {
   kind: "chatgpt" | "supergrok";
@@ -42,9 +48,11 @@ type DeviceFlow = {
 export function ModelsView() {
   const providers = useHelix((s) => s.providers ?? []);
   const preferredProvider = useHelix((s) => s.preferredProvider ?? "supergrok");
+  const modelByProvider = useHelix((s) => s.modelByProvider ?? {});
   const brainKeys = useHelix((s) => s.brainKeys ?? {});
   const envFlags = useHelix((s) => s.envFlags ?? {});
   const setPreferredProvider = useHelix((s) => s.setPreferredProvider);
+  const setProviderModel = useHelix((s) => s.setProviderModel);
   const setBrainKey = useHelix((s) => s.setBrainKey);
   const applyBrainPatch = useHelix((s) => s.applyBrainPatch);
   const clearProviderSlot = useHelix((s) => s.clearProviderSlot);
@@ -52,22 +60,108 @@ export function ModelsView() {
   const [probing, setProbing] = useState<ProviderId | null>(null);
   const [deviceFlow, setDeviceFlow] = useState<DeviceFlow | null>(null);
   const [deviceStarting, setDeviceStarting] = useState<ProviderId | null>(null);
+  const [liveModels, setLiveModels] = useState<Partial<Record<ProviderId, ModelOption[]>>>({});
+  const [listing, setListing] = useState<Partial<Record<ProviderId, boolean>>>({});
+  const [listError, setListError] = useState<Partial<Record<ProviderId, string>>>({});
+  const [modelFilter, setModelFilter] = useState<Partial<Record<ProviderId, string>>>({});
 
   const preferred = PROVIDER_DEFS.find((d) => d.id === preferredProvider);
   const chatgptOn = Boolean(brainKeys.codexAccess);
   const claudeOn = Boolean(brainKeys.anthropicOAuth);
   const grokOn = Boolean(brainKeys.xaiAccess);
 
+  function connected(id: ProviderId): boolean {
+    const def = PROVIDER_DEFS.find((d) => d.id === id);
+    if (!def) return false;
+    if (def.id === "local") return Boolean(brainKeys.ollamaHost?.trim()) || Boolean(envFlags.ollama);
+    if (def.slot === "xai") {
+      return grokOn || slotConnected(brainKeys, "xai") || Boolean(envFlags.xai);
+    }
+    return slotConnected(brainKeys, def.slot) || Boolean(envFlags[def.slot]);
+  }
+
+  async function refreshCatalog(id: ProviderId, keysOverride?: BrainKeys) {
+    const def = PROVIDER_DEFS.find((d) => d.id === id);
+    if (!def) return;
+    const keys = keysOverride ?? brainKeys;
+    setListing((s) => ({ ...s, [id]: true }));
+    try {
+      const result = await listBrainModels({
+        data: { preferredProvider: id, keys },
+      });
+      const siblings = PROVIDER_DEFS.filter((d) => d.slot === def.slot).map((d) => d.id);
+      if (result.ok) {
+        const catalog = def.models;
+        const live = result.models;
+        const merged = [
+          ...live,
+          ...catalog.filter((c) => !live.some((m) => modelIdsMatch(m.id, c.id))),
+        ];
+        setLiveModels((s) => {
+          const next = { ...s };
+          for (const sid of siblings) next[sid] = merged;
+          return next;
+        });
+        setListError((s) => {
+          const next = { ...s };
+          for (const sid of siblings) delete next[sid];
+          return next;
+        });
+      } else {
+        setListError((s) => ({ ...s, [id]: result.error }));
+      }
+    } catch (err) {
+      setListError((s) => ({
+        ...s,
+        [id]: err instanceof Error ? err.message : "Could not list models",
+      }));
+    } finally {
+      setListing((s) => ({ ...s, [id]: false }));
+    }
+  }
+
+  useEffect(() => {
+    const seen = new Set<string>();
+    for (const def of PROVIDER_DEFS) {
+      if (!connected(def.id) || seen.has(def.slot)) continue;
+      seen.add(def.slot);
+      void refreshCatalog(def.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch when credentials change
+  }, [
+    brainKeys.xai,
+    brainKeys.xaiAccess,
+    brainKeys.openai,
+    brainKeys.codexAccess,
+    brainKeys.anthropic,
+    brainKeys.anthropicOAuth,
+    brainKeys.google,
+    brainKeys.poolside,
+    brainKeys.openrouter,
+    brainKeys.deepseek,
+    brainKeys.ollamaHost,
+    envFlags.xai,
+    envFlags.openai,
+    envFlags.anthropic,
+    envFlags.google,
+    envFlags.poolside,
+    envFlags.openrouter,
+    envFlags.deepseek,
+  ]);
+
   const liveLabel = useMemo(() => {
     const def = preferred ?? PROVIDER_DEFS[0];
     if (!def) return "None";
+    const chosen = modelLabel(def, modelByProvider[def.id], liveModels[def.id]);
     const hasEnv = Boolean(envFlags[def.slot]);
     const hasLocal = slotConnected(brainKeys, def.slot);
-    if (def.id === "supergrok" && (envFlags.xai || hasLocal || grokOn)) return def.name;
-    if (hasLocal || hasEnv || def.id === "local") return def.name;
-    if (def.auth === "subscription") return `${def.name} (connect)`;
-    return `${def.name} (needs a key)`;
-  }, [preferred, brainKeys, envFlags, grokOn]);
+    if (def.id === "supergrok" && (envFlags.xai || hasLocal || grokOn)) {
+      return `${def.name} · ${chosen}`;
+    }
+    if (hasLocal || hasEnv || def.id === "local") return `${def.name} · ${chosen}`;
+    if (def.auth === "subscription") return `${def.name} · ${chosen} (connect)`;
+    return `${def.name} · ${chosen} (needs a key)`;
+  }, [preferred, brainKeys, envFlags, grokOn, modelByProvider, liveModels]);
 
   function slotValue(slot: KeySlot): string {
     if (slot === "ollama") return brainKeys.ollamaHost ?? "";
@@ -85,7 +179,12 @@ export function ModelsView() {
       const model = (drafts.ollamaModel ?? brainKeys.ollamaModel ?? "").trim();
       setBrainKey("ollamaHost", host || "http://127.0.0.1:11434");
       setBrainKey("ollamaModel", model || "llama3.2");
-      setPreferredProvider("local");
+      setProviderModel("local", model || "llama3.2");
+      void refreshCatalog("local", {
+        ...brainKeys,
+        ollamaHost: host || "http://127.0.0.1:11434",
+        ollamaModel: model || "llama3.2",
+      });
       toast("Ollama saved", { description: "Works when Paddy runs on the same machine." });
       return;
     }
@@ -103,6 +202,11 @@ export function ModelsView() {
     }
     setPreferredProvider(id);
     setDrafts((d) => ({ ...d, [def.slot]: "" }));
+    const nextKeys: BrainKeys = { ...brainKeys };
+    if (def.slot === "anthropic" && isAnthropicOAuth(value)) nextKeys.anthropicOAuth = value;
+    else if (def.slot === "anthropic") nextKeys.anthropic = value;
+    else nextKeys[def.slot] = value;
+    void refreshCatalog(id, nextKeys);
     toast(`${def.name} connected`, {
       description: isAnthropicOAuth(value)
         ? "Claude setup-token stays in this browser."
@@ -125,7 +229,13 @@ export function ModelsView() {
       keys.ollamaModel = drafts.ollamaModel ?? keys.ollamaModel;
     }
     try {
-      const result = await probeBrain({ data: { preferredProvider: id, keys } });
+      const result = await probeBrain({
+        data: {
+          preferredProvider: id,
+          preferredModel: modelByProvider[id] || def.model,
+          keys,
+        },
+      });
       if (result.ok) toast("Reachable", { description: result.detail });
       else toast("Not reachable", { description: result.error });
     } catch (err) {
@@ -184,15 +294,18 @@ export function ModelsView() {
         return;
       }
       if (result.status === "ready") {
+        let nextKeys: BrainKeys = { ...useHelix.getState().brainKeys };
         if (deviceFlow.kind === "chatgpt") {
           const tokens = "tokens" in result ? result.tokens : null;
           if (tokens && "accountId" in tokens) {
-            applyBrainPatch({
+            nextKeys = {
+              ...nextKeys,
               codexAccess: tokens.access,
               codexRefresh: tokens.refresh,
               codexExpires: String(tokens.expires),
               codexAccount: typeof tokens.accountId === "string" ? tokens.accountId : "",
-            });
+            };
+            applyBrainPatch(nextKeys);
           }
           toast("ChatGPT connected", {
             description: "Plus/Pro quota is now the live brain for that preference.",
@@ -200,6 +313,12 @@ export function ModelsView() {
         } else {
           const tokens = "tokens" in result ? result.tokens : null;
           if (tokens) {
+            nextKeys = {
+              ...nextKeys,
+              xaiAccess: tokens.access,
+              xaiRefresh: tokens.refresh,
+              xaiExpires: String(tokens.expires),
+            };
             applyBrainPatch({
               xaiAccess: tokens.access,
               xaiRefresh: tokens.refresh,
@@ -212,6 +331,7 @@ export function ModelsView() {
         }
         setPreferredProvider(deviceFlow.target);
         setDeviceFlow(null);
+        void refreshCatalog(deviceFlow.target, nextKeys);
       }
     };
     const id = window.setInterval(() => void tick(), 4000);
@@ -242,8 +362,10 @@ export function ModelsView() {
           <p className="mt-1 font-display text-2xl">{liveLabel}</p>
           <p className="mt-1 text-sm text-muted">
             Preferred: {preferred?.name ?? "SuperGrok"}
-            {preferred ? ` · ${preferred.model}` : ""}. A signed-in subscription
-            or pasted key beats the hosted SuperGrok demo for that provider.
+            {preferred
+              ? ` · ${modelLabel(preferred, modelByProvider[preferred.id], liveModels[preferred.id])}`
+              : ""}
+            . Models listed for a connected key are what that plan can actually call.
           </p>
         </section>
 
@@ -322,6 +444,71 @@ export function ModelsView() {
                     </div>
                     <p className="mt-0.5 font-mono text-[11px] text-subtle">{def.plan}</p>
                     <p className="mt-1 text-sm text-muted">{def.blurb}</p>
+                    <div className="mt-3">
+                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                        <p className="text-[11px] font-medium tracking-wide text-muted uppercase">
+                          {listing[def.id]
+                            ? "Asking the provider…"
+                            : liveModels[def.id]
+                              ? "On this key"
+                              : "Catalog"}
+                        </p>
+                        {connected(def.id) ? (
+                          <button
+                            type="button"
+                            className="text-[11px] text-muted hover:text-fg"
+                            onClick={() => void refreshCatalog(def.id)}
+                          >
+                            Refresh
+                          </button>
+                        ) : null}
+                      </div>
+                      {liveModels[def.id] ? null : (
+                        <p className="mb-2 text-xs text-subtle">
+                          {listError[def.id]
+                            ? `Could not list (${listError[def.id]}). Showing a catalog — connect a working key to see what you can actually call.`
+                            : "Connect this provider to list models on your plan. Catalog ids can 404 if your quota does not include them."}
+                        </p>
+                      )}
+                      {((liveModels[def.id] ?? def.models).length > 12) ? (
+                        <Input
+                          className="mb-2"
+                          placeholder="Filter models"
+                          value={modelFilter[def.id] ?? ""}
+                          onChange={(e) =>
+                            setModelFilter((s) => ({ ...s, [def.id]: e.target.value }))
+                          }
+                        />
+                      ) : null}
+                      <div className="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto">
+                        {(liveModels[def.id] ?? def.models)
+                          .filter((m) => {
+                            const q = (modelFilter[def.id] ?? "").trim().toLowerCase();
+                            if (!q) return true;
+                            return m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q);
+                          })
+                          .map((m) => {
+                            const selected =
+                              pickModel(def, modelByProvider[def.id], liveModels[def.id]) === m.id;
+                            return (
+                              <button
+                                key={m.id}
+                                type="button"
+                                title={m.id}
+                                onClick={() => setProviderModel(def.id, m.id)}
+                                className={cn(
+                                  "min-h-11 rounded-lg px-3 text-xs font-medium transition-colors",
+                                  selected
+                                    ? "bg-bg text-fg shadow-[var(--shadow-border)]"
+                                    : "text-muted hover:bg-bg hover:text-fg",
+                                )}
+                              >
+                                {m.name}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
                     {stored ? (
                       <p className="mt-1 flex items-center gap-1 font-mono text-[11px] text-subtle">
                         <KeyRound className="size-3" />

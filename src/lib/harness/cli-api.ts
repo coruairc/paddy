@@ -3,6 +3,7 @@ import { cliTurnSeed } from "./defaults";
 import { PROVIDER_DEFS, type ProviderId } from "./providers";
 import { executeTurn } from "./run-turn";
 import type { HelixTurnInput, Mutation } from "./types";
+import { timingSafeEqual } from "node:crypto";
 
 export const CLI_PROTOCOL = 1;
 
@@ -23,19 +24,21 @@ function expectedToken(): string {
 function bearer(request: Request): string {
   const header = request.headers.get("authorization") ?? "";
   const m = header.match(/^Bearer\s+(.+)$/i);
-  if (m?.[1]) return m[1].trim();
-  try {
-    return new URL(request.url).searchParams.get("token")?.trim() ?? "";
-  } catch {
-    return "";
-  }
+  return m?.[1]?.trim() ?? "";
+}
+
+function tokenMatch(got: string, expected: string): boolean {
+  const a = Buffer.from(got);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }
 
 export function cliAuthorized(request: Request): boolean {
   const expected = expectedToken();
   if (!expected || expected.length < 16) return false;
   const got = bearer(request);
-  return got.length > 0 && got === expected;
+  return got.length > 0 && tokenMatch(got, expected);
 }
 
 function publicStatus() {
@@ -115,7 +118,9 @@ async function handleChat(body: Record<string, unknown>): Promise<Response> {
     channelName: "CLI",
     policy: seed.policy,
     preferredProvider: preferred,
+    preferredModel: typeof body.model === "string" ? body.model.slice(0, 120) : undefined,
     keys: {},
+    tickets: seed.tickets ?? [],
   };
 
   const result = await executeTurn(input);

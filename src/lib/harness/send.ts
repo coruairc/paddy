@@ -1,4 +1,5 @@
 import { runHelixTurn } from "./run-turn";
+import { WEB_SESSION_ID } from "./defaults";
 import { useHelix } from "./store";
 import type { HelixTurnInput } from "./types";
 
@@ -9,31 +10,39 @@ ${text}
 </EXTERNAL_UNTRUSTED_CONTENT>`;
 }
 
-export async function sendTurn(text: string, channelId?: string) {
+export async function sendTurn(text: string, channelId?: string, sessionId?: string) {
   const state = useHelix.getState();
-  const profile = state.profiles.find((p) => p.id === state.activeProfileId);
+  const profileId = state.activeProfileId;
+  const profile = state.profiles.find((p) => p.id === profileId);
   const ws = state.ws();
-  const channel = state.channels.find((c) => c.id === channelId);
+  const ch = channelId ?? "web";
+  const sid =
+    sessionId ??
+    (ch === "web"
+      ? WEB_SESSION_ID
+      : (ws.sessions ?? []).find((s) => s.id === state.activeSessionId && s.channelId === ch)?.id ??
+        (ws.sessions ?? []).find((s) => s.channelId === ch)?.id ??
+        `${ch}:inbox`);
+  const channel = state.channels.find((c) => c.id === ch);
+  const session = (ws.sessions ?? []).find((s) => s.id === sid);
 
-  const history = ws.messages
-    .filter((m) => m.role === "user" || m.role === "assistant")
-    .slice(-10)
-    .map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }));
+  const thread = ws.messages.filter(
+    (m) => (m.sessionId ?? WEB_SESSION_ID) === sid && (m.role === "user" || m.role === "assistant"),
+  );
 
-  const transcript = ws.messages
-    .filter((m) => m.role === "user" || m.role === "assistant")
-    .slice(-40)
-    .map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content.slice(0, 400),
-    }));
+  const history = thread.slice(-10).map((m) => ({
+    role: m.role as "user" | "assistant",
+    content: m.content,
+  }));
+
+  const transcript = thread.slice(-40).map((m) => ({
+    role: m.role as "user" | "assistant",
+    content: m.content.slice(0, 400),
+  }));
 
   const inbound =
-    channelId && channelId !== "web"
-      ? wrapUntrusted(text, channel?.name ?? channelId, channel?.lastMessage?.from)
+    ch !== "web"
+      ? wrapUntrusted(text, channel?.name ?? ch, session?.peer ?? channel?.lastMessage?.from)
       : text;
 
   const payload: HelixTurnInput = {
@@ -52,11 +61,20 @@ export async function sendTurn(text: string, channelId?: string) {
     history,
     transcript,
     userMessage: inbound,
-    channelId,
+    channelId: ch,
     channelName: channel?.name,
     policy: state.policy,
     preferredProvider: state.preferredProvider ?? "supergrok",
+    preferredModel:
+      state.modelByProvider?.[state.preferredProvider ?? "supergrok"] ??
+      undefined,
     keys: state.brainKeys ?? {},
+    tickets: (ws.tickets ?? []).map((t) => ({
+      id: t.id,
+      title: t.title,
+      body: t.body,
+      status: t.status,
+    })),
   };
 
   useHelix.getState().setBusy(true);
@@ -64,9 +82,9 @@ export async function sendTurn(text: string, channelId?: string) {
   try {
     const result = await runHelixTurn({ data: payload });
     if (result.keyPatch) useHelix.getState().applyBrainPatch(result.keyPatch);
-    useHelix.getState().applyResult(text, channelId, result);
+    useHelix.getState().applyResult(text, ch, result, sid, profileId);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Turn failed";
-    useHelix.getState().applyResult(text, channelId, { ok: false, error: message });
+    useHelix.getState().applyResult(text, ch, { ok: false, error: message }, sid, profileId);
   }
 }

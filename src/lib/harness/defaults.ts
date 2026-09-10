@@ -1,13 +1,17 @@
 import { uid } from "@/lib/utils";
 import type {
   Channel,
+  ChatMessage,
   Checkpoint,
   HelixTurnInput,
   MemoryEntry,
   Policy,
   ProfileMeta,
+  Session,
   Skill,
+  Ticket,
   TraceEvent,
+  UsageStats,
   WorkspaceFiles,
   WorkspaceState,
 } from "./types";
@@ -28,6 +32,8 @@ export const POLICY: Policy = {
     "schedule_wake",
     "hub_search",
     "install_skill",
+    "create_ticket",
+    "update_ticket",
   ],
   requireApproval: ["send_channel", "spawn_subagent"],
 };
@@ -199,9 +205,202 @@ function memoriesHelix(): MemoryEntry[] {
   ];
 }
 
+export function emptyUsage(): UsageStats {
+  return {
+    promptTokens: 0,
+    completionTokens: 0,
+    turns: 0,
+    toolCalls: 0,
+    lastModel: "",
+    lastProvider: "",
+    lastAt: null,
+  };
+}
+
+export const WEB_SESSION_ID = "web:operator";
+
+export function webSession(at = now): Session {
+  return {
+    id: WEB_SESSION_ID,
+    channelId: "web",
+    title: "Operator",
+    peer: "you",
+    lastAt: at - 1000 * 60 * 44,
+    preview: "Web console",
+    unread: 0,
+  };
+}
+
+export function seedSessions(): Session[] {
+  return [
+    webSession(),
+    {
+      id: "whatsapp:353",
+      channelId: "whatsapp",
+      title: "+353 unknown",
+      peer: "+353 unknown",
+      lastAt: now - 1000 * 60 * 9,
+      preview: "Can you look at last month’s invoice?",
+      unread: 1,
+    },
+    {
+      id: "telegram:ada",
+      channelId: "telegram",
+      title: "Ada",
+      peer: "Ada",
+      lastAt: now - 1000 * 60 * 18,
+      preview: "Can you turn tonight's notes into a standup?",
+      unread: 1,
+    },
+    {
+      id: "telegram:donal",
+      channelId: "telegram",
+      title: "Donal",
+      peer: "Donal",
+      lastAt: now - 1000 * 60 * 80,
+      preview: "Leave the heartbeat gated.",
+      unread: 0,
+    },
+    {
+      id: "slack:ops",
+      channelId: "slack",
+      title: "#ops",
+      peer: "#ops",
+      lastAt: now - 1000 * 60 * 110,
+      preview: "Heartbeat looks quiet. Good.",
+      unread: 0,
+    },
+    {
+      id: "slack:ciara",
+      channelId: "slack",
+      title: "@ciara",
+      peer: "ciara",
+      lastAt: now - 1000 * 60 * 200,
+      preview: "Standup doc is in the canvas.",
+      unread: 0,
+    },
+    {
+      id: "discord:mod",
+      channelId: "discord",
+      title: "mod",
+      peer: "mod",
+      lastAt: now - 1000 * 60 * 60 * 6,
+      preview: "Canvas preview is nice.",
+      unread: 0,
+    },
+    {
+      id: "email:brief",
+      channelId: "email",
+      title: "brief@local",
+      peer: "brief@local",
+      lastAt: now - 1000 * 60 * 60 * 20,
+      preview: "Weekly review reminder queued.",
+      unread: 0,
+    },
+  ];
+}
+
+export function seedSessionMessages(): ChatMessage[] {
+  return [
+    {
+      id: uid("msg"),
+      role: "user",
+      content: "Can you turn tonight's notes into a standup?",
+      channelId: "telegram",
+      sessionId: "telegram:ada",
+      at: now - 1000 * 60 * 18,
+    },
+    {
+      id: uid("msg"),
+      role: "user",
+      content: "Leave the heartbeat gated.",
+      channelId: "telegram",
+      sessionId: "telegram:donal",
+      at: now - 1000 * 60 * 80,
+    },
+    {
+      id: uid("msg"),
+      role: "assistant",
+      content: "Gate stays closed unless a watch matches. I won’t spend a call on silence.",
+      channelId: "telegram",
+      sessionId: "telegram:donal",
+      at: now - 1000 * 60 * 79,
+    },
+    {
+      id: uid("msg"),
+      role: "user",
+      content: "Heartbeat looks quiet. Good.",
+      channelId: "slack",
+      sessionId: "slack:ops",
+      at: now - 1000 * 60 * 110,
+    },
+    {
+      id: uid("msg"),
+      role: "user",
+      content: "Standup doc is in the canvas.",
+      channelId: "slack",
+      sessionId: "slack:ciara",
+      at: now - 1000 * 60 * 200,
+    },
+    {
+      id: uid("msg"),
+      role: "assistant",
+      content: "Noted. I’ll keep the canvas card and not paste it into Slack.",
+      channelId: "slack",
+      sessionId: "slack:ciara",
+      at: now - 1000 * 60 * 199,
+    },
+    {
+      id: uid("msg"),
+      role: "user",
+      content: "Canvas preview is nice.",
+      channelId: "discord",
+      sessionId: "discord:mod",
+      at: now - 1000 * 60 * 60 * 6,
+    },
+    {
+      id: uid("msg"),
+      role: "user",
+      content: "Weekly review reminder queued.",
+      channelId: "email",
+      sessionId: "email:brief",
+      at: now - 1000 * 60 * 60 * 20,
+    },
+    {
+      id: uid("msg"),
+      role: "user",
+      content: "Can you look at last month’s invoice?",
+      channelId: "whatsapp",
+      sessionId: "whatsapp:353",
+      at: now - 1000 * 60 * 9,
+    },
+  ];
+}
+
+function seedTickets(): Ticket[] {
+  return [
+    {
+      id: uid("tk"),
+      title: "Connect a subscription",
+      body: "Sign in SuperGrok or ChatGPT, or paste a Claude setup-token in Models.",
+      status: "doing",
+      at: now - 1000 * 60 * 90,
+      updatedAt: now - 1000 * 60 * 40,
+    },
+    {
+      id: uid("tk"),
+      title: "Morning briefing skill",
+      body: "Learn a skill that summarises overnight channel mail into one note.",
+      status: "backlog",
+      at: now - 1000 * 60 * 50,
+      updatedAt: now - 1000 * 60 * 50,
+    },
+  ];
+}
+
 export function cliTurnSeed(): Pick<
   HelixTurnInput,
-  "profileName" | "role" | "files" | "skills" | "memories" | "policy"
+  "profileName" | "role" | "files" | "skills" | "memories" | "policy" | "tickets"
 > {
   return {
     profileName: PADDY_PROFILE.name,
@@ -217,6 +416,12 @@ export function cliTurnSeed(): Pick<
     })),
     memories: memoriesHelix().map((m) => ({ text: m.text, kind: m.kind })),
     policy: POLICY,
+    tickets: seedTickets().map((t) => ({
+      id: t.id,
+      title: t.title,
+      body: t.body,
+      status: t.status,
+    })),
   };
 }
 
@@ -296,6 +501,9 @@ function workspace(
         content: "Workspace came online. Start with Paddy Irishman. Add extra agents when you need them.",
       },
     ],
+    tickets: extra.tickets ?? [],
+    usage: extra.usage ?? emptyUsage(),
+    sessions: extra.sessions ?? [webSession()],
   };
 }
 
@@ -354,6 +562,9 @@ export function seedWorkspaces(): Record<string, WorkspaceState> {
       skills: skillsHelix(),
       memories: memoriesHelix(),
       traces: tracesHelix(),
+      tickets: seedTickets(),
+      sessions: seedSessions(),
+      messages: seedSessionMessages(),
     }),
   };
 }

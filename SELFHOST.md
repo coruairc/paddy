@@ -47,7 +47,7 @@ paddy doctor
 
 `paddy gateway start` backgrounds it; `stop` / `restart` / `status` match. The command is `paddy` — never npx.
 
-Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model in **Models**, or `paddy models prefer laguna-s`. Keys and session tokens in the UI stay in that browser’s localStorage. **The CLI spends the gateway’s environment** (`selfhost.env`) — sign-in in the dashboard is for the browser.
+Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model in **Models**, or `paddy models prefer laguna`. Keys and session tokens in the UI stay in that browser’s localStorage. **The CLI spends the gateway’s environment** (`selfhost.env`) — sign-in in the dashboard is for the browser.
 
 `--port` and `--host` override the default `127.0.0.1:8080`.
 
@@ -97,7 +97,7 @@ Never commit keys. Never paste them into the console chat.
 - **ChatGPT Plus / Pro** — Sign in with ChatGPT (device code) in Models. Enable device-code in ChatGPT → Settings → Security. CLI uses `OPENAI_API_KEY` or `CHATGPT_ACCESS_TOKEN`.
 - **Claude Pro / Max** — paste a token from `claude setup-token`, or an API key. Anthropic does not allow third-party Claude.ai login. CLI uses `ANTHROPIC_TOKEN` / `ANTHROPIC_API_KEY`.
 - **Gemini** — free Google AI Studio key, or a Pro/Ultra key. Google does not allow third-party Gemini CLI login.
-- **Laguna S / XS** — free Poolside models. Get a key at platform.poolside.ai.
+- **Laguna** — free Poolside models (S or XS). Get a key at platform.poolside.ai.
 - **Ollama** — first-class on this machine. The hosted preview cannot see your localhost.
 - **Skills hub** — local catalog, not the live ClawHub/Hermes registries.
 - **Workspace** — browser localStorage (`paddy-harness-v1`); CLI workspace is `~/.paddy/workspace.json`.

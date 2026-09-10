@@ -40,7 +40,7 @@ paddy gateway start        # background
 paddy dashboard            # web console
 paddy chat "hello"
 paddy models
-paddy models prefer laguna-s
+paddy models prefer laguna
 paddy doctor
 ```
 

@@ -31,3 +31,12 @@ export function formatDate(at: number): string {
     day: "numeric",
   });
 }
+
+export function formatTokens(n: number): string {
+  if (n < 1000) return String(Math.max(0, Math.round(n)));
+  if (n < 1_000_000) {
+    const k = n / 1000;
+    return `${k >= 10 ? k.toFixed(0) : k.toFixed(1)}k`;
+  }
+  return `${(n / 1_000_000).toFixed(1)}M`;
+}

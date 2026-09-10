@@ -1,10 +1,16 @@
 import { openaiTools } from "./tools";
 import {
+  aliasPreferredModel,
+  canonicalizeModelId,
   defFor,
   isAnthropicOAuth,
+  normalizeProviderId,
+  pickModel,
+  prettyModelName,
   TOKEN_MAX,
   type BrainKeys,
   type Compat,
+  type ModelOption,
   type ProviderId,
 } from "./providers";
 import { CODEX_API, isCodexAccess, refreshCodexToken } from "./oauth-codex";
@@ -21,6 +27,21 @@ export type ToolCall = {
   type: "function";
   function: { name: string; arguments: string };
 };
+
+export type BrainUsage = { promptTokens: number; completionTokens: number };
+
+const ZERO_USAGE: BrainUsage = { promptTokens: 0, completionTokens: 0 };
+
+function readUsage(raw: unknown): BrainUsage {
+  if (!raw || typeof raw !== "object") return { ...ZERO_USAGE };
+  const u = raw as Record<string, unknown>;
+  const prompt = Number(u.prompt_tokens ?? u.input_tokens ?? 0);
+  const completion = Number(u.completion_tokens ?? u.output_tokens ?? 0);
+  return {
+    promptTokens: Number.isFinite(prompt) ? prompt : 0,
+    completionTokens: Number.isFinite(completion) ? completion : 0,
+  };
+}
 
 export interface BrainRoute {
   provider: ProviderId;
@@ -41,6 +62,12 @@ type OpenAiResponse = {
       tool_calls?: ToolCall[];
     };
   }[];
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    input_tokens?: number;
+    output_tokens?: number;
+  };
   error?: { message?: string };
 };
 
@@ -55,15 +82,20 @@ function env(name: string): string {
 export function resolveBrain(
   preferred: ProviderId,
   keys: BrainKeys,
+  modelId?: string,
 ): { ok: true; route: BrainRoute } | { ok: false; error: string } {
-  const def = defFor(preferred) ?? defFor("supergrok");
+  const requested = modelId || aliasPreferredModel(preferred);
+  const def = defFor(normalizeProviderId(preferred)) ?? defFor("supergrok");
   if (!def) {
     return { ok: false, error: "No model provider configured." };
   }
 
   if (def.id === "local") {
     const host = trimKey(keys.ollamaHost) || env("OLLAMA_HOST") || def.baseUrl;
-    const model = trimKey(keys.ollamaModel) || env("OLLAMA_MODEL") || def.model;
+    const model =
+      pickModel(def, requested) !== def.model
+        ? pickModel(def, requested)
+        : trimKey(keys.ollamaModel) || env("OLLAMA_MODEL") || def.model;
     const baseUrl = host.replace(/\/$/, "").endsWith("/v1")
       ? host.replace(/\/$/, "")
       : `${host.replace(/\/$/, "")}/v1`;
@@ -83,7 +115,7 @@ export function resolveBrain(
   let apiKey = "";
   let compat: Compat = def.compat;
   let baseUrl = def.baseUrl.replace(/\/$/, "");
-  let model = def.model;
+  let model = pickModel(def, requested);
   let accountId: string | undefined;
   let refresh: string | undefined;
 
@@ -104,7 +136,7 @@ export function resolveBrain(
       accountId = trimKey(keys.codexAccount) || env("CHATGPT_ACCOUNT_ID") || undefined;
       compat = "codex";
       baseUrl = CODEX_API;
-      model = def.model;
+      model = pickModel(def, modelId);
     } else {
       apiKey = trimKey(keys.openai) || env("OPENAI_API_KEY");
     }
@@ -150,7 +182,7 @@ export function resolveBrain(
     if (def.slot === "poolside") {
       return {
         ok: false,
-        error: "Connect Laguna in Models — get a free Poolside key, then prefer S or XS.",
+        error: "Connect Laguna in Models — get a free Poolside key, then pick S or XS.",
       };
     }
     return {
@@ -172,6 +204,137 @@ export function resolveBrain(
       refresh,
     },
   };
+}
+
+export async function listAvailableModels(route: BrainRoute): Promise<ModelOption[]> {
+  const ids = await fetchModelIds(route);
+  const unique = [
+    ...new Set(
+      ids
+        .map(normalizeModelId)
+        .map(canonicalizeModelId)
+        .filter((id) => id && !skipModelId(id)),
+    ),
+  ];
+  const picked =
+    route.provider === "openrouter" ? rankOpenRouter(unique) : unique.slice(0, 48);
+  return picked.map((id) => ({ id, name: prettyModelName(id) }));
+}
+
+function normalizeModelId(id: string): string {
+  return id.replace(/^models\//, "").trim();
+}
+
+function skipModelId(id: string): boolean {
+  const s = id.toLowerCase();
+  if (
+    /embed|whisper|tts|dall-e|dalle|imagen|imagine|moderation|realtime|audio|wav|voice|flux|video|stt|computer-use/.test(
+      s,
+    )
+  ) {
+    return true;
+  }
+  if (/grok-2-image|image-gen/.test(s)) return true;
+  return false;
+}
+
+function rankOpenRouter(ids: string[]): string[] {
+  const scored = ids
+    .map((id) => ({ id, n: openRouterScore(id) }))
+    .filter((x) => x.n > 0)
+    .sort((a, b) => b.n - a.n || a.id.localeCompare(b.id));
+  return scored.slice(0, 36).map((x) => x.id);
+}
+
+function openRouterScore(id: string): number {
+  const s = id.toLowerCase();
+  if (s === "openrouter/auto" || s === "auto") return 100;
+  if (s.includes("grok-4.6")) return 98;
+  if (s.startsWith("x-ai/")) return 90;
+  if (s.includes("claude") && !s.includes(":free")) return 70;
+  if (s.includes("gpt-5") || s.includes("gpt-4.1")) return 65;
+  if (s.includes("gemini-2")) return 60;
+  if (s.includes("deepseek") && !s.includes(":free")) return 50;
+  if (s.includes(":free")) return 8;
+  return 12;
+}
+
+function extractIds(json: unknown): string[] {
+  if (!json || typeof json !== "object") return [];
+  const o = json as Record<string, unknown>;
+  const arr = (
+    Array.isArray(o.data) ? o.data : Array.isArray(o.models) ? o.models : Array.isArray(json) ? json : []
+  ) as unknown[];
+  const ids: string[] = [];
+  for (const item of arr) {
+    if (typeof item === "string") {
+      ids.push(item);
+      continue;
+    }
+    if (!item || typeof item !== "object") continue;
+    const r = item as Record<string, unknown>;
+    if (Array.isArray(r.supportedGenerationMethods)) {
+      const methods = r.supportedGenerationMethods as string[];
+      if (!methods.includes("generateContent")) continue;
+    }
+    const id = r.id ?? r.name ?? r.model;
+    if (typeof id === "string") ids.push(id);
+  }
+  return ids;
+}
+
+async function fetchModelIds(route: BrainRoute): Promise<string[]> {
+  if (route.provider === "local") {
+    const host = route.baseUrl.replace(/\/v1\/?$/, "");
+    const res = await fetch(`${host}/api/tags`);
+    if (!res.ok) throw new Error(`Ollama tags ${res.status}`);
+    return extractIds(await res.json());
+  }
+  if (route.provider === "gemini") {
+    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+      headers: { "x-goog-api-key": route.apiKey },
+    });
+    if (!res.ok) throw new Error(`Gemini models ${res.status}`);
+    return extractIds(await res.json());
+  }
+  if (route.compat === "anthropic") {
+    const res = await fetch(`${route.baseUrl.replace(/\/$/, "")}/models`, {
+      headers: anthropicHeaders(route.apiKey),
+    });
+    if (!res.ok) throw new Error(`Anthropic models ${res.status}`);
+    return extractIds(await res.json());
+  }
+
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${route.apiKey}`,
+    Accept: "application/json",
+  };
+  if (route.compat === "codex") {
+    headers.originator = "codex_cli_rs";
+    headers["OpenAI-Beta"] = "responses=experimental";
+    if (route.accountId) headers["ChatGPT-Account-Id"] = route.accountId;
+  }
+  if (route.provider === "openrouter") {
+    headers["HTTP-Referer"] = "https://paddy.local";
+    headers["X-Title"] = "Paddy";
+  }
+
+  const urls =
+    route.compat === "xai"
+      ? [`${route.baseUrl}/language-models`, `${route.baseUrl}/models`]
+      : [`${route.baseUrl}/models`];
+
+  let last = "Could not list models";
+  for (const url of urls) {
+    const res = await fetch(url, { headers });
+    if (!res.ok) {
+      last = `Models ${res.status}`;
+      continue;
+    }
+    const ids = extractIds(await res.json());
+    if (ids.length) return ids;
+  }
+  throw new Error(last);
 }
 
 export function envPresence(): Record<string, boolean> {
@@ -196,7 +359,7 @@ export async function callBrain(
   messages: ChatMsg[],
   useTools: boolean,
   maxTokens: number,
-): Promise<{ content: string; toolCalls: ToolCall[] }> {
+): Promise<{ content: string; toolCalls: ToolCall[]; usage: BrainUsage }> {
   if (route.compat === "codex") {
     return callCodex(route, messages, useTools, maxTokens);
   }
@@ -211,7 +374,7 @@ async function callCodex(
   messages: ChatMsg[],
   useTools: boolean,
   maxTokens: number,
-): Promise<{ content: string; toolCalls: ToolCall[] }> {
+): Promise<{ content: string; toolCalls: ToolCall[]; usage: BrainUsage }> {
   const system = messages
     .filter((m) => m.role === "system")
     .map((m) => m.content)
@@ -300,6 +463,12 @@ async function callCodex(
     }[];
     error?: { message?: string };
     detail?: string;
+    usage?: {
+      input_tokens?: number;
+      output_tokens?: number;
+      prompt_tokens?: number;
+      completion_tokens?: number;
+    };
   };
   if (!res.ok) {
     throw new Error(json.error?.message || json.detail || `ChatGPT error ${res.status}`);
@@ -318,7 +487,7 @@ async function callCodex(
       content += (item.content ?? []).map((c) => c.text ?? "").join("");
     }
   }
-  return { content, toolCalls };
+  return { content, toolCalls, usage: readUsage(json.usage) };
 }
 
 async function callOpenAiCompat(
@@ -326,7 +495,7 @@ async function callOpenAiCompat(
   messages: ChatMsg[],
   useTools: boolean,
   maxTokens: number,
-): Promise<{ content: string; toolCalls: ToolCall[] }> {
+): Promise<{ content: string; toolCalls: ToolCall[]; usage: BrainUsage }> {
   const body: Record<string, unknown> = {
     model: route.model,
     messages,
@@ -379,11 +548,13 @@ async function callOpenAiCompat(
   return {
     content: message?.content ?? "",
     toolCalls: message?.tool_calls ?? [],
+    usage: readUsage(json.usage),
   };
 }
 
 type AnthropicResponse = {
   content?: { type?: string; text?: string; id?: string; name?: string; input?: unknown }[];
+  usage?: { input_tokens?: number; output_tokens?: number };
   error?: { message?: string };
 };
 
@@ -406,7 +577,7 @@ async function callAnthropic(
   messages: ChatMsg[],
   useTools: boolean,
   maxTokens: number,
-): Promise<{ content: string; toolCalls: ToolCall[] }> {
+): Promise<{ content: string; toolCalls: ToolCall[]; usage: BrainUsage }> {
   const system = messages
     .filter((m) => m.role === "system")
     .map((m) => m.content)
@@ -493,5 +664,5 @@ async function callAnthropic(
         arguments: JSON.stringify(b.input ?? {}),
       },
     }));
-  return { content: text, toolCalls };
+  return { content: text, toolCalls, usage: readUsage(json.usage) };
 }

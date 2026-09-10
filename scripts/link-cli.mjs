@@ -18,11 +18,14 @@ export function linkCli() {
   if (!existsSync(cli)) {
     throw new Error(`missing ${cli}`);
   }
-  mkdirSync(binDir, { recursive: true });
+  mkdirSync(binDir, { recursive: true, mode: 0o755 });
+  if (/["$`\n;&|<>%]/.test(cli) || /["$`\n;&|<>%]/.test(binDir)) {
+    throw new Error("unsafe path for paddy wrapper");
+  }
   if (win) {
-    writeFileSync(dest, `@echo off\r\nnode "${cli}" %*\r\n`, "utf8");
+    writeFileSync(dest, `@echo off\r\nnode "${cli}" %*\r\n`, { encoding: "utf8", mode: 0o755 });
   } else {
-    writeFileSync(dest, `#!/usr/bin/env bash\nexec node "${cli}" "$@"\n`, "utf8");
+    writeFileSync(dest, `#!/usr/bin/env bash\nexec node "${cli}" "$@"\n`, { encoding: "utf8", mode: 0o755 });
     chmodSync(dest, 0o755);
   }
   return { binDir, dest };

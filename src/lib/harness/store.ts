@@ -1,16 +1,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { uid } from "@/lib/utils";
-import { CHANNELS, PADDY_PROFILE, POLICY, PROFILES, newAgentWorkspace, seedWorkspaces } from "./defaults";
+import { CHANNELS, PADDY_PROFILE, POLICY, PROFILES, WEB_SESSION_ID, emptyUsage, newAgentWorkspace, seedSessionMessages, seedSessions, seedWorkspaces, webSession } from "./defaults";
 import { getHubSkill } from "./hub";
-import { defaultBrainKeys, defaultProviders, keysForSlot, PROVIDER_DEFS, slotForBrainKey, TOKEN_MAX, type BrainKeys, type KeySlot, type ProviderId, type ProviderState } from "./providers";
+import { defaultBrainKeys, defaultModelByProvider, defaultProviders, keysForSlot, normalizeProviderId, PROVIDER_DEFS, slotForBrainKey, TOKEN_MAX, type BrainKeys, type KeySlot, type ProviderId, type ProviderState } from "./providers";
 import type {
   Channel,
   HelixTurnResult,
   Mutation,
   Policy,
   ProfileMeta,
+  Session,
   SkillStatus,
+  TicketStatus,
   ToolName,
   TraceEvent,
   TraceKind,
@@ -22,7 +24,11 @@ function mergeProviderState(
   saved: ProviderState[] | undefined,
   defaults: ProviderState[],
 ): ProviderState[] {
-  const map = new Map((saved ?? []).map((p) => [p.id, p]));
+  const map = new Map<string, ProviderState>((saved ?? []).map((p) => [p.id, p]));
+  if (!map.has("laguna")) {
+    const old = map.get("laguna-s") ?? map.get("laguna-xs");
+    if (old) map.set("laguna", { ...old, id: "laguna" });
+  }
   return defaults.map((d) => map.get(d.id) ?? d);
 }
 
@@ -38,6 +44,8 @@ function snapshotOf(ws: WorkspaceState): string {
     memories: ws.memories,
     dailyNotes: ws.dailyNotes,
     canvas: ws.canvas,
+    tickets: ws.tickets,
+    sessions: ws.sessions,
   });
 }
 
@@ -68,6 +76,9 @@ function applyMutation(ws: WorkspaceState, m: Mutation): WorkspaceState {
     wakes: [...ws.wakes],
     dailyNotes: [...ws.dailyNotes],
     messages: [...ws.messages],
+    tickets: [...(ws.tickets ?? [])],
+    usage: { ...(ws.usage ?? emptyUsage()) },
+    sessions: [...(ws.sessions ?? [])],
   };
 
   switch (m.type) {
@@ -202,6 +213,42 @@ function applyMutation(ws: WorkspaceState, m: Mutation): WorkspaceState {
       }
       break;
     }
+    case "create_ticket": {
+      next.tickets.unshift({
+        id: uid("tk"),
+        title: m.title,
+        body: m.body,
+        status: m.status,
+        at: Date.now(),
+        updatedAt: Date.now(),
+      });
+      next.traces.unshift(event("tool", `Ticket · ${m.title}`, { detail: m.status }));
+      break;
+    }
+    case "update_ticket": {
+      next.tickets = next.tickets.map((t) =>
+        t.id === m.id
+          ? {
+              ...t,
+              title: m.title?.trim() ? m.title : t.title,
+              body: m.body !== undefined ? m.body : t.body,
+              status: m.status ?? t.status,
+              updatedAt: Date.now(),
+            }
+          : t,
+      );
+      const hit = next.tickets.find((t) => t.id === m.id);
+      next.traces.unshift(
+        event("tool", `Ticket moved · ${hit?.title ?? m.id}`, {
+          detail: m.status ?? "edited",
+        }),
+      );
+      break;
+    }
+    case "remove_ticket": {
+      next.tickets = next.tickets.filter((t) => t.id !== m.id);
+      break;
+    }
     default:
       break;
   }
@@ -231,8 +278,10 @@ export interface HelixStore {
   } | null;
   providers: ProviderState[];
   preferredProvider: ProviderId;
+  modelByProvider: Partial<Record<ProviderId, string>>;
   brainKeys: BrainKeys;
   envFlags: Record<string, boolean>;
+  activeSessionId: string;
   setView: (view: ViewId) => void;
   setMoreOpen: (open: boolean) => void;
   setInspector: (tab: "loop" | "canvas" | "context") => void;
@@ -240,11 +289,22 @@ export interface HelixStore {
   setProfile: (id: string) => void;
   addAgent: (name: string, role: string) => { ok: true; id: string } | { ok: false; error: string };
   removeAgent: (id: string) => boolean;
+  addTicket: (title: string, body?: string) => void;
+  moveTicket: (id: string, status: TicketStatus) => void;
+  removeTicket: (id: string) => void;
   setBusy: (busy: boolean) => void;
   setError: (error: string | null) => void;
   ws: () => WorkspaceState;
   updateFiles: (patch: Partial<WorkspaceState["files"]>) => void;
-  applyResult: (userText: string, channelId: string | undefined, result: HelixTurnResult) => void;
+  applyResult: (
+    userText: string,
+    channelId: string | undefined,
+    result: HelixTurnResult,
+    sessionId?: string,
+    profileId?: string,
+  ) => void;
+  openSession: (id: string) => void;
+  setActiveSession: (id: string) => void;
   admitChannel: (channelId: string) => string | null;
   approvePair: (channelId: string) => void;
   denyPair: (channelId: string) => void;
@@ -254,7 +314,7 @@ export interface HelixStore {
   rollback: (checkpointId: string) => void;
   manualCheckpoint: (label: string) => void;
   resolveApproval: (allow: boolean) => void;
-  applySubagent: (text: string, ok: boolean) => void;
+  applySubagent: (text: string, ok: boolean, profileId?: string) => void;
   setPolicy: (tool: ToolName, require: boolean) => void;
   resetWorkspace: () => void;
   installHubSkill: (slug: string) => { ok: boolean; detail: string };
@@ -262,6 +322,7 @@ export interface HelixStore {
   pairProvider: (id: ProviderId) => void;
   unpairProvider: (id: ProviderId) => void;
   setPreferredProvider: (id: ProviderId) => void;
+  setProviderModel: (id: ProviderId, model: string) => void;
   markSuperGrokLive: (live: boolean) => void;
   setBrainKey: (slot: keyof BrainKeys, value: string) => void;
   applyBrainPatch: (patch: BrainKeys) => void;
@@ -278,6 +339,47 @@ function patchWs(
   return { ...workspaces, [id]: fn(workspaces[id]!) };
 }
 
+function touchSession(
+  sessions: Session[],
+  opts: {
+    id: string;
+    channelId: string;
+    preview: string;
+    title?: string;
+    peer?: string;
+    unread?: number;
+    clearUnread?: boolean;
+  },
+): Session[] {
+  const at = Date.now();
+  const preview = opts.preview.slice(0, 160);
+  const found = sessions.some((s) => s.id === opts.id);
+  if (!found) {
+    return [
+      {
+        id: opts.id,
+        channelId: opts.channelId,
+        title: opts.title ?? opts.peer ?? opts.channelId,
+        peer: opts.peer,
+        lastAt: at,
+        preview,
+        unread: opts.clearUnread ? 0 : (opts.unread ?? 0),
+      },
+      ...sessions,
+    ];
+  }
+  return sessions.map((s) =>
+    s.id === opts.id
+      ? {
+          ...s,
+          lastAt: at,
+          preview,
+          unread: opts.clearUnread ? 0 : s.unread + (opts.unread ?? 0),
+        }
+      : s,
+  );
+}
+
 type PersistedHelix = Partial<
   Pick<
     HelixStore,
@@ -289,7 +391,9 @@ type PersistedHelix = Partial<
     | "lastPulseAt"
     | "providers"
     | "preferredProvider"
+    | "modelByProvider"
     | "brainKeys"
+    | "activeSessionId"
   >
 >;
 
@@ -311,15 +415,19 @@ export const useHelix = create<HelixStore>()(
       pendingApproval: null,
       providers: defaultProviders(),
       preferredProvider: "supergrok",
+      modelByProvider: defaultModelByProvider(),
       brainKeys: defaultBrainKeys(),
       envFlags: {},
+      activeSessionId: WEB_SESSION_ID,
       setView: (view) => set({ view, moreOpen: false }),
       setMoreOpen: (moreOpen) => set({ moreOpen }),
       setInspector: (inspector) => set({ inspector }),
       setHydrated: () => set({ hydrated: true }),
       setProfile: (id) => {
         if (!get().workspaces[id]) return;
-        set({ activeProfileId: id, view: "console" });
+        const web =
+          get().workspaces[id]!.sessions?.find((s) => s.channelId === "web")?.id ?? WEB_SESSION_ID;
+        set({ activeProfileId: id, activeSessionId: web });
       },
       addAgent: (name, role) => {
         const trimmed = name.trim().slice(0, 40);
@@ -338,6 +446,7 @@ export const useHelix = create<HelixStore>()(
             [id]: newAgentWorkspace(trimmed, roleText),
           },
           activeProfileId: id,
+          activeSessionId: WEB_SESSION_ID,
           view: "console",
         });
         return { ok: true, id };
@@ -346,14 +455,63 @@ export const useHelix = create<HelixStore>()(
         if (id === "paddy") return false;
         if (!get().workspaces[id]) return false;
         const { [id]: _dropped, ...rest } = get().workspaces;
+        const nextId = get().activeProfileId === id ? "paddy" : get().activeProfileId;
+        const web =
+          rest[nextId]?.sessions?.find((s) => s.channelId === "web")?.id ?? WEB_SESSION_ID;
         set({
           profiles: get().profiles.filter((p) => p.id !== id),
           workspaces: rest,
-          activeProfileId: get().activeProfileId === id ? "paddy" : get().activeProfileId,
+          activeProfileId: nextId,
+          activeSessionId: get().activeProfileId === id ? web : get().activeSessionId,
           view: get().activeProfileId === id ? "console" : get().view,
         });
         return true;
       },
+      addTicket: (title, body) => {
+        const trimmed = title.trim().slice(0, 120);
+        if (!trimmed) return;
+        const id = get().activeProfileId;
+        set({
+          workspaces: patchWs(get().workspaces, id, (ws) =>
+            applyMutation(ws, {
+              type: "create_ticket",
+              title: trimmed,
+              body: (body ?? "").trim().slice(0, 800),
+              status: "backlog",
+            }),
+          ),
+        });
+      },
+      moveTicket: (ticketId, status) => {
+        const id = get().activeProfileId;
+        set({
+          workspaces: patchWs(get().workspaces, id, (ws) =>
+            applyMutation(ws, { type: "update_ticket", id: ticketId, status }),
+          ),
+        });
+      },
+      removeTicket: (ticketId) => {
+        const id = get().activeProfileId;
+        set({
+          workspaces: patchWs(get().workspaces, id, (ws) =>
+            applyMutation(ws, { type: "remove_ticket", id: ticketId }),
+          ),
+        });
+      },
+      openSession: (sessionId) => {
+        const id = get().activeProfileId;
+        set({
+          activeSessionId: sessionId,
+          view: "sessions",
+          workspaces: patchWs(get().workspaces, id, (ws) => ({
+            ...ws,
+            sessions: (ws.sessions ?? []).map((s) =>
+              s.id === sessionId ? { ...s, unread: 0 } : s,
+            ),
+          })),
+        });
+      },
+      setActiveSession: (sessionId) => set({ activeSessionId: sessionId }),
       setBusy: (busy) => set({ busy }),
       setError: (error) => set({ error }),
       ws: () => get().workspaces[get().activeProfileId]!,
@@ -366,9 +524,17 @@ export const useHelix = create<HelixStore>()(
           })),
         });
       },
-      applyResult: (userText, channelId, result) => {
-        const id = get().activeProfileId;
+      applyResult: (userText, channelId, result, sessionId, profileId) => {
+        const id =
+          profileId && get().workspaces[profileId] ? profileId : get().activeProfileId;
         const at = Date.now();
+        const sid =
+          sessionId ||
+          (channelId && channelId !== "web" ? `${channelId}:inbox` : WEB_SESSION_ID);
+        const ch = channelId || "web";
+        const isActive = sid === get().activeSessionId && get().view === "sessions";
+        const isWebConsole = sid === WEB_SESSION_ID && get().view === "console";
+        const clearUnread = isActive || isWebConsole || ch === "web";
         set({
           workspaces: patchWs(get().workspaces, id, (ws) => {
             let next: WorkspaceState = {
@@ -379,7 +545,8 @@ export const useHelix = create<HelixStore>()(
                   id: uid("msg"),
                   role: "user",
                   content: userText,
-                  channelId,
+                  channelId: ch,
+                  sessionId: sid,
                   at,
                 },
               ],
@@ -394,6 +561,8 @@ export const useHelix = create<HelixStore>()(
                     id: uid("msg"),
                     role: "assistant",
                     content: result.text,
+                    channelId: ch,
+                    sessionId: sid,
                     at: Date.now(),
                   },
                 ],
@@ -426,6 +595,8 @@ export const useHelix = create<HelixStore>()(
                     id: uid("msg"),
                     role: "assistant",
                     content: result.error,
+                    channelId: ch,
+                    sessionId: sid,
                     at: Date.now(),
                   },
                 ],
@@ -442,7 +613,26 @@ export const useHelix = create<HelixStore>()(
                 ],
               };
             }
-            next.messages = next.messages.slice(-80);
+            next.messages = next.messages.slice(-120);
+            next.sessions = touchSession(next.sessions ?? [], {
+              id: sid,
+              channelId: ch,
+              preview: result.ok ? result.text : userText,
+              clearUnread,
+              unread: clearUnread ? 0 : 1,
+            });
+            if (result.usage) {
+              const prev = next.usage ?? emptyUsage();
+              next.usage = {
+                promptTokens: prev.promptTokens + result.usage.promptTokens,
+                completionTokens: prev.completionTokens + result.usage.completionTokens,
+                turns: prev.turns + 1,
+                toolCalls: prev.toolCalls + result.usage.toolCalls,
+                lastModel: result.usage.model || prev.lastModel,
+                lastProvider: result.usage.provider || prev.lastProvider,
+                lastAt: Date.now(),
+              };
+            }
             return next;
           }),
           pendingApproval: result.ok ? (result.pendingApproval ?? null) : null,
@@ -461,13 +651,32 @@ export const useHelix = create<HelixStore>()(
         const ch = get().channels.find((c) => c.id === channelId);
         if (!ch?.lastMessage) return null;
         if (ch.pendingPair) return null;
+        const peer = ch.lastMessage.from;
+        const existing = get()
+          .ws()
+          .sessions?.find((s) => s.channelId === channelId && s.peer === peer);
+        const slug = peer.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 24) || "inbox";
+        const sessionId = existing?.id ?? `${channelId}:${slug}`;
+        const id = get().activeProfileId;
         set({
           channels: get().channels.map((c) =>
             c.id === channelId ? { ...c, unread: 0 } : c,
           ),
-          view: "console",
+          activeSessionId: sessionId,
+          view: "sessions",
+          workspaces: patchWs(get().workspaces, id, (ws) => ({
+            ...ws,
+            sessions: touchSession(ws.sessions ?? [], {
+              id: sessionId,
+              channelId,
+              preview: ch.lastMessage!.text,
+              title: peer,
+              peer,
+              clearUnread: true,
+            }),
+          })),
         });
-        return `[${ch.name} · ${ch.lastMessage.from}] ${ch.lastMessage.text}`;
+        return `[${ch.name} · ${peer}] ${ch.lastMessage.text}`;
       },
       approvePair: (channelId) => {
         set({
@@ -578,18 +787,17 @@ export const useHelix = create<HelixStore>()(
         const ck = get().ws().checkpoints.find((c) => c.id === checkpointId);
         if (!ck) return;
         try {
-          const parsed = JSON.parse(ck.snapshot) as Pick<
-            WorkspaceState,
-            "files" | "skills" | "memories" | "dailyNotes" | "canvas"
-          >;
+          const parsed = JSON.parse(ck.snapshot) as Partial<WorkspaceState>;
           set({
             workspaces: patchWs(get().workspaces, id, (ws) => ({
               ...ws,
-              files: parsed.files,
-              skills: parsed.skills,
-              memories: parsed.memories,
+              files: parsed.files ?? ws.files,
+              skills: parsed.skills ?? ws.skills,
+              memories: parsed.memories ?? ws.memories,
               dailyNotes: parsed.dailyNotes ?? ws.dailyNotes,
-              canvas: parsed.canvas ?? [],
+              canvas: parsed.canvas ?? ws.canvas,
+              tickets: parsed.tickets ?? ws.tickets,
+              sessions: parsed.sessions ?? ws.sessions,
               traces: [
                 event("checkpoint", `Rolled back · ${ck.label}`, { status: "warn" }),
                 ...ws.traces,
@@ -648,8 +856,12 @@ export const useHelix = create<HelixStore>()(
         }
         set({ pendingApproval: null });
       },
-      applySubagent: (text, ok) => {
-        const id = get().activeProfileId;
+      applySubagent: (text, ok, profileId) => {
+        const id =
+          profileId && get().workspaces[profileId] ? profileId : get().activeProfileId;
+        const sid = get().activeSessionId;
+        const ch =
+          get().workspaces[id]?.sessions?.find((s) => s.id === sid)?.channelId ?? "web";
         set({
           workspaces: patchWs(get().workspaces, id, (ws) => ({
             ...ws,
@@ -659,6 +871,8 @@ export const useHelix = create<HelixStore>()(
                 id: uid("msg"),
                 role: "assistant" as const,
                 content: text,
+                sessionId: sid,
+                channelId: ch,
                 at: Date.now(),
               },
             ].slice(-80),
@@ -693,6 +907,9 @@ export const useHelix = create<HelixStore>()(
           view: "console",
           providers: defaultProviders(),
           preferredProvider: "supergrok",
+          modelByProvider: defaultModelByProvider(),
+          brainKeys: defaultBrainKeys(),
+          activeSessionId: WEB_SESSION_ID,
         });
       },
       installHubSkill: (slug) => {
@@ -757,6 +974,17 @@ export const useHelix = create<HelixStore>()(
         const st = list.find((p) => p.id === pid);
         if (!st) return;
         set({ preferredProvider: pid });
+      },
+      setProviderModel: (pid, model) => {
+        const def = PROVIDER_DEFS.find((d) => d.id === pid);
+        if (!def) return;
+        const trimmed = model.trim().slice(0, 120);
+        if (!trimmed) return;
+        set({
+          preferredProvider: pid,
+          modelByProvider: { ...get().modelByProvider, [pid]: trimmed },
+        });
+        if (pid === "local") get().setBrainKey("ollamaModel", trimmed);
       },
       markSuperGrokLive: (live) => {
         const list = get().providers?.length ? get().providers : defaultProviders();
@@ -836,7 +1064,9 @@ export const useHelix = create<HelixStore>()(
         lastPulseAt: s.lastPulseAt,
         providers: s.providers,
         preferredProvider: s.preferredProvider,
+        modelByProvider: s.modelByProvider,
         brainKeys: s.brainKeys,
+        activeSessionId: s.activeSessionId,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as PersistedHelix;
@@ -849,6 +1079,28 @@ export const useHelix = create<HelixStore>()(
         delete workspaces.helix;
         if (!workspaces.paddy) {
           workspaces.paddy = current.workspaces.paddy;
+        }
+        for (const key of Object.keys(workspaces)) {
+          const ws = workspaces[key];
+          if (!ws) continue;
+          workspaces[key] = {
+            ...ws,
+            tickets: Array.isArray(ws.tickets) ? ws.tickets : [],
+            usage: {
+              ...emptyUsage(),
+              ...(ws.usage ?? {}),
+            },
+            sessions:
+              Array.isArray(ws.sessions) && ws.sessions.length > 0
+                ? ws.sessions
+                : key === "paddy"
+                  ? seedSessions()
+                  : [webSession()],
+            messages:
+              key === "paddy" && !(ws.messages ?? []).some((m) => m.sessionId)
+                ? [...(ws.messages ?? []), ...seedSessionMessages()]
+                : (ws.messages ?? []),
+          };
         }
         let profiles = (p.profiles ?? current.profiles)
           .map((pr) => {
@@ -877,9 +1129,27 @@ export const useHelix = create<HelixStore>()(
           ...p,
           workspaces,
           activeProfileId,
+          activeSessionId:
+            (p.activeSessionId &&
+            workspaces[activeProfileId]?.sessions?.some((s) => s.id === p.activeSessionId)
+              ? p.activeSessionId
+              : workspaces[activeProfileId]?.sessions?.find((s) => s.channelId === "web")?.id) ??
+            WEB_SESSION_ID,
           profiles,
           providers: mergeProviderState(p.providers, defaultProviders()),
-          preferredProvider: p.preferredProvider ?? "supergrok",
+          preferredProvider: normalizeProviderId(p.preferredProvider ?? "supergrok"),
+          modelByProvider: (() => {
+            const saved = p.modelByProvider ?? {};
+            const merged = { ...defaultModelByProvider(), ...saved };
+            const oldLaguna =
+              saved.laguna ||
+              (saved as Record<string, string>)["laguna-s"] ||
+              (saved as Record<string, string>)["laguna-xs"];
+            if (oldLaguna) merged.laguna = oldLaguna;
+            delete (merged as Record<string, string>)["laguna-s"];
+            delete (merged as Record<string, string>)["laguna-xs"];
+            return merged;
+          })(),
           brainKeys: { ...defaultBrainKeys(), ...(p.brainKeys ?? {}) },
           policy: {
             autoApprove: (p.policy?.autoApprove ?? current.policy.autoApprove).filter(
