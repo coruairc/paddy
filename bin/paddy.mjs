@@ -35,6 +35,10 @@ const DEFAULT_HOST = "127.0.0.1";
 function preferAlias(id) {
   const raw = String(id || "").trim();
   if (raw === "laguna-s" || raw === "laguna-xs") return "laguna";
+  if (raw === "chatgpt-plus" || raw === "chatgpt-pro" || raw === "codex") return "chatgpt";
+  if (raw === "claude-pro" || raw === "claude-max") return "claude";
+  if (raw === "kimi-coding" || raw === "moonshot") return "kimi";
+  if (raw === "zai" || raw === "zhipu" || raw === "z-ai" || raw === "glm") return "glm";
   return raw;
 }
 
@@ -110,6 +114,9 @@ Talk
   paddy dashboard            Open the web console
   paddy models               List brains the gateway can see
   paddy models prefer <id>   Remember a preferred brain
+  paddy skills               List skills in ~/.paddy/workspace.json
+  paddy memory               Show MEMORY.md facts
+  paddy approve allow|deny   Allow or deny the last held tool
   paddy agent list           List minds
 
 Setup
@@ -120,7 +127,7 @@ Setup
 Flags
   --port <n>     Gateway port (default ${DEFAULT_PORT})
   --host <h>     Bind / connect host (default ${DEFAULT_HOST})
-  --prefer <id>  Brain for this chat (supergrok, chatgpt-plus, laguna, …)
+  --prefer <id>  Brain for this chat (supergrok, chatgpt, claude, kimi, glm, …)
   --json         Machine-readable output
   --yes          Non-interactive onboard
   --help
@@ -196,7 +203,8 @@ export function readPid() {
 
 function writePid(pid, port) {
   ensureHome();
-  writeFileSync(pidPath(), `${pid}\n${port}\n`);
+  writeFileSync(pidPath(), `${pid}\n${port}\n`, { mode: 0o600 });
+  try { chmodSync(pidPath(), 0o600); } catch { /* ignore */ }
 }
 
 function alive(pid) {
@@ -395,17 +403,80 @@ function applyMutations(ws, mutations) {
     files: { ...(ws.files ?? {}) },
     history: [...(ws.history ?? [])],
     memories: [...(ws.memories ?? [])],
+    skills: [...(ws.skills ?? [])],
+    tickets: [...(ws.tickets ?? [])],
+    dailyNotes: [...(ws.dailyNotes ?? [])],
   };
   for (const m of mutations) {
     if (!m || typeof m !== "object") continue;
     if (m.type === "write_memory" && m.text) {
+      if (m.mode === "replace") next.memories = [];
       next.memories.push({ text: m.text, kind: m.kind || "fact" });
-      const line = `- (${m.kind || "fact"}) ${m.text}`;
-      next.files.memory = `${next.files.memory || "# MEMORY.md\n"}\n${line}\n`;
+      next.files.memory = `# MEMORY.md\n\n${next.memories.map((x) => `- (${x.kind}) ${x.text}`).join("\n") || "- (empty)"}\n`;
     } else if (m.type === "update_user" && m.content) {
       next.files.user = m.content;
     } else if (m.type === "update_soul" && m.content) {
       next.files.soul = m.content;
+    } else if (m.type === "update_heartbeat" && m.content) {
+      next.files.heartbeat = m.content;
+    } else if (m.type === "create_skill" && m.name) {
+      if (!(next.skills ?? []).some((s) => s.name === m.name)) {
+        next.skills = [
+          { name: m.name, description: m.description, instructions: m.instructions, triggers: m.triggers ?? [], status: "new", uses: 0 },
+          ...(next.skills ?? []),
+        ];
+      }
+    } else if (m.type === "patch_skill" && m.name && m.instructions) {
+      next.skills = (next.skills ?? []).map((s) =>
+        s.name === m.name ? { ...s, instructions: m.instructions, status: s.status === "archived" ? s.status : "active" } : s,
+      );
+    } else if (m.type === "archive_skill" && m.name) {
+      next.skills = (next.skills ?? []).map((s) => (s.name === m.name ? { ...s, status: "archived" } : s));
+    } else if (m.type === "install_hub" && m.name) {
+      if (!(next.skills ?? []).some((s) => s.name === m.name)) {
+        next.skills = [
+          { name: m.name, description: m.description, instructions: m.instructions, triggers: m.triggers ?? [], status: "active", uses: 0 },
+          ...(next.skills ?? []),
+        ];
+      }
+    } else if (m.type === "create_ticket" && m.title) {
+      next.tickets = [
+        { id: `t-${Date.now()}`, title: m.title, body: m.body ?? "", status: m.status || "backlog" },
+        ...(next.tickets ?? []),
+      ];
+    } else if (m.type === "update_ticket" && m.id) {
+      next.tickets = (next.tickets ?? []).map((t) =>
+        t.id === m.id ? { ...t, title: m.title ?? t.title, body: m.body ?? t.body, status: m.status ?? t.status } : t,
+      );
+    } else if (m.type === "daily_note" && m.content) {
+      const date = new Date().toISOString().slice(0, 10);
+      const existing = (next.dailyNotes ?? []).find((d) => d.date === date);
+      if (existing) {
+        next.dailyNotes = next.dailyNotes.map((d) =>
+          d.date === date ? { ...d, content: `${d.content}\n${m.content}` } : d,
+        );
+      } else {
+        next.dailyNotes = [{ date, content: m.content }, ...(next.dailyNotes ?? [])];
+      }
+    } else if (m.type === "schedule_wake") {
+      next.wakes = [
+        {
+          id: `wk-${Date.now()}`,
+          at: Date.now() + (Number(m.delayMinutes) || 30) * 60_000,
+          reason: m.reason,
+          note: m.note,
+          fired: false,
+          notified: false,
+        },
+        ...(next.wakes ?? []),
+      ];
+    } else if (m.type === "checkpoint" && m.label) {
+      next.checkpoints = [
+        { id: `ck-${Date.now()}`, label: m.label, at: Date.now(), snapshot: "{}" },
+        ...(next.checkpoints ?? []),
+      ];
+    } else if (m.type === "canvas" && m.card) {
+      next.canvas = [m.card, ...(next.canvas ?? [])].slice(0, 12);
     }
   }
   return next;
@@ -461,10 +532,14 @@ async function cmdGateway(sub, flags) {
       return;
     }
     try {
-      process.kill(rec.pid, "SIGTERM");
-    } catch (err) {
-      fail(flags, err instanceof Error ? err.message : "kill failed");
-      return;
+      process.kill(-rec.pid, "SIGTERM");
+    } catch {
+      try {
+        process.kill(rec.pid, "SIGTERM");
+      } catch (err) {
+        fail(flags, err instanceof Error ? err.message : "kill failed");
+        return;
+      }
     }
     const start = Date.now();
     while (Date.now() - start < 8000 && alive(rec.pid)) {
@@ -472,9 +547,13 @@ async function cmdGateway(sub, flags) {
     }
     if (alive(rec.pid)) {
       try {
-        process.kill(rec.pid, "SIGKILL");
+        process.kill(-rec.pid, "SIGKILL");
       } catch {
-        /* ignore */
+        try {
+          process.kill(rec.pid, "SIGKILL");
+        } catch {
+          /* ignore */
+        }
       }
     }
     rmSync(pidPath(), { force: true });
@@ -536,7 +615,7 @@ async function cmdDoctor(flags) {
   const checks = [];
   const add = (name, ok, detail) => checks.push({ name, ok, detail });
 
-  add("node", Number(process.versions.node.split(".")[0]) >= 20, `node ${process.version}`);
+  add("node", Number(process.versions.node.split(".")[0]) >= 22, `node ${process.version}`);
   add("kit", existsSync(join(root, "package.json")) && existsSync(join(root, "scripts/with-app-env.mjs")), root);
   add("home", true, paddyHome());
   add("token", Boolean(cfg.token && cfg.token.length >= 16), cfg.token ? "present" : "missing — run paddy onboard");
@@ -630,16 +709,47 @@ async function cmdChat(rest, flags) {
         message,
         history: (ws.history ?? []).slice(-10),
         files: ws.files && Object.keys(ws.files).length ? ws.files : undefined,
+        memories: ws.memories,
+        skills: ws.skills,
+        tickets: ws.tickets,
+        dailyNotes: ws.dailyNotes,
+        wakes: ws.wakes,
+        canvas: ws.canvas,
+        checkpoints: ws.checkpoints,
         preferredProvider: preferred,
         model,
-        profileName: "Paddy",
+        profileName: "Paddy Irishman",
       },
     });
     if (!r.data?.ok) {
       throw new Error(r.data?.error || `HTTP ${r.status}`);
     }
     ws.history = [...(ws.history ?? []), { role: "user", content: message }, { role: "assistant", content: r.data.text }];
-    saveWorkspace(applyMutations(ws, r.data.mutations));
+    if (r.data.workspace) {
+      ws.files = r.data.workspace.files ?? ws.files;
+      ws.memories = r.data.workspace.memories ?? ws.memories;
+      ws.skills = r.data.workspace.skills ?? ws.skills;
+      ws.tickets = r.data.workspace.tickets ?? ws.tickets;
+      ws.dailyNotes = r.data.workspace.dailyNotes ?? ws.dailyNotes;
+      ws.wakes = r.data.workspace.wakes ?? ws.wakes;
+      ws.canvas = r.data.workspace.canvas ?? ws.canvas;
+      ws.checkpoints = r.data.workspace.checkpoints ?? ws.checkpoints;
+      ws.pendingApprovals = Array.isArray(r.data.pendingApprovals)
+        ? r.data.pendingApprovals
+        : r.data.pendingApproval
+          ? [r.data.pendingApproval]
+          : [];
+      saveWorkspace(ws);
+    } else {
+      saveWorkspace(applyMutations(ws, r.data.mutations));
+    }
+    if (r.data.pendingApproval) {
+      const held = r.data.pendingApprovals?.length
+        ? r.data.pendingApprovals
+        : [r.data.pendingApproval];
+      const lines = held.map((p) => `  held: ${p.tool} — ${p.reason}`).join("\n");
+      process.stderr.write(`paddy: approval required (open the dashboard to allow/deny)\n${lines}\n`);
+    }
     return r.data;
   }
 
@@ -757,7 +867,83 @@ function cmdAgent(rest, flags) {
     fail(flags, "Usage: paddy agent list", 2);
     return;
   }
-  out(flags, { ok: true, agents: [{ id: "paddy", name: "Paddy" }] }, "  paddy    Paddy    (seed mind — add extras in the dashboard)");
+  out(flags, { ok: true, agents: [{ id: "paddy", name: "Paddy Irishman" }] }, "  paddy    Paddy Irishman    (seed mind — extra agents live in the dashboard on this machine)");
+}
+
+function cmdSkills(flags) {
+  const ws = loadWorkspace();
+  const skills = ws.skills ?? [];
+  if (!skills.length) {
+    out(flags, { ok: true, skills: [] }, "No skills in ~/.paddy/workspace.json yet. Chat will seed the defaults, then persist what you learn.");
+    return;
+  }
+  const lines = skills.map((s) => `  ${(s.status || "active").padEnd(8)} ${s.name} — ${s.description || ""}`);
+  out(flags, { ok: true, skills }, lines.join("\n"));
+}
+
+function cmdMemory(flags) {
+  const ws = loadWorkspace();
+  const memories = ws.memories ?? [];
+  const file = typeof ws.files?.memory === "string" ? ws.files.memory.trim() : "";
+  if (!memories.length && !file) {
+    out(flags, { ok: true, memories: [] }, "No MEMORY.md facts yet.");
+    return;
+  }
+  const lines = memories.length
+    ? memories.map((m) => `  (${m.kind || "fact"}) ${m.text}`)
+    : [file];
+  out(flags, { ok: true, memories, file: file || null }, lines.join("\n"));
+}
+
+async function cmdApprove(rest, flags) {
+  const cfg = loadConfig();
+  const { origin } = baseUrl(cfg, flags);
+  const up = await pingHttp(origin);
+  if (!up) {
+    fail(flags, "Gateway is not running. Start it with: paddy gateway");
+    return;
+  }
+  const action = (rest[0] || "").toLowerCase();
+  if (action !== "allow" && action !== "deny") {
+    fail(flags, "Usage: paddy approve allow | paddy approve deny", 2);
+    return;
+  }
+  const ws = loadWorkspace();
+  const held = Array.isArray(ws.pendingApprovals) ? ws.pendingApprovals : [];
+  const pending = held[0];
+  if (!pending) {
+    fail(flags, "Nothing held. A gated tool (send_channel / spawn_subagent) queues here after chat.");
+    return;
+  }
+  const r = await fetchCli(cfg, flags, {
+    method: "POST",
+    body: {
+      action: "approve",
+      allow: action === "allow",
+      tool: pending.tool,
+      args: pending.args,
+      preferredProvider: ws.preferredProvider || cfg.preferredProvider,
+      model: cfg.preferredModel,
+    },
+  });
+  if (!r.data?.ok) {
+    fail(flags, r.data?.error || `HTTP ${r.status}`);
+    return;
+  }
+  ws.pendingApprovals = held.slice(1);
+  if (action === "allow" && r.data.mutation) {
+    Object.assign(ws, applyMutations(ws, [r.data.mutation]));
+  }
+  if (action === "allow" && r.data.text && pending.tool === "spawn_subagent") {
+    ws.history = [
+      ...(ws.history ?? []),
+      { role: "assistant", content: r.data.text },
+    ];
+  }
+  saveWorkspace(ws);
+  const next = ws.pendingApprovals[0];
+  const extra = next ? `\nNext held: ${next.tool}` : "";
+  out(flags, r.data, `${r.data.text || (action === "allow" ? "Allowed." : "Denied.")}${extra}`);
 }
 
 export async function main(argv = process.argv.slice(2)) {
@@ -807,6 +993,17 @@ export async function main(argv = process.argv.slice(2)) {
       case "agent":
       case "agents":
         cmdAgent(rest.slice(1), flags);
+        break;
+      case "skills":
+      case "skill":
+        cmdSkills(flags);
+        break;
+      case "memory":
+      case "memories":
+        cmdMemory(flags);
+        break;
+      case "approve":
+        await cmdApprove(rest.slice(1), flags);
         break;
       case "help":
         process.stdout.write(helpText());

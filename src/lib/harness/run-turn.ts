@@ -3,8 +3,9 @@ import { getHubSkill, searchHub } from "./hub";
 import { callBrain, envPresence, listAvailableModels, resolveBrain, type BrainRoute, type ChatMsg } from "./brain";
 import { pollCodexDevice, startCodexDevice } from "./oauth-codex";
 import { pollXaiDevice, startXaiDevice } from "./oauth-xai";
-import { TOKEN_MAX, type BrainKeys, type ModelOption, type ProviderId } from "./providers";
+import { TOKEN_MAX, defFor, type BrainKeys, type ModelOption, type ProviderId } from "./providers";
 import { buildSystemPrompt } from "./prompt";
+import { toSkillMd } from "./mutate";
 import type {
   HelixTurnInput,
   HelixTurnResult,
@@ -15,8 +16,8 @@ import type {
   TraceEvent,
 } from "./types";
 
-const MAX_ROUNDS = 3;
-const MAX_TOKENS = 1024;
+const MAX_ROUNDS = 5;
+const MAX_TOKENS = 2048;
 const SUBAGENT_TOKENS = 350;
 
 function parseArgs(raw: string): Record<string, unknown> {
@@ -33,7 +34,32 @@ function str(v: unknown, fallback = ""): string {
 }
 
 function num(v: unknown, fallback = 0): number {
-  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string" && v.trim()) {
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return fallback;
+}
+
+function skillKey(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 48);
+}
+
+function resolveSkillName(
+  skills: HelixTurnInput["skills"],
+  name: string,
+): string | null {
+  const raw = name.trim();
+  const slug = skillKey(raw);
+  const hit = skills.find(
+    (s) => s.name === raw || s.name === slug || skillKey(s.name) === slug,
+  );
+  return hit?.name ?? null;
 }
 
 function searchWorkspace(input: HelixTurnInput, query: string): string {
@@ -74,11 +100,12 @@ function readFile(input: HelixTurnInput, file: string): string {
     user: input.files.user,
     memory: input.files.memory,
     agents: input.files.agents,
+    heartbeat: input.files.heartbeat,
   };
   if (map[key]) return map[key];
   const skill = input.skills.find((s) => s.name.toLowerCase() === key);
   if (skill) {
-    return `# ${skill.name}\n\n${skill.description}\n\n${skill.instructions}`;
+    return toSkillMd(skill);
   }
   return `Unknown file: ${file}`;
 }
@@ -88,9 +115,18 @@ const KEY_FIELDS: (keyof BrainKeys)[] = [
   "openai",
   "anthropic",
   "google",
+  "kimi",
+  "minimax",
+  "glm",
+  "qwen",
+  "deepseek",
+  "mistral",
+  "groq",
   "poolside",
   "openrouter",
-  "deepseek",
+  "together",
+  "fireworks",
+  "huggingface",
   "ollamaHost",
   "ollamaModel",
   "codexAccess",
@@ -123,9 +159,11 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
 
     const traces: Omit<TraceEvent, "id" | "at">[] = [];
     const mutations: Mutation[] = [];
-    let pendingApproval:
-      | { tool: ToolName; args: Record<string, string>; reason: string }
-      | undefined;
+    const heldApprovals: {
+      tool: ToolName;
+      args: Record<string, string>;
+      reason: string;
+    }[] = [];
     let subagentUsed = false;
 
     const history = data.history.slice(-10).map((m) => ({
@@ -197,23 +235,20 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
           const args = parseArgs(tc.function.arguments);
           const needsApproval = data.policy.requireApproval.includes(name);
 
-          if (needsApproval && !pendingApproval) {
+          if (needsApproval) {
             const asStrings: Record<string, string> = {};
             for (const [k, v] of Object.entries(args)) {
               asStrings[k] = typeof v === "string" ? v : JSON.stringify(v);
             }
-            pendingApproval = {
-              tool: name,
-              args: asStrings,
-              reason:
-                name === "send_channel"
-                  ? "Outbound channel send leaves the workspace."
-                  : "Subagents spend a nested model call.",
-            };
+            const reason =
+              name === "send_channel"
+                ? "Outbound channel send is queued on this gateway. No live bridge in this kit."
+                : "Subagents spend a nested model call.";
+            heldApprovals.push({ tool: name, args: asStrings, reason });
             traces.push({
               kind: "permission",
               title: `Approval required: ${name}`,
-              detail: pendingApproval.reason,
+              detail: reason,
               status: "pending",
             });
             messages.push({
@@ -246,7 +281,7 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
               status: "ok",
             });
           }
-          if (name === "create_skill" || name === "patch_skill" || name === "install_skill") {
+          if (name === "create_skill" || name === "patch_skill" || name === "install_skill" || name === "skill_manage") {
             traces.push({
               kind: "skill",
               title:
@@ -288,7 +323,8 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
       text: finalText,
       mutations,
       traces,
-      pendingApproval,
+      pendingApproval: heldApprovals[0],
+      pendingApprovals: heldApprovals.length ? heldApprovals : undefined,
       keyPatch: route.rotated,
       usage: packUsage(),
     };
@@ -345,16 +381,55 @@ async function runTool(
       };
     }
     case "patch_skill": {
-      const skillName = str(args.name);
-      const found = input.skills.some((s) => s.name === skillName);
-      if (!found) return { result: `No skill named ${skillName}.` };
+      const found = resolveSkillName(input.skills, str(args.name));
+      if (!found) return { result: `No skill named ${str(args.name)}.` };
       return {
-        result: `Patched ${skillName}.`,
+        result: `Patched ${found}.`,
         mutation: {
           type: "patch_skill",
-          name: skillName,
+          name: found,
           instructions: str(args.instructions).slice(0, 4000),
           reason: str(args.reason).slice(0, 400),
+        },
+      };
+    }
+    case "skill_manage": {
+      const action = str(args.action);
+      const rawName = str(args.name);
+      const skillName = skillKey(rawName);
+      if (!skillName) return { result: "Skill needs a name." };
+      if (action === "archive") {
+        const found = resolveSkillName(input.skills, rawName);
+        if (!found) return { result: `No skill named ${rawName}.` };
+        return {
+          result: `Archived ${found}.`,
+          mutation: { type: "archive_skill", name: found },
+        };
+      }
+      if (action === "patch") {
+        const found = resolveSkillName(input.skills, rawName);
+        if (!found) return { result: `No skill named ${rawName}.` };
+        return {
+          result: `Patched ${found}.`,
+          mutation: {
+            type: "patch_skill",
+            name: found,
+            instructions: str(args.instructions).slice(0, 4000),
+            reason: str(args.reason).slice(0, 400),
+          },
+        };
+      }
+      const triggers = Array.isArray(args.triggers)
+        ? args.triggers.filter((t): t is string => typeof t === "string").slice(0, 8)
+        : [];
+      return {
+        result: `Created skill ${skillName}.`,
+        mutation: {
+          type: "create_skill",
+          name: skillName,
+          description: str(args.description).slice(0, 240),
+          instructions: str(args.instructions).slice(0, 4000),
+          triggers,
         },
       };
     }
@@ -483,7 +558,7 @@ async function runTool(
         result: hits
           .map(
             (s) =>
-              `${s.slug} · ${s.trust}/${s.registry} · ${s.installs} installs\n  ${s.description}`,
+              `${s.slug} · ${s.trust}/${s.registry} · local catalog\n  ${s.description}`,
           )
           .join("\n"),
       };
@@ -549,6 +624,22 @@ async function runTool(
         },
       };
     }
+    case "write_daily": {
+      const content = str(args.content).slice(0, 500);
+      if (!content) return { result: "Empty daily note not written." };
+      return {
+        result: "Appended today’s daily note.",
+        mutation: { type: "daily_note", content },
+      };
+    }
+    case "update_heartbeat": {
+      const content = str(args.content).slice(0, 4000);
+      if (!content) return { result: "HEARTBEAT.md unchanged." };
+      return {
+        result: "HEARTBEAT.md updated.",
+        mutation: { type: "update_heartbeat", content },
+      };
+    }
     default:
       return { result: `Unknown tool ${name}` };
   }
@@ -606,7 +697,7 @@ export const listBrainModels = createServerFn({ method: "POST" })
     async ({
       data,
     }): Promise<
-      | { ok: true; models: ModelOption[]; source: "live" }
+      | { ok: true; models: ModelOption[]; source: "live" | "catalog" }
       | { ok: false; error: string; models: ModelOption[] }
     > => {
       const resolved = resolveBrain(
@@ -614,13 +705,14 @@ export const listBrainModels = createServerFn({ method: "POST" })
         sanitizeKeys(data.keys),
       );
       if (!resolved.ok) return { ok: false, error: resolved.error, models: [] };
+      const catalog = defFor(resolved.route.provider)?.models ?? [];
       try {
         const models = await listAvailableModels(resolved.route);
-        if (!models.length) {
-          return { ok: false, error: "Provider returned no chat models.", models: [] };
-        }
-        return { ok: true, models, source: "live" };
+        if (models.length) return { ok: true, models, source: "live" };
+        if (catalog.length) return { ok: true, models: catalog, source: "catalog" };
+        return { ok: false, error: "Provider returned no chat models.", models: [] };
       } catch (err) {
+        if (catalog.length) return { ok: true, models: catalog, source: "catalog" };
         return {
           ok: false,
           error: err instanceof Error ? err.message : "Could not list models",

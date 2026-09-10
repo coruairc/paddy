@@ -66,9 +66,26 @@ export const TOOL_CATALOG: {
     },
   },
   {
+    name: "skill_manage",
+    description:
+      "Create, patch, or archive a skill. Prefer this when retiring a bad procedure. create_skill / patch_skill still work.",
+    parameters: {
+      type: "object",
+      properties: {
+        action: { type: "string", enum: ["create", "patch", "archive"] },
+        name: { type: "string", description: "kebab-case id" },
+        description: { type: "string" },
+        instructions: { type: "string" },
+        triggers: { type: "array", items: { type: "string" } },
+        reason: { type: "string" },
+      },
+      required: ["action", "name"],
+    },
+  },
+  {
     name: "search_memory",
     description:
-      "Full-text search over MEMORY.md, identity files, skills, and this profile’s recent transcript.",
+      "Substring search over MEMORY.md, identity files, skills, and this profile’s recent transcript.",
     parameters: {
       type: "object",
       properties: {
@@ -85,7 +102,7 @@ export const TOOL_CATALOG: {
       properties: {
         file: {
           type: "string",
-          description: "soul | identity | user | memory | agents | or a skill name",
+          description: "soul | identity | user | memory | agents | heartbeat | or a skill name",
         },
       },
       required: ["file"],
@@ -136,7 +153,7 @@ export const TOOL_CATALOG: {
   {
     name: "spawn_subagent",
     description:
-      "Delegate a bounded subtask to an isolated child mind. Requires approval. One per turn.",
+      "Delegate a bounded nested completion. Requires approval. One per turn. Same brain, no tools; the result is posted to this chat.",
     parameters: {
       type: "object",
       properties: {
@@ -170,7 +187,8 @@ export const TOOL_CATALOG: {
   },
   {
     name: "send_channel",
-    description: "Send an outbound message on a gateway channel. Requires approval.",
+    description:
+      "Queue an outbound on a gateway channel. Requires approval. This kit does not deliver to live Telegram/Slack/WhatsApp — it records the outbound until a bridge is configured.",
     parameters: {
       type: "object",
       properties: {
@@ -196,7 +214,7 @@ export const TOOL_CATALOG: {
   {
     name: "install_skill",
     description:
-      "Download a hub skill into this workspace by slug or name (e.g. clawhub/google-calendar).",
+      "Copy a hub skill from the local catalog into this workspace by slug or name (e.g. clawhub/google-calendar). Not a live ClawHub download.",
     parameters: {
       type: "object",
       properties: {
@@ -231,6 +249,30 @@ export const TOOL_CATALOG: {
         status: { type: "string", enum: ["backlog", "doing", "done"] },
       },
       required: ["id"],
+    },
+  },
+  {
+    name: "write_daily",
+    description:
+      "Append a line to today’s daily note (OpenClaw-style YYYY-MM-DD log). Short. No secrets.",
+    parameters: {
+      type: "object",
+      properties: {
+        content: { type: "string", description: "One or two sentences for today." },
+      },
+      required: ["content"],
+    },
+  },
+  {
+    name: "update_heartbeat",
+    description:
+      "Rewrite HEARTBEAT.md standing watch. Keep it short. Silence is valid. HEARTBEAT_OK when nothing is due.",
+    parameters: {
+      type: "object",
+      properties: {
+        content: { type: "string", description: "Full Markdown for HEARTBEAT.md." },
+      },
+      required: ["content"],
     },
   },
 ];

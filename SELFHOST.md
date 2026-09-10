@@ -64,6 +64,7 @@ Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model 
 | `paddy models` / `paddy models prefer <id>` | List / pick a brain |
 | `paddy skills` | List learned skills in `workspace.json` |
 | `paddy memory` | Show persisted MEMORY.md facts |
+| `paddy approve allow` / `deny` | Allow or deny a gated tool the last chat held |
 | `paddy doctor` | Check node, kit, env, gateway |
 | `paddy onboard` | Write `~/.paddy` and `selfhost.env` |
 | `paddy agent list` | Seed mind is Paddy; extras are added in the dashboard |

@@ -3,10 +3,12 @@ import {
   aliasPreferredModel,
   canonicalizeModelId,
   defFor,
+  envNamesFor,
   isAnthropicOAuth,
   normalizeProviderId,
   pickModel,
   prettyModelName,
+  PROVIDER_DEFS,
   TOKEN_MAX,
   type BrainKeys,
   type Compat,
@@ -92,6 +94,14 @@ export function resolveBrain(
 
   if (def.id === "local") {
     const host = trimKey(keys.ollamaHost) || env("OLLAMA_HOST") || def.baseUrl;
+    const loopback = /^(https?:\/\/)?(127\.|localhost|\[::1\]|0\.0\.0\.0)/i.test(host);
+    if (loopback && !trimKey(process.env.PADDY_CLI_TOKEN)) {
+      return {
+        ok: false,
+        error:
+          "Ollama only works on the machine running paddy gateway. Prefer a cloud brain here, or self-host.",
+      };
+    }
     const model =
       pickModel(def, requested) !== def.model
         ? pickModel(def, requested)
@@ -149,10 +159,26 @@ export function resolveBrain(
       env("ANTHROPIC_API_KEY");
   } else if (def.slot === "google") {
     apiKey = trimKey(keys.google) || env("GOOGLE_API_KEY") || env("GEMINI_API_KEY");
-  } else if (def.slot === "poolside") {
-    apiKey = trimKey(keys.poolside) || env("POOLSIDE_API_KEY");
-  } else if (def.slot === "openrouter") apiKey = trimKey(keys.openrouter) || env("OPENROUTER_API_KEY");
-  else if (def.slot === "deepseek") apiKey = trimKey(keys.deepseek) || env("DEEPSEEK_API_KEY");
+  } else {
+    apiKey = trimKey(keys[def.slot]);
+    if (!apiKey) {
+      for (const name of envNamesFor(def)) {
+        apiKey = env(name);
+        if (apiKey) break;
+      }
+    }
+    if (def.id === "kimi" && apiKey.startsWith("sk-kimi-")) {
+      baseUrl = "https://api.kimi.com/coding/v1";
+      if (!modelId) model = pickModel(def, "k3");
+    }
+    if (def.id === "minimax") {
+      const host = env("MINIMAX_API_HOST");
+      if (host) {
+        const trimmed = host.replace(/\/$/, "");
+        baseUrl = trimmed.endsWith("/v1") ? trimmed : `${trimmed}/v1`;
+      }
+    }
+  }
 
   if (!apiKey) {
     if (def.id === "supergrok") {
@@ -228,7 +254,7 @@ function normalizeModelId(id: string): string {
 function skipModelId(id: string): boolean {
   const s = id.toLowerCase();
   if (
-    /embed|whisper|tts|dall-e|dalle|imagen|imagine|moderation|realtime|audio|wav|voice|flux|video|stt|computer-use/.test(
+    /embed|whisper|tts|dall-e|dalle|imagen|imagine|moderation|realtime|audio|wav|voice|flux|video|stt|computer-use|multi-agent/.test(
       s,
     )
   ) {
@@ -236,6 +262,12 @@ function skipModelId(id: string): boolean {
   }
   if (/grok-2-image|image-gen/.test(s)) return true;
   return false;
+}
+
+function xaiSendsReasoningEffort(model: string): boolean {
+  const s = model.toLowerCase();
+  if (/4\.20|4-20|non-reasoning|multi-agent/.test(s)) return false;
+  return /grok-4\.[3-9]|grok-4\.6|grok-4\.5|grok-4-fast|grok-3/.test(s);
 }
 
 function rankOpenRouter(ids: string[]): string[] {
@@ -278,9 +310,22 @@ function extractIds(json: unknown): string[] {
       if (!methods.includes("generateContent")) continue;
     }
     const id = r.id ?? r.name ?? r.model;
-    if (typeof id === "string") ids.push(id);
+    if (typeof id !== "string") continue;
+    const aliases = Array.isArray(r.aliases)
+      ? r.aliases.filter((a): a is string => typeof a === "string")
+      : [];
+    ids.push(pickPublicModelId(id, aliases));
   }
   return ids;
+}
+
+function pickPublicModelId(id: string, aliases: string[]): string {
+  const pool = [id, ...aliases];
+  const usable = pool.filter((s) => s && !skipModelId(s));
+  if (!usable.length) return id;
+  const stable = usable.filter((s) => !/-\d{4}(?:-|$)/.test(s) && !/beta|experimental/i.test(s));
+  const ranked = (stable.length ? stable : usable).slice().sort((a, b) => a.length - b.length || a.localeCompare(b));
+  return ranked[0] ?? id;
 }
 
 async function fetchModelIds(route: BrainRoute): Promise<string[]> {
@@ -338,20 +383,15 @@ async function fetchModelIds(route: BrainRoute): Promise<string[]> {
 }
 
 export function envPresence(): Record<string, boolean> {
-  return {
-    xai: Boolean(env("XAI_API_KEY")),
-    openai: Boolean(
-      env("OPENAI_API_KEY") || env("CHATGPT_ACCESS_TOKEN") || env("CODEX_ACCESS_TOKEN"),
-    ),
-    anthropic: Boolean(
-      env("ANTHROPIC_API_KEY") || env("ANTHROPIC_TOKEN") || env("CLAUDE_CODE_OAUTH_TOKEN"),
-    ),
-    google: Boolean(env("GOOGLE_API_KEY") || env("GEMINI_API_KEY")),
-    poolside: Boolean(env("POOLSIDE_API_KEY")),
-    openrouter: Boolean(env("OPENROUTER_API_KEY")),
-    deepseek: Boolean(env("DEEPSEEK_API_KEY")),
-    ollama: Boolean(env("OLLAMA_HOST")),
-  };
+  const out: Record<string, boolean> = {};
+  for (const def of PROVIDER_DEFS) {
+    if (def.id === "local") {
+      out.ollama = Boolean(env("OLLAMA_HOST"));
+      continue;
+    }
+    out[def.slot] = envNamesFor(def).some((name) => Boolean(env(name)));
+  }
+  return out;
 }
 
 export async function callBrain(
@@ -502,7 +542,7 @@ async function callOpenAiCompat(
     temperature: 0.4,
     max_tokens: maxTokens,
   };
-  if (route.compat === "xai") {
+  if (route.compat === "xai" && xaiSendsReasoningEffort(route.model)) {
     body.reasoning_effort = "low";
   }
   if (useTools) {
@@ -542,6 +582,29 @@ async function callOpenAiCompat(
   const json = (await used.json()) as OpenAiResponse;
   if (!used.ok) {
     const msg = json.error?.message || `${route.label} error ${used.status}`;
+    if (
+      route.compat === "xai" &&
+      used.status === 400 &&
+      body.reasoning_effort &&
+      /reasoning[_ ]?effort/i.test(msg)
+    ) {
+      delete body.reasoning_effort;
+      used = await fetch(`${route.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+      const retry = (await used.json()) as OpenAiResponse;
+      if (!used.ok) {
+        throw new Error(retry.error?.message || `${route.label} error ${used.status}`);
+      }
+      const retried = retry.choices?.[0]?.message;
+      return {
+        content: retried?.content ?? "",
+        toolCalls: retried?.tool_calls ?? [],
+        usage: readUsage(retry.usage),
+      };
+    }
     throw new Error(msg);
   }
   const message = json.choices?.[0]?.message;

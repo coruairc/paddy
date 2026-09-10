@@ -109,7 +109,7 @@ export function AppShell() {
   useEffect(() => {
     const t = window.setInterval(() => {
       const result = useHelix.getState().firePulse();
-      if (result.woke) {
+      if (result.woke && result.fresh) {
         toast("Wake gate opened", { description: result.detail });
       }
     }, 60_000);
@@ -244,7 +244,7 @@ export function AppShell() {
             <Button
               onClick={() => {
                 const held = useHelix.getState().pendingApproval;
-                const profileId = useHelix.getState().activeProfileId;
+                const profileId = held?.profileId ?? useHelix.getState().activeProfileId;
                 resolveApproval(true);
                 if (held?.tool !== "spawn_subagent") return;
                 setBusy(true);

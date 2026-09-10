@@ -28,7 +28,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "official",
     category: "writing",
     version: "1.2.0",
-    installs: "12.4k",
+    installs: "bundled",
   },
   {
     slug: "clawhub/google-calendar",
@@ -42,7 +42,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "calendar",
     version: "2.0.1",
-    installs: "41k",
+    installs: "bundled",
   },
   {
     slug: "clawhub/gmail-triage",
@@ -56,7 +56,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "ops",
     version: "1.8.4",
-    installs: "33k",
+    installs: "bundled",
   },
   {
     slug: "hermes/web-brief",
@@ -70,7 +70,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "research",
     version: "0.9.0",
-    installs: "18k",
+    installs: "bundled",
   },
   {
     slug: "openai/pr-review",
@@ -84,7 +84,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "trusted",
     category: "coding",
     version: "1.4.0",
-    installs: "9.1k",
+    installs: "bundled",
   },
   {
     slug: "anthropic/sql-guard",
@@ -98,7 +98,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "trusted",
     category: "coding",
     version: "1.1.0",
-    installs: "7.6k",
+    installs: "bundled",
   },
   {
     slug: "clawhub/incident-page",
@@ -112,7 +112,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "ops",
     version: "3.0.0",
-    installs: "15k",
+    installs: "bundled",
   },
   {
     slug: "hermes/pdf-digest",
@@ -126,7 +126,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "research",
     version: "1.0.2",
-    installs: "11k",
+    installs: "bundled",
   },
   {
     slug: "clawhub/customer-reply",
@@ -140,7 +140,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "writing",
     version: "1.3.1",
-    installs: "8.8k",
+    installs: "bundled",
   },
   {
     slug: "paddy/weekly-okrs",
@@ -154,7 +154,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "official",
     category: "ops",
     version: "1.0.0",
-    installs: "4.2k",
+    installs: "bundled",
   },
   {
     slug: "clawhub/browser-research",
@@ -168,7 +168,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "research",
     version: "0.7.3",
-    installs: "22k",
+    installs: "bundled",
   },
   {
     slug: "hermes/apple-notes",
@@ -182,7 +182,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "memory",
     version: "0.4.0",
-    installs: "6.4k",
+    installs: "bundled",
   },
   {
     slug: "clawhub/whisper-notes",
@@ -196,7 +196,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "voice",
     version: "1.5.0",
-    installs: "19k",
+    installs: "bundled",
   },
   {
     slug: "openai/k8s-ops",
@@ -210,7 +210,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "trusted",
     category: "coding",
     version: "2.1.0",
-    installs: "5.9k",
+    installs: "bundled",
   },
   {
     slug: "hermes/openclaw-migrate",
@@ -224,7 +224,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "ops",
     version: "0.3.0",
-    installs: "3.1k",
+    installs: "bundled",
   },
   {
     slug: "clawhub/travel-pack",
@@ -238,7 +238,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "ops",
     version: "1.0.4",
-    installs: "10k",
+    installs: "bundled",
   },
   {
     slug: "clawhub/expense-capture",
@@ -252,7 +252,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "community",
     category: "ops",
     version: "1.2.2",
-    installs: "7.2k",
+    installs: "bundled",
   },
   {
     slug: "paddy/x-thread",
@@ -266,7 +266,7 @@ export const HUB_SKILLS: HubSkill[] = [
     trust: "official",
     category: "writing",
     version: "1.0.1",
-    installs: "2.8k",
+    installs: "bundled",
   },
 ];
 
@@ -307,13 +307,13 @@ export function scanHubSkill(skill: HubSkill): {
   if (skill.trust === "community") {
     return {
       verdict: "review",
-      note: "Community pack. Quarantined, hashed, no shell. Read the SKILL.md before you lean on it.",
+      note: "Community pack in this local catalog. Read the SKILL.md before you lean on it.",
       bundle,
     };
   }
   return {
     verdict: "clean",
-    note: `${skill.trust} registry. No host binaries declared.`,
+    note: `${skill.trust} pack in this local catalog. No live ClawHub scan.`,
     bundle,
   };
 }

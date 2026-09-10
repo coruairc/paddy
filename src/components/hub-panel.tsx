@@ -20,8 +20,6 @@ const TRUST: Record<HubSkill["trust"], "ok" | "accent" | "default"> = {
   community: "default",
 };
 
-const SCAN_STEPS = ["Quarantine", "Hash bundle", "Security scan", "Write SKILL.md"] as const;
-
 export function HubPanel() {
   const skills = useHelix((s) => s.workspaces[s.activeProfileId]!.skills);
   const installHubSkill = useHelix((s) => s.installHubSkill);
@@ -30,8 +28,6 @@ export function HubPanel() {
   const [cat, setCat] = useState<(typeof HUB_CATEGORIES)[number]>("all");
   const [reg, setReg] = useState<HubRegistry | "all">("all");
   const [open, setOpen] = useState<string | null>(HUB_SKILLS[0]?.slug ?? null);
-  const [scanning, setScanning] = useState<string | null>(null);
-  const [scanStep, setScanStep] = useState(0);
 
   const installed = new Set(skills.map((s) => s.name));
 
@@ -48,15 +44,8 @@ export function HubPanel() {
   const selected = list.find((s) => s.slug === open) ?? list[0];
   const scan = selected ? scanHubSkill(selected) : null;
 
-  async function install(slug: string) {
-    setScanning(slug);
-    setScanStep(0);
-    for (let i = 0; i < SCAN_STEPS.length; i++) {
-      setScanStep(i);
-      await new Promise((r) => setTimeout(r, 220));
-    }
+  function install(slug: string) {
     const result = installHubSkill(slug);
-    setScanning(null);
     toast(result.ok ? "Installed" : "Hub", { description: result.detail });
   }
 
@@ -68,9 +57,8 @@ export function HubPanel() {
         </p>
         <h2 className="mt-1 font-display text-2xl tracking-tight">Skills hub</h2>
         <p className="mt-2 max-w-xl text-sm text-muted">
-          Browse, scan, install. Inspired by ClawHub and Hermes — this index
-          lives in Paddy, not on their registries. Bundles are quarantined,
-          hashed, then written into this profile.
+          Browse, then install into this profile. Inspired by ClawHub and Hermes —
+          this index lives in Paddy, not on their registries. No live download.
         </p>
         <p className="mt-2 font-mono text-xs text-subtle tabular-nums">
           {HUB_SKILLS.length} indexed · {skills.filter((s) => s.origin === "hub").length} from hub
@@ -143,7 +131,7 @@ export function HubPanel() {
                 </div>
                 <p className="mt-1 line-clamp-2 text-xs text-muted">{s.description}</p>
                 <p className="mt-1 font-mono text-[10px] text-subtle">
-                  {s.registry} · v{s.version} · {s.installs}
+                  {s.registry} · v{s.version} · bundled
                   {installed.has(s.name) ? " · installed" : ""}
                 </p>
               </button>
@@ -160,12 +148,11 @@ export function HubPanel() {
             <h3 className="mt-1 font-display text-xl">{selected.name}</h3>
             <p className="mt-2 text-sm text-fg/90">{selected.description}</p>
             <p className="mt-3 text-xs text-muted">
-              {selected.author} · {selected.registry} · v{selected.version} · {selected.installs}{" "}
-              installs
+              {selected.author} · {selected.registry} · v{selected.version} · local catalog
             </p>
             {scan ? (
               <p className="mt-2 font-mono text-[11px] text-subtle">
-                scan {scan.verdict} · bundle {scan.bundle}
+                {scan.verdict} · id {scan.bundle} · {scan.note}
               </p>
             ) : null}
             {selected.triggers.length ? (
@@ -173,27 +160,9 @@ export function HubPanel() {
                 Triggers: {selected.triggers.join(" · ")}
               </p>
             ) : null}
-            <p className="mt-3 font-mono text-[11px] text-subtle">
-              paddy hub install {selected.slug}
-            </p>
             <pre className="mt-4 max-h-48 overflow-auto whitespace-pre-wrap rounded-xl bg-bg p-3 font-mono text-xs leading-relaxed text-fg/85">
               {selected.instructions}
             </pre>
-            {scanning === selected.slug ? (
-              <ol className="mt-4 space-y-1.5">
-                {SCAN_STEPS.map((label, i) => (
-                  <li
-                    key={label}
-                    className={cn(
-                      "font-mono text-xs",
-                      i < scanStep ? "text-ok" : i === scanStep ? "text-accent" : "text-subtle",
-                    )}
-                  >
-                    {i < scanStep ? "done" : i === scanStep ? "run " : "idle"} · {label}
-                  </li>
-                ))}
-              </ol>
-            ) : null}
             <div className="mt-4 flex gap-2">
               {installed.has(selected.name) ? (
                 <Button
@@ -206,12 +175,7 @@ export function HubPanel() {
                   Uninstall
                 </Button>
               ) : (
-                <Button
-                  disabled={scanning === selected.slug}
-                  onClick={() => void install(selected.slug)}
-                >
-                  {scanning === selected.slug ? "Scanning…" : "Install"}
-                </Button>
+                <Button onClick={() => install(selected.slug)}>Install into this profile</Button>
               )}
             </div>
           </article>

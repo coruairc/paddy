@@ -135,7 +135,9 @@ export function SessionsView() {
                   ) : null}
                 </div>
                 {g.sessions.length === 0 ? (
-                  <p className="px-2 py-2 text-xs text-subtle">No sessions</p>
+                  <p className="px-2 py-2 text-xs text-subtle">
+                    {g.id === "web" ? "No sessions" : "Idle — no live bridge in this kit"}
+                  </p>
                 ) : (
                   <ul className="flex flex-col gap-0.5">
                     {g.sessions.map((s) => {

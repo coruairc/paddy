@@ -65,8 +65,9 @@ export function GatewayView() {
           </p>
           <h1 className="mt-1 font-display text-3xl tracking-tight">Gateway</h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-            One control plane. Unknown senders wait on a pairing code. Heartbeat
-            ticks on its own — the timer is not a license to spend.
+            One control plane. Web and CLI are live. Other channels stay idle
+            until a bridge exists — this kit does not ship Telegram or Slack.
+            Heartbeat ticks on its own; the timer is not a license to spend.
           </p>
         </header>
 

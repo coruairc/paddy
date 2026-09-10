@@ -1,17 +1,16 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { uid } from "@/lib/utils";
-import { CHANNELS, PADDY_PROFILE, POLICY, PROFILES, WEB_SESSION_ID, emptyUsage, newAgentWorkspace, seedSessionMessages, seedSessions, seedWorkspaces, webSession } from "./defaults";
+import { CHANNELS, PADDY_PROFILE, POLICY, PROFILES, WEB_SESSION_ID, emptyUsage, newAgentWorkspace, seedSessions, seedWorkspaces, webSession } from "./defaults";
 import { getHubSkill } from "./hub";
-import { defaultBrainKeys, defaultModelByProvider, defaultProviders, keysForSlot, normalizeProviderId, PROVIDER_DEFS, slotForBrainKey, TOKEN_MAX, type BrainKeys, type KeySlot, type ProviderId, type ProviderState } from "./providers";
+import { applyMutation, curatorPass, DEMO_SESSION_IDS, parseMemoryFile } from "./mutate";
+import { defaultBrainKeys, defaultModelByProvider, defaultProviders, keysForSlot, normalizeProviderId, PROVIDER_DEFS, slotConnected, slotForBrainKey, TOKEN_MAX, type BrainKeys, type KeySlot, type ProviderId, type ProviderState } from "./providers";
 import type {
   Channel,
   HelixTurnResult,
-  Mutation,
   Policy,
   ProfileMeta,
   Session,
-  SkillStatus,
   TicketStatus,
   ToolName,
   TraceEvent,
@@ -29,24 +28,15 @@ function mergeProviderState(
     const old = map.get("laguna-s") ?? map.get("laguna-xs");
     if (old) map.set("laguna", { ...old, id: "laguna" });
   }
+  if (!map.has("chatgpt")) {
+    const old = map.get("chatgpt-plus") ?? map.get("chatgpt-pro");
+    if (old) map.set("chatgpt", { ...old, id: "chatgpt" });
+  }
+  if (!map.has("claude")) {
+    const old = map.get("claude-pro") ?? map.get("claude-max");
+    if (old) map.set("claude", { ...old, id: "claude" });
+  }
   return defaults.map((d) => map.get(d.id) ?? d);
-}
-
-function rebuildMemoryFile(ws: WorkspaceState): string {
-  const lines = ws.memories.map((m) => `- (${m.kind}) ${m.text}`);
-  return `# MEMORY.md\n\n${lines.join("\n") || "- (empty)"}`;
-}
-
-function snapshotOf(ws: WorkspaceState): string {
-  return JSON.stringify({
-    files: ws.files,
-    skills: ws.skills,
-    memories: ws.memories,
-    dailyNotes: ws.dailyNotes,
-    canvas: ws.canvas,
-    tickets: ws.tickets,
-    sessions: ws.sessions,
-  });
 }
 
 function event(
@@ -64,199 +54,6 @@ function event(
   };
 }
 
-function applyMutation(ws: WorkspaceState, m: Mutation): WorkspaceState {
-  const next: WorkspaceState = {
-    ...ws,
-    files: { ...ws.files },
-    skills: [...ws.skills],
-    memories: [...ws.memories],
-    traces: [...ws.traces],
-    canvas: [...ws.canvas],
-    checkpoints: [...ws.checkpoints],
-    wakes: [...ws.wakes],
-    dailyNotes: [...ws.dailyNotes],
-    messages: [...ws.messages],
-    tickets: [...(ws.tickets ?? [])],
-    usage: { ...(ws.usage ?? emptyUsage()) },
-    sessions: [...(ws.sessions ?? [])],
-  };
-
-  switch (m.type) {
-    case "write_memory": {
-      if (m.mode === "replace") next.memories = [];
-      next.memories.push({
-        id: uid("mem"),
-        text: m.text,
-        kind: m.kind,
-        at: Date.now(),
-        source: "agent",
-      });
-      next.files.memory = rebuildMemoryFile(next);
-      break;
-    }
-    case "update_user":
-      next.files.user = m.content;
-      break;
-    case "update_soul":
-      next.files.soul = m.content;
-      break;
-    case "create_skill": {
-      const exists = next.skills.some((s) => s.name === m.name);
-      if (!exists) {
-        next.skills.unshift({
-          id: uid("sk"),
-          name: m.name,
-          description: m.description,
-          instructions: m.instructions,
-          triggers: m.triggers,
-          status: "new",
-          uses: 0,
-          lastUsedAt: null,
-          createdAt: Date.now(),
-          origin: "learned",
-        });
-      }
-      break;
-    }
-    case "patch_skill": {
-      next.skills = next.skills.map((s) =>
-        s.name === m.name
-          ? {
-              ...s,
-              instructions: m.instructions,
-              origin: "patched" as const,
-              status: s.status === "archived" ? s.status : "active",
-            }
-          : s,
-      );
-      break;
-    }
-    case "bump_skill": {
-      next.skills = next.skills.map((s) =>
-        s.name === m.name
-          ? {
-              ...s,
-              uses: s.uses + 1,
-              lastUsedAt: Date.now(),
-              status: s.status === "new" ? "active" : s.status,
-            }
-          : s,
-      );
-      break;
-    }
-    case "canvas":
-      next.canvas.unshift({
-        ...m.card,
-        id: uid("cv"),
-        at: Date.now(),
-      });
-      next.canvas = next.canvas.slice(0, 12);
-      break;
-    case "checkpoint":
-      next.checkpoints.unshift({
-        id: uid("ck"),
-        label: m.label,
-        at: Date.now(),
-        snapshot: snapshotOf(next),
-      });
-      next.checkpoints = next.checkpoints.slice(0, 20);
-      next.traces.unshift(event("checkpoint", `Checkpoint · ${m.label}`));
-      break;
-    case "schedule_wake":
-      next.wakes.unshift({
-        id: uid("wk"),
-        at: Date.now() + m.delayMinutes * 60_000,
-        reason: m.reason,
-        note: m.note,
-        fired: false,
-      });
-      next.traces.unshift(event("wake", `Wake gated · ${m.delayMinutes}m`, { detail: m.reason }));
-      break;
-    case "send_channel":
-      next.traces.unshift(
-        event("gateway", `Outbound · ${m.channelId}`, { detail: m.message.slice(0, 180) }),
-      );
-      break;
-    case "install_hub": {
-      const exists = next.skills.some((s) => s.name === m.name);
-      if (!exists) {
-        next.skills.unshift({
-          id: uid("sk"),
-          name: m.name,
-          description: m.description,
-          instructions: m.instructions,
-          triggers: m.triggers,
-          status: "active",
-          uses: 0,
-          lastUsedAt: null,
-          createdAt: Date.now(),
-          origin: "hub",
-          slug: m.slug,
-          registry: m.registry,
-          version: m.version,
-        });
-        next.traces.unshift(
-          event("skill", `Hub install · ${m.slug}`, { detail: m.registry }),
-        );
-      }
-      break;
-    }
-    case "daily_note": {
-      const date = new Date().toISOString().slice(0, 10);
-      const existing = next.dailyNotes.find((d) => d.date === date);
-      if (existing) {
-        next.dailyNotes = next.dailyNotes.map((d) =>
-          d.date === date ? { ...d, content: `${d.content}\n${m.content}` } : d,
-        );
-      } else {
-        next.dailyNotes.unshift({ date, content: m.content });
-      }
-      break;
-    }
-    case "create_ticket": {
-      next.tickets.unshift({
-        id: uid("tk"),
-        title: m.title,
-        body: m.body,
-        status: m.status,
-        at: Date.now(),
-        updatedAt: Date.now(),
-      });
-      next.traces.unshift(event("tool", `Ticket · ${m.title}`, { detail: m.status }));
-      break;
-    }
-    case "update_ticket": {
-      next.tickets = next.tickets.map((t) =>
-        t.id === m.id
-          ? {
-              ...t,
-              title: m.title?.trim() ? m.title : t.title,
-              body: m.body !== undefined ? m.body : t.body,
-              status: m.status ?? t.status,
-              updatedAt: Date.now(),
-            }
-          : t,
-      );
-      const hit = next.tickets.find((t) => t.id === m.id);
-      next.traces.unshift(
-        event("tool", `Ticket moved · ${hit?.title ?? m.id}`, {
-          detail: m.status ?? "edited",
-        }),
-      );
-      break;
-    }
-    case "remove_ticket": {
-      next.tickets = next.tickets.filter((t) => t.id !== m.id);
-      break;
-    }
-    default:
-      break;
-  }
-
-  next.traces = next.traces.slice(0, 80);
-  next.messages = next.messages.slice(-80);
-  return next;
-}
 
 export interface HelixStore {
   view: ViewId;
@@ -275,7 +72,16 @@ export interface HelixStore {
     tool: ToolName;
     args: Record<string, string>;
     reason: string;
+    profileId?: string;
+    sessionId?: string;
   } | null;
+  pendingQueue: {
+    tool: ToolName;
+    args: Record<string, string>;
+    reason: string;
+    profileId?: string;
+    sessionId?: string;
+  }[];
   providers: ProviderState[];
   preferredProvider: ProviderId;
   modelByProvider: Partial<Record<ProviderId, string>>;
@@ -308,7 +114,7 @@ export interface HelixStore {
   admitChannel: (channelId: string) => string | null;
   approvePair: (channelId: string) => void;
   denyPair: (channelId: string) => void;
-  firePulse: () => { woke: boolean; detail: string };
+  firePulse: () => { woke: boolean; detail: string; fresh: boolean };
   admitWake: (id: string) => string | null;
   runCurator: () => void;
   rollback: (checkpointId: string) => void;
@@ -394,6 +200,8 @@ type PersistedHelix = Partial<
     | "modelByProvider"
     | "brainKeys"
     | "activeSessionId"
+    | "pendingApproval"
+    | "pendingQueue"
   >
 >;
 
@@ -413,6 +221,7 @@ export const useHelix = create<HelixStore>()(
       workspaces: seedWorkspaces(),
       lastPulseAt: Date.now() - 12 * 60_000,
       pendingApproval: null,
+      pendingQueue: [],
       providers: defaultProviders(),
       preferredProvider: "supergrok",
       modelByProvider: defaultModelByProvider(),
@@ -518,10 +327,29 @@ export const useHelix = create<HelixStore>()(
       updateFiles: (patch) => {
         const id = get().activeProfileId;
         set({
-          workspaces: patchWs(get().workspaces, id, (ws) => ({
-            ...ws,
-            files: { ...ws.files, ...patch },
-          })),
+          workspaces: patchWs(get().workspaces, id, (ws) => {
+            const files = { ...ws.files, ...patch };
+            if (typeof patch.memory !== "string") return { ...ws, files };
+            const parsed = parseMemoryFile(patch.memory);
+            if (parsed.length) return { ...ws, files, memories: parsed };
+            const stripped = patch.memory.replace(/^#\s*MEMORY\.md\s*/i, "").trim();
+            if (!stripped || stripped === "- (empty)") {
+              return { ...ws, files, memories: [] };
+            }
+            return {
+              ...ws,
+              files,
+              memories: [
+                {
+                  id: uid("mem"),
+                  text: stripped.slice(0, 800),
+                  kind: "fact" as const,
+                  at: Date.now(),
+                  source: "editor",
+                },
+              ],
+            };
+          }),
         });
       },
       applyResult: (userText, channelId, result, sessionId, profileId) => {
@@ -623,6 +451,20 @@ export const useHelix = create<HelixStore>()(
             });
             if (result.usage) {
               const prev = next.usage ?? emptyUsage();
+              const wroteMemory = result.ok
+                ? result.mutations.some(
+                    (m) => m.type === "write_memory" || m.type === "update_user",
+                  )
+                : false;
+              const wroteSkill = result.ok
+                ? result.mutations.some(
+                    (m) =>
+                      m.type === "create_skill" ||
+                      m.type === "patch_skill" ||
+                      m.type === "install_hub" ||
+                      m.type === "archive_skill",
+                  )
+                : false;
               next.usage = {
                 promptTokens: prev.promptTokens + result.usage.promptTokens,
                 completionTokens: prev.completionTokens + result.usage.completionTokens,
@@ -631,11 +473,24 @@ export const useHelix = create<HelixStore>()(
                 lastModel: result.usage.model || prev.lastModel,
                 lastProvider: result.usage.provider || prev.lastProvider,
                 lastAt: Date.now(),
+                turnsSinceMemoryWrite: wroteMemory ? 0 : (prev.turnsSinceMemoryWrite ?? 0) + 1,
+                lastTurnToolCalls: result.usage.toolCalls,
+                skillNudge: result.usage.toolCalls >= 4 && !wroteSkill,
               };
             }
             return next;
           }),
-          pendingApproval: result.ok ? (result.pendingApproval ?? null) : null,
+          pendingApproval: result.ok && result.pendingApproval
+            ? { ...result.pendingApproval, profileId: id, sessionId: sid }
+            : null,
+          pendingQueue:
+            result.ok && result.pendingApprovals && result.pendingApprovals.length > 1
+              ? result.pendingApprovals.slice(1).map((p) => ({
+                  ...p,
+                  profileId: id,
+                  sessionId: sid,
+                }))
+              : [],
           error: result.ok ? null : result.error,
           busy: false,
         });
@@ -710,35 +565,26 @@ export const useHelix = create<HelixStore>()(
         set({ lastPulseAt: at });
         const id = get().activeProfileId;
         if (!due) {
+          return { woke: false, detail: "Gate closed. Silence is cheaper.", fresh: false };
+        }
+        const fresh = !due.notified;
+        if (fresh) {
           set({
             workspaces: patchWs(get().workspaces, id, (ws) => ({
               ...ws,
+              wakes: ws.wakes.map((w) => (w.id === due.id ? { ...w, notified: true } : w)),
               traces: [
-                event("wake", "Heartbeat · gate closed", {
-                  detail: "No matching watch. Model not woken.",
+                event("wake", "Heartbeat · gate open", {
+                  detail: `${due.reason} — admit to spend a turn.`,
                   at,
+                  status: "warn",
                 }),
                 ...ws.traces,
               ].slice(0, 80),
             })),
           });
-          return { woke: false, detail: "Gate closed. Silence is cheaper." };
         }
-        set({
-          workspaces: patchWs(get().workspaces, id, (ws) => ({
-            ...ws,
-            wakes: ws.wakes.map((w) => (w.id === due.id ? { ...w, fired: true } : w)),
-            traces: [
-              event("wake", "Heartbeat · gate open", {
-                detail: due.reason,
-                at,
-                status: "warn",
-              }),
-              ...ws.traces,
-            ].slice(0, 80),
-          })),
-        });
-        return { woke: true, detail: due.note };
+        return { woke: true, detail: due.note, fresh };
       },
       admitWake: (wakeId) => {
         const w = get().ws().wakes.find((x) => x.id === wakeId);
@@ -755,27 +601,16 @@ export const useHelix = create<HelixStore>()(
       },
       runCurator: () => {
         const id = get().activeProfileId;
-        const horizonStale = 14 * 24 * 60 * 60 * 1000;
-        const horizonArch = 90 * 24 * 60 * 60 * 1000;
         set({
           workspaces: patchWs(get().workspaces, id, (ws) => {
-            const skills = ws.skills.map((s) => {
-              if (s.origin === "seeded" && s.status === "active") return s;
-              const age = s.lastUsedAt ? Date.now() - s.lastUsedAt : Date.now() - s.createdAt;
-              let status: SkillStatus = s.status;
-              if (s.uses === 0 && s.origin === "learned") status = "new";
-              else if (age > horizonArch) status = "archived";
-              else if (age > horizonStale) status = "stale";
-              else if (s.uses > 0) status = "active";
-              return { ...s, status };
-            });
+            const pass = curatorPass(ws);
             return {
               ...ws,
-              skills,
+              skills: pass.skills,
+              memories: pass.memories,
+              files: pass.files,
               traces: [
-                event("skill", "Curator pass", {
-                  detail: "Lifecycle reconciled (new → active → stale → archived).",
-                }),
+                event("skill", "Curator pass", { detail: pass.detail }),
                 ...ws.traces,
               ].slice(0, 80),
             };
@@ -819,7 +654,10 @@ export const useHelix = create<HelixStore>()(
       resolveApproval: (allow) => {
         const pending = get().pendingApproval;
         if (!pending) return;
-        const id = get().activeProfileId;
+        const id =
+          pending.profileId && get().workspaces[pending.profileId]
+            ? pending.profileId
+            : get().activeProfileId;
         if (allow && pending.tool === "send_channel") {
           set({
             workspaces: patchWs(get().workspaces, id, (ws) =>
@@ -838,7 +676,6 @@ export const useHelix = create<HelixStore>()(
                       text: pending.args.message ?? "",
                       at: Date.now(),
                     },
-                    status: c.status === "offline" ? c.status : "connected",
                   }
                 : c,
             ),
@@ -854,7 +691,12 @@ export const useHelix = create<HelixStore>()(
             })),
           });
         }
-        set({ pendingApproval: null });
+        const rest = get().pendingQueue;
+        const next = rest[0] ?? null;
+        set({
+          pendingApproval: next,
+          pendingQueue: rest.slice(1),
+        });
       },
       applySubagent: (text, ok, profileId) => {
         const id =
@@ -902,6 +744,7 @@ export const useHelix = create<HelixStore>()(
           channels: CHANNELS,
           policy: POLICY,
           pendingApproval: null,
+          pendingQueue: [],
           error: null,
           activeProfileId: "paddy",
           view: "console",
@@ -981,20 +824,21 @@ export const useHelix = create<HelixStore>()(
         const trimmed = model.trim().slice(0, 120);
         if (!trimmed) return;
         set({
-          preferredProvider: pid,
           modelByProvider: { ...get().modelByProvider, [pid]: trimmed },
         });
         if (pid === "local") get().setBrainKey("ollamaModel", trimmed);
       },
       markSuperGrokLive: (live) => {
         const list = get().providers?.length ? get().providers : defaultProviders();
+        const hasLocal = slotConnected(get().brainKeys ?? {}, "xai");
+        const nextLive = live || hasLocal;
         set({
           providers: list.map((p) =>
             p.id === "supergrok"
               ? {
                   ...p,
-                  status: live ? "live" : p.status === "live" ? "idle" : p.status,
-                  pairedAt: live ? p.pairedAt ?? Date.now() : p.pairedAt,
+                  status: nextLive ? "live" : p.status === "live" ? "idle" : p.status,
+                  pairedAt: nextLive ? p.pairedAt ?? Date.now() : p.pairedAt,
                 }
               : p,
           ),
@@ -1067,6 +911,8 @@ export const useHelix = create<HelixStore>()(
         modelByProvider: s.modelByProvider,
         brainKeys: s.brainKeys,
         activeSessionId: s.activeSessionId,
+        pendingApproval: s.pendingApproval,
+        pendingQueue: s.pendingQueue,
       }),
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as PersistedHelix;
@@ -1085,21 +931,31 @@ export const useHelix = create<HelixStore>()(
           if (!ws) continue;
           workspaces[key] = {
             ...ws,
+            files: {
+              soul: ws.files?.soul ?? "",
+              identity: ws.files?.identity ?? "",
+              user: ws.files?.user ?? "",
+              memory: ws.files?.memory ?? "",
+              agents: ws.files?.agents ?? "",
+              heartbeat:
+                ws.files?.heartbeat ||
+                "# HEARTBEAT.md\n\nStanding watch. Silence is valid. HEARTBEAT_OK when nothing is due.\n",
+            },
             tickets: Array.isArray(ws.tickets) ? ws.tickets : [],
             usage: {
               ...emptyUsage(),
               ...(ws.usage ?? {}),
             },
-            sessions:
-              Array.isArray(ws.sessions) && ws.sessions.length > 0
-                ? ws.sessions
-                : key === "paddy"
-                  ? seedSessions()
-                  : [webSession()],
-            messages:
-              key === "paddy" && !(ws.messages ?? []).some((m) => m.sessionId)
-                ? [...(ws.messages ?? []), ...seedSessionMessages()]
-                : (ws.messages ?? []),
+            sessions: (() => {
+              const raw = Array.isArray(ws.sessions) ? ws.sessions : [];
+              const cleaned = raw.filter((s) => !DEMO_SESSION_IDS.includes(s.id));
+              if (cleaned.length > 0) return cleaned;
+              return key === "paddy" ? seedSessions() : [webSession()];
+            })(),
+            messages: (ws.messages ?? []).filter(
+              (m) => !m.sessionId || !DEMO_SESSION_IDS.includes(m.sessionId),
+            ),
+            wakes: (ws.wakes ?? []).map((w) => ({ ...w, notified: w.notified ?? w.fired })),
           };
         }
         let profiles = (p.profiles ?? current.profiles)
@@ -1126,7 +982,6 @@ export const useHelix = create<HelixStore>()(
         }
         return {
           ...current,
-          ...p,
           workspaces,
           activeProfileId,
           activeSessionId:
@@ -1148,36 +1003,50 @@ export const useHelix = create<HelixStore>()(
             if (oldLaguna) merged.laguna = oldLaguna;
             delete (merged as Record<string, string>)["laguna-s"];
             delete (merged as Record<string, string>)["laguna-xs"];
+            const oldGpt =
+              saved.chatgpt ||
+              (saved as Record<string, string>)["chatgpt-plus"] ||
+              (saved as Record<string, string>)["chatgpt-pro"];
+            if (oldGpt) merged.chatgpt = oldGpt;
+            delete (merged as Record<string, string>)["chatgpt-plus"];
+            delete (merged as Record<string, string>)["chatgpt-pro"];
+            const oldClaude =
+              saved.claude ||
+              (saved as Record<string, string>)["claude-pro"] ||
+              (saved as Record<string, string>)["claude-max"];
+            if (oldClaude) merged.claude = oldClaude;
+            delete (merged as Record<string, string>)["claude-pro"];
+            delete (merged as Record<string, string>)["claude-max"];
             return merged;
           })(),
           brainKeys: { ...defaultBrainKeys(), ...(p.brainKeys ?? {}) },
           policy: {
-            autoApprove: (p.policy?.autoApprove ?? current.policy.autoApprove).filter(
-              (t) => t !== "spawn_subagent",
-            ),
+            autoApprove: Array.from(
+              new Set([
+                ...(p.policy?.autoApprove ?? current.policy.autoApprove),
+                "write_daily",
+                "update_heartbeat",
+                "skill_manage",
+              ]),
+            ).filter((t) => t !== "spawn_subagent" && t !== "send_channel") as ToolName[],
             requireApproval: Array.from(
               new Set([
                 ...(p.policy?.requireApproval ?? current.policy.requireApproval),
                 "spawn_subagent",
                 "send_channel",
               ]),
-            ),
+            ) as ToolName[],
           },
-          channels: (p.channels ?? current.channels).map((c) => {
-            if (c.id !== "whatsapp") return c;
-            const seed = current.channels.find((x) => x.id === "whatsapp");
-            if (!seed?.pendingPair || c.pendingPair) return c;
-            if (c.status === "connected" && (c.allowFrom?.length ?? 0) > 0) return c;
-            if (!c.lastMessage) return c;
+          channels: current.channels.map((def) => {
+            const saved = (p.channels ?? []).find((c) => c.id === def.id);
             return {
-              ...c,
-              pendingPair: seed.pendingPair,
-              status: "pairing" as const,
-              lastMessage: seed.lastMessage ?? c.lastMessage,
-              unread: Math.max(c.unread, 1),
-              blurb: seed.blurb,
+              ...def,
+              allowFrom: saved?.allowFrom,
             };
           }),
+          pendingQueue: Array.isArray(p.pendingQueue) ? p.pendingQueue : [],
+          pendingApproval: p.pendingApproval ?? current.pendingApproval,
+          lastPulseAt: p.lastPulseAt ?? current.lastPulseAt,
         };
       },
     },

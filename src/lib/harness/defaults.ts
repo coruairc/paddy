@@ -34,6 +34,9 @@ export const POLICY: Policy = {
     "install_skill",
     "create_ticket",
     "update_ticket",
+    "write_daily",
+    "update_heartbeat",
+    "skill_manage",
   ],
   requireApproval: ["send_channel", "spawn_subagent"],
 };
@@ -93,6 +96,15 @@ Timezone and name unknown.
 4. Run the loop: model → tools → policy → repeat (max a few rounds).
 5. Persist: memory writes, skill patches, checkpoint if the workspace changed.
 6. Heartbeat is a timer, not a license to spend. Silence is a valid result.
+`,
+  heartbeat: `# HEARTBEAT.md
+
+Standing watch. The pulse fires on a timer. Do not spend a model call unless a line below is due.
+
+- Keep MEMORY.md honest; drop trivia.
+- If a ticket sits in doing with no progress, nudge the board.
+- If a learned skill has never been used, leave it — the curator will age it.
+- Silence is valid. HEARTBEAT_OK when nothing is due.
 `,
 };
 
@@ -214,6 +226,9 @@ export function emptyUsage(): UsageStats {
     lastModel: "",
     lastProvider: "",
     lastAt: null,
+    turnsSinceMemoryWrite: 0,
+    lastTurnToolCalls: 0,
+    skillNudge: false,
   };
 }
 
@@ -232,149 +247,11 @@ export function webSession(at = now): Session {
 }
 
 export function seedSessions(): Session[] {
-  return [
-    webSession(),
-    {
-      id: "whatsapp:353",
-      channelId: "whatsapp",
-      title: "+353 unknown",
-      peer: "+353 unknown",
-      lastAt: now - 1000 * 60 * 9,
-      preview: "Can you look at last month’s invoice?",
-      unread: 1,
-    },
-    {
-      id: "telegram:ada",
-      channelId: "telegram",
-      title: "Ada",
-      peer: "Ada",
-      lastAt: now - 1000 * 60 * 18,
-      preview: "Can you turn tonight's notes into a standup?",
-      unread: 1,
-    },
-    {
-      id: "telegram:donal",
-      channelId: "telegram",
-      title: "Donal",
-      peer: "Donal",
-      lastAt: now - 1000 * 60 * 80,
-      preview: "Leave the heartbeat gated.",
-      unread: 0,
-    },
-    {
-      id: "slack:ops",
-      channelId: "slack",
-      title: "#ops",
-      peer: "#ops",
-      lastAt: now - 1000 * 60 * 110,
-      preview: "Heartbeat looks quiet. Good.",
-      unread: 0,
-    },
-    {
-      id: "slack:ciara",
-      channelId: "slack",
-      title: "@ciara",
-      peer: "ciara",
-      lastAt: now - 1000 * 60 * 200,
-      preview: "Standup doc is in the canvas.",
-      unread: 0,
-    },
-    {
-      id: "discord:mod",
-      channelId: "discord",
-      title: "mod",
-      peer: "mod",
-      lastAt: now - 1000 * 60 * 60 * 6,
-      preview: "Canvas preview is nice.",
-      unread: 0,
-    },
-    {
-      id: "email:brief",
-      channelId: "email",
-      title: "brief@local",
-      peer: "brief@local",
-      lastAt: now - 1000 * 60 * 60 * 20,
-      preview: "Weekly review reminder queued.",
-      unread: 0,
-    },
-  ];
+  return [webSession()];
 }
 
 export function seedSessionMessages(): ChatMessage[] {
-  return [
-    {
-      id: uid("msg"),
-      role: "user",
-      content: "Can you turn tonight's notes into a standup?",
-      channelId: "telegram",
-      sessionId: "telegram:ada",
-      at: now - 1000 * 60 * 18,
-    },
-    {
-      id: uid("msg"),
-      role: "user",
-      content: "Leave the heartbeat gated.",
-      channelId: "telegram",
-      sessionId: "telegram:donal",
-      at: now - 1000 * 60 * 80,
-    },
-    {
-      id: uid("msg"),
-      role: "assistant",
-      content: "Gate stays closed unless a watch matches. I won’t spend a call on silence.",
-      channelId: "telegram",
-      sessionId: "telegram:donal",
-      at: now - 1000 * 60 * 79,
-    },
-    {
-      id: uid("msg"),
-      role: "user",
-      content: "Heartbeat looks quiet. Good.",
-      channelId: "slack",
-      sessionId: "slack:ops",
-      at: now - 1000 * 60 * 110,
-    },
-    {
-      id: uid("msg"),
-      role: "user",
-      content: "Standup doc is in the canvas.",
-      channelId: "slack",
-      sessionId: "slack:ciara",
-      at: now - 1000 * 60 * 200,
-    },
-    {
-      id: uid("msg"),
-      role: "assistant",
-      content: "Noted. I’ll keep the canvas card and not paste it into Slack.",
-      channelId: "slack",
-      sessionId: "slack:ciara",
-      at: now - 1000 * 60 * 199,
-    },
-    {
-      id: uid("msg"),
-      role: "user",
-      content: "Canvas preview is nice.",
-      channelId: "discord",
-      sessionId: "discord:mod",
-      at: now - 1000 * 60 * 60 * 6,
-    },
-    {
-      id: uid("msg"),
-      role: "user",
-      content: "Weekly review reminder queued.",
-      channelId: "email",
-      sessionId: "email:brief",
-      at: now - 1000 * 60 * 60 * 20,
-    },
-    {
-      id: uid("msg"),
-      role: "user",
-      content: "Can you look at last month’s invoice?",
-      channelId: "whatsapp",
-      sessionId: "whatsapp:353",
-      at: now - 1000 * 60 * 9,
-    },
-  ];
+  return [];
 }
 
 function seedTickets(): Ticket[] {
@@ -431,7 +308,7 @@ function tracesHelix(): TraceEvent[] {
       id: uid("tr"),
       kind: "gateway",
       title: "Gateway online",
-      detail: "Web console bound. Telegram, Slack, email connected.",
+      detail: "Web console bound. Other channels idle — this kit does not ship live messaging bridges.",
       at: now - 1000 * 60 * 180,
       status: "ok",
     },
@@ -534,6 +411,7 @@ Still forming. Ask rather than invent.
 - ${name} was created on this gateway.
 `,
     agents: PADDY_FILES.agents,
+    heartbeat: PADDY_FILES.heartbeat,
   };
   const at = Date.now();
   return workspace(files, {
@@ -576,80 +454,48 @@ export const CHANNELS: Channel[] = [
     blurb: "This preview. Always the operator channel.",
     status: "connected",
     unread: 0,
-    lastMessage: { from: "you", text: "Gateway came online.", at: now - 1000 * 60 * 44 },
   },
   {
     id: "telegram",
     name: "Telegram",
-    blurb: "Direct messages. Short register.",
-    status: "connected",
-    unread: 1,
-    lastMessage: {
-      from: "Ada",
-      text: "Can you turn tonight's notes into a standup?",
-      at: now - 1000 * 60 * 18,
-    },
+    blurb: "Idle. This kit does not ship a Telegram bot — sessions are ready if you add a bridge later.",
+    status: "idle",
+    unread: 0,
   },
   {
     id: "slack",
     name: "Slack",
-    blurb: "#ops plus DMs.",
-    status: "connected",
+    blurb: "Idle. No Slack app in this kit. Pair a workspace when a bridge exists.",
+    status: "idle",
     unread: 0,
-    lastMessage: {
-      from: "#ops",
-      text: "Heartbeat looks quiet. Good.",
-      at: now - 1000 * 60 * 110,
-    },
   },
   {
     id: "discord",
     name: "Discord",
-    blurb: "Guild + threads.",
+    blurb: "Idle. Guild routing lives here once a bot token is wired.",
     status: "idle",
     unread: 0,
-    lastMessage: {
-      from: "mod",
-      text: "Canvas preview is nice.",
-      at: now - 1000 * 60 * 60 * 6,
-    },
   },
   {
     id: "whatsapp",
     name: "WhatsApp",
-    blurb: "Phone-first. Unknown senders wait on a pairing code.",
-    status: "pairing",
-    unread: 1,
-    lastMessage: {
-      from: "+353 unknown",
-      text: "Can you look at last month’s invoice?",
-      at: now - 1000 * 60 * 9,
-    },
-    pendingPair: {
-      from: "+353 unknown",
-      text: "Can you look at last month’s invoice?",
-      code: "K7M2-Q9XP",
-      at: now - 1000 * 60 * 9,
-    },
+    blurb: "Idle. Unknown senders will wait on a pairing code when a bridge exists.",
+    status: "idle",
+    unread: 0,
   },
   {
     id: "signal",
     name: "Signal",
-    blurb: "Sealed sender. Node offline.",
+    blurb: "Offline. No Signal node in this kit.",
     status: "offline",
     unread: 0,
   },
   {
     id: "email",
     name: "Email",
-    blurb: "Inbound to paddy@local.",
-    status: "connected",
+    blurb: "Idle. Point DNS at a self-hosted inbound later — not in this kit.",
+    status: "idle",
     unread: 0,
-    lastMessage: {
-      from: "brief@local",
-      text: "Weekly review reminder queued.",
-      at: now - 1000 * 60 * 60 * 20,
-    },
   },
 ];
 

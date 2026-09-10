@@ -11,6 +11,7 @@ const FILES: { key: keyof WorkspaceFiles; label: string; hint: string }[] = [
   { key: "user", label: "USER.md", hint: "Small model of you" },
   { key: "memory", label: "MEMORY.md", hint: "Durable facts" },
   { key: "agents", label: "AGENTS.md", hint: "Wake protocol" },
+  { key: "heartbeat", label: "HEARTBEAT.md", hint: "Standing watch" },
 ];
 
 export function IdentityView() {
@@ -80,10 +81,18 @@ export function IdentityView() {
           className="min-h-0 flex-1 font-mono text-xs leading-relaxed"
         />
         {active === "memory" ? (
-          <p className="mt-2 text-[11px] text-subtle">
-            Daily notes ({notes.length}):{" "}
-            {notes[0] ? `${notes[0].date} — ${notes[0].content}` : "none"}
-          </p>
+          <div className="mt-3 space-y-1">
+            <p className="text-[11px] font-medium tracking-wide text-muted uppercase">Daily notes</p>
+            {notes.length ? (
+              notes.slice(0, 7).map((n) => (
+                <p key={n.date} className="font-mono text-[11px] text-subtle">
+                  {n.date} — {n.content}
+                </p>
+              ))
+            ) : (
+              <p className="text-[11px] text-subtle">None yet. The agent can write_daily.</p>
+            )}
+          </div>
         ) : null}
       </section>
     </div>

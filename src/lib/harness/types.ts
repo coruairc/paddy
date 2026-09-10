@@ -17,6 +17,7 @@ export type ToolName =
   | "update_user"
   | "create_skill"
   | "patch_skill"
+  | "skill_manage"
   | "search_memory"
   | "read_workspace"
   | "list_skills"
@@ -28,7 +29,9 @@ export type ToolName =
   | "hub_search"
   | "install_skill"
   | "create_ticket"
-  | "update_ticket";
+  | "update_ticket"
+  | "write_daily"
+  | "update_heartbeat";
 
 export type TraceKind =
   | "model"
@@ -64,6 +67,7 @@ export interface WorkspaceFiles {
   user: string;
   memory: string;
   agents: string;
+  heartbeat: string;
 }
 
 export interface Skill {
@@ -142,6 +146,7 @@ export interface Wake {
   reason: string;
   note: string;
   fired: boolean;
+  notified?: boolean;
 }
 
 export interface Ticket {
@@ -161,6 +166,9 @@ export interface UsageStats {
   lastModel: string;
   lastProvider: string;
   lastAt: number | null;
+  turnsSinceMemoryWrite: number;
+  lastTurnToolCalls: number;
+  skillNudge: boolean;
 }
 
 export interface DailyNote {
@@ -198,6 +206,7 @@ export type Mutation =
   | { type: "write_memory"; text: string; kind: MemoryKind; mode: "append" | "replace" }
   | { type: "update_user"; content: string }
   | { type: "update_soul"; content: string }
+  | { type: "update_heartbeat"; content: string }
   | {
       type: "create_skill";
       name: string;
@@ -206,6 +215,7 @@ export type Mutation =
       triggers: string[];
     }
   | { type: "patch_skill"; name: string; instructions: string; reason: string }
+  | { type: "archive_skill"; name: string }
   | { type: "bump_skill"; name: string }
   | { type: "canvas"; card: Omit<CanvasCard, "id" | "at"> }
   | { type: "checkpoint"; label: string }
@@ -248,6 +258,11 @@ export interface HelixTurnInput {
   preferredModel?: string;
   keys?: Record<string, string | undefined>;
   tickets?: Pick<Ticket, "id" | "title" | "body" | "status">[];
+  dailyToday?: string;
+  otherSessions?: { id: string; title: string; preview: string }[];
+  dueWakes?: { reason: string; note: string }[];
+  nudgeMemory?: boolean;
+  nudgeSkill?: boolean;
 }
 
 export type HelixTurnResult =
@@ -273,6 +288,11 @@ export type HelixTurnResult =
         args: Record<string, string>;
         reason: string;
       };
+      pendingApprovals?: {
+        tool: ToolName;
+        args: Record<string, string>;
+        reason: string;
+      }[];
       keyPatch?: BrainKeys;
       usage?: {
         promptTokens: number;

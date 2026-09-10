@@ -25,6 +25,9 @@ test("help lists gateway, chat, models, doctor", () => {
     "paddy doctor",
     "paddy onboard",
     "paddy dashboard",
+    "paddy skills",
+    "paddy memory",
+    "paddy approve",
   ]) {
     assert.match(text, new RegExp(needle.replace(/ /g, "\\s+")));
   }

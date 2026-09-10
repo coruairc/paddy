@@ -22,6 +22,8 @@ import {
 import {
   CODEX_VERIFY_URL,
   PROVIDER_DEFS,
+  PROVIDER_GROUP_LABEL,
+  PROVIDER_GROUP_ORDER,
   XAI_VERIFY_URL,
   isAnthropicOAuth,
   maskKey,
@@ -63,7 +65,9 @@ export function ModelsView() {
   const [liveModels, setLiveModels] = useState<Partial<Record<ProviderId, ModelOption[]>>>({});
   const [listing, setListing] = useState<Partial<Record<ProviderId, boolean>>>({});
   const [listError, setListError] = useState<Partial<Record<ProviderId, string>>>({});
+  const [listSource, setListSource] = useState<Partial<Record<ProviderId, "live" | "catalog">>>({});
   const [modelFilter, setModelFilter] = useState<Partial<Record<ProviderId, string>>>({});
+  const [providerQuery, setProviderQuery] = useState("");
 
   const preferred = PROVIDER_DEFS.find((d) => d.id === preferredProvider);
   const chatgptOn = Boolean(brainKeys.codexAccess);
@@ -80,6 +84,14 @@ export function ModelsView() {
     return slotConnected(brainKeys, def.slot) || Boolean(envFlags[def.slot]);
   }
 
+  function hasLocalCreds(id: ProviderId): boolean {
+    const def = PROVIDER_DEFS.find((d) => d.id === id);
+    if (!def) return false;
+    if (def.id === "local") return Boolean(brainKeys.ollamaHost?.trim());
+    if (def.slot === "xai") return grokOn || slotConnected(brainKeys, "xai");
+    return slotConnected(brainKeys, def.slot);
+  }
+
   async function refreshCatalog(id: ProviderId, keysOverride?: BrainKeys) {
     const def = PROVIDER_DEFS.find((d) => d.id === id);
     if (!def) return;
@@ -91,15 +103,15 @@ export function ModelsView() {
       });
       const siblings = PROVIDER_DEFS.filter((d) => d.slot === def.slot).map((d) => d.id);
       if (result.ok) {
-        const catalog = def.models;
         const live = result.models;
-        const merged = [
-          ...live,
-          ...catalog.filter((c) => !live.some((m) => modelIdsMatch(m.id, c.id))),
-        ];
         setLiveModels((s) => {
           const next = { ...s };
-          for (const sid of siblings) next[sid] = merged;
+          for (const sid of siblings) next[sid] = live;
+          return next;
+        });
+        setListSource((s) => {
+          const next = { ...s };
+          for (const sid of siblings) next[sid] = result.source;
           return next;
         });
         setListError((s) => {
@@ -107,14 +119,31 @@ export function ModelsView() {
           for (const sid of siblings) delete next[sid];
           return next;
         });
+        const current = modelByProvider[id];
+        const hit = current ? live.find((m) => modelIdsMatch(m.id, current)) : undefined;
+        if (hit) {
+          if (hit.id !== current) setProviderModel(id, hit.id);
+        } else if (live[0]) {
+          setProviderModel(id, live[0].id);
+        }
       } else {
         setListError((s) => ({ ...s, [id]: result.error }));
+        setLiveModels((s) => {
+          const next = { ...s };
+          for (const sid of siblings) delete next[sid];
+          return next;
+        });
       }
     } catch (err) {
       setListError((s) => ({
         ...s,
         [id]: err instanceof Error ? err.message : "Could not list models",
       }));
+      setLiveModels((s) => {
+        const next = { ...s };
+        delete next[id];
+        return next;
+      });
     } finally {
       setListing((s) => ({ ...s, [id]: false }));
     }
@@ -123,31 +152,26 @@ export function ModelsView() {
   useEffect(() => {
     const seen = new Set<string>();
     for (const def of PROVIDER_DEFS) {
-      if (!connected(def.id) || seen.has(def.slot)) continue;
+      if (seen.has(def.slot)) continue;
       seen.add(def.slot);
-      void refreshCatalog(def.id);
+      const siblings = PROVIDER_DEFS.filter((d) => d.slot === def.slot).map((d) => d.id);
+      if (hasLocalCreds(def.id)) {
+        void refreshCatalog(def.id);
+      } else {
+        setLiveModels((s) => {
+          const next = { ...s };
+          for (const sid of siblings) delete next[sid];
+          return next;
+        });
+        setListError((s) => {
+          const next = { ...s };
+          for (const sid of siblings) delete next[sid];
+          return next;
+        });
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch when credentials change
-  }, [
-    brainKeys.xai,
-    brainKeys.xaiAccess,
-    brainKeys.openai,
-    brainKeys.codexAccess,
-    brainKeys.anthropic,
-    brainKeys.anthropicOAuth,
-    brainKeys.google,
-    brainKeys.poolside,
-    brainKeys.openrouter,
-    brainKeys.deepseek,
-    brainKeys.ollamaHost,
-    envFlags.xai,
-    envFlags.openai,
-    envFlags.anthropic,
-    envFlags.google,
-    envFlags.poolside,
-    envFlags.openrouter,
-    envFlags.deepseek,
-  ]);
+  }, [brainKeys, envFlags]);
 
   const liveLabel = useMemo(() => {
     const def = preferred ?? PROVIDER_DEFS[0];
@@ -351,9 +375,10 @@ export function ModelsView() {
           </p>
           <h1 className="mt-1 font-display text-3xl tracking-tight">Models</h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-            Sign in with SuperGrok or ChatGPT, paste a Claude setup-token, grab a free
-            Google or Poolside key, or drop in API keys. Download the kit to run the
-            same harness on your machine.
+            Sign in with SuperGrok or ChatGPT, paste a Claude token, or drop in a
+            lab key. Kimi, MiniMax, GLM and the rest list models on that
+            account after you connect. Download the kit to run the same
+            harness on your machine.
           </p>
         </header>
 
@@ -405,8 +430,30 @@ export function ModelsView() {
           </ol>
         </section>
 
-        <ul className="grid gap-3">
-          {PROVIDER_DEFS.map((def) => {
+        <Input
+          placeholder="Filter providers"
+          value={providerQuery}
+          onChange={(e) => setProviderQuery(e.target.value)}
+        />
+
+        {PROVIDER_GROUP_ORDER.map((group) => {
+          const q = providerQuery.trim().toLowerCase();
+          const items = PROVIDER_DEFS.filter((d) => d.group === group).filter((d) => {
+            if (!q) return true;
+            return (
+              d.name.toLowerCase().includes(q) ||
+              d.plan.toLowerCase().includes(q) ||
+              d.id.includes(q)
+            );
+          });
+          if (!items.length) return null;
+          return (
+            <section key={group} className="grid gap-3">
+              <h2 className="text-[11px] font-medium tracking-wide text-muted uppercase">
+                {PROVIDER_GROUP_LABEL[group]}
+              </h2>
+              <ul className="grid gap-3">
+                {items.map((def) => {
             const st = providers.find((p) => p.id === def.id);
             const status = st?.status ?? "idle";
             const isPreferred = preferredProvider === def.id;
@@ -450,10 +497,12 @@ export function ModelsView() {
                           {listing[def.id]
                             ? "Asking the provider…"
                             : liveModels[def.id]
-                              ? "On this key"
-                              : "Catalog"}
+                              ? listSource[def.id] === "catalog"
+                                ? "Catalog (could not list this key)"
+                                : "On this key"
+                              : "Models"}
                         </p>
-                        {connected(def.id) ? (
+                        {hasLocalCreds(def.id) ? (
                           <button
                             type="button"
                             className="text-[11px] text-muted hover:text-fg"
@@ -463,14 +512,20 @@ export function ModelsView() {
                           </button>
                         ) : null}
                       </div>
-                      {liveModels[def.id] ? null : (
+                      {listing[def.id] ? (
+                        <p className="mb-2 text-xs text-subtle">Listing what this account can call.</p>
+                      ) : liveModels[def.id]?.length ? null : (
                         <p className="mb-2 text-xs text-subtle">
                           {listError[def.id]
-                            ? `Could not list (${listError[def.id]}). Showing a catalog — connect a working key to see what you can actually call.`
-                            : "Connect this provider to list models on your plan. Catalog ids can 404 if your quota does not include them."}
+                            ? listError[def.id]
+                            : hasLocalCreds(def.id)
+                              ? "No chat models on this key yet."
+                              : connected(def.id)
+                                ? "Gateway env has a key. Paste it here or sign in to list models on your account."
+                                : "Paste a key or sign in — then we list what this account can actually call."}
                         </p>
                       )}
-                      {((liveModels[def.id] ?? def.models).length > 12) ? (
+                      {(liveModels[def.id]?.length ?? 0) > 12 ? (
                         <Input
                           className="mb-2"
                           placeholder="Filter models"
@@ -480,34 +535,36 @@ export function ModelsView() {
                           }
                         />
                       ) : null}
-                      <div className="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto">
-                        {(liveModels[def.id] ?? def.models)
-                          .filter((m) => {
-                            const q = (modelFilter[def.id] ?? "").trim().toLowerCase();
-                            if (!q) return true;
-                            return m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q);
-                          })
-                          .map((m) => {
-                            const selected =
-                              pickModel(def, modelByProvider[def.id], liveModels[def.id]) === m.id;
-                            return (
-                              <button
-                                key={m.id}
-                                type="button"
-                                title={m.id}
-                                onClick={() => setProviderModel(def.id, m.id)}
-                                className={cn(
-                                  "min-h-11 rounded-lg px-3 text-xs font-medium transition-colors",
-                                  selected
-                                    ? "bg-bg text-fg shadow-[var(--shadow-border)]"
-                                    : "text-muted hover:bg-bg hover:text-fg",
-                                )}
-                              >
-                                {m.name}
-                              </button>
-                            );
-                          })}
-                      </div>
+                      {liveModels[def.id]?.length ? (
+                        <div className="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto">
+                          {liveModels[def.id]!
+                            .filter((m) => {
+                              const q = (modelFilter[def.id] ?? "").trim().toLowerCase();
+                              if (!q) return true;
+                              return m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q);
+                            })
+                            .map((m) => {
+                              const selected =
+                                pickModel(def, modelByProvider[def.id], liveModels[def.id]) === m.id;
+                              return (
+                                <button
+                                  key={m.id}
+                                  type="button"
+                                  title={m.id}
+                                  onClick={() => setProviderModel(def.id, m.id)}
+                                  className={cn(
+                                    "min-h-11 rounded-lg px-3 text-xs font-medium transition-colors",
+                                    selected
+                                      ? "bg-bg text-fg shadow-[var(--shadow-border)]"
+                                      : "text-muted hover:bg-bg hover:text-fg",
+                                  )}
+                                >
+                                  {m.name}
+                                </button>
+                              );
+                            })}
+                        </div>
+                      ) : null}
                     </div>
                     {stored ? (
                       <p className="mt-1 flex items-center gap-1 font-mono text-[11px] text-subtle">
@@ -670,7 +727,10 @@ export function ModelsView() {
               </li>
             );
           })}
-        </ul>
+              </ul>
+            </section>
+          );
+        })}
       </div>
 
       <Dialog open={Boolean(deviceFlow)} onOpenChange={(open) => !open && setDeviceFlow(null)}>

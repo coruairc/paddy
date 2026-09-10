@@ -1,5 +1,6 @@
 import { runHelixTurn } from "./run-turn";
 import { WEB_SESSION_ID } from "./defaults";
+import { todayKey } from "./mutate";
 import { useHelix } from "./store";
 import type { HelixTurnInput } from "./types";
 
@@ -35,7 +36,7 @@ export async function sendTurn(text: string, channelId?: string, sessionId?: str
     content: m.content,
   }));
 
-  const transcript = thread.slice(-40).map((m) => ({
+  const transcript = ws.messages.slice(-80).map((m) => ({
     role: m.role as "user" | "assistant",
     content: m.content.slice(0, 400),
   }));
@@ -44,6 +45,10 @@ export async function sendTurn(text: string, channelId?: string, sessionId?: str
     ch !== "web"
       ? wrapUntrusted(text, channel?.name ?? ch, session?.peer ?? channel?.lastMessage?.from)
       : text;
+
+  const today = todayKey();
+  const dailyToday = (ws.dailyNotes ?? []).find((d) => d.date === today)?.content;
+  const usage = ws.usage;
 
   const payload: HelixTurnInput = {
     profileName: profile?.name ?? "Paddy Irishman",
@@ -75,6 +80,17 @@ export async function sendTurn(text: string, channelId?: string, sessionId?: str
       body: t.body,
       status: t.status,
     })),
+    dailyToday,
+    otherSessions: (ws.sessions ?? [])
+      .filter((s) => s.id !== sid)
+      .sort((a, b) => b.lastAt - a.lastAt)
+      .slice(0, 5)
+      .map((s) => ({ id: s.id, title: s.title, preview: s.preview })),
+    dueWakes: (ws.wakes ?? [])
+      .filter((w) => !w.fired && w.at <= Date.now())
+      .map((w) => ({ reason: w.reason, note: w.note })),
+    nudgeMemory: (usage?.turnsSinceMemoryWrite ?? 0) >= 6 && (usage?.turns ?? 0) > 0,
+    nudgeSkill: Boolean(usage?.skillNudge),
   };
 
   useHelix.getState().setBusy(true);
@@ -83,6 +99,7 @@ export async function sendTurn(text: string, channelId?: string, sessionId?: str
     const result = await runHelixTurn({ data: payload });
     if (result.keyPatch) useHelix.getState().applyBrainPatch(result.keyPatch);
     useHelix.getState().applyResult(text, ch, result, sid, profileId);
+    if (result.ok) useHelix.getState().runCurator();
   } catch (err) {
     const message = err instanceof Error ? err.message : "Turn failed";
     useHelix.getState().applyResult(text, ch, { ok: false, error: message }, sid, profileId);
