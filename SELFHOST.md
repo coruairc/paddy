@@ -62,6 +62,8 @@ Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model 
 | `paddy chat "…"` | One-shot turn |
 | `paddy dashboard` | Open the web console |
 | `paddy models` / `paddy models prefer <id>` | List / pick a brain |
+| `paddy skills` | List learned skills in `workspace.json` |
+| `paddy memory` | Show persisted MEMORY.md facts |
 | `paddy doctor` | Check node, kit, env, gateway |
 | `paddy onboard` | Write `~/.paddy` and `selfhost.env` |
 | `paddy agent list` | Seed mind is Paddy; extras are added in the dashboard |
@@ -97,10 +99,13 @@ Never commit keys. Never paste them into the console chat.
 - **ChatGPT Plus / Pro** — Sign in with ChatGPT (device code) in Models. Enable device-code in ChatGPT → Settings → Security. CLI uses `OPENAI_API_KEY` or `CHATGPT_ACCESS_TOKEN`.
 - **Claude Pro / Max** — paste a token from `claude setup-token`, or an API key. Anthropic does not allow third-party Claude.ai login. CLI uses `ANTHROPIC_TOKEN` / `ANTHROPIC_API_KEY`.
 - **Gemini** — free Google AI Studio key, or a Pro/Ultra key. Google does not allow third-party Gemini CLI login.
+- **Kimi / MiniMax / GLM / Qwen / Mistral / Groq / Together / Fireworks / Hugging Face** — paste the matching key in Models. Env aliases are in `selfhost.env.example`.
 - **Laguna** — free Poolside models (S or XS). Get a key at platform.poolside.ai.
-- **Ollama** — first-class on this machine. The hosted preview cannot see your localhost.
+- **Ollama** — first-class on the machine running `paddy gateway`. The hosted preview cannot see your localhost.
+- **Learning loop** — `write_memory`, `create_skill` / `patch_skill` / `skill_manage`, daily notes, HEARTBEAT.md, curator (ages + folds duplicate triggers). Skills persist in the browser workspace and in `~/.paddy/workspace.json` for the CLI.
 - **Skills hub** — local catalog, not the live ClawHub/Hermes registries.
 - **Workspace** — browser localStorage (`paddy-harness-v1`); CLI workspace is `~/.paddy/workspace.json`.
+- **Channels** — web console and CLI are live. Telegram / Slack / WhatsApp / Discord / Signal / email are idle slots. This kit does not ship those bridges. `send_channel` queues outbound for approval; it does not deliver off-box.
 
 ## Models
 

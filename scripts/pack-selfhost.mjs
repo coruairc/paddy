@@ -55,8 +55,10 @@ if (existsSync(pkgPath)) {
 }
 
 mkdirSync(join(staging, ".grok"), { recursive: true });
-const appEnv = join(root, ".grok", "app-env.json");
-if (existsSync(appEnv)) cpSync(appEnv, join(staging, ".grok", "app-env.json"));
+writeFileSync(
+  join(staging, ".grok", "app-env.json"),
+  `${JSON.stringify({ VITE_AUTH_ENABLED: "false", deploy: { database: false } }, null, 2)}\n`,
+);
 
 rmSync(zipPath, { force: true });
 execFileSync("python3", ["-c", `
