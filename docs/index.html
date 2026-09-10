@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Paddy — install</title>
+    <meta
+      name="description"
+      content="Paddy is an Irish-roots super harness. Install with curl or PowerShell."
+    />
+    <link rel="icon" href="https://raw.githubusercontent.com/coruairc/paddy/main/public/favicon.svg" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #0a0a0b;
+        --fg: #f2f1ec;
+        --muted: #8c8b86;
+        --elevated: #18181b;
+        --accent: #7d9e72;
+        --border: #2a2a30;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "IBM Plex Sans", system-ui, sans-serif;
+        line-height: 1.5;
+      }
+      main {
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 4rem 1.25rem 6rem;
+      }
+      h1 {
+        font-family: "Instrument Serif", Georgia, serif;
+        font-size: 3rem;
+        font-weight: 400;
+        letter-spacing: -0.03em;
+        margin: 0.25rem 0 0.5rem;
+      }
+      .kicker {
+        color: var(--accent);
+        font-size: 0.7rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+      p { color: var(--muted); }
+      pre {
+        background: var(--elevated);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 1rem 1.1rem;
+        overflow-x: auto;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 0.82rem;
+        color: var(--fg);
+      }
+      a { color: var(--accent); }
+      .card { margin-top: 2rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="kicker">Irish roots</p>
+      <h1>Paddy</h1>
+      <p>
+        Super harness. Gateway presence plus a closed learning loop. Install it
+        the same way as the others — one curl, or one PowerShell line.
+      </p>
+
+      <div class="card">
+        <p class="kicker">macOS · Linux · WSL</p>
+        <pre>curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash</pre>
+      </div>
+
+      <div class="card">
+        <p class="kicker">Windows</p>
+        <pre>irm https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex</pre>
+      </div>
+
+      <p>
+        Then <code>paddy gateway</code>. Source:
+        <a href="https://github.com/coruairc/paddy">github.com/coruairc/paddy</a>.
+        MIT.
+      </p>
+    </main>
+  </body>
+</html>

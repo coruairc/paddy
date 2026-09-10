@@ -1,0 +1,40 @@
+MIT License
+
+Copyright (c) 2026 Paddy
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+Paddy is original software. It is inspired by ideas from OpenClaw (MIT,
+OpenClaw Foundation) and Hermes Agent (MIT, Nous Research). No upstream
+source was copied. MIT requires retaining copyright notices only when
+substantial portions of that software are copied; that condition is not
+triggered here.
+
+Trademarks named in the product (OpenClaw, Hermes, ClawHub, SuperGrok,
+ChatGPT, Claude, Gemini, WhatsApp, Telegram, Slack, Discord, Signal,
+Guinness, Paddy Irish Whiskey, IBM Plex, and others) belong to their
+owners. They are used nominatively to describe lineage, channels, fonts,
+or subscription pairing. Paddy is not affiliated with, sponsored by, or
+endorsed by those owners.
+
+Fonts bundled via Google Fonts: IBM Plex (SIL OFL, IBM Corp., reserved
+name “Plex”) and Instrument Serif (SIL OFL, The Instrument Serif Project
+Authors).
