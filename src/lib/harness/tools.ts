@@ -114,6 +114,18 @@ export const TOOL_CATALOG: {
     parameters: { type: "object", properties: {} },
   },
   {
+    name: "use_skill",
+    description:
+      "Load a installed skill’s full playbook by name and follow it this turn. Call this when a capability matches, before improvising.",
+    parameters: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "Skill name or kebab-case id." },
+      },
+      required: ["name"],
+    },
+  },
+  {
     name: "canvas_render",
     description: "Paint structured output on the live canvas (OpenClaw presence).",
     parameters: {
@@ -214,7 +226,7 @@ export const TOOL_CATALOG: {
   {
     name: "install_skill",
     description:
-      "Copy a hub skill from the local catalog into this workspace by slug or name (e.g. clawhub/google-calendar). Not a live ClawHub download.",
+      "Copy a hub skill from the local catalog into this workspace by slug or name (e.g. meeting-actions). Instantly live. Not a live ClawHub download.",
     parameters: {
       type: "object",
       properties: {

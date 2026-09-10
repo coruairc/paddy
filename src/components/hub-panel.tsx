@@ -20,7 +20,7 @@ const TRUST: Record<HubSkill["trust"], "ok" | "accent" | "default"> = {
   community: "default",
 };
 
-export function HubPanel() {
+export function HubPanel({ onInstalled }: { onInstalled?: (name: string) => void }) {
   const skills = useHelix((s) => s.workspaces[s.activeProfileId]!.skills);
   const installHubSkill = useHelix((s) => s.installHubSkill);
   const uninstallSkill = useHelix((s) => s.uninstallSkill);
@@ -46,7 +46,11 @@ export function HubPanel() {
 
   function install(slug: string) {
     const result = installHubSkill(slug);
-    toast(result.ok ? "Installed" : "Hub", { description: result.detail });
+    toast(result.ok ? "Live on this mind" : "Hub", { description: result.detail });
+    if (result.ok) {
+      const found = HUB_SKILLS.find((s) => s.slug === slug);
+      if (found) onInstalled?.(found.name);
+    }
   }
 
   return (
@@ -57,8 +61,9 @@ export function HubPanel() {
         </p>
         <h2 className="mt-1 font-display text-2xl tracking-tight">Skills hub</h2>
         <p className="mt-2 max-w-xl text-sm text-muted">
-          Browse, then install into this profile. Inspired by ClawHub and Hermes —
-          this index lives in Paddy, not on their registries. No live download.
+          Browse, then install into this profile. Each install is a live playbook
+          on this mind — not a download from ClawHub. Talk a trigger, or Run it
+          from Installed. Import SKILL.md there to add your own.
         </p>
         <p className="mt-2 font-mono text-xs text-subtle tabular-nums">
           {HUB_SKILLS.length} indexed · {skills.filter((s) => s.origin === "hub").length} from hub

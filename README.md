@@ -42,6 +42,9 @@ paddy chat "hello"
 paddy models
 paddy models prefer laguna
 paddy skills
+paddy skills install meeting-actions
+paddy skills import ./SKILL.md
+paddy skills export standup-notes
 paddy memory
 paddy doctor
 ```

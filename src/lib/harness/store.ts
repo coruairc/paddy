@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 import { uid } from "@/lib/utils";
 import { CHANNELS, PADDY_PROFILE, POLICY, PROFILES, WEB_SESSION_ID, emptyUsage, newAgentWorkspace, seedSessions, seedWorkspaces, webSession } from "./defaults";
 import { getHubSkill } from "./hub";
-import { applyMutation, curatorPass, DEMO_SESSION_IDS, parseMemoryFile } from "./mutate";
+import { applyMutation, curatorPass, DEMO_SESSION_IDS, matchSkills, parseMemoryFile, parseSkillMd } from "./mutate";
 import { defaultBrainKeys, defaultModelByProvider, defaultProviders, keysForSlot, normalizeProviderId, PROVIDER_DEFS, slotConnected, slotForBrainKey, TOKEN_MAX, type BrainKeys, type KeySlot, type ProviderId, type ProviderState } from "./providers";
 import type {
   Channel,
@@ -11,6 +11,7 @@ import type {
   Policy,
   ProfileMeta,
   Session,
+  Skill,
   TicketStatus,
   ToolName,
   TraceEvent,
@@ -125,6 +126,20 @@ export interface HelixStore {
   resetWorkspace: () => void;
   installHubSkill: (slug: string) => { ok: boolean; detail: string };
   uninstallSkill: (name: string) => void;
+  createSkill: (input: {
+    name: string;
+    description: string;
+    instructions: string;
+    triggers: string[];
+  }) => { ok: true } | { ok: false; error: string };
+  importSkillMd: (
+    markdown: string,
+  ) => { ok: true; name: string; updated: boolean; detail: string } | { ok: false; error: string };
+  patchSkill: (
+    name: string,
+    patch: { description?: string; instructions?: string; triggers?: string[] },
+  ) => void;
+  setSkillStatus: (name: string, status: Skill["status"]) => void;
   pairProvider: (id: ProviderId) => void;
   unpairProvider: (id: ProviderId) => void;
   setPreferredProvider: (id: ProviderId) => void;
@@ -403,9 +418,14 @@ export const useHelix = create<HelixStore>()(
                   ...next.traces,
                 ].slice(0, 80),
               };
-              const lower = userText.toLowerCase();
+              const matched = matchSkills(next.skills, userText, 5);
+              const already = new Set(
+                result.mutations
+                  .filter((m): m is Extract<typeof m, { type: "bump_skill" }> => m.type === "bump_skill")
+                  .map((m) => m.name),
+              );
               next.skills = next.skills.map((s) =>
-                s.triggers.some((tr) => lower.includes(tr.toLowerCase()))
+                matched.some((m) => m.name === s.name) && !already.has(s.name)
                   ? {
                       ...s,
                       uses: s.uses + 1,
@@ -777,7 +797,7 @@ export const useHelix = create<HelixStore>()(
             }),
           ),
         });
-        return { ok: true, detail: `Installed ${found.slug}` };
+        return { ok: true, detail: `Live · say “${found.triggers[0] ?? found.name}”` };
       },
       uninstallSkill: (name) => {
         const id = get().activeProfileId;
@@ -789,6 +809,117 @@ export const useHelix = create<HelixStore>()(
               event("skill", `Uninstalled · ${name}`),
               ...ws.traces,
             ].slice(0, 80),
+          })),
+        });
+      },
+      createSkill: (input) => {
+        const name = input.name
+          .toLowerCase()
+          .replace(/[^a-z0-9-]+/g, "-")
+          .replace(/^-|-$/g, "")
+          .slice(0, 48);
+        if (!name) return { ok: false, error: "Name the skill." };
+        const id = get().activeProfileId;
+        const ws = get().workspaces[id];
+        if (ws?.skills.some((s) => s.name === name)) {
+          return { ok: false, error: `${name} is already on this mind.` };
+        }
+        set({
+          workspaces: patchWs(get().workspaces, id, (cur) =>
+            applyMutation(cur, {
+              type: "create_skill",
+              name,
+              description: input.description.trim().slice(0, 240),
+              instructions: input.instructions.trim().slice(0, 8000),
+              triggers: input.triggers.map((t) => t.trim()).filter(Boolean).slice(0, 8),
+              origin: "learned",
+              status: "active",
+            }),
+          ),
+        });
+        return { ok: true };
+      },
+      importSkillMd: (markdown) => {
+        const parsed = parseSkillMd(markdown);
+        if (!parsed.ok) return parsed;
+        const id = get().activeProfileId;
+        const ws = get().ws();
+        const exists = ws.skills.some((s) => s.name === parsed.name);
+        if (exists) {
+          set({
+            workspaces: patchWs(get().workspaces, id, (cur) => ({
+              ...cur,
+              skills: cur.skills.map((s) =>
+                s.name === parsed.name
+                  ? {
+                      ...s,
+                      description: parsed.description,
+                      instructions: parsed.instructions,
+                      triggers: parsed.triggers.length ? parsed.triggers : s.triggers,
+                      origin: s.origin === "seeded" || s.origin === "hub" ? s.origin : ("patched" as const),
+                      status: s.status === "archived" ? "active" : s.status,
+                      version: parsed.version || s.version,
+                    }
+                  : s,
+              ),
+              traces: [event("skill", `Playbook updated · ${parsed.name}`), ...cur.traces].slice(0, 80),
+            })),
+          });
+          return {
+            ok: true,
+            name: parsed.name,
+            updated: true,
+            detail: `Updated ${parsed.name}`,
+          };
+        }
+        set({
+          workspaces: patchWs(get().workspaces, id, (cur) =>
+            applyMutation(cur, {
+              type: "create_skill",
+              name: parsed.name,
+              description: parsed.description,
+              instructions: parsed.instructions,
+              triggers: parsed.triggers,
+              origin: "learned",
+              status: "active",
+              version: parsed.version || undefined,
+            }),
+          ),
+        });
+        return {
+          ok: true,
+          name: parsed.name,
+          updated: false,
+          detail: `Live · say “${parsed.triggers[0] ?? parsed.name}”`,
+        };
+      },
+      patchSkill: (name, patch) => {
+        const id = get().activeProfileId;
+        set({
+          workspaces: patchWs(get().workspaces, id, (ws) => ({
+            ...ws,
+            skills: ws.skills.map((s) =>
+              s.name === name
+                ? {
+                    ...s,
+                    description: patch.description?.trim() ? patch.description.slice(0, 240) : s.description,
+                    instructions: patch.instructions !== undefined ? patch.instructions.slice(0, 8000) : s.instructions,
+                    triggers: patch.triggers ?? s.triggers,
+                    origin: s.origin === "seeded" ? s.origin : ("patched" as const),
+                    status: s.status === "archived" ? s.status : "active",
+                  }
+                : s,
+            ),
+          })),
+        });
+      },
+      setSkillStatus: (name, status) => {
+        const id = get().activeProfileId;
+        set({
+          workspaces: patchWs(get().workspaces, id, (ws) => ({
+            ...ws,
+            skills: ws.skills.map((s) => (s.name === name ? { ...s, status } : s)),
+            traces: [event("skill", `${status} · ${name}`), ...ws.traces].slice(0, 80),
           })),
         });
       },
@@ -1027,6 +1158,7 @@ export const useHelix = create<HelixStore>()(
                 "write_daily",
                 "update_heartbeat",
                 "skill_manage",
+                "use_skill",
               ]),
             ).filter((t) => t !== "spawn_subagent" && t !== "send_channel") as ToolName[],
             requireApproval: Array.from(

@@ -26,6 +26,9 @@ test("help lists gateway, chat, models, doctor", () => {
     "paddy onboard",
     "paddy dashboard",
     "paddy skills",
+    "paddy skills install",
+    "paddy skills import",
+    "paddy skills export",
     "paddy memory",
     "paddy approve",
   ]) {
@@ -114,4 +117,43 @@ test("agent list includes paddy", () => {
   assert.equal(r.status, 0, r.stderr);
   const payload = JSON.parse(r.stdout);
   assert.equal(payload.agents[0].id, "paddy");
+});
+
+test("paddy skills install copies a hub playbook into workspace.json", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-home-"));
+  run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  const r = run(["skills", "install", "meeting-actions", "--json"], { PADDY_HOME: home });
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  const payload = JSON.parse(r.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.skill.name, "meeting-actions");
+  const ws = JSON.parse(readFileSync(join(home, "workspace.json"), "utf8"));
+  assert.equal(ws.skills[0].name, "meeting-actions");
+  assert.equal(ws.skills[0].status, "active");
+});
+
+test("paddy skills import then export round-trips SKILL.md", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-home-"));
+  run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  const file = join(home, "SKILL.md");
+  writeFileSync(
+    file,
+    `---
+name: morning-brief
+description: overnight rollup
+triggers: [morning brief]
+---
+
+canvas_render kind=markdown title="Morning brief"
+`,
+  );
+  const imported = run(["skills", "import", file, "--json"], { PADDY_HOME: home });
+  assert.equal(imported.status, 0, imported.stderr + imported.stdout);
+  const payload = JSON.parse(imported.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.skill.name, "morning-brief");
+  const exported = run(["skills", "export", "morning-brief"], { PADDY_HOME: home });
+  assert.equal(exported.status, 0, exported.stderr);
+  assert.match(exported.stdout, /name: morning-brief/);
+  assert.match(exported.stdout, /canvas_render/);
 });

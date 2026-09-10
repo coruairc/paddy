@@ -1,3 +1,4 @@
+import { kebabSkillName, parseSkillMd, toSkillMd } from "./skill-md.mjs";
 import type {
   MemoryEntry,
   MemoryKind,
@@ -9,6 +10,8 @@ import type {
   WorkspaceFiles,
   WorkspaceState,
 } from "./types";
+
+export { kebabSkillName, parseSkillMd, toSkillMd };
 
 function uid(prefix = "id"): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36).slice(-3)}`;
@@ -69,39 +72,54 @@ function event(
   };
 }
 
-export function toSkillMd(s: {
-  name: string;
-  description: string;
-  instructions: string;
-  triggers?: string[];
-  status?: string;
-}): string {
-  const triggers = (s.triggers ?? []).join(", ");
-  const desc = s.description.replace(/\n/g, " ").slice(0, 240);
-  return `---
-name: ${s.name}
-description: ${desc}
-triggers: [${triggers}]
-status: ${s.status ?? "active"}
----
-
-${s.instructions}
-`;
-}
-
 export function matchSkills<
   T extends { name: string; triggers: string[]; uses: number; status: string; instructions: string },
->(skills: T[], text: string, limit = 3): T[] {
+>(skills: T[], text: string, limit = 3, force?: string): T[] {
   const lower = text.toLowerCase();
   const live = skills.filter((s) => s.status !== "archived");
-  const hits = live.filter((s) =>
-    (s.triggers ?? []).some((t) => t && lower.includes(t.toLowerCase())),
-  );
-  if (hits.length) return hits.slice(0, limit);
-  return [...live]
-    .filter((s) => s.status === "active")
-    .sort((a, b) => b.uses - a.uses)
-    .slice(0, 2);
+  const stop = new Set([
+    "the",
+    "and",
+    "for",
+    "this",
+    "that",
+    "with",
+    "from",
+    "what",
+    "how",
+    "are",
+    "was",
+    "you",
+    "your",
+    "use",
+    "into",
+    "please",
+    "just",
+  ]);
+  const tokens = lower.split(/[^a-z0-9-]+/).filter((w) => w.length > 2 && !stop.has(w));
+  const forceKey = (force ?? "").toLowerCase().trim();
+  const scored = live
+    .map((s) => {
+      let score = 0;
+      const name = s.name.toLowerCase();
+      if (forceKey && (name === forceKey || name === forceKey.replace(/\s+/g, "-"))) score += 100;
+      if (lower.includes(name) || lower.includes(name.replace(/-/g, " "))) score += 8;
+      for (const t of s.triggers ?? []) {
+        if (!t) continue;
+        const tl = t.toLowerCase();
+        if (lower.includes(tl)) score += 10;
+        for (const w of tl.split(/[^a-z0-9-]+/)) {
+          if (w.length > 2 && !stop.has(w) && tokens.includes(w)) score += 2;
+        }
+      }
+      for (const w of name.split("-")) {
+        if (w.length > 2 && tokens.includes(w)) score += 3;
+      }
+      return { s, score };
+    })
+    .filter((x) => x.score > 0)
+    .sort((a, b) => b.score - a.score || b.s.uses - a.s.uses);
+  return scored.slice(0, limit).map((x) => x.s);
 }
 
 export function applyMutation(ws: WorkspaceState, m: Mutation): WorkspaceState {
@@ -152,12 +170,14 @@ export function applyMutation(ws: WorkspaceState, m: Mutation): WorkspaceState {
           description: m.description,
           instructions: m.instructions,
           triggers: m.triggers,
-          status: "new",
+          status: m.status ?? "new",
           uses: 0,
           lastUsedAt: null,
           createdAt: Date.now(),
-          origin: "learned",
+          origin: m.origin ?? "learned",
+          version: m.version,
         });
+        next.traces.unshift(event("skill", `Skill live · ${m.name}`));
       }
       break;
     }
@@ -323,77 +343,56 @@ export function curatorPass(
     const age = s.lastUsedAt ? now - s.lastUsedAt : now - s.createdAt;
     let status: SkillStatus = s.status;
     if (s.status === "archived") return s;
-    if (s.origin === "learned" && s.uses === 0) {
-      if (age > LEARNED_ARCH) status = "archived";
-      else if (age > LEARNED_STALE) status = "stale";
-      else status = "new";
-    } else if (age > HORIZON_ARCH) status = "archived";
-    else if (age > HORIZON_STALE) status = "stale";
-    else if (s.uses > 0) status = "active";
-    return { ...s, status };
+    if (s.origin === "learned") {
+      if (age > LEARNED_ARCH && s.uses === 0) status = "archived";
+      else if (age > LEARNED_STALE && s.uses < 2) status = "stale";
+    } else if (s.status !== "new") {
+      if (age > HORIZON_ARCH && s.uses === 0) status = "archived";
+      else if (age > HORIZON_STALE && s.uses < 3) status = "stale";
+    }
+    return status === s.status ? s : { ...s, status };
   });
 
-  let consolidated = 0;
   const live = skills.filter((s) => s.status !== "archived");
   for (let i = 0; i < live.length; i++) {
     for (let j = i + 1; j < live.length; j++) {
       const a = live[i]!;
       const b = live[j]!;
-      const shared = (a.triggers ?? []).filter((t) =>
-        (b.triggers ?? []).some((u) => u.toLowerCase() === t.toLowerCase()),
-      );
+      if (a.origin !== "learned" || b.origin !== "learned") continue;
+      const shared = a.triggers.filter((t) => b.triggers.includes(t));
       if (shared.length < 2) continue;
-      const drop = a.uses <= b.uses ? a : b;
-      const keep = drop === a ? b : a;
+      const loser = a.uses <= b.uses ? a : b;
+      const winner = loser === a ? b : a;
       skills = skills.map((s) =>
-        s.name === drop.name && s.status !== "archived"
+        s.name === loser.name
           ? {
               ...s,
               status: "archived" as const,
-              instructions: `${s.instructions}\n\nSuperseded by ${keep.name} (shared triggers: ${shared.join(", ")}).`,
+              instructions: `${s.instructions}\n\nSuperseded by ${winner.name} (shared triggers: ${shared.join(", ")}).`,
             }
           : s,
       );
-      consolidated += 1;
     }
   }
 
   let memories = [...ws.memories];
   if (memories.length > MEMORY_CAP) {
-    const overflow = memories.length - MEMORY_CAP;
     const episodes = memories.filter((m) => m.kind === "episode");
-    const dropIds = new Set(
-      [...episodes]
-        .sort((a, b) => a.at - b.at)
-        .slice(0, overflow)
-        .map((m) => m.id),
-    );
-    if (dropIds.size < overflow) {
-      for (const m of [...memories].sort((a, b) => a.at - b.at)) {
-        if (dropIds.size >= overflow) break;
-        if (m.kind === "preference" || m.kind === "lesson") continue;
-        dropIds.add(m.id);
-      }
-    }
-    memories = memories.filter((m) => !dropIds.has(m.id));
+    const keep = memories.filter((m) => m.kind !== "episode");
+    const drop = episodes.slice(0, Math.max(0, memories.length - MEMORY_CAP));
+    const dropIds = new Set(drop.map((d) => d.id));
+    memories = [...keep, ...episodes.filter((e) => !dropIds.has(e.id))].slice(-MEMORY_CAP);
   }
 
   const files = { ...ws.files, memory: rebuildMemoryFile({ memories }) };
   const archived = skills.filter((s) => s.status === "archived").length;
-  const detail = `Lifecycle ${skills.length} skills (${archived} archived${consolidated ? `, ${consolidated} folded` : ""}). Memory ${memories.length}/${MEMORY_CAP}.`;
+  const stale = skills.filter((s) => s.status === "stale").length;
+  const detail = `curator · ${stale} stale · ${archived} archived · memory ${memories.length}`;
   return { skills, memories, files, detail };
 }
 
-export function todayKey(at = Date.now()): string {
-  return new Date(at).toISOString().slice(0, 10);
+export function todayKey(d = new Date()): string {
+  return d.toISOString().slice(0, 10);
 }
 
-export const DEMO_SESSION_IDS = [
-  "whatsapp:353",
-  "telegram:ada",
-  "telegram:donal",
-  "slack:ops",
-  "slack:ciara",
-  "discord:mod",
-  "email:brief",
-];
+export const DEMO_SESSION_IDS = ["wa:ada", "tg:353", "slack:ops"];

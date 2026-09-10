@@ -281,7 +281,7 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
               status: "ok",
             });
           }
-          if (name === "create_skill" || name === "patch_skill" || name === "install_skill" || name === "skill_manage") {
+          if (name === "create_skill" || name === "patch_skill" || name === "install_skill" || name === "skill_manage" || name === "use_skill") {
             traces.push({
               kind: "skill",
               title:
@@ -289,7 +289,9 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
                   ? "Skill created from experience"
                   : name === "install_skill"
                     ? "Skill installed from hub"
-                    : "Skill patched",
+                    : name === "use_skill"
+                      ? "Skill loaded"
+                      : "Skill patched",
               detail: str(args.name) || str(args.slug),
               status: "ok",
             });
@@ -375,7 +377,7 @@ async function runTool(
           type: "create_skill",
           name: skillName,
           description: str(args.description).slice(0, 240),
-          instructions: str(args.instructions).slice(0, 4000),
+          instructions: str(args.instructions).slice(0, 8000),
           triggers,
         },
       };
@@ -388,7 +390,7 @@ async function runTool(
         mutation: {
           type: "patch_skill",
           name: found,
-          instructions: str(args.instructions).slice(0, 4000),
+          instructions: str(args.instructions).slice(0, 8000),
           reason: str(args.reason).slice(0, 400),
         },
       };
@@ -414,7 +416,7 @@ async function runTool(
           mutation: {
             type: "patch_skill",
             name: found,
-            instructions: str(args.instructions).slice(0, 4000),
+            instructions: str(args.instructions).slice(0, 8000),
             reason: str(args.reason).slice(0, 400),
           },
         };
@@ -428,7 +430,7 @@ async function runTool(
           type: "create_skill",
           name: skillName,
           description: str(args.description).slice(0, 240),
-          instructions: str(args.instructions).slice(0, 4000),
+          instructions: str(args.instructions).slice(0, 8000),
           triggers,
         },
       };
@@ -445,6 +447,16 @@ async function runTool(
         (s) => `${s.name} · ${s.status} · ${s.uses} uses — ${s.description}`,
       );
       return { result: lines.join("\n") || "No skills." };
+    }
+    case "use_skill": {
+      const found = resolveSkillName(input.skills, str(args.name));
+      if (!found) return { result: `No skill named ${str(args.name)}.` };
+      const skill = input.skills.find((s) => s.name === found);
+      if (!skill) return { result: `No skill named ${found}.` };
+      return {
+        result: toSkillMd(skill),
+        mutation: { type: "bump_skill", name: found },
+      };
     }
     case "canvas_render": {
       const kindRaw = str(args.kind, "markdown");

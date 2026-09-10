@@ -27,6 +27,7 @@ export const POLICY: Policy = {
     "search_memory",
     "read_workspace",
     "list_skills",
+    "use_skill",
     "canvas_render",
     "checkpoint",
     "schedule_wake",
@@ -115,7 +116,7 @@ function skillsHelix(): Skill[] {
       name: "standup-notes",
       description: "Turn raw bullets into a 9-line standup (yesterday / today / blockers).",
       instructions:
-        "Ask for raw notes if missing. Output three headed sections only. No preamble. Put the result on the canvas as markdown.",
+        "Ask for raw notes if missing. Three headed sections only: Yesterday / Today / Blockers. No preamble. canvas_render kind=markdown title=\"Standup\". Offer create_ticket for each blocker.",
       triggers: ["standup", "scrum", "yesterday I"],
       status: "active",
       uses: 11,
@@ -128,7 +129,7 @@ function skillsHelix(): Skill[] {
       name: "memory-hygiene",
       description: "Distill a session into durable MEMORY.md facts. Drop trivia.",
       instructions:
-        "Extract only facts, preferences, and lessons that should survive a week. write_memory with kind=fact|preference|lesson. Never store secrets.",
+        "Extract only facts, preferences, and lessons that should survive a week. write_memory with kind=fact|preference|lesson. Never store secrets. Confirm what you persisted in one line.",
       triggers: ["remember that", "from now on", "I prefer"],
       status: "active",
       uses: 7,
@@ -154,7 +155,7 @@ function skillsHelix(): Skill[] {
       name: "canvas-brief",
       description: "Put structured output on the live canvas instead of a chat wall.",
       instructions:
-        "Use canvas_render. Prefer stats for numbers, diagram for loops/architecture, markdown for briefs, timeline for sequences.",
+        "Use canvas_render. Prefer stats for numbers, diagram for loops/architecture, markdown for briefs, timeline for sequences. Do not dump the same content as a chat wall if it belongs on the canvas.",
       triggers: ["on the canvas", "diagram", "brief me"],
       status: "active",
       uses: 9,
@@ -180,7 +181,7 @@ function skillsHelix(): Skill[] {
       name: "weekly-review",
       description: "Draft a weekly review from memory + recent traces.",
       instructions:
-        "Search memory. Group into shipped / learned / stuck / next. Keep it under one page. Offer to save as a skill patch if the format works.",
+        "search_memory. Group into shipped / learned / stuck / next. canvas_render kind=markdown title=\"Week in review\". Keep it under one page. Offer write_daily. Offer to patch this skill if the format works.",
       triggers: ["weekly review", "week in review"],
       status: "new",
       uses: 0,

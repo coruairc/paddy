@@ -21,6 +21,7 @@ export type ToolName =
   | "search_memory"
   | "read_workspace"
   | "list_skills"
+  | "use_skill"
   | "canvas_render"
   | "spawn_subagent"
   | "checkpoint"
@@ -213,6 +214,9 @@ export type Mutation =
       description: string;
       instructions: string;
       triggers: string[];
+      origin?: Skill["origin"];
+      status?: SkillStatus;
+      version?: string;
     }
   | { type: "patch_skill"; name: string; instructions: string; reason: string }
   | { type: "archive_skill"; name: string }
@@ -263,6 +267,7 @@ export interface HelixTurnInput {
   dueWakes?: { reason: string; note: string }[];
   nudgeMemory?: boolean;
   nudgeSkill?: boolean;
+  forceSkill?: string;
 }
 
 export type HelixTurnResult =

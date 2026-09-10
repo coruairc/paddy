@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyMutation, curatorPass, matchSkills, parseMemoryFile, toSkillMd } from "./mutate.ts";
+import { applyMutation, curatorPass, matchSkills, parseMemoryFile, parseSkillMd, toSkillMd } from "./mutate.ts";
 import type { Skill, WorkspaceState } from "./types.ts";
 
 function emptyWs(over: Partial<WorkspaceState> = {}): WorkspaceState {
@@ -105,12 +105,87 @@ test("toSkillMd emits YAML frontmatter", () => {
   assert.match(md, /Ask for notes/);
 });
 
+test("parseSkillMd reads OpenClaw frontmatter", () => {
+  const parsed = parseSkillMd(`---
+name: Morning Brief
+description: Compress overnight notes.
+triggers:
+  - morning brief
+  - overnight
+version: 1.0.0
+---
+
+1. search_memory
+2. canvas_render kind=markdown
+`);
+  assert.equal(parsed.ok, true);
+  if (!parsed.ok) return;
+  assert.equal(parsed.name, "morning-brief");
+  assert.equal(parsed.description, "Compress overnight notes.");
+  assert.deepEqual(parsed.triggers, ["morning brief", "overnight"]);
+  assert.match(parsed.instructions, /canvas_render/);
+  assert.equal(parsed.version, "1.0.0");
+});
+
+test("parseSkillMd round-trips toSkillMd", () => {
+  const md = toSkillMd({
+    name: "ticket-cut",
+    description: "cut work",
+    instructions: "create_ticket for each slice.",
+    triggers: ["cut tickets"],
+    status: "active",
+  });
+  const parsed = parseSkillMd(md);
+  assert.equal(parsed.ok, true);
+  if (!parsed.ok) return;
+  assert.equal(parsed.name, "ticket-cut");
+  assert.equal(parsed.instructions, "create_ticket for each slice.");
+  assert.deepEqual(parsed.triggers, ["cut tickets"]);
+});
+
+test("parseSkillMd uses heading when frontmatter is missing", () => {
+  const parsed = parseSkillMd("# Decision log\n\nwrite_memory kind=lesson\n");
+  assert.equal(parsed.ok, true);
+  if (!parsed.ok) return;
+  assert.equal(parsed.name, "decision-log");
+  assert.match(parsed.instructions, /write_memory/);
+});
+
+test("create_skill can land active", () => {
+  const ws = applyMutation(emptyWs(), {
+    type: "create_skill",
+    name: "morning-brief",
+    description: "brief",
+    instructions: "canvas_render",
+    triggers: ["morning brief"],
+    status: "active",
+    origin: "learned",
+  });
+  assert.equal(ws.skills[0]?.status, "active");
+  assert.equal(ws.skills[0]?.name, "morning-brief");
+});
+
 test("matchSkills prefers trigger hits over popularity", () => {
   const skills = [
     skill("canvas-brief", { uses: 99, status: "active", triggers: ["diagram"] }),
     skill("standup-notes", { uses: 1, status: "active", triggers: ["standup", "scrum"] }),
   ];
   const hits = matchSkills(skills, "please turn this into a standup");
+  assert.equal(hits[0]?.name, "standup-notes");
+});
+
+test("matchSkills returns empty when nothing matches", () => {
+  const skills = [skill("canvas-brief", { uses: 99, status: "active", triggers: ["diagram"] })];
+  const hits = matchSkills(skills, "what is the weather in cork");
+  assert.equal(hits.length, 0);
+});
+
+test("matchSkills pins a forced skill", () => {
+  const skills = [
+    skill("canvas-brief", { uses: 99, status: "active", triggers: ["diagram"] }),
+    skill("standup-notes", { uses: 1, status: "active", triggers: ["standup"] }),
+  ];
+  const hits = matchSkills(skills, "hello", 3, "standup-notes");
   assert.equal(hits[0]?.name, "standup-notes");
 });
 

@@ -27,6 +27,8 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
+import { HUB_SKILLS } from "../src/lib/harness/hub-catalog.mjs";
+import { parseSkillMd, toSkillMd } from "../src/lib/harness/skill-md.mjs";
 
 export const VERSION = "0.1.0";
 const DEFAULT_PORT = 8080;
@@ -115,6 +117,9 @@ Talk
   paddy models               List brains the gateway can see
   paddy models prefer <id>   Remember a preferred brain
   paddy skills               List skills in ~/.paddy/workspace.json
+  paddy skills install <id>  Copy a hub playbook onto this mind
+  paddy skills import [file] Add a SKILL.md (stdin if omitted or -)
+  paddy skills export <name> Print a skill as SKILL.md
   paddy memory               Show MEMORY.md facts
   paddy approve allow|deny   Allow or deny the last held tool
   paddy agent list           List minds
@@ -870,15 +875,133 @@ function cmdAgent(rest, flags) {
   out(flags, { ok: true, agents: [{ id: "paddy", name: "Paddy Irishman" }] }, "  paddy    Paddy Irishman    (seed mind — extra agents live in the dashboard on this machine)");
 }
 
-function cmdSkills(flags) {
+function cmdSkills(rest, flags) {
+  const sub = (rest[0] || "list").toLowerCase();
   const ws = loadWorkspace();
-  const skills = ws.skills ?? [];
-  if (!skills.length) {
-    out(flags, { ok: true, skills: [] }, "No skills in ~/.paddy/workspace.json yet. Chat will seed the defaults, then persist what you learn.");
+  const skills = [...(ws.skills ?? [])];
+
+  if (sub === "list") {
+    if (!skills.length) {
+      out(flags, { ok: true, skills: [] }, "No skills in ~/.paddy/workspace.json yet. Install from the hub, import a SKILL.md, or chat — then they persist.");
+      return;
+    }
+    const lines = skills.map((s) => `  ${(s.status || "active").padEnd(8)} ${s.name} — ${s.description || ""}`);
+    out(flags, { ok: true, skills }, lines.join("\n"));
     return;
   }
-  const lines = skills.map((s) => `  ${(s.status || "active").padEnd(8)} ${s.name} — ${s.description || ""}`);
-  out(flags, { ok: true, skills }, lines.join("\n"));
+
+  if (sub === "install") {
+    const q = rest.slice(1).join(" ").trim().toLowerCase();
+    if (!q) {
+      fail(flags, "Usage: paddy skills install <slug-or-name>", 2);
+      return;
+    }
+    const found = HUB_SKILLS.find(
+      (s) => s.slug.toLowerCase() === q || s.name.toLowerCase() === q || s.slug.toLowerCase().endsWith(`/${q}`),
+    );
+    if (!found) {
+      const names = HUB_SKILLS.map((s) => s.name).join(", ");
+      fail(flags, `Unknown hub skill “${q}”. Bundled: ${names}`);
+      return;
+    }
+    if (skills.some((s) => s.name === found.name)) {
+      fail(flags, `${found.name} is already installed.`);
+      return;
+    }
+    const next = {
+      name: found.name,
+      description: found.description,
+      instructions: found.instructions,
+      triggers: found.triggers ?? [],
+      status: "active",
+      uses: 0,
+      origin: "hub",
+      slug: found.slug,
+      registry: found.registry,
+      version: found.version,
+    };
+    ws.skills = [next, ...skills];
+    saveWorkspace(ws);
+    out(
+      flags,
+      { ok: true, skill: next },
+      `Live · ${found.name}\n  say “${found.triggers?.[0] ?? found.name}” — or paddy chat "Use the ${found.name} skill."`,
+    );
+    return;
+  }
+
+  if (sub === "import") {
+    const file = rest[1];
+    let text = "";
+    try {
+      if (!file || file === "-") {
+        text = readFileSync(0, "utf8");
+      } else {
+        text = readFileSync(resolve(file), "utf8");
+      }
+    } catch (err) {
+      fail(flags, err instanceof Error ? err.message : "Could not read SKILL.md");
+      return;
+    }
+    const parsed = parseSkillMd(text);
+    if (!parsed.ok) {
+      fail(flags, parsed.error);
+      return;
+    }
+    const idx = skills.findIndex((s) => s.name === parsed.name);
+    if (idx >= 0) {
+      const prev = skills[idx];
+      skills[idx] = {
+        ...prev,
+        description: parsed.description,
+        instructions: parsed.instructions,
+        triggers: parsed.triggers.length ? parsed.triggers : prev.triggers,
+        status: prev.status === "archived" ? "active" : prev.status || "active",
+        version: parsed.version || prev.version,
+      };
+      ws.skills = skills;
+      saveWorkspace(ws);
+      out(flags, { ok: true, updated: true, name: parsed.name }, `Updated ${parsed.name}`);
+      return;
+    }
+    const created = {
+      name: parsed.name,
+      description: parsed.description,
+      instructions: parsed.instructions,
+      triggers: parsed.triggers,
+      status: "active",
+      uses: 0,
+      origin: "learned",
+      version: parsed.version || undefined,
+    };
+    ws.skills = [created, ...skills];
+    saveWorkspace(ws);
+    out(
+      flags,
+      { ok: true, updated: false, skill: created },
+      `Live · ${parsed.name}${parsed.triggers[0] ? `\n  say “${parsed.triggers[0]}”` : ""}`,
+    );
+    return;
+  }
+
+  if (sub === "export") {
+    const name = (rest[1] || "").toLowerCase();
+    if (!name) {
+      fail(flags, "Usage: paddy skills export <name>", 2);
+      return;
+    }
+    const hit = skills.find((s) => String(s.name || "").toLowerCase() === name);
+    if (!hit) {
+      fail(flags, `No skill named ${name}.`);
+      return;
+    }
+    const md = toSkillMd(hit);
+    if (flags.json) out(flags, { ok: true, name: hit.name, markdown: md }, md);
+    else process.stdout.write(md.endsWith("\n") ? md : `${md}\n`);
+    return;
+  }
+
+  fail(flags, "Usage: paddy skills [list|install <id>|import [file]|export <name>]", 2);
 }
 
 function cmdMemory(flags) {
@@ -996,7 +1119,7 @@ export async function main(argv = process.argv.slice(2)) {
         break;
       case "skills":
       case "skill":
-        cmdSkills(flags);
+        cmdSkills(rest.slice(1), flags);
         break;
       case "memory":
       case "memories":

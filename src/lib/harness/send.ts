@@ -11,7 +11,12 @@ ${text}
 </EXTERNAL_UNTRUSTED_CONTENT>`;
 }
 
-export async function sendTurn(text: string, channelId?: string, sessionId?: string) {
+export async function sendTurn(
+  text: string,
+  channelId?: string,
+  sessionId?: string,
+  opts?: { skill?: string },
+) {
   const state = useHelix.getState();
   const profileId = state.activeProfileId;
   const profile = state.profiles.find((p) => p.id === profileId);
@@ -91,6 +96,7 @@ export async function sendTurn(text: string, channelId?: string, sessionId?: str
       .map((w) => ({ reason: w.reason, note: w.note })),
     nudgeMemory: (usage?.turnsSinceMemoryWrite ?? 0) >= 6 && (usage?.turns ?? 0) > 0,
     nudgeSkill: Boolean(usage?.skillNudge),
+    forceSkill: opts?.skill,
   };
 
   useHelix.getState().setBusy(true);

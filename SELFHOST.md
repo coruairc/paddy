@@ -62,7 +62,10 @@ Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model 
 | `paddy chat "…"` | One-shot turn |
 | `paddy dashboard` | Open the web console |
 | `paddy models` / `paddy models prefer <id>` | List / pick a brain |
-| `paddy skills` | List learned skills in `workspace.json` |
+| `paddy skills` | List skills in `workspace.json` |
+| `paddy skills install <id>` | Copy a bundled hub playbook onto this mind |
+| `paddy skills import [file]` | Add a SKILL.md (OpenClaw / agentskills.io). Stdin if omitted |
+| `paddy skills export <name>` | Print a skill as SKILL.md |
 | `paddy memory` | Show persisted MEMORY.md facts |
 | `paddy approve allow` / `deny` | Allow or deny a gated tool the last chat held |
 | `paddy doctor` | Check node, kit, env, gateway |
