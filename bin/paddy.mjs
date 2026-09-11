@@ -85,6 +85,7 @@ export function parseArgv(argv) {
     help: false,
     version: false,
     yes: false,
+    check: false,
     prefer: undefined,
     token: undefined,
     appToken: undefined,
@@ -107,6 +108,7 @@ export function parseArgv(argv) {
     else if (a === "--version" || a === "-V") flags.version = true;
     else if (a === "--json") flags.json = true;
     else if (a === "--yes" || a === "-y") flags.yes = true;
+    else if (a === "--check") flags.check = true;
     else if (a === "--port") flags.port = Number(argv[++i]);
     else if (a?.startsWith("--port=")) flags.port = Number(a.slice(7));
     else if (a === "--host") flags.host = argv[++i];
@@ -192,6 +194,8 @@ Setup
   paddy onboard              Alias for paddy config
   paddy doctor               Check the install
   paddy status               Alias for gateway status
+  paddy update               Pull the latest release and reinstall
+  paddy update --check       Check for an update without applying it
 
 Flags
   --port <n>     Gateway port (default ${DEFAULT_PORT})
@@ -251,6 +255,7 @@ export function loadConfig() {
     ),
     preferredModel: typeof config.brain?.model === "string" ? config.brain.model : undefined,
     root: typeof config.kit?.root === "string" && config.kit.root ? config.kit.root : kitRoot(),
+    ref: typeof config.kit?.ref === "string" && config.kit.ref ? config.kit.ref : undefined,
   };
 }
 
@@ -264,6 +269,10 @@ export function saveConfig(patch) {
     else delete config.brain.model;
   }
   if (patch.root) config.kit.root = patch.root;
+  if (patch.ref) {
+    config.kit = config.kit || {};
+    config.kit.ref = patch.ref;
+  }
   let token = patch.token;
   if (!token) token = loadConfig().token;
   if (!token || token.length < 16) token = randomBytes(24).toString("hex");
@@ -401,6 +410,158 @@ export async function fetchCli(cfg, flags, { method = "GET", body } = {}) {
     return { status: res.status, data };
   } finally {
     clearTimeout(t);
+  }
+}
+
+function spawnCaptured(command, args, opts = {}) {
+  const timeoutMs = opts.timeoutMs ?? 30_000;
+  return new Promise((resolve) => {
+    let stdout = "";
+    let stderr = "";
+    let timedOut = false;
+    const child = spawn(command, args, {
+      cwd: opts.cwd,
+      env: opts.env || process.env,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    child.stdout.on("data", (b) => {
+      stdout += b;
+    });
+    child.stderr.on("data", (b) => {
+      stderr += b;
+    });
+    const timer = setTimeout(() => {
+      timedOut = true;
+      try {
+        child.kill("SIGTERM");
+      } catch {
+        /* gone */
+      }
+      setTimeout(() => {
+        try {
+          child.kill("SIGKILL");
+        } catch {
+          /* gone */
+        }
+      }, 1500);
+    }, timeoutMs);
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      resolve({ code: 1, stdout, stderr: err.message, timedOut: false });
+    });
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      resolve({
+        code: code ?? 1,
+        stdout,
+        stderr: timedOut ? `${stderr}\ntimed out after ${timeoutMs}ms`.trim() : stderr,
+        timedOut,
+      });
+    });
+  });
+}
+
+function sanitizeGitRef(raw) {
+  const s = String(raw || "").trim();
+  if (!s || s === "HEAD") return "";
+  if (s.startsWith("-")) return "";
+  if (!/^[A-Za-z0-9._/-]+$/.test(s)) return "";
+  return s.replace(/^origin\//, "").replace(/^tags\//, "");
+}
+
+async function gitStdout(root, args, timeoutMs = 15_000) {
+  const r = await spawnCaptured("git", args, { cwd: root, timeoutMs });
+  if (r.code !== 0) return "";
+  return r.stdout.trim();
+}
+
+async function detectGitRef(root) {
+  const branch = sanitizeGitRef(await gitStdout(root, ["rev-parse", "--abbrev-ref", "HEAD"]));
+  if (branch) return branch;
+  const tag = sanitizeGitRef(await gitStdout(root, ["describe", "--tags", "--exact-match"]));
+  if (tag) return tag;
+  const upstream = sanitizeGitRef(await gitStdout(root, ["rev-parse", "--abbrev-ref", "@{upstream}"]));
+  if (upstream) return upstream;
+  const originHead = sanitizeGitRef(
+    await gitStdout(root, ["symbolic-ref", "--short", "refs/remotes/origin/HEAD"]),
+  );
+  if (originHead) return originHead;
+  return "main";
+}
+
+async function resolveUpdateRef(root) {
+  try {
+    const stored = sanitizeGitRef(loadConfig().ref);
+    if (stored) return stored;
+  } catch {
+    /* no config yet */
+  }
+  return detectGitRef(root);
+}
+
+const NOT_A_GIT_CHECKOUT =
+  "paddy update: this install isn't a git checkout (zip kit or vendored). Re-download the kit to update.";
+
+export async function checkForUpdate(kitRootPath) {
+  const root = kitRootPath || kitRoot();
+  if (!existsSync(join(root, ".git"))) {
+    return { ok: false, git: false, error: NOT_A_GIT_CHECKOUT };
+  }
+  const ref = await resolveUpdateRef(root);
+  const fetched = await spawnCaptured("git", ["fetch", "--depth", "1", "origin", ref], {
+    cwd: root,
+    timeoutMs: 20_000,
+  });
+  if (fetched.code !== 0) {
+    const detail = (fetched.stderr || fetched.stdout).trim() || `exit ${fetched.code}`;
+    return {
+      ok: false,
+      git: true,
+      ref,
+      error: fetched.timedOut ? `git fetch timed out (${ref})` : `git fetch failed: ${detail}`,
+    };
+  }
+  const headOut = await spawnCaptured("git", ["rev-parse", "HEAD"], { cwd: root, timeoutMs: 10_000 });
+  const fetchHeadOut = await spawnCaptured("git", ["rev-parse", "FETCH_HEAD"], {
+    cwd: root,
+    timeoutMs: 10_000,
+  });
+  const current = headOut.stdout.trim();
+  const latest = fetchHeadOut.stdout.trim();
+  if (headOut.code !== 0 || !/^[0-9a-f]{7,40}$/i.test(current)) {
+    return {
+      ok: false,
+      git: true,
+      ref,
+      error: `could not read HEAD: ${(headOut.stderr || headOut.stdout).trim() || "unknown"}`,
+    };
+  }
+  if (fetchHeadOut.code !== 0 || !/^[0-9a-f]{7,40}$/i.test(latest)) {
+    return {
+      ok: false,
+      git: true,
+      ref,
+      error: `could not read FETCH_HEAD: ${(fetchHeadOut.stderr || fetchHeadOut.stdout).trim() || "unknown"}`,
+    };
+  }
+  const upToDate = current === latest;
+  return {
+    ok: true,
+    git: true,
+    upToDate,
+    ref,
+    current,
+    latest,
+    shortCurrent: current.slice(0, 7),
+    shortLatest: latest.slice(0, 7),
+  };
+}
+
+function updateRoot() {
+  try {
+    return loadConfig().root || kitRoot();
+  } catch {
+    return kitRoot();
   }
 }
 
@@ -759,9 +920,147 @@ async function cmdDoctor(flags) {
     }
   }
 
-  const ok = checks.every((c) => c.ok || c.name === "selfhost.env" || c.name === "brains" || c.name === "gateway");
+  try {
+    const update = await checkForUpdate(updateRoot());
+    if (!update.git) {
+      add("update", false, "zip kit — re-download to update");
+    } else if (!update.ok) {
+      add("update", false, update.error);
+    } else if (update.upToDate) {
+      add("update", true, `up to date (${update.shortCurrent})`);
+    } else {
+      add("update", false, "update available (run paddy update)");
+    }
+  } catch (err) {
+    add("update", false, err instanceof Error ? err.message : "update check failed");
+  }
+
+  const ok = checks.every(
+    (c) =>
+      c.ok ||
+      c.name === "selfhost.env" ||
+      c.name === "brains" ||
+      c.name === "gateway" ||
+      c.name === "update",
+  );
   const lines = checks.map((c) => `  ${c.ok ? "ok  " : "warn"}  ${c.name.padEnd(14)} ${c.detail}`);
   out(flags, { ok, origin, checks }, `Paddy doctor\n${lines.join("\n")}`);
+}
+
+async function cmdUpdate(flags) {
+  const root = updateRoot();
+  const check = await checkForUpdate(root);
+  if (!check.ok) {
+    fail(flags, check.error);
+    return;
+  }
+
+  if (flags.check) {
+    out(
+      flags,
+      {
+        ok: true,
+        check: true,
+        upToDate: check.upToDate,
+        git: true,
+        ref: check.ref,
+        current: check.current,
+        latest: check.latest,
+      },
+      check.upToDate
+        ? `Already up to date (${check.shortCurrent}).`
+        : `Update available: ${check.shortCurrent} → ${check.shortLatest} (run paddy update)`,
+    );
+    return;
+  }
+
+  if (check.upToDate) {
+    out(
+      flags,
+      {
+        ok: true,
+        upToDate: true,
+        git: true,
+        ref: check.ref,
+        current: check.current,
+        latest: check.latest,
+      },
+      `Already up to date (${check.shortCurrent}).`,
+    );
+    return;
+  }
+
+  const rec = readPid();
+  const running = Boolean(rec && alive(rec.pid));
+  if (running) {
+    process.stderr.write("paddy: gateway is running and will restart after the update.\n");
+  }
+  if (running && !flags.yes && stdinStream.isTTY && stdoutStream.isTTY) {
+    const rl = createInterface({ input: stdinStream, output: stdoutStream });
+    let answer = "";
+    try {
+      answer = (await rl.question("Continue? [y/N] ")).trim();
+    } finally {
+      rl.close();
+    }
+    if (!/^y(es)?$/i.test(answer)) {
+      out(flags, { ok: false, cancelled: true }, "Update cancelled.");
+      return;
+    }
+  }
+
+  const checkout = await spawnCaptured("git", ["checkout", "-q", "FETCH_HEAD"], {
+    cwd: root,
+    timeoutMs: 20_000,
+  });
+  if (checkout.code !== 0) {
+    fail(
+      flags,
+      `git checkout failed: ${(checkout.stderr || checkout.stdout).trim() || `exit ${checkout.code}`}`,
+    );
+    return;
+  }
+
+  const npm = await spawnCaptured("npm", ["install", "--no-fund", "--no-audit"], {
+    cwd: root,
+    timeoutMs: 180_000,
+  });
+  if (npm.code !== 0) {
+    fail(
+      flags,
+      `npm install failed: ${(npm.stderr || npm.stdout).trim().slice(0, 800) || `exit ${npm.code}`}`,
+    );
+    return;
+  }
+
+  try {
+    saveConfig({ ref: check.ref, root });
+  } catch {
+    /* pin is best-effort */
+  }
+
+  let restarted = false;
+  if (running) {
+    // Memory lives in PGLite/Postgres on disk (not in-process), so a gateway
+    // stop/start during update does not wipe workspace state.
+    await cmdGateway("stop", flags);
+    await cmdGateway("start", flags);
+    restarted = true;
+  }
+
+  out(
+    flags,
+    {
+      ok: true,
+      upToDate: false,
+      git: true,
+      ref: check.ref,
+      previous: check.current,
+      current: check.latest,
+      restarted,
+    },
+    `Updated ${check.shortCurrent} → ${check.shortLatest}.${restarted ? " Gateway restarted." : ""}\nIf anything looks off: paddy doctor`,
+  );
 }
 
 async function cmdModels(rest, flags) {
@@ -1436,6 +1735,9 @@ export async function main(argv = process.argv.slice(2)) {
         break;
       case "doctor":
         await cmdDoctor(flags);
+        break;
+      case "update":
+        await cmdUpdate(flags);
         break;
       case "models":
       case "model":

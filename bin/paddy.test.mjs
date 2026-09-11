@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync } from 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { helpText, parseArgv, loadDotEnv, kitRoot, VERSION } from "./paddy.mjs";
+import { helpText, parseArgv, loadDotEnv, kitRoot, VERSION, checkForUpdate } from "./paddy.mjs";
 import { loadResolvedAccounts } from "../src/lib/harness/config.mjs";
 
 const bin = join(kitRoot(), "bin/paddy.mjs");
@@ -24,6 +24,8 @@ test("help lists gateway, chat, models, doctor", () => {
     "paddy chat",
     "paddy models",
     "paddy doctor",
+    "paddy update",
+    "paddy update --check",
     "paddy config",
     "paddy config show",
     "paddy config validate",
@@ -82,6 +84,7 @@ test("paddy --help exits 0 and mentions gateway", () => {
   const r = run(["--help"]);
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /paddy gateway/);
+  assert.match(r.stdout, /paddy update/);
 });
 
 test("paddy --version prints semver", () => {
@@ -123,6 +126,7 @@ test("doctor --json reports kit and home", () => {
   assert.ok(names.includes("node"));
   assert.ok(names.includes("kit"));
   assert.ok(names.includes("home"));
+  assert.ok(names.includes("update"));
 });
 
 test("agent list includes paddy", () => {
@@ -294,4 +298,106 @@ test("paddy channels export does not change canonical config", () => {
   assert.equal(readFileSync(join(home, "config.json"), "utf8"), before);
   assert.match(readFileSync(join(root, ".openclaw", "openclaw.json"), "utf8"), /exp:tok/);
   assert.match(readFileSync(join(root, ".hermes", ".env"), "utf8"), /TELEGRAM_BOT_TOKEN=exp:tok/);
+});
+
+function git(cwd, args) {
+  const r = spawnSync("git", args, {
+    cwd,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      GIT_AUTHOR_NAME: "Paddy Test",
+      GIT_AUTHOR_EMAIL: "paddy@test",
+      GIT_COMMITTER_NAME: "Paddy Test",
+      GIT_COMMITTER_EMAIL: "paddy@test",
+    },
+  });
+  if (r.status !== 0) {
+    throw new Error(`git ${args.join(" ")}: ${r.stderr || r.stdout}`);
+  }
+  return r;
+}
+
+function pointKit(home, kit) {
+  const path = join(home, "config.json");
+  const cfg = JSON.parse(readFileSync(path, "utf8"));
+  cfg.kit = { ...(cfg.kit || {}), root: kit };
+  writeFileSync(path, `${JSON.stringify(cfg, null, 2)}\n`);
+}
+
+function seedBareOrigin() {
+  const origin = mkdtempSync(join(tmpdir(), "paddy-origin-"));
+  git(origin, ["init", "--bare"]);
+  git(origin, ["symbolic-ref", "HEAD", "refs/heads/main"]);
+  const seed = mkdtempSync(join(tmpdir(), "paddy-seed-"));
+  git(seed, ["init"]);
+  writeFileSync(join(seed, "README"), "paddy\n");
+  git(seed, ["add", "."]);
+  git(seed, ["commit", "-m", "init"]);
+  git(seed, ["branch", "-M", "main"]);
+  git(seed, ["remote", "add", "origin", origin]);
+  git(seed, ["push", "-u", "origin", "main"]);
+  return origin;
+}
+
+test("paddy update --check --json fails clearly on a zip-kit (no .git)", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-upd-zip-"));
+  const kit = mkdtempSync(join(tmpdir(), "paddy-zipkit-"));
+  writeFileSync(join(kit, "README"), "vendored\n");
+  run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  pointKit(home, kit);
+  const r = run(["update", "--check", "--json"], { PADDY_HOME: home });
+  assert.notEqual(r.status, 0, r.stdout + r.stderr);
+  const payload = JSON.parse(r.stdout);
+  assert.equal(payload.ok, false);
+  assert.match(payload.error, /isn't a git checkout/);
+  assert.doesNotMatch(r.stderr + r.stdout, /Error: /);
+});
+
+test("paddy update --check --json reports a git fetch error instead of crashing", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-upd-noremote-"));
+  const kit = mkdtempSync(join(tmpdir(), "paddy-noremote-"));
+  git(kit, ["init"]);
+  writeFileSync(join(kit, "README"), "solo\n");
+  git(kit, ["add", "."]);
+  git(kit, ["commit", "-m", "init"]);
+  run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  pointKit(home, kit);
+  const r = run(["update", "--check", "--json"], { PADDY_HOME: home });
+  assert.notEqual(r.status, 0, r.stdout + r.stderr);
+  const payload = JSON.parse(r.stdout);
+  assert.equal(payload.ok, false);
+  assert.match(payload.error, /git fetch failed/i);
+  assert.doesNotMatch(r.stderr, /ERR_UNHANDLED|throw /);
+});
+
+test("checkForUpdate returns upToDate when HEAD matches FETCH_HEAD", async () => {
+  const origin = seedBareOrigin();
+  const kit = mkdtempSync(join(tmpdir(), "paddy-current-"));
+  const cloned = spawnSync("git", ["clone", "--branch", "main", origin, kit], { encoding: "utf8" });
+  assert.equal(cloned.status, 0, cloned.stderr);
+  const result = await checkForUpdate(kit);
+  assert.equal(result.ok, true, result.error);
+  assert.equal(result.upToDate, true);
+  assert.equal(result.git, true);
+  assert.equal(result.current, result.latest);
+  assert.match(result.shortCurrent, /^[0-9a-f]{7}$/);
+});
+
+test("paddy update --json on a current checkout does not run npm install", () => {
+  const origin = seedBareOrigin();
+  const kit = mkdtempSync(join(tmpdir(), "paddy-fresh-"));
+  const cloned = spawnSync("git", ["clone", "--branch", "main", origin, kit], { encoding: "utf8" });
+  assert.equal(cloned.status, 0, cloned.stderr);
+  const home = mkdtempSync(join(tmpdir(), "paddy-upd-fresh-"));
+  run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  pointKit(home, kit);
+  const r = run(["update", "--json"], { PADDY_HOME: home });
+  assert.equal(r.status ?? 0, 0, r.stderr + r.stdout);
+  const payload = JSON.parse(r.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.upToDate, true);
+  assert.match(r.stdout, /Already up to date|upToDate/);
+  assert.equal(existsSync(join(kit, "node_modules")), false);
+  assert.equal(existsSync(join(kit, "package.json")), false);
 });
