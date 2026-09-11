@@ -115,6 +115,19 @@ export interface HelixStore {
   admitChannel: (channelId: string) => string | null;
   approvePair: (channelId: string) => void;
   denyPair: (channelId: string) => void;
+  mergeLiveChannels: (
+    rows: Array<{
+      id: string;
+      status?: Channel["status"];
+      configured?: boolean;
+      error?: string;
+      label?: string;
+      lastAt?: number;
+      lastMessage?: { from: string; text: string };
+      pending?: number;
+    }>,
+    pending?: Array<{ channelId: string; from: string; text: string; code: string; at: number }>,
+  ) => void;
   firePulse: () => { woke: boolean; detail: string; fresh: boolean };
   admitWake: (id: string) => string | null;
   runCurator: () => void;
@@ -575,6 +588,37 @@ export const useHelix = create<HelixStore>()(
               ? { ...c, pendingPair: undefined, unread: 0, lastMessage: undefined }
               : c,
           ),
+        });
+      },
+      mergeLiveChannels: (rows, pending) => {
+        set({
+          channels: get().channels.map((c) => {
+            const row = rows.find((r) => r.id === c.id);
+            if (!row) return c;
+            const pair = pending?.find((p) => p.channelId === c.id);
+            const raw = String(row.status || "");
+            const status: Channel["status"] =
+              raw === "connected" || raw === "idle" || raw === "pairing" || raw === "offline"
+                ? raw
+                : raw === "error"
+                  ? "offline"
+                  : c.status;
+            return {
+              ...c,
+              status: pair ? "pairing" : status,
+              configured: row.configured,
+              error: row.error,
+              label: row.label,
+              lastMessage: row.lastMessage
+                ? { from: row.lastMessage.from, text: row.lastMessage.text, at: row.lastAt ?? Date.now() }
+                : c.lastMessage,
+              pendingPair: pair
+                ? { from: pair.from, text: pair.text, code: pair.code, at: pair.at }
+                : status === "pairing"
+                  ? c.pendingPair
+                  : undefined,
+            };
+          }),
         });
       },
       firePulse: () => {

@@ -114,8 +114,9 @@ export function ObservatoryView() {
           <p className="mt-3 text-sm leading-relaxed text-muted">
             SuperGrok, ChatGPT, Claude, Gemini, Kimi, MiniMax, GLM, OpenRouter, DeepSeek,
             and Ollama name brains we pair with. WhatsApp, Telegram, Slack, Discord, and
-            Signal are idle channel slots in this kit — no live bridges ship here.
-            Keys you paste stay in this browser and are sent only to
+            Signal connect through the same gateway — BotFather / Discord tokens, OpenClaw
+            pairing codes, Hermes allow-lists. Import ~/.openclaw or ~/.hermes so you do
+            not paste twice. Keys you paste stay in this browser and are sent only to
             that provider on each turn. Guinness, the harp device, and Paddy Irish Whiskey are
             unrelated marks — the mascot is an original cartoon, not a
             drinks brand. Fonts: IBM Plex and Instrument Serif (SIL OFL).

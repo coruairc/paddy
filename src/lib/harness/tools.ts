@@ -200,7 +200,7 @@ export const TOOL_CATALOG: {
   {
     name: "send_channel",
     description:
-      "Queue an outbound on a gateway channel. Requires approval. This kit does not deliver to live Telegram/Slack/WhatsApp — it records the outbound until a bridge is configured.",
+      "Queue an outbound on a live gateway channel (telegram, slack, discord, whatsapp, signal, email). Requires approval. The bridge delivers it once a chat is connected.",
     parameters: {
       type: "object",
       properties: {

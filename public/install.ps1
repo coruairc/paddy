@@ -8,6 +8,7 @@
 [CmdletBinding()]
 param(
   [switch]$NoOnboard,
+  [switch]$NoConfig,
   [switch]$DryRun,
   [string]$Ref = $(if ($env:PADDY_REF) { $env:PADDY_REF } else { "main" }),
   [string]$Repo = $(if ($env:PADDY_REPO) { $env:PADDY_REPO } else { "coruairc/paddy" }),
@@ -137,12 +138,12 @@ if ($userPath -notlike "*$BinDir*") {
 $env:Path = "$BinDir;$env:Path"
 
 $prefix = if ($env:PADDY_HOME) { $env:PADDY_HOME } else { (Join-Path $HOME ".paddy") }
-if (-not $NoOnboard) {
-  Write-Paddy "paddy onboard"
+if (-not $NoOnboard -and -not $NoConfig) {
+  Write-Paddy "paddy config"
   Invoke-Paddy {
     $env:PADDY_HOME = $prefix
-    & node $cli onboard --yes
-  } "paddy onboard --yes"
+    & node $cli config --yes
+  } "paddy config --yes"
 }
 
 Write-PaddyMark

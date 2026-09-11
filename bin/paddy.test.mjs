@@ -1,10 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, readFileSync, existsSync } from "node:fs";
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { helpText, parseArgv, loadDotEnv, kitRoot, VERSION } from "./paddy.mjs";
+import { loadResolvedAccounts } from "../src/lib/harness/config.mjs";
 
 const bin = join(kitRoot(), "bin/paddy.mjs");
 
@@ -23,6 +24,10 @@ test("help lists gateway, chat, models, doctor", () => {
     "paddy chat",
     "paddy models",
     "paddy doctor",
+    "paddy config",
+    "paddy config show",
+    "paddy config validate",
+    "paddy config import",
     "paddy onboard",
     "paddy dashboard",
     "paddy skills",
@@ -31,6 +36,9 @@ test("help lists gateway, chat, models, doctor", () => {
     "paddy skills export",
     "paddy memory",
     "paddy approve",
+    "paddy channels",
+    "paddy pairing approve",
+    "paddy gateway setup",
   ]) {
     assert.match(text, new RegExp(needle.replace(/ /g, "\\s+")));
   }
@@ -88,16 +96,21 @@ test("unknown command exits 2", () => {
   assert.match(r.stderr, /Unknown command/);
 });
 
-test("onboard --yes writes ~/.paddy and copies env", () => {
+test("paddy config --yes writes ~/.paddy (onboard is an alias)", () => {
   const home = mkdtempSync(join(tmpdir(), "paddy-home-"));
-  const r = run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  const r = run(["config", "--yes", "--json"], { PADDY_HOME: home });
   assert.equal(r.status, 0, r.stderr + r.stdout);
   const payload = JSON.parse(r.stdout);
   assert.equal(payload.ok, true);
   assert.equal(existsSync(join(home, "config.json")), true);
   const cfg = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
-  assert.ok(cfg.token.length >= 16);
-  assert.equal(cfg.port, 8080);
+  assert.equal(cfg.version, 1);
+  assert.equal(cfg.gateway.port, 8080);
+  assert.equal(cfg.cli.token, "${PADDY_CLI_TOKEN}");
+  const envText = readFileSync(join(home, ".env"), "utf8");
+  assert.match(envText, /PADDY_CLI_TOKEN=/);
+  const alias = run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  assert.equal(alias.status, 0, alias.stderr + alias.stdout);
 });
 
 test("doctor --json reports kit and home", () => {
@@ -156,4 +169,129 @@ canvas_render kind=markdown title="Morning brief"
   assert.equal(exported.status, 0, exported.stderr);
   assert.match(exported.stdout, /name: morning-brief/);
   assert.match(exported.stdout, /canvas_render/);
+});
+
+test("parseArgv reads channel flags", () => {
+  const { flags, rest } = parseArgv([
+    "channels",
+    "add",
+    "telegram",
+    "--token",
+    "123:abc",
+    "--sync",
+    "both",
+    "--allow-from",
+    "42",
+  ]);
+  assert.equal(flags.token, "123:abc");
+  assert.equal(flags.sync, "both");
+  assert.equal(flags.allowFrom, "42");
+  assert.deepEqual(rest, ["channels", "add", "telegram"]);
+});
+
+test("paddy channels add telegram writes canonical config.json and .env", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-ch-"));
+  const r = run(
+    ["channels", "add", "telegram", "--token", "111:AAA", "--json"],
+    { PADDY_HOME: home },
+  );
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  const payload = JSON.parse(r.stdout);
+  assert.equal(payload.ok, true);
+  assert.equal(payload.id, "telegram");
+  const saved = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
+  assert.equal(saved.channels.telegram.token, "${TELEGRAM_BOT_TOKEN}");
+  assert.equal(saved.channels.telegram.access.mode, "pairing");
+  assert.match(readFileSync(join(home, ".env"), "utf8"), /TELEGRAM_BOT_TOKEN=111:AAA/);
+  assert.equal(existsSync(join(home, "channels.json")), false);
+  const accounts = loadResolvedAccounts(home);
+  assert.equal(accounts.telegram.token, "111:AAA");
+});
+
+test("paddy channels import reads OpenClaw telegram botToken into canonical config", () => {
+  const root = mkdtempSync(join(tmpdir(), "paddy-imp-"));
+  mkdirSync(join(root, ".openclaw"));
+  writeFileSync(
+    join(root, ".openclaw", "openclaw.json"),
+    `{ channels: { telegram: { enabled: true, botToken: "oc:tok", dmPolicy: "pairing" } } }\n`,
+  );
+  const paddyHome = join(root, ".paddy");
+  const r = run(["channels", "import", "--json"], { PADDY_HOME: paddyHome, HOME: root });
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  const payload = JSON.parse(r.stdout);
+  assert.equal(payload.ok, true);
+  const saved = JSON.parse(readFileSync(join(paddyHome, "config.json"), "utf8"));
+  assert.equal(saved.channels.telegram.token, "${TELEGRAM_BOT_TOKEN}");
+  assert.match(readFileSync(join(paddyHome, ".env"), "utf8"), /TELEGRAM_BOT_TOKEN=oc:tok/);
+  assert.equal(existsSync(join(paddyHome, "channels.json")), false);
+  const accounts = loadResolvedAccounts(paddyHome);
+  assert.equal(accounts.telegram.token, "oc:tok");
+});
+
+test("paddy channels add is what the live bridge consumes (no channels.json)", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-rt-"));
+  run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  const r = run(
+    ["channels", "add", "telegram", "--token", "live:tok", "--dm-policy", "allowlist", "--allow-from", "42", "--json"],
+    { PADDY_HOME: home },
+  );
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  const accounts = loadResolvedAccounts(home);
+  assert.equal(accounts.telegram.token, "live:tok");
+  assert.equal(accounts.telegram.dmPolicy, "allowlist");
+  assert.deepEqual(accounts.telegram.allowFrom, ["42"]);
+  assert.equal(existsSync(join(home, "channels.json")), false);
+});
+
+test("paddy config show redacts secrets", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-show-"));
+  run(["channels", "add", "telegram", "--token", "SECRETTOKEN99", "--json"], { PADDY_HOME: home });
+  const r = run(["config", "show", "--json"], { PADDY_HOME: home });
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  assert.doesNotMatch(r.stdout, /SECRETTOKEN99/);
+  const payload = JSON.parse(r.stdout);
+  assert.equal(payload.config.channels.telegram.token, "${TELEGRAM_BOT_TOKEN}");
+});
+
+test("paddy config validate accepts a fresh install", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-val-"));
+  run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  const r = run(["config", "validate", "--json"], { PADDY_HOME: home });
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  const payload = JSON.parse(r.stdout);
+  assert.equal(payload.ok, true);
+});
+
+test("paddy channels import conflict keeps existing until --yes", () => {
+  const root = mkdtempSync(join(tmpdir(), "paddy-cf-"));
+  mkdirSync(join(root, ".openclaw"));
+  writeFileSync(
+    join(root, ".openclaw", "openclaw.json"),
+    `{ channels: { telegram: { enabled: true, botToken: "theirs:tok", dmPolicy: "open" } } }\n`,
+  );
+  const home = join(root, ".paddy");
+  run(["channels", "add", "telegram", "--token", "mine:tok", "--json"], { PADDY_HOME: home, HOME: root });
+  const first = run(["channels", "import", "--json"], { PADDY_HOME: home, HOME: root });
+  assert.equal(first.status, 0, first.stderr + first.stdout);
+  const payload = JSON.parse(first.stdout);
+  assert.ok(payload.conflicts?.some((c) => c.id === "telegram"));
+  const kept = loadResolvedAccounts(home);
+  assert.equal(kept.telegram.token, "mine:tok");
+  const replaced = run(["channels", "import", "--yes", "--json"], { PADDY_HOME: home, HOME: root });
+  assert.equal(replaced.status, 0, replaced.stderr + replaced.stdout);
+  const after = loadResolvedAccounts(home);
+  assert.equal(after.telegram.token, "theirs:tok");
+  assert.equal(after.telegram.dmPolicy, "open");
+});
+
+test("paddy channels export does not change canonical config", () => {
+  const root = mkdtempSync(join(tmpdir(), "paddy-ex-"));
+  const home = join(root, ".paddy");
+  run(["channels", "add", "telegram", "--token", "exp:tok", "--json"], { PADDY_HOME: home, HOME: root });
+  const before = readFileSync(join(home, "config.json"), "utf8");
+  const r = run(["channels", "export", "--to", "both", "--json"], { PADDY_HOME: home, HOME: root });
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  assert.equal(readFileSync(join(home, "config.json"), "utf8"), before);
+  assert.match(readFileSync(join(root, ".openclaw", "openclaw.json"), "utf8"), /exp:tok/);
+  assert.match(readFileSync(join(root, ".hermes", ".env"), "utf8"), /TELEGRAM_BOT_TOKEN=exp:tok/);
 });

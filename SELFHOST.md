@@ -24,7 +24,7 @@ That clones [coruairc/paddy](https://github.com/coruairc/paddy), runs `npm insta
 paddy gateway
 ```
 
-Skip onboard: `bash -s -- --no-onboard`. Help: `bash -s -- --help`.
+Skip first-run config: `bash -s -- --no-config`. Help: `bash -s -- --help`.
 
 ## Zip kit
 
@@ -32,7 +32,7 @@ Skip onboard: `bash -s -- --no-onboard`. Help: `bash -s -- --help`.
 unzip paddy-selfhost.zip
 cd paddy-selfhost
 npm install            # puts `paddy` on PATH (~/.local/bin)
-paddy onboard
+paddy config
 paddy gateway
 ```
 
@@ -69,7 +69,15 @@ Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model 
 | `paddy memory` | Show persisted MEMORY.md facts |
 | `paddy approve allow` / `deny` | Allow or deny a gated tool the last chat held |
 | `paddy doctor` | Check node, kit, env, gateway |
-| `paddy onboard` | Write `~/.paddy` and `selfhost.env` |
+| `paddy config` | Write `~/.paddy` and `selfhost.env` (alias: `paddy onboard`) |
+| `paddy config show` | Print canonical config (secrets redacted) |
+| `paddy config validate` | Check the JSON schema |
+| `paddy config import` | Pull OpenClaw / Hermes into Paddy (conflicts ask before replace) |
+| `paddy channels` | List Telegram / Discord / Slack / … |
+| `paddy channels add telegram --token …` | Write Paddy config; the live bridge picks it up |
+| `paddy gateway setup` | Connect wizard (same config as the CLI) |
+| `paddy channels export --to both` | Compatibility files only — Paddy config stays the source of truth |
+| `paddy pairing approve CODE` | Allow a stranger who DMed the bot |
 | `paddy agent list` | Seed mind is Paddy; extras are added in the dashboard |
 
 Config lives in `~/.paddy/config.json`. Chat history for the CLI lives in `~/.paddy/workspace.json` (separate from the browser workspace).
@@ -109,7 +117,7 @@ Never commit keys. Never paste them into the console chat.
 - **Learning loop** — `write_memory`, `create_skill` / `patch_skill` / `skill_manage`, daily notes, HEARTBEAT.md, curator (ages + folds duplicate triggers). Skills persist in the browser workspace and in `~/.paddy/workspace.json` for the CLI.
 - **Skills hub** — local catalog, not the live ClawHub/Hermes registries.
 - **Workspace** — browser localStorage (`paddy-harness-v1`); CLI workspace is `~/.paddy/workspace.json`.
-- **Channels** — web console and CLI are live. Telegram / Slack / WhatsApp / Discord / Signal / email are idle slots. This kit does not ship those bridges. `send_channel` queues outbound for approval; it does not deliver off-box.
+- **Channels** — web, CLI, and a live bridge. Connect Telegram / Discord / Slack / WhatsApp / Signal / email on Gateway, or `paddy channels add telegram --token …`. Pairing codes match OpenClaw. Env names match Hermes (`TELEGRAM_BOT_TOKEN`). `paddy channels import` reads `~/.openclaw/openclaw.json` and `~/.hermes/.env`; `--sync both` writes them back so those gateways see the same bots. WhatsApp Cloud API webhook: `/api/hooks/whatsapp`.
 
 ## Models
 

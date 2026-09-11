@@ -29,6 +29,20 @@ import { fileURLToPath } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
 import { HUB_SKILLS } from "../src/lib/harness/hub-catalog.mjs";
 import { parseSkillMd, toSkillMd } from "../src/lib/harness/skill-md.mjs";
+import {
+  exportToLineage,
+  importFromLineage,
+  loadCanonical,
+  loadPendingPairs,
+  loadResolvedAccounts,
+  redactConfig,
+  removeCanonicalChannel,
+  resolvedSnapshot,
+  saveCanonical,
+  savePendingPairs,
+  upsertCanonicalChannel,
+  validateCanonical,
+} from "../src/lib/harness/config.mjs";
 
 export const VERSION = "0.1.0";
 const DEFAULT_PORT = 8080;
@@ -72,6 +86,19 @@ export function parseArgv(argv) {
     version: false,
     yes: false,
     prefer: undefined,
+    token: undefined,
+    appToken: undefined,
+    sync: undefined,
+    allowFrom: undefined,
+    dmPolicy: undefined,
+    phoneId: undefined,
+    verifyToken: undefined,
+    number: undefined,
+    url: undefined,
+    from: undefined,
+    user: undefined,
+    pass: undefined,
+    to: undefined,
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
@@ -86,6 +113,32 @@ export function parseArgv(argv) {
     else if (a?.startsWith("--host=")) flags.host = a.slice(7);
     else if (a === "--prefer") flags.prefer = argv[++i];
     else if (a?.startsWith("--prefer=")) flags.prefer = a.slice(9);
+    else if (a === "--token") flags.token = argv[++i];
+    else if (a?.startsWith("--token=")) flags.token = a.slice(8);
+    else if (a === "--app-token") flags.appToken = argv[++i];
+    else if (a?.startsWith("--app-token=")) flags.appToken = a.slice(12);
+    else if (a === "--sync") flags.sync = argv[++i];
+    else if (a?.startsWith("--sync=")) flags.sync = a.slice(7);
+    else if (a === "--allow-from") flags.allowFrom = argv[++i];
+    else if (a?.startsWith("--allow-from=")) flags.allowFrom = a.slice(13);
+    else if (a === "--dm-policy") flags.dmPolicy = argv[++i];
+    else if (a?.startsWith("--dm-policy=")) flags.dmPolicy = a.slice(12);
+    else if (a === "--phone-id") flags.phoneId = argv[++i];
+    else if (a?.startsWith("--phone-id=")) flags.phoneId = a.slice(11);
+    else if (a === "--verify-token") flags.verifyToken = argv[++i];
+    else if (a?.startsWith("--verify-token=")) flags.verifyToken = a.slice(15);
+    else if (a === "--number") flags.number = argv[++i];
+    else if (a?.startsWith("--number=")) flags.number = a.slice(9);
+    else if (a === "--url") flags.url = argv[++i];
+    else if (a?.startsWith("--url=")) flags.url = a.slice(6);
+    else if (a === "--from") flags.from = argv[++i];
+    else if (a?.startsWith("--from=")) flags.from = a.slice(7);
+    else if (a === "--user") flags.user = argv[++i];
+    else if (a?.startsWith("--user=")) flags.user = a.slice(7);
+    else if (a === "--pass") flags.pass = argv[++i];
+    else if (a?.startsWith("--pass=")) flags.pass = a.slice(7);
+    else if (a === "--to") flags.to = argv[++i];
+    else if (a?.startsWith("--to=")) flags.to = a.slice(5);
     else if (a === "--") rest.push(...argv.slice(i + 1));
     else if (a?.startsWith("-") && a !== "-") {
       throw new Error(`Unknown flag ${a}`);
@@ -104,11 +157,22 @@ Usage:
   paddy <command> [flags]
 
 Gateway
-  paddy gateway              Run the gateway in the foreground
+  paddy gateway              Run the gateway + channel bridge in the foreground
   paddy gateway start        Start in the background
   paddy gateway stop         Stop the background gateway
   paddy gateway restart      Restart the background gateway
   paddy gateway status       Is the gateway up?
+  paddy gateway setup        Hermes-style wizard (Telegram, Discord, Slack, …)
+
+  paddy config               Write ~/.paddy, copy selfhost.env, remember a brain
+  paddy config show          Print canonical config (secrets redacted)
+  paddy config validate      Check the JSON schema
+  paddy config import        Pull OpenClaw / Hermes into Paddy config
+  paddy channels             List connected channels
+  paddy channels add <id>    Connect telegram | discord | slack | whatsapp | signal | email
+  paddy channels remove <id> Disconnect a channel
+  paddy channels export      Write compatibility files (--to openclaw|hermes|both)
+  paddy pairing approve CODE Allow a stranger (pairing policy)
 
 Talk
   paddy chat                 Interactive REPL (gateway must be running)
@@ -125,7 +189,7 @@ Talk
   paddy agent list           List minds
 
 Setup
-  paddy onboard              Write ~/.paddy and copy selfhost.env
+  paddy onboard              Alias for paddy config
   paddy doctor               Check the install
   paddy status               Alias for gateway status
 
@@ -134,11 +198,18 @@ Flags
   --host <h>     Bind / connect host (default ${DEFAULT_HOST})
   --prefer <id>  Brain for this chat (supergrok, chatgpt, claude, kimi, glm, …)
   --json         Machine-readable output
-  --yes          Non-interactive onboard
+  --token <s>    Bot token (channels add)
+  --app-token    Slack app token (xapp-…)
+  --allow-from   Comma-separated user ids
+  --dm-policy    pairing | allowlist | open
+  --sync         openclaw | hermes | both  (export compatibility after add)
+  --to           openclaw | hermes | both  (channels export)
+  --from         openclaw | hermes | both  (config import)
+  --yes          Non-interactive config / setup / import replace
   --help
 
-Keys live in the gateway environment (selfhost.env). Sign-in in the dashboard
-is for the browser; the CLI spends env subscriptions and keys.
+Keys live in ~/.paddy/.env (secrets) and selfhost.env (brains). config.json is the
+canonical structure — OpenClaw and Hermes files are import/export only.
 
 Quick start
   curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
@@ -166,23 +237,39 @@ function writeJson(path, data) {
 }
 
 export function loadConfig() {
-  const raw = readJson(homePath("config.json"), {});
+  const { config, env } = loadCanonical({ persist: true });
+  const tokenRef = typeof config.cli?.token === "string" ? config.cli.token : "";
+  const token =
+    (env.PADDY_CLI_TOKEN || "").trim() ||
+    (tokenRef.startsWith("${") ? "" : tokenRef);
   return {
-    port: Number(raw.port) || DEFAULT_PORT,
-    host: typeof raw.host === "string" && raw.host ? raw.host : DEFAULT_HOST,
-    token: typeof raw.token === "string" ? raw.token : "",
-    preferredProvider: preferAlias(typeof raw.preferredProvider === "string" ? raw.preferredProvider : "supergrok"),
-    preferredModel: typeof raw.preferredModel === "string" ? raw.preferredModel : undefined,
-    root: typeof raw.root === "string" ? raw.root : kitRoot(),
+    port: Number(config.gateway?.port) || DEFAULT_PORT,
+    host: typeof config.gateway?.host === "string" && config.gateway.host ? config.gateway.host : DEFAULT_HOST,
+    token,
+    preferredProvider: preferAlias(
+      typeof config.brain?.preferred === "string" ? config.brain.preferred : "supergrok",
+    ),
+    preferredModel: typeof config.brain?.model === "string" ? config.brain.model : undefined,
+    root: typeof config.kit?.root === "string" && config.kit.root ? config.kit.root : kitRoot(),
   };
 }
 
 export function saveConfig(patch) {
-  const next = { ...loadConfig(), ...patch };
-  if (!next.token || next.token.length < 16) {
-    next.token = randomBytes(24).toString("hex");
+  const { config } = loadCanonical({ persist: true });
+  if (patch.port != null) config.gateway.port = Number(patch.port) || config.gateway.port;
+  if (patch.host) config.gateway.host = patch.host;
+  if (patch.preferredProvider) config.brain.preferred = preferAlias(patch.preferredProvider);
+  if (patch.preferredModel !== undefined) {
+    if (patch.preferredModel) config.brain.model = patch.preferredModel;
+    else delete config.brain.model;
   }
-  writeJson(homePath("config.json"), next);
+  if (patch.root) config.kit.root = patch.root;
+  let token = patch.token;
+  if (!token) token = loadConfig().token;
+  if (!token || token.length < 16) token = randomBytes(24).toString("hex");
+  saveCanonical(config, { envPatch: { PADDY_CLI_TOKEN: token } });
+  const next = loadConfig();
+  next.token = token;
   return next;
 }
 
@@ -248,6 +335,7 @@ function gatewayEnv(cfg) {
     ...loadDotEnv(join(root, "selfhost.env.example")),
     ...loadDotEnv(homePath("selfhost.env")),
     ...loadDotEnv(join(root, "selfhost.env")),
+    ...loadDotEnv(homePath(".env")),
   };
   for (const [k, v] of Object.entries(fileEnv)) {
     if (typeof v === "string" && !v.trim()) delete fileEnv[k];
@@ -327,16 +415,16 @@ async function pingHttp(origin) {
 
 function spawnGateway(cfg, flags, { detached }) {
   const root = cfg.root || kitRoot();
-  const wrapper = join(root, "scripts/with-app-env.mjs");
-  const viteJs = join(root, "node_modules/vite/bin/vite.js");
-  const viteBin = existsSync(viteJs) ? viteJs : "vite";
+  const gatewayJs = join(root, "bin/paddy-gateway.mjs");
   const { host, port } = baseUrl(cfg, flags);
-  if (!existsSync(wrapper)) {
-    throw new Error(`Not a Paddy kit (${wrapper} missing). Run this from the unzipped folder.`);
+  if (!existsSync(gatewayJs)) {
+    throw new Error(`Not a Paddy kit (${gatewayJs} missing). Run this from the unzipped folder.`);
   }
-  const args = [wrapper, viteBin, "dev", "--host", host, "--port", String(port)];
   const env = gatewayEnv(cfg);
+  env.PADDY_BIND = host;
+  env.PADDY_PORT = String(port);
   ensureHome();
+  const args = [gatewayJs];
   if (detached) {
     const fd = openSync(logPath(), "a");
     const child = spawn(process.execPath, args, {
@@ -576,7 +664,11 @@ async function cmdGateway(sub, flags) {
     return cmdStatus(flags);
   }
 
-  fail(flags, `Unknown gateway command “${action}”. Try run | start | stop | restart | status.`, 2);
+  if (action === "setup") {
+    return cmdGatewaySetup(flags);
+  }
+
+  fail(flags, `Unknown gateway command “${action}”. Try run | start | stop | restart | status | setup.`, 2);
 }
 
 async function cmdStatus(flags) {
@@ -623,9 +715,9 @@ async function cmdDoctor(flags) {
   add("node", Number(process.versions.node.split(".")[0]) >= 22, `node ${process.version}`);
   add("kit", existsSync(join(root, "package.json")) && existsSync(join(root, "scripts/with-app-env.mjs")), root);
   add("home", true, paddyHome());
-  add("token", Boolean(cfg.token && cfg.token.length >= 16), cfg.token ? "present" : "missing — run paddy onboard");
+  add("token", Boolean(cfg.token && cfg.token.length >= 16), cfg.token ? "present" : "missing — run paddy config");
   const envFile = existsSync(join(root, "selfhost.env")) || existsSync(homePath("selfhost.env"));
-  add("selfhost.env", envFile, envFile ? "found" : "copy from selfhost.env.example (paddy onboard)");
+  add("selfhost.env", envFile, envFile ? "found" : "copy from selfhost.env.example (paddy config)");
   const rec = readPid();
   const http = await pingHttp(origin);
   add("gateway", http, http ? origin : "not running — paddy gateway");
@@ -1069,6 +1161,227 @@ async function cmdApprove(rest, flags) {
   out(flags, r.data, `${r.data.text || (action === "allow" ? "Allowed." : "Denied.")}${extra}`);
 }
 
+const BRIDGE_IDS = ["telegram", "discord", "slack", "whatsapp", "signal", "email"];
+
+function parseSync(raw) {
+  const v = String(raw || "").toLowerCase();
+  if (v === "openclaw" || v === "hermes" || v === "both") return v;
+  return "";
+}
+
+async function cmdConfig(rest, flags) {
+  const sub = (rest[0] || "").toLowerCase();
+  if (!sub || sub === "init") {
+    await cmdOnboard(flags);
+    return;
+  }
+  if (sub === "show") {
+    const { config } = loadCanonical({ persist: true });
+    const view = redactConfig(config);
+    const text = JSON.stringify(view, null, 2);
+    out(flags, { ok: true, config: view }, text);
+    return;
+  }
+  if (sub === "validate") {
+    const snap = resolvedSnapshot();
+    const valid = validateCanonical(snap.config);
+    const missing = (snap.missing || []).map((m) => `${m.path} → ${m.name}`);
+    if (!valid.ok) {
+      fail(flags, valid.errors.join("; "));
+      return;
+    }
+    const extra = missing.length ? `\nMissing env: ${missing.join(", ")}` : "";
+    out(
+      flags,
+      { ok: true, errors: [], missing },
+      `config.json ok (version ${snap.config.version})${extra}`,
+    );
+    return;
+  }
+  if (sub === "import") {
+    const fromFlag = flags.from || rest[1] || (rest.includes("--from") ? "" : "both");
+    const source = parseSync(fromFlag) || "both";
+    cmdChannels(["import", source], flags);
+    return;
+  }
+  fail(flags, "Usage: paddy config [init|show|validate|import]", 2);
+}
+
+function cmdChannels(rest, flags) {
+  const sub = (rest[0] || "list").toLowerCase();
+
+  if (sub === "list") {
+    const accounts = loadResolvedAccounts();
+    const lines = BRIDGE_IDS.map((id) => {
+      const acc = accounts[id];
+      const on = Boolean(acc && (acc.token || acc.host || acc.user));
+      return `  ${on ? "on " : "off"}  ${id.padEnd(10)} ${on ? acc.dmPolicy || "pairing" : "—"}`;
+    });
+    out(flags, { ok: true, accounts }, `Channels\n${lines.join("\n")}`);
+    return;
+  }
+
+  if (sub === "remove" || sub === "rm") {
+    const id = (rest[1] || "").toLowerCase();
+    if (!BRIDGE_IDS.includes(id)) {
+      fail(flags, "Usage: paddy channels remove <telegram|discord|slack|whatsapp|signal|email>", 2);
+      return;
+    }
+    removeCanonicalChannel(id);
+    out(flags, { ok: true, id }, `Disconnected ${id}.`);
+    return;
+  }
+
+  if (sub === "import") {
+    const source = parseSync(flags.from || rest[1] || "both") || "both";
+    const result = importFromLineage({
+      source,
+      replace: flags.yes ? BRIDGE_IDS : [],
+    });
+    if (!result.ok && !result.conflicts?.length) {
+      fail(flags, result.error || "Nothing to import.");
+      return;
+    }
+    const bits = [];
+    if (result.imported?.length) bits.push(`Imported ${result.imported.join(", ")} into ~/.paddy/config.json.`);
+    if (result.conflicts?.length) {
+      bits.push(
+        `Conflicts: ${result.conflicts.map((c) => c.id).join(", ")}. Re-run with --yes to replace.`,
+      );
+    }
+    if (result.skipped?.length && !result.conflicts?.length) {
+      bits.push(`Kept existing: ${result.skipped.join(", ")}.`);
+    }
+    out(flags, result, bits.join("\n") || "No changes.");
+    return;
+  }
+
+  if (sub === "export") {
+    const target = parseSync(flags.to || flags.sync || rest[1] || "both") || "both";
+    const paths = exportToLineage(target);
+    out(
+      flags,
+      { ok: true, paths, target },
+      `Wrote ${paths.join(" · ") || "nothing"}. Paddy config.json is unchanged. Restart openclaw / hermes gateway to pick them up.`,
+    );
+    return;
+  }
+
+  if (sub === "add") {
+    const id = (rest[1] || "").toLowerCase();
+    if (!BRIDGE_IDS.includes(id)) {
+      fail(flags, "Usage: paddy channels add <telegram|discord|slack|whatsapp|signal|email> --token …", 2);
+      return;
+    }
+    const acc = {
+      dmPolicy: ["pairing", "allowlist", "open"].includes(flags.dmPolicy) ? flags.dmPolicy : "pairing",
+      allowFrom: String(flags.allowFrom || "")
+        .split(/[,\s]+/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+      requireMention: true,
+    };
+    if (flags.token) acc.token = flags.token;
+    if (flags.appToken) acc.appToken = flags.appToken;
+    if (flags.phoneId) acc.phoneId = flags.phoneId;
+    if (flags.verifyToken) acc.verifyToken = flags.verifyToken;
+    if (flags.number) acc.number = flags.number;
+    if (flags.url) acc.host = flags.url;
+    if (flags.from) acc.from = flags.from;
+    if (flags.user) acc.user = flags.user;
+    if (flags.pass) acc.pass = flags.pass;
+    if (id === "telegram" || id === "discord") {
+      if (!acc.token) {
+        fail(flags, `Need --token (BotFather / Discord bot token).`);
+        return;
+      }
+    }
+    if (id === "slack" && (!acc.token || !acc.appToken)) {
+      fail(flags, "Need --token xoxb-… and --app-token xapp-…");
+      return;
+    }
+    upsertCanonicalChannel(id, acc);
+    const sync = parseSync(flags.sync);
+    const paths = sync ? exportToLineage(sync) : [];
+    out(
+      flags,
+      { ok: true, id, sync: sync || null, paths },
+      `Connected ${id} in config.json.${paths.length ? ` Exported ${paths.join(" · ")}.` : ""} Message the bot — pairing codes show in Gateway.`,
+    );
+    return;
+  }
+
+  fail(flags, "Usage: paddy channels [list|add|remove|import|export]", 2);
+}
+
+async function cmdPairing(rest, flags) {
+  const action = (rest[0] || "").toLowerCase();
+  const code = (rest[1] || "").trim();
+  if ((action !== "approve" && action !== "deny") || !code) {
+    fail(flags, "Usage: paddy pairing approve CODE | paddy pairing deny CODE", 2);
+    return;
+  }
+  const cfg = loadConfig();
+  const up = await pingHttp(baseUrl(cfg, flags).origin);
+  if (up) {
+    const r = await fetchCli(cfg, flags, {
+      method: "POST",
+      body: { action: "pairing", code, allow: action === "approve" },
+    });
+    if (!r.data?.ok) {
+      fail(flags, r.data?.error || `HTTP ${r.status}`);
+      return;
+    }
+    out(flags, r.data, r.data.text || (action === "approve" ? "Allowed." : "Denied."));
+    return;
+  }
+  const file = { pending: loadPendingPairs(), accounts: loadResolvedAccounts() };
+  const needle = code.toUpperCase();
+  const pair = (file.pending || []).find((p) => String(p.code).toUpperCase() === needle);
+  if (!pair) {
+    fail(flags, "Unknown pairing code. Start paddy gateway, then try again.");
+    return;
+  }
+  const pending = file.pending.filter((p) => p.id !== pair.id);
+  savePendingPairs(pending);
+  if (action === "approve") {
+    const acc = file.accounts[pair.channelId] || { dmPolicy: "pairing", allowFrom: [], requireMention: true };
+    if (!acc.allowFrom.includes(pair.fromId)) acc.allowFrom.push(pair.fromId);
+    upsertCanonicalChannel(pair.channelId, acc);
+  }
+  out(flags, { ok: true, pair }, `${action === "approve" ? "Allowed" : "Denied"} ${pair.from} on ${pair.channelId}.`);
+}
+
+async function cmdGatewaySetup(flags) {
+  const id = (flags.to || "telegram").toLowerCase();
+  if (!BRIDGE_IDS.includes(id) && flags.yes) {
+    fail(flags, "Pass a channel as the first prompt, or: paddy channels add telegram --token …");
+    return;
+  }
+  let channel = BRIDGE_IDS.includes(id) ? id : "telegram";
+  let token = flags.token || "";
+  if (!flags.yes && stdinStream.isTTY && stdoutStream.isTTY) {
+    const rl = createInterface({ input: stdinStream, output: stdoutStream });
+    try {
+      const pick = (await rl.question(`Channel [${channel}]: `)).trim().toLowerCase();
+      if (BRIDGE_IDS.includes(pick)) channel = pick;
+      token = (await rl.question("Bot token (empty to skip): ")).trim() || token;
+      const allow = (await rl.question("Allow from (user ids, empty = pairing): ")).trim();
+      if (allow) flags.allowFrom = allow;
+      const syncIn = (await rl.question("Export compatibility files? [n/openclaw/hermes/both]: ")).trim().toLowerCase();
+      if (syncIn && syncIn !== "n" && syncIn !== "no") flags.sync = parseSync(syncIn) || "both";
+    } finally {
+      rl.close();
+    }
+  }
+  if (!token && channel !== "email" && channel !== "signal") {
+    fail(flags, "No token. Same as hermes gateway setup — paste the BotFather / Discord token.");
+    return;
+  }
+  flags.token = token;
+  cmdChannels(["add", channel], flags);
+}
+
 export async function main(argv = process.argv.slice(2)) {
   let parsed;
   try {
@@ -1111,7 +1424,7 @@ export async function main(argv = process.argv.slice(2)) {
         await cmdDashboard(flags);
         break;
       case "onboard":
-        await cmdOnboard(flags);
+        await cmdConfig([], flags);
         break;
       case "agent":
       case "agents":
@@ -1127,6 +1440,17 @@ export async function main(argv = process.argv.slice(2)) {
         break;
       case "approve":
         await cmdApprove(rest.slice(1), flags);
+        break;
+      case "channels":
+      case "channel":
+        cmdChannels(rest.slice(1), flags);
+        break;
+      case "config":
+        await cmdConfig(rest.slice(1), flags);
+        break;
+      case "pairing":
+      case "pair":
+        await cmdPairing(rest.slice(1), flags);
         break;
       case "help":
         process.stdout.write(helpText());

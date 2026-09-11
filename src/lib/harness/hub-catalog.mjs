@@ -299,10 +299,10 @@ DON'T: invent cluster state or kubectl apply.`,
 DO:
 1. List the mapping. Don't invent API keys.
 2. For each pasted SKILL.md, tell them to Import SKILL.md on Skills, or call create_skill yourself if they pasted the body.
-3. Channels stay idle in this kit — say so.
+3. Channels: tell them paddy channels import (reads ~/.openclaw/openclaw.json and ~/.hermes/.env) or Connect on Gateway. Telegram bot tokens transfer. Pairing codes still apply.
 4. canvas_render kind=diagram title="OpenClaw → Paddy" if helpful.
 
-DON'T: claim Telegram/WhatsApp came over.`,
+DON'T: claim a live Telegram session exists until a token is saved.`,
     triggers: ["migrate from openclaw", "import claw", "coming from openclaw"],
     author: "catalog",
     registry: "hermes",

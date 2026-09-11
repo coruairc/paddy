@@ -242,7 +242,7 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
             }
             const reason =
               name === "send_channel"
-                ? "Outbound channel send is queued on this gateway. No live bridge in this kit."
+                ? "Outbound channel send is delivered by the live bridge after you approve."
                 : "Subagents spend a nested model call.";
             heldApprovals.push({ tool: name, args: asStrings, reason });
             traces.push({

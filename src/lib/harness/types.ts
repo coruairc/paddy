@@ -186,6 +186,9 @@ export interface Channel {
   lastMessage?: { from: string; text: string; at: number };
   pendingPair?: { from: string; text: string; code: string; at: number };
   allowFrom?: string[];
+  configured?: boolean;
+  error?: string;
+  label?: string;
 }
 
 export interface WorkspaceState {

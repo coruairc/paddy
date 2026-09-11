@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/paddy-icon.jpg" width="160" height="160" alt="Paddy Irishman">
+</p>
+
 # Paddy Irishman
 
 Irish-roots super harness. Gateway presence plus a closed learning loop.
@@ -20,14 +24,14 @@ Windows (PowerShell):
 irm https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex
 ```
 
-Skip the onboard wizard:
+Skip first-run config:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --no-onboard
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --no-config
 ```
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1))) -NoOnboard
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1))) -NoConfig
 ```
 
 Needs **git** and **Node.js 22+**. No sudo. The script clones this repo to `~/.paddy/src`, runs `npm install`, and puts `paddy` on your PATH.
@@ -35,12 +39,18 @@ Needs **git** and **Node.js 22+**. No sudo. The script clones this repo to `~/.p
 ## Then
 
 ```bash
+paddy config               # write ~/.paddy — models, channels, secrets
+paddy config show          # canonical JSON (tokens redacted)
 paddy gateway              # control plane (foreground)
 paddy gateway start        # background
 paddy dashboard            # web console
 paddy chat "hello"
 paddy models
 paddy models prefer laguna
+paddy channels add telegram --token <bot>
+paddy config import        # from ~/.openclaw and ~/.hermes
+paddy channels export --to both
+paddy pairing approve ABCD
 paddy skills
 paddy skills install meeting-actions
 paddy skills import ./SKILL.md
@@ -49,7 +59,32 @@ paddy memory
 paddy doctor
 ```
 
-Put keys or setup-tokens in `~/.paddy/src/selfhost.env` (copy `selfhost.env.example`) or `~/.paddy/selfhost.env`. Sign-in in the dashboard is for the browser; the CLI spends the gateway environment.
+`paddy onboard` is an alias for `paddy config`.
+
+## Config
+
+One file. Paddy owns it. OpenClaw and Hermes are import/export only.
+
+| File | What it holds |
+|---|---|
+| `~/.paddy/config.json` | Structure and behaviour (gateway, brain, channels, access policy) |
+| `~/.paddy/.env` | Secrets (`TELEGRAM_BOT_TOKEN`, CLI token, …) referenced as `${ENV}` |
+| `selfhost.env` | Brain keys / setup-tokens |
+
+```bash
+paddy config                 # init
+paddy config show
+paddy config validate
+paddy config import --from openclaw
+paddy channels add telegram --token <bot>
+paddy models prefer laguna
+```
+
+Saving a channel writes Paddy config. Export writes OpenClaw / Hermes compatibility files without changing Paddy. Import merges with conflict prompts — never a silent overwrite.
+
+Access policy on each channel: **pairing**, **allowlist**, or **open**.
+
+Put keys in `~/.paddy/src/selfhost.env` (copy `selfhost.env.example`) or `~/.paddy/selfhost.env`. Sign-in in the dashboard is for the browser; the CLI spends the gateway environment.
 
 ## Manual
 
@@ -57,7 +92,7 @@ Put keys or setup-tokens in `~/.paddy/src/selfhost.env` (copy `selfhost.env.exam
 git clone https://github.com/coruairc/paddy.git
 cd paddy
 npm install          # puts `paddy` on PATH
-paddy onboard
+paddy config
 paddy gateway
 ```
 

@@ -3,7 +3,7 @@
 # Not affiliated with the OpenClaw Foundation or Nous Research.
 #
 #   curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
-#   curl -fsSL …/install.sh | bash -s -- --no-onboard
+#   curl -fsSL …/install.sh | bash -s -- --no-config
 #   curl -fsSL …/install.sh | bash -s -- --help
 set -euo pipefail
 
@@ -28,7 +28,8 @@ Windows:
 
 Flags:
   --help            This text
-  --no-onboard      Skip paddy onboard
+  --no-onboard      Skip paddy config
+  --no-config       Same as --no-onboard
   --ref <ref>       Git branch or tag (default: main)
   --git-dir <path>  Checkout path (default: ~/.paddy/src)
   --bin-dir <path>  Wrapper path (default: ~/.local/bin)
@@ -88,7 +89,7 @@ PADDYPLAIN
 while [ $# -gt 0 ]; do
   case "$1" in
     -h|--help) usage; exit 0 ;;
-    --no-onboard) ONBOARD=0 ;;
+    --no-onboard|--no-config) ONBOARD=0 ;;
     --dry-run) DRY_RUN=1 ;;
     --ref) REF="${2:-}"; shift ;;
     --git-dir) GIT_DIR="${2:-}"; shift ;;
@@ -185,11 +186,11 @@ if [ "$path_has_bin" != 1 ]; then
 fi
 
 if [ "$ONBOARD" = 1 ]; then
-  log "paddy onboard"
+  log "paddy config"
   if [ "$DRY_RUN" = 1 ]; then
-    printf '[dry-run] PADDY_HOME=%s paddy onboard --yes\n' "$PREFIX"
+    printf '[dry-run] PADDY_HOME=%s paddy config --yes\n' "$PREFIX"
   else
-    PADDY_HOME="$PREFIX" "${BIN_DIR}/paddy" onboard --yes || log "onboard skipped (run paddy onboard later)"
+    PADDY_HOME="$PREFIX" "${BIN_DIR}/paddy" config --yes || log "config skipped (run paddy config later)"
   fi
 fi
 
