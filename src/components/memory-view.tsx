@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useHelix } from "@/lib/harness/store";
+import { relatedForMemory } from "@/lib/harness/related";
 import type { MemoryKind } from "@/lib/harness/types";
 import { formatRelative } from "@/lib/utils";
 
@@ -17,6 +18,7 @@ export function MemoryView() {
   const memories = useHelix((s) => s.workspaces[s.activeProfileId]!.memories);
   const files = useHelix((s) => s.workspaces[s.activeProfileId]!.files);
   const messages = useHelix((s) => s.workspaces[s.activeProfileId]!.messages);
+  const ws = useHelix((s) => s.workspaces[s.activeProfileId]!);
   const [q, setQ] = useState("");
 
   const hits = useMemo(() => {
@@ -66,6 +68,14 @@ export function MemoryView() {
                 </span>
               </div>
               <p className="mt-2 text-sm leading-relaxed text-fg/90">{m.text}</p>
+              {relatedForMemory(ws, m).length ? (
+                <p className="mt-2 text-[11px] text-muted">
+                  Related:{" "}
+                  {relatedForMemory(ws, m)
+                    .map((r) => `${r.kind === "skill" ? "skill" : "memory"} · ${r.label.slice(0, 48)}`)
+                    .join(" · ")}
+                </p>
+              ) : null}
             </li>
           ))}
           {!hits.length ? (

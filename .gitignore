@@ -16,3 +16,4 @@ public/__grok
 *.tsbuildinfo
 .vite
 .cache
+.paddy-data

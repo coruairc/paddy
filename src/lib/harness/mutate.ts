@@ -1,5 +1,6 @@
 import { kebabSkillName, parseSkillMd, toSkillMd } from "./skill-md.mjs";
 import type {
+  HelixTurnResult,
   MemoryEntry,
   MemoryKind,
   Mutation,
@@ -326,6 +327,188 @@ export function applyMutation(ws: WorkspaceState, m: Mutation): WorkspaceState {
 
   next.traces = next.traces.slice(0, 80);
   next.messages = next.messages.slice(-80);
+  return next;
+}
+
+function touchSession(
+  sessions: WorkspaceState["sessions"],
+  opts: {
+    id: string;
+    channelId: string;
+    preview: string;
+    unread?: number;
+    clearUnread?: boolean;
+  },
+): WorkspaceState["sessions"] {
+  const at = Date.now();
+  const preview = opts.preview.slice(0, 160);
+  const found = sessions.some((s) => s.id === opts.id);
+  if (!found) {
+    return [
+      {
+        id: opts.id,
+        channelId: opts.channelId,
+        title: opts.channelId,
+        lastAt: at,
+        preview,
+        unread: opts.clearUnread ? 0 : (opts.unread ?? 0),
+      },
+      ...sessions,
+    ];
+  }
+  return sessions.map((s) =>
+    s.id === opts.id
+      ? {
+          ...s,
+          lastAt: at,
+          preview,
+          unread: opts.clearUnread ? 0 : s.unread + (opts.unread ?? 0),
+        }
+      : s,
+  );
+}
+
+/** Apply a completed turn onto a workspace snapshot (CLI, web, channels share this). */
+export function applyTurnToWorkspace(
+  ws: WorkspaceState,
+  opts: {
+    userText: string;
+    channelId: string;
+    sessionId: string;
+    result: HelixTurnResult;
+    clearUnread?: boolean;
+  },
+): WorkspaceState {
+  const at = Date.now();
+  const ch = opts.channelId || "web";
+  const sid = opts.sessionId || "web:operator";
+  let next: WorkspaceState = {
+    ...ws,
+    messages: [
+      ...ws.messages,
+      {
+        id: uid("msg"),
+        role: "user",
+        content: opts.userText,
+        channelId: ch,
+        sessionId: sid,
+        at,
+      },
+    ],
+  };
+  if (opts.result.ok) {
+    for (const m of opts.result.mutations) next = applyMutation(next, m);
+    next = {
+      ...next,
+      messages: [
+        ...next.messages,
+        {
+          id: uid("msg"),
+          role: "assistant",
+          content: opts.result.text,
+          channelId: ch,
+          sessionId: sid,
+          at: Date.now(),
+        },
+      ],
+      traces: [
+        ...opts.result.traces.map((t) => ({
+          ...t,
+          id: uid("tr"),
+          at: Date.now(),
+        })),
+        ...next.traces,
+      ].slice(0, 80),
+    };
+    const matched = matchSkills(next.skills, opts.userText, 5);
+    const already = new Set(
+      opts.result.mutations
+        .filter((m): m is Extract<typeof m, { type: "bump_skill" }> => m.type === "bump_skill")
+        .map((m) => m.name),
+    );
+    next.skills = next.skills.map((s) =>
+      matched.some((m) => m.name === s.name) && !already.has(s.name)
+        ? {
+            ...s,
+            uses: s.uses + 1,
+            lastUsedAt: Date.now(),
+            status: s.status === "new" ? "active" : s.status,
+          }
+        : s,
+    );
+  } else {
+    next = {
+      ...next,
+      messages: [
+        ...next.messages,
+        {
+          id: uid("msg"),
+          role: "assistant",
+          content: opts.result.error,
+          channelId: ch,
+          sessionId: sid,
+          at: Date.now(),
+        },
+      ],
+      traces: [
+        {
+          id: uid("tr"),
+          kind: "model",
+          title: "Turn failed",
+          detail: opts.result.error,
+          at: Date.now(),
+          status: "error",
+        },
+        ...next.traces,
+      ],
+    };
+  }
+  next.messages = next.messages.slice(-120);
+  next.sessions = touchSession(next.sessions ?? [], {
+    id: sid,
+    channelId: ch,
+    preview: opts.result.ok ? opts.result.text : opts.userText,
+    clearUnread: opts.clearUnread ?? ch === "web",
+    unread: (opts.clearUnread ?? ch === "web") ? 0 : 1,
+  });
+  if (opts.result.usage) {
+    const prev = next.usage ?? {
+      promptTokens: 0,
+      completionTokens: 0,
+      turns: 0,
+      toolCalls: 0,
+      lastModel: "",
+      lastProvider: "",
+      lastAt: null,
+      turnsSinceMemoryWrite: 0,
+      lastTurnToolCalls: 0,
+      skillNudge: false,
+    };
+    const wroteMemory = opts.result.ok
+      ? opts.result.mutations.some((m) => m.type === "write_memory" || m.type === "update_user")
+      : false;
+    const wroteSkill = opts.result.ok
+      ? opts.result.mutations.some(
+          (m) =>
+            m.type === "create_skill" ||
+            m.type === "patch_skill" ||
+            m.type === "install_hub" ||
+            m.type === "archive_skill",
+        )
+      : false;
+    next.usage = {
+      promptTokens: prev.promptTokens + opts.result.usage.promptTokens,
+      completionTokens: prev.completionTokens + opts.result.usage.completionTokens,
+      turns: prev.turns + 1,
+      toolCalls: prev.toolCalls + opts.result.usage.toolCalls,
+      lastModel: opts.result.usage.model || prev.lastModel,
+      lastProvider: opts.result.usage.provider || prev.lastProvider,
+      lastAt: Date.now(),
+      turnsSinceMemoryWrite: wroteMemory ? 0 : (prev.turnsSinceMemoryWrite ?? 0) + 1,
+      lastTurnToolCalls: opts.result.usage.toolCalls,
+      skillNudge: opts.result.usage.toolCalls >= 4 && !wroteSkill,
+    };
+  }
   return next;
 }
 

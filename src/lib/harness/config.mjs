@@ -95,6 +95,7 @@ export function defaultCanonical() {
     brain: { preferred: "supergrok" },
     kit: {},
     channels: {},
+    mcp: { servers: {} },
   };
 }
 
@@ -418,6 +419,12 @@ export function normalizeCanonical(raw) {
     kit: {
       ...(typeof src.kit === "object" && src.kit ? src.kit : {}),
       ...(src.root ? { root: src.root } : {}),
+    },
+    mcp: {
+      servers:
+        src.mcp?.servers && typeof src.mcp.servers === "object" && !Array.isArray(src.mcp.servers)
+          ? src.mcp.servers
+          : {},
     },
     channels: {},
   };

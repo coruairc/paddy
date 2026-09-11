@@ -57,3 +57,20 @@ process.on("SIGTERM", () => shutdown(0));
 
 start([wrapper, viteBin, "dev", "--host", host, "--port", String(port)], "dashboard");
 start([bridge, "--origin", `http://${host === "0.0.0.0" || host === "::" ? "127.0.0.1" : host}:${port}`], "bridge");
+
+const origin = `http://${host === "0.0.0.0" || host === "::" ? "127.0.0.1" : host}:${port}`;
+const token = (process.env.PADDY_CLI_TOKEN || "").trim();
+if (token) {
+  const tick = () => {
+    fetch(`${origin}/api/cli`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({ action: "wake" }),
+    }).catch(() => {});
+  };
+  const timer = setInterval(tick, 30_000);
+  timer.unref?.();
+}

@@ -180,7 +180,7 @@ Talk
   paddy dashboard            Open the web console
   paddy models               List brains the gateway can see
   paddy models prefer <id>   Remember a preferred brain
-  paddy skills               List skills in ~/.paddy/workspace.json
+  paddy skills               List skills on this mind
   paddy skills install <id>  Copy a hub playbook onto this mind
   paddy skills import [file] Add a SKILL.md (stdin if omitted or -)
   paddy skills export <name> Print a skill as SKILL.md
@@ -476,6 +476,17 @@ async function waitForUp(cfg, flags, ms = 25000) {
   return false;
 }
 
+async function liveWorkspace(flags) {
+  try {
+    const cfg = loadConfig();
+    const r = await fetchCli(cfg, flags, { method: "POST", body: { action: "workspace" } });
+    if (r.data?.ok && r.data.workspace) return r.data.workspace;
+  } catch {
+    /* gateway down — fall back to the on-disk file */
+  }
+  return loadWorkspace();
+}
+
 function loadWorkspace() {
   const fallback = {
     files: {},
@@ -483,6 +494,19 @@ function loadWorkspace() {
     preferredProvider: loadConfig().preferredProvider,
   };
   return readJson(homePath("workspace.json"), fallback);
+}
+
+async function pushWorkspace(flags, ws) {
+  saveWorkspace(ws);
+  try {
+    const cfg = loadConfig();
+    await fetchCli(cfg, flags, {
+      method: "POST",
+      body: { action: "workspace-save", workspace: ws },
+    });
+  } catch {
+    /* gateway down */
+  }
 }
 
 function saveWorkspace(ws) {
@@ -967,14 +991,14 @@ function cmdAgent(rest, flags) {
   out(flags, { ok: true, agents: [{ id: "paddy", name: "Paddy Irishman" }] }, "  paddy    Paddy Irishman    (seed mind — extra agents live in the dashboard on this machine)");
 }
 
-function cmdSkills(rest, flags) {
+async function cmdSkills(rest, flags) {
   const sub = (rest[0] || "list").toLowerCase();
-  const ws = loadWorkspace();
+  const ws = await liveWorkspace(flags);
   const skills = [...(ws.skills ?? [])];
 
   if (sub === "list") {
     if (!skills.length) {
-      out(flags, { ok: true, skills: [] }, "No skills in ~/.paddy/workspace.json yet. Install from the hub, import a SKILL.md, or chat — then they persist.");
+      out(flags, { ok: true, skills: [] }, "No skills on this mind yet. Install from the hub, import a SKILL.md, or chat — then they persist.");
       return;
     }
     const lines = skills.map((s) => `  ${(s.status || "active").padEnd(8)} ${s.name} — ${s.description || ""}`);
@@ -1013,7 +1037,7 @@ function cmdSkills(rest, flags) {
       version: found.version,
     };
     ws.skills = [next, ...skills];
-    saveWorkspace(ws);
+    await pushWorkspace(flags, ws);
     out(
       flags,
       { ok: true, skill: next },
@@ -1052,7 +1076,7 @@ function cmdSkills(rest, flags) {
         version: parsed.version || prev.version,
       };
       ws.skills = skills;
-      saveWorkspace(ws);
+      await pushWorkspace(flags, ws);
       out(flags, { ok: true, updated: true, name: parsed.name }, `Updated ${parsed.name}`);
       return;
     }
@@ -1067,7 +1091,7 @@ function cmdSkills(rest, flags) {
       version: parsed.version || undefined,
     };
     ws.skills = [created, ...skills];
-    saveWorkspace(ws);
+    await pushWorkspace(flags, ws);
     out(
       flags,
       { ok: true, updated: false, skill: created },
@@ -1096,8 +1120,8 @@ function cmdSkills(rest, flags) {
   fail(flags, "Usage: paddy skills [list|install <id>|import [file]|export <name>]", 2);
 }
 
-function cmdMemory(flags) {
-  const ws = loadWorkspace();
+async function cmdMemory(flags) {
+  const ws = await liveWorkspace(flags);
   const memories = ws.memories ?? [];
   const file = typeof ws.files?.memory === "string" ? ws.files.memory.trim() : "";
   if (!memories.length && !file) {
@@ -1432,11 +1456,11 @@ export async function main(argv = process.argv.slice(2)) {
         break;
       case "skills":
       case "skill":
-        cmdSkills(rest.slice(1), flags);
+        await cmdSkills(rest.slice(1), flags);
         break;
       case "memory":
       case "memories":
-        cmdMemory(flags);
+        await cmdMemory(flags);
         break;
       case "approve":
         await cmdApprove(rest.slice(1), flags);

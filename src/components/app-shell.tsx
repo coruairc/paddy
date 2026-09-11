@@ -32,7 +32,8 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { helixRuntime, runSubagent } from "@/lib/harness/run-turn";
+import { loadWorkspaces, runStoredSubagent, saveWorkspaceFn } from "@/lib/harness/memory-api";
+import { helixRuntime } from "@/lib/harness/run-turn";
 import { useHelix } from "@/lib/harness/store";
 import type { ProfileMeta, ViewId } from "@/lib/harness/types";
 import { cn } from "@/lib/utils";
@@ -94,7 +95,30 @@ export function AppShell() {
     const done = () => setHydrated();
     try {
       const result = useHelix.persist.rehydrate();
-      void Promise.resolve(result).then(done, done);
+      void Promise.resolve(result)
+        .then(async () => {
+          try {
+            const snap = await loadWorkspaces();
+            if (!snap?.ok || !snap.workspaces) return;
+            const local = useHelix.getState().workspaces;
+            const merged = { ...snap.workspaces };
+            for (const [id, ws] of Object.entries(local)) {
+              const remote = snap.workspaces[id];
+              const localMem = ws?.memories?.length ?? 0;
+              const remoteMem = remote?.memories?.length ?? 0;
+              const localMsg = ws?.messages?.length ?? 0;
+              const remoteMsg = remote?.messages?.length ?? 0;
+              if (!remote || localMem + localMsg > remoteMem + remoteMsg) {
+                merged[id] = ws;
+                void saveWorkspaceFn({ data: { profileId: id, workspace: ws } });
+              }
+            }
+            useHelix.getState().hydrateWorkspaces(merged);
+          } catch {
+            /* store still has seeds */
+          }
+        })
+        .finally(done);
     } catch {
       done();
     }
@@ -105,6 +129,25 @@ export function AppShell() {
       })
       .catch(() => markSuperGrokLive(false));
   }, [setHydrated, markSuperGrokLive, setEnvFlags]);
+
+  useEffect(() => {
+    let timer: number | undefined;
+    const unsub = useHelix.subscribe((s, prev) => {
+      if (s.workspaces === prev.workspaces) return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        const st = useHelix.getState();
+        const id = st.activeProfileId;
+        const ws = st.workspaces[id];
+        if (!ws) return;
+        void saveWorkspaceFn({ data: { profileId: id, workspace: ws } });
+      }, 400);
+    });
+    return () => {
+      unsub();
+      window.clearTimeout(timer);
+    };
+  }, []);
 
   useEffect(() => {
     const t = window.setInterval(() => {
@@ -248,12 +291,14 @@ export function AppShell() {
                 resolveApproval(true);
                 if (held?.tool !== "spawn_subagent") return;
                 setBusy(true);
-                void runSubagent({
+                void runStoredSubagent({
                   data: {
                     role: held.args.role ?? "specialist",
                     task: held.args.task ?? "",
+                    profileId,
                     preferredProvider: useHelix.getState().preferredProvider,
                     keys: useHelix.getState().brainKeys,
+                    policy: useHelix.getState().policy,
                   },
                 })
                   .then((r) => {

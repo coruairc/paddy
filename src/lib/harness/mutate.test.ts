@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyMutation, curatorPass, matchSkills, parseMemoryFile, parseSkillMd, toSkillMd } from "./mutate.ts";
+import { applyMutation, applyTurnToWorkspace, curatorPass, matchSkills, parseMemoryFile, parseSkillMd, toSkillMd } from "./mutate.ts";
 import type { Skill, WorkspaceState } from "./types.ts";
 
 function emptyWs(over: Partial<WorkspaceState> = {}): WorkspaceState {
@@ -223,4 +223,26 @@ test("parseMemoryFile rebuilds entries from MEMORY.md bullets", () => {
   assert.equal(entries[0]?.kind, "preference");
   assert.equal(entries[0]?.text, "Prefer terse replies");
   assert.equal(entries[1]?.kind, "lesson");
+});
+
+test("applyTurnToWorkspace is the shared CLI/web write path", () => {
+  const payload = {
+    userText: "Remember I like diagrams",
+    channelId: "web",
+    sessionId: "web:operator",
+    result: {
+      ok: true as const,
+      text: "Noted.",
+      mutations: [
+        { type: "write_memory" as const, text: "Likes diagrams", kind: "preference" as const, mode: "append" as const },
+      ],
+      traces: [{ kind: "memory" as const, title: "Memory synced", status: "ok" as const }],
+    },
+    clearUnread: true,
+  };
+  const cli = applyTurnToWorkspace(emptyWs(), payload);
+  const web = applyTurnToWorkspace(emptyWs(), payload);
+  assert.equal(cli.memories[0]?.text, web.memories[0]?.text);
+  assert.equal(cli.messages[1]?.content, "Noted.");
+  assert.match(cli.files.memory, /Likes diagrams/);
 });

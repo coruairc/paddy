@@ -4,6 +4,7 @@ import { uid } from "@/lib/utils";
 import { CHANNELS, PADDY_PROFILE, POLICY, PROFILES, WEB_SESSION_ID, emptyUsage, newAgentWorkspace, seedSessions, seedWorkspaces, webSession } from "./defaults";
 import { getHubSkill } from "./hub";
 import { applyMutation, curatorPass, DEMO_SESSION_IDS, matchSkills, parseMemoryFile, parseSkillMd } from "./mutate";
+import { persistBrainKeys } from "./config-api";
 import { defaultBrainKeys, defaultModelByProvider, defaultProviders, keysForSlot, normalizeProviderId, PROVIDER_DEFS, slotConnected, slotForBrainKey, TOKEN_MAX, type BrainKeys, type KeySlot, type ProviderId, type ProviderState } from "./providers";
 import type {
   Channel,
@@ -110,6 +111,15 @@ export interface HelixStore {
     sessionId?: string,
     profileId?: string,
   ) => void;
+  commitTurn: (
+    userText: string,
+    channelId: string | undefined,
+    result: HelixTurnResult,
+    sessionId?: string,
+    profileId?: string,
+  ) => void;
+  replaceWorkspace: (id: string, ws: WorkspaceState) => void;
+  hydrateWorkspaces: (all: Record<string, WorkspaceState>) => void;
   openSession: (id: string) => void;
   setActiveSession: (id: string) => void;
   admitChannel: (channelId: string) => string | null;
@@ -221,7 +231,6 @@ type PersistedHelix = Partial<
     | "profiles"
     | "channels"
     | "policy"
-    | "workspaces"
     | "lastPulseAt"
     | "providers"
     | "preferredProvider"
@@ -534,6 +543,49 @@ export const useHelix = create<HelixStore>()(
             ),
           });
         }
+      },
+      commitTurn: (userText, channelId, result, sessionId, profileId) => {
+        const id =
+          profileId && get().workspaces[profileId] ? profileId : get().activeProfileId;
+        const sid =
+          sessionId ||
+          (channelId && channelId !== "web" ? `${channelId}:inbox` : WEB_SESSION_ID);
+        const ch = channelId || "web";
+        if (result.workspace) {
+          set({ workspaces: { ...get().workspaces, [id]: result.workspace } });
+        } else {
+          get().applyResult(userText, channelId, result, sessionId, profileId);
+          return;
+        }
+        set({
+          pendingApproval:
+            result.ok && result.pendingApproval
+              ? { ...result.pendingApproval, profileId: id, sessionId: sid }
+              : null,
+          pendingQueue:
+            result.ok && result.pendingApprovals && result.pendingApprovals.length > 1
+              ? result.pendingApprovals.slice(1).map((p) => ({
+                  ...p,
+                  profileId: id,
+                  sessionId: sid,
+                }))
+              : [],
+          error: result.ok ? null : result.error,
+          busy: false,
+        });
+        if (ch) {
+          set({
+            channels: get().channels.map((c) =>
+              c.id === ch ? { ...c, unread: 0 } : c,
+            ),
+          });
+        }
+      },
+      replaceWorkspace: (id, ws) => {
+        set({ workspaces: { ...get().workspaces, [id]: ws } });
+      },
+      hydrateWorkspaces: (all) => {
+        set({ workspaces: { ...get().workspaces, ...all } });
       },
       admitChannel: (channelId) => {
         const ch = get().channels.find((c) => c.id === channelId);
@@ -1051,6 +1103,11 @@ export const useHelix = create<HelixStore>()(
           };
         });
         set({ brainKeys, providers });
+        const persistable: Record<string, string> = {};
+        for (const [k, v] of Object.entries(brainKeys)) {
+          persistable[k] = v ?? "";
+        }
+        void persistBrainKeys({ data: { keys: persistable } });
       },
       clearBrainSlot: (slot) => {
         get().applyBrainPatch({ [slot]: "" });
@@ -1079,7 +1136,6 @@ export const useHelix = create<HelixStore>()(
         profiles: s.profiles,
         channels: s.channels,
         policy: s.policy,
-        workspaces: s.workspaces,
         lastPulseAt: s.lastPulseAt,
         providers: s.providers,
         preferredProvider: s.preferredProvider,
@@ -1090,7 +1146,9 @@ export const useHelix = create<HelixStore>()(
         pendingQueue: s.pendingQueue,
       }),
       merge: (persisted, current) => {
-        const p = (persisted ?? {}) as PersistedHelix;
+        const p = (persisted ?? {}) as PersistedHelix & {
+          workspaces?: Record<string, WorkspaceState>;
+        };
         const workspaces = { ...current.workspaces, ...p.workspaces };
         if (workspaces.helix && !workspaces.paddy) {
           workspaces.paddy = workspaces.helix;

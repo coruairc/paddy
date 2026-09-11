@@ -1,4 +1,6 @@
 import { openaiTools } from "./tools";
+import { shouldFailover } from "./failover";
+import { splitKeyPool } from "./secret-scope";
 import {
   aliasPreferredModel,
   canonicalizeModelId,
@@ -17,6 +19,7 @@ import {
 } from "./providers";
 import { CODEX_API, isCodexAccess, refreshCodexToken } from "./oauth-codex";
 import { isXaiAccess, refreshXaiToken } from "./oauth-xai";
+import { secret } from "./secret-scope";
 
 export type ChatMsg =
   | { role: "system"; content: string }
@@ -55,6 +58,16 @@ export interface BrainRoute {
   accountId?: string;
   refresh?: string;
   rotated?: BrainKeys;
+  keyPool?: string[];
+}
+
+export type ToolSpec = ReturnType<typeof openaiTools>;
+export type ToolsArg = boolean | ToolSpec;
+
+function resolvedTools(useTools: ToolsArg): ToolSpec | null {
+  if (Array.isArray(useTools)) return useTools;
+  if (useTools) return openaiTools();
+  return null;
 }
 
 type OpenAiResponse = {
@@ -78,7 +91,7 @@ function trimKey(raw?: string): string {
 }
 
 function env(name: string): string {
-  return trimKey(process.env[name]);
+  return trimKey(secret(name));
 }
 
 export function resolveBrain(
@@ -217,6 +230,9 @@ export function resolveBrain(
     };
   }
 
+  const pool = splitKeyPool(apiKey);
+  const primary = pool[0] || apiKey;
+
   return {
     ok: true,
     route: {
@@ -224,10 +240,11 @@ export function resolveBrain(
       label: def.name,
       model,
       baseUrl,
-      apiKey,
+      apiKey: primary,
       compat,
       accountId,
       refresh,
+      keyPool: pool.slice(1),
     },
   };
 }
@@ -397,7 +414,7 @@ export function envPresence(): Record<string, boolean> {
 export async function callBrain(
   route: BrainRoute,
   messages: ChatMsg[],
-  useTools: boolean,
+  useTools: ToolsArg,
   maxTokens: number,
 ): Promise<{ content: string; toolCalls: ToolCall[]; usage: BrainUsage }> {
   if (route.compat === "codex") {
@@ -412,7 +429,7 @@ export async function callBrain(
 async function callCodex(
   route: BrainRoute,
   messages: ChatMsg[],
-  useTools: boolean,
+  useTools: ToolsArg,
   maxTokens: number,
 ): Promise<{ content: string; toolCalls: ToolCall[]; usage: BrainUsage }> {
   const system = messages
@@ -452,7 +469,8 @@ async function callCodex(
     max_output_tokens: maxTokens,
   };
   if (useTools) {
-    body.tools = openaiTools().map((t) => ({
+    const tools = resolvedTools(useTools) ?? openaiTools();
+    body.tools = tools.map((t) => ({
       type: "function",
       name: t.function.name,
       description: t.function.description,
@@ -533,7 +551,7 @@ async function callCodex(
 async function callOpenAiCompat(
   route: BrainRoute,
   messages: ChatMsg[],
-  useTools: boolean,
+  useTools: ToolsArg,
   maxTokens: number,
 ): Promise<{ content: string; toolCalls: ToolCall[]; usage: BrainUsage }> {
   const body: Record<string, unknown> = {
@@ -545,8 +563,9 @@ async function callOpenAiCompat(
   if (route.compat === "xai" && xaiSendsReasoningEffort(route.model)) {
     body.reasoning_effort = "low";
   }
-  if (useTools) {
-    body.tools = openaiTools();
+  const tools = resolvedTools(useTools);
+  if (tools) {
+    body.tools = tools;
     body.tool_choice = "auto";
   }
   const headers: Record<string, string> = {
@@ -578,6 +597,18 @@ async function callOpenAiCompat(
       headers,
       body: JSON.stringify(body),
     });
+  }
+  if (shouldFailover(used.status) && route.keyPool?.length) {
+    const nextKey = route.keyPool.shift();
+    if (nextKey) {
+      route.apiKey = nextKey;
+      headers.Authorization = `Bearer ${nextKey}`;
+      used = await fetch(`${route.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body),
+      });
+    }
   }
   const json = (await used.json()) as OpenAiResponse;
   if (!used.ok) {
@@ -638,7 +669,7 @@ function anthropicHeaders(apiKey: string): Record<string, string> {
 async function callAnthropic(
   route: BrainRoute,
   messages: ChatMsg[],
-  useTools: boolean,
+  useTools: ToolsArg,
   maxTokens: number,
 ): Promise<{ content: string; toolCalls: ToolCall[]; usage: BrainUsage }> {
   const system = messages
@@ -695,8 +726,9 @@ async function callAnthropic(
     system,
     messages: converted,
   };
-  if (useTools) {
-    body.tools = openaiTools().map((t) => ({
+  const tools = resolvedTools(useTools);
+  if (tools) {
+    body.tools = tools.map((t) => ({
       name: t.function.name,
       description: t.function.description,
       input_schema: t.function.parameters,

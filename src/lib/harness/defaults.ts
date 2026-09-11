@@ -1,9 +1,6 @@
-import { uid } from "@/lib/utils";
 import type {
   Channel,
   ChatMessage,
-  Checkpoint,
-  HelixTurnInput,
   MemoryEntry,
   Policy,
   ProfileMeta,
@@ -15,6 +12,10 @@ import type {
   WorkspaceFiles,
   WorkspaceState,
 } from "./types";
+
+function uid(prefix = "id"): string {
+  return `${prefix}_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36).slice(-3)}`;
+}
 
 const now = Date.now();
 
@@ -276,40 +277,13 @@ function seedTickets(): Ticket[] {
   ];
 }
 
-export function cliTurnSeed(): Pick<
-  HelixTurnInput,
-  "profileName" | "role" | "files" | "skills" | "memories" | "policy" | "tickets"
-> {
-  return {
-    profileName: PADDY_PROFILE.name,
-    role: PADDY_PROFILE.role,
-    files: PADDY_FILES,
-    skills: skillsHelix().map((s) => ({
-      name: s.name,
-      description: s.description,
-      instructions: s.instructions,
-      status: s.status,
-      uses: s.uses,
-      triggers: s.triggers,
-    })),
-    memories: memoriesHelix().map((m) => ({ text: m.text, kind: m.kind })),
-    policy: POLICY,
-    tickets: seedTickets().map((t) => ({
-      id: t.id,
-      title: t.title,
-      body: t.body,
-      status: t.status,
-    })),
-  };
-}
-
 function tracesHelix(): TraceEvent[] {
   return [
     {
       id: uid("tr"),
       kind: "gateway",
       title: "Gateway online",
-      detail: "Web console bound. Telegram, Discord, Slack, WhatsApp, Signal, and email wait on a token — same fields OpenClaw and Hermes use.",
+      detail: "Web console bound. Other channels idle — this kit does not ship live messaging bridges.",
       at: now - 1000 * 60 * 180,
       status: "ok",
     },
@@ -459,42 +433,42 @@ export const CHANNELS: Channel[] = [
   {
     id: "telegram",
     name: "Telegram",
-    blurb: "BotFather token. Same field OpenClaw and Hermes store. Pairing code on first DM.",
+    blurb: "Idle. This kit does not ship a Telegram bot — sessions are ready if you add a bridge later.",
     status: "idle",
     unread: 0,
   },
   {
     id: "slack",
     name: "Slack",
-    blurb: "Socket Mode. Bot token + app token — the Hermes pair.",
+    blurb: "Idle. No Slack app in this kit. Pair a workspace when a bridge exists.",
     status: "idle",
     unread: 0,
   },
   {
     id: "discord",
     name: "Discord",
-    blurb: "Bot token with Message Content Intent. Guilds wait on mention.",
+    blurb: "Idle. Guild routing lives here once a bot token is wired.",
     status: "idle",
     unread: 0,
   },
   {
     id: "whatsapp",
     name: "WhatsApp",
-    blurb: "Meta Cloud API. Webhook /api/hooks/whatsapp on this gateway.",
+    blurb: "Idle. Unknown senders will wait on a pairing code when a bridge exists.",
     status: "idle",
     unread: 0,
   },
   {
     id: "signal",
     name: "Signal",
-    blurb: "signal-cli REST URL + number. Same as Hermes SIGNAL_HTTP_URL.",
-    status: "idle",
+    blurb: "Offline. No Signal node in this kit.",
+    status: "offline",
     unread: 0,
   },
   {
     id: "email",
     name: "Email",
-    blurb: "IMAP poll + SMTP send. Gmail needs an app password.",
+    blurb: "Idle. Point DNS at a self-hosted inbound later — not in this kit.",
     status: "idle",
     unread: 0,
   },

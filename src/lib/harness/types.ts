@@ -271,6 +271,9 @@ export interface HelixTurnInput {
   nudgeMemory?: boolean;
   nudgeSkill?: boolean;
   forceSkill?: string;
+  profileId?: string;
+  sessionId?: string;
+  rawUserText?: string;
 }
 
 export type HelixTurnResult =
@@ -285,6 +288,7 @@ export type HelixTurnResult =
         model: string;
         provider: string;
       };
+      workspace?: WorkspaceState;
     }
   | {
       ok: true;
@@ -309,4 +313,5 @@ export type HelixTurnResult =
         model: string;
         provider: string;
       };
+      workspace?: WorkspaceState;
     };

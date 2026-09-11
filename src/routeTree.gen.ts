@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiCliRouteImport } from './routes/api/cli'
+import { Route as ApiHooksChannelRouteImport } from './routes/api/hooks/$channel'
 import { Route as ApiHooksWhatsappRouteImport } from './routes/api/hooks/whatsapp'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const ApiCliRoute = ApiCliRouteImport.update({
   path: '/api/cli',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiHooksChannelRoute = ApiHooksChannelRouteImport.update({
+  id: '/api/hooks/$channel',
+  path: '/api/hooks/$channel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHooksWhatsappRoute = ApiHooksWhatsappRouteImport.update({
   id: '/api/hooks/whatsapp',
   path: '/api/hooks/whatsapp',
@@ -32,30 +38,39 @@ const ApiHooksWhatsappRoute = ApiHooksWhatsappRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/cli': typeof ApiCliRoute
+  '/api/hooks/$channel': typeof ApiHooksChannelRoute
   '/api/hooks/whatsapp': typeof ApiHooksWhatsappRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/cli': typeof ApiCliRoute
+  '/api/hooks/$channel': typeof ApiHooksChannelRoute
   '/api/hooks/whatsapp': typeof ApiHooksWhatsappRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/cli': typeof ApiCliRoute
+  '/api/hooks/$channel': typeof ApiHooksChannelRoute
   '/api/hooks/whatsapp': typeof ApiHooksWhatsappRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/cli' | '/api/hooks/whatsapp'
+  fullPaths: '/' | '/api/cli' | '/api/hooks/$channel' | '/api/hooks/whatsapp'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/cli' | '/api/hooks/whatsapp'
-  id: '__root__' | '/' | '/api/cli' | '/api/hooks/whatsapp'
+  to: '/' | '/api/cli' | '/api/hooks/$channel' | '/api/hooks/whatsapp'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/cli'
+    | '/api/hooks/$channel'
+    | '/api/hooks/whatsapp'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiCliRoute: typeof ApiCliRoute
+  ApiHooksChannelRoute: typeof ApiHooksChannelRoute
   ApiHooksWhatsappRoute: typeof ApiHooksWhatsappRoute
 }
 
@@ -75,6 +90,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCliRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/hooks/$channel': {
+      id: '/api/hooks/$channel'
+      path: '/api/hooks/$channel'
+      fullPath: '/api/hooks/$channel'
+      preLoaderRoute: typeof ApiHooksChannelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/hooks/whatsapp': {
       id: '/api/hooks/whatsapp'
       path: '/api/hooks/whatsapp'
@@ -88,6 +110,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiCliRoute: ApiCliRoute,
+  ApiHooksChannelRoute: ApiHooksChannelRoute,
   ApiHooksWhatsappRoute: ApiHooksWhatsappRoute,
 }
 export const routeTree = rootRouteImport

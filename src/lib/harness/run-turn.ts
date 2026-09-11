@@ -1,6 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getHubSkill, searchHub } from "./hub";
 import { callBrain, envPresence, listAvailableModels, resolveBrain, type BrainRoute, type ChatMsg } from "./brain";
+import { compactMessages } from "./compact";
+import { POLICY } from "./defaults";
+import { callMcpTool, isMcpToolName, listMcpTools, mcpOpenAiTools } from "./mcp";
+import { resolveSubagentToolPolicy, subagentMayUse, toolNeedsApproval } from "./subagent-policy";
+import { openaiTools } from "./tools";
 import { pollCodexDevice, startCodexDevice } from "./oauth-codex";
 import { pollXaiDevice, startXaiDevice } from "./oauth-xai";
 import { TOKEN_MAX, defFor, type BrainKeys, type ModelOption, type ProviderId } from "./providers";
@@ -171,11 +176,14 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
       content: m.content.slice(0, 2500),
     }));
 
-    const messages: ChatMsg[] = [
+    const messages: ChatMsg[] = compactMessages([
       { role: "system", content: buildSystemPrompt(data) },
       ...history,
       { role: "user", content: data.userMessage.slice(0, 4000) },
-    ];
+    ]);
+
+    const mcpTools = await listMcpTools();
+    const toolset = [...openaiTools(), ...mcpOpenAiTools(mcpTools)];
 
     traces.push({
       kind: "model",
@@ -207,7 +215,7 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
         const { content, toolCalls, usage } = await callBrain(
           route,
           messages,
-          true,
+          toolset,
           MAX_TOKENS,
         );
         addUsage(usage);
@@ -233,7 +241,8 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
         for (const tc of toolCalls) {
           const name = tc.function.name as ToolName;
           const args = parseArgs(tc.function.arguments);
-          const needsApproval = data.policy.requireApproval.includes(name);
+          const needsApproval = toolNeedsApproval(name, data.policy);
+
 
           if (needsApproval) {
             const asStrings: Record<string, string> = {};
@@ -243,7 +252,9 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
             const reason =
               name === "send_channel"
                 ? "Outbound channel send is delivered by the live bridge after you approve."
-                : "Subagents spend a nested model call.";
+                : isMcpToolName(name)
+                  ? "MCP tools are always approval-gated."
+                  : "Subagents spend a nested model call.";
             heldApprovals.push({ tool: name, args: asStrings, reason });
             traces.push({
               kind: "permission",
@@ -518,19 +529,8 @@ async function runTool(
       const role = str(args.role, "specialist").slice(0, 80);
       const task = str(args.task).slice(0, 1200);
       try {
-        const nested = await callBrain(
-          ctx.route,
-          [
-            {
-              role: "system",
-              content: `You are an isolated Paddy subagent (${role}). Do the task in under 180 words. No tools. No fluff.`,
-            },
-            { role: "user", content: task },
-          ],
-          false,
-          SUBAGENT_TOKENS,
-        );
-        return { result: `Subagent (${role}):\n${nested.content.trim()}` };
+        const text = await executeInheritedSubagent(input, ctx.route, role, task);
+        return { result: text };
       } catch (err) {
         const message = err instanceof Error ? err.message : "subagent failed";
         return { result: `Subagent failed: ${message}` };
@@ -653,8 +653,59 @@ async function runTool(
       };
     }
     default:
+      if (isMcpToolName(name)) {
+        const out = await callMcpTool(name, args);
+        return { result: out };
+      }
       return { result: `Unknown tool ${name}` };
   }
+}
+
+export async function executeInheritedSubagent(
+  data: HelixTurnInput,
+  route: BrainRoute,
+  role: string,
+  task: string,
+): Promise<string> {
+  const allow = resolveSubagentToolPolicy(data.policy);
+  const nestedTools = openaiTools().filter((t) => allow.includes(t.function.name as ToolName));
+  const nestedMsgs: ChatMsg[] = [
+    {
+      role: "system",
+      content: `You are an isolated Paddy subagent (${role}). Do the task in under 180 words. You may use inherited tools only: ${allow.join(", ") || "(none)"}. Never send_channel or spawn_subagent.`,
+    },
+    { role: "user", content: task },
+  ];
+  const first = await callBrain(route, nestedMsgs, nestedTools, SUBAGENT_TOKENS);
+  if (!first.toolCalls.length) {
+    return `Subagent (${role}):\n${first.content.trim()}`;
+  }
+  nestedMsgs.push({
+    role: "assistant",
+    content: first.content || null,
+    tool_calls: first.toolCalls,
+  });
+  const ctx = { route, subagentUsed: true, markSubagent: () => {} };
+  for (const tc of first.toolCalls) {
+    const nestedName = tc.function.name as ToolName;
+    if (!subagentMayUse(data.policy, nestedName)) {
+      nestedMsgs.push({
+        role: "tool",
+        tool_call_id: tc.id,
+        content: `Tool ${nestedName} is not inherited by this subagent.`,
+      });
+      continue;
+    }
+    const nestedArgs = parseArgs(tc.function.arguments);
+    const ran = await runTool(nestedName, nestedArgs, data, ctx);
+    nestedMsgs.push({
+      role: "tool",
+      tool_call_id: tc.id,
+      content: ran.result.slice(0, 4000),
+    });
+  }
+  const last = await callBrain(route, nestedMsgs, false, SUBAGENT_TOKENS);
+  return `Subagent (${role}):\n${last.content.trim()}`;
 }
 
 export const helixRuntime = createServerFn({ method: "GET" }).handler(async () => {
@@ -741,6 +792,7 @@ export const runSubagent = createServerFn({ method: "POST" })
       task: string;
       preferredProvider?: string;
       keys?: Record<string, string | undefined>;
+      policy?: HelixTurnInput["policy"];
     }) => input,
   )
   .handler(async ({ data }): Promise<{ ok: true; text: string } | { ok: false; error: string }> => {
@@ -751,20 +803,21 @@ export const runSubagent = createServerFn({ method: "POST" })
     if (!resolved.ok) return { ok: false, error: resolved.error };
     const role = data.role.slice(0, 80) || "specialist";
     const task = data.task.slice(0, 1200);
+    const policy = data.policy ?? POLICY;
+    const input: HelixTurnInput = {
+      profileName: "Paddy Irishman",
+      role: "operator",
+      files: { soul: "", identity: "", user: "", memory: "", agents: "", heartbeat: "" },
+      skills: [],
+      memories: [],
+      history: [],
+      userMessage: task,
+      policy,
+      keys: sanitizeKeys(data.keys),
+    };
     try {
-      const nested = await callBrain(
-        resolved.route,
-        [
-          {
-            role: "system",
-            content: `You are an isolated Paddy subagent (${role}). Do the task in under 180 words. No tools. No fluff.`,
-          },
-          { role: "user", content: task },
-        ],
-        false,
-        SUBAGENT_TOKENS,
-      );
-      return { ok: true, text: `Subagent (${role}):\n${nested.content.trim()}` };
+      const text = await executeInheritedSubagent(input, resolved.route, role, task);
+      return { ok: true, text };
     } catch (err) {
       const message = err instanceof Error ? err.message : "subagent failed";
       return { ok: false, error: message };

@@ -165,7 +165,7 @@ export const TOOL_CATALOG: {
   {
     name: "spawn_subagent",
     description:
-      "Delegate a bounded nested completion. Requires approval. One per turn. Same brain, no tools; the result is posted to this chat.",
+      "Delegate a bounded nested completion. Requires approval. One per turn. Inherits the parent turn's auto-approved tools except send_channel and spawn_subagent.",
     parameters: {
       type: "object",
       properties: {
@@ -289,8 +289,10 @@ export const TOOL_CATALOG: {
   },
 ];
 
-export function openaiTools() {
-  return TOOL_CATALOG.map((t) => ({
+export function openaiTools(
+  extra: { name: string; description: string; parameters: Record<string, unknown> }[] = [],
+) {
+  return [...TOOL_CATALOG, ...extra].map((t) => ({
     type: "function" as const,
     function: {
       name: t.name,
