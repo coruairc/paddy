@@ -21,6 +21,7 @@ test("install.sh --help mentions curl, powershell, and paddy gateway", () => {
     "install.sh | bash",
     "install.ps1",
     "--no-onboard",
+    "--yes",
     "curl -fsSL",
   ]) {
     assert.match(r.stdout, new RegExp(needle.replace(/[|]/g, "\\|")));
@@ -43,6 +44,20 @@ test("install.sh --dry-run prints clone and wrapper without writing src", () => 
   assert.match(r.stdout, /paddy gateway/);
 });
 
+test("install.sh --dry-run with off-PATH bin-dir prints export PATH", () => {
+  const r = run([
+    "--dry-run",
+    "--no-onboard",
+    "--git-dir",
+    "/tmp/paddy-dry-src",
+    "--bin-dir",
+    "/tmp/paddy-off-path-bin",
+  ]);
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  assert.match(r.stdout, /export PATH=/);
+  assert.match(r.stdout, /paddy gateway/);
+});
+
 test("install copies stay in sync", () => {
   const root = readFileSync(sh, "utf8");
   assert.equal(readFileSync(join(import.meta.dirname, "public/install.sh"), "utf8"), root);
@@ -52,4 +67,3 @@ test("install copies stay in sync", () => {
   assert.equal(readFileSync(join(import.meta.dirname, "docs/install.ps1"), "utf8"), ps1);
   assert.match(ps1, /Paddy installed successfully, Sláinte🍀/);
 });
-

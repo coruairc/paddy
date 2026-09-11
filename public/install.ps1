@@ -10,6 +10,7 @@ param(
   [switch]$NoOnboard,
   [switch]$NoConfig,
   [switch]$DryRun,
+  [switch]$Yes,
   [string]$Ref = $(if ($env:PADDY_REF) { $env:PADDY_REF } else { "main" }),
   [string]$Repo = $(if ($env:PADDY_REPO) { $env:PADDY_REPO } else { "coruairc/paddy" }),
   [string]$GitDir = $(if ($env:PADDY_GIT_DIR) { $env:PADDY_GIT_DIR } else { (Join-Path $HOME ".paddy\src") }),
@@ -17,6 +18,46 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+function Confirm-Paddy {
+  param([string]$Message)
+  if ($Yes) { return $true }
+  try {
+    $ans = Read-Host "$Message [Y/n]"
+  } catch {
+    return $false
+  }
+  return -not ($ans -match '^[nN]')
+}
+
+function Refresh-PaddyPath {
+  $machine = [Environment]::GetEnvironmentVariable("Path", "Machine")
+  $user = [Environment]::GetEnvironmentVariable("Path", "User")
+  if (-not $machine) { $machine = "" }
+  if (-not $user) { $user = "" }
+  $env:Path = "$machine;$user;$env:Path"
+}
+
+function Ensure-PaddyCommand {
+  param([string]$Name, [string]$WingetId, [string]$Hint)
+  if (Get-Command $Name -ErrorAction SilentlyContinue) { return }
+  if (-not (Confirm-Paddy "$Name is not installed. Install it now with winget?")) {
+    throw "paddy install: need $Name on PATH. $Hint"
+  }
+  Write-Paddy "installing $Name"
+  if ($DryRun) {
+    Write-Host "[dry-run] winget install --id $WingetId"
+    return
+  }
+  if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+    throw "paddy install: winget not found. $Hint"
+  }
+  winget install --id $WingetId -e --accept-package-agreements --accept-source-agreements
+  Refresh-PaddyPath
+  if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
+    throw "paddy install: $Name still missing after winget. Open a new terminal and re-run, or: $Hint"
+  }
+}
 
 function Write-Paddy {
   param([string]$Message)
@@ -77,15 +118,26 @@ if ($Ref -notmatch '^[A-Za-z0-9._/-]+$') { throw "paddy install: bad -Ref" }
 if ($Repo -notmatch '^[A-Za-z0-9._/-]+$') { throw "paddy install: bad -Repo" }
 if ($BinDir -match '[;$"]' -or $GitDir -match '[;$"]') { throw "paddy install: bad path" }
 
-foreach ($cmd in @("git", "node", "npm")) {
-  if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) {
-    throw "paddy install: need $cmd on PATH. Node 22+: winget install OpenJS.NodeJS.LTS  Git: winget install Git.Git"
-  }
+Ensure-PaddyCommand "git" "Git.Git" "winget install --id Git.Git -e"
+Ensure-PaddyCommand "node" "OpenJS.NodeJS.LTS" "winget install --id OpenJS.NodeJS.LTS -e"
+if (-not (Get-Command npm -ErrorAction SilentlyContinue)) {
+  Ensure-PaddyCommand "npm" "OpenJS.NodeJS.LTS" "winget install --id OpenJS.NodeJS.LTS -e"
 }
 
-$major = [int]((node -p "parseInt(process.versions.node, 10)").ToString().Trim())
+$major = 0
+try { $major = [int]((node -p "parseInt(process.versions.node, 10)").ToString().Trim()) } catch { $major = 0 }
 if ($major -lt 22) {
-  throw "paddy install: Node.js $major is too old. Paddy wants 22+."
+  if (Confirm-Paddy "Node.js $major is too old (need 22+). Install Node.js LTS now with winget?") {
+    Write-Paddy "installing Node.js LTS"
+    if (-not $DryRun) {
+      winget install --id OpenJS.NodeJS.LTS -e --accept-package-agreements --accept-source-agreements
+      Refresh-PaddyPath
+      $major = [int]((node -p "parseInt(process.versions.node, 10)").ToString().Trim())
+    }
+  }
+  if ($major -lt 22 -and -not $DryRun) {
+    throw "paddy install: Node.js $major is too old. Paddy wants 22+. winget install --id OpenJS.NodeJS.LTS -e"
+  }
 }
 Write-Paddy "node $(node -v) · npm $(npm -v)"
 
@@ -162,5 +214,9 @@ Write-Host @"
   paddy doctor
 
 Put keys in $GitDir\selfhost.env or $prefix\selfhost.env, then prefer a model.
+
+If paddy is not found in this session:
+  `$env:Path = "$BinDir;`$env:Path"
+  paddy gateway
 
 "@

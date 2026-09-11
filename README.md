@@ -34,7 +34,13 @@ curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | ba
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1))) -NoConfig
 ```
 
-Needs **git** and **Node.js 22+**. No sudo. The script clones this repo to `~/.paddy/src`, runs `npm install`, and puts `paddy` on your PATH.
+If git or Node.js 22+ is missing, the script offers to install them. It clones this repo to `~/.paddy/src`, runs `npm install`, and puts `paddy` on your PATH (`~/.local/bin`, and `/usr/local/bin` when writable). If this terminal still says `command not found`:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+hash -r
+paddy gateway
+```
 
 ## Then
 

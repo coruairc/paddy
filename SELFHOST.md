@@ -6,7 +6,7 @@ Not affiliated with the OpenClaw Foundation, Nous Research, OpenAI, Anthropic, G
 
 ## Install from git (recommended)
 
-Same shape as the usual harness installers. Needs git and Node.js 22+.
+Same shape as the usual harness installers. If git or Node.js 22+ is missing, the installer offers to install them.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash

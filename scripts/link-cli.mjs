@@ -25,7 +25,7 @@ export function linkCli() {
   if (win) {
     writeFileSync(dest, `@echo off\r\nnode "${cli}" %*\r\n`, { encoding: "utf8", mode: 0o755 });
   } else {
-    writeFileSync(dest, `#!/usr/bin/env bash\nexec node "${cli}" "$@"\n`, { encoding: "utf8", mode: 0o755 });
+    writeFileSync(dest, `#!/usr/bin/env bash\nexport PATH="${binDir}:$PATH"\nexec node "${cli}" "$@"\n`, { encoding: "utf8", mode: 0o755 });
     chmodSync(dest, 0o755);
   }
   return { binDir, dest };
