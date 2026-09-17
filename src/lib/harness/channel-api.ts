@@ -17,6 +17,7 @@ import {
 } from "./channels";
 import { detectLineage, readLineageAccounts, summarizeImported } from "./lineage.mjs";
 import { exportToLineage, importFromLineage } from "./config.mjs";
+import { cliGatewayMiddleware } from "./cli-auth.server";
 
 function gatewayReady(): boolean {
   return Boolean((process.env.PADDY_CLI_TOKEN ?? "").trim());
@@ -88,6 +89,7 @@ export const listGatewayChannels = createServerFn({ method: "GET" }).handler(asy
 });
 
 export const saveGatewayChannel = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator(
     (input: {
       id: string;
@@ -150,6 +152,7 @@ export const saveGatewayChannel = createServerFn({ method: "POST" })
   });
 
 export const resolveGatewayPair = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator((input: { code: string; allow: boolean }) => input)
   .handler(async ({ data }) => {
     if (!gatewayReady()) {
@@ -166,6 +169,7 @@ export const resolveGatewayPair = createServerFn({ method: "POST" })
   });
 
 export const importLineageChannels = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator((input: { source: "openclaw" | "hermes" | "both"; replace?: string[] }) => input)
   .handler(async ({ data }) => {
     if (!gatewayReady()) {
@@ -215,6 +219,7 @@ export const importLineageChannels = createServerFn({ method: "POST" })
   });
 
 export const exportLineageChannels = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator((input: { target: "openclaw" | "hermes" | "both" }) => input)
   .handler(async ({ data }) => {
     if (!gatewayReady()) {

@@ -8,8 +8,11 @@ import { TOKEN_MAX, type BrainKeys, type ProviderId } from "./providers";
 import { executeTurn, executeInheritedSubagent } from "./run-turn";
 import { secretsForProfile, withSecretScope } from "./secret-scope";
 import type { HelixTurnInput, HelixTurnResult, WorkspaceState } from "./types";
+import { cliGatewayMiddleware } from "./cli-auth.server";
 
-export const loadWorkspaces = createServerFn({ method: "GET" }).handler(async () => {
+export const loadWorkspaces = createServerFn({ method: "GET" })
+  .middleware([cliGatewayMiddleware])
+  .handler(async () => {
   const store = await getMemoryStore();
   const ids = await store.listProfiles();
   const workspaces: Record<string, WorkspaceState> = {};
@@ -18,6 +21,7 @@ export const loadWorkspaces = createServerFn({ method: "GET" }).handler(async ()
 });
 
 export const saveWorkspaceFn = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator((input: { profileId: string; workspace: WorkspaceState }) => input)
   .handler(async ({ data }) => {
     const id = data.profileId.trim().slice(0, 80) || "paddy";
@@ -66,6 +70,7 @@ function sanitizeKeys(raw?: Record<string, string | undefined>): BrainKeys {
 }
 
 export const runStoredHelixTurn = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator((input: HelixTurnInput) => input)
   .handler(async ({ data }): Promise<HelixTurnResult> => {
     const profileId = (data.profileId || "paddy").slice(0, 80);
@@ -108,6 +113,7 @@ export const runStoredHelixTurn = createServerFn({ method: "POST" })
   });
 
 export const runStoredSubagent = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator(
     (input: {
       role: string;
