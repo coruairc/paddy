@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { applyEnvAccounts, decideInbound, loadChannelConfig } from "@/lib/harness/channels";
-import { handleCliRequest } from "@/lib/harness/cli-api";
+import { handleInboundFromVerifiedWebhook } from "@/lib/harness/cli-api";
 import { normalizeInbound } from "@/lib/harness/inbound";
+import { verifyWhatsappSignature } from "@/lib/harness/webhook-verify";
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -32,15 +33,21 @@ async function handlePost(request: Request) {
   if (!acc?.token || !acc.phoneId) {
     return json({ ok: false, error: "WhatsApp is not connected." }, 400);
   }
+
+  const rawBody = await request.text();
+  const verified = verifyWhatsappSignature(rawBody, request.headers);
+  if (!verified.ok) return json({ ok: false, error: verified.error }, verified.status);
+
   let body: unknown = {};
   try {
-    body = await request.json();
+    body = rawBody ? JSON.parse(rawBody) : {};
   } catch {
     return json({ ok: false, error: "Invalid JSON." }, 400);
   }
+
   const inbound = normalizeInbound("whatsapp", body);
   if (!inbound) return json({ ok: true, ignored: true });
-  const cliToken = (process.env.PADDY_CLI_TOKEN ?? "").trim();
+
   const decision = decideInbound({
     channelId: "whatsapp",
     from: inbound.from,
@@ -49,29 +56,23 @@ async function handlePost(request: Request) {
     text: inbound.message,
     isGroup: inbound.isGroup,
   });
+
   let reply = "";
   if (decision.action === "pair") reply = decision.reply;
-  else if (decision.action === "allow" && cliToken) {
-    const inner = new Request(request.url, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${cliToken}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "inbound",
-        channelId: inbound.channelId,
-        from: inbound.from,
-        fromId: inbound.fromId,
-        chatId: inbound.chatId,
-        message: inbound.message,
-        isGroup: inbound.isGroup,
-      }),
+  else if (decision.action === "allow") {
+    const res = await handleInboundFromVerifiedWebhook({
+      action: "inbound",
+      channelId: inbound.channelId,
+      from: inbound.from,
+      fromId: inbound.fromId,
+      chatId: inbound.chatId,
+      message: inbound.message,
+      isGroup: inbound.isGroup,
     });
-    const res = await handleCliRequest(inner);
     const data = (await res.json().catch(() => ({}))) as { reply?: string; text?: string };
     reply = data.reply || data.text || "";
   }
+
   if (reply) {
     await fetch(`https://graph.facebook.com/v21.0/${acc.phoneId}/messages`, {
       method: "POST",

@@ -1,8 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { upsertSecrets } from "./config.mjs";
+import { cliGatewayMiddleware } from "./cli-auth.server";
 import { BRAIN_KEY_ENV } from "./secret-scope";
 
+/**
+ * Persist brain keys into ~/.paddy/.env.
+ * Requires presented Bearer when off-loopback (see cliGatewayMiddleware).
+ * FE contract: send Authorization: Bearer <PADDY_CLI_TOKEN> on this call when
+ * PADDY_BIND is not loopback; loopback single-operator may omit it.
+ */
 export const persistBrainKeys = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator((input: { keys: Record<string, string> }) => input)
   .handler(async ({ data }) => {
     const patch: Record<string, string> = {};

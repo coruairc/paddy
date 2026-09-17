@@ -14,21 +14,11 @@ import { executeTurn, executeInheritedSubagent } from "./run-turn";
 import { secretsForProfile, withSecretScope } from "./secret-scope";
 import { wrapUntrusted } from "./untrusted";
 import type { HelixTurnInput } from "./types";
+import { cliAuthorized, expectedCliToken } from "./cli-auth";
 
 const TOKEN_MAX = 8192;
 
-function expectedToken(): string {
-  return (process.env.PADDY_CLI_TOKEN ?? "").trim();
-}
 
-function cliAuthorized(request: Request): boolean {
-  const want = expectedToken();
-  if (!want) return false;
-  const header = request.headers.get("authorization") ?? "";
-  const bearer = header.toLowerCase().startsWith("bearer ") ? header.slice(7).trim() : "";
-  const query = new URL(request.url).searchParams.get("token") ?? "";
-  return bearer === want || query === want;
-}
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -51,7 +41,7 @@ function publicStatus() {
   return {
     ok: true as const,
     preferred,
-    locked: !expectedToken(),
+    locked: !expectedCliToken(),
     env,
     providers: PROVIDER_DEFS.map((d) => ({
       id: d.id,
@@ -149,7 +139,7 @@ async function handleChat(body: Record<string, unknown>) {
   });
 }
 
-async function handleInbound(body: Record<string, unknown>) {
+export async function handleInbound(body: Record<string, unknown>) {
   const channelId = str(body.channelId);
   if (!isBridgeChannel(channelId)) return json({ ok: false, error: "Unknown channel." }, 400);
   const from = str(body.from, "unknown");
@@ -328,6 +318,12 @@ async function handleApprove(body: Record<string, unknown>) {
   return json({ ok: true, text: "Allowed." });
 }
 
+
+/** For verified provider webhooks only — never call from unsigned HTTP. */
+export async function handleInboundFromVerifiedWebhook(body: Record<string, unknown>): Promise<Response> {
+  return handleInbound(body);
+}
+
 export async function handleCliRequest(request: Request): Promise<Response> {
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204 });
@@ -368,10 +364,10 @@ export async function handleCliRequest(request: Request): Promise<Response> {
       {
         ok: false,
         error:
-          expectedToken()
-            ? "CLI token rejected. Use the token from ~/.paddy/config.json (paddy gateway sets it)."
+          expectedCliToken()
+            ? "CLI token rejected. Use Authorization: Bearer <token> from ~/.paddy/config.json (query ?token= is no longer accepted)."
             : "CLI chat is locked on the hosted preview. Download the kit and run paddy gateway on your machine.",
-        locked: !expectedToken(),
+        locked: !expectedCliToken(),
       },
       401,
     );
