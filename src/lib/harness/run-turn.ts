@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { cliGatewayMiddleware } from "./cli-auth.server";
 import { getHubSkill, searchHub } from "./hub";
 import { callBrain, envPresence, listAvailableModels, resolveBrain, type BrainRoute, type ChatMsg } from "./brain";
 import { compactMessages } from "./compact";
@@ -344,6 +345,7 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
 }
 
 export const runHelixTurn = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator((input: HelixTurnInput) => input)
   .handler(async ({ data }): Promise<HelixTurnResult> => executeTurn(data));
 
@@ -708,7 +710,9 @@ export async function executeInheritedSubagent(
   return `Subagent (${role}):\n${last.content.trim()}`;
 }
 
-export const helixRuntime = createServerFn({ method: "GET" }).handler(async () => {
+export const helixRuntime = createServerFn({ method: "GET" })
+  .middleware([cliGatewayMiddleware])
+  .handler(async () => {
   const env = envPresence();
   return {
     superGrok: env.xai,
@@ -718,6 +722,7 @@ export const helixRuntime = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const probeBrain = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator(
     (input: {
       preferredProvider: string;
@@ -750,6 +755,7 @@ export const probeBrain = createServerFn({ method: "POST" })
   });
 
 export const listBrainModels = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator(
     (input: {
       preferredProvider: string;
@@ -786,6 +792,7 @@ export const listBrainModels = createServerFn({ method: "POST" })
   );
 
 export const runSubagent = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator(
     (input: {
       role: string;
@@ -824,7 +831,9 @@ export const runSubagent = createServerFn({ method: "POST" })
     }
   });
 
-export const startCodexAuth = createServerFn({ method: "POST" }).handler(
+export const startCodexAuth = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
+  .handler(
   async (): Promise<
     | { ok: true; sessionId: string; userCode: string; verificationUrl: string; expiresIn: number }
     | { ok: false; error: string }
@@ -842,6 +851,7 @@ export const startCodexAuth = createServerFn({ method: "POST" }).handler(
 );
 
 export const pollCodexAuth = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator((input: { sessionId: string }) => input)
   .handler(
     async ({
@@ -871,7 +881,9 @@ export const pollCodexAuth = createServerFn({ method: "POST" })
     },
   );
 
-export const startXaiAuth = createServerFn({ method: "POST" }).handler(
+export const startXaiAuth = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
+  .handler(
   async (): Promise<
     | { ok: true; sessionId: string; userCode: string; verificationUrl: string; expiresIn: number }
     | { ok: false; error: string }
@@ -889,6 +901,7 @@ export const startXaiAuth = createServerFn({ method: "POST" }).handler(
 );
 
 export const pollXaiAuth = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
   .validator((input: { sessionId: string }) => input)
   .handler(
     async ({
