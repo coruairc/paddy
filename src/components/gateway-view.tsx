@@ -12,6 +12,11 @@ import {
   saveGatewayChannel,
 } from "@/lib/harness/channel-api";
 import { INSTALL_PS1_CMD, INSTALL_SH } from "@/lib/harness/install";
+import {
+  isCliAuthFailure,
+  markCliAuthNeeded,
+  messageForCliAuthFailure,
+} from "@/lib/harness/cli-token";
 import { sendTurn } from "@/lib/harness/send";
 import { useHelix } from "@/lib/harness/store";
 import type { ChannelStatus } from "@/lib/harness/types";
@@ -221,6 +226,15 @@ export function GatewayView() {
         setOpenId(null);
         void refresh();
       }
+    } catch (err) {
+      if (isCliAuthFailure(err)) markCliAuthNeeded();
+      toast("Not connected", {
+        description: isCliAuthFailure(err)
+          ? messageForCliAuthFailure(err)
+          : err instanceof Error
+            ? err.message
+            : "Save failed",
+      });
     } finally {
       setSaving(null);
     }

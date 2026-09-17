@@ -73,14 +73,14 @@ export function messageForCliAuthFailure(err: unknown): string {
   return raw || CLI_AUTH_NEEDED_MESSAGE;
 }
 
-type Snapshot = { token: string; authNeeded: boolean; hasToken: boolean };
+type Snapshot = { authNeeded: boolean; hasToken: boolean };
 
 function getSnapshot(): Snapshot {
-  return { token: cliToken, authNeeded, hasToken: Boolean(cliToken) };
+  return { authNeeded, hasToken: Boolean(cliToken) };
 }
 
 function getServerSnapshot(): Snapshot {
-  return { token: "", authNeeded: false, hasToken: false };
+  return { authNeeded: false, hasToken: false };
 }
 
 export function useCliTokenSession(): Snapshot {
