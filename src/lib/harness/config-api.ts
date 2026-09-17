@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { upsertSecrets } from "./config.mjs";
-import { cliGatewayMiddleware } from "./cli-auth.server";
+import { cliGatewayMiddleware } from "./cli-gateway-middleware";
 import { BRAIN_KEY_ENV } from "./secret-scope";
 
 /**

@@ -1,10 +1,7 @@
 /**
- * Server-only gateway auth middleware for createServerFn.
+ * Server-only re-exports for gateway auth helpers.
+ * Middleware lives in cli-gateway-middleware.ts (needs a client hook).
  */
-import { createMiddleware } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
-import { assertGatewayCallerAuthorized } from "./cli-auth";
-
 export {
   CliAuthError,
   assertGatewayCallerAuthorized,
@@ -15,9 +12,5 @@ export {
   tokensEqual,
 } from "./cli-auth";
 
-export const cliGatewayMiddleware = createMiddleware({ type: "function" }).server(
-  async ({ next }) => {
-    assertGatewayCallerAuthorized(getRequest());
-    return next();
-  },
-);
+/** Prefer `./cli-gateway-middleware` so the client Authorization hook is included. */
+export { cliGatewayMiddleware } from "./cli-gateway-middleware";
