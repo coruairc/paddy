@@ -9,6 +9,7 @@ import {
   upsertCanonicalChannel,
 } from "./config.mjs";
 import { envAccountsFromProcess } from "./lineage.mjs";
+import { enqueueOutboundDurable } from "./outbound.mjs";
 
 export const BRIDGE_CHANNELS = [
   "telegram",
@@ -88,6 +89,10 @@ export function channelsStatusPath(): string {
 
 export function outboundPath(): string {
   return join(paddyHome(), "outbound.json");
+}
+
+export function outboundDeadPath(): string {
+  return join(paddyHome(), "outbound-dead.json");
 }
 
 function ensureHome(): void {
@@ -282,16 +287,11 @@ export function enqueueOutbound(row: {
   chatId?: string;
   message: string;
 }): void {
-  let q: { channelId: BridgeChannelId; chatId?: string; message: string; at: number }[] = [];
-  try {
-    q = JSON.parse(readFileSync(outboundPath(), "utf8")) as typeof q;
-  } catch {
-    q = [];
-  }
-  if (!Array.isArray(q)) q = [];
-  q.push({ ...row, message: row.message.slice(0, 4000), at: Date.now() });
-  ensureHome();
-  writeFileSync(outboundPath(), `${JSON.stringify(q.slice(-40), null, 2)}\n`, { mode: 0o600 });
+  enqueueOutboundDurable({
+    channelId: row.channelId,
+    chatId: row.chatId,
+    message: row.message.slice(0, 4000),
+  });
 }
 
 export function applyEnvAccounts(cfg: ChannelConfigFile): ChannelConfigFile {

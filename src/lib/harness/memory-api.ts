@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { PADDY_PROFILE, POLICY } from "./defaults";
 import { applyTurnToWorkspace, curatorPass } from "./mutate";
-import { buildTurnInput } from "./memory-store";
+import { buildTurnInput, SyncConflictError } from "./memory-store";
 import { getMemoryStore } from "./memory-store-sql";
 import { resolveBrain } from "./brain";
 import { TOKEN_MAX, type BrainKeys, type ProviderId } from "./providers";
@@ -26,8 +26,20 @@ export const saveWorkspaceFn = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const id = data.profileId.trim().slice(0, 80) || "paddy";
     const store = await getMemoryStore();
-    await store.syncTurn(id, data.workspace);
-    return { ok: true as const };
+    try {
+      await store.syncTurn(id, data.workspace);
+      return { ok: true as const, revision: data.workspace.revision };
+    } catch (err) {
+      if (err instanceof SyncConflictError) {
+        return {
+          ok: false as const,
+          error: "sync_conflict",
+          expected: err.expected,
+          actual: err.actual,
+        };
+      }
+      throw err;
+    }
   });
 
 const KEY_FIELDS: (keyof BrainKeys)[] = [
@@ -108,7 +120,28 @@ export const runStoredHelixTurn = createServerFn({ method: "POST" })
       next.memories = pass.memories;
       next.files = pass.files;
     }
-    await store.syncTurn(profileId, next);
+    try {
+      await store.syncTurn(profileId, next);
+    } catch (err) {
+      if (!(err instanceof SyncConflictError)) throw err;
+      // One bounded retry: rebase onto latest snapshot then sync again.
+      const latest = await store.prefetch(profileId);
+      const rebased = applyTurnToWorkspace(latest, {
+        userText: data.rawUserText ?? data.userMessage,
+        channelId: data.channelId || "web",
+        sessionId,
+        result,
+        clearUnread: true,
+      });
+      if (result.ok) {
+        const pass2 = curatorPass(rebased);
+        rebased.skills = pass2.skills;
+        rebased.memories = pass2.memories;
+        rebased.files = pass2.files;
+      }
+      await store.syncTurn(profileId, rebased);
+      return { ...result, workspace: rebased };
+    }
     return { ...result, workspace: next };
   });
 

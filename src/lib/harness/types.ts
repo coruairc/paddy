@@ -93,6 +93,10 @@ export interface MemoryEntry {
   kind: MemoryKind;
   at: number;
   source: string;
+  /** Optional unit embedding for ranked recall (local hash or API). */
+  embedding?: number[];
+  /** 0..1 importance hint for composite recall scoring. */
+  importance?: number;
 }
 
 export interface ChatMessage {
@@ -192,6 +196,8 @@ export interface Channel {
 }
 
 export interface WorkspaceState {
+  /** Monotonic revision for optimistic syncTurn (lost-update guard). */
+  revision?: number;
   files: WorkspaceFiles;
   skills: Skill[];
   memories: MemoryEntry[];

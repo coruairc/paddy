@@ -12,6 +12,7 @@ import { pollXaiDevice, startXaiDevice } from "./oauth-xai";
 import { TOKEN_MAX, defFor, type BrainKeys, type ModelOption, type ProviderId } from "./providers";
 import { buildSystemPrompt } from "./prompt";
 import { toSkillMd } from "./mutate";
+import { rankMemories } from "./memory-recall.ts";
 import type {
   HelixTurnInput,
   HelixTurnResult,
@@ -71,8 +72,22 @@ function resolveSkillName(
 function searchWorkspace(input: HelixTurnInput, query: string): string {
   const q = query.toLowerCase();
   const hits: string[] = [];
-  for (const m of input.memories) {
-    if (m.text.toLowerCase().includes(q)) hits.push(`[memory/${m.kind}] ${m.text}`);
+  // Ranked semantic/lexical recall over structured memories (Hermes-class).
+  const ranked = rankMemories(
+    input.memories.map((m, i) => ({
+      id: `m${i}`,
+      text: m.text,
+      kind: m.kind,
+      at: 0,
+      source: "turn",
+    })),
+    query,
+    { limit: 8 },
+  );
+  for (const h of ranked) {
+    if (h.score > 0.05 || h.memory.text.toLowerCase().includes(q)) {
+      hits.push(`[memory/${h.memory.kind} · ${h.score.toFixed(2)}] ${h.memory.text}`);
+    }
   }
   const files = input.files;
   for (const [name, content] of Object.entries(files)) {

@@ -11,6 +11,7 @@ import type {
   WorkspaceFiles,
   WorkspaceState,
 } from "./types";
+import { ensureMemoryEmbedding } from "./embeddings.ts";
 
 export { kebabSkillName, parseSkillMd, toSkillMd };
 
@@ -36,6 +37,7 @@ export function parseMemoryFile(text: string, now = Date.now()): MemoryEntry[] {
       kind,
       at: now,
       source: "editor",
+      embedding: ensureMemoryEmbedding(body),
     });
   }
   return out;
@@ -149,6 +151,8 @@ export function applyMutation(ws: WorkspaceState, m: Mutation): WorkspaceState {
         kind: m.kind,
         at: Date.now(),
         source: "agent",
+        embedding: ensureMemoryEmbedding(m.text),
+        importance: m.kind === "preference" ? 0.9 : m.kind === "fact" ? 0.75 : 0.6,
       });
       next.files.memory = rebuildMemoryFile(next);
       break;

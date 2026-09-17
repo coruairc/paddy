@@ -11,6 +11,14 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { connect as tlsConnect } from "node:tls";
 import { loadPendingPairs, loadResolvedAccounts } from "../src/lib/harness/config.mjs";
+import {
+  appendOutboundDead,
+  markOutboundFailure,
+  outboundLimits,
+  partitionOutbound,
+  readOutboundQueue,
+  writeOutboundQueue,
+} from "../src/lib/harness/outbound.mjs";
 
 const HOME = process.env.PADDY_HOME?.trim() || join(homedir(), ".paddy");
 const STATUS = join(HOME, "channels-status.json");
@@ -624,34 +632,47 @@ if (!CLI_TOKEN) {
   process.stderr.write("paddy-bridge: PADDY_CLI_TOKEN missing — inbound turns will fail.\n");
 }
 
+async function assertOk(res, label) {
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`${label} HTTP ${res.status}${body ? `: ${body.slice(0, 120)}` : ""}`);
+  }
+}
+
 async function sendOutbound(id, acc, chatId, message) {
   const text = clip(message, TOKEN_MAX);
   if (id === "telegram" && acc.token) {
-    await fetch(`https://api.telegram.org/bot${acc.token}/sendMessage`, {
+    const res = await fetch(`https://api.telegram.org/bot${acc.token}/sendMessage`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ chat_id: chatId, text }),
     });
+    await assertOk(res, "telegram");
     return;
   }
   if (id === "discord" && acc.token) {
-    await fetch(`https://discord.com/api/v10/channels/${chatId}/messages`, {
+    const res = await fetch(`https://discord.com/api/v10/channels/${chatId}/messages`, {
       method: "POST",
       headers: { authorization: `Bot ${acc.token}`, "content-type": "application/json" },
       body: JSON.stringify({ content: text.slice(0, 1900) }),
     });
+    await assertOk(res, "discord");
     return;
   }
   if (id === "slack" && acc.token) {
-    await fetch("https://slack.com/api/chat.postMessage", {
+    const res = await fetch("https://slack.com/api/chat.postMessage", {
       method: "POST",
       headers: { authorization: `Bearer ${acc.token}`, "content-type": "application/json" },
       body: JSON.stringify({ channel: chatId, text }),
     });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || body.ok === false) {
+      throw new Error(`slack ${body.error || `HTTP ${res.status}`}`);
+    }
     return;
   }
   if (id === "whatsapp" && acc.token && acc.phoneId) {
-    await fetch(`https://graph.facebook.com/v21.0/${acc.phoneId}/messages`, {
+    const res = await fetch(`https://graph.facebook.com/v21.0/${acc.phoneId}/messages`, {
       method: "POST",
       headers: { authorization: `Bearer ${acc.token}`, "content-type": "application/json" },
       body: JSON.stringify({
@@ -661,39 +682,87 @@ async function sendOutbound(id, acc, chatId, message) {
         text: { body: text },
       }),
     });
+    await assertOk(res, "whatsapp");
     return;
   }
   if (id === "signal" && acc.host && acc.number) {
-    await fetch(`${String(acc.host).replace(/\/$/, "")}/v2/send`, {
+    const res = await fetch(`${String(acc.host).replace(/\/$/, "")}/v2/send`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ number: acc.number, recipients: [chatId], message: text }),
     });
+    await assertOk(res, "signal");
+    return;
   }
+  throw new Error(`${id} not configured for outbound`);
 }
 
 async function drainOutbound() {
-  const q = readJson(OUT, []);
-  if (!Array.isArray(q) || !q.length) return;
-  writeJson(OUT, []);
-  const cfg = loadCfg();
-  for (const row of q) {
+  const limits = outboundLimits(process.env);
+  const queue = readOutboundQueue(HOME);
+  if (!queue.length) return;
+  const now = Date.now();
+  const { due, waiting, dead } = partitionOutbound(queue, now, limits);
+  if (dead.length) appendOutboundDead(dead, HOME, limits);
+
+  // Persist non-dead jobs first (waiting + due) so a crash never drops the batch.
+  let remaining = [...waiting, ...due];
+  writeOutboundQueue(remaining, HOME);
+
+  for (const row of due) {
     const id = row.channelId;
+    const cfg = loadCfg();
     const acc = cfg.accounts?.[id];
-    if (!acc) continue;
     const chatId = row.chatId || live[id]?.lastChatId;
-    if (!chatId && id !== "email") continue;
+
+    const dropId = (jid) => {
+      remaining = remaining.filter((j) => j.id !== jid);
+      writeOutboundQueue(remaining, HOME);
+    };
+    const replaceJob = (next) => {
+      remaining = remaining.map((j) => (j.id === next.id ? next : j));
+      writeOutboundQueue(remaining, HOME);
+    };
+
+    if (!acc) {
+      const failed = markOutboundFailure(row, new Error(`${id} account missing`), limits, Date.now());
+      if (failed.attempts >= limits.maxAttempts) {
+        appendOutboundDead([failed], HOME, limits);
+        dropId(row.id);
+      } else {
+        replaceJob(failed);
+      }
+      continue;
+    }
+    if (!chatId && id !== "email") {
+      const failed = markOutboundFailure(row, new Error("no chatId"), limits, Date.now());
+      if (failed.attempts >= limits.maxAttempts) {
+        appendOutboundDead([failed], HOME, limits);
+        dropId(row.id);
+      } else {
+        replaceJob(failed);
+      }
+      continue;
+    }
     try {
       if (id === "email") {
         await sendSmtp(acc, row.chatId || acc.from, "Paddy", row.message);
       } else {
         await sendOutbound(id, acc, chatId, row.message);
       }
-    } catch {
-      /* next tick */
+      dropId(row.id);
+    } catch (err) {
+      const failed = markOutboundFailure(row, err, limits, Date.now());
+      if (failed.attempts >= limits.maxAttempts) {
+        appendOutboundDead([failed], HOME, limits);
+        dropId(row.id);
+      } else {
+        replaceJob(failed);
+      }
     }
   }
 }
+
 let lastFp = "";
 setInterval(() => {
   const cfg = loadCfg();
