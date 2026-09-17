@@ -17,7 +17,7 @@ import {
 } from "./channels";
 import { detectLineage, readLineageAccounts, summarizeImported } from "./lineage.mjs";
 import { exportToLineage, importFromLineage } from "./config.mjs";
-import { cliGatewayMiddleware } from "./cli-auth.server";
+import { cliGatewayMiddleware } from "./cli-gateway-middleware";
 
 function gatewayReady(): boolean {
   return Boolean((process.env.PADDY_CLI_TOKEN ?? "").trim());

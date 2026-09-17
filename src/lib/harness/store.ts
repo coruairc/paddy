@@ -235,8 +235,7 @@ type PersistedHelix = Partial<
     | "providers"
     | "preferredProvider"
     | "modelByProvider"
-    | "brainKeys"
-    | "activeSessionId"
+        | "activeSessionId"
     | "pendingApproval"
     | "pendingQueue"
   >
@@ -1140,7 +1139,6 @@ export const useHelix = create<HelixStore>()(
         providers: s.providers,
         preferredProvider: s.preferredProvider,
         modelByProvider: s.modelByProvider,
-        brainKeys: s.brainKeys,
         activeSessionId: s.activeSessionId,
         pendingApproval: s.pendingApproval,
         pendingQueue: s.pendingQueue,
@@ -1252,7 +1250,7 @@ export const useHelix = create<HelixStore>()(
             delete (merged as Record<string, string>)["claude-max"];
             return merged;
           })(),
-          brainKeys: { ...defaultBrainKeys(), ...(p.brainKeys ?? {}) },
+          brainKeys: defaultBrainKeys(),
           policy: {
             autoApprove: Array.from(
               new Set([

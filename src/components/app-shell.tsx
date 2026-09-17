@@ -34,6 +34,8 @@ import {
 } from "@/components/ui/dialog";
 import { loadWorkspaces, runStoredSubagent, saveWorkspaceFn } from "@/lib/harness/memory-api";
 import { helixRuntime } from "@/lib/harness/run-turn";
+import { CliTokenBar } from "@/components/cli-token-bar";
+import { isCliAuthFailure, markCliAuthNeeded } from "@/lib/harness/cli-token";
 import { useHelix } from "@/lib/harness/store";
 import type { ProfileMeta, ViewId } from "@/lib/harness/types";
 import { cn } from "@/lib/utils";
@@ -114,7 +116,8 @@ export function AppShell() {
               }
             }
             useHelix.getState().hydrateWorkspaces(merged);
-          } catch {
+          } catch (err) {
+            if (isCliAuthFailure(err)) markCliAuthNeeded();
             /* store still has seeds */
           }
         })
@@ -127,7 +130,10 @@ export function AppShell() {
         markSuperGrokLive(Boolean(r?.superGrok));
         if (r?.env) setEnvFlags(r.env);
       })
-      .catch(() => markSuperGrokLive(false));
+      .catch((err) => {
+        if (isCliAuthFailure(err)) markCliAuthNeeded();
+        markSuperGrokLive(false);
+      });
   }, [setHydrated, markSuperGrokLive, setEnvFlags]);
 
   useEffect(() => {
@@ -162,7 +168,9 @@ export function AppShell() {
   const profile = profiles.find((p) => p.id === activeProfileId);
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-bg text-fg">
+    <div className="flex h-dvh flex-col overflow-hidden bg-bg text-fg">
+      <CliTokenBar />
+      <div className="flex min-h-0 flex-1 overflow-hidden">
       <nav
         aria-label="Paddy Irishman"
         className="flex w-44 shrink-0 flex-col border-r border-border bg-bg sm:w-52"
@@ -306,7 +314,12 @@ export function AppShell() {
                     else applySubagent(r.error, false, profileId);
                   })
                   .catch((err) => {
-                    applySubagent(err instanceof Error ? err.message : "Subagent failed", false, profileId);
+                    if (isCliAuthFailure(err)) markCliAuthNeeded();
+                    applySubagent(
+                      err instanceof Error ? err.message : "Subagent failed",
+                      false,
+                      profileId,
+                    );
                   });
               }}
             >
@@ -315,6 +328,7 @@ export function AppShell() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }

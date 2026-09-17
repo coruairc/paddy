@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { cliGatewayMiddleware } from "./cli-auth.server";
+import { cliGatewayMiddleware } from "./cli-gateway-middleware";
 import { getHubSkill, searchHub } from "./hub";
 import { callBrain, envPresence, listAvailableModels, resolveBrain, type BrainRoute, type ChatMsg } from "./brain";
 import { compactMessages } from "./compact";

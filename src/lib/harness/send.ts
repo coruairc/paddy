@@ -1,6 +1,11 @@
 import { runStoredHelixTurn } from "./memory-api";
 import { WEB_SESSION_ID } from "./defaults";
 import { todayKey } from "./mutate";
+import {
+  isCliAuthFailure,
+  markCliAuthNeeded,
+  messageForCliAuthFailure,
+} from "./cli-token";
 import { useHelix } from "./store";
 import { wrapUntrusted } from "./untrusted";
 import type { HelixTurnInput } from "./types";
@@ -108,7 +113,12 @@ export async function sendTurn(
       if (result.ok) useHelix.getState().runCurator();
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Turn failed";
+    if (isCliAuthFailure(err)) markCliAuthNeeded();
+    const message = isCliAuthFailure(err)
+      ? messageForCliAuthFailure(err)
+      : err instanceof Error
+        ? err.message
+        : "Turn failed";
     useHelix.getState().applyResult(text, ch, { ok: false, error: message }, sid, profileId);
   }
 }

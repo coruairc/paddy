@@ -36,6 +36,11 @@ import {
   type ModelOption,
   type ProviderId,
 } from "@/lib/harness/providers";
+import {
+  isCliAuthFailure,
+  markCliAuthNeeded,
+  messageForCliAuthFailure,
+} from "@/lib/harness/cli-token";
 import { useHelix } from "@/lib/harness/store";
 import { cn, formatRelative } from "@/lib/utils";
 
@@ -135,9 +140,14 @@ export function ModelsView() {
         });
       }
     } catch (err) {
+      if (isCliAuthFailure(err)) markCliAuthNeeded();
       setListError((s) => ({
         ...s,
-        [id]: err instanceof Error ? err.message : "Could not list models",
+        [id]: isCliAuthFailure(err)
+          ? messageForCliAuthFailure(err)
+          : err instanceof Error
+            ? err.message
+            : "Could not list models",
       }));
       setLiveModels((s) => {
         const next = { ...s };
@@ -263,8 +273,13 @@ export function ModelsView() {
       if (result.ok) toast("Reachable", { description: result.detail });
       else toast("Not reachable", { description: result.error });
     } catch (err) {
+      if (isCliAuthFailure(err)) markCliAuthNeeded();
       toast("Probe failed", {
-        description: err instanceof Error ? err.message : "Could not reach the provider",
+        description: isCliAuthFailure(err)
+          ? messageForCliAuthFailure(err)
+          : err instanceof Error
+            ? err.message
+            : "Could not reach the provider",
       });
     } finally {
       setProbing(null);
@@ -290,8 +305,13 @@ export function ModelsView() {
         target: id,
       });
     } catch (err) {
+      if (isCliAuthFailure(err)) markCliAuthNeeded();
       toast("Could not start sign-in", {
-        description: err instanceof Error ? err.message : "Try again, or paste a key.",
+        description: isCliAuthFailure(err)
+          ? messageForCliAuthFailure(err)
+          : err instanceof Error
+            ? err.message
+            : "Try again, or paste a key.",
       });
     } finally {
       setDeviceStarting(null);

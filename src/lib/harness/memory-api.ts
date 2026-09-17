@@ -8,7 +8,7 @@ import { TOKEN_MAX, type BrainKeys, type ProviderId } from "./providers";
 import { executeTurn, executeInheritedSubagent } from "./run-turn";
 import { secretsForProfile, withSecretScope } from "./secret-scope";
 import type { HelixTurnInput, HelixTurnResult, WorkspaceState } from "./types";
-import { cliGatewayMiddleware } from "./cli-auth.server";
+import { cliGatewayMiddleware } from "./cli-gateway-middleware";
 
 export const loadWorkspaces = createServerFn({ method: "GET" })
   .middleware([cliGatewayMiddleware])
