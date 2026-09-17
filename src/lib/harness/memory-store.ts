@@ -19,25 +19,57 @@ import type {
   WorkspaceFiles,
   WorkspaceState,
 } from "./types";
+import { ensureMemoryEmbedding } from "./embeddings.ts";
+import { formatRecallBlock, rankMemories } from "./memory-recall.ts";
 
 export interface Queryable {
   query<T = Record<string, unknown>>(text: string, params?: unknown[]): Promise<T[]>;
 }
 
+export class SyncConflictError extends Error {
+  readonly profileId: string;
+  readonly expected: number;
+  readonly actual: number;
+
+  constructor(profileId: string, expected: number, actual: number) {
+    super(
+      `syncTurn conflict for ${profileId}: expected revision ${expected}, actual ${actual}`,
+    );
+    this.name = "SyncConflictError";
+    this.profileId = profileId;
+    this.expected = expected;
+    this.actual = actual;
+  }
+}
+
 export interface WorkspaceRepo {
   get(profileId: string): Promise<WorkspaceState | null>;
-  put(profileId: string, snapshot: WorkspaceState): Promise<void>;
+  /**
+   * Persist snapshot. When `expectedRevision` is set, fails with SyncConflictError
+   * if the stored revision does not match (lost-update guard).
+   * Returns the new revision.
+   */
+  put(
+    profileId: string,
+    snapshot: WorkspaceState,
+    expectedRevision?: number,
+  ): Promise<number>;
   list(): Promise<string[]>;
 }
 
 export interface MemoryStore {
   initialize(): Promise<void>;
   prefetch(profileId: string): Promise<WorkspaceState>;
+  /**
+   * Persist a turn snapshot with optimistic concurrency.
+   * Uses `ws.revision` as the expected base revision when present.
+   * Bumps and returns via mutating `ws.revision` to the new value.
+   */
   syncTurn(profileId: string, ws: WorkspaceState): Promise<void>;
   getWorkspace(profileId: string): Promise<WorkspaceState>;
   putWorkspace(profileId: string, ws: WorkspaceState): Promise<void>;
   listProfiles(): Promise<string[]>;
-  systemPromptBlock(profileId: string): Promise<string>;
+  systemPromptBlock(profileId: string, query?: string): Promise<string>;
   shutdown(): Promise<void>;
 }
 
@@ -59,6 +91,7 @@ const EMPTY_FILES: WorkspaceFiles = {
 
 export function blankWorkspace(): WorkspaceState {
   return {
+    revision: 0,
     files: { ...EMPTY_FILES },
     skills: [],
     memories: [],
@@ -115,7 +148,13 @@ export function coerceSnapshot(raw: unknown): WorkspaceState {
             sessionId: "web:operator",
           }));
   const usage = asRecord(o.usage);
+  const revisionRaw = o.revision;
+  const revision =
+    typeof revisionRaw === "number" && Number.isFinite(revisionRaw)
+      ? Math.max(0, Math.floor(revisionRaw))
+      : 0;
   return {
+    revision,
     files: {
       soul: typeof files.soul === "string" ? files.soul : base.files.soul,
       identity: typeof files.identity === "string" ? files.identity : base.files.identity,
@@ -160,8 +199,17 @@ export function createMemoryRepo(initial?: Record<string, WorkspaceState>): Work
       const hit = map.get(profileId);
       return hit ? structuredClone(hit) : null;
     },
-    async put(profileId, snapshot) {
-      map.set(profileId, structuredClone(snapshot));
+    async put(profileId, snapshot, expectedRevision) {
+      const current = map.get(profileId);
+      const actual = current?.revision ?? 0;
+      if (expectedRevision != null && current && actual !== expectedRevision) {
+        throw new SyncConflictError(profileId, expectedRevision, actual);
+      }
+      const nextRev = actual + 1;
+      const next = structuredClone(snapshot);
+      next.revision = nextRev;
+      map.set(profileId, next);
+      return nextRev;
     },
     async list() {
       return [...map.keys()];
@@ -172,21 +220,54 @@ export function createMemoryRepo(initial?: Record<string, WorkspaceState>): Work
 export function createSqlRepo(db: Queryable): WorkspaceRepo {
   return {
     async get(profileId) {
-      const rows = await db.query<{ snapshot: unknown }>(
-        "select snapshot from paddy_workspace where profile_id = $1",
+      const rows = await db.query<{ snapshot: unknown; revision?: number }>(
+        "select snapshot, revision from paddy_workspace where profile_id = $1",
         [profileId],
       );
       if (!rows[0]) return null;
-      return coerceSnapshot(rows[0].snapshot);
+      const ws = coerceSnapshot(rows[0].snapshot);
+      const rev = Number(rows[0].revision);
+      if (Number.isFinite(rev)) ws.revision = Math.max(ws.revision ?? 0, Math.floor(rev));
+      return ws;
     },
-    async put(profileId, snapshot) {
-      await db.query(
-        `insert into paddy_workspace (profile_id, snapshot, updated_at)
-         values ($1, $2::jsonb, now())
-         on conflict (profile_id) do update
-           set snapshot = excluded.snapshot, updated_at = now()`,
-        [profileId, JSON.stringify(snapshot)],
+    async put(profileId, snapshot, expectedRevision) {
+      const currentRows = await db.query<{ revision: number }>(
+        "select revision from paddy_workspace where profile_id = $1",
+        [profileId],
       );
+      const actual = currentRows[0] ? Number(currentRows[0].revision) || 0 : 0;
+      if (expectedRevision != null && currentRows[0] && actual !== expectedRevision) {
+        throw new SyncConflictError(profileId, expectedRevision, actual);
+      }
+      const nextRev = actual + 1;
+      const next = { ...snapshot, revision: nextRev };
+      if (!currentRows[0]) {
+        await db.query(
+          `insert into paddy_workspace (profile_id, snapshot, revision, updated_at)
+           values ($1, $2::jsonb, $3, now())`,
+          [profileId, JSON.stringify(next), nextRev],
+        );
+        return nextRev;
+      }
+      const updated = await db.query<{ revision: number }>(
+        `update paddy_workspace
+           set snapshot = $2::jsonb, revision = $3, updated_at = now()
+         where profile_id = $1 and revision = $4
+         returning revision`,
+        [profileId, JSON.stringify(next), nextRev, expectedRevision ?? actual],
+      );
+      if (!updated[0]) {
+        const again = await db.query<{ revision: number }>(
+          "select revision from paddy_workspace where profile_id = $1",
+          [profileId],
+        );
+        throw new SyncConflictError(
+          profileId,
+          expectedRevision ?? actual,
+          Number(again[0]?.revision) || 0,
+        );
+      }
+      return nextRev;
     },
     async list() {
       const rows = await db.query<{ profile_id: string }>(
@@ -252,17 +333,30 @@ export function createMemoryStore(repo: WorkspaceRepo, opts: MemoryStoreOptions 
       if (opts.seed) {
         const seeds = await opts.seed();
         if (seeds[profileId]) {
-          await repo.put(profileId, seeds[profileId]!);
-          return structuredClone(seeds[profileId]!);
+          const seeded = structuredClone(seeds[profileId]!);
+          const rev = await repo.put(profileId, seeded);
+          seeded.revision = rev;
+          return seeded;
         }
       }
       const blank = blankWorkspace();
-      await repo.put(profileId, blank);
+      const rev = await repo.put(profileId, blank);
+      blank.revision = rev;
       return blank;
     },
     async syncTurn(profileId, ws) {
       await store.initialize();
-      await repo.put(profileId, ws);
+      const expected =
+        typeof ws.revision === "number" && Number.isFinite(ws.revision)
+          ? Math.max(0, Math.floor(ws.revision))
+          : undefined;
+      // Attach local embeddings for new/changed memories (no network).
+      ws.memories = (ws.memories ?? []).map((m) => ({
+        ...m,
+        embedding: ensureMemoryEmbedding(m.text, m.embedding),
+      }));
+      const nextRev = await repo.put(profileId, ws, expected);
+      ws.revision = nextRev;
     },
     async getWorkspace(profileId) {
       return store.prefetch(profileId);
@@ -274,10 +368,10 @@ export function createMemoryStore(repo: WorkspaceRepo, opts: MemoryStoreOptions 
       await store.initialize();
       return repo.list();
     },
-    async systemPromptBlock(profileId) {
+    async systemPromptBlock(profileId, query) {
       const ws = await store.prefetch(profileId);
-      const lines = ws.memories.slice(-12).map((m) => `- (${m.kind}) ${m.text}`);
-      return lines.length ? `## Memory\n${lines.join("\n")}` : "";
+      const hits = rankMemories(ws.memories ?? [], query ?? "", { limit: 12 });
+      return formatRecallBlock(hits);
     },
     async shutdown() {
       ready = false;
@@ -325,7 +419,10 @@ export function buildTurnInput(
       uses: s.uses,
       triggers: s.triggers,
     })),
-    memories: (ws.memories ?? []).slice(-16).map((m) => ({ text: m.text, kind: m.kind })),
+    memories: rankMemories(ws.memories ?? [], opts.userMessage, { limit: 16 }).map((h) => ({
+      text: h.memory.text,
+      kind: h.memory.kind,
+    })),
     history: thread.slice(-10).map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,

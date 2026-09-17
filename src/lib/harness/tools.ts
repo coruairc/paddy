@@ -85,7 +85,7 @@ export const TOOL_CATALOG: {
   {
     name: "search_memory",
     description:
-      "Substring search over MEMORY.md, identity files, skills, and this profile’s recent transcript.",
+      "Ranked recall over memories (semantic/lexical + recency), plus substring hits in identity files, skills, and recent transcript.",
     parameters: {
       type: "object",
       properties: {

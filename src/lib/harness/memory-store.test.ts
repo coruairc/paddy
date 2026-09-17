@@ -11,6 +11,7 @@ import {
   createMemoryRepo,
   createMemoryStore,
   createSqlRepo,
+  SyncConflictError,
 } from "./memory-store.ts";
 import type { Policy, WorkspaceState } from "./types.ts";
 
@@ -51,7 +52,10 @@ test("disk PGLite snapshot survives a reopen (gateway restart)", async () => {
   const dir = mkdtempSync(join(tmpdir(), "paddy-pg-"));
   const dataDir = join(dir, "pglite");
   const { PGlite } = await import("@electric-sql/pglite");
-  const migration = readFileSync(join(process.cwd(), "migrations/0002_paddy.sql"), "utf8");
+  const migration = [
+    readFileSync(join(process.cwd(), "migrations/0002_paddy.sql"), "utf8"),
+    readFileSync(join(process.cwd(), "migrations/0003_paddy_revision.sql"), "utf8"),
+  ].join("\n");
 
   const wrap = (pg: InstanceType<typeof PGlite>) => ({
     query: async <T>(text: string, params: unknown[] = []) => {
@@ -140,4 +144,64 @@ test("buildTurnInput reads the store snapshot, not a hardcoded seed", async () =
   assert.ok(input.memories.some((m) => m.text === "operator likes diagrams"));
   assert.equal(input.userMessage, "hello");
   assert.equal(input.files.memory.includes("seeded"), true);
+});
+
+test("syncTurn bumps revision and rejects lost updates", async () => {
+  const store = createMemoryStore(createMemoryRepo(), { seed: seedPaddy });
+  await store.initialize();
+  const a = await store.prefetch("paddy");
+  const base = a.revision ?? 0;
+  assert.ok(base >= 1);
+
+  const a1 = applyMutation(a, {
+    type: "write_memory",
+    text: "from A",
+    kind: "fact",
+    mode: "append",
+  });
+  await store.syncTurn("paddy", a1);
+  assert.equal(a1.revision, base + 1);
+
+  const stale = structuredClone(a);
+  stale.revision = base;
+  stale.memories = [
+    ...stale.memories,
+    { id: "x", text: "stale writer", kind: "fact", at: 9, source: "t" },
+  ];
+  await assert.rejects(
+    () => store.syncTurn("paddy", stale),
+    (err: unknown) =>
+      err instanceof SyncConflictError && err.expected === base && err.actual === base + 1,
+  );
+
+  const fresh = await store.prefetch("paddy");
+  assert.ok(fresh.memories.some((m) => m.text === "from A"));
+  assert.equal(fresh.memories.some((m) => m.text === "stale writer"), false);
+});
+
+test("systemPromptBlock ranks memories for a query", async () => {
+  const store = createMemoryStore(createMemoryRepo());
+  await store.initialize();
+  const ws = await store.prefetch("paddy");
+  ws.memories = [
+    {
+      id: "1",
+      text: "Uses PostgreSQL for billing",
+      kind: "fact",
+      at: Date.now() - 86400_000,
+      source: "t",
+    },
+    {
+      id: "2",
+      text: "Likes oat milk lattes",
+      kind: "preference",
+      at: Date.now(),
+      source: "t",
+    },
+  ];
+  await store.syncTurn("paddy", ws);
+  const block = await store.systemPromptBlock("paddy", "billing database");
+  assert.match(block, /PostgreSQL/);
+  const firstLine = block.split("\n").find((l) => l.startsWith("- "));
+  assert.ok(firstLine?.includes("PostgreSQL"));
 });
