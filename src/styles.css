@@ -179,3 +179,205 @@
   background: color-mix(in oklab, var(--color-fg) 16%, transparent);
   border-radius: 99px;
 }
+
+/* Idle Paddy mascot (empty chat) */
+.paddy-idle-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 11rem;
+  height: 11rem;
+}
+
+@media (min-width: 640px) {
+  .paddy-idle-stage {
+    width: 13rem;
+    height: 13rem;
+  }
+}
+
+.paddy-idle-figure {
+  position: relative;
+  z-index: 1;
+  transform-origin: 50% 85%;
+}
+
+.paddy-idle-prop {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Pint — tip back and drain */
+.paddy-idle--pint .paddy-idle-figure {
+  animation: paddy-pint-sway 2.4s ease-in-out infinite;
+}
+.paddy-idle-pint {
+  right: -0.35rem;
+  bottom: 0.9rem;
+  font-size: 2.25rem;
+  transform-origin: 40% 90%;
+  animation: paddy-pint-drain 2.4s ease-in-out infinite;
+}
+
+@keyframes paddy-pint-sway {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  35% {
+    transform: rotate(-8deg) translateY(2px);
+  }
+  55% {
+    transform: rotate(-14deg) translateY(4px);
+  }
+  75% {
+    transform: rotate(-4deg) translateY(1px);
+  }
+}
+
+@keyframes paddy-pint-drain {
+  0%,
+  20% {
+    transform: rotate(12deg) translateY(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: rotate(-28deg) translateY(-6px) scale(1.05);
+    opacity: 1;
+  }
+  70% {
+    transform: rotate(-40deg) translateY(4px) scale(0.92);
+    opacity: 0.85;
+  }
+  100% {
+    transform: rotate(12deg) translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Jig — bounce and kick */
+.paddy-idle--jig .paddy-idle-figure {
+  animation: paddy-jig 0.85s ease-in-out infinite;
+}
+.paddy-idle-notes {
+  top: 0.2rem;
+  right: 0.1rem;
+  font-size: 1.5rem;
+  color: var(--color-accent);
+  animation: paddy-notes 0.85s ease-in-out infinite;
+}
+
+@keyframes paddy-jig {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  25% {
+    transform: translateY(-14px) rotate(6deg);
+  }
+  50% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  75% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+@keyframes paddy-notes {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(8px, -10px) scale(1.15);
+    opacity: 1;
+  }
+}
+
+/* Pot of gold — hop + coins */
+.paddy-idle--gold .paddy-idle-figure {
+  animation: paddy-gold-hop 2.2s ease-in-out infinite;
+}
+.paddy-idle-pot {
+  left: -0.15rem;
+  bottom: 0.35rem;
+  font-size: 2rem;
+  animation: paddy-pot-pop 2.2s ease-in-out infinite;
+}
+.paddy-idle-coin {
+  font-size: 1.15rem;
+  opacity: 0;
+}
+.paddy-idle-coin-a {
+  left: 15%;
+  top: 35%;
+  animation: paddy-coin-fly 2.2s ease-in-out infinite;
+}
+.paddy-idle-coin-b {
+  left: 48%;
+  top: 18%;
+  animation: paddy-coin-fly 2.2s ease-in-out 0.15s infinite;
+}
+.paddy-idle-coin-c {
+  right: 12%;
+  top: 30%;
+  animation: paddy-coin-fly 2.2s ease-in-out 0.3s infinite;
+}
+
+@keyframes paddy-gold-hop {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(0) scale(1);
+  }
+  55% {
+    transform: translateY(-18px) scale(1.04);
+  }
+  70% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes paddy-pot-pop {
+  0%,
+  40% {
+    transform: scale(0.85) translateY(6px);
+    opacity: 0.7;
+  }
+  55% {
+    transform: scale(1.12) translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes paddy-coin-fly {
+  0%,
+  45% {
+    transform: translate(0, 0) scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, -42px) scale(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paddy-idle-figure,
+  .paddy-idle-prop {
+    animation: none !important;
+  }
+}

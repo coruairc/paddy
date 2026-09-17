@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp, LoaderCircle } from "lucide-react";
 import { CanvasStack } from "@/components/canvas-panel";
 import { HelixMark } from "@/components/helix-mark";
+import { PaddyIdle } from "@/components/paddy-idle";
 import { Markdown } from "@/components/markdown";
 import { Button } from "@/components/ui/button";
 import { WEB_SESSION_ID } from "@/lib/harness/defaults";
 import { sendTurn } from "@/lib/harness/send";
 import { useHelix } from "@/lib/harness/store";
-import type { ChatMessage, TraceEvent, TraceKind, UsageStats } from "@/lib/harness/types";
-import { cn, formatTime, formatTokens } from "@/lib/utils";
+import type { ChatMessage, TraceEvent, TraceKind } from "@/lib/harness/types";
+import { cn, formatTime } from "@/lib/utils";
 
 const KIND_LABEL: Record<TraceKind, string> = {
   model: "model",
@@ -50,13 +51,7 @@ export function ConsoleView() {
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8">
           {messages.length === 0 ? (
-            <EmptyState
-              name={profile?.name ?? "Paddy Irishman"}
-              usage={ws.usage}
-              skills={ws.skills.length}
-              memories={ws.memories.length}
-              tickets={(ws.tickets ?? []).filter((t) => t.status !== "done").length}
-            />
+            <EmptyState name={profile?.name ?? "Paddy Irishman"} />
           ) : (
             <div className="mx-auto flex max-w-2xl flex-col gap-6">
               {messages.map((m) => (
@@ -181,78 +176,8 @@ function isWebMessage(m: ChatMessage) {
   return sid === WEB_SESSION_ID && (!m.channelId || m.channelId === "web");
 }
 
-function EmptyState({
-  name,
-  usage,
-  skills,
-  memories,
-  tickets,
-}: {
-  name: string;
-  usage?: UsageStats;
-  skills: number;
-  memories: number;
-  tickets: number;
-}) {
-  const tokensIn = usage?.promptTokens ?? 0;
-  const tokensOut = usage?.completionTokens ?? 0;
-  const total = tokensIn + tokensOut;
-  const turns = usage?.turns ?? 0;
-  const tools = usage?.toolCalls ?? 0;
-  const model = usage?.lastModel || "—";
-
-  const stats: { label: string; value: string; hint: string }[] = [
-    {
-      label: "Tokens",
-      value: formatTokens(total),
-      hint: turns ? `${formatTokens(tokensIn)} in · ${formatTokens(tokensOut)} out` : "No spend yet",
-    },
-    {
-      label: "Turns",
-      value: String(turns),
-      hint: tools ? `${tools} tool calls` : "Idle",
-    },
-    {
-      label: "Last model",
-      value: model,
-      hint: usage?.lastProvider || "Pick one in Models",
-    },
-    {
-      label: "Open tickets",
-      value: String(tickets),
-      hint: `${skills} skills · ${memories} memories`,
-    },
-  ];
-
-  return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-8 pt-4 sm:pt-10">
-      <div className="rise-in">
-        <HelixMark className="size-16 text-accent" />
-        <h1 className="mt-5 font-display text-4xl tracking-tight sm:text-5xl">{name}</h1>
-        <p className="mt-2 text-sm text-muted">This mind’s usage. Chat below to spend tokens.</p>
-      </div>
-      <dl className="grid grid-cols-2 gap-3">
-        {stats.map((s, i) => (
-          <div
-            key={s.label}
-            className={cn(
-              "rise-in rounded-2xl bg-elevated px-4 py-4 shadow-[var(--shadow-border)]",
-              i === 0 && "stagger-1",
-              i === 1 && "stagger-2",
-              i === 2 && "stagger-3",
-              i === 3 && "stagger-4",
-            )}
-          >
-            <dt className="text-xs font-medium tracking-wide text-muted uppercase">{s.label}</dt>
-            <dd className="mt-2 truncate font-display text-3xl tracking-tight tabular-nums">
-              {s.value}
-            </dd>
-            <p className="mt-1 truncate text-xs text-subtle">{s.hint}</p>
-          </div>
-        ))}
-      </dl>
-    </div>
-  );
+function EmptyState({ name }: { name: string }) {
+  return <PaddyIdle name={name} />;
 }
 
 function TraceList({ traces }: { traces: TraceEvent[] }) {
