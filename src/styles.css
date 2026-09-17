@@ -381,3 +381,7 @@
     animation: none !important;
   }
 }
+
+.paddy-idle--idle .paddy-idle-figure {
+  transform: none;
+}

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { HelixMark } from "@/components/helix-mark";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,8 @@ const MOVES: { id: PaddyIdleMove; caption: string }[] = [
   { id: "jig", caption: "Irish dancing. Drop a message to join in." },
   { id: "gold", caption: "Pulling a pot of gold. Ask him anything." },
 ];
+
+const IDLE_CAPTION = "Standing by. Chat when you're ready.";
 
 function pickMove(): PaddyIdleMove {
   return MOVES[Math.floor(Math.random() * MOVES.length)]!.id;
@@ -21,11 +23,24 @@ export function PaddyIdle({
 }: {
   name: string;
   className?: string;
-  /** Override for tests / Storybook; otherwise random per mount. */
+  /** Override for tests / Storybook; otherwise random after mount. */
   move?: PaddyIdleMove;
 }) {
-  const move = useMemo(() => forced ?? pickMove(), [forced]);
-  const caption = MOVES.find((m) => m.id === move)?.caption ?? MOVES[0]!.caption;
+  // Static on SSR / first paint; randomize only after mount to avoid hydration mismatch.
+  const [move, setMove] = useState<PaddyIdleMove | null>(forced ?? null);
+
+  useEffect(() => {
+    if (forced !== undefined) {
+      setMove(forced);
+      return;
+    }
+    setMove(pickMove());
+  }, [forced]);
+
+  const caption =
+    move === null
+      ? IDLE_CAPTION
+      : (MOVES.find((m) => m.id === move)?.caption ?? IDLE_CAPTION);
 
   return (
     <div
@@ -35,7 +50,10 @@ export function PaddyIdle({
       )}
     >
       <div
-        className={cn("paddy-idle-stage rise-in", `paddy-idle--${move}`)}
+        className={cn(
+          "paddy-idle-stage rise-in",
+          move ? `paddy-idle--${move}` : "paddy-idle--idle",
+        )}
         aria-hidden
       >
         <div className="paddy-idle-figure">
