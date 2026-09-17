@@ -105,15 +105,27 @@ export function loadOutboundJobs(raw) {
 }
 
 /**
+ * Enqueue a job. On backpressure, oldest jobs are returned in `overflowed`
+ * (caller should dead-letter) instead of being silently dropped.
  * @param {NonNullable<ReturnType<typeof normalizeOutboundJob>>[]} queue
  * @param {{ channelId: string, chatId?: string, message: string }} row
  * @param {ReturnType<typeof outboundLimits>} limits
  * @param {number} [now]
+ * @returns {{ queue: NonNullable<ReturnType<typeof normalizeOutboundJob>>[], overflowed: NonNullable<ReturnType<typeof normalizeOutboundJob>>[] }}
  */
 export function enqueueOutboundJob(queue, row, limits, now = Date.now()) {
   const job = normalizeOutboundJob({ ...row, at: now, attempts: 0, nextAt: now }, now);
-  if (!job) return queue;
-  return [...queue, job].slice(-limits.maxQueue);
+  if (!job) return { queue, overflowed: [] };
+  const next = [...queue, job];
+  if (next.length <= limits.maxQueue) {
+    return { queue: next, overflowed: [] };
+  }
+  const drop = next.length - limits.maxQueue;
+  const overflowed = next.slice(0, drop).map((j) => ({
+    ...j,
+    lastError: sanitizeOutboundError(j.lastError || "queue overflow (dropped under backpressure)"),
+  }));
+  return { queue: next.slice(drop), overflowed };
 }
 
 /**
@@ -170,7 +182,7 @@ function writeJsonSecure(path, data) {
 
 export function readOutboundQueue(home = paddyHome()) {
   try {
-    return loadOutboundJobs(JSON.parse(readFileSync(outboundPath(home), "utf8")));
+    return loadOutboundJobs(JSON.parse(readFileSync(outboundPath(home), "utf8"));
   } catch {
     return [];
   }
@@ -199,7 +211,8 @@ export function appendOutboundDead(dead, home = paddyHome(), limits = outboundLi
  */
 export function enqueueOutboundDurable(row, home = paddyHome(), env = process.env) {
   const limits = outboundLimits(env);
-  const q = enqueueOutboundJob(readOutboundQueue(home), row, limits);
-  writeOutboundQueue(q, home);
-  return q[q.length - 1];
+  const { queue, overflowed } = enqueueOutboundJob(readOutboundQueue(home), row, limits);
+  if (overflowed.length) appendOutboundDead(overflowed, home, limits);
+  writeOutboundQueue(queue, home);
+  return queue[queue.length - 1];
 }

@@ -91,3 +91,40 @@ test("dead letter append is capped", () => {
   const raw = JSON.parse(readFileSync(join(home, "outbound-dead.json"), "utf8"));
   assert.equal(raw.length, 3);
 });
+
+test("enqueueOutboundJob returns overflowed oldest on backpressure", () => {
+  const limits = outboundLimits({ PADDY_OUTBOUND_MAX_QUEUE: "10" });
+  let queue: ReturnType<typeof loadOutboundJobs> = [];
+  const overflowed: ReturnType<typeof loadOutboundJobs> = [];
+  for (let i = 0; i < 12; i++) {
+    const r = enqueueOutboundJob(queue, { channelId: "telegram", message: `m${i}` }, limits, 1000 + i);
+    queue = r.queue;
+    overflowed.push(...r.overflowed);
+  }
+  assert.equal(queue.length, 10);
+  assert.equal(overflowed.length, 2);
+  assert.equal(overflowed[0]!.message, "m0");
+  assert.equal(overflowed[1]!.message, "m1");
+  assert.equal(queue[0]!.message, "m2");
+  assert.equal(queue[queue.length - 1]!.message, "m11");
+  assert.match(String(overflowed[0]!.lastError), /queue overflow/);
+});
+
+test("queue overflow dead-letters oldest instead of silent drop", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-overflow-"));
+  const env = { PADDY_OUTBOUND_MAX_QUEUE: "10" };
+  for (let i = 0; i < 10; i++) {
+    enqueueOutboundDurable({ channelId: "telegram", chatId: "1", message: `m${i}` }, home, env);
+  }
+  enqueueOutboundDurable({ channelId: "telegram", chatId: "1", message: "newest" }, home, env);
+  const q = readOutboundQueue(home);
+  assert.equal(q.length, 10);
+  assert.equal(q[0]!.message, "m1");
+  assert.equal(q[q.length - 1]!.message, "newest");
+  const deadPath = join(home, "outbound-dead.json");
+  assert.equal(existsSync(deadPath), true);
+  const dead = JSON.parse(readFileSync(deadPath, "utf8")) as Array<{ message: string; lastError?: string }>;
+  assert.equal(dead.length, 1);
+  assert.equal(dead[0]!.message, "m0");
+  assert.match(String(dead[0]!.lastError), /queue overflow/);
+});
