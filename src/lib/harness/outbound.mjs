@@ -182,7 +182,7 @@ function writeJsonSecure(path, data) {
 
 export function readOutboundQueue(home = paddyHome()) {
   try {
-    return loadOutboundJobs(JSON.parse(readFileSync(outboundPath(home), "utf8"));
+    return loadOutboundJobs(JSON.parse(readFileSync(outboundPath(home), "utf8")));
   } catch {
     return [];
   }
