@@ -13,6 +13,7 @@ import {
   isWriteOnlySecretPath,
   parseConfigureSections,
   promptSecret,
+  selectMenu,
   sectionRoutes,
   wizardSchema,
 } from "./configure-wizard.mjs";
@@ -210,6 +211,54 @@ test("promptSecret mutes echo when setRawMode is available", async () => {
   assert.equal(joined.includes("secret"), false);
   assert.ok(joined.includes("Gateway auth token"));
   assert.equal(raw, false);
+  rl.close();
+});
+
+test("selectMenu restores stdin for a following readline prompt", async () => {
+  let raw = false;
+  let paused = true;
+  const stdin = new EventEmitter();
+  stdin.isTTY = true;
+  stdin.isRaw = false;
+  stdin.setRawMode = (v) => {
+    raw = Boolean(v);
+    stdin.isRaw = raw;
+    return stdin;
+  };
+  stdin.isPaused = () => paused;
+  stdin.resume = () => {
+    paused = false;
+    return stdin;
+  };
+  stdin.pause = () => {
+    paused = true;
+    return stdin;
+  };
+
+  const stdout = {
+    isTTY: true,
+    write() {
+      return true;
+    },
+  };
+
+  const selected = selectMenu([{ value: "workspace", label: "Workspace" }], {
+    stdin,
+    stdout,
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  stdin.emit("data", "\r");
+
+  assert.equal(await selected, "workspace");
+  assert.equal(raw, false);
+  assert.equal(stdin.isPaused(), false);
+  assert.equal(stdin.listenerCount("data"), 0);
+
+  const rl = createInterface({ input: stdin, output: stdout, terminal: false });
+  const answer = rl.question("Workspace path: ");
+  await new Promise((resolve) => setImmediate(resolve));
+  stdin.emit("data", "/tmp/workspace\r\n");
+  assert.equal(await answer, "/tmp/workspace");
   rl.close();
 });
 
