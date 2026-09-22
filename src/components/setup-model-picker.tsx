@@ -28,7 +28,10 @@ import {
   messageForCliAuthFailure,
 } from "@/lib/harness/cli-token";
 import { getByDottedPath } from "@/lib/harness/config-panel";
-import { resolveModelPickerSelection } from "@/lib/harness/setup-model-picker";
+import {
+  brainModelSelectionWrite,
+  resolveModelPickerSelection,
+} from "@/lib/harness/setup-model-picker";
 import { cn } from "@/lib/utils";
 
 export type BrainMenuOption = { value: string; label: string; hint?: string };
@@ -308,22 +311,17 @@ export function SetupModelPicker({ config, disabled, onConfig }: Props) {
     }
     setBusy(true);
     try {
-      const prefRes = await configSet({
-        data: { path: "brain.preferred", value: resolved.preferred },
+      const res = await configSet({
+        data: brainModelSelectionWrite({
+          preferred: resolved.preferred,
+          model: resolved.model,
+        }),
       });
-      if (!prefRes?.ok) {
-        toast.error((prefRes as { error?: string })?.error || "Set brain.preferred failed");
+      if (!res?.ok) {
+        toast.error((res as { error?: string })?.error || "Set brain preferred/model failed");
         return;
       }
-      const modelRes = await configSet({
-        data: { path: "brain.model", value: resolved.model },
-      });
-      if (!modelRes?.ok) {
-        toast.error((modelRes as { error?: string })?.error || "Set brain.model failed");
-        if (prefRes.config) onConfig(prefRes.config as Record<string, unknown>);
-        return;
-      }
-      if (modelRes.config) onConfig(modelRes.config as Record<string, unknown>);
+      if (res.config) onConfig(res.config as Record<string, unknown>);
       toast.success(
         `Brain: ${resolved.preferred}${
           resolved.model ? ` (${resolved.model})` : " (provider default)"
@@ -407,9 +405,9 @@ export function SetupModelPicker({ config, disabled, onConfig }: Props) {
             ?
           </p>
           <p className="text-[11px] text-muted">
-            Writes only <span className="font-mono">brain.preferred</span> and{" "}
-            <span className="font-mono">brain.model</span> via path-keyed configSet. No secrets in
-            this section.
+            Writes <span className="font-mono">brain.preferred</span> and{" "}
+            <span className="font-mono">brain.model</span> in one merge configSet on{" "}
+            <span className="font-mono">brain</span>. No secrets in this section.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" disabled={locked} onClick={() => void save()}>
