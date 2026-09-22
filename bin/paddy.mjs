@@ -47,6 +47,10 @@ import {
   upsertCanonicalChannel,
   validateCanonical,
 } from "../src/lib/harness/config.mjs";
+import {
+  parseConfigureSections,
+  runConfigureWizard,
+} from "../src/lib/harness/configure-wizard.mjs";
 
 export const VERSION = "0.1.0";
 const DEFAULT_PORT = 8080;
@@ -107,6 +111,7 @@ export function parseArgv(argv) {
     target: undefined,
     confirm: false,
     kind: undefined,
+    section: [],
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
@@ -153,6 +158,8 @@ export function parseArgv(argv) {
     else if (a === "--confirm") flags.confirm = true;
     else if (a === "--kind") flags.kind = argv[++i];
     else if (a?.startsWith("--kind=")) flags.kind = a.slice(7);
+    else if (a === "--section") flags.section.push(argv[++i]);
+    else if (a?.startsWith("--section=")) flags.section.push(a.slice(10));
     else if (a === "--") rest.push(...argv.slice(i + 1));
     else if (a?.startsWith("-") && a !== "-") {
       throw new Error(`Unknown flag ${a}`);
@@ -178,7 +185,9 @@ Gateway
   paddy gateway status       Is the gateway up?
   paddy gateway setup        Hermes-style wizard (Telegram, Discord, Slack, …)
 
-  paddy config               Write ~/.paddy, copy selfhost.env, remember a brain
+  paddy configure            Interactive section wizard (↑/↓ + Enter)
+  paddy config               Same wizard on a TTY; --yes / non-TTY → first-run init
+  paddy config init          First-run home + selfhost.env
   paddy config show          Print canonical config (secrets redacted)
   paddy config get <path>    Read a path (secrets redacted)
   paddy config set <path> <json>  Set a path to a JSON value
@@ -213,7 +222,7 @@ Talk
   paddy agent list           List minds
 
 Setup
-  paddy onboard              Alias for paddy config
+  paddy onboard              Alias for paddy config init (first-run)
   paddy doctor               Check the install
   paddy status               Alias for gateway status
   paddy update               Pull the latest release and reinstall
@@ -231,6 +240,7 @@ Flags
   --sync         openclaw | hermes | both  (export compatibility after add)
   --to           openclaw | hermes | both  (channels export)
   --from         openclaw | hermes | both  (config import)
+  --section <s>  Configure wizard section filter (repeatable)
   --yes          Non-interactive config / setup / import replace
   --help
 
@@ -1632,10 +1642,45 @@ function parseSync(raw) {
   return "";
 }
 
+async function cmdConfigure(flags, sections) {
+  if (!stdinStream.isTTY || !stdoutStream.isTTY) {
+    fail(
+      flags,
+      "paddy configure needs an interactive TTY. Use paddy config get|set|unset|show|schema|validate, or paddy config init --yes.",
+      2,
+    );
+    return;
+  }
+  // Ensure ~/.paddy exists via the same first-run path install uses (non-interactive).
+  await cmdOnboard({ ...flags, yes: true });
+  const parsed = parseConfigureSections(sections ?? flags.section ?? []);
+  if (parsed.invalid.length) {
+    fail(flags, `Unknown configure section(s): ${parsed.invalid.join(", ")}`, 2);
+    return;
+  }
+  await runConfigureWizard({
+    sections: parsed.sections,
+    log: (line) => process.stdout.write(`${line}\n`),
+  });
+}
+
 async function cmdConfig(rest, flags) {
   const sub = (rest[0] || "").toLowerCase();
-  if (!sub || sub === "init") {
+  if (!sub) {
+    // Install / CI: --yes or non-TTY keeps first-run init. Interactive TTY → wizard.
+    if (flags.yes || !stdinStream.isTTY || !stdoutStream.isTTY) {
+      await cmdOnboard(flags);
+      return;
+    }
+    await cmdConfigure(flags, flags.section);
+    return;
+  }
+  if (sub === "init") {
     await cmdOnboard(flags);
+    return;
+  }
+  if (sub === "configure") {
+    await cmdConfigure(flags, flags.section);
     return;
   }
   if (sub === "show") {
@@ -1750,7 +1795,7 @@ async function cmdConfig(rest, flags) {
     cmdChannels(["import", source], flags);
     return;
   }
-  fail(flags, "Usage: paddy config [init|show|get|set|unset|schema|validate|import]", 2);
+  fail(flags, "Usage: paddy config [init|show|get|set|unset|schema|validate|import|configure]", 2);
 }
 
 function cmdChannels(rest, flags) {
@@ -1973,7 +2018,10 @@ export async function main(argv = process.argv.slice(2)) {
         await cmdDashboard(flags);
         break;
       case "onboard":
-        await cmdConfig([], flags);
+        await cmdConfig(["init"], flags);
+        break;
+      case "configure":
+        await cmdConfigure(flags, flags.section);
         break;
       case "agent":
       case "agents":
