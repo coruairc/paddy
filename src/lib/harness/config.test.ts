@@ -14,6 +14,7 @@ import {
   turnBrainPreference,
   resolveOpenClawRuntime,
   OPENCLAW_DEFAULT_URL,
+  resolveCanonicalBrainPreference,
   canonicalConfigSchema,
   channelToAccount,
   configGet,
@@ -744,4 +745,35 @@ test("turnBrainPreference allows explicit CLI-style override", () => {
   const brain = turnBrainPreference({ preferred: "claude", model: "claude-sonnet-4", home: dir });
   assert.equal(brain.preferred, "claude");
   assert.equal(brain.model, "claude-sonnet-4");
+});
+
+test("resolveCanonicalBrainPreference reads brain.preferred/model; ignores preferredProvider", () => {
+  const fromBrain = resolveCanonicalBrainPreference({
+    brain: { preferred: "claude", model: "claude-sonnet-4" },
+    preferredProvider: "supergrok",
+  });
+  assert.equal(fromBrain.preferred, "claude");
+  assert.equal(fromBrain.model, "claude-sonnet-4");
+
+  const empty = resolveCanonicalBrainPreference({});
+  assert.equal(empty.preferred, "supergrok");
+  assert.equal(empty.model, undefined);
+
+  const envOnly = resolveCanonicalBrainPreference(null, { envOverride: "qwen" });
+  assert.equal(envOnly.preferred, "qwen");
+
+  const brainWinsEnv = resolveCanonicalBrainPreference(
+    { brain: { preferred: "local" } },
+    { envOverride: "qwen" },
+  );
+  assert.equal(brainWinsEnv.preferred, "local");
+});
+
+test("canonicalBrainPreference matches resolveCanonicalBrainPreference on disk", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet("brain", { preferred: "chatgpt", model: "gpt-5" }, { home: dir, merge: true });
+  const disk = canonicalBrainPreference({ home: dir });
+  const { config } = loadCanonical({ home: dir, persist: false });
+  assert.deepEqual(disk, resolveCanonicalBrainPreference(config));
 });

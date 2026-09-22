@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { loadWorkspaces, runStoredSubagent, saveWorkspaceFn } from "@/lib/harness/memory-api";
 import { getConfig } from "@/lib/harness/config-api";
+import { resolveCanonicalBrainPreference } from "@/lib/harness/brain-preference.mjs";
 import {
   applyPersistedWorkspaceRevision,
   formatSyncConflictMessage,
@@ -185,16 +186,13 @@ export function AppShell() {
             useHelix.getState().hydrateWorkspaces(merged);
             try {
               const cfg = await getConfig();
-              const brain = (cfg?.ok && cfg.config
-                ? (cfg.config as { brain?: { preferred?: string; model?: string } }).brain
-                : undefined);
-              const pref = typeof brain?.preferred === "string" ? brain.preferred.trim() : "";
-              if (pref) {
-                const pid = normalizeProviderId(pref);
+              if (cfg?.ok && cfg.config) {
+                const brainPref = resolveCanonicalBrainPreference(cfg.config);
+                const pid = normalizeProviderId(brainPref.preferred);
                 const helix = useHelix.getState();
                 helix.setPreferredProvider(pid);
-                if (typeof brain?.model === "string" && brain.model.trim()) {
-                  helix.setProviderModel(pid, brain.model.trim());
+                if (brainPref.model) {
+                  helix.setProviderModel(pid, brainPref.model);
                 }
               }
             } catch (cfgErr) {

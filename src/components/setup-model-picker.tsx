@@ -27,7 +27,7 @@ import {
   markCliAuthNeeded,
   messageForCliAuthFailure,
 } from "@/lib/harness/cli-token";
-import { getByDottedPath } from "@/lib/harness/config-panel";
+import { resolveCanonicalBrainPreference } from "@/lib/harness/brain-preference.mjs";
 import {
   brainModelSelectionWrite,
   resolveModelPickerSelection,
@@ -216,8 +216,9 @@ function SearchableOptionList({
 
 export function SetupModelPicker({ config, disabled, onConfig }: Props) {
   const listId = useId();
-  const currentPreferred = String(getByDottedPath(config, "brain.preferred") ?? "supergrok");
-  const currentModel = String(getByDottedPath(config, "brain.model") ?? "");
+  const brainPref = resolveCanonicalBrainPreference(config);
+  const currentPreferred = brainPref.preferred;
+  const currentModel = brainPref.model ?? "";
 
   const [phase, setPhase] = useState<Phase>("provider");
   const [query, setQuery] = useState("");

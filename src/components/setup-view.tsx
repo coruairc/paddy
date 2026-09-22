@@ -21,6 +21,7 @@ import {
   getConfig,
   getConfigSchema,
 } from "@/lib/harness/config-api";
+import { resolveCanonicalBrainPreference } from "@/lib/harness/brain-preference.mjs";
 import {
   buildSetupFields,
   formatFieldDisplay,
@@ -503,7 +504,7 @@ function HealthPanel({
   onRefresh: () => void;
 }) {
   const gateway = (config?.gateway as Record<string, unknown> | undefined) || {};
-  const brain = (config?.brain as Record<string, unknown> | undefined) || {};
+  const brainPref = resolveCanonicalBrainPreference(config);
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap gap-2">
@@ -539,7 +540,7 @@ function HealthPanel({
           {cliTokenSet ? "set (redacted)" : "missing"}
         </p>
         <p>
-          brain preferred={String(brain.preferred ?? "—")} model={String(brain.model ?? "—")}
+          brain preferred={brainPref.preferred} model={brainPref.model ?? "—"}
         </p>
         <p>channels [{channelKeys.join(", ") || "none"}]</p>
       </div>
@@ -565,7 +566,7 @@ function DonePanel({
   onDismiss: () => void;
 }) {
   const gateway = (config?.gateway as Record<string, unknown> | undefined) || {};
-  const brain = (config?.brain as Record<string, unknown> | undefined) || {};
+  const brainPref = resolveCanonicalBrainPreference(config);
   const workspace = getByDottedPath(config, "agents.defaults.workspace");
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-border bg-elevated p-4">
@@ -581,8 +582,8 @@ function DonePanel({
         <div>
           <dt className="text-fg">brain</dt>
           <dd>
-            {String(brain.preferred ?? "—")}
-            {brain.model ? ` / ${String(brain.model)}` : ""}
+            {brainPref.preferred}
+            {brainPref.model ? ` / ${brainPref.model}` : ""}
           </dd>
         </div>
         <div>
