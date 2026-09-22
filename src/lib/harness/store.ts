@@ -305,7 +305,7 @@ export const useHelix = create<HelixStore>()(
         if (!get().workspaces[id]) return;
         const web =
           get().workspaces[id]!.sessions?.find((s) => s.channelId === "web")?.id ?? WEB_SESSION_ID;
-        set({ activeProfileId: id, activeSessionId: web });
+        set({ activeProfileId: id, activeSessionId: web, lastTurnMemory: null });
       },
       addAgent: (name, role) => {
         const trimmed = name.trim().slice(0, 40);
@@ -326,6 +326,7 @@ export const useHelix = create<HelixStore>()(
           activeProfileId: id,
           activeSessionId: WEB_SESSION_ID,
           view: "console",
+          lastTurnMemory: null,
         });
         return { ok: true, id };
       },
@@ -342,6 +343,7 @@ export const useHelix = create<HelixStore>()(
           activeProfileId: nextId,
           activeSessionId: get().activeProfileId === id ? web : get().activeSessionId,
           view: get().activeProfileId === id ? "console" : get().view,
+          lastTurnMemory: null,
         });
         return true;
       },
@@ -928,6 +930,7 @@ export const useHelix = create<HelixStore>()(
           modelByProvider: defaultModelByProvider(),
           brainKeys: defaultBrainKeys(),
           activeSessionId: WEB_SESSION_ID,
+          lastTurnMemory: null,
         });
       },
       installHubSkill: (slug) => {
