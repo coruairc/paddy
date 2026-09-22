@@ -21,6 +21,12 @@ import type {
 } from "./types";
 import { ensureMemoryEmbedding } from "./embeddings.ts";
 import { formatRecallBlock, rankMemories } from "./memory-recall.ts";
+import {
+  ensureSessionFreeze,
+  filesForTurn,
+  resolveMemoryLimits,
+  usageMeters,
+} from "./memory-hermes.mjs";
 
 export interface Queryable {
   query<T = Record<string, unknown>>(text: string, params?: unknown[]): Promise<T[]>;
@@ -399,9 +405,24 @@ export function buildTurnInput(
     keys?: Record<string, string | undefined>;
     forceSkill?: string;
   },
-): HelixTurnInput {
+): HelixTurnInput & {
+  memoryInjected?: {
+    entry: import("./types").MemoryEntry;
+    score: number;
+    similarity: number;
+    recency: number;
+    importance: number;
+  }[];
+  memoryUsage?: ReturnType<typeof usageMeters>;
+} {
   const sid = opts.sessionId || "web:operator";
   const ch = opts.channelId || "web";
+  const frozen = ensureSessionFreeze(ws, sid, ch);
+  const files = filesForTurn(frozen.workspace, sid);
+  const limits = resolveMemoryLimits();
+  const recallHits = rankMemories(ws.memories ?? [], opts.userMessage, {
+    limit: limits.recallLimit,
+  });
   const thread = (ws.messages ?? []).filter(
     (m) => (m.sessionId ?? "web:operator") === sid && (m.role === "user" || m.role === "assistant"),
   );
@@ -410,7 +431,7 @@ export function buildTurnInput(
   return {
     profileName: opts.profileName,
     role: opts.role,
-    files: ws.files,
+    files,
     skills: (ws.skills ?? []).map((s) => ({
       name: s.name,
       description: s.description,
@@ -419,7 +440,7 @@ export function buildTurnInput(
       uses: s.uses,
       triggers: s.triggers,
     })),
-    memories: rankMemories(ws.memories ?? [], opts.userMessage, { limit: 16 }).map((h) => ({
+    memories: recallHits.map((h) => ({
       text: h.memory.text,
       kind: h.memory.kind,
     })),
@@ -456,6 +477,14 @@ export function buildTurnInput(
     nudgeMemory: (usage?.turnsSinceMemoryWrite ?? 0) >= 6 && (usage?.turns ?? 0) > 0,
     nudgeSkill: Boolean(usage?.skillNudge),
     forceSkill: opts.forceSkill,
+    memoryInjected: recallHits.map((h) => ({
+      entry: h.memory,
+      score: h.score,
+      similarity: h.similarity,
+      recency: h.recency,
+      importance: h.importance,
+    })),
+    memoryUsage: usageMeters(ws, limits),
   };
 }
 

@@ -7,8 +7,26 @@ import { resolveBrain } from "./brain";
 import { TOKEN_MAX, type BrainKeys, type ProviderId } from "./providers";
 import { executeTurn, executeInheritedSubagent } from "./run-turn";
 import { secretsForProfile, withSecretScope } from "./secret-scope";
-import type { HelixTurnInput, HelixTurnResult, WorkspaceState } from "./types";
+import type {
+  HelixTurnInput,
+  HelixTurnResult,
+  MemoryKind,
+  MemoryTarget,
+  MemoryWriteAction,
+  WorkspaceState,
+} from "./types";
 import { cliGatewayMiddleware } from "./cli-gateway-middleware";
+import {
+  applyMemoryWrite,
+  ensureSessionFreeze,
+  memoryList as listMemory,
+  memoryReset as resetMemory,
+  memoryStatus as statusOf,
+  resolveMemoryLimits,
+  usageMeters,
+} from "./memory-hermes.mjs";
+import { rankMemories } from "./memory-recall.ts";
+import { ensureMemoryEmbedding } from "./embeddings.ts";
 
 export const loadWorkspaces = createServerFn({ method: "GET" })
   .middleware([cliGatewayMiddleware])
@@ -88,22 +106,33 @@ export const runStoredHelixTurn = createServerFn({ method: "POST" })
     const profileId = (data.profileId || "paddy").slice(0, 80);
     const sessionId = data.sessionId || "web:operator";
     const store = await getMemoryStore();
-    const ws = await store.prefetch(profileId);
+    let ws = await store.prefetch(profileId);
+    const freeze = ensureSessionFreeze(ws, sessionId, data.channelId || "web");
+    ws = freeze.workspace;
+    if (freeze.created) {
+      try {
+        await store.syncTurn(profileId, ws);
+      } catch (err) {
+        if (!(err instanceof SyncConflictError)) throw err;
+        ws = await store.prefetch(profileId);
+      }
+    }
     const keys = sanitizeKeys(data.keys);
+    const built = buildTurnInput(ws, {
+      profileName: data.profileName,
+      role: data.role,
+      userMessage: data.userMessage,
+      channelId: data.channelId,
+      channelName: data.channelName,
+      sessionId,
+      policy: data.policy,
+      preferredProvider: data.preferredProvider,
+      preferredModel: data.preferredModel,
+      keys,
+      forceSkill: data.forceSkill,
+    });
     const input: HelixTurnInput = {
-      ...buildTurnInput(ws, {
-        profileName: data.profileName,
-        role: data.role,
-        userMessage: data.userMessage,
-        channelId: data.channelId,
-        channelName: data.channelName,
-        sessionId,
-        policy: data.policy,
-        preferredProvider: data.preferredProvider,
-        preferredModel: data.preferredModel,
-        keys,
-        forceSkill: data.forceSkill,
-      }),
+      ...built,
       userMessage: data.userMessage,
     };
     const result = await withSecretScope(secretsForProfile(keys), () => executeTurn(input));
@@ -120,11 +149,23 @@ export const runStoredHelixTurn = createServerFn({ method: "POST" })
       next.memories = pass.memories;
       next.files = pass.files;
     }
+    const limits = resolveMemoryLimits();
+    const meters = usageMeters(next, limits);
+    const memoryUsage = {
+      memory: meters.memory,
+      user: meters.user,
+      memoryChars: meters.memoryChars,
+      memoryLimit: meters.memoryLimit,
+      userChars: meters.userChars,
+      userLimit: meters.userLimit,
+    };
+    const enriched = result.ok
+      ? { ...result, memoryInjected: built.memoryInjected, memoryUsage }
+      : result;
     try {
       await store.syncTurn(profileId, next);
     } catch (err) {
       if (!(err instanceof SyncConflictError)) throw err;
-      // One bounded retry: rebase onto latest snapshot then sync again.
       const latest = await store.prefetch(profileId);
       const rebased = applyTurnToWorkspace(latest, {
         userText: data.rawUserText ?? data.userMessage,
@@ -140,9 +181,9 @@ export const runStoredHelixTurn = createServerFn({ method: "POST" })
         rebased.files = pass2.files;
       }
       await store.syncTurn(profileId, rebased);
-      return { ...result, workspace: rebased };
+      return { ...enriched, workspace: rebased };
     }
-    return { ...result, workspace: next };
+    return { ...enriched, workspace: next };
   });
 
 export const runStoredSubagent = createServerFn({ method: "POST" })
@@ -189,3 +230,140 @@ export const runStoredSubagent = createServerFn({ method: "POST" })
     }
   });
 
+/* ─── Hermes memory APIs (PR3+PR4) ─────────────────────────────────────── */
+
+function toApiHits(hits: ReturnType<typeof rankMemories>) {
+  return hits.map((h) => ({
+    entry: h.memory,
+    score: h.score,
+    similarity: h.similarity,
+    recency: h.recency,
+    importance: h.importance,
+  }));
+}
+
+/** `{ memoryChars, memoryLimit, userChars, userLimit, entryCount, ftsEnabled, embeddingMode }` */
+export const memoryStatus = createServerFn({ method: "GET" })
+  .middleware([cliGatewayMiddleware])
+  .handler(async () => {
+    const store = await getMemoryStore();
+    const ws = await store.prefetch("paddy");
+    return { ok: true as const, ...statusOf(ws) };
+  });
+
+export const memoryList = createServerFn({ method: "GET" })
+  .middleware([cliGatewayMiddleware])
+  .validator((input?: { target?: MemoryTarget }) => input ?? {})
+  .handler(async ({ data }) => {
+    const store = await getMemoryStore();
+    const ws = await store.prefetch("paddy");
+    const target = data?.target;
+    if (target === "memory" || target === "user") {
+      return { ok: true as const, ...listMemory(ws, target) };
+    }
+    const both = listMemory(ws) as {
+      memory: ReturnType<typeof listMemory>;
+      user: ReturnType<typeof listMemory>;
+    };
+    return { ok: true as const, ...both };
+  });
+
+export const memorySearch = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
+  .validator((input: { query: string; limit?: number; target?: MemoryTarget }) => input)
+  .handler(async ({ data }) => {
+    const store = await getMemoryStore();
+    const ws = await store.prefetch("paddy");
+    const query = (data.query ?? "").slice(0, 2000);
+    const limit = typeof data.limit === "number" ? data.limit : undefined;
+    let pool = ws.memories ?? [];
+    if (data.target === "user") {
+      const listed = listMemory(ws, "user") as { entries: typeof pool };
+      pool = listed.entries;
+    } else if (data.target === "memory") {
+      pool = ws.memories ?? [];
+    }
+    const hits = rankMemories(pool, query, { limit });
+    return { ok: true as const, hits: toApiHits(hits) };
+  });
+
+export const memoryWrite = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
+  .validator(
+    (input: {
+      target: MemoryTarget;
+      action: MemoryWriteAction;
+      text: string;
+      oldText?: string;
+      kind?: MemoryKind;
+    }) => input,
+  )
+  .handler(async ({ data }) => {
+    const store = await getMemoryStore();
+    const ws = await store.prefetch("paddy");
+    const limits = resolveMemoryLimits();
+    const result = applyMemoryWrite(ws, {
+      target: data.target,
+      action: data.action,
+      text: data.text,
+      oldText: data.oldText,
+      kind: data.kind,
+      limits,
+      embed: (text: string, existing?: number[]) => ensureMemoryEmbedding(text, existing),
+    });
+    if (!result.ok) {
+      return {
+        ok: false as const,
+        error: result.error as string,
+        code: (result as { code?: string }).code,
+        currentEntries: (result as { currentEntries?: string[] }).currentEntries,
+        matches: (result as { matches?: string[] }).matches,
+        usage: (result as { usage?: string }).usage,
+      };
+    }
+    await store.syncTurn("paddy", result.workspace);
+    return {
+      ok: true as const,
+      message: result.message,
+      replacedEntry: result.replacedEntry,
+      usage: result.usage ?? usageMeters(result.workspace, limits),
+      workspace: result.workspace,
+    };
+  });
+
+export const memoryRecall = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
+  .validator((input: { query: string; limit?: number }) => input)
+  .handler(async ({ data }) => {
+    const store = await getMemoryStore();
+    const ws = await store.prefetch("paddy");
+    const limits = resolveMemoryLimits();
+    const query = (data.query ?? "").slice(0, 2000);
+    const limit = typeof data.limit === "number" ? data.limit : limits.recallLimit;
+    const hits = rankMemories(ws.memories ?? [], query, { limit });
+    return {
+      ok: true as const,
+      hits: toApiHits(hits),
+      memoryUsage: usageMeters(ws, limits),
+    };
+  });
+
+export const memoryReset = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
+  .validator((input: { target: "all" | "memory" | "user"; confirm: boolean }) => input)
+  .handler(async ({ data }) => {
+    const store = await getMemoryStore();
+    const ws = await store.prefetch("paddy");
+    const result = resetMemory(ws, data.target, data.confirm);
+    if (!result.ok) {
+      return { ok: false as const, error: result.error as string };
+    }
+    await store.syncTurn("paddy", result.workspace);
+    return {
+      ok: true as const,
+      message: result.message,
+      status: statusOf(result.workspace),
+    };
+  });
+
+export { ensureSessionFreeze, resolveMemoryLimits, usageMeters };

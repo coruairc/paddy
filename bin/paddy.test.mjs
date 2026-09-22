@@ -41,6 +41,7 @@ test("help lists gateway, chat, models, doctor", () => {
     "paddy skills import",
     "paddy skills export",
     "paddy memory",
+    "paddy memory status",
     "paddy approve",
     "paddy channels",
     "paddy pairing approve",
