@@ -90,3 +90,10 @@ test("valueForField never echoes writeOnly token from config", () => {
     "",
   );
 });
+
+test("openclaw.token is writeOnly secret path", () => {
+  assert.equal(isWriteOnlySecretPath("openclaw.token"), true);
+  assert.equal(isWriteOnlySecretPath("openclaw.url"), false);
+  const node = fallbackConfigSchema().properties?.openclaw?.properties?.token;
+  assert.equal(node?.writeOnly, true);
+});
