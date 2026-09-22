@@ -28,7 +28,7 @@ import {
 } from "./configure-wizard.mjs";
 import { createInterface } from "node:readline/promises";
 import { EventEmitter } from "node:events";
-import { loadCanonical, configGet, configSet } from "./config.mjs";
+import { loadCanonical, configGet, configSet, canonicalBrainPreference } from "./config.mjs";
 import { brainModelSelectionWrite } from "./setup-model-picker.ts";
 
 function tempHome() {
@@ -578,6 +578,9 @@ test("applyBrainModelSelection writes preferred+model in one merge configSet", (
   const disk = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
   assert.equal(disk.brain.preferred, "claude");
   assert.equal(disk.brain.model, "claude-haiku-4-5");
+  const runtime = canonicalBrainPreference({ home });
+  assert.equal(runtime.preferred, "claude");
+  assert.equal(runtime.model, "claude-haiku-4-5");
 });
 
 test("failed atomic brain write leaves prior preferred+model unchanged", () => {

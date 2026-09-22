@@ -32,6 +32,8 @@ import {
   brainModelSelectionWrite,
   resolveModelPickerSelection,
 } from "@/lib/harness/setup-model-picker";
+import { normalizeProviderId } from "@/lib/harness/providers";
+import { useHelix } from "@/lib/harness/store";
 import { cn } from "@/lib/utils";
 
 export type BrainMenuOption = { value: string; label: string; hint?: string };
@@ -322,6 +324,10 @@ export function SetupModelPicker({ config, disabled, onConfig }: Props) {
         return;
       }
       if (res.config) onConfig(res.config as Record<string, unknown>);
+      const pid = normalizeProviderId(resolved.preferred);
+      const helix = useHelix.getState();
+      helix.setPreferredProvider(pid);
+      if (resolved.model) helix.setProviderModel(pid, resolved.model);
       toast.success(
         `Brain: ${resolved.preferred}${
           resolved.model ? ` (${resolved.model})` : " (provider default)"

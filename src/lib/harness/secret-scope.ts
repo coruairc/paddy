@@ -5,13 +5,54 @@
  * profile A's WhatsApp token would otherwise leak into profile B's turn.
  * When a scope is active, secret() is fail-closed — only the bag is visible.
  * With no scope (single-profile / tests), secret() falls back to process.env.
+ *
+ * Do not statically import node:async_hooks — config-api / run-turn / memory-api
+ * are imported from client components, and Vite then crashes the GUI with
+ * "AsyncLocalStorage has been externalized for browser compatibility".
  */
-import { AsyncLocalStorage } from "node:async_hooks";
 import type { BrainKeys } from "./providers";
 
 export type SecretBag = Record<string, string>;
 
-const als = new AsyncLocalStorage<SecretBag>();
+type AlsApi = {
+  run: <T>(store: SecretBag, callback: () => T) => T;
+  getStore: () => SecretBag | undefined;
+};
+
+function createAls(): AlsApi {
+  const g = globalThis as {
+    process?: { versions?: { node?: string }; getBuiltinModule?: (name: string) => unknown };
+    window?: unknown;
+  };
+  const inBrowser = typeof g.window !== "undefined";
+  if (!inBrowser && typeof g.process?.getBuiltinModule === "function") {
+    try {
+      const hooks = g.process.getBuiltinModule("async_hooks") as {
+        AsyncLocalStorage?: new <T>() => AlsApi;
+      };
+      if (hooks?.AsyncLocalStorage) return new hooks.AsyncLocalStorage<SecretBag>();
+    } catch {
+      /* fall through to a process-local stack */
+    }
+  }
+  let current: SecretBag | undefined;
+  return {
+    run<T>(store: SecretBag, callback: () => T): T {
+      const prev = current;
+      current = store;
+      try {
+        return callback();
+      } finally {
+        current = prev;
+      }
+    },
+    getStore() {
+      return current;
+    },
+  };
+}
+
+const als = createAls();
 
 export const BRAIN_KEY_ENV: Record<string, string> = {
   xai: "XAI_API_KEY",

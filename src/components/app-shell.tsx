@@ -37,9 +37,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { loadWorkspaces, runStoredSubagent, saveWorkspaceFn } from "@/lib/harness/memory-api";
+import { getConfig } from "@/lib/harness/config-api";
 import { helixRuntime } from "@/lib/harness/run-turn";
 import { CliTokenBar } from "@/components/cli-token-bar";
 import { isCliAuthFailure, markCliAuthNeeded } from "@/lib/harness/cli-token";
+import { normalizeProviderId } from "@/lib/harness/providers";
 import { useHelix } from "@/lib/harness/store";
 import type { ProfileMeta, ViewId } from "@/lib/harness/types";
 import { cn } from "@/lib/utils";
@@ -122,6 +124,23 @@ export function AppShell() {
               }
             }
             useHelix.getState().hydrateWorkspaces(merged);
+            try {
+              const cfg = await getConfig();
+              const brain = (cfg?.ok && cfg.config
+                ? (cfg.config as { brain?: { preferred?: string; model?: string } }).brain
+                : undefined);
+              const pref = typeof brain?.preferred === "string" ? brain.preferred.trim() : "";
+              if (pref) {
+                const pid = normalizeProviderId(pref);
+                const helix = useHelix.getState();
+                helix.setPreferredProvider(pid);
+                if (typeof brain?.model === "string" && brain.model.trim()) {
+                  helix.setProviderModel(pid, brain.model.trim());
+                }
+              }
+            } catch (cfgErr) {
+              if (isCliAuthFailure(cfgErr)) markCliAuthNeeded();
+            }
           } catch (err) {
             if (isCliAuthFailure(err)) markCliAuthNeeded();
             /* store still has seeds */

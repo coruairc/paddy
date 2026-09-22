@@ -1147,7 +1147,7 @@ async function cmdChat(rest, flags) {
     return;
   }
 
-  const rawPrefer = flags.prefer || loadWorkspace().preferredProvider || cfg.preferredProvider;
+  const rawPrefer = flags.prefer || cfg.preferredProvider;
   const preferred = preferAlias(rawPrefer);
   const model = flags.prefer ? preferModel(flags.prefer) : cfg.preferredModel || preferModel(rawPrefer);
   const oneShot = rest.join(" ").trim();

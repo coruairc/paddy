@@ -542,6 +542,33 @@ export function applyBrainModelSelection(selection, { home = paddyHome() } = {})
   );
 }
 
+/**
+ * Runtime brain selection from canonical config (what `paddy configure` writes).
+ * PADDY_MODEL is a last-resort env override, not a second source of truth.
+ * @param {{ home?: string }} [opts]
+ * @returns {{ preferred: string, model: string | undefined }}
+ */
+export function canonicalBrainPreference({ home } = {}) {
+  const envOverride =
+    typeof process !== "undefined" && process.env?.PADDY_MODEL
+      ? String(process.env.PADDY_MODEL).trim()
+      : "";
+  try {
+    const { config } = loadCanonical({ home, persist: false });
+    const preferredRaw = config?.brain?.preferred;
+    const modelRaw = config?.brain?.model;
+    const preferred =
+      typeof preferredRaw === "string" && preferredRaw.trim()
+        ? preferredRaw.trim()
+        : envOverride || "supergrok";
+    const model =
+      typeof modelRaw === "string" && modelRaw.trim() ? modelRaw.trim() : undefined;
+    return { preferred, model };
+  } catch {
+    return { preferred: envOverride || "supergrok", model: undefined };
+  }
+}
+
 export function configUnset(path, { home = paddyHome() } = {}) {
   const normalized = normalizeConfigPath(path);
   let alias = resolveConfigPathAlias(path);

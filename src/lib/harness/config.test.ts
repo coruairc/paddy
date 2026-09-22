@@ -10,6 +10,7 @@ import {
   SCHEMA_VERSION,
   accountToChannel,
   atomicWrite,
+  canonicalBrainPreference,
   canonicalConfigSchema,
   channelToAccount,
   configGet,
@@ -653,4 +654,20 @@ test("validateCanonical issues include path and richer messages", () => {
   assert.ok(bad.issues.some((i) => i.path === "gateway.port"));
   assert.ok(bad.issues.some((i) => i.path === "channels.telegram.access.mode"));
   assert.match(bad.errors.join(" "), /gateway\.port/);
+});
+
+test("canonicalBrainPreference reads wizard brain.preferred/model, not PADDY_MODEL", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet("brain", { preferred: "qwen", model: "qwen-plus" }, { home: dir, merge: true });
+  const prev = process.env.PADDY_MODEL;
+  process.env.PADDY_MODEL = "supergrok";
+  try {
+    const brain = canonicalBrainPreference({ home: dir });
+    assert.equal(brain.preferred, "qwen");
+    assert.equal(brain.model, "qwen-plus");
+  } finally {
+    if (prev === undefined) delete process.env.PADDY_MODEL;
+    else process.env.PADDY_MODEL = prev;
+  }
 });

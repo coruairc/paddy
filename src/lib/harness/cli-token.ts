@@ -75,12 +75,23 @@ export function messageForCliAuthFailure(err: unknown): string {
 
 type Snapshot = { authNeeded: boolean; hasToken: boolean };
 
+const SERVER_SNAPSHOT: Snapshot = { authNeeded: false, hasToken: false };
+let clientSnapshot: Snapshot = SERVER_SNAPSHOT;
+
 function getSnapshot(): Snapshot {
-  return { authNeeded, hasToken: Boolean(cliToken) };
+  const next: Snapshot = { authNeeded, hasToken: Boolean(cliToken) };
+  if (
+    clientSnapshot.authNeeded === next.authNeeded &&
+    clientSnapshot.hasToken === next.hasToken
+  ) {
+    return clientSnapshot;
+  }
+  clientSnapshot = next;
+  return clientSnapshot;
 }
 
 function getServerSnapshot(): Snapshot {
-  return { authNeeded: false, hasToken: false };
+  return SERVER_SNAPSHOT;
 }
 
 export function useCliTokenSession(): Snapshot {

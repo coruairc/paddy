@@ -15,10 +15,15 @@ import { secretsForProfile, withSecretScope } from "./secret-scope";
 import { wrapUntrusted } from "./untrusted";
 import type { HelixTurnInput } from "./types";
 import { cliAuthorized, expectedCliToken } from "./cli-auth";
+import { canonicalBrainPreference } from "./config.mjs";
 
 const TOKEN_MAX = 8192;
 
 
+
+function brainDefaults(): { preferred: string; model: string | undefined } {
+  return canonicalBrainPreference();
+}
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -37,7 +42,7 @@ function str(v: unknown, fallback = ""): string {
 
 function publicStatus() {
   const env = envPresence();
-  const preferred = (process.env.PADDY_MODEL || "supergrok").trim() || "supergrok";
+  const preferred = brainDefaults().preferred;
   return {
     ok: true as const,
     preferred,
@@ -122,8 +127,8 @@ async function handleChat(body: Record<string, unknown>) {
     channelId: str(body.channelId, "web") || "web",
     channelName: str(body.channelName, "web"),
     sessionId: str(body.sessionId, "web:operator") || "web:operator",
-    preferredProvider: str(body.preferredProvider, process.env.PADDY_MODEL || "supergrok"),
-    preferredModel: str(body.model) || undefined,
+    preferredProvider: str(body.preferredProvider, brainDefaults().preferred),
+    preferredModel: str(body.model) || brainDefaults().model,
     keys: keysFromBody(body),
     clearUnread: true,
   });
@@ -174,8 +179,8 @@ export async function handleInbound(body: Record<string, unknown>) {
     channelId,
     channelName: str(body.channelName, channelId),
     sessionId: str(body.sessionId, `${channelId}:${chatId || fromId || "inbox"}`),
-    preferredProvider: str(body.preferredProvider, process.env.PADDY_MODEL || "supergrok"),
-    preferredModel: str(body.model) || undefined,
+    preferredProvider: str(body.preferredProvider, brainDefaults().preferred),
+    preferredModel: str(body.model) || brainDefaults().model,
     keys: keysFromBody(body),
     clearUnread: false,
   });
@@ -229,7 +234,8 @@ async function handleWake(body: Record<string, unknown>) {
       channelId: "web",
       channelName: "Heartbeat",
       sessionId: "web:operator",
-      preferredProvider: str(body.preferredProvider, process.env.PADDY_MODEL || "supergrok"),
+      preferredProvider: str(body.preferredProvider, brainDefaults().preferred),
+      preferredModel: str(body.model) || brainDefaults().model,
       keys: keysFromBody(body),
       clearUnread: true,
     });
@@ -284,10 +290,11 @@ async function handleApprove(body: Record<string, unknown>) {
     });
   }
   if (tool === "spawn_subagent") {
-    const preferred = (str(body.preferredProvider, process.env.PADDY_MODEL || "supergrok") ||
+    const brain = brainDefaults();
+    const preferred = (str(body.preferredProvider, brain.preferred) ||
       "supergrok") as ProviderId;
     const keys = keysFromBody(body);
-    const resolved = resolveBrain(preferred, keys, str(body.model) || undefined);
+    const resolved = resolveBrain(preferred, keys, str(body.model) || brain.model);
     if (!resolved.ok) return json({ ok: false, error: resolved.error }, 400);
     const role = str(args.role, "specialist").slice(0, 80);
     const task = str(args.task).slice(0, 1200);
@@ -301,7 +308,7 @@ async function handleApprove(body: Record<string, unknown>) {
         userMessage: task,
         policy: POLICY,
         preferredProvider: preferred,
-        preferredModel: str(body.model) || undefined,
+        preferredModel: str(body.model) || brain.model,
         keys,
       });
       const text = await withSecretScope(secretsForProfile(keys), () =>

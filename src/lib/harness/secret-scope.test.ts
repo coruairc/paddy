@@ -1,5 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import {
   secret,
   secretsForProfile,
@@ -59,4 +61,9 @@ test("secretsForProfile prefers profile keys over env", () => {
 test("splitKeyPool splits comma and newline lists", () => {
   assert.deepEqual(splitKeyPool("a, b\nc"), ["a", "b", "c"]);
   assert.deepEqual(splitKeyPool("  "), []);
+});
+
+test("secret-scope does not statically import node:async_hooks (Vite client crash)", () => {
+  const src = readFileSync(fileURLToPath(new URL("./secret-scope.ts", import.meta.url)), "utf8");
+  assert.equal(/from\s+["']node:async_hooks["']/.test(src), false);
 });
