@@ -13,6 +13,7 @@ import {
   Puzzle,
   Radio,
   Trash2,
+  Wand2,
 } from "lucide-react";
 import { HelixMark } from "@/components/helix-mark";
 import { BoardView } from "@/components/board-view";
@@ -22,6 +23,7 @@ import { GatewayView } from "@/components/gateway-view";
 import { IdentityView } from "@/components/identity-view";
 import { MemoryView } from "@/components/memory-view";
 import { ConfigView } from "@/components/config-view";
+import { SetupView } from "@/components/setup-view";
 import { ModelsView } from "@/components/models-view";
 import { ObservatoryView } from "@/components/observatory-view";
 import { SessionsView } from "@/components/sessions-view";
@@ -67,6 +69,7 @@ const NAV_GROUPS: {
   {
     id: "ops",
     items: [
+      { id: "setup", label: "Setup", icon: Wand2 },
       { id: "config", label: "Config", icon: SlidersHorizontal },
       { id: "models", label: "Models", icon: Cpu },
       { id: "checkpoints", label: "Checkpoints", icon: History },
@@ -261,6 +264,7 @@ export function AppShell() {
           {view === "memory" && <MemoryView key={activeProfileId} />}
           {view === "checkpoints" && <CheckpointsView key={activeProfileId} />}
           {view === "observatory" && <ObservatoryView key={activeProfileId} />}
+          {view === "setup" && <SetupView />}
           {view === "config" && <ConfigView />}
           {view === "models" && <ModelsView />}
         </main>

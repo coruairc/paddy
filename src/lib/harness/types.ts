@@ -11,7 +11,8 @@ export type ViewId =
   | "checkpoints"
   | "observatory"
   | "models"
-  | "config";
+  | "config"
+  | "setup";
 
 export type ToolName =
   | "write_memory"

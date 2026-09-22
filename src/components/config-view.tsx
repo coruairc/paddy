@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Eraser, RefreshCw, Save, ShieldAlert, SlidersHorizontal } from "lucide-react";
+import { Check, Eraser, RefreshCw, Save, ShieldAlert, SlidersHorizontal, Wand2, X } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import {
   configGet,
   configSet,
@@ -17,8 +15,10 @@ import {
 import {
   buildConfigFields,
   formatFieldDisplay,
+  isSetupDismissed,
   MEMORY_SCHEMA_DEFAULTS,
   parseFieldInput,
+  setSetupDismissed,
   valueForField,
   type ConfigFieldDef,
   type SchemaNode,
@@ -28,6 +28,8 @@ import {
   markCliAuthNeeded,
   messageForCliAuthFailure,
 } from "@/lib/harness/cli-token";
+import { ConfigFieldRow } from "@/components/config-field-row";
+import { useHelix } from "@/lib/harness/store";
 import { cn } from "@/lib/utils";
 
 type Issue = { path?: string; message: string; severity?: string };
@@ -58,6 +60,8 @@ function handleAuth(err: unknown): boolean {
 }
 
 export function ConfigView() {
+  const setView = useHelix((s) => s.setView);
+  const [showSetupBanner, setShowSetupBanner] = useState(() => !isSetupDismissed());
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
   const [schema, setSchema] = useState<SchemaNode | null>(null);
   const [schemaStub, setSchemaStub] = useState(false);
@@ -310,8 +314,50 @@ export function ConfigView() {
               <Check className="size-3.5" />
               Validate
             </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => setView("setup")}
+            >
+              <Wand2 className="size-3.5" />
+              Guided setup
+            </Button>
           </div>
         </header>
+
+        {showSetupBanner ? (
+          <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-accent/40 bg-accent/5 p-3">
+            <div className="min-w-0">
+              <p className="flex items-center gap-2 text-sm font-medium text-fg">
+                <Wand2 className="size-4 text-accent" />
+                First-run guided setup
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                Walk Workspace → Model → Gateway → Channels → Memory → Skills → Health — same
+                contract as <span className="font-mono">paddy configure</span>. Path-keyed forms
+                below stay available.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" size="sm" onClick={() => setView("setup")}>
+                Start setup
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setSetupDismissed(true);
+                  setShowSetupBanner(false);
+                }}
+                aria-label="Dismiss setup banner"
+              >
+                <X className="size-3.5" />
+              </Button>
+            </div>
+          </div>
+        ) : null}
 
         {issues.length > 0 ? (
           <div className="rounded-xl border border-danger/40 bg-danger/5 p-3 text-sm">
@@ -350,7 +396,7 @@ export function ConfigView() {
               ) : null}
               <div className="flex flex-col gap-3">
                 {sectionFields.map((field) => (
-                  <FieldRow
+                  <ConfigFieldRow
                     key={field.path}
                     field={field}
                     draft={draftFor(field)}
@@ -469,101 +515,6 @@ export function ConfigView() {
           </div>
         </section>
       </div>
-    </div>
-  );
-}
-
-function FieldRow({
-  field,
-  draft,
-  disabled,
-  busy,
-  onDraft,
-  onSave,
-  onUnset,
-  onToggle,
-}: {
-  field: ConfigFieldDef;
-  draft: string;
-  disabled: boolean;
-  busy: boolean;
-  onDraft: (v: string) => void;
-  onSave: () => void;
-  onUnset: () => void;
-  onToggle: (checked: boolean) => void;
-}) {
-  const checked = draft === "true";
-
-  return (
-    <div className="rounded-xl border border-border bg-surface/40 p-3">
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="font-mono text-xs text-fg">{field.path}</p>
-          {field.description || field.notRuntimeSot ? (
-            <p className="mt-0.5 text-[11px] text-muted">
-              {field.description}
-              {field.notRuntimeSot ? (field.description ? " · " : "") + "not runtime SoT yet" : ""}
-            </p>
-          ) : null}
-        </div>
-        <div className="flex gap-1">
-          {field.kind !== "boolean" && field.path !== "gateway.auth.mode" ? (
-            <Button type="button" size="sm" disabled={disabled || busy} onClick={onSave}>
-              <Save className="size-3.5" />
-              Set
-            </Button>
-          ) : null}
-          {!field.writeOnly && field.path !== "gateway.auth.mode" ? (
-            <Button type="button" size="sm" variant="ghost" disabled={disabled || busy} onClick={onUnset}>
-              Unset
-            </Button>
-          ) : null}
-        </div>
-      </div>
-      {field.kind === "boolean" ? (
-        <div className="flex items-center gap-3">
-          <Switch
-            checked={checked}
-            disabled={disabled || busy}
-            onCheckedChange={onToggle}
-            aria-label={field.path}
-          />
-          <span className="text-xs text-muted">{checked ? "true" : "false"}</span>
-        </div>
-      ) : field.path === "gateway.auth.mode" ? (
-        <Input value="token" readOnly disabled className="font-mono text-xs" />
-      ) : field.kind === "password" ? (
-        <Input
-          type="password"
-          autoComplete="off"
-          spellCheck={false}
-          value={draft}
-          placeholder="writeOnly — paste to set, never shown back"
-          disabled={disabled || busy}
-          onChange={(e) => onDraft(e.target.value)}
-          className="font-mono text-xs"
-          aria-label={field.path}
-        />
-      ) : field.kind === "json" ? (
-        <Textarea
-          value={draft}
-          disabled={disabled || busy}
-          onChange={(e) => onDraft(e.target.value)}
-          className="min-h-24 font-mono text-xs"
-          spellCheck={false}
-        />
-      ) : (
-        <Input
-          type={field.kind === "number" ? "number" : "text"}
-          value={draft}
-          disabled={disabled || busy}
-          onChange={(e) => onDraft(e.target.value)}
-          className="font-mono text-xs"
-          spellCheck={false}
-          autoComplete="off"
-          aria-label={field.path}
-        />
-      )}
     </div>
   );
 }
