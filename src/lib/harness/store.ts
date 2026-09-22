@@ -9,6 +9,7 @@ import { defaultBrainKeys, defaultModelByProvider, defaultProviders, keysForSlot
 import type {
   Channel,
   HelixTurnResult,
+  LastTurnMemory,
   Policy,
   ProfileMeta,
   Session,
@@ -57,6 +58,35 @@ function event(
 }
 
 
+
+function lastTurnMemoryFrom(result: HelixTurnResult): LastTurnMemory | null {
+  if (!result.ok) return null;
+  const injected = result.memoryInjected ?? [];
+  if (!injected.length && !result.memoryUsage) return null;
+  return {
+    at: Date.now(),
+    injected,
+    usage: result.memoryUsage,
+  };
+}
+
+function memoryRecallTrace(snap: LastTurnMemory): TraceEvent {
+  const detail = snap.injected
+    .slice(0, 6)
+    .map((h) => `${h.entry.kind}:${h.entry.text.slice(0, 48)} (${h.score.toFixed(2)})`)
+    .join(" · ");
+  return event(
+    "memory",
+    `Recall injected ${snap.injected.length}`,
+    {
+      detail: snap.usage
+        ? `${detail} · caps ${snap.usage.memory} mem / ${snap.usage.user} user`
+        : detail || undefined,
+      status: "ok",
+    },
+  );
+}
+
 export interface HelixStore {
   view: ViewId;
   moreOpen: boolean;
@@ -90,6 +120,8 @@ export interface HelixStore {
   brainKeys: BrainKeys;
   envFlags: Record<string, boolean>;
   activeSessionId: string;
+  /** Ephemeral: last turn memoryInjected + memoryUsage (not localStorage). */
+  lastTurnMemory: LastTurnMemory | null;
   setView: (view: ViewId) => void;
   setMoreOpen: (open: boolean) => void;
   setInspector: (tab: "loop" | "canvas" | "context") => void;
@@ -264,6 +296,7 @@ export const useHelix = create<HelixStore>()(
       brainKeys: defaultBrainKeys(),
       envFlags: {},
       activeSessionId: WEB_SESSION_ID,
+      lastTurnMemory: null,
       setView: (view) => set({ view, moreOpen: false }),
       setMoreOpen: (moreOpen) => set({ moreOpen }),
       setInspector: (inspector) => set({ inspector }),
@@ -535,6 +568,22 @@ export const useHelix = create<HelixStore>()(
           error: result.ok ? null : result.error,
           busy: false,
         });
+        if (result.ok) {
+          const snap = lastTurnMemoryFrom(result);
+          if (snap) {
+            set({
+              lastTurnMemory: snap,
+              ...(snap.injected.length
+                ? {
+                    workspaces: patchWs(get().workspaces, id, (ws) => ({
+                      ...ws,
+                      traces: [memoryRecallTrace(snap), ...ws.traces].slice(0, 80),
+                    })),
+                  }
+                : {}),
+            });
+          }
+        }
         if (channelId) {
           set({
             channels: get().channels.map((c) =>
@@ -551,7 +600,18 @@ export const useHelix = create<HelixStore>()(
           (channelId && channelId !== "web" ? `${channelId}:inbox` : WEB_SESSION_ID);
         const ch = channelId || "web";
         if (result.workspace) {
-          set({ workspaces: { ...get().workspaces, [id]: result.workspace } });
+          const snap = lastTurnMemoryFrom(result);
+          let ws = result.workspace;
+          if (snap?.injected.length) {
+            ws = {
+              ...ws,
+              traces: [memoryRecallTrace(snap), ...(ws.traces ?? [])].slice(0, 80),
+            };
+          }
+          set({
+            workspaces: { ...get().workspaces, [id]: ws },
+            ...(snap ? { lastTurnMemory: snap } : {}),
+          });
         } else {
           get().applyResult(userText, channelId, result, sessionId, profileId);
           return;

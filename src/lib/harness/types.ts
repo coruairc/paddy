@@ -349,3 +349,10 @@ export type HelixTurnResult =
         userLimit: number;
       };
     };
+
+/** FE observability snapshot from the last successful turn (not persisted). */
+export type LastTurnMemory = {
+  at: number;
+  injected: NonNullable<Extract<HelixTurnResult, { ok: true }>["memoryInjected"]>;
+  usage?: Extract<HelixTurnResult, { ok: true }>["memoryUsage"];
+};

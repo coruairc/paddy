@@ -46,7 +46,7 @@ const SECTIONS: { id: ConfigFieldDef["section"]; title: string; blurb: string }[
   {
     id: "memory",
     title: "Memory limits",
-    blurb: "Hermes-shaped caps from schema defaults. Form fields only until PR3 — not runtime SoT yet.",
+    blurb: "Hermes-shaped caps (agents.defaults.memory). Read by resolveMemoryLimits at runtime.",
   },
 ];
 
@@ -280,7 +280,7 @@ export function ConfigView() {
             <h1 className="mt-1 font-display text-3xl tracking-tight">Config</h1>
             <p className="mt-2 max-w-xl text-sm text-muted">
               OpenClaw-style get/set/unset over ~/.paddy/config.json. Secrets stay writeOnly — never
-              localStorage. Memory & skills paths are accepted for forms; runtime SoT lands later.
+              localStorage. Memory caps are runtime SoT; skills nested keys remain form-only.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Badge variant="default">{configPath || "~/.paddy/config.json"}</Badge>

@@ -29,6 +29,7 @@ export function ConsoleView() {
   const busy = useHelix((s) => s.busy);
   const inspector = useHelix((s) => s.inspector);
   const setInspector = useHelix((s) => s.setInspector);
+  const lastTurnMemory = useHelix((s) => s.lastTurnMemory);
   const profile = useHelix((s) => s.profiles.find((p) => p.id === s.activeProfileId));
   const [draft, setDraft] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
@@ -163,6 +164,7 @@ export function ConsoleView() {
               user={ws.files.user}
               skillCount={ws.skills.length}
               memCount={ws.memories.length}
+              lastTurnMemory={lastTurnMemory}
             />
           )}
         </div>
@@ -215,11 +217,13 @@ function ContextPane({
   user,
   skillCount,
   memCount,
+  lastTurnMemory,
 }: {
   soul: string;
   user: string;
   skillCount: number;
   memCount: number;
+  lastTurnMemory: import("@/lib/harness/types").LastTurnMemory | null;
 }) {
   return (
     <div className="space-y-4">
@@ -233,6 +237,40 @@ function ContextPane({
           <dd className="font-mono text-sm tabular-nums">{memCount}</dd>
         </div>
       </dl>
+      {lastTurnMemory?.usage ? (
+        <dl className="grid grid-cols-2 gap-2">
+          <div className="rounded-lg bg-bg px-3 py-2">
+            <dt className="text-[11px] text-muted">Memory cap</dt>
+            <dd className="font-mono text-sm tabular-nums">{lastTurnMemory.usage.memory}</dd>
+          </div>
+          <div className="rounded-lg bg-bg px-3 py-2">
+            <dt className="text-[11px] text-muted">User cap</dt>
+            <dd className="font-mono text-sm tabular-nums">{lastTurnMemory.usage.user}</dd>
+          </div>
+        </dl>
+      ) : null}
+      {lastTurnMemory?.injected?.length ? (
+        <section>
+          <h3 className="mb-1 text-[11px] font-medium tracking-wide text-muted uppercase">
+            Last turn recall
+          </h3>
+          <ul className="space-y-1.5">
+            {lastTurnMemory.injected.slice(0, 8).map((h) => (
+              <li key={h.entry.id} className="rounded-lg bg-bg px-3 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] tracking-wide text-accent uppercase">
+                    {h.entry.kind}
+                  </span>
+                  <span className="font-mono text-[10px] text-subtle tabular-nums">
+                    {h.score.toFixed(2)}
+                  </span>
+                </div>
+                <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-fg/85">{h.entry.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
       <section>
         <h3 className="mb-1 text-[11px] font-medium tracking-wide text-muted uppercase">Soul</h3>
         <pre className="max-h-48 overflow-auto whitespace-pre-wrap rounded-lg bg-bg p-3 font-mono text-[11px] leading-relaxed text-fg/80">

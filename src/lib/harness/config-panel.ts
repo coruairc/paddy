@@ -1,8 +1,9 @@
 /**
  * FE helpers for the path-keyed Config panel.
- * Prefers live `getConfigSchema` (Backend PR1); falls back to a tiny local
- * mirror of the same v1 const schema when the serverFn is unavailable.
- * Memory/skills fields are form-only until PR3 (not runtime SoT).
+ * Prefers live `getConfigSchema`; falls back to a tiny local mirror of the
+ * same v1 const schema when the serverFn is unavailable.
+ * agents.defaults.memory is runtime SoT via resolveMemoryLimits.
+ * skills nested keys remain form-only (not yet runtime SoT).
  */
 
 export const CONFIG_SCHEMA_VERSION = 1 as const;
@@ -163,8 +164,7 @@ export function buildConfigFields(schema: SchemaNode | null | undefined): Config
   return CONFIG_PANEL_PATHS.map((path) => {
     const node = schemaAt(root, path);
     const leaf = path.split(".").pop() || path;
-    const notRuntimeSot =
-      path.startsWith("agents.defaults.memory") || path.startsWith("skills");
+    const notRuntimeSot = path.startsWith("skills");
     return {
       path,
       label: leaf,

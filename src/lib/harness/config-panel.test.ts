@@ -13,13 +13,13 @@ test("fallback schema is version const 1", () => {
   assert.equal(schema.properties?.version?.const, 1);
 });
 
-test("buildConfigFields marks writeOnly token and memory notRuntimeSot", () => {
+test("buildConfigFields marks writeOnly token; memory is runtime SoT", () => {
   const fields = buildConfigFields(fallbackConfigSchema());
   const token = fields.find((f) => f.path === "gateway.auth.token");
   assert.equal(token?.writeOnly, true);
   assert.equal(token?.kind, "password");
   const mem = fields.find((f) => f.path === "agents.defaults.memory.memoryCharLimit");
-  assert.equal(mem?.notRuntimeSot, true);
+  assert.equal(mem?.notRuntimeSot, false);
   assert.equal(mem?.defaultValue, MEMORY_SCHEMA_DEFAULTS.memoryCharLimit);
 });
 
