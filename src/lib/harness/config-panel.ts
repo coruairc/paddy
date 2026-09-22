@@ -212,6 +212,26 @@ const FALLBACK_SCHEMA: SchemaNode = {
         allow: { type: "array", items: { type: "string" } },
       },
     },
+    // Locked with Backend Phase B: openclaw.runtime|url|token|model
+    openclaw: {
+      type: "object",
+      description:
+        "Opt-in OpenClaw gateway (runtime openclaw|paddy, url, writeOnly token → ${OPENCLAW_GATEWAY_TOKEN}, model)",
+      properties: {
+        runtime: {
+          type: "string",
+          description: '"openclaw" | "paddy" — hosted demo forces paddy',
+          default: "paddy",
+        },
+        url: { type: "string", description: "OpenClaw gateway base URL" },
+        token: {
+          type: "string",
+          writeOnly: true,
+          description: "Gateway bearer (${OPENCLAW_GATEWAY_TOKEN}); never returned in plaintext",
+        },
+        model: { type: "string", description: "OpenClaw agent target id", default: "openclaw" },
+      },
+    },
   },
 };
 
@@ -247,6 +267,7 @@ function sectionFor(path: string): ConfigPanelSection {
   if (path.startsWith("brain.")) return "brain";
   if (path.startsWith("agents.defaults.memory")) return "memory";
   if (path.startsWith("skills")) return "skills";
+  if (path.startsWith("openclaw")) return "gateway";
   return "other";
 }
 
@@ -270,7 +291,13 @@ export function isWriteOnlySecretPath(path: string): boolean {
   const n = String(path || "")
     .trim()
     .toLowerCase();
-  return n === "gateway.auth.token" || n === "gateway.auth" || n === "cli.token";
+  return (
+    n === "gateway.auth.token" ||
+    n === "gateway.auth" ||
+    n === "cli.token" ||
+    n === "openclaw.token" ||
+    n === "openclaw"
+  );
 }
 
 export function fieldDefFromPath(

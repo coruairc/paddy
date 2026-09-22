@@ -21,6 +21,7 @@ import { sendTurn } from "@/lib/harness/send";
 import { useHelix } from "@/lib/harness/store";
 import type { ChannelStatus } from "@/lib/harness/types";
 import { formatRelative } from "@/lib/utils";
+import { OpenClawTargetPanel } from "@/components/openclaw-target-panel";
 
 const STATUS: Record<ChannelStatus, { label: string; variant: "ok" | "warn" | "danger" | "default" }> = {
   connected: { label: "connected", variant: "ok" },
@@ -293,6 +294,8 @@ export function GatewayView() {
             an allow list. OpenClaw and Hermes are import/export only.
           </p>
         </header>
+
+        <OpenClawTargetPanel />
 
         <section className="grid gap-3 sm:grid-cols-3">
           <Stat label="Channels live" value={`${connected}/${channels.length}`} />
