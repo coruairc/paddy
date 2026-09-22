@@ -24,3 +24,24 @@ export function resolveModelPickerSelection(opts: {
   else model = modelChoice;
   return { preferred, model };
 }
+
+/**
+ * Single configSet payload for Setup confirm / CLI model section.
+ * FE: `configSet({ data: brainModelSelectionWrite({ preferred, model }) })`
+ * — one merge write on `brain` so preferred cannot land without model.
+ * Node: prefer `applyBrainModelSelection` from config.mjs (same shape).
+ */
+export function brainModelSelectionWrite(opts: { preferred: string; model: string }): {
+  path: "brain";
+  value: { preferred: string; model: string };
+  merge: true;
+} {
+  return {
+    path: "brain",
+    value: {
+      preferred: String(opts.preferred),
+      model: opts.model == null ? "" : String(opts.model),
+    },
+    merge: true,
+  };
+}

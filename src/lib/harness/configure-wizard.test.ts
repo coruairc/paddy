@@ -11,6 +11,7 @@ import {
   MENU_BACK,
   MENU_DEFAULT_MODEL,
   MENU_KEEP,
+  applyBrainModelSelection,
   applyConfigureSection,
   applyGatewayAuthToken,
   brainModelMenuOptions,
@@ -27,7 +28,8 @@ import {
 } from "./configure-wizard.mjs";
 import { createInterface } from "node:readline/promises";
 import { EventEmitter } from "node:events";
-import { loadCanonical, configGet } from "./config.mjs";
+import { loadCanonical, configGet, configSet } from "./config.mjs";
+import { brainModelSelectionWrite } from "./setup-model-picker.ts";
 
 function tempHome() {
   return mkdtempSync(join(tmpdir(), "paddy-configure-"));
@@ -474,3 +476,79 @@ test("runModelSection Back on provider skips writes", async () => {
   assert.equal(disk.brain.model, "grok-4");
 });
 
+test("applyBrainModelSelection writes preferred+model in one merge configSet", () => {
+  const home = tempHome();
+  loadCanonical({ home, persist: true });
+  applyConfigureSection("model", { preferred: "supergrok", model: "grok-4" }, { home });
+
+  const result = applyBrainModelSelection(
+    { preferred: "claude", model: "claude-haiku-4-5" },
+    { home },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(result.path, "brain");
+  const disk = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
+  assert.equal(disk.brain.preferred, "claude");
+  assert.equal(disk.brain.model, "claude-haiku-4-5");
+});
+
+test("failed atomic brain write leaves prior preferred+model unchanged", () => {
+  const home = tempHome();
+  loadCanonical({ home, persist: true });
+  applyConfigureSection("model", { preferred: "supergrok", model: "grok-4" }, { home });
+
+  // Same one-shot shape as applyBrainModelSelection / brainModelSelectionWrite,
+  // but with a non-string model so validateCanonical rejects before save.
+  assert.throws(
+    () => configSet("brain", { preferred: "claude", model: 12345 }, { home, merge: true }),
+    /brain\.model|Invalid Paddy config/,
+  );
+
+  const disk = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
+  assert.equal(disk.brain.preferred, "supergrok");
+  assert.equal(disk.brain.model, "grok-4");
+});
+
+test("applyBrainModelSelection rejects empty preferred without touching disk", () => {
+  const home = tempHome();
+  loadCanonical({ home, persist: true });
+  applyConfigureSection("model", { preferred: "supergrok", model: "grok-4" }, { home });
+
+  assert.throws(
+    () => applyBrainModelSelection({ preferred: "  ", model: "x" }, { home }),
+    /brain\.preferred/,
+  );
+  const disk = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
+  assert.equal(disk.brain.preferred, "supergrok");
+  assert.equal(disk.brain.model, "grok-4");
+});
+
+test("applyConfigureSection model uses atomic brain write (not two path sets)", () => {
+  const home = tempHome();
+  loadCanonical({ home, persist: true });
+  const result = applyConfigureSection(
+    "model",
+    { preferred: "claude", model: "claude-sonnet-4-5" },
+    { home },
+  );
+  assert.equal(result.writes.length, 1);
+  assert.equal(result.writes[0].path, "brain");
+  const disk = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
+  assert.equal(disk.brain.preferred, "claude");
+  assert.equal(disk.brain.model, "claude-sonnet-4-5");
+});
+
+test("brainModelSelectionWrite payload matches applyBrainModelSelection configSet shape", () => {
+  const payload = brainModelSelectionWrite({ preferred: "claude", model: "claude-opus-4-5" });
+  assert.deepEqual(payload, {
+    path: "brain",
+    value: { preferred: "claude", model: "claude-opus-4-5" },
+    merge: true,
+  });
+  const home = tempHome();
+  loadCanonical({ home, persist: true });
+  configSet(payload.path, payload.value, { home, merge: payload.merge });
+  const disk = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
+  assert.equal(disk.brain.preferred, "claude");
+  assert.equal(disk.brain.model, "claude-opus-4-5");
+});
