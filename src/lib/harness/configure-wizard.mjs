@@ -23,6 +23,26 @@ import {
   upsertCanonicalChannel,
   validateCanonical,
 } from "./config.mjs";
+import {
+  MENU_BACK,
+  MENU_DEFAULT_MODEL,
+  MENU_KEEP,
+  MENU_KEEP_MODEL,
+  brainModelMenuOptions,
+  brainProviderById,
+  brainProviderMenuOptions,
+} from "./brain-catalog.mjs";
+
+export {
+  BRAIN_PROVIDER_CATALOG,
+  MENU_BACK,
+  MENU_DEFAULT_MODEL,
+  MENU_KEEP,
+  MENU_KEEP_MODEL,
+  brainModelMenuOptions,
+  brainProviderById,
+  brainProviderMenuOptions,
+} from "./brain-catalog.mjs";
 
 /** @typedef {"workspace"|"model"|"gateway"|"channels"|"memory"|"skills"|"health"|"done"} WizardSectionId */
 
@@ -37,7 +57,7 @@ export const CONFIGURE_SECTIONS = Object.freeze([
   {
     id: "model",
     label: "Model / Brain",
-    hint: "brain.preferred + brain.model",
+    hint: "searchable provider → model → brain.preferred / brain.model",
     paths: ["brain.preferred", "brain.model"],
   },
   {
@@ -280,52 +300,106 @@ function safeGet(path, home) {
 }
 
 /**
- * ↑/↓ + Enter menu; numbered fallback when raw mode is unavailable.
+ * Case-insensitive substring filter over label/hint/value (OpenClaw-style type-to-search).
  * @param {Array<{ value: string, label: string, hint?: string }>} options
- * @param {{ stdin?: NodeJS.ReadStream, stdout?: NodeJS.WriteStream, message?: string, initial?: number }} [opts]
+ * @param {string} [query]
+ */
+export function filterMenuOptions(options, query = "") {
+  const q = String(query || "").trim().toLowerCase();
+  if (!q) return options.slice();
+  return options.filter((opt) => {
+    const hay = `${opt.label || ""} ${opt.hint || ""} ${opt.value || ""}`.toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+/**
+ * ↑/↓ + Enter menu; optional type-to-search filter; numbered fallback when raw mode is unavailable.
+ * @param {Array<{ value: string, label: string, hint?: string }>} options
+ * @param {{
+ *   stdin?: NodeJS.ReadStream,
+ *   stdout?: NodeJS.WriteStream,
+ *   message?: string,
+ *   initial?: number,
+ *   searchable?: boolean,
+ *   cancelValue?: string,
+ * }} [opts]
  */
 export async function selectMenu(options, opts = {}) {
   const stdin = opts.stdin ?? defaultStdin;
   const stdout = opts.stdout ?? defaultStdout;
   const message = opts.message || "What do you want to configure?";
-  let index = Math.max(0, Math.min(options.length - 1, opts.initial ?? 0));
+  const searchable = Boolean(opts.searchable);
+  const cancelValue = opts.cancelValue;
+  let query = "";
+  let filtered = filterMenuOptions(options, query);
+  let index = Math.max(0, Math.min(Math.max(filtered.length, 1) - 1, opts.initial ?? 0));
 
   if (!stdin.isTTY || !stdout.isTTY || typeof stdin.setRawMode !== "function") {
     const rl = createInterface({ input: stdin, output: stdout });
     try {
       stdout.write(`${message}\n`);
-      options.forEach((opt, i) => {
+      if (searchable) {
+        const filterAns = (await rl.question("Filter (empty = all): ")).trim();
+        filtered = filterMenuOptions(options, filterAns);
+        if (!filtered.length) {
+          stdout.write("  (no matches)\n");
+          return cancelValue ?? options[0]?.value;
+        }
+      }
+      filtered.forEach((opt, i) => {
         stdout.write(`  ${i + 1}. ${opt.label}${opt.hint ? ` — ${opt.hint}` : ""}\n`);
       });
-      const answer = (await rl.question(`Choose [1-${options.length}]: `)).trim();
+      const answer = (await rl.question(`Choose [1-${filtered.length}]: `)).trim();
       const n = Number(answer);
-      if (Number.isFinite(n) && n >= 1 && n <= options.length) return options[n - 1].value;
-      return options[index]?.value;
+      if (Number.isFinite(n) && n >= 1 && n <= filtered.length) return filtered[n - 1].value;
+      return filtered[Math.min(index, filtered.length - 1)]?.value;
     } finally {
       rl.close();
     }
   }
 
-  const lineCount = options.length + 2;
+  const footer = searchable
+    ? "  ↑/↓ move · type to filter · Backspace edit · Enter select · Esc back · q quit"
+    : "  ↑/↓ move · Enter select · q quit";
+
+  const lineCount = () => filtered.length + (searchable ? 3 : 2) + (filtered.length ? 0 : 1);
+
   const draw = () => {
     stdout.write("\x1b[?25l");
     stdout.write(`${message}\n`);
-    options.forEach((opt, i) => {
-      const cursor = i === index ? "›" : " ";
-      const label = i === index ? `\x1b[36m${opt.label}\x1b[0m` : opt.label;
-      const hint = opt.hint ? `\x1b[90m ${opt.hint}\x1b[0m` : "";
-      stdout.write(`  ${cursor} ${label}${hint}\n`);
-    });
-    stdout.write("\x1b[90m  ↑/↓ move · Enter select · q quit\x1b[0m\n");
+    if (searchable) {
+      stdout.write(`\x1b[90m  Filter:\x1b[0m ${query}\x1b[90m_\x1b[0m\n`);
+    }
+    if (!filtered.length) {
+      stdout.write("\x1b[90m  (no matches)\x1b[0m\n");
+    } else {
+      filtered.forEach((opt, i) => {
+        const cursor = i === index ? "›" : " ";
+        const label = i === index ? `\x1b[36m${opt.label}\x1b[0m` : opt.label;
+        const hint = opt.hint ? `\x1b[90m ${opt.hint}\x1b[0m` : "";
+        stdout.write(`  ${cursor} ${label}${hint}\n`);
+      });
+    }
+    stdout.write(`\x1b[90m${footer}\x1b[0m\n`);
   };
 
+  let drawnLines = 0;
   const clear = () => {
-    stdout.write(`\x1b[${lineCount}A`);
-    for (let i = 0; i < lineCount; i++) stdout.write("\x1b[2K\x1b[1B");
-    stdout.write(`\x1b[${lineCount}A`);
+    if (drawnLines <= 0) return;
+    stdout.write(`\x1b[${drawnLines}A`);
+    for (let i = 0; i < drawnLines; i++) stdout.write("\x1b[2K\x1b[1B");
+    stdout.write(`\x1b[${drawnLines}A`);
+  };
+
+  const redraw = () => {
+    clear();
+    draw();
+    drawnLines = lineCount();
   };
 
   draw();
+  drawnLines = lineCount();
 
   return await new Promise((resolve) => {
     const cleanup = () => {
@@ -347,29 +421,68 @@ export async function selectMenu(options, opts = {}) {
         resolve("done");
         return;
       }
+      if (s === "\u001b" || s === "\u001b\u001b") {
+        if (cancelValue !== undefined) {
+          cleanup();
+          resolve(cancelValue);
+        }
+        return;
+      }
       if (s === "\r" || s === "\n") {
-        const value = options[index]?.value ?? "done";
+        if (!filtered.length) return;
+        const value = filtered[index]?.value ?? "done";
         cleanup();
         resolve(value);
         return;
       }
-      if (s === "\u001b[A" || s === "k") {
-        index = (index - 1 + options.length) % options.length;
-        clear();
-        draw();
+      // j/k vim keys only when not searchable — otherwise they are filter input.
+      if (s === "\u001b[A" || (!searchable && s === "k")) {
+        if (!filtered.length) return;
+        index = (index - 1 + filtered.length) % filtered.length;
+        redraw();
         return;
       }
-      if (s === "\u001b[B" || s === "j") {
-        index = (index + 1) % options.length;
-        clear();
-        draw();
+      if (s === "\u001b[B" || (!searchable && s === "j")) {
+        if (!filtered.length) return;
+        index = (index + 1) % filtered.length;
+        redraw();
+        return;
+      }
+      if (searchable && (s === "\u007f" || s === "\b")) {
+        query = query.slice(0, -1);
+        filtered = filterMenuOptions(options, query);
+        index = 0;
+        redraw();
+        return;
+      }
+      if (searchable && s === "\u0015") {
+        query = "";
+        filtered = filterMenuOptions(options, query);
+        index = 0;
+        redraw();
+        return;
+      }
+      if (s.startsWith("\u001b")) return;
+      if (searchable) {
+        let changed = false;
+        for (const ch of s) {
+          const code = ch.charCodeAt(0);
+          if (code < 32) continue;
+          query += ch;
+          changed = true;
+        }
+        if (changed) {
+          filtered = filterMenuOptions(options, query);
+          index = 0;
+          redraw();
+        }
       }
     };
     try {
       stdin.setRawMode(true);
     } catch {
       cleanup();
-      resolve(options[index]?.value ?? "done");
+      resolve(filtered[index]?.value ?? options[index]?.value ?? "done");
       return;
     }
     stdin.resume();
@@ -465,17 +578,98 @@ async function runWorkspaceSection(rl, home, log) {
   }
 }
 
-async function runModelSection(rl, home, log) {
-  const preferred = safeGet("brain.preferred", home) ?? "supergrok";
-  const model = safeGet("brain.model", home) ?? "";
-  const nextPreferred = await promptLine(rl, "Preferred brain", preferred);
-  const nextModel = await promptLine(rl, "Model override (empty clears)", model);
-  applyConfigureSection(
-    "model",
-    { preferred: nextPreferred, model: nextModel === undefined ? undefined : nextModel },
-    { home },
-  );
-  log(`Brain: ${nextPreferred}${nextModel ? ` (${nextModel})` : ""}`);
+/**
+ * OpenClaw-style searchable provider → model picker for Model / Brain.
+ * Writes brain.preferred + brain.model only (no new secret storage).
+ * @param {{
+ *   home: string,
+ *   log: (line: string) => void,
+ *   stdin?: NodeJS.ReadStream,
+ *   stdout?: NodeJS.WriteStream,
+ * }} opts
+ */
+export async function runModelSection(opts) {
+  const home = opts.home;
+  const log = opts.log;
+  const stdin = opts.stdin ?? defaultStdin;
+  const stdout = opts.stdout ?? defaultStdout;
+
+  const currentPreferred = String(safeGet("brain.preferred", home) ?? "supergrok");
+  const currentModel = String(safeGet("brain.model", home) ?? "");
+
+  while (true) {
+    const providerRows = brainProviderMenuOptions({ currentPreferred });
+    const providerChoice = await selectMenu(providerRows, {
+      stdin,
+      stdout,
+      message: "Model / Brain — choose a provider (type to filter)",
+      searchable: true,
+      cancelValue: MENU_BACK,
+      initial: Math.max(
+        0,
+        providerRows.findIndex((o) => o.value === currentPreferred || o.value === MENU_KEEP),
+      ),
+    });
+
+    if (!providerChoice || providerChoice === "done" || providerChoice === MENU_BACK) {
+      log("Model / Brain unchanged.");
+      return { ok: true, skipped: true };
+    }
+
+    const preferred = providerChoice === MENU_KEEP ? currentPreferred : String(providerChoice);
+    const provider = brainProviderById(preferred);
+    if (!provider) {
+      log(`Unknown provider “${preferred}”.`);
+      continue;
+    }
+
+    const modelChoice = await selectMenu(brainModelMenuOptions(preferred, { currentModel }), {
+      stdin,
+      stdout,
+      message: `Model for ${provider.name} (type to filter)`,
+      searchable: true,
+      cancelValue: MENU_BACK,
+    });
+
+    if (!modelChoice || modelChoice === "done" || modelChoice === MENU_BACK) {
+      continue;
+    }
+
+    let model;
+    if (modelChoice === MENU_DEFAULT_MODEL) {
+      model = "";
+    } else if (modelChoice === MENU_KEEP_MODEL) {
+      model = currentModel;
+    } else {
+      model = String(modelChoice);
+    }
+
+    const confirm = await selectMenu(
+      [
+        {
+          value: "save",
+          label: "Save",
+          hint: `${preferred}${model ? ` / ${model}` : " (provider default)"}`,
+        },
+        { value: MENU_BACK, label: "Back", hint: "Return to model list" },
+      ],
+      {
+        stdin,
+        stdout,
+        message: "Confirm Model / Brain",
+        searchable: false,
+        cancelValue: MENU_BACK,
+      },
+    );
+
+    if (!confirm || confirm === "done" || confirm === MENU_BACK) {
+      continue;
+    }
+
+    applyConfigureSection("model", { preferred, model }, { home });
+    log(`Brain: ${preferred}${model ? ` (${model})` : " (provider default)"}`);
+    return { ok: true, preferred, model };
+  }
 }
 
 async function runGatewaySection(rl, home, log) {
@@ -664,36 +858,37 @@ export async function runConfigureWizard(opts = {}) {
     }
 
     log(`\n— ${CONFIGURE_SECTIONS.find((s) => s.id === choice)?.label || choice} —`);
-    const rl = createInterface({ input: stdin, output: stdout });
-    try {
-      switch (choice) {
-        case "workspace":
-          await runWorkspaceSection(rl, home, log);
-          break;
-        case "model":
-          await runModelSection(rl, home, log);
-          break;
-        case "gateway":
-          await runGatewaySection(rl, home, log);
-          break;
-        case "channels":
-          await runChannelsSection(rl, home, log);
-          break;
-        case "memory":
-          await runMemorySection(rl, home, log);
-          break;
-        case "skills":
-          await runSkillsSection(rl, home, log);
-          break;
-        case "health":
-          runHealthSection(log, home);
-          break;
-        default:
-          log(`Section “${choice}” is not implemented (no fake writer).`);
-          break;
+    if (choice === "model") {
+      // Searchable menus own raw-mode stdin — do not hold a readline interface open.
+      await runModelSection({ home, log, stdin, stdout });
+    } else if (choice === "health") {
+      runHealthSection(log, home);
+    } else {
+      const rl = createInterface({ input: stdin, output: stdout });
+      try {
+        switch (choice) {
+          case "workspace":
+            await runWorkspaceSection(rl, home, log);
+            break;
+          case "gateway":
+            await runGatewaySection(rl, home, log);
+            break;
+          case "channels":
+            await runChannelsSection(rl, home, log);
+            break;
+          case "memory":
+            await runMemorySection(rl, home, log);
+            break;
+          case "skills":
+            await runSkillsSection(rl, home, log);
+            break;
+          default:
+            log(`Section “${choice}” is not implemented (no fake writer).`);
+            break;
+        }
+      } finally {
+        rl.close();
       }
-    } finally {
-      rl.close();
     }
 
     if (preselected.length && !queue.length) {
