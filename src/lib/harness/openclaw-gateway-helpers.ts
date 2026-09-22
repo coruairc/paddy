@@ -15,6 +15,9 @@ export type OpenClawTarget = {
   model?: string;
 };
 
+/** UI/config target (includes runtime). Alias — distinct name from Backend openclaw-gateway OpenClawTarget. */
+export type OpenClawUiTarget = OpenClawTarget;
+
 export const OPENCLAW_TARGET_ROOT = "openclaw";
 
 export const OPENCLAW_TARGET_PATHS = {
