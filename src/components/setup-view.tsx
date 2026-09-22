@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfigFieldRow } from "@/components/config-field-row";
+import { SetupModelPicker } from "@/components/setup-model-picker";
 import {
   configSet,
   configUnset,
@@ -405,7 +406,15 @@ export function SetupView() {
             />
           ) : null}
 
-          {fields.length > 0 ? (
+          {sectionId === "model" ? (
+            <SetupModelPicker
+              config={config}
+              disabled={loading || busyPath !== null}
+              onConfig={(cfg) => setConfig(cfg)}
+            />
+          ) : null}
+
+          {sectionId !== "model" && fields.length > 0 ? (
             <div className="flex flex-col gap-3">
               {fields.map((field) => (
                 <ConfigFieldRow

@@ -8,6 +8,7 @@
     ],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
     "jsx": "react-jsx",
     "strict": true,
     "isolatedModules": true,
@@ -32,5 +33,6 @@
   "include": [
     "src",
     "server"
-  ]
+  ],
+  "exclude": ["src/lib/harness/setup-model-picker.test.mjs"]
 }

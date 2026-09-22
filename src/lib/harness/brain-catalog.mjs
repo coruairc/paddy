@@ -6,16 +6,14 @@
  *   node --experimental-strip-types scripts/sync-brain-catalog.mjs  (optional)
  * Auth secrets stay in ~/.paddy/.env via existing BRAIN_KEY_ENV — this catalog
  * only drives picker labels; it does not store keys.
+ *
+ * Pure ESM + JSON import so CLI and dashboard can share the same helpers
+ * (no node:fs — safe for Vite client bundles).
  */
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import raw from "./brain-catalog.data.json" with { type: "json" };
 
-/** @typedef {{ id: string, name: string }} BrainModelOption */
-/** @typedef {{ id: string, name: string, plan: string, group: string, defaultModel: string, models: BrainModelOption[] }} BrainProviderOption */
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const raw = JSON.parse(readFileSync(join(__dirname, "brain-catalog.data.json"), "utf8"));
+/** @typedef {{ readonly id: string, readonly name: string }} BrainModelOption */
+/** @typedef {{ readonly id: string, readonly name: string, readonly plan: string, readonly group: string, readonly defaultModel: string, readonly models: ReadonlyArray<BrainModelOption> }} BrainProviderOption */
 
 /** @type {ReadonlyArray<BrainProviderOption>} */
 export const BRAIN_PROVIDER_CATALOG = Object.freeze(
