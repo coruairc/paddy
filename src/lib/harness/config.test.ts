@@ -10,10 +10,15 @@ import {
   SCHEMA_VERSION,
   accountToChannel,
   atomicWrite,
+  canonicalConfigSchema,
   channelToAccount,
+  configGet,
+  configSet,
+  configUnset,
   detectImportConflicts,
   exportToLineage,
   extractChannelSecrets,
+  getAtPath,
   importFromLineage,
   interpolate,
   isEnvRef,
@@ -21,10 +26,14 @@ import {
   loadResolvedAccounts,
   mergeImportedAccounts,
   migrateFromLegacy,
+  parseConfigPath,
   redactConfig,
   redactValue,
   removeCanonicalChannel,
+  resolveConfigPathAlias,
   saveCanonical,
+  setAtPath,
+  unsetAtPath,
   upsertCanonicalChannel,
   validateCanonical,
 } from "./config.mjs";
@@ -475,4 +484,99 @@ test("Hermes import then runtime accounts match without channels.json", () => {
   assert.equal(accounts.telegram.token, "hm-rt:tok");
   assert.equal(accounts.telegram.dmPolicy, "allowlist");
   assert.deepEqual(accounts.telegram.allowFrom, ["3", "4"]);
+});
+
+
+test("parseConfigPath rejects blocked segments", () => {
+  assert.throws(() => parseConfigPath("__proto__.polluted"), /Invalid path segment/);
+  assert.throws(() => parseConfigPath(""), /required/);
+  assert.deepEqual(parseConfigPath("gateway.port"), ["gateway", "port"]);
+  assert.equal(resolveConfigPathAlias("gateway.auth.token"), "cli.token");
+});
+
+test("getAtPath setAtPath unsetAtPath round-trip", () => {
+  const root = { gateway: { host: "127.0.0.1", port: 8080 }, brain: { preferred: "supergrok" } };
+  assert.deepEqual(getAtPath(root, "gateway.port"), { found: true, value: 8080 });
+  assert.equal(getAtPath(root, "missing.path").found, false);
+  const next = setAtPath(root, "gateway.port", 9090);
+  assert.equal(next.gateway.port, 9090);
+  assert.equal(root.gateway.port, 8080);
+  const nested = setAtPath(root, "agents.defaults.memory.enabled", true);
+  assert.equal(nested.agents.defaults.memory.enabled, true);
+  const cleared = unsetAtPath(next, "gateway.port");
+  assert.equal(cleared.found, true);
+  assert.equal(cleared.config.gateway.port, undefined);
+  assert.equal(cleared.config.gateway.host, "127.0.0.1");
+});
+
+test("configGet configSet configUnset with redaction", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  const setPort = configSet("gateway.port", 9090, { home: dir });
+  assert.equal(setPort.config.gateway.port, 9090);
+  const got = configGet("gateway.port", { home: dir });
+  assert.equal(got.value, 9090);
+  const setTok = configSet("gateway.auth.token", "SUPER-SECRET-CLI-TOKEN-VALUE", { home: dir });
+  assert.equal(setTok.aliasedTo, "cli.token");
+  assert.equal(setTok.config.cli.token, "${PADDY_CLI_TOKEN}");
+  assert.doesNotMatch(JSON.stringify(setTok.config), /SUPER-SECRET/);
+  const gotTok = configGet("cli.token", { home: dir });
+  assert.equal(gotTok.value, "${PADDY_CLI_TOKEN}");
+  const env = readFileSync(join(dir, ".env"), "utf8");
+  assert.match(env, /PADDY_CLI_TOKEN=SUPER-SECRET-CLI-TOKEN-VALUE/);
+  configSet("brain.preferred", "laguna", { home: dir });
+  const unset = configUnset("brain.preferred", { home: dir });
+  assert.equal(unset.config.brain.preferred, undefined);
+  assert.throws(() => configGet("no.such.path", { home: dir }), /not found/);
+  assert.throws(() => configUnset("no.such.path", { home: dir }), /not found/);
+});
+
+test("configSet redacts channel token on read path", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet(
+    "channels.telegram",
+    { enabled: true, token: "111:PLAINTEXTSECRET", access: { mode: "pairing", users: [] } },
+    { home: dir },
+  );
+  const got = configGet("channels.telegram", { home: dir });
+  assert.doesNotMatch(JSON.stringify(got.value), /PLAINTEXTSECRET/);
+  assert.equal(got.value.token, "${TELEGRAM_BOT_TOKEN}");
+  const disk = JSON.parse(readFileSync(join(dir, "config.json"), "utf8"));
+  assert.equal(disk.channels.telegram.token, "${TELEGRAM_BOT_TOKEN}");
+});
+
+test("canonicalConfigSchema matches FE contract subset", () => {
+  const schema = canonicalConfigSchema();
+  assert.equal(schema.type, "object");
+  const props = schema.properties;
+  for (const key of ["gateway", "brain", "channels", "agents", "skills"]) {
+    assert.ok(props[key], `missing ${key}`);
+  }
+  assert.equal(props.gateway.properties.host.type, "string");
+  assert.equal(props.gateway.properties.port.maximum, 65535);
+  assert.equal(props.gateway.properties.auth.properties.mode.const, "token");
+  assert.equal(props.gateway.properties.auth.properties.token.writeOnly, true);
+  assert.equal(props.brain.properties.preferred.type, "string");
+  assert.equal(props.brain.properties.model.type, "string");
+  assert.equal(props.channels.additionalProperties.type, "object");
+  const mem = props.agents.properties.defaults.properties.memory.properties;
+  assert.equal(mem.enabled.type, "boolean");
+  assert.equal(mem.memoryCharLimit.default, 2200);
+  assert.equal(mem.userCharLimit.default, 1375);
+  assert.equal(mem.recallLimit.default, 12);
+  assert.equal(mem.fts.type, "boolean");
+  assert.equal(props.skills.type, "object");
+});
+
+test("validateCanonical issues include path and richer messages", () => {
+  const bad = validateCanonical({
+    version: 1,
+    gateway: { host: "h", port: 99999 },
+    channels: { telegram: { enabled: true, access: { mode: "friends" } } },
+  });
+  assert.equal(bad.ok, false);
+  assert.ok(bad.issues.some((i) => i.path === "gateway.port"));
+  assert.ok(bad.issues.some((i) => i.path === "channels.telegram.access.mode"));
+  assert.match(bad.errors.join(" "), /gateway\.port/);
 });

@@ -72,6 +72,8 @@ Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model 
 | `paddy config` | Write `~/.paddy` and `selfhost.env` (alias: `paddy onboard`) |
 | `paddy config show` | Print canonical config (secrets redacted) |
 | `paddy config validate` | Check the JSON schema |
+| `paddy config get|set|unset <path>` | Path-addressed read/write (secrets redacted on read) |
+| `paddy config schema` | JSON Schema subset for FE / Control UI |
 | `paddy config import` | Pull OpenClaw / Hermes into Paddy (conflicts ask before replace) |
 | `paddy channels` | List Telegram / Discord / Slack / … |
 | `paddy channels add telegram --token …` | Write Paddy config; the live bridge picks it up |
@@ -81,6 +83,13 @@ Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model 
 | `paddy agent list` | Seed mind is Paddy; extras are added in the dashboard |
 
 Config lives in `~/.paddy/config.json`. Chat history for the CLI lives in `~/.paddy/workspace.json` (separate from the browser workspace).
+
+Path-keyed edits (OpenClaw-style) address that flat JSON file:
+
+- `paddy config get|set|unset <path>` — e.g. `gateway.port`, `brain.preferred`, `channels.telegram`
+- `paddy config schema` — JSON Schema subset for Control UI forms
+- Alias: `gateway.auth.token` → `cli.token` (`${PADDY_CLI_TOKEN}`); secrets are redacted on read
+- `agents.defaults.memory.*` / `skills.*` are accepted for FE forms but are not yet runtime source of truth
 
 `npm run dev` still works if you want Vite directly. Prefer `paddy gateway` so the CLI token is injected and `paddy chat` can reach `/api/cli`.
 

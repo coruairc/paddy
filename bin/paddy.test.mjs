@@ -28,6 +28,10 @@ test("help lists gateway, chat, models, doctor", () => {
     "paddy update --check",
     "paddy config",
     "paddy config show",
+    "paddy config get",
+    "paddy config set",
+    "paddy config unset",
+    "paddy config schema",
     "paddy config validate",
     "paddy config import",
     "paddy onboard",
@@ -400,4 +404,43 @@ test("paddy update --json on a current checkout does not run npm install", () =>
   assert.match(r.stdout, /Already up to date|upToDate/);
   assert.equal(existsSync(join(kit, "node_modules")), false);
   assert.equal(existsSync(join(kit, "package.json")), false);
+});
+
+
+test("paddy config get/set/unset path ops", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-cfgpath-"));
+  run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  const set = run(["config", "set", "gateway.port", "9090", "--json"], { PADDY_HOME: home });
+  assert.equal(set.status, 0, set.stderr + set.stdout);
+  const get = run(["config", "get", "gateway.port", "--json"], { PADDY_HOME: home });
+  assert.equal(get.status, 0, get.stderr + get.stdout);
+  assert.equal(JSON.parse(get.stdout).value, 9090);
+  run(["config", "set", "brain.model", '"gpt-test"', "--json"], { PADDY_HOME: home });
+  const unset = run(["config", "unset", "brain.model", "--json"], { PADDY_HOME: home });
+  assert.equal(unset.status, 0, unset.stderr + unset.stdout);
+  const missing = run(["config", "get", "brain.model", "--json"], { PADDY_HOME: home });
+  assert.notEqual(missing.status, 0);
+});
+
+test("paddy config schema prints FE subset", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-schema-"));
+  const r = run(["config", "schema", "--json"], { PADDY_HOME: home });
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  const payload = JSON.parse(r.stdout);
+  assert.equal(payload.ok, true);
+  assert.ok(payload.schema.properties.gateway.properties.auth);
+  assert.equal(payload.schema.properties.agents.properties.defaults.properties.memory.properties.memoryCharLimit.default, 2200);
+});
+
+test("paddy config set does not echo secrets", () => {
+  const home = mkdtempSync(join(tmpdir(), "paddy-secret-"));
+  run(["onboard", "--yes", "--json"], { PADDY_HOME: home });
+  const r = run(
+    ["config", "set", "gateway.auth.token", '"SUPERSECRETCLI99"', "--json"],
+    { PADDY_HOME: home },
+  );
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  assert.doesNotMatch(r.stdout, /SUPERSECRETCLI99/);
+  const show = run(["config", "show", "--json"], { PADDY_HOME: home });
+  assert.doesNotMatch(show.stdout, /SUPERSECRETCLI99/);
 });
