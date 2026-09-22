@@ -360,6 +360,10 @@ export function canonicalConfigSchema() {
             type: "object",
             additionalProperties: true,
             properties: {
+              workspace: {
+                type: "string",
+                description: "Default agent workspace directory",
+              },
               memory: {
                 type: "object",
                 additionalProperties: false,

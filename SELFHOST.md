@@ -69,7 +69,9 @@ Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model 
 | `paddy memory` | Show persisted MEMORY.md facts |
 | `paddy approve allow` / `deny` | Allow or deny a gated tool the last chat held |
 | `paddy doctor` | Check node, kit, env, gateway |
-| `paddy config` | Write `~/.paddy` and `selfhost.env` (alias: `paddy onboard`) |
+| `paddy configure` | Interactive OpenClaw-style section wizard (↑/↓ + Enter) |
+| `paddy config` | Same wizard on a TTY; `--yes` / non-TTY keeps first-run init |
+| `paddy config init` | First-run `~/.paddy` + `selfhost.env` (alias: `paddy onboard`) |
 | `paddy config show` | Print canonical config (secrets redacted) |
 | `paddy config validate` | Check the JSON schema |
 | `paddy config get|set|unset <path>` | Path-addressed read/write (secrets redacted on read) |
@@ -84,7 +86,14 @@ Open the URL the gateway prints (default http://127.0.0.1:8080). Prefer a model 
 
 Config lives in `~/.paddy/config.json`. Chat history for the CLI lives in `~/.paddy/workspace.json` (separate from the browser workspace).
 
-Path-keyed edits (OpenClaw-style) address that flat JSON file:
+Path-keyed edits (OpenClaw-style) address that flat JSON file.
+
+Interactive `paddy configure` (and bare `paddy config` on a TTY) opens a section menu
+(Workspace, Model/Brain, Gateway, Channels, Memory, Skills, Health, Skip/Done).
+Every write goes through `configSet` / `configGet` against `canonicalConfigSchema`
+(same schema as `getConfigSchema`). Gateway auth tokens are writeOnly: they land in
+`cli.token` + `~/.paddy/.env`, never plaintext in `config.json`. Plugins / Daemon are
+not offered yet (no persistence surface).
 
 - `paddy config get|set|unset <path>` — e.g. `gateway.port`, `brain.preferred`, `channels.telegram`
 - `paddy config schema` — JSON Schema subset for Control UI forms
