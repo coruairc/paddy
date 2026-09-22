@@ -104,6 +104,9 @@ export function parseArgv(argv) {
     user: undefined,
     pass: undefined,
     to: undefined,
+    target: undefined,
+    confirm: false,
+    kind: undefined,
   };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
@@ -145,6 +148,11 @@ export function parseArgv(argv) {
     else if (a?.startsWith("--pass=")) flags.pass = a.slice(7);
     else if (a === "--to") flags.to = argv[++i];
     else if (a?.startsWith("--to=")) flags.to = a.slice(5);
+    else if (a === "--target") flags.target = argv[++i];
+    else if (a?.startsWith("--target=")) flags.target = a.slice(9);
+    else if (a === "--confirm") flags.confirm = true;
+    else if (a === "--kind") flags.kind = argv[++i];
+    else if (a?.startsWith("--kind=")) flags.kind = a.slice(7);
     else if (a === "--") rest.push(...argv.slice(i + 1));
     else if (a?.startsWith("-") && a !== "-") {
       throw new Error(`Unknown flag ${a}`);
@@ -194,7 +202,13 @@ Talk
   paddy skills install <id>  Copy a hub playbook onto this mind
   paddy skills import [file] Add a SKILL.md (stdin if omitted or -)
   paddy skills export <name> Print a skill as SKILL.md
-  paddy memory               Show MEMORY.md facts
+  paddy memory               Show MEMORY.md facts (alias: list)
+  paddy memory status        Char meters + entry count
+  paddy memory list [target] List memory|user entries
+  paddy memory search <q>    Ranked recall search
+  paddy memory add <text>    Append a MEMORY entry (--target user)
+  paddy memory recall <q>    Preview injection ranking
+  paddy memory reset         Wipe store (--target all|memory|user --confirm)
   paddy approve allow|deny   Allow or deny the last held tool
   paddy agent list           List minds
 
@@ -1427,18 +1441,136 @@ async function cmdSkills(rest, flags) {
   fail(flags, "Usage: paddy skills [list|install <id>|import [file]|export <name>]", 2);
 }
 
-async function cmdMemory(flags) {
+async function cmdMemory(rest, flags) {
+  const {
+    applyMemoryWrite,
+    memoryList,
+    memoryReset,
+    memoryStatus,
+    resolveMemoryLimits,
+    usageMeters,
+  } = await import("../src/lib/harness/memory-hermes.mjs");
+
+  const sub = (rest[0] || "list").toLowerCase();
   const ws = await liveWorkspace(flags);
-  const memories = ws.memories ?? [];
-  const file = typeof ws.files?.memory === "string" ? ws.files.memory.trim() : "";
-  if (!memories.length && !file) {
-    out(flags, { ok: true, memories: [] }, "No MEMORY.md facts yet.");
+  const limits = resolveMemoryLimits();
+
+  if (sub === "status") {
+    const status = memoryStatus(ws);
+    const lines = [
+      `MEMORY ${status.memoryChars}/${status.memoryLimit} chars`,
+      `USER ${status.userChars}/${status.userLimit} chars`,
+      `entries ${status.entryCount} · fts ${status.ftsEnabled ? "on" : "off"} · embed ${status.embeddingMode}`,
+    ];
+    out(flags, { ok: true, ...status }, lines.join("\n"));
     return;
   }
-  const lines = memories.length
-    ? memories.map((m) => `  (${m.kind || "fact"}) ${m.text}`)
-    : [file];
-  out(flags, { ok: true, memories, file: file || null }, lines.join("\n"));
+
+  if (sub === "list" || sub === "dump" || sub === "show") {
+    const target = (flags.target || rest[1] || "").toLowerCase();
+    if (target === "memory" || target === "user") {
+      const listed = memoryList(ws, target);
+      const lines = (listed.entries || []).map((e) =>
+        typeof e === "string" ? `  ${e}` : `  (${e.kind || "fact"}) ${e.text}`,
+      );
+      out(
+        flags,
+        { ok: true, ...listed },
+        lines.length ? lines.join("\n") : `No ${target} entries.`,
+      );
+      return;
+    }
+    const memories = ws.memories ?? [];
+    const file = typeof ws.files?.memory === "string" ? ws.files.memory.trim() : "";
+    if (!memories.length && !file) {
+      out(flags, { ok: true, memories: [] }, "No MEMORY.md facts yet.");
+      return;
+    }
+    const lines = memories.length
+      ? memories.map((m) => `  (${m.kind || "fact"}) ${m.text}`)
+      : [file];
+    out(flags, { ok: true, memories, file: file || null }, lines.join("\n"));
+    return;
+  }
+
+  if (sub === "search" || sub === "recall") {
+    const query = rest.slice(1).join(" ").trim();
+    if (!query) {
+      fail(flags, `Usage: paddy memory ${sub} <query>`, 2);
+      return;
+    }
+    const q = query.toLowerCase();
+    const tokens = q.split(/[^a-z0-9-]+/).filter((w) => w.length > 2);
+    const scored = (ws.memories ?? []).map((m) => {
+      const body = String(m.text || "").toLowerCase();
+      let score = 0;
+      if (body.includes(q)) score += 2;
+      for (const tok of tokens) if (body.includes(tok)) score += 1;
+      return {
+        entry: m,
+        score,
+        similarity: score > 0 ? Math.min(1, score / 4) : 0,
+        recency: 0.5,
+        importance: typeof m.importance === "number" ? m.importance : 0.5,
+      };
+    });
+    const apiHits = scored
+      .filter((h) => h.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limits.recallLimit);
+    const lines = apiHits.map(
+      (h) => `  [${h.score.toFixed(2)}] (${h.entry.kind || "fact"}) ${h.entry.text}`,
+    );
+    out(
+      flags,
+      { ok: true, hits: apiHits, memoryUsage: usageMeters(ws, limits) },
+      lines.length ? lines.join("\n") : "No hits.",
+    );
+    return;
+  }
+
+  if (sub === "add") {
+    const target = (flags.target || "memory").toLowerCase() === "user" ? "user" : "memory";
+    const body = rest.slice(1).join(" ").trim();
+    if (!body) {
+      fail(flags, "Usage: paddy memory add <text> [--target memory|user]", 2);
+      return;
+    }
+    const result = applyMemoryWrite(ws, {
+      target,
+      action: "add",
+      text: body,
+      kind: flags.kind || "fact",
+      limits,
+    });
+    if (!result.ok) {
+      fail(flags, result.error || "memory write failed");
+      return;
+    }
+    await pushWorkspace(flags, result.workspace);
+    out(
+      flags,
+      { ok: true, message: result.message, usage: result.usage },
+      `${result.message} (${result.usage?.memory || ""} · ${result.usage?.user || ""})`,
+    );
+    return;
+  }
+
+  if (sub === "reset") {
+    const targetRaw = (flags.target || rest[1] || "all").toLowerCase();
+    const target = targetRaw === "memory" || targetRaw === "user" ? targetRaw : "all";
+    const confirm = Boolean(flags.confirm) || Boolean(flags.yes);
+    const result = memoryReset(ws, target, confirm);
+    if (!result.ok) {
+      fail(flags, result.error || "reset refused (pass --confirm)");
+      return;
+    }
+    await pushWorkspace(flags, result.workspace);
+    out(flags, { ok: true, message: result.message }, result.message);
+    return;
+  }
+
+  fail(flags, "Usage: paddy memory status|list|search|add|recall|reset", 2);
 }
 
 async function cmdApprove(rest, flags) {
@@ -1853,7 +1985,7 @@ export async function main(argv = process.argv.slice(2)) {
         break;
       case "memory":
       case "memories":
-        await cmdMemory(flags);
+        await cmdMemory(rest.slice(1), flags);
         break;
       case "approve":
         await cmdApprove(rest.slice(1), flags);

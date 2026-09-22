@@ -13,6 +13,11 @@ import { TOKEN_MAX, defFor, type BrainKeys, type ModelOption, type ProviderId } 
 import { buildSystemPrompt } from "./prompt";
 import { toSkillMd } from "./mutate";
 import { rankMemories } from "./memory-recall.ts";
+import {
+  resolveMemoryLimits,
+  wouldMemoryOverflow,
+  wouldUserOverflow,
+} from "./memory-hermes.mjs";
 import type {
   HelixTurnInput,
   HelixTurnResult,
@@ -347,6 +352,10 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
         : "I had nothing to add.";
     }
 
+    const extras = data as HelixTurnInput & {
+      memoryInjected?: Extract<HelixTurnResult, { ok: true }>["memoryInjected"];
+      memoryUsage?: Extract<HelixTurnResult, { ok: true }>["memoryUsage"];
+    };
     return {
       ok: true,
       text: finalText,
@@ -356,6 +365,8 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
       pendingApprovals: heldApprovals.length ? heldApprovals : undefined,
       keyPatch: route.rotated,
       usage: packUsage(),
+      memoryInjected: extras.memoryInjected,
+      memoryUsage: extras.memoryUsage,
     };
 }
 
@@ -376,6 +387,33 @@ async function runTool(
       const kind = (str(args.kind, "fact") as MemoryKind) || "fact";
       const mode = str(args.mode, "append") === "replace" ? "replace" : "append";
       if (!text) return { result: "Empty memory not written." };
+      const limits = resolveMemoryLimits();
+      // Gate on live store texts — never frozen files.memory (prompt snapshot only).
+      const liveTexts =
+        input.memoryTextsLive ??
+        input.memories.map((m) => String(m.text ?? ""));
+      const check = wouldMemoryOverflow(
+        {
+          memories: liveTexts.map((body, i) => ({
+            id: `m${i}`,
+            text: body,
+            kind: "fact" as MemoryKind,
+            at: 0,
+            source: "turn",
+          })),
+        },
+        text,
+        mode,
+        limits,
+      );
+      if (check.overflow) {
+        return {
+          result:
+            `MEMORY at ${check.current ?? "?"}/${check.limit} chars. Adding this entry ` +
+            `(${text.length} chars) would exceed the limit. Consolidate with replace/remove, then retry. ` +
+            `Never truncate silently.`,
+        };
+      }
       return {
         result: `Wrote ${kind} to memory.`,
         mutation: { type: "write_memory", text, kind, mode },
@@ -384,6 +422,15 @@ async function runTool(
     case "update_user": {
       const content = str(args.content).slice(0, 2500);
       if (!content) return { result: "USER.md unchanged." };
+      const limits = resolveMemoryLimits();
+      const check = wouldUserOverflow(content, limits);
+      if (check.overflow) {
+        return {
+          result:
+            `USER at ${check.chars}/${check.limit} chars would exceed the limit. ` +
+            `Shorten content or use memoryWrite remove/replace. Never truncate silently.`,
+        };
+      }
       return {
         result: "USER.md updated.",
         mutation: { type: "update_user", content },

@@ -12,6 +12,11 @@ import type {
   WorkspaceState,
 } from "./types";
 import { ensureMemoryEmbedding } from "./embeddings.ts";
+import {
+  resolveMemoryLimits,
+  wouldMemoryOverflow,
+  wouldUserOverflow,
+} from "./memory-hermes.mjs";
 
 export { kebabSkillName, parseSkillMd, toSkillMd };
 
@@ -144,7 +149,20 @@ export function applyMutation(ws: WorkspaceState, m: Mutation): WorkspaceState {
 
   switch (m.type) {
     case "write_memory": {
+      // Re-check Hermes char caps on the *live* store. Turn tools may have
+      // gated on a stale freeze; never let a mutation breach the cap.
+      const limits = resolveMemoryLimits();
+      const mode = m.mode === "replace" ? "replace" : "append";
+      const base = mode === "replace" ? { ...next, memories: [] as typeof next.memories } : next;
+      const check = wouldMemoryOverflow(base, m.text, mode, limits);
+      if (check.overflow) {
+        break; // drop mutation — keep live store under cap
+      }
       if (m.mode === "replace") next.memories = [];
+      // Dedup append (matches wouldMemoryOverflow / applyMemoryWrite)
+      if (mode === "append" && next.memories.some((e) => e.text === m.text)) {
+        break;
+      }
       next.memories.push({
         id: uid("mem"),
         text: m.text,
@@ -157,9 +175,13 @@ export function applyMutation(ws: WorkspaceState, m: Mutation): WorkspaceState {
       next.files.memory = rebuildMemoryFile(next);
       break;
     }
-    case "update_user":
+    case "update_user": {
+      const limits = resolveMemoryLimits();
+      const check = wouldUserOverflow(m.content, limits);
+      if (check.overflow) break; // drop — never silent truncate past USER cap
       next.files.user = m.content;
       break;
+    }
     case "update_soul":
       next.files.soul = m.content;
       break;

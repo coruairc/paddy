@@ -48,6 +48,8 @@ export type TraceKind =
 
 export type SkillStatus = "new" | "active" | "stale" | "archived";
 export type MemoryKind = "fact" | "preference" | "lesson" | "episode";
+export type MemoryTarget = "memory" | "user";
+export type MemoryWriteAction = "add" | "replace" | "remove";
 export type ChannelStatus = "connected" | "idle" | "pairing" | "offline";
 export type TicketStatus = "backlog" | "doing" | "done";
 
@@ -116,6 +118,8 @@ export interface Session {
   lastAt: number;
   preview: string;
   unread: number;
+  /** Hermes frozen MEMORY/USER markdown captured at session start. */
+  frozenMemory?: { memory: string; user: string; at: number };
 }
 
 export interface TraceEvent {
@@ -261,6 +265,12 @@ export interface HelixTurnInput {
   files: WorkspaceFiles;
   skills: Pick<Skill, "name" | "description" | "instructions" | "status" | "uses" | "triggers">[];
   memories: Pick<MemoryEntry, "text" | "kind">[];
+  /**
+   * Full live MEMORY entry texts for Hermes char-cap gates.
+   * Session freeze only affects files.memory / files.user for prompt injection —
+   * overflow must never use the frozen snapshot.
+   */
+  memoryTextsLive?: string[];
   history: { role: "user" | "assistant"; content: string }[];
   transcript?: { role: "user" | "assistant"; content: string }[];
   userMessage: string;
@@ -320,4 +330,21 @@ export type HelixTurnResult =
         provider: string;
       };
       workspace?: WorkspaceState;
+      /** Ranked recall hits injected into this turn (FE observability). */
+      memoryInjected?: {
+        entry: MemoryEntry;
+        score: number;
+        similarity: number;
+        recency: number;
+        importance: number;
+      }[];
+      /** Hermes-style usage meters, e.g. memory: "1474/2200". */
+      memoryUsage?: {
+        memory: string;
+        user: string;
+        memoryChars: number;
+        memoryLimit: number;
+        userChars: number;
+        userLimit: number;
+      };
     };

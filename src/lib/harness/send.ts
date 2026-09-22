@@ -67,6 +67,7 @@ export async function sendTurn(
       triggers: s.triggers,
     })),
     memories: ws.memories.slice(-16).map((m) => ({ text: m.text, kind: m.kind })),
+    memoryTextsLive: ws.memories.map((m) => String(m.text ?? "")),
     history,
     transcript,
     userMessage: inbound,
