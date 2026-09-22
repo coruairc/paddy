@@ -531,6 +531,80 @@ test("configGet configSet configUnset with redaction", () => {
   assert.throws(() => configUnset("no.such.path", { home: dir }), /not found/);
 });
 
+test("configSet gateway.auth object never writes plaintext token to config.json", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  const secret = "PARENT-OBJECT-AUTH-SECRET-VALUE";
+  const setAuth = configSet(
+    "gateway.auth",
+    { mode: "token", token: secret },
+    { home: dir },
+  );
+  assert.equal(setAuth.aliasedTo, "cli.token");
+  assert.equal(setAuth.config.cli.token, "${PADDY_CLI_TOKEN}");
+  assert.doesNotMatch(JSON.stringify(setAuth.config), /PARENT-OBJECT-AUTH/);
+  assert.equal(setAuth.config.gateway.auth, undefined);
+
+  const disk = JSON.parse(readFileSync(join(dir, "config.json"), "utf8"));
+  assert.equal(disk.gateway.auth, undefined);
+  assert.doesNotMatch(JSON.stringify(disk), /PARENT-OBJECT-AUTH/);
+  assert.equal(disk.cli.token, "${PADDY_CLI_TOKEN}");
+  assert.equal(disk.version, 1);
+
+  const env = readFileSync(join(dir, ".env"), "utf8");
+  assert.match(env, /PADDY_CLI_TOKEN=PARENT-OBJECT-AUTH-SECRET-VALUE/);
+
+  const got = configGet("gateway.auth", { home: dir });
+  assert.equal(got.value.mode, "token");
+  assert.doesNotMatch(JSON.stringify(got.value), /PARENT-OBJECT-AUTH/);
+});
+
+test("configSet nested gateway.auth.token still extracts to .env", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  const secret = "NESTED-AUTH-TOKEN-SECRET-VALUE";
+  const setTok = configSet("gateway.auth.token", secret, { home: dir });
+  assert.equal(setTok.aliasedTo, "cli.token");
+  assert.equal(setTok.config.cli.token, "${PADDY_CLI_TOKEN}");
+  const disk = JSON.parse(readFileSync(join(dir, "config.json"), "utf8"));
+  assert.equal(disk.gateway.auth, undefined);
+  assert.doesNotMatch(JSON.stringify(disk), /NESTED-AUTH-TOKEN/);
+  assert.equal(disk.cli.token, "${PADDY_CLI_TOKEN}");
+  const env = readFileSync(join(dir, ".env"), "utf8");
+  assert.match(env, /PADDY_CLI_TOKEN=NESTED-AUTH-TOKEN-SECRET-VALUE/);
+});
+
+test("configUnset gateway.auth clears cli.token", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet("gateway.auth", { mode: "token", token: "UNSET-ME-AUTH-SECRET" }, { home: dir });
+  const unset = configUnset("gateway.auth", { home: dir });
+  assert.equal(unset.aliasedTo, "cli.token");
+  assert.equal(unset.config.cli.token, undefined);
+  const disk = JSON.parse(readFileSync(join(dir, "config.json"), "utf8"));
+  assert.equal(disk.gateway.auth, undefined);
+  assert.equal(disk.cli?.token, undefined);
+});
+
+test("loadCanonical rescues orphaned gateway.auth.token from disk", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  const diskPath = join(dir, "config.json");
+  const disk = JSON.parse(readFileSync(diskPath, "utf8"));
+  disk.gateway = { ...disk.gateway, auth: { mode: "token", token: "ORPHAN-AUTH-PLAINTEXT-SECRET" } };
+  delete disk.cli;
+  writeFileSync(diskPath, `${JSON.stringify(disk, null, 2)}\n`);
+  const { config } = loadCanonical({ home: dir, persist: true });
+  assert.equal(config.cli.token, "${PADDY_CLI_TOKEN}");
+  assert.equal(config.gateway.auth, undefined);
+  const rewritten = JSON.parse(readFileSync(diskPath, "utf8"));
+  assert.equal(rewritten.gateway.auth, undefined);
+  assert.doesNotMatch(JSON.stringify(rewritten), /ORPHAN-AUTH/);
+  assert.equal(rewritten.cli.token, "${PADDY_CLI_TOKEN}");
+  const env = readFileSync(join(dir, ".env"), "utf8");
+  assert.match(env, /PADDY_CLI_TOKEN=ORPHAN-AUTH-PLAINTEXT-SECRET/);
+});
+
 test("configSet redacts channel token on read path", () => {
   const dir = home();
   loadCanonical({ home: dir, persist: true });

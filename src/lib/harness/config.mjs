@@ -149,8 +149,8 @@ export function redactConfig(config) {
  *
  * Mapping (v1 disk ↔ familiar OpenClaw-shaped paths):
  *   gateway.host | gateway.port     → config.gateway.*
- *   gateway.auth.token (alias)      → cli.token  (${PADDY_CLI_TOKEN})
- *   gateway.auth.mode (alias get)   → "token"
+ *   gateway.auth / gateway.auth.token → cli.token  (${PADDY_CLI_TOKEN}); never persist gateway.auth
+ *   gateway.auth.mode (virtual)     → "token" (get synthesizes; set accepts only "token")
  *   brain.preferred | brain.model   → config.brain.*
  *   channels.<id>.*                 → config.channels.*
  *   agents.defaults.memory.*        → optional nested keys (schema/FE; not yet runtime SoT)
@@ -264,13 +264,43 @@ function redactPathValue(path, value) {
   return value;
 }
 
+/** Drop gateway.auth from disk shape — v1 stores the bearer only as cli.token / .env. */
+function stripGatewayAuth(config) {
+  if (!config?.gateway || typeof config.gateway !== "object" || Array.isArray(config.gateway)) {
+    return config;
+  }
+  if (!Object.hasOwn(config.gateway, "auth")) return config;
+  const gateway = { ...config.gateway };
+  delete gateway.auth;
+  return { ...config, gateway };
+}
+
+function isGatewayAuthPath(path) {
+  const normalized = normalizeConfigPath(path);
+  return normalized === "gateway.auth" || normalized.startsWith("gateway.auth.");
+}
+
+/**
+ * Move plaintext CLI bearer into ${PADDY_CLI_TOKEN}.
+ * Also rescues gateway.auth.token if a caller wrote the parent object before stripping.
+ */
 function extractCliToken(config, envPatch = {}) {
-  const next = { ...config, cli: { ...(config.cli || {}) } };
+  let next = { ...config, cli: { ...(config.cli || {}) } };
   const patch = { ...envPatch };
+  const authTok = next.gateway?.auth?.token;
+  if (
+    typeof authTok === "string" &&
+    authTok &&
+    !isEnvRef(authTok) &&
+    (typeof next.cli.token !== "string" || !next.cli.token || isEnvRef(next.cli.token))
+  ) {
+    next.cli.token = authTok;
+  }
   if (typeof next.cli.token === "string" && next.cli.token && !isEnvRef(next.cli.token)) {
     patch[CLI_TOKEN_ENV] = next.cli.token;
     next.cli.token = `\${${CLI_TOKEN_ENV}}`;
   }
+  next = stripGatewayAuth(next);
   return { config: next, envPatch: patch };
 }
 
@@ -407,8 +437,63 @@ export function configGet(path, { home = paddyHome() } = {}) {
 }
 
 export function configSet(path, value, { home = paddyHome(), merge = false } = {}) {
-  const alias = resolveConfigPathAlias(path);
+  const normalized = normalizeConfigPath(path);
+  let alias = resolveConfigPathAlias(path);
   const { config } = loadCanonical({ home, persist: true });
+
+  // Parent object gateway.auth → rewrite token onto cli.token; never persist gateway.auth.
+  if (normalized === "gateway.auth") {
+    let authValue = value;
+    if (merge && authValue && typeof authValue === "object" && !Array.isArray(authValue)) {
+      const tokenHit = getAtPath(config, "cli.token");
+      const current = {
+        mode: "token",
+        ...(tokenHit.found && tokenHit.value != null ? { token: tokenHit.value } : {}),
+      };
+      authValue = { ...current, ...authValue };
+    }
+    if (!authValue || typeof authValue !== "object" || Array.isArray(authValue)) {
+      const err = new Error("gateway.auth must be an object");
+      err.code = "ECONFIG_VALUE";
+      throw err;
+    }
+    if (authValue.mode != null && String(authValue.mode) !== "token") {
+      const err = new Error('gateway.auth.mode must be "token"');
+      err.code = "ECONFIG_VALUE";
+      throw err;
+    }
+    let next = config;
+    if (Object.hasOwn(authValue, "token")) {
+      next = setAtPath(next, "cli.token", authValue.token);
+    }
+    next = stripGatewayAuth(next);
+    const extracted = extractCliToken(next);
+    next = extracted.config;
+    const saved = saveCanonical(next, { home, envPatch: extracted.envPatch });
+    return {
+      ok: true,
+      path: normalized,
+      config: redactConfig(saved),
+      aliasedTo: "cli.token",
+    };
+  }
+
+  // Nested gateway.auth.mode is virtual — accept "token", do not write to disk.
+  if (normalized === "gateway.auth.mode") {
+    if (String(value) !== "token") {
+      const err = new Error('gateway.auth.mode must be "token"');
+      err.code = "ECONFIG_VALUE";
+      throw err;
+    }
+    const saved = saveCanonical(stripGatewayAuth(config), { home });
+    return {
+      ok: true,
+      path: normalized,
+      config: redactConfig(saved),
+      aliasedTo: "cli.token",
+    };
+  }
+
   let nextValue = value;
   if (merge && nextValue && typeof nextValue === "object" && !Array.isArray(nextValue)) {
     const hit = getAtPath(config, alias);
@@ -417,32 +502,46 @@ export function configSet(path, value, { home = paddyHome(), merge = false } = {
     }
   }
   let next = setAtPath(config, alias, nextValue);
+  // Nested token under gateway.auth is aliased to cli.token; still strip any residual auth blob.
+  if (isGatewayAuthPath(path) || alias === "cli.token") {
+    next = stripGatewayAuth(next);
+  }
   const extracted = extractCliToken(next);
   next = extracted.config;
   const saved = saveCanonical(next, { home, envPatch: extracted.envPatch });
   return {
     ok: true,
-    path: normalizeConfigPath(path),
+    path: normalized,
     config: redactConfig(saved),
-    ...(alias !== normalizeConfigPath(path) ? { aliasedTo: alias } : {}),
+    ...(alias !== normalized || isGatewayAuthPath(path) ? { aliasedTo: alias === normalized ? "cli.token" : alias } : {}),
   };
 }
 
 export function configUnset(path, { home = paddyHome() } = {}) {
-  const alias = resolveConfigPathAlias(path);
-  const { config } = loadCanonical({ home, persist: true });
-  const result = unsetAtPath(config, alias);
-  if (!result.found) {
-    const err = new Error(`Config path not found: ${normalizeConfigPath(path)}. Nothing was changed.`);
+  const normalized = normalizeConfigPath(path);
+  let alias = resolveConfigPathAlias(path);
+  // gateway.auth (parent) clears the real bearer at cli.token
+  if (normalized === "gateway.auth") {
+    alias = "cli.token";
+  } else if (normalized === "gateway.auth.mode") {
+    const err = new Error(`Config path not found: ${normalized}. Nothing was changed.`);
     err.code = "ECONFIG_PATH";
     throw err;
   }
-  const saved = saveCanonical(result.config, { home });
+  const { config } = loadCanonical({ home, persist: true });
+  const result = unsetAtPath(config, alias);
+  if (!result.found) {
+    const err = new Error(`Config path not found: ${normalized}. Nothing was changed.`);
+    err.code = "ECONFIG_PATH";
+    throw err;
+  }
+  const cleaned = stripGatewayAuth(result.config);
+  const saved = saveCanonical(cleaned, { home });
   return {
     ok: true,
-    path: normalizeConfigPath(path),
+    path: normalized,
     config: redactConfig(saved),
-    ...(alias !== normalizeConfigPath(path) ? { aliasedTo: alias } : {}),
+    ...(alias !== normalized || isGatewayAuthPath(path) ? { aliasedTo: alias } : {}),
   };
 }
 
@@ -806,6 +905,22 @@ export function normalizeCanonical(raw) {
 export function migrateFromLegacy(raw, { channelsFile, env } = {}) {
   const notes = [];
   let src = raw && typeof raw === "object" ? { ...raw } : {};
+  // Rescue orphaned gateway.auth.token before normalizeCanonical drops gateway.auth.
+  // Always rewrite away gateway.auth — it is not part of the v1 disk shape.
+  if (src.gateway && typeof src.gateway === "object" && Object.hasOwn(src.gateway, "auth")) {
+    const orphanAuthTok = src.gateway.auth?.token;
+    if (typeof orphanAuthTok === "string" && orphanAuthTok && !isEnvRef(orphanAuthTok)) {
+      const cliTok = src.cli?.token;
+      if (typeof cliTok !== "string" || !cliTok || isEnvRef(cliTok)) {
+        src = {
+          ...src,
+          cli: { ...(typeof src.cli === "object" && src.cli ? src.cli : {}), token: orphanAuthTok },
+        };
+        notes.push("rescued gateway.auth.token into cli.token");
+      }
+    }
+    notes.push("stripped gateway.auth from config.json (use cli.token)");
+  }
   const isV1 = src.version === SCHEMA_VERSION && src.gateway && src.channels;
   let canonical = isV1 ? normalizeCanonical(src) : normalizeCanonical(src);
   if (!isV1 && (src.port || src.host || src.token || src.preferredProvider)) {
