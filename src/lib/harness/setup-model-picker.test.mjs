@@ -6,36 +6,12 @@ import {
   MENU_KEEP,
   MENU_KEEP_MODEL,
   brainModelMenuOptions,
-  brainProviderById,
   brainProviderMenuOptions,
 } from "./brain-catalog.mjs";
-
-/** Mirrors resolveModelPickerSelection in setup-model-picker.ts */
-function resolveModelPickerSelection({
-  providerChoice,
-  modelChoice,
-  currentPreferred,
-  currentModel,
-}) {
-  if (!providerChoice || providerChoice === MENU_BACK) return { back: true };
-  const preferred = providerChoice === MENU_KEEP ? currentPreferred : providerChoice;
-  if (!brainProviderById(preferred)) return null;
-  if (!modelChoice || modelChoice === MENU_BACK) return { back: true };
-  let model;
-  if (modelChoice === MENU_DEFAULT_MODEL) model = "";
-  else if (modelChoice === MENU_KEEP_MODEL) model = currentModel;
-  else model = modelChoice;
-  return { preferred, model };
-}
-
-/** Mirrors brainModelSelectionWrite — FE confirm must use this one-shot shape. */
-function brainModelSelectionWrite({ preferred, model }) {
-  return {
-    path: "brain",
-    value: { preferred: String(preferred), model: model == null ? "" : String(model) },
-    merge: true,
-  };
-}
+import {
+  brainModelSelectionWrite,
+  resolveModelPickerSelection,
+} from "./setup-model-picker.ts";
 
 test("shared catalog helpers expose OpenClaw menu rows for Setup picker", () => {
   const providers = brainProviderMenuOptions({ currentPreferred: "supergrok" });
