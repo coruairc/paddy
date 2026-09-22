@@ -30,6 +30,10 @@ import { createHash, randomBytes } from "node:crypto";
 import { HUB_SKILLS } from "../src/lib/harness/hub-catalog.mjs";
 import { parseSkillMd, toSkillMd } from "../src/lib/harness/skill-md.mjs";
 import {
+  canonicalConfigSchema,
+  configGet,
+  configSet,
+  configUnset,
   exportToLineage,
   importFromLineage,
   loadCanonical,
@@ -168,6 +172,10 @@ Gateway
 
   paddy config               Write ~/.paddy, copy selfhost.env, remember a brain
   paddy config show          Print canonical config (secrets redacted)
+  paddy config get <path>    Read a path (secrets redacted)
+  paddy config set <path> <json>  Set a path to a JSON value
+  paddy config unset <path>  Remove a path
+  paddy config schema        Print JSON Schema subset (FE / Control UI)
   paddy config validate      Check the JSON schema
   paddy config import        Pull OpenClaw / Hermes into Paddy config
   paddy channels             List connected channels
@@ -1505,18 +1513,101 @@ async function cmdConfig(rest, flags) {
     out(flags, { ok: true, config: view }, text);
     return;
   }
+  if (sub === "get") {
+    const path = rest[1];
+    if (!path) {
+      fail(flags, "Usage: paddy config get <path>", 2);
+      return;
+    }
+    try {
+      const result = configGet(path);
+      const rendered =
+        typeof result.value === "string" ? result.value : JSON.stringify(result.value, null, 2);
+      out(flags, result, rendered);
+    } catch (err) {
+      fail(flags, err instanceof Error ? err.message : String(err));
+    }
+    return;
+  }
+  if (sub === "set") {
+    const path = rest[1];
+    const raw = rest.slice(2).join(" ").trim();
+    if (!path || !raw) {
+      fail(flags, "Usage: paddy config set <path> <json>", 2);
+      return;
+    }
+    let value;
+    try {
+      value = JSON.parse(raw);
+    } catch (err) {
+      fail(
+        flags,
+        `Invalid JSON value: ${err instanceof Error ? err.message : String(err)}. Tip: strings need quotes, e.g. '"supergrok"' or '9090'.`,
+      );
+      return;
+    }
+    try {
+      const result = configSet(path, value);
+      out(
+        flags,
+        result,
+        `Set ${result.path}${result.aliasedTo ? ` (→ ${result.aliasedTo})` : ""}.`,
+      );
+    } catch (err) {
+      fail(flags, err instanceof Error ? err.message : String(err));
+    }
+    return;
+  }
+  if (sub === "unset") {
+    const path = rest[1];
+    if (!path) {
+      fail(flags, "Usage: paddy config unset <path>", 2);
+      return;
+    }
+    try {
+      const result = configUnset(path);
+      out(
+        flags,
+        result,
+        `Unset ${result.path}${result.aliasedTo ? ` (→ ${result.aliasedTo})` : ""}.`,
+      );
+    } catch (err) {
+      fail(flags, err instanceof Error ? err.message : String(err));
+    }
+    return;
+  }
+  if (sub === "schema") {
+    const schema = canonicalConfigSchema();
+    out(
+      flags,
+      { ok: true, schema, schemaVersion: schema.properties?.version?.const },
+      JSON.stringify(schema, null, 2),
+    );
+    return;
+  }
   if (sub === "validate") {
     const snap = resolvedSnapshot();
     const valid = validateCanonical(snap.config);
     const missing = (snap.missing || []).map((m) => `${m.path} → ${m.name}`);
+    const issues = [
+      ...(valid.issues || []).map((i) => ({ ...i, severity: "error" })),
+      ...(snap.missing || []).map((m) => ({
+        path: m.path,
+        message: `missing env ${m.name}`,
+        severity: "warning",
+      })),
+    ];
     if (!valid.ok) {
-      fail(flags, valid.errors.join("; "));
+      const detail = (valid.issues || [])
+        .map((i) => (i.path ? `${i.path}: ${i.message}` : i.message))
+        .join("\n");
+      fail(flags, detail || valid.errors.join("; "));
       return;
     }
     const extra = missing.length ? `\nMissing env: ${missing.join(", ")}` : "";
     out(
       flags,
-      { ok: true, errors: [], missing },
+      { ok: true, errors: [], missing, issues },
       `config.json ok (version ${snap.config.version})${extra}`,
     );
     return;
@@ -1527,7 +1618,7 @@ async function cmdConfig(rest, flags) {
     cmdChannels(["import", source], flags);
     return;
   }
-  fail(flags, "Usage: paddy config [init|show|validate|import]", 2);
+  fail(flags, "Usage: paddy config [init|show|get|set|unset|schema|validate|import]", 2);
 }
 
 function cmdChannels(rest, flags) {

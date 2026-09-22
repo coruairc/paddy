@@ -144,6 +144,408 @@ export function redactConfig(config) {
   return walk(config);
 }
 
+/**
+ * Path-addressed config (OpenClaw-style get/set/unset) over flat ~/.paddy/config.json.
+ *
+ * Mapping (v1 disk ↔ familiar OpenClaw-shaped paths):
+ *   gateway.host | gateway.port     → config.gateway.*
+ *   gateway.auth / gateway.auth.token → cli.token  (${PADDY_CLI_TOKEN}); never persist gateway.auth
+ *   gateway.auth.mode (virtual)     → "token" (get synthesizes; set accepts only "token")
+ *   brain.preferred | brain.model   → config.brain.*
+ *   channels.<id>.*                 → config.channels.*
+ *   agents.defaults.memory.*        → optional nested keys (schema/FE; not yet runtime SoT)
+ *   skills.*                        → optional nested keys (schema/FE; not yet runtime SoT)
+ *
+ * Do not invent a full OpenClawConfig v2 document yet — paths address the v1 JSON file.
+ */
+
+const BLOCKED_SEGMENTS = new Set(["__proto__", "prototype", "constructor"]);
+
+/** @type {Record<string, string>} */
+const PATH_ALIASES = {
+  "gateway.auth.token": "cli.token",
+};
+
+export function parseConfigPath(path) {
+  const raw = String(path ?? "").trim();
+  if (!raw) {
+    const err = new Error("config path is required");
+    err.code = "ECONFIG_PATH";
+    throw err;
+  }
+  const segments = raw.split(".").map((s) => s.trim()).filter(Boolean);
+  if (!segments.length) {
+    const err = new Error("config path is required");
+    err.code = "ECONFIG_PATH";
+    throw err;
+  }
+  for (const seg of segments) {
+    if (BLOCKED_SEGMENTS.has(seg)) {
+      const err = new Error(`Invalid path segment: ${seg}`);
+      err.code = "ECONFIG_PATH";
+      throw err;
+    }
+  }
+  return segments;
+}
+
+export function normalizeConfigPath(path) {
+  return parseConfigPath(path).join(".");
+}
+
+export function resolveConfigPathAlias(path) {
+  const normalized = normalizeConfigPath(path);
+  return PATH_ALIASES[normalized] || normalized;
+}
+
+export function getAtPath(root, path) {
+  const segments = typeof path === "string" ? parseConfigPath(path) : path;
+  let current = root;
+  for (const segment of segments) {
+    if (!current || typeof current !== "object" || Array.isArray(current)) {
+      return { found: false };
+    }
+    if (!Object.hasOwn(current, segment)) return { found: false };
+    current = current[segment];
+  }
+  return { found: true, value: current };
+}
+
+export function setAtPath(root, path, value) {
+  const segments = typeof path === "string" ? parseConfigPath(path) : path;
+  if (!segments.length) {
+    const err = new Error("config path is required");
+    err.code = "ECONFIG_PATH";
+    throw err;
+  }
+  const clone = root && typeof root === "object" && !Array.isArray(root) ? { ...root } : {};
+  let cursor = clone;
+  for (let i = 0; i < segments.length - 1; i++) {
+    const seg = segments[i];
+    const next = cursor[seg];
+    const child =
+      next && typeof next === "object" && !Array.isArray(next) ? { ...next } : {};
+    cursor[seg] = child;
+    cursor = child;
+  }
+  cursor[segments[segments.length - 1]] = value;
+  return clone;
+}
+
+export function unsetAtPath(root, path) {
+  const segments = typeof path === "string" ? parseConfigPath(path) : path;
+  if (!segments.length) {
+    const err = new Error("config path is required");
+    err.code = "ECONFIG_PATH";
+    throw err;
+  }
+  const hit = getAtPath(root, segments);
+  if (!hit.found) return { found: false, config: root };
+  const clone = root && typeof root === "object" && !Array.isArray(root) ? { ...root } : {};
+  let cursor = clone;
+  for (let i = 0; i < segments.length - 1; i++) {
+    const seg = segments[i];
+    const next = cursor[seg];
+    const child =
+      next && typeof next === "object" && !Array.isArray(next) ? { ...next } : {};
+    cursor[seg] = child;
+    cursor = child;
+  }
+  delete cursor[segments[segments.length - 1]];
+  return { found: true, config: clone };
+}
+
+function redactPathValue(path, value) {
+  const leaf = String(path).split(".").pop() || "";
+  if (typeof value === "string" && looksSecretKey(leaf) && value && !isEnvRef(value)) {
+    return redactValue(value);
+  }
+  if (value && typeof value === "object") return redactConfig(value);
+  return value;
+}
+
+/** Drop gateway.auth from disk shape — v1 stores the bearer only as cli.token / .env. */
+function stripGatewayAuth(config) {
+  if (!config?.gateway || typeof config.gateway !== "object" || Array.isArray(config.gateway)) {
+    return config;
+  }
+  if (!Object.hasOwn(config.gateway, "auth")) return config;
+  const gateway = { ...config.gateway };
+  delete gateway.auth;
+  return { ...config, gateway };
+}
+
+function isGatewayAuthPath(path) {
+  const normalized = normalizeConfigPath(path);
+  return normalized === "gateway.auth" || normalized.startsWith("gateway.auth.");
+}
+
+/**
+ * Move plaintext CLI bearer into ${PADDY_CLI_TOKEN}.
+ * Also rescues gateway.auth.token if a caller wrote the parent object before stripping.
+ */
+function extractCliToken(config, envPatch = {}) {
+  let next = { ...config, cli: { ...(config.cli || {}) } };
+  const patch = { ...envPatch };
+  const authTok = next.gateway?.auth?.token;
+  if (
+    typeof authTok === "string" &&
+    authTok &&
+    !isEnvRef(authTok) &&
+    (typeof next.cli.token !== "string" || !next.cli.token || isEnvRef(next.cli.token))
+  ) {
+    next.cli.token = authTok;
+  }
+  if (typeof next.cli.token === "string" && next.cli.token && !isEnvRef(next.cli.token)) {
+    patch[CLI_TOKEN_ENV] = next.cli.token;
+    next.cli.token = `\${${CLI_TOKEN_ENV}}`;
+  }
+  next = stripGatewayAuth(next);
+  return { config: next, envPatch: patch };
+}
+
+/**
+ * JSON Schema subset for path-keyed Control UI / FE forms.
+ * Stable stub — properties match FE contract; disk remains v1 flat config.json.
+ */
+export function canonicalConfigSchema() {
+  return {
+    $id: "https://paddy.local/schemas/config.v1.json",
+    $schema: "https://json-schema.org/draft/2020-12/schema",
+    title: "PaddyConfig",
+    description:
+      "Path-keyed subset over ~/.paddy/config.json (v1). OpenClaw-shaped agents.defaults.memory / skills are accepted for FE forms; runtime still uses flat brain/channels/gateway until a later PR.",
+    type: "object",
+    additionalProperties: true,
+    properties: {
+      version: { type: "integer", const: SCHEMA_VERSION },
+      gateway: {
+        type: "object",
+        additionalProperties: true,
+        properties: {
+          host: { type: "string", minLength: 1, description: "Bind / connect host" },
+          port: { type: "integer", minimum: 1, maximum: 65535 },
+          auth: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+              mode: { type: "string", const: "token", default: "token" },
+              token: {
+                type: "string",
+                writeOnly: true,
+                description: "Maps to cli.token / ${PADDY_CLI_TOKEN}; never returned in plaintext",
+              },
+            },
+          },
+        },
+      },
+      brain: {
+        type: "object",
+        additionalProperties: true,
+        properties: {
+          preferred: { type: "string", minLength: 1, description: "Provider id (supergrok, chatgpt, …)" },
+          model: { type: "string", description: "Optional model override" },
+        },
+      },
+      channels: {
+        type: "object",
+        additionalProperties: { type: "object" },
+        description: "Channel accounts keyed by id (telegram, discord, …)",
+      },
+      agents: {
+        type: "object",
+        additionalProperties: true,
+        properties: {
+          defaults: {
+            type: "object",
+            additionalProperties: true,
+            properties: {
+              memory: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  enabled: { type: "boolean", default: true },
+                  memoryCharLimit: { type: "integer", minimum: 0, default: 2200 },
+                  userCharLimit: { type: "integer", minimum: 0, default: 1375 },
+                  recallLimit: { type: "integer", minimum: 0, default: 12 },
+                  fts: { type: "boolean", default: true },
+                },
+              },
+            },
+          },
+        },
+      },
+      skills: {
+        type: "object",
+        additionalProperties: true,
+        description: "Skills load / allowlist (schema stub; not yet runtime SoT)",
+        properties: {
+          load: {
+            type: "object",
+            properties: {
+              extraDirs: { type: "array", items: { type: "string" } },
+            },
+          },
+          allow: { type: "array", items: { type: "string" } },
+        },
+      },
+      cli: {
+        type: "object",
+        additionalProperties: true,
+        properties: {
+          token: {
+            type: "string",
+            writeOnly: true,
+            description: "Bearer for CLI + non-loopback dashboard (${PADDY_CLI_TOKEN})",
+          },
+        },
+      },
+      kit: { type: "object", additionalProperties: true },
+      mcp: {
+        type: "object",
+        properties: {
+          servers: { type: "object", additionalProperties: true },
+        },
+      },
+    },
+  };
+}
+
+export function configGet(path, { home = paddyHome() } = {}) {
+  const alias = resolveConfigPathAlias(path);
+  const { config } = loadCanonical({ home, persist: true });
+  if (normalizeConfigPath(path) === "gateway.auth") {
+    const tokenHit = getAtPath(config, "cli.token");
+    const value = {
+      mode: "token",
+      token: tokenHit.found ? redactPathValue("cli.token", tokenHit.value) : undefined,
+    };
+    return { ok: true, path: normalizeConfigPath(path), value, aliasedTo: "cli.token" };
+  }
+  const hit = getAtPath(config, alias);
+  if (!hit.found) {
+    const err = new Error(`Config path not found: ${normalizeConfigPath(path)}`);
+    err.code = "ECONFIG_PATH";
+    throw err;
+  }
+  return {
+    ok: true,
+    path: normalizeConfigPath(path),
+    value: redactPathValue(alias, hit.value),
+    ...(alias !== normalizeConfigPath(path) ? { aliasedTo: alias } : {}),
+  };
+}
+
+export function configSet(path, value, { home = paddyHome(), merge = false } = {}) {
+  const normalized = normalizeConfigPath(path);
+  let alias = resolveConfigPathAlias(path);
+  const { config } = loadCanonical({ home, persist: true });
+
+  // Parent object gateway.auth → rewrite token onto cli.token; never persist gateway.auth.
+  if (normalized === "gateway.auth") {
+    let authValue = value;
+    if (merge && authValue && typeof authValue === "object" && !Array.isArray(authValue)) {
+      const tokenHit = getAtPath(config, "cli.token");
+      const current = {
+        mode: "token",
+        ...(tokenHit.found && tokenHit.value != null ? { token: tokenHit.value } : {}),
+      };
+      authValue = { ...current, ...authValue };
+    }
+    if (!authValue || typeof authValue !== "object" || Array.isArray(authValue)) {
+      const err = new Error("gateway.auth must be an object");
+      err.code = "ECONFIG_VALUE";
+      throw err;
+    }
+    if (authValue.mode != null && String(authValue.mode) !== "token") {
+      const err = new Error('gateway.auth.mode must be "token"');
+      err.code = "ECONFIG_VALUE";
+      throw err;
+    }
+    let next = config;
+    if (Object.hasOwn(authValue, "token")) {
+      next = setAtPath(next, "cli.token", authValue.token);
+    }
+    next = stripGatewayAuth(next);
+    const extracted = extractCliToken(next);
+    next = extracted.config;
+    const saved = saveCanonical(next, { home, envPatch: extracted.envPatch });
+    return {
+      ok: true,
+      path: normalized,
+      config: redactConfig(saved),
+      aliasedTo: "cli.token",
+    };
+  }
+
+  // Nested gateway.auth.mode is virtual — accept "token", do not write to disk.
+  if (normalized === "gateway.auth.mode") {
+    if (String(value) !== "token") {
+      const err = new Error('gateway.auth.mode must be "token"');
+      err.code = "ECONFIG_VALUE";
+      throw err;
+    }
+    const saved = saveCanonical(stripGatewayAuth(config), { home });
+    return {
+      ok: true,
+      path: normalized,
+      config: redactConfig(saved),
+      aliasedTo: "cli.token",
+    };
+  }
+
+  let nextValue = value;
+  if (merge && nextValue && typeof nextValue === "object" && !Array.isArray(nextValue)) {
+    const hit = getAtPath(config, alias);
+    if (hit.found && hit.value && typeof hit.value === "object" && !Array.isArray(hit.value)) {
+      nextValue = { ...hit.value, ...nextValue };
+    }
+  }
+  let next = setAtPath(config, alias, nextValue);
+  // Nested token under gateway.auth is aliased to cli.token; still strip any residual auth blob.
+  if (isGatewayAuthPath(path) || alias === "cli.token") {
+    next = stripGatewayAuth(next);
+  }
+  const extracted = extractCliToken(next);
+  next = extracted.config;
+  const saved = saveCanonical(next, { home, envPatch: extracted.envPatch });
+  return {
+    ok: true,
+    path: normalized,
+    config: redactConfig(saved),
+    ...(alias !== normalized || isGatewayAuthPath(path) ? { aliasedTo: alias === normalized ? "cli.token" : alias } : {}),
+  };
+}
+
+export function configUnset(path, { home = paddyHome() } = {}) {
+  const normalized = normalizeConfigPath(path);
+  let alias = resolveConfigPathAlias(path);
+  // gateway.auth (parent) clears the real bearer at cli.token
+  if (normalized === "gateway.auth") {
+    alias = "cli.token";
+  } else if (normalized === "gateway.auth.mode") {
+    const err = new Error(`Config path not found: ${normalized}. Nothing was changed.`);
+    err.code = "ECONFIG_PATH";
+    throw err;
+  }
+  const { config } = loadCanonical({ home, persist: true });
+  const result = unsetAtPath(config, alias);
+  if (!result.found) {
+    const err = new Error(`Config path not found: ${normalized}. Nothing was changed.`);
+    err.code = "ECONFIG_PATH";
+    throw err;
+  }
+  const cleaned = stripGatewayAuth(result.config);
+  const saved = saveCanonical(cleaned, { home });
+  return {
+    ok: true,
+    path: normalized,
+    config: redactConfig(saved),
+    ...(alias !== normalized || isGatewayAuthPath(path) ? { aliasedTo: alias } : {}),
+  };
+}
+
+
 export function atomicWrite(path, text, mode = 0o600) {
   mkdirSync(dirname(path), { recursive: true, mode: 0o700 });
   try {
@@ -324,48 +726,112 @@ export function extractAllSecrets(channels) {
 }
 
 export function validateCanonical(config) {
-  const errors = [];
+  /** @type {{ path: string, message: string }[]} */
+  const issues = [];
+  const push = (path, message) => {
+    issues.push({ path, message });
+  };
   if (!config || typeof config !== "object" || Array.isArray(config)) {
-    return { ok: false, errors: ["config must be a JSON object"] };
+    push("", "config must be a JSON object");
+    return { ok: false, errors: issues.map((i) => i.message), issues };
   }
   const version = config.version;
   if (version != null && version !== SCHEMA_VERSION) {
-    errors.push(`unsupported config version ${version} (expected ${SCHEMA_VERSION})`);
+    push("version", `unsupported config version ${version} (expected ${SCHEMA_VERSION})`);
   }
   const gw = config.gateway;
   if (gw != null) {
-    if (typeof gw !== "object" || Array.isArray(gw)) errors.push("gateway must be an object");
-    else {
+    if (typeof gw !== "object" || Array.isArray(gw)) {
+      push("gateway", "gateway must be an object");
+    } else {
       if (gw.host != null && (typeof gw.host !== "string" || !gw.host.trim())) {
-        errors.push("gateway.host must be a non-empty string");
+        push("gateway.host", "gateway.host must be a non-empty string");
       }
       if (gw.port != null) {
         const n = Number(gw.port);
-        if (!Number.isInteger(n) || n < 1 || n > 65535) errors.push("gateway.port must be 1–65535");
+        if (!Number.isInteger(n) || n < 1 || n > 65535) {
+          push("gateway.port", "gateway.port must be an integer from 1 to 65535");
+        }
+      }
+      if (gw.auth != null) {
+        if (typeof gw.auth !== "object" || Array.isArray(gw.auth)) {
+          push("gateway.auth", "gateway.auth must be an object");
+        } else if (gw.auth.mode != null && String(gw.auth.mode) !== "token") {
+          push("gateway.auth.mode", 'gateway.auth.mode must be "token"');
+        }
+      }
+    }
+  }
+  const brain = config.brain;
+  if (brain != null) {
+    if (typeof brain !== "object" || Array.isArray(brain)) {
+      push("brain", "brain must be an object");
+    } else {
+      if (brain.preferred != null && (typeof brain.preferred !== "string" || !brain.preferred.trim())) {
+        push("brain.preferred", "brain.preferred must be a non-empty string");
+      }
+      if (brain.model != null && typeof brain.model !== "string") {
+        push("brain.model", "brain.model must be a string");
       }
     }
   }
   const channels = config.channels;
   if (channels != null) {
     if (typeof channels !== "object" || Array.isArray(channels)) {
-      errors.push("channels must be an object");
+      push("channels", "channels must be an object");
     } else {
       for (const [id, ch] of Object.entries(channels)) {
-        if (!ch || typeof ch !== "object") {
-          errors.push(`channels.${id} must be an object`);
+        const base = `channels.${id}`;
+        if (!ch || typeof ch !== "object" || Array.isArray(ch)) {
+          push(base, `${base} must be an object`);
           continue;
         }
         if (ch.enabled != null && typeof ch.enabled !== "boolean") {
-          errors.push(`channels.${id}.enabled must be a boolean`);
+          push(`${base}.enabled`, `${base}.enabled must be a boolean`);
         }
         const mode = ch.access?.mode ?? ch.dmPolicy;
         if (mode != null && !ACCESS_MODES.includes(String(mode))) {
-          errors.push(`channels.${id}.access.mode must be pairing | allowlist | open`);
+          push(
+            `${base}.access.mode`,
+            `${base}.access.mode must be one of: pairing, allowlist, open (got ${JSON.stringify(mode)})`,
+          );
         }
       }
     }
   }
-  return { ok: errors.length === 0, errors };
+  const agents = config.agents;
+  if (agents != null) {
+    if (typeof agents !== "object" || Array.isArray(agents)) {
+      push("agents", "agents must be an object");
+    } else if (agents.defaults != null) {
+      if (typeof agents.defaults !== "object" || Array.isArray(agents.defaults)) {
+        push("agents.defaults", "agents.defaults must be an object");
+      } else if (agents.defaults.memory != null) {
+        const mem = agents.defaults.memory;
+        const mp = "agents.defaults.memory";
+        if (typeof mem !== "object" || Array.isArray(mem)) {
+          push(mp, `${mp} must be an object`);
+        } else {
+          if (mem.enabled != null && typeof mem.enabled !== "boolean") {
+            push(`${mp}.enabled`, `${mp}.enabled must be a boolean`);
+          }
+          for (const key of ["memoryCharLimit", "userCharLimit", "recallLimit"]) {
+            if (mem[key] != null) {
+              const n = Number(mem[key]);
+              if (!Number.isInteger(n) || n < 0) {
+                push(`${mp}.${key}`, `${mp}.${key} must be a non-negative integer`);
+              }
+            }
+          }
+          if (mem.fts != null && typeof mem.fts !== "boolean") {
+            push(`${mp}.fts`, `${mp}.fts must be a boolean`);
+          }
+        }
+      }
+    }
+  }
+  const errors = issues.map((i) => (i.path ? `${i.path}: ${i.message}` : i.message));
+  return { ok: issues.length === 0, errors, issues };
 }
 
 function missingEnvRefs(config, env) {
@@ -439,6 +905,22 @@ export function normalizeCanonical(raw) {
 export function migrateFromLegacy(raw, { channelsFile, env } = {}) {
   const notes = [];
   let src = raw && typeof raw === "object" ? { ...raw } : {};
+  // Rescue orphaned gateway.auth.token before normalizeCanonical drops gateway.auth.
+  // Always rewrite away gateway.auth — it is not part of the v1 disk shape.
+  if (src.gateway && typeof src.gateway === "object" && Object.hasOwn(src.gateway, "auth")) {
+    const orphanAuthTok = src.gateway.auth?.token;
+    if (typeof orphanAuthTok === "string" && orphanAuthTok && !isEnvRef(orphanAuthTok)) {
+      const cliTok = src.cli?.token;
+      if (typeof cliTok !== "string" || !cliTok || isEnvRef(cliTok)) {
+        src = {
+          ...src,
+          cli: { ...(typeof src.cli === "object" && src.cli ? src.cli : {}), token: orphanAuthTok },
+        };
+        notes.push("rescued gateway.auth.token into cli.token");
+      }
+    }
+    notes.push("stripped gateway.auth from config.json (use cli.token)");
+  }
   const isV1 = src.version === SCHEMA_VERSION && src.gateway && src.channels;
   let canonical = isV1 ? normalizeCanonical(src) : normalizeCanonical(src);
   if (!isV1 && (src.port || src.host || src.token || src.preferredProvider)) {
