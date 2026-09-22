@@ -265,6 +265,12 @@ export interface HelixTurnInput {
   files: WorkspaceFiles;
   skills: Pick<Skill, "name" | "description" | "instructions" | "status" | "uses" | "triggers">[];
   memories: Pick<MemoryEntry, "text" | "kind">[];
+  /**
+   * Full live MEMORY entry texts for Hermes char-cap gates.
+   * Session freeze only affects files.memory / files.user for prompt injection —
+   * overflow must never use the frozen snapshot.
+   */
+  memoryTextsLive?: string[];
   history: { role: "user" | "assistant"; content: string }[];
   transcript?: { role: "user" | "assistant"; content: string }[];
   userMessage: string;

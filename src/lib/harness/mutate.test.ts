@@ -246,3 +246,30 @@ test("applyTurnToWorkspace is the shared CLI/web write path", () => {
   assert.equal(cli.messages[1]?.content, "Noted.");
   assert.match(cli.files.memory, /Likes diagrams/);
 });
+
+test("write_memory drops append when live store is at Hermes cap", () => {
+  const prev = process.env.PADDY_MEMORY_CHAR_LIMIT;
+  const prevHome = process.env.PADDY_HOME;
+  process.env.PADDY_MEMORY_CHAR_LIMIT = "50";
+  process.env.PADDY_HOME = "/nonexistent-paddy-home-xyz-mutate-cap";
+  try {
+    const live = "x".repeat(41);
+    const ws = emptyWs({
+      memories: [{ id: "m1", text: live, kind: "fact", at: 1, source: "api" }],
+    });
+    ws.files.memory = `# MEMORY.md\n\n- (fact) ${live}\n`;
+    const next = applyMutation(ws, {
+      type: "write_memory",
+      text: "y".repeat(20),
+      kind: "fact",
+      mode: "append",
+    });
+    assert.equal(next.memories.length, 1);
+    assert.equal(next.memories[0]?.text, live);
+  } finally {
+    if (prev === undefined) delete process.env.PADDY_MEMORY_CHAR_LIMIT;
+    else process.env.PADDY_MEMORY_CHAR_LIMIT = prev;
+    if (prevHome === undefined) delete process.env.PADDY_HOME;
+    else process.env.PADDY_HOME = prevHome;
+  }
+});

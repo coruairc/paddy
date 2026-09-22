@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   applyMemoryWrite,
+  charCountOf,
   DEFAULT_MEMORY_CHAR_LIMIT,
   DEFAULT_USER_CHAR_LIMIT,
   ensureSessionFreeze,
@@ -14,8 +15,10 @@ import {
   memoryStatus,
   resolveMemoryLimits,
   usageMeters,
+  wouldMemoryOverflow,
 } from "./memory-hermes.mjs";
 import { blankWorkspace } from "./memory-store.ts";
+import { applyMutation } from "./mutate.ts";
 
 test("defaults are Hermes caps 2200 / 1375", () => {
   assert.equal(DEFAULT_MEMORY_CHAR_LIMIT, 2200);
@@ -190,4 +193,76 @@ test("usageMeters format memory/user strings", () => {
   const meters = usageMeters(ws, { memoryCharLimit: 2200, userCharLimit: 1375 });
   assert.equal(meters.memory, "3/2200");
   assert.equal(meters.user, "0/1375");
+});
+
+test("freeze lag + tool write_memory must not exceed live cap (Reviewer repro)", () => {
+  // live 41/50, freeze [], tool +20 → must reject (not allow via empty freeze)
+  const prev = process.env.PADDY_MEMORY_CHAR_LIMIT;
+  const prevHome = process.env.PADDY_HOME;
+  process.env.PADDY_MEMORY_CHAR_LIMIT = "50";
+  process.env.PADDY_HOME = "/nonexistent-paddy-home-xyz-freeze-lag";
+  try {
+    const liveText = "x".repeat(41);
+    let ws = blankWorkspace();
+    ws.memories = [{ id: "m1", text: liveText, kind: "fact", at: 1, source: "api" }];
+    ws.files.memory = `# MEMORY.md\n\n- (fact) ${liveText}\n`;
+    // Session froze when empty — prompt still sees empty MEMORY.md
+    ws.sessions = [
+      {
+        id: "web:op",
+        channelId: "web",
+        title: "web",
+        lastAt: 1,
+        preview: "",
+        unread: 0,
+        frozenMemory: {
+          memory: "# MEMORY.md\n\n- (empty)",
+          user: "# USER.md\n\n- (empty)",
+          at: 1,
+        },
+      },
+    ];
+    const frozen = filesForTurn(ws, "web:op");
+    assert.match(frozen.memory, /\(empty\)/);
+    assert.doesNotMatch(frozen.memory, /xxxxx/);
+
+    // Buggy gate on freeze would see ~0 chars and allow +20
+    const freezeGate = wouldMemoryOverflow(
+      { memories: [] },
+      "y".repeat(20),
+      "append",
+      { memoryCharLimit: 50 },
+    );
+    assert.equal(freezeGate.overflow, false);
+
+    // Live gate must reject
+    const liveGate = wouldMemoryOverflow(
+      ws,
+      "y".repeat(20),
+      "append",
+      { memoryCharLimit: 50 },
+    );
+    assert.equal(liveGate.overflow, true);
+    assert.equal(liveGate.current, 41);
+
+    // mutate applies to live ws — must drop the mutation
+    const beforeChars = charCountOf(ws.memories.map((m) => m.text));
+    assert.equal(beforeChars, 41);
+    const next = applyMutation(ws, {
+      type: "write_memory",
+      text: "y".repeat(20),
+      kind: "fact",
+      mode: "append",
+    });
+    assert.equal(next.memories.length, 1);
+    assert.equal(next.memories[0]?.text, liveText);
+    const afterChars = charCountOf(next.memories.map((m) => m.text));
+    assert.ok(afterChars <= 50, `live exceeded cap: ${afterChars}/50`);
+    assert.equal(afterChars, 41);
+  } finally {
+    if (prev === undefined) delete process.env.PADDY_MEMORY_CHAR_LIMIT;
+    else process.env.PADDY_MEMORY_CHAR_LIMIT = prev;
+    if (prevHome === undefined) delete process.env.PADDY_HOME;
+    else process.env.PADDY_HOME = prevHome;
+  }
 });

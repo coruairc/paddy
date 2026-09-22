@@ -444,6 +444,8 @@ export function buildTurnInput(
       text: h.memory.text,
       kind: h.memory.kind,
     })),
+    // Cap gates use live store; freeze is prompt-only (files.memory/user).
+    memoryTextsLive: (ws.memories ?? []).map((m) => String(m.text ?? "")),
     history: thread.slice(-10).map((m) => ({
       role: m.role as "user" | "assistant",
       content: m.content,

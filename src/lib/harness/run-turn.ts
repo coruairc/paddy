@@ -14,7 +14,6 @@ import { buildSystemPrompt } from "./prompt";
 import { toSkillMd } from "./mutate";
 import { rankMemories } from "./memory-recall.ts";
 import {
-  parseUserEntries,
   resolveMemoryLimits,
   wouldMemoryOverflow,
   wouldUserOverflow,
@@ -389,10 +388,13 @@ async function runTool(
       const mode = str(args.mode, "append") === "replace" ? "replace" : "append";
       if (!text) return { result: "Empty memory not written." };
       const limits = resolveMemoryLimits();
-      const entryTexts = parseUserEntries(input.files.memory || "");
+      // Gate on live store texts — never frozen files.memory (prompt snapshot only).
+      const liveTexts =
+        input.memoryTextsLive ??
+        input.memories.map((m) => String(m.text ?? ""));
       const check = wouldMemoryOverflow(
         {
-          memories: entryTexts.map((body, i) => ({
+          memories: liveTexts.map((body, i) => ({
             id: `m${i}`,
             text: body,
             kind: "fact" as MemoryKind,
