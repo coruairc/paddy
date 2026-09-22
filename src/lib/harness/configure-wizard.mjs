@@ -335,7 +335,9 @@ export async function selectMenu(options, opts = {}) {
       } catch {
         /* ignore */
       }
-      stdin.pause();
+      if (typeof stdin.isPaused === "function" && stdin.isPaused()) {
+        stdin.resume();
+      }
       stdout.write("\x1b[?25h\n");
     };
     const onData = (buf) => {
@@ -641,29 +643,29 @@ export async function runConfigureWizard(opts = {}) {
     hint: s.hint,
   }));
 
-  const rl = createInterface({ input: stdin, output: stdout });
-  try {
-    while (true) {
-      /** @type {WizardSectionId} */
-      let choice;
-      if (queue.length) {
-        choice = /** @type {WizardSectionId} */ (queue.shift());
-      } else {
-        choice = /** @type {WizardSectionId} */ (
-          await selectMenu(menuOptions, {
-            stdin,
-            stdout,
-            message: "What do you want to configure?",
-          })
-        );
-      }
+  while (true) {
+    /** @type {WizardSectionId} */
+    let choice;
+    if (queue.length) {
+      choice = /** @type {WizardSectionId} */ (queue.shift());
+    } else {
+      choice = /** @type {WizardSectionId} */ (
+        await selectMenu(menuOptions, {
+          stdin,
+          stdout,
+          message: "What do you want to configure?",
+        })
+      );
+    }
 
-      if (!choice || choice === "done") {
-        log("Done.");
-        break;
-      }
+    if (!choice || choice === "done") {
+      log("Done.");
+      break;
+    }
 
-      log(`\n— ${CONFIGURE_SECTIONS.find((s) => s.id === choice)?.label || choice} —`);
+    log(`\n— ${CONFIGURE_SECTIONS.find((s) => s.id === choice)?.label || choice} —`);
+    const rl = createInterface({ input: stdin, output: stdout });
+    try {
       switch (choice) {
         case "workspace":
           await runWorkspaceSection(rl, home, log);
@@ -690,14 +692,14 @@ export async function runConfigureWizard(opts = {}) {
           log(`Section “${choice}” is not implemented (no fake writer).`);
           break;
       }
-
-      if (preselected.length && !queue.length) {
-        log("Done.");
-        break;
-      }
+    } finally {
+      rl.close();
     }
-  } finally {
-    rl.close();
+
+    if (preselected.length && !queue.length) {
+      log("Done.");
+      break;
+    }
   }
 
   return { ok: true, home };
