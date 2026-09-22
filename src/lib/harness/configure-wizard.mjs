@@ -376,7 +376,7 @@ export async function selectMenu(options, opts = {}) {
   }
 
   const footer = searchable
-    ? "  ↑/↓ move · type to filter · Backspace edit · Enter select · Esc back · q quit"
+    ? "  ↑/↓ move · type to filter · Backspace edit · Enter select · Esc back · Ctrl+C quit"
     : "  ↑/↓ move · Enter select · q quit";
 
   const lineCount = () => filtered.length + (searchable ? 3 : 2) + (filtered.length ? 0 : 1);
@@ -432,7 +432,9 @@ export async function selectMenu(options, opts = {}) {
     };
     const onData = (buf) => {
       const s = buf.toString("utf8");
-      if (s === "\u0003" || s === "q" || s === "Q") {
+      // Ctrl+C always quits. q/Q only quit when the menu is not type-to-search
+      // (otherwise they are filter input — Qwen, Groq, etc.).
+      if (s === "\u0003" || (!searchable && (s === "q" || s === "Q"))) {
         cleanup();
         resolve("done");
         return;

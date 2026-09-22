@@ -374,6 +374,94 @@ test("selectMenu searchable filter then Enter selects filtered row", async () =>
   assert.equal(stdin.listenerCount("data"), 0);
 });
 
+function fakeTty() {
+  let raw = false;
+  let paused = true;
+  const stdin = new EventEmitter();
+  stdin.isTTY = true;
+  stdin.isRaw = false;
+  stdin.setRawMode = (v) => {
+    raw = Boolean(v);
+    stdin.isRaw = raw;
+    return stdin;
+  };
+  stdin.isPaused = () => paused;
+  stdin.resume = () => {
+    paused = false;
+    return stdin;
+  };
+  stdin.pause = () => {
+    paused = true;
+    return stdin;
+  };
+  const stdout = {
+    isTTY: true,
+    write() {
+      return true;
+    },
+  };
+  return { stdin, stdout, isRaw: () => raw };
+}
+
+test("selectMenu searchable typing qwen selects Qwen (q is filter, not quit)", async () => {
+  const { stdin, stdout } = fakeTty();
+  const pending = selectMenu(
+    [
+      { value: "supergrok", label: "SuperGrok", hint: "xAI" },
+      { value: "claude", label: "Claude", hint: "Anthropic" },
+      { value: "qwen", label: "Qwen", hint: "Alibaba DashScope" },
+      { value: "groq", label: "Groq", hint: "GroqCloud" },
+    ],
+    { stdin, stdout, searchable: true, message: "Pick provider" },
+  );
+  await typeKeys(stdin, ["q", "w", "e", "n"]);
+  await pressEnter(stdin);
+  assert.equal(await pending, "qwen");
+});
+
+test("selectMenu searchable typing groq selects Groq", async () => {
+  const { stdin, stdout } = fakeTty();
+  const pending = selectMenu(
+    [
+      { value: "gemini", label: "Gemini", hint: "Google" },
+      { value: "groq", label: "Groq", hint: "GroqCloud" },
+      { value: "openrouter", label: "OpenRouter", hint: "Gateways" },
+    ],
+    { stdin, stdout, searchable: true, message: "Pick provider" },
+  );
+  await typeKeys(stdin, ["g", "r", "o", "q"]);
+  await pressEnter(stdin);
+  assert.equal(await pending, "groq");
+});
+
+test("selectMenu searchable Ctrl+C still quits", async () => {
+  const { stdin, stdout } = fakeTty();
+  const pending = selectMenu(
+    [
+      { value: "qwen", label: "Qwen" },
+      { value: "claude", label: "Claude" },
+    ],
+    { stdin, stdout, searchable: true, message: "Pick provider" },
+  );
+  await waitForDataListener(stdin);
+  stdin.emit("data", "\u0003");
+  assert.equal(await pending, "done");
+});
+
+test("selectMenu non-searchable q still quits", async () => {
+  const { stdin, stdout } = fakeTty();
+  const pending = selectMenu(
+    [
+      { value: "workspace", label: "Workspace" },
+      { value: "model", label: "Model" },
+    ],
+    { stdin, stdout, message: "What do you want to configure?" },
+  );
+  await waitForDataListener(stdin);
+  stdin.emit("data", "q");
+  assert.equal(await pending, "done");
+});
+
 test("runModelSection provider→model→confirm writes brain.preferred and brain.model", async () => {
   const home = tempHome();
   loadCanonical({ home, persist: true });
