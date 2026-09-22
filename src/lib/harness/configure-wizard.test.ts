@@ -12,9 +12,12 @@ import {
   configureHealthCheck,
   isWriteOnlySecretPath,
   parseConfigureSections,
+  promptSecret,
   sectionRoutes,
   wizardSchema,
 } from "./configure-wizard.mjs";
+import { createInterface } from "node:readline/promises";
+import { EventEmitter } from "node:events";
 import { loadCanonical, configGet } from "./config.mjs";
 
 function tempHome() {
@@ -159,3 +162,54 @@ test("temp home config.json exists after loadCanonical persist", () => {
   loadCanonical({ home, persist: true });
   assert.equal(existsSync(join(home, "config.json")), true);
 });
+
+test("promptSecret mutes echo when setRawMode is available", async () => {
+  const written = [];
+  let raw = false;
+  const stdin = new EventEmitter();
+  stdin.isTTY = true;
+  stdin.isRaw = false;
+  stdin.setRawMode = (v) => {
+    raw = Boolean(v);
+    stdin.isRaw = raw;
+    return stdin;
+  };
+  stdin.resume = () => stdin;
+  stdin.pause = () => stdin;
+  stdin.off = EventEmitter.prototype.off;
+  stdin.on = EventEmitter.prototype.on;
+  stdin.removeListener = EventEmitter.prototype.removeListener;
+
+  const stdout = {
+    isTTY: true,
+    write(chunk) {
+      written.push(String(chunk));
+      return true;
+    },
+  };
+
+  const rl = createInterface({ input: stdin, output: stdout, terminal: false });
+  // pause/resume stubs used by promptSecret
+  rl.pause = () => {};
+  rl.resume = () => {};
+
+  const pending = promptSecret(rl, "Gateway auth token");
+  // Allow listener registration
+  await new Promise((r) => setImmediate(r));
+  assert.equal(raw, true);
+  stdin.emit("data", "s");
+  stdin.emit("data", "e");
+  stdin.emit("data", "c");
+  stdin.emit("data", "r");
+  stdin.emit("data", "e");
+  stdin.emit("data", "t");
+  stdin.emit("data", "\r");
+  const value = await pending;
+  assert.equal(value, "secret");
+  const joined = written.join("");
+  assert.equal(joined.includes("secret"), false);
+  assert.ok(joined.includes("Gateway auth token"));
+  assert.equal(raw, false);
+  rl.close();
+});
+

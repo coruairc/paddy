@@ -381,8 +381,77 @@ async function promptLine(rl, label, current) {
   return answer === "" ? current : answer;
 }
 
-async function promptSecret(rl, label) {
-  return (await rl.question(`${label} (empty keeps current): `)).trim();
+/**
+ * Read a secret without echoing when stdin supports setRawMode.
+ * Falls back to rl.question (may echo) on non-TTY / limited streams.
+ * @param {import("node:readline/promises").Interface} rl
+ * @param {string} label
+ * @returns {Promise<string>}
+ */
+export async function promptSecret(rl, label) {
+  const prompt = `${label} (empty keeps current): `;
+  const stdin = /** @type {NodeJS.ReadStream | undefined} */ (rl.input);
+  const stdout = /** @type {NodeJS.WriteStream | undefined} */ (rl.output) ?? defaultStdout;
+
+  if (!stdin?.isTTY || typeof stdin.setRawMode !== "function") {
+    return (await rl.question(prompt)).trim();
+  }
+
+  rl.pause();
+  stdout.write(prompt);
+
+  return new Promise((resolve, reject) => {
+    let buf = "";
+    const wasRaw = Boolean(stdin.isRaw);
+    const cleanup = () => {
+      stdin.off("data", onData);
+      try {
+        stdin.setRawMode(wasRaw);
+      } catch {
+        /* ignore */
+      }
+      try {
+        rl.resume();
+      } catch {
+        /* ignore */
+      }
+    };
+    const onData = (chunk) => {
+      const s = String(chunk);
+      if (s === "\u0003") {
+        cleanup();
+        reject(Object.assign(new Error("Interrupted"), { code: "EINTR" }));
+        return;
+      }
+      if (s === "\r" || s === "\n" || s === "\r\n") {
+        cleanup();
+        stdout.write("\n");
+        resolve(buf.trim());
+        return;
+      }
+      if (s === "\u007f" || s === "\b") {
+        buf = buf.slice(0, -1);
+        return;
+      }
+      if (s === "\u0015") {
+        buf = "";
+        return;
+      }
+      for (const ch of s) {
+        const code = ch.charCodeAt(0);
+        if (code < 32) continue;
+        buf += ch;
+      }
+    };
+    try {
+      stdin.setRawMode(true);
+    } catch {
+      cleanup();
+      void rl.question(prompt).then((v) => resolve(String(v).trim()), reject);
+      return;
+    }
+    stdin.on("data", onData);
+  });
 }
 
 async function runWorkspaceSection(rl, home, log) {
