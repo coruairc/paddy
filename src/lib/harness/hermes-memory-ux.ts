@@ -43,11 +43,13 @@ export type SyncConflictPayload = {
 /**
  * Hosted shared demo: no PADDY_CLI_TOKEN → force paddy (SuperGrok + Hermes).
  * Same gate as persistBrainKeys / FE Phase B helpers.
+ *
+ * Pure helper for tests + serverFns only — the browser has no PADDY_CLI_TOKEN,
+ * so never call this from client components. Drive UI from a server `hostedDemo`
+ * signal (e.g. memoryStatus.hostedDemo).
  */
 export function isHostedPaddyDemoEnv(
-  env: { PADDY_CLI_TOKEN?: string | undefined } = typeof process !== "undefined"
-    ? process.env
-    : {},
+  env: { PADDY_CLI_TOKEN?: string | undefined },
 ): boolean {
   return !(env.PADDY_CLI_TOKEN ?? "").trim();
 }
@@ -114,7 +116,28 @@ export function formatSyncConflictMessage(res: {
 }): string {
   const exp = typeof res.expected === "number" ? String(res.expected) : "?";
   const act = typeof res.actual === "number" ? String(res.actual) : "?";
-  return `Memory sync conflict (revision ${exp} → ${act}). Reloaded the latest workspace — retry your edit.`;
+  // Imperative: hydrate is async — do not claim "Reloaded…" before it finishes.
+  return `Memory sync conflict (revision ${exp} → ${act}). Reload to sync, then retry your edit.`;
+}
+
+export type PersistWorkspaceOk = { ok: true; revision?: number };
+
+/**
+ * After a successful saveWorkspace, advance the local tip revision from `res.revision`.
+ * Skipping this leaves a stale rev and the next persist 409s against itself.
+ * Returns a new object when revision changes; otherwise the same reference.
+ */
+export function applyPersistedWorkspaceRevision<T extends { revision?: number }>(
+  workspace: T,
+  res: PersistWorkspaceOk | { ok: false } | unknown,
+): T {
+  if (!res || typeof res !== "object") return workspace;
+  const r = res as { ok?: unknown; revision?: unknown };
+  if (r.ok !== true) return workspace;
+  if (typeof r.revision !== "number" || !Number.isFinite(r.revision)) return workspace;
+  const nextRev = Math.max(0, Math.floor(r.revision));
+  if (workspace.revision === nextRev) return workspace;
+  return { ...workspace, revision: nextRev };
 }
 
 /**

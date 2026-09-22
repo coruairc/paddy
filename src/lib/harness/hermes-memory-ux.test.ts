@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   HERMES_MEMORY_LIFECYCLE,
+  applyPersistedWorkspaceRevision,
   configuredRuntimeFromConfig,
   describeHermesMemoryPath,
   formatSyncConflictMessage,
@@ -9,6 +10,7 @@ import {
   isSyncConflictResult,
   resolveEffectiveRuntimeForMemoryUx,
 } from "./hermes-memory-ux.ts";
+import { blankWorkspace, createMemoryRepo, createMemoryStore, SyncConflictError } from "./memory-store.ts";
 
 test("lifecycle lists MemoryStore steps including curatorPass + syncTurn", () => {
   assert.deepEqual([...HERMES_MEMORY_LIFECYCLE], [
@@ -65,12 +67,73 @@ test("isSyncConflictResult detects 409-shaped saveWorkspace / CLI payloads", () 
   assert.equal(isSyncConflictResult(undefined), false);
 });
 
-test("formatSyncConflictMessage is recoverable (reload + retry)", () => {
+test("formatSyncConflictMessage is imperative (reload to sync — not past tense)", () => {
   const msg = formatSyncConflictMessage({ expected: 3, actual: 4 });
   assert.match(msg, /sync conflict/i);
   assert.match(msg, /3/);
   assert.match(msg, /4/);
-  assert.match(msg, /Reloaded|retry/i);
+  assert.match(msg, /Reload to sync/i);
+  assert.doesNotMatch(msg, /Reloaded/i);
+});
+
+test("applyPersistedWorkspaceRevision advances tip from saveWorkspace ok payload", () => {
+  const ws = { revision: 2, label: "x" };
+  const next = applyPersistedWorkspaceRevision(ws, { ok: true, revision: 3 });
+  assert.equal(next.revision, 3);
+  assert.notEqual(next, ws);
+  assert.equal(applyPersistedWorkspaceRevision(ws, { ok: false, error: "sync_conflict" }), ws);
+  assert.equal(applyPersistedWorkspaceRevision(ws, { ok: true }), ws);
+});
+
+test("two sequential persists do not self-conflict when client applies res.revision", async () => {
+  const store = createMemoryStore(createMemoryRepo(), {
+    seed: async () => ({ paddy: blankWorkspace() }),
+  });
+  await store.initialize();
+  let client = await store.prefetch("paddy");
+
+  async function persistLikeSaveWorkspace(ws: ReturnType<typeof blankWorkspace>) {
+    const copy = structuredClone(ws);
+    try {
+      await store.syncTurn("paddy", copy);
+      return { ok: true as const, revision: copy.revision };
+    } catch (err) {
+      if (err instanceof SyncConflictError) {
+        return {
+          ok: false as const,
+          error: "sync_conflict" as const,
+          expected: err.expected,
+          actual: err.actual,
+        };
+      }
+      throw err;
+    }
+  }
+
+  const r1 = await persistLikeSaveWorkspace(client);
+  assert.equal(r1.ok, true);
+  if (!r1.ok) throw new Error("unreachable");
+  // BUG without this: client keeps stale rev → second save 409s against itself
+  client = applyPersistedWorkspaceRevision(client, r1);
+  assert.equal(client.revision, r1.revision);
+
+  client = {
+    ...client,
+    files: { ...client.files, memory: `${client.files.memory}\nnote` },
+  };
+  const r2 = await persistLikeSaveWorkspace(client);
+  assert.equal(r2.ok, true, "second persist must not self-conflict after revision patch");
+  if (!r2.ok) throw new Error("unreachable");
+  client = applyPersistedWorkspaceRevision(client, r2);
+  assert.equal(client.revision, r2.revision);
+
+  // Prove the stale-rev path still 409s (regression guard for the bug class)
+  const stale = structuredClone(client);
+  stale.revision = (r1.revision ?? 0);
+  const rStale = await persistLikeSaveWorkspace(stale);
+  assert.equal(rStale.ok, false);
+  if (rStale.ok) throw new Error("unreachable");
+  assert.equal(rStale.error, "sync_conflict");
 });
 
 test("configuredRuntimeFromConfig reads openclaw.runtime without token", () => {

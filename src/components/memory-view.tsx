@@ -17,7 +17,6 @@ import {
   configuredRuntimeFromConfig,
   describeHermesMemoryPath,
   formatSyncConflictMessage,
-  isHostedPaddyDemoEnv,
   isSyncConflictResult,
   type HermesMemoryPathStatus,
 } from "@/lib/harness/hermes-memory-ux";
@@ -86,7 +85,7 @@ export function MemoryView() {
   const [writeTarget, setWriteTarget] = useState<MemoryTarget>("memory");
   const [writeAction, setWriteAction] = useState<MemoryWriteAction>("add");
   const [hermesPath, setHermesPath] = useState<HermesMemoryPathStatus>(() =>
-    describeHermesMemoryPath({ hostedDemo: true }),
+    describeHermesMemoryPath({ hostedDemo: false }),
   );
 
   const refresh = useCallback(async () => {
@@ -109,12 +108,15 @@ export function MemoryView() {
         setUserEntries(both.user?.entries ?? []);
       }
       const configured = cfg?.ok ? configuredRuntimeFromConfig(cfg.config) : null;
-      // Trust disk/config runtime. Hosted demo defaults openclaw.runtime=paddy
-      // (SuperGrok + Hermes) — never pretend OpenClaw loopback in the panel.
+      // Hosted vs self-host comes from memoryStatus.hostedDemo (server signal).
+      // Do not call isHostedPaddyDemoEnv() in the browser — no PADDY_CLI_TOKEN there.
+      const hostedDemo = Boolean(
+        st && typeof st === "object" && "hostedDemo" in st && (st as { hostedDemo?: unknown }).hostedDemo,
+      );
       setHermesPath(
         describeHermesMemoryPath({
           configuredRuntime: configured,
-          hostedDemo: configured !== "openclaw" && isHostedPaddyDemoEnv(),
+          hostedDemo,
         }),
       );
     } catch (err) {

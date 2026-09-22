@@ -39,6 +39,7 @@ import {
 import { loadWorkspaces, runStoredSubagent, saveWorkspaceFn } from "@/lib/harness/memory-api";
 import { getConfig } from "@/lib/harness/config-api";
 import {
+  applyPersistedWorkspaceRevision,
   formatSyncConflictMessage,
   isSyncConflictResult,
 } from "@/lib/harness/hermes-memory-ux";
@@ -84,6 +85,15 @@ async function persistWorkspaceRecovering(profileId: string, workspace: import("
         if (isCliAuthFailure(err)) markCliAuthNeeded();
       }
       return false;
+    }
+    // On ok, advance local tip from res.revision (in-place — avoids subscribe re-persist loop).
+    if (res && typeof res === "object" && (res as { ok?: unknown }).ok === true) {
+      const patched = applyPersistedWorkspaceRevision(workspace, res);
+      const nextRev = patched.revision;
+      if (typeof nextRev === "number" && Number.isFinite(nextRev)) {
+        const cur = useHelix.getState().workspaces[profileId];
+        if (cur) cur.revision = nextRev;
+      }
     }
     return true;
   } catch (err) {

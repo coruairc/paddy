@@ -27,6 +27,7 @@ import {
 } from "./memory-hermes.mjs";
 import { rankMemories } from "./memory-recall.ts";
 import { ensureMemoryEmbedding } from "./embeddings.ts";
+import { isHostedPaddyDemoEnv } from "./hermes-memory-ux.ts";
 
 export const loadWorkspaces = createServerFn({ method: "GET" })
   .middleware([cliGatewayMiddleware])
@@ -236,7 +237,9 @@ export const memoryStatus = createServerFn({ method: "GET" })
   .handler(async () => {
     const store = await getMemoryStore();
     const ws = await store.prefetch("paddy");
-    return { ok: true as const, ...statusOf(ws) };
+    // Server signal: browser has no PADDY_CLI_TOKEN — never infer hosted demo client-side.
+    const hostedDemo = isHostedPaddyDemoEnv(process.env);
+    return { ok: true as const, ...statusOf(ws), hostedDemo };
   });
 
 export const memoryList = createServerFn({ method: "GET" })
