@@ -164,7 +164,7 @@ export function redactConfig(config) {
  *   brain.preferred | brain.model   → config.brain.*
  *   openclaw.runtime|url|token|model → config.openclaw.* (opt-in OpenClaw gateway)
  *   channels.<id>.*                 → config.channels.*
- *   agents.defaults.memory.*        → optional nested keys (schema/FE; not yet runtime SoT)
+ *   agents.defaults.memory.*        → Hermes defaults (runtime SoT via resolveMemoryLimits)
  *   skills.*                        → optional nested keys (schema/FE; not yet runtime SoT)
  *
  * Do not invent a full OpenClawConfig v2 document yet — paths address the v1 JSON file.
@@ -334,7 +334,7 @@ export function canonicalConfigSchema() {
     $schema: "https://json-schema.org/draft/2020-12/schema",
     title: "PaddyConfig",
     description:
-      "Path-keyed subset over ~/.paddy/config.json (v1). openclaw.* selects optional OpenClaw gateway runtime; agents.defaults.memory / skills are accepted for FE forms.",
+      "Path-keyed subset over ~/.paddy/config.json (v1). openclaw.* selects optional OpenClaw gateway runtime; agents.defaults.memory is Hermes runtime SoT (resolveMemoryLimits); skills accepted for FE forms.",
     type: "object",
     additionalProperties: true,
     properties: {

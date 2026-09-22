@@ -538,6 +538,30 @@ export function applyTurnToWorkspace(
   return next;
 }
 
+/**
+ * Shared post-turn Hermes path for both runtimes (paddy brain + OpenClaw):
+ * applyTurnToWorkspace → curatorPass (stale/archive) when the turn succeeded.
+ * Caller then syncTurn (versioned; may throw SyncConflictError).
+ */
+export function applyHermesTurnPersistence(
+  ws: WorkspaceState,
+  opts: {
+    userText: string;
+    channelId: string;
+    sessionId: string;
+    result: HelixTurnResult;
+    clearUnread?: boolean;
+  },
+): WorkspaceState {
+  const next = applyTurnToWorkspace(ws, opts);
+  if (!opts.result.ok) return next;
+  const pass = curatorPass(next);
+  next.skills = pass.skills;
+  next.memories = pass.memories;
+  next.files = pass.files;
+  return next;
+}
+
 const HORIZON_STALE = 14 * 24 * 60 * 60 * 1000;
 const HORIZON_ARCH = 90 * 24 * 60 * 60 * 1000;
 const LEARNED_STALE = 7 * 24 * 60 * 60 * 1000;

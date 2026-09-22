@@ -3,7 +3,7 @@
  * Falls back to lexical overlap when embeddings are absent.
  */
 import { cosine, localEmbed } from "./embeddings.ts";
-import type { MemoryEntry, MemoryKind } from "./types";
+import type { HelixTurnInput, MemoryEntry, MemoryKind } from "./types";
 
 const KIND_WEIGHT: Record<MemoryKind, number> = {
   preference: 0.9,
@@ -100,4 +100,44 @@ export function formatRecallBlock(hits: RecallHit[]): string {
     (h) => `- (${h.memory.kind}) ${h.memory.text}`,
   );
   return `## Memory\n${lines.join("\n")}`;
+}
+
+
+/** Hermes recall block for injection as a system message (paddy + OpenClaw routes). */
+export function recallSystemMessage(
+  data: Pick<HelixTurnInput, "memories"> & {
+    memoryInjected?: {
+      entry: MemoryEntry;
+      score: number;
+      similarity: number;
+      recency: number;
+      importance: number;
+    }[];
+  },
+): string {
+  if (data.memoryInjected?.length) {
+    const hits: RecallHit[] = data.memoryInjected.map((h) => ({
+      memory: h.entry,
+      score: h.score,
+      similarity: h.similarity,
+      recency: h.recency,
+      importance: h.importance,
+    }));
+    return formatRecallBlock(hits);
+  }
+  if (!data.memories?.length) return "";
+  const hits: RecallHit[] = data.memories.map((m, i) => ({
+    memory: {
+      id: `recall_${i}`,
+      text: m.text,
+      kind: m.kind,
+      at: 0,
+      source: "turn",
+    },
+    score: 1,
+    similarity: 1,
+    recency: 1,
+    importance: 1,
+  }));
+  return formatRecallBlock(hits);
 }

@@ -99,7 +99,8 @@ not offered yet (no persistence surface).
 - `paddy config schema` — JSON Schema subset for Control UI forms
 - Alias: `gateway.auth.token` → `cli.token` (`${PADDY_CLI_TOKEN}`); secrets are redacted on read
 - `openclaw.runtime` (`paddy` | `openclaw`), `openclaw.url`, `openclaw.token`, `openclaw.model` — opt-in OpenClaw gateway target
-- `agents.defaults.memory.*` / `skills.*` are accepted for FE forms but are not yet runtime source of truth
+- `agents.defaults.memory.*` — Hermes memory defaults (enabled, char/recall limits); runtime SoT via `resolveMemoryLimits` for **both** `openclaw.runtime=paddy` and `openclaw`
+- `skills.*` are accepted for FE forms
 
 `npm run dev` still works if you want Vite directly. Prefer `paddy gateway` so the CLI token is injected and `paddy chat` can reach `/api/cli`.
 
@@ -141,7 +142,7 @@ Never commit keys. Never paste them into the console chat.
 
 ## OpenClaw runtime (optional, self-host)
 
-Paddy’s GUI and Hermes memory stay in Paddy. When you opt in, **OpenClaw** runs the model path (Codex / channels / tools on that gateway).
+Paddy’s GUI and **Hermes memory** (MemoryStore prefetch → ranked recall as system → curatorPass → versioned syncTurn) stay in Paddy for **both** runtimes. When you opt in, **OpenClaw** runs only the model HTTP path; Paddy still executes tools, persists memory, and runs the curator after every turn.
 
 1. Install OpenClaw and start its gateway (default `http://127.0.0.1:18789`).
 2. Enable the OpenAI-compatible chat endpoint in `~/.openclaw/openclaw.json`:

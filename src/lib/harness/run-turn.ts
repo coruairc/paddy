@@ -15,7 +15,7 @@ import { pollXaiDevice, startXaiDevice } from "./oauth-xai";
 import { TOKEN_MAX, defFor, type BrainKeys, type ModelOption, type ProviderId } from "./providers";
 import { buildSystemPrompt } from "./prompt";
 import { toSkillMd } from "./mutate";
-import { rankMemories } from "./memory-recall.ts";
+import { rankMemories, recallSystemMessage } from "./memory-recall.ts";
 import {
   resolveMemoryLimits,
   wouldMemoryOverflow,
@@ -180,6 +180,7 @@ function sanitizeKeys(raw?: Record<string, string | undefined>): BrainKeys {
 
 
 
+
 /** Route LLM calls through OpenClaw when openclaw.runtime=openclaw (keeps config.mjs off brain.ts / client). */
 async function callTurnModel(
   route: BrainRoute,
@@ -222,8 +223,10 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
       content: m.content.slice(0, 2500),
     }));
 
+    const recall = recallSystemMessage(data);
     const messages: ChatMsg[] = compactMessages([
       { role: "system", content: buildSystemPrompt(data) },
+      ...(recall ? [{ role: "system" as const, content: recall }] : []),
       ...history,
       { role: "user", content: data.userMessage.slice(0, 4000) },
     ]);

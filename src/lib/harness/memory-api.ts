@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { PADDY_PROFILE, POLICY } from "./defaults";
-import { applyTurnToWorkspace, curatorPass } from "./mutate";
+import { applyHermesTurnPersistence } from "./mutate";
 import { buildTurnInput, SyncConflictError } from "./memory-store";
 import { getMemoryStore } from "./memory-store-sql";
 import { resolveTurnBrainRoute } from "./turn-brain-route";
@@ -136,19 +136,13 @@ export const runStoredHelixTurn = createServerFn({ method: "POST" })
       userMessage: data.userMessage,
     };
     const result = await withSecretScope(secretsForProfile(keys), () => executeTurn(input));
-    const next = applyTurnToWorkspace(ws, {
+    const next = applyHermesTurnPersistence(ws, {
       userText: data.rawUserText ?? data.userMessage,
       channelId: data.channelId || "web",
       sessionId,
       result,
       clearUnread: true,
     });
-    if (result.ok) {
-      const pass = curatorPass(next);
-      next.skills = pass.skills;
-      next.memories = pass.memories;
-      next.files = pass.files;
-    }
     const limits = resolveMemoryLimits();
     const meters = usageMeters(next, limits);
     const memoryUsage = {
@@ -167,19 +161,13 @@ export const runStoredHelixTurn = createServerFn({ method: "POST" })
     } catch (err) {
       if (!(err instanceof SyncConflictError)) throw err;
       const latest = await store.prefetch(profileId);
-      const rebased = applyTurnToWorkspace(latest, {
+      const rebased = applyHermesTurnPersistence(latest, {
         userText: data.rawUserText ?? data.userMessage,
         channelId: data.channelId || "web",
         sessionId,
         result,
         clearUnread: true,
       });
-      if (result.ok) {
-        const pass2 = curatorPass(rebased);
-        rebased.skills = pass2.skills;
-        rebased.memories = pass2.memories;
-        rebased.files = pass2.files;
-      }
       await store.syncTurn(profileId, rebased);
       return { ...enriched, workspace: rebased };
     }

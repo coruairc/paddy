@@ -6,8 +6,8 @@ import {
   resolvePair,
 } from "./channels";
 import { PADDY_PROFILE, POLICY } from "./defaults";
-import { applyTurnToWorkspace, curatorPass } from "./mutate";
-import { buildTurnInput } from "./memory-store";
+import { applyHermesTurnPersistence } from "./mutate";
+import { buildTurnInput, SyncConflictError } from "./memory-store";
 import { getMemoryStore } from "./memory-store-sql";
 import { PROVIDER_DEFS, type BrainKeys } from "./providers";
 import { executeTurn, executeInheritedSubagent } from "./run-turn";
@@ -108,19 +108,13 @@ async function runStoredTurn(opts: {
     keys,
   });
   const result = await withSecretScope(secretsForProfile(keys), () => executeTurn(input));
-  const next = applyTurnToWorkspace(ws, {
+  const next = applyHermesTurnPersistence(ws, {
     userText: opts.rawUserText,
     channelId: opts.channelId,
     sessionId: opts.sessionId,
     result,
     clearUnread: opts.clearUnread,
   });
-  if (result.ok) {
-    const pass = curatorPass(next);
-    next.skills = pass.skills;
-    next.memories = pass.memories;
-    next.files = pass.files;
-  }
   await store.syncTurn(opts.profileId, next);
   return { result, workspace: next };
 }
@@ -135,18 +129,35 @@ async function handleChat(body: Record<string, unknown>) {
   if (!message.trim()) return json({ ok: false, error: "Empty message." }, 400);
   const profileId = str(body.profileId, "paddy") || "paddy";
   const brain = brainFromBody(body);
-  const packed = await runStoredTurn({
-    profileId,
-    userMessage: message,
-    rawUserText: message,
-    channelId: str(body.channelId, "web") || "web",
-    channelName: str(body.channelName, "web"),
-    sessionId: str(body.sessionId, "web:operator") || "web:operator",
-    preferredProvider: brain.preferred,
-    preferredModel: brain.model,
-    keys: keysFromBody(body),
-    clearUnread: true,
-  });
+  let packed;
+  try {
+    packed = await runStoredTurn({
+      profileId,
+      userMessage: message,
+      rawUserText: message,
+      channelId: str(body.channelId, "web") || "web",
+      channelName: str(body.channelName, "web"),
+      sessionId: str(body.sessionId, "web:operator") || "web:operator",
+      preferredProvider: brain.preferred,
+      preferredModel: brain.model,
+      keys: keysFromBody(body),
+      clearUnread: true,
+    });
+  } catch (err) {
+    if (err instanceof SyncConflictError) {
+      return json(
+        {
+          ok: false,
+          error: "sync_conflict",
+          expected: err.expected,
+          actual: err.actual,
+          profileId: err.profileId,
+        },
+        409,
+      );
+    }
+    throw err;
+  }
   if (!packed.result.ok) return json({ ...packed.result, workspace: packed.workspace }, 400);
   for (const m of packed.result.mutations) {
     if (m.type === "send_channel") {
@@ -230,7 +241,23 @@ async function handleWorkspaceSave(body: Record<string, unknown>) {
   const store = await getMemoryStore();
   const { coerceSnapshot } = await import("./memory-store");
   const incoming = coerceSnapshot(body.workspace);
-  await store.syncTurn(profileId, incoming);
+  try {
+    await store.syncTurn(profileId, incoming);
+  } catch (err) {
+    if (err instanceof SyncConflictError) {
+      return json(
+        {
+          ok: false,
+          error: "sync_conflict",
+          expected: err.expected,
+          actual: err.actual,
+          profileId: err.profileId,
+        },
+        409,
+      );
+    }
+    throw err;
+  }
   return json({ ok: true, profileId, workspace: incoming });
 }
 

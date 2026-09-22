@@ -76,7 +76,7 @@ export const getConfigSchema = createServerFn({ method: "GET" })
         "gateway.auth.token": "cli.token",
         "openclaw.runtime": 'paddy | openclaw — hosted defaults to paddy',
         "openclaw.token": "${OPENCLAW_GATEWAY_TOKEN}",
-        "agents.defaults.memory": "optional nested keys on v1 config.json (not yet runtime SoT)",
+        "agents.defaults.memory": "Hermes memory defaults — runtime SoT via resolveMemoryLimits (both runtimes)",
         skills: "optional nested keys on v1 config.json (not yet runtime SoT)",
       },
     };
