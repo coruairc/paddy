@@ -6,13 +6,21 @@ import { mkdtempSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  BRAIN_PROVIDER_CATALOG,
   CONFIGURE_SECTIONS,
+  MENU_BACK,
+  MENU_DEFAULT_MODEL,
+  MENU_KEEP,
   applyConfigureSection,
   applyGatewayAuthToken,
+  brainModelMenuOptions,
+  brainProviderMenuOptions,
   configureHealthCheck,
+  filterMenuOptions,
   isWriteOnlySecretPath,
   parseConfigureSections,
   promptSecret,
+  runModelSection,
   selectMenu,
   sectionRoutes,
   wizardSchema,
@@ -24,6 +32,26 @@ import { loadCanonical, configGet } from "./config.mjs";
 function tempHome() {
   return mkdtempSync(join(tmpdir(), "paddy-configure-"));
 }
+
+
+async function waitForDataListener(stdin, timeoutMs = 500) {
+  const start = Date.now();
+  while (stdin.listenerCount("data") === 0) {
+    if (Date.now() - start > timeoutMs) throw new Error("timed out waiting for stdin data listener");
+    await new Promise((r) => setImmediate(r));
+  }
+}
+
+async function typeKeys(stdin, chars) {
+  await waitForDataListener(stdin);
+  for (const ch of chars) stdin.emit("data", ch);
+}
+
+async function pressEnter(stdin) {
+  await waitForDataListener(stdin);
+  stdin.emit("data", "\r");
+}
+
 
 test("configure sections exclude Plugins/Daemon and cover persisted surfaces", () => {
   const ids = CONFIGURE_SECTIONS.map((s) => s.id);
@@ -260,5 +288,189 @@ test("selectMenu restores stdin for a following readline prompt", async () => {
   stdin.emit("data", "/tmp/workspace\r\n");
   assert.equal(await answer, "/tmp/workspace");
   rl.close();
+});
+
+test("filterMenuOptions type-to-search matches label hint and value", () => {
+  const options = [
+    { value: "supergrok", label: "SuperGrok", hint: "Sign-in · xAI" },
+    { value: "claude", label: "Claude", hint: "Sign-in · Anthropic" },
+    { value: "openrouter", label: "OpenRouter", hint: "Gateways · many models" },
+  ];
+  assert.deepEqual(
+    filterMenuOptions(options, "claude").map((o) => o.value),
+    ["claude"],
+  );
+  assert.deepEqual(
+    filterMenuOptions(options, "gateways").map((o) => o.value),
+    ["openrouter"],
+  );
+  assert.deepEqual(
+    filterMenuOptions(options, "SUPER").map((o) => o.value),
+    ["supergrok"],
+  );
+  assert.equal(filterMenuOptions(options, "zzz").length, 0);
+  assert.equal(filterMenuOptions(options, "").length, 3);
+});
+
+test("brain catalog mirrors providers and menu rows include Back", () => {
+  assert.ok(BRAIN_PROVIDER_CATALOG.length >= 10);
+  assert.ok(BRAIN_PROVIDER_CATALOG.some((p) => p.id === "supergrok"));
+  assert.ok(BRAIN_PROVIDER_CATALOG.some((p) => p.id === "claude"));
+  const providers = brainProviderMenuOptions({ currentPreferred: "supergrok" });
+  assert.ok(providers.some((o) => o.value === MENU_KEEP));
+  assert.equal(providers.at(-1)?.value, MENU_BACK);
+  const models = brainModelMenuOptions("claude", { currentModel: "claude-opus-4-5" });
+  assert.equal(models[0]?.value, MENU_DEFAULT_MODEL);
+  assert.ok(models.some((o) => o.value === "claude-sonnet-4-5"));
+  assert.equal(models.at(-1)?.value, MENU_BACK);
+});
+
+test("selectMenu searchable filter then Enter selects filtered row", async () => {
+  let raw = false;
+  let paused = true;
+  const stdin = new EventEmitter();
+  stdin.isTTY = true;
+  stdin.isRaw = false;
+  stdin.setRawMode = (v) => {
+    raw = Boolean(v);
+    stdin.isRaw = raw;
+    return stdin;
+  };
+  stdin.isPaused = () => paused;
+  stdin.resume = () => {
+    paused = false;
+    return stdin;
+  };
+  stdin.pause = () => {
+    paused = true;
+    return stdin;
+  };
+
+  const stdout = {
+    isTTY: true,
+    write() {
+      return true;
+    },
+  };
+
+  const pending = selectMenu(
+    [
+      { value: "supergrok", label: "SuperGrok", hint: "xAI" },
+      { value: "claude", label: "Claude", hint: "Anthropic" },
+      { value: "gemini", label: "Gemini", hint: "Google" },
+    ],
+    { stdin, stdout, searchable: true, message: "Pick provider" },
+  );
+  await new Promise((r) => setImmediate(r));
+  stdin.emit("data", "c");
+  stdin.emit("data", "l");
+  stdin.emit("data", "a");
+  await new Promise((r) => setImmediate(r));
+  stdin.emit("data", "\r");
+  assert.equal(await pending, "claude");
+  assert.equal(raw, false);
+  assert.equal(stdin.listenerCount("data"), 0);
+});
+
+test("runModelSection provider→model→confirm writes brain.preferred and brain.model", async () => {
+  const home = tempHome();
+  loadCanonical({ home, persist: true });
+
+  let raw = false;
+  let paused = true;
+  const stdin = new EventEmitter();
+  stdin.isTTY = true;
+  stdin.isRaw = false;
+  stdin.setRawMode = (v) => {
+    raw = Boolean(v);
+    stdin.isRaw = raw;
+    return stdin;
+  };
+  stdin.isPaused = () => paused;
+  stdin.resume = () => {
+    paused = false;
+    return stdin;
+  };
+  stdin.pause = () => {
+    paused = true;
+    return stdin;
+  };
+  const stdout = {
+    isTTY: true,
+    write() {
+      return true;
+    },
+  };
+  const logs = [];
+
+  const pending = runModelSection({
+    home,
+    log: (line) => logs.push(line),
+    stdin,
+    stdout,
+  });
+
+  await typeKeys(stdin, "claude");
+  await pressEnter(stdin);
+
+  await typeKeys(stdin, "haiku");
+  await pressEnter(stdin);
+
+  await pressEnter(stdin); // Confirm Save
+
+  const result = await pending;
+  assert.equal(result.ok, true);
+  assert.equal(result.preferred, "claude");
+  assert.equal(result.model, "claude-haiku-4-5");
+  assert.equal(raw, false);
+
+  const disk = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
+  assert.equal(disk.brain.preferred, "claude");
+  assert.equal(disk.brain.model, "claude-haiku-4-5");
+  assert.ok(logs.some((l) => /Brain: claude/.test(l)));
+});
+
+test("runModelSection Back on provider skips writes", async () => {
+  const home = tempHome();
+  loadCanonical({ home, persist: true });
+  applyConfigureSection("model", { preferred: "supergrok", model: "grok-4" }, { home });
+
+  let paused = true;
+  const stdin = new EventEmitter();
+  stdin.isTTY = true;
+  stdin.isRaw = false;
+  stdin.setRawMode = (v) => {
+    stdin.isRaw = Boolean(v);
+    return stdin;
+  };
+  stdin.isPaused = () => paused;
+  stdin.resume = () => {
+    paused = false;
+    return stdin;
+  };
+  stdin.pause = () => {
+    paused = true;
+    return stdin;
+  };
+  const stdout = {
+    isTTY: true,
+    write() {
+      return true;
+    },
+  };
+
+  const pending = runModelSection({
+    home,
+    log: () => {},
+    stdin,
+    stdout,
+  });
+  await typeKeys(stdin, "back");
+  await pressEnter(stdin);
+  const result = await pending;
+  assert.equal(result.skipped, true);
+  const disk = JSON.parse(readFileSync(join(home, "config.json"), "utf8"));
+  assert.equal(disk.brain.preferred, "supergrok");
+  assert.equal(disk.brain.model, "grok-4");
 });
 
