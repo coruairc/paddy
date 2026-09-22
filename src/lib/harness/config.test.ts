@@ -11,6 +11,7 @@ import {
   accountToChannel,
   atomicWrite,
   canonicalBrainPreference,
+  turnBrainPreference,
   resolveOpenClawRuntime,
   OPENCLAW_DEFAULT_URL,
   canonicalConfigSchema,
@@ -713,4 +714,34 @@ test("validateCanonical rejects bad openclaw.runtime", () => {
   });
   assert.equal(bad.ok, false);
   assert.ok(bad.errors.some((e) => /openclaw\.runtime/.test(e)));
+});
+
+test("turnBrainPreference uses wizard brain.preferred when request omits override", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet("brain", { preferred: "claude", model: "claude-opus-4" }, { home: dir, merge: true });
+  const brain = turnBrainPreference({ home: dir });
+  assert.equal(brain.preferred, "claude");
+  assert.equal(brain.model, "claude-opus-4");
+});
+
+test("turnBrainPreference does not silently hardcode supergrok over configure", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet("brain", { preferred: "qwen", model: "qwen-plus" }, { home: dir, merge: true });
+  // Empty / missing override must not fall back to hardcoded supergrok
+  const empty = turnBrainPreference({ preferred: "", model: "", home: dir });
+  assert.equal(empty.preferred, "qwen");
+  assert.equal(empty.model, "qwen-plus");
+  const missing = turnBrainPreference({ home: dir });
+  assert.equal(missing.preferred, "qwen");
+});
+
+test("turnBrainPreference allows explicit CLI-style override", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet("brain", { preferred: "qwen", model: "qwen-plus" }, { home: dir, merge: true });
+  const brain = turnBrainPreference({ preferred: "claude", model: "claude-sonnet-4", home: dir });
+  assert.equal(brain.preferred, "claude");
+  assert.equal(brain.model, "claude-sonnet-4");
 });

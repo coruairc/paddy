@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { cliGatewayMiddleware } from "./cli-gateway-middleware";
 import { getHubSkill, searchHub } from "./hub";
 import { callBrain, envPresence, listAvailableModels, resolveBrain, type BrainRoute, type ChatMsg, type ToolCall, type ToolsArg } from "./brain";
-import { resolveOpenClawRuntime } from "./config.mjs";
+import { resolveOpenClawRuntime, turnBrainPreference } from "./config.mjs";
+import { resolveTurnBrainRoute } from "./turn-brain-route";
 import { callOpenClawChat, probeOpenClawGateway } from "./openclaw-gateway";
 import { compactMessages } from "./compact";
 import { POLICY } from "./defaults";
@@ -200,33 +201,12 @@ async function callTurnModel(
   return callBrain(route, messages, useTools, maxTokens);
 }
 
-function openClawRouteOrNull(): BrainRoute | null {
-  const oc = resolveOpenClawRuntime();
-  if (!oc.active) return null;
-  return {
-    provider: "supergrok",
-    label: "OpenClaw",
-    model: oc.model,
-    baseUrl: oc.url,
-    apiKey: oc.token || "openclaw",
-    compat: "openai",
-  };
-}
-
 export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult> {
-    const ocRoute = openClawRouteOrNull();
-    let route: BrainRoute;
-    if (ocRoute) {
-      // OpenClaw owns Codex/channels/tools when configured; Hermes recall stays in system prompt.
-      route = ocRoute;
-    } else {
-      const preferred = (data.preferredProvider as ProviderId) || "supergrok";
-      const resolved = resolveBrain(preferred, sanitizeKeys(data.keys), data.preferredModel);
-      if (!resolved.ok) {
-        return { ok: false, error: resolved.error };
-      }
-      route = resolved.route;
+    const resolved = resolveTurnBrainRoute(data);
+    if (!resolved.ok) {
+      return { ok: false, error: resolved.error };
     }
+    const route = resolved.route;
 
     const traces: Omit<TraceEvent, "id" | "at">[] = [];
     const mutations: Mutation[] = [];
@@ -845,10 +825,14 @@ export const probeBrain = createServerFn({ method: "POST" })
     if (oc.active) {
       return probeOpenClawGateway({ url: oc.url, token: oc.token, model: oc.model });
     }
+    const brain = turnBrainPreference({
+      preferred: data.preferredProvider,
+      model: data.preferredModel,
+    });
     const resolved = resolveBrain(
-      (data.preferredProvider as ProviderId) || "supergrok",
+      brain.preferred as ProviderId,
       sanitizeKeys(data.keys),
-      data.preferredModel,
+      brain.model,
     );
     if (!resolved.ok) return { ok: false, error: resolved.error };
     try {
@@ -906,8 +890,9 @@ export const listBrainModels = createServerFn({ method: "POST" })
         ];
         return { ok: true, models, source: "catalog" };
       }
+      const brain = turnBrainPreference({ preferred: data.preferredProvider });
       const resolved = resolveBrain(
-        (data.preferredProvider as ProviderId) || "supergrok",
+        brain.preferred as ProviderId,
         sanitizeKeys(data.keys),
       );
       if (!resolved.ok) return { ok: false, error: resolved.error, models: [] };
@@ -940,18 +925,12 @@ export const runSubagent = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data }): Promise<{ ok: true; text: string } | { ok: false; error: string }> => {
-    const ocRoute = openClawRouteOrNull();
-    let route: BrainRoute;
-    if (ocRoute) {
-      route = ocRoute;
-    } else {
-      const resolved = resolveBrain(
-        (data.preferredProvider as ProviderId) || "supergrok",
-        sanitizeKeys(data.keys),
-      );
-      if (!resolved.ok) return { ok: false, error: resolved.error };
-      route = resolved.route;
-    }
+    const resolved = resolveTurnBrainRoute({
+      preferredProvider: data.preferredProvider,
+      keys: data.keys,
+    });
+    if (!resolved.ok) return { ok: false, error: resolved.error };
+    const route = resolved.route;
     const role = data.role.slice(0, 80) || "specialist";
     const task = data.task.slice(0, 1200);
     const policy = data.policy ?? POLICY;

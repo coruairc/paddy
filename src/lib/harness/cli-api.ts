@@ -1,4 +1,4 @@
-import { envPresence, resolveBrain } from "./brain";
+import { envPresence } from "./brain";
 import {
   decideInbound,
   enqueueOutbound,
@@ -9,21 +9,19 @@ import { PADDY_PROFILE, POLICY } from "./defaults";
 import { applyTurnToWorkspace, curatorPass } from "./mutate";
 import { buildTurnInput } from "./memory-store";
 import { getMemoryStore } from "./memory-store-sql";
-import { PROVIDER_DEFS, type BrainKeys, type ProviderId } from "./providers";
+import { PROVIDER_DEFS, type BrainKeys } from "./providers";
 import { executeTurn, executeInheritedSubagent } from "./run-turn";
+import { resolveTurnBrainRoute } from "./turn-brain-route";
 import { secretsForProfile, withSecretScope } from "./secret-scope";
 import { wrapUntrusted } from "./untrusted";
 import type { HelixTurnInput } from "./types";
 import { cliAuthorized, expectedCliToken } from "./cli-auth";
-import { canonicalBrainPreference, resolveOpenClawRuntime } from "./config.mjs";
+import { turnBrainPreference, resolveOpenClawRuntime } from "./config.mjs";
 
 const TOKEN_MAX = 8192;
 
 
 
-function brainDefaults(): { preferred: string; model: string | undefined } {
-  return canonicalBrainPreference();
-}
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -40,9 +38,17 @@ function str(v: unknown, fallback = ""): string {
   return typeof v === "string" ? v : fallback;
 }
 
+/** Canonical (wizard) brain preference; optional body preferredProvider/model override. */
+function brainFromBody(body: Record<string, unknown> = {}) {
+  return turnBrainPreference({
+    preferred: str(body.preferredProvider) || undefined,
+    model: str(body.model) || undefined,
+  });
+}
+
 function publicStatus() {
   const env = envPresence();
-  const preferred = brainDefaults().preferred;
+  const preferred = turnBrainPreference().preferred;
   const oc = resolveOpenClawRuntime();
   return {
     ok: true as const,
@@ -128,6 +134,7 @@ async function handleChat(body: Record<string, unknown>) {
   const message = str(body.message).slice(0, TOKEN_MAX);
   if (!message.trim()) return json({ ok: false, error: "Empty message." }, 400);
   const profileId = str(body.profileId, "paddy") || "paddy";
+  const brain = brainFromBody(body);
   const packed = await runStoredTurn({
     profileId,
     userMessage: message,
@@ -135,8 +142,8 @@ async function handleChat(body: Record<string, unknown>) {
     channelId: str(body.channelId, "web") || "web",
     channelName: str(body.channelName, "web"),
     sessionId: str(body.sessionId, "web:operator") || "web:operator",
-    preferredProvider: str(body.preferredProvider, brainDefaults().preferred),
-    preferredModel: str(body.model) || brainDefaults().model,
+    preferredProvider: brain.preferred,
+    preferredModel: brain.model,
     keys: keysFromBody(body),
     clearUnread: true,
   });
@@ -180,6 +187,7 @@ export async function handleInbound(body: Record<string, unknown>) {
     });
   }
   const profileId = str(body.profileId, "paddy") || "paddy";
+  const brain = brainFromBody(body);
   const packed = await runStoredTurn({
     profileId,
     userMessage: wrapUntrusted(message, str(body.channelName, channelId), from),
@@ -187,8 +195,8 @@ export async function handleInbound(body: Record<string, unknown>) {
     channelId,
     channelName: str(body.channelName, channelId),
     sessionId: str(body.sessionId, `${channelId}:${chatId || fromId || "inbox"}`),
-    preferredProvider: str(body.preferredProvider, brainDefaults().preferred),
-    preferredModel: str(body.model) || brainDefaults().model,
+    preferredProvider: brain.preferred,
+    preferredModel: brain.model,
     keys: keysFromBody(body),
     clearUnread: false,
   });
@@ -230,6 +238,7 @@ async function handleWake(body: Record<string, unknown>) {
   const store = await getMemoryStore();
   const ids = await store.listProfiles();
   const fired: { profileId: string; reason: string }[] = [];
+  const brain = brainFromBody(body);
   for (const profileId of ids) {
     const ws = await store.prefetch(profileId);
     const due = (ws.wakes ?? []).filter((w) => !w.fired && w.at <= Date.now());
@@ -242,8 +251,8 @@ async function handleWake(body: Record<string, unknown>) {
       channelId: "web",
       channelName: "Heartbeat",
       sessionId: "web:operator",
-      preferredProvider: str(body.preferredProvider, brainDefaults().preferred),
-      preferredModel: str(body.model) || brainDefaults().model,
+      preferredProvider: brain.preferred,
+      preferredModel: brain.model,
       keys: keysFromBody(body),
       clearUnread: true,
     });
@@ -298,24 +307,13 @@ async function handleApprove(body: Record<string, unknown>) {
     });
   }
   if (tool === "spawn_subagent") {
-    const brain = brainDefaults();
-    const preferred = (str(body.preferredProvider, brain.preferred) ||
-      "supergrok") as ProviderId;
+    const brain = brainFromBody(body);
     const keys = keysFromBody(body);
-    const oc = resolveOpenClawRuntime();
-    const resolved = oc.active
-      ? {
-          ok: true as const,
-          route: {
-            provider: "supergrok" as ProviderId,
-            label: "OpenClaw",
-            model: oc.model,
-            baseUrl: oc.url,
-            apiKey: oc.token || "openclaw",
-            compat: "openai" as const,
-          },
-        }
-      : resolveBrain(preferred, keys, str(body.model) || brain.model);
+    const resolved = resolveTurnBrainRoute({
+      preferredProvider: brain.preferred,
+      preferredModel: brain.model,
+      keys,
+    });
     if (!resolved.ok) return json({ ok: false, error: resolved.error }, 400);
     const role = str(args.role, "specialist").slice(0, 80);
     const task = str(args.task).slice(0, 1200);
@@ -328,8 +326,8 @@ async function handleApprove(body: Record<string, unknown>) {
         role: PADDY_PROFILE.role,
         userMessage: task,
         policy: POLICY,
-        preferredProvider: preferred,
-        preferredModel: str(body.model) || brain.model,
+        preferredProvider: brain.preferred,
+        preferredModel: brain.model,
         keys,
       });
       const text = await withSecretScope(secretsForProfile(keys), () =>

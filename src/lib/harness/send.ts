@@ -74,10 +74,8 @@ export async function sendTurn(
     channelId: ch,
     channelName: channel?.name,
     policy: state.policy,
-    preferredProvider: state.preferredProvider ?? "supergrok",
-    preferredModel:
-      state.modelByProvider?.[state.preferredProvider ?? "supergrok"] ??
-      undefined,
+    // Prefer/model: server reads turnBrainPreference (wizard brain.* SoT). Do not
+    // send helix store defaults — they silently hardcode supergrok over configure.
     keys: state.brainKeys ?? {},
     tickets: (ws.tickets ?? []).map((t) => ({
       id: t.id,

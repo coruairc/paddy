@@ -618,6 +618,22 @@ export function canonicalBrainPreference({ home } = {}) {
   }
 }
 
+/**
+ * Preference for turn/chat/inbound/wake. Wizard `brain.preferred`/`brain.model` are SoT.
+ * Optional explicit preferred/model override (CLI --prefer / request body); empty falls
+ * through to canonical — never a silent hardcoded "supergrok" when config has another.
+ * @param {{ preferred?: string, model?: string, home?: string }} [opts]
+ * @returns {{ preferred: string, model: string | undefined }}
+ */
+export function turnBrainPreference({ preferred, model, home } = {}) {
+  const canon = canonicalBrainPreference({ home });
+  const pref =
+    typeof preferred === "string" && preferred.trim() ? preferred.trim() : canon.preferred;
+  const mdl =
+    typeof model === "string" && model.trim() ? model.trim() : canon.model;
+  return { preferred: pref, model: mdl };
+}
+
 export function configUnset(path, { home = paddyHome() } = {}) {
   const normalized = normalizeConfigPath(path);
   let alias = resolveConfigPathAlias(path);

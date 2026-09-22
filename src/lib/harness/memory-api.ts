@@ -3,8 +3,8 @@ import { PADDY_PROFILE, POLICY } from "./defaults";
 import { applyTurnToWorkspace, curatorPass } from "./mutate";
 import { buildTurnInput, SyncConflictError } from "./memory-store";
 import { getMemoryStore } from "./memory-store-sql";
-import { resolveBrain } from "./brain";
-import { TOKEN_MAX, type BrainKeys, type ProviderId } from "./providers";
+import { resolveTurnBrainRoute } from "./turn-brain-route";
+import { TOKEN_MAX, type BrainKeys } from "./providers";
 import { executeTurn, executeInheritedSubagent } from "./run-turn";
 import { secretsForProfile, withSecretScope } from "./secret-scope";
 import type {
@@ -214,11 +214,11 @@ export const runStoredSubagent = createServerFn({ method: "POST" })
       preferredModel: data.preferredModel,
       keys,
     });
-    const resolved = resolveBrain(
-      (data.preferredProvider as ProviderId) || "supergrok",
+    const resolved = resolveTurnBrainRoute({
+      preferredProvider: data.preferredProvider,
+      preferredModel: data.preferredModel,
       keys,
-      data.preferredModel,
-    );
+    });
     if (!resolved.ok) return { ok: false, error: resolved.error };
     try {
       const text = await withSecretScope(secretsForProfile(keys), () =>
