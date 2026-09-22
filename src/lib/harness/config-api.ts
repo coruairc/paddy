@@ -86,7 +86,7 @@ export const configGet = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const result = configGetPath(data.path);
-      return { ok: true as const, ...result };
+      return { ...result, ok: true as const };
     } catch (err) {
       return pathError(err);
     }
@@ -98,7 +98,7 @@ export const configSet = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const result = configSetPath(data.path, data.value, { merge: Boolean(data.merge) });
-      return { ok: true as const, ...result };
+      return { ...result, ok: true as const };
     } catch (err) {
       return pathError(err);
     }
@@ -110,7 +110,7 @@ export const configUnset = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const result = configUnsetPath(data.path);
-      return { ok: true as const, ...result };
+      return { ...result, ok: true as const };
     } catch (err) {
       return pathError(err);
     }
