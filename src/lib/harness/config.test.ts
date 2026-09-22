@@ -11,6 +11,7 @@ import {
   accountToChannel,
   atomicWrite,
   canonicalBrainPreference,
+  resolveCanonicalBrainPreference,
   canonicalConfigSchema,
   channelToAccount,
   configGet,
@@ -670,4 +671,35 @@ test("canonicalBrainPreference reads wizard brain.preferred/model, not PADDY_MOD
     if (prev === undefined) delete process.env.PADDY_MODEL;
     else process.env.PADDY_MODEL = prev;
   }
+});
+
+test("resolveCanonicalBrainPreference reads brain.preferred/model; ignores preferredProvider", () => {
+  const fromBrain = resolveCanonicalBrainPreference({
+    brain: { preferred: "claude", model: "claude-sonnet-4" },
+    preferredProvider: "supergrok",
+  });
+  assert.equal(fromBrain.preferred, "claude");
+  assert.equal(fromBrain.model, "claude-sonnet-4");
+
+  const empty = resolveCanonicalBrainPreference({});
+  assert.equal(empty.preferred, "supergrok");
+  assert.equal(empty.model, undefined);
+
+  const envOnly = resolveCanonicalBrainPreference(null, { envOverride: "qwen" });
+  assert.equal(envOnly.preferred, "qwen");
+
+  const brainWinsEnv = resolveCanonicalBrainPreference(
+    { brain: { preferred: "local" } },
+    { envOverride: "qwen" },
+  );
+  assert.equal(brainWinsEnv.preferred, "local");
+});
+
+test("canonicalBrainPreference matches resolveCanonicalBrainPreference on disk", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet("brain", { preferred: "chatgpt", model: "gpt-5" }, { home: dir, merge: true });
+  const disk = canonicalBrainPreference({ home: dir });
+  const { config } = loadCanonical({ home: dir, persist: false });
+  assert.deepEqual(disk, resolveCanonicalBrainPreference(config));
 });

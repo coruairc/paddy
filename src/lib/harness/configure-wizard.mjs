@@ -12,6 +12,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin as defaultStdin, stdout as defaultStdout } from "node:process";
 import {
   applyBrainModelSelection,
+  canonicalBrainPreference,
   canonicalConfigSchema,
   configGet,
   configSet,
@@ -612,8 +613,9 @@ export async function runModelSection(opts) {
   const stdin = opts.stdin ?? defaultStdin;
   const stdout = opts.stdout ?? defaultStdout;
 
-  const currentPreferred = String(safeGet("brain.preferred", home) ?? "supergrok");
-  const currentModel = String(safeGet("brain.model", home) ?? "");
+  const brainPref = canonicalBrainPreference({ home });
+  const currentPreferred = brainPref.preferred;
+  const currentModel = brainPref.model ?? "";
 
   while (true) {
     const providerRows = brainProviderMenuOptions({ currentPreferred });

@@ -41,6 +41,8 @@ import {
   markCliAuthNeeded,
   messageForCliAuthFailure,
 } from "@/lib/harness/cli-token";
+import { configSet } from "@/lib/harness/config-api";
+import { brainModelSelectionWrite } from "@/lib/harness/setup-model-picker";
 import { useHelix } from "@/lib/harness/store";
 import { cn, formatRelative } from "@/lib/utils";
 
@@ -95,6 +97,31 @@ export function ModelsView() {
     if (def.id === "local") return Boolean(brainKeys.ollamaHost?.trim());
     if (def.slot === "xai") return grokOn || slotConnected(brainKeys, "xai");
     return slotConnected(brainKeys, def.slot);
+  }
+
+  /** Mirror chat preferredProvider into canonical brain.preferred (+ model). */
+  async function preferAndPersist(id: ProviderId) {
+    setPreferredProvider(id);
+    const model = (useHelix.getState().modelByProvider?.[id] ?? "").trim();
+    try {
+      const res = await configSet({
+        data: brainModelSelectionWrite({ preferred: id, model }),
+      });
+      if (!res?.ok) {
+        toast("Could not save brain preference", {
+          description: (res as { error?: string })?.error || "config set failed",
+        });
+      }
+    } catch (err) {
+      if (isCliAuthFailure(err)) markCliAuthNeeded();
+      toast("Could not save brain preference", {
+        description: isCliAuthFailure(err)
+          ? messageForCliAuthFailure(err)
+          : err instanceof Error
+            ? err.message
+            : "config set failed",
+      });
+    }
   }
 
   async function refreshCatalog(id: ProviderId, keysOverride?: BrainKeys) {
@@ -234,7 +261,7 @@ export function ModelsView() {
     } else {
       setBrainKey(def.slot, value);
     }
-    setPreferredProvider(id);
+    void preferAndPersist(id);
     setDrafts((d) => ({ ...d, [def.slot]: "" }));
     const nextKeys: BrainKeys = { ...brainKeys };
     if (def.slot === "anthropic" && isAnthropicOAuth(value)) nextKeys.anthropicOAuth = value;
@@ -373,7 +400,7 @@ export function ModelsView() {
             description: "Your SuperGrok / X Premium+ quota is now the live brain.",
           });
         }
-        setPreferredProvider(deviceFlow.target);
+        void preferAndPersist(deviceFlow.target);
         setDeviceFlow(null);
         void refreshCatalog(deviceFlow.target, nextKeys);
       }
@@ -608,7 +635,12 @@ export function ModelsView() {
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
                     {!isPreferred ? (
-                      <Button size="sm" variant="secondary" onClick={() => setPreferredProvider(def.id)}>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        aria-label={`Prefer ${def.name} as brain`}
+                        onClick={() => void preferAndPersist(def.id)}
+                      >
                         Prefer
                       </Button>
                     ) : null}

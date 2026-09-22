@@ -30,6 +30,9 @@ import {
   parseOpenClawChannels,
   readLineageAccounts,
 } from "./lineage.mjs";
+import { resolveCanonicalBrainPreference } from "./brain-preference.mjs";
+
+export { DEFAULT_BRAIN_PREFERRED, resolveCanonicalBrainPreference } from "./brain-preference.mjs";
 
 export const SCHEMA_VERSION = 1;
 export const CHANNEL_IDS = [...LINEAGE_CHANNELS];
@@ -555,17 +558,9 @@ export function canonicalBrainPreference({ home } = {}) {
       : "";
   try {
     const { config } = loadCanonical({ home, persist: false });
-    const preferredRaw = config?.brain?.preferred;
-    const modelRaw = config?.brain?.model;
-    const preferred =
-      typeof preferredRaw === "string" && preferredRaw.trim()
-        ? preferredRaw.trim()
-        : envOverride || "supergrok";
-    const model =
-      typeof modelRaw === "string" && modelRaw.trim() ? modelRaw.trim() : undefined;
-    return { preferred, model };
+    return resolveCanonicalBrainPreference(config, { envOverride });
   } catch {
-    return { preferred: envOverride || "supergrok", model: undefined };
+    return resolveCanonicalBrainPreference(null, { envOverride });
   }
 }
 
