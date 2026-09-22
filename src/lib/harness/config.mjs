@@ -46,6 +46,9 @@ export const SECRET_ENV = {
 };
 
 const CLI_TOKEN_ENV = "PADDY_CLI_TOKEN";
+const OPENCLAW_TOKEN_ENV = "OPENCLAW_GATEWAY_TOKEN";
+export const OPENCLAW_DEFAULT_URL = "http://127.0.0.1:18789";
+export const OPENCLAW_RUNTIMES = ["paddy", "openclaw"];
 
 /**
  * @typedef {{
@@ -93,6 +96,13 @@ export function defaultCanonical() {
     gateway: { host: "127.0.0.1", port: 8080 },
     cli: { token: `\${${CLI_TOKEN_ENV}}` },
     brain: { preferred: "supergrok" },
+    // Hosted/demo must stay on paddy + SuperGrok — never require OpenClaw.
+    openclaw: {
+      runtime: "paddy",
+      url: OPENCLAW_DEFAULT_URL,
+      token: `\${${OPENCLAW_TOKEN_ENV}}`,
+      model: "openclaw",
+    },
     kit: {},
     channels: {},
     mcp: { servers: {} },
@@ -152,6 +162,7 @@ export function redactConfig(config) {
  *   gateway.auth / gateway.auth.token → cli.token  (${PADDY_CLI_TOKEN}); never persist gateway.auth
  *   gateway.auth.mode (virtual)     → "token" (get synthesizes; set accepts only "token")
  *   brain.preferred | brain.model   → config.brain.*
+ *   openclaw.runtime|url|token|model → config.openclaw.* (opt-in OpenClaw gateway)
  *   channels.<id>.*                 → config.channels.*
  *   agents.defaults.memory.*        → optional nested keys (schema/FE; not yet runtime SoT)
  *   skills.*                        → optional nested keys (schema/FE; not yet runtime SoT)
@@ -300,6 +311,15 @@ function extractCliToken(config, envPatch = {}) {
     patch[CLI_TOKEN_ENV] = next.cli.token;
     next.cli.token = `\${${CLI_TOKEN_ENV}}`;
   }
+  // Promote plaintext OpenClaw gateway bearer into ${OPENCLAW_GATEWAY_TOKEN}.
+  if (next.openclaw && typeof next.openclaw === "object" && !Array.isArray(next.openclaw)) {
+    next = { ...next, openclaw: { ...next.openclaw } };
+    const ocTok = next.openclaw.token;
+    if (typeof ocTok === "string" && ocTok && !isEnvRef(ocTok)) {
+      patch[OPENCLAW_TOKEN_ENV] = ocTok;
+      next.openclaw.token = `\${${OPENCLAW_TOKEN_ENV}}`;
+    }
+  }
   next = stripGatewayAuth(next);
   return { config: next, envPatch: patch };
 }
@@ -314,7 +334,7 @@ export function canonicalConfigSchema() {
     $schema: "https://json-schema.org/draft/2020-12/schema",
     title: "PaddyConfig",
     description:
-      "Path-keyed subset over ~/.paddy/config.json (v1). OpenClaw-shaped agents.defaults.memory / skills are accepted for FE forms; runtime still uses flat brain/channels/gateway until a later PR.",
+      "Path-keyed subset over ~/.paddy/config.json (v1). openclaw.* selects optional OpenClaw gateway runtime; agents.defaults.memory / skills are accepted for FE forms.",
     type: "object",
     additionalProperties: true,
     properties: {
@@ -345,6 +365,35 @@ export function canonicalConfigSchema() {
         properties: {
           preferred: { type: "string", minLength: 1, description: "Provider id (supergrok, chatgpt, …)" },
           model: { type: "string", description: "Optional model override" },
+        },
+      },
+      openclaw: {
+        type: "object",
+        additionalProperties: true,
+        description:
+          "Opt-in OpenClaw gateway target. Hosted/demo defaults to runtime=paddy (Paddy brains). Self-host may set runtime=openclaw.",
+        properties: {
+          runtime: {
+            type: "string",
+            enum: ["paddy", "openclaw"],
+            default: "paddy",
+            description: "paddy = native brains; openclaw = POST OpenClaw /v1/chat/completions",
+          },
+          url: {
+            type: "string",
+            default: "http://127.0.0.1:18789",
+            description: "OpenClaw gateway base URL (no trailing path)",
+          },
+          token: {
+            type: "string",
+            writeOnly: true,
+            description: "Gateway bearer (${OPENCLAW_GATEWAY_TOKEN}); never returned in plaintext",
+          },
+          model: {
+            type: "string",
+            default: "openclaw",
+            description: "OpenClaw agent target id (openclaw, openclaw/default, openclaw/<agentId>)",
+          },
         },
       },
       channels: {
@@ -827,6 +876,28 @@ export function validateCanonical(config) {
       }
     }
   }
+  const openclaw = config.openclaw;
+  if (openclaw != null) {
+    if (typeof openclaw !== "object" || Array.isArray(openclaw)) {
+      push("openclaw", "openclaw must be an object");
+    } else {
+      if (openclaw.runtime != null) {
+        const rt = String(openclaw.runtime).trim();
+        if (!OPENCLAW_RUNTIMES.includes(rt)) {
+          push("openclaw.runtime", 'openclaw.runtime must be "paddy" or "openclaw"');
+        }
+      }
+      if (openclaw.url != null && (typeof openclaw.url !== "string" || !openclaw.url.trim())) {
+        push("openclaw.url", "openclaw.url must be a non-empty string");
+      }
+      if (openclaw.token != null && typeof openclaw.token !== "string") {
+        push("openclaw.token", "openclaw.token must be a string");
+      }
+      if (openclaw.model != null && typeof openclaw.model !== "string") {
+        push("openclaw.model", "openclaw.model must be a string");
+      }
+    }
+  }
   const channels = config.channels;
   if (channels != null) {
     if (typeof channels !== "object" || Array.isArray(channels)) {
@@ -901,6 +972,58 @@ function missingEnvRefs(config, env) {
   return missing;
 }
 
+function normalizeOpenClawSection(raw, base) {
+  const src = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  const runtimeRaw = typeof src.runtime === "string" ? src.runtime.trim() : "";
+  const runtime = OPENCLAW_RUNTIMES.includes(runtimeRaw) ? runtimeRaw : base.runtime;
+  const url =
+    typeof src.url === "string" && src.url.trim() ? src.url.trim().replace(/\/+$/, "") : base.url;
+  const token =
+    typeof src.token === "string" && src.token
+      ? src.token
+      : base.token;
+  const model =
+    typeof src.model === "string" && src.model.trim() ? src.model.trim() : base.model;
+  return { runtime, url, token, model };
+}
+
+/**
+ * Resolved OpenClaw gateway target from canonical config.
+ * Hosted/demo: runtime stays "paddy" — never requires OpenClaw.
+ * @param {{ home?: string }} [opts]
+ * @returns {{
+ *   runtime: "paddy" | "openclaw",
+ *   active: boolean,
+ *   url: string,
+ *   token: string,
+ *   model: string,
+ * }}
+ */
+export function resolveOpenClawRuntime({ home } = {}) {
+  const base = defaultCanonical().openclaw;
+  try {
+    const { config, env } = loadCanonical({ home, persist: false });
+    const oc = normalizeOpenClawSection(config?.openclaw, base);
+    const token = interpolate(oc.token || "", env || {}).trim();
+    const runtime = oc.runtime === "openclaw" ? "openclaw" : "paddy";
+    return {
+      runtime,
+      active: runtime === "openclaw",
+      url: oc.url || OPENCLAW_DEFAULT_URL,
+      token,
+      model: oc.model || "openclaw",
+    };
+  } catch {
+    return {
+      runtime: "paddy",
+      active: false,
+      url: OPENCLAW_DEFAULT_URL,
+      token: "",
+      model: "openclaw",
+    };
+  }
+}
+
 export function normalizeCanonical(raw) {
   const base = defaultCanonical();
   const src = raw && typeof raw === "object" ? raw : {};
@@ -934,6 +1057,7 @@ export function normalizeCanonical(raw) {
         ? { model: src.brain?.model || src.preferredModel }
         : {}),
     },
+    openclaw: normalizeOpenClawSection(src.openclaw, base.openclaw),
     kit: {
       ...(typeof src.kit === "object" && src.kit ? src.kit : {}),
       ...(src.root ? { root: src.root } : {}),
@@ -1087,8 +1211,10 @@ export function saveCanonical(config, { home = paddyHome(), envPatch = {} } = {}
     throw err;
   }
   const extracted = extractAllSecrets(config.channels || {});
-  const next = { ...config, version: SCHEMA_VERSION, channels: extracted.channels };
-  const secrets = { ...envPatch, ...extracted.envPatch };
+  const withChannels = { ...config, version: SCHEMA_VERSION, channels: extracted.channels };
+  const promoted = extractCliToken(withChannels, { ...envPatch, ...extracted.envPatch });
+  const next = promoted.config;
+  const secrets = promoted.envPatch;
   if (Object.keys(secrets).length) upsertSecrets(secrets, home);
   ensureHome(home);
   atomicWrite(configPath(home), `${JSON.stringify(next, null, 2)}\n`, 0o600);

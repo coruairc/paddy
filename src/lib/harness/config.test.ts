@@ -11,6 +11,8 @@ import {
   accountToChannel,
   atomicWrite,
   canonicalBrainPreference,
+  resolveOpenClawRuntime,
+  OPENCLAW_DEFAULT_URL,
   canonicalConfigSchema,
   channelToAccount,
   configGet,
@@ -670,4 +672,45 @@ test("canonicalBrainPreference reads wizard brain.preferred/model, not PADDY_MOD
     if (prev === undefined) delete process.env.PADDY_MODEL;
     else process.env.PADDY_MODEL = prev;
   }
+});
+
+test("fresh config defaults openclaw.runtime to paddy", () => {
+  const dir = home();
+  const { config } = loadCanonical({ home: dir, persist: true });
+  assert.equal(config.openclaw.runtime, "paddy");
+  assert.equal(config.openclaw.url, OPENCLAW_DEFAULT_URL);
+  assert.equal(config.openclaw.model, "openclaw");
+  const oc = resolveOpenClawRuntime({ home: dir });
+  assert.equal(oc.active, false);
+  assert.equal(oc.runtime, "paddy");
+});
+
+test("openclaw.runtime=openclaw activates resolveOpenClawRuntime", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet("openclaw.runtime", "openclaw", { home: dir });
+  configSet("openclaw.url", "http://127.0.0.1:18789/", { home: dir });
+  const oc = resolveOpenClawRuntime({ home: dir });
+  assert.equal(oc.active, true);
+  assert.equal(oc.url, "http://127.0.0.1:18789");
+});
+
+test("openclaw.token plaintext promotes to OPENCLAW_GATEWAY_TOKEN", () => {
+  const dir = home();
+  loadCanonical({ home: dir, persist: true });
+  configSet("openclaw.token", "oc-secret-token", { home: dir });
+  const { config } = loadCanonical({ home: dir, persist: false });
+  assert.equal(config.openclaw.token, "${OPENCLAW_GATEWAY_TOKEN}");
+  const oc = resolveOpenClawRuntime({ home: dir });
+  assert.equal(oc.token, "oc-secret-token");
+});
+
+test("validateCanonical rejects bad openclaw.runtime", () => {
+  const bad = validateCanonical({
+    version: SCHEMA_VERSION,
+    gateway: { host: "127.0.0.1", port: 8080 },
+    openclaw: { runtime: "nope" },
+  });
+  assert.equal(bad.ok, false);
+  assert.ok(bad.errors.some((e) => /openclaw\.runtime/.test(e)));
 });

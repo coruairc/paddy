@@ -1,7 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { cliGatewayMiddleware } from "./cli-gateway-middleware";
 import { getHubSkill, searchHub } from "./hub";
-import { callBrain, envPresence, listAvailableModels, resolveBrain, type BrainRoute, type ChatMsg } from "./brain";
+import { callBrain, envPresence, listAvailableModels, resolveBrain, type BrainRoute, type ChatMsg, type ToolCall, type ToolsArg } from "./brain";
+import { resolveOpenClawRuntime } from "./config.mjs";
+import { callOpenClawChat, probeOpenClawGateway } from "./openclaw-gateway";
 import { compactMessages } from "./compact";
 import { POLICY } from "./defaults";
 import { callMcpTool, isMcpToolName, listMcpTools, mcpOpenAiTools } from "./mcp";
@@ -175,13 +177,56 @@ function sanitizeKeys(raw?: Record<string, string | undefined>): BrainKeys {
   return out;
 }
 
+
+
+/** Route LLM calls through OpenClaw when openclaw.runtime=openclaw (keeps config.mjs off brain.ts / client). */
+async function callTurnModel(
+  route: BrainRoute,
+  messages: ChatMsg[],
+  useTools: ToolsArg,
+  maxTokens: number,
+): Promise<{ content: string; toolCalls: ToolCall[]; usage: { promptTokens: number; completionTokens: number } }> {
+  const oc = resolveOpenClawRuntime();
+  if (oc.active) {
+    const tools = Array.isArray(useTools) ? useTools : useTools ? openaiTools() : null;
+    return callOpenClawChat({
+      target: { url: oc.url, token: oc.token, model: oc.model || route.model },
+      messages,
+      tools,
+      maxTokens,
+      temperature: 0.4,
+    });
+  }
+  return callBrain(route, messages, useTools, maxTokens);
+}
+
+function openClawRouteOrNull(): BrainRoute | null {
+  const oc = resolveOpenClawRuntime();
+  if (!oc.active) return null;
+  return {
+    provider: "supergrok",
+    label: "OpenClaw",
+    model: oc.model,
+    baseUrl: oc.url,
+    apiKey: oc.token || "openclaw",
+    compat: "openai",
+  };
+}
+
 export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult> {
-    const preferred = (data.preferredProvider as ProviderId) || "supergrok";
-    const resolved = resolveBrain(preferred, sanitizeKeys(data.keys), data.preferredModel);
-    if (!resolved.ok) {
-      return { ok: false, error: resolved.error };
+    const ocRoute = openClawRouteOrNull();
+    let route: BrainRoute;
+    if (ocRoute) {
+      // OpenClaw owns Codex/channels/tools when configured; Hermes recall stays in system prompt.
+      route = ocRoute;
+    } else {
+      const preferred = (data.preferredProvider as ProviderId) || "supergrok";
+      const resolved = resolveBrain(preferred, sanitizeKeys(data.keys), data.preferredModel);
+      if (!resolved.ok) {
+        return { ok: false, error: resolved.error };
+      }
+      route = resolved.route;
     }
-    const route = resolved.route;
 
     const traces: Omit<TraceEvent, "id" | "at">[] = [];
     const mutations: Mutation[] = [];
@@ -233,7 +278,7 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
 
     try {
       for (let round = 0; round < MAX_ROUNDS; round++) {
-        const { content, toolCalls, usage } = await callBrain(
+        const { content, toolCalls, usage } = await callTurnModel(
           route,
           messages,
           toolset,
@@ -332,7 +377,7 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
       }
 
       if (!finalText) {
-        const last = await callBrain(route, messages, false, 600);
+        const last = await callTurnModel(route, messages, false, 600);
         addUsage(last.usage);
         finalText = last.content.trim();
       }
@@ -735,7 +780,7 @@ export async function executeInheritedSubagent(
     },
     { role: "user", content: task },
   ];
-  const first = await callBrain(route, nestedMsgs, nestedTools, SUBAGENT_TOKENS);
+  const first = await callTurnModel(route, nestedMsgs, nestedTools, SUBAGENT_TOKENS);
   if (!first.toolCalls.length) {
     return `Subagent (${role}):\n${first.content.trim()}`;
   }
@@ -763,7 +808,7 @@ export async function executeInheritedSubagent(
       content: ran.result.slice(0, 4000),
     });
   }
-  const last = await callBrain(route, nestedMsgs, false, SUBAGENT_TOKENS);
+  const last = await callTurnModel(route, nestedMsgs, false, SUBAGENT_TOKENS);
   return `Subagent (${role}):\n${last.content.trim()}`;
 }
 
@@ -771,10 +816,18 @@ export const helixRuntime = createServerFn({ method: "GET" })
   .middleware([cliGatewayMiddleware])
   .handler(async () => {
   const env = envPresence();
+  const oc = resolveOpenClawRuntime();
   return {
     superGrok: env.xai,
     model: "grok-4.6",
     env,
+    openclaw: {
+      runtime: oc.runtime,
+      active: oc.active,
+      url: oc.url,
+      model: oc.model,
+      hasToken: Boolean(oc.token),
+    },
   };
 });
 
@@ -788,6 +841,10 @@ export const probeBrain = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data }): Promise<{ ok: true; detail: string } | { ok: false; error: string }> => {
+    const oc = resolveOpenClawRuntime();
+    if (oc.active) {
+      return probeOpenClawGateway({ url: oc.url, token: oc.token, model: oc.model });
+    }
     const resolved = resolveBrain(
       (data.preferredProvider as ProviderId) || "supergrok",
       sanitizeKeys(data.keys),
@@ -811,6 +868,21 @@ export const probeBrain = createServerFn({ method: "POST" })
     }
   });
 
+/** FE Gateway UI: probe OpenClaw /v1/models (does not start an agent turn). */
+export const probeOpenClaw = createServerFn({ method: "POST" })
+  .middleware([cliGatewayMiddleware])
+  .validator(
+    (input?: { url?: string; token?: string; model?: string }) => input ?? {},
+  )
+  .handler(async ({ data }): Promise<{ ok: true; detail: string } | { ok: false; error: string }> => {
+    const oc = resolveOpenClawRuntime();
+    return probeOpenClawGateway({
+      url: (data.url ?? oc.url).trim() || oc.url,
+      token: typeof data.token === "string" && data.token.trim() ? data.token.trim() : oc.token,
+      model: (data.model ?? oc.model).trim() || oc.model,
+    });
+  });
+
 export const listBrainModels = createServerFn({ method: "POST" })
   .middleware([cliGatewayMiddleware])
   .validator(
@@ -826,6 +898,14 @@ export const listBrainModels = createServerFn({ method: "POST" })
       | { ok: true; models: ModelOption[]; source: "live" | "catalog" }
       | { ok: false; error: string; models: ModelOption[] }
     > => {
+      const oc = resolveOpenClawRuntime();
+      if (oc.active) {
+        const models: ModelOption[] = [
+          { id: "openclaw", name: "OpenClaw (default agent)" },
+          { id: "openclaw/default", name: "OpenClaw / default" },
+        ];
+        return { ok: true, models, source: "catalog" };
+      }
       const resolved = resolveBrain(
         (data.preferredProvider as ProviderId) || "supergrok",
         sanitizeKeys(data.keys),
@@ -860,11 +940,18 @@ export const runSubagent = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data }): Promise<{ ok: true; text: string } | { ok: false; error: string }> => {
-    const resolved = resolveBrain(
-      (data.preferredProvider as ProviderId) || "supergrok",
-      sanitizeKeys(data.keys),
-    );
-    if (!resolved.ok) return { ok: false, error: resolved.error };
+    const ocRoute = openClawRouteOrNull();
+    let route: BrainRoute;
+    if (ocRoute) {
+      route = ocRoute;
+    } else {
+      const resolved = resolveBrain(
+        (data.preferredProvider as ProviderId) || "supergrok",
+        sanitizeKeys(data.keys),
+      );
+      if (!resolved.ok) return { ok: false, error: resolved.error };
+      route = resolved.route;
+    }
     const role = data.role.slice(0, 80) || "specialist";
     const task = data.task.slice(0, 1200);
     const policy = data.policy ?? POLICY;
@@ -880,7 +967,7 @@ export const runSubagent = createServerFn({ method: "POST" })
       keys: sanitizeKeys(data.keys),
     };
     try {
-      const text = await executeInheritedSubagent(input, resolved.route, role, task);
+      const text = await executeInheritedSubagent(input, route, role, task);
       return { ok: true, text };
     } catch (err) {
       const message = err instanceof Error ? err.message : "subagent failed";

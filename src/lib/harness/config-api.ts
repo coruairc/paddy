@@ -74,6 +74,8 @@ export const getConfigSchema = createServerFn({ method: "GET" })
       schemaVersion: SCHEMA_VERSION,
       mapping: {
         "gateway.auth.token": "cli.token",
+        "openclaw.runtime": 'paddy | openclaw — hosted defaults to paddy',
+        "openclaw.token": "${OPENCLAW_GATEWAY_TOKEN}",
         "agents.defaults.memory": "optional nested keys on v1 config.json (not yet runtime SoT)",
         skills: "optional nested keys on v1 config.json (not yet runtime SoT)",
       },

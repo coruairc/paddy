@@ -15,7 +15,7 @@ import { secretsForProfile, withSecretScope } from "./secret-scope";
 import { wrapUntrusted } from "./untrusted";
 import type { HelixTurnInput } from "./types";
 import { cliAuthorized, expectedCliToken } from "./cli-auth";
-import { canonicalBrainPreference } from "./config.mjs";
+import { canonicalBrainPreference, resolveOpenClawRuntime } from "./config.mjs";
 
 const TOKEN_MAX = 8192;
 
@@ -43,11 +43,19 @@ function str(v: unknown, fallback = ""): string {
 function publicStatus() {
   const env = envPresence();
   const preferred = brainDefaults().preferred;
+  const oc = resolveOpenClawRuntime();
   return {
     ok: true as const,
     preferred,
     locked: !expectedCliToken(),
     env,
+    openclaw: {
+      runtime: oc.runtime,
+      active: oc.active,
+      url: oc.url,
+      model: oc.model,
+      hasToken: Boolean(oc.token),
+    },
     providers: PROVIDER_DEFS.map((d) => ({
       id: d.id,
       name: d.name,
@@ -294,7 +302,20 @@ async function handleApprove(body: Record<string, unknown>) {
     const preferred = (str(body.preferredProvider, brain.preferred) ||
       "supergrok") as ProviderId;
     const keys = keysFromBody(body);
-    const resolved = resolveBrain(preferred, keys, str(body.model) || brain.model);
+    const oc = resolveOpenClawRuntime();
+    const resolved = oc.active
+      ? {
+          ok: true as const,
+          route: {
+            provider: "supergrok" as ProviderId,
+            label: "OpenClaw",
+            model: oc.model,
+            baseUrl: oc.url,
+            apiKey: oc.token || "openclaw",
+            compat: "openai" as const,
+          },
+        }
+      : resolveBrain(preferred, keys, str(body.model) || brain.model);
     if (!resolved.ok) return json({ ok: false, error: resolved.error }, 400);
     const role = str(args.role, "specialist").slice(0, 80);
     const task = str(args.task).slice(0, 1200);

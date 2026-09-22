@@ -98,6 +98,7 @@ not offered yet (no persistence surface).
 - `paddy config get|set|unset <path>` — e.g. `gateway.port`, `brain.preferred`, `channels.telegram`
 - `paddy config schema` — JSON Schema subset for Control UI forms
 - Alias: `gateway.auth.token` → `cli.token` (`${PADDY_CLI_TOKEN}`); secrets are redacted on read
+- `openclaw.runtime` (`paddy` | `openclaw`), `openclaw.url`, `openclaw.token`, `openclaw.model` — opt-in OpenClaw gateway target
 - `agents.defaults.memory.*` / `skills.*` are accepted for FE forms but are not yet runtime source of truth
 
 `npm run dev` still works if you want Vite directly. Prefer `paddy gateway` so the CLI token is injected and `paddy chat` can reach `/api/cli`.
@@ -136,6 +137,41 @@ Never commit keys. Never paste them into the console chat.
 - **Skills hub** — local catalog, not the live ClawHub/Hermes registries.
 - **Workspace** — browser localStorage (`paddy-harness-v1`); CLI workspace is `~/.paddy/workspace.json`.
 - **Channels** — web, CLI, and a live bridge. Connect Telegram / Discord / Slack / WhatsApp / Signal / email on Gateway, or `paddy channels add telegram --token …`. Pairing codes match OpenClaw. Env names match Hermes (`TELEGRAM_BOT_TOKEN`). `paddy channels import` reads `~/.openclaw/openclaw.json` and `~/.hermes/.env`; `--sync both` writes them back so those gateways see the same bots. WhatsApp Cloud API webhook: `/api/hooks/whatsapp`.
+
+
+## OpenClaw runtime (optional, self-host)
+
+Paddy’s GUI and Hermes memory stay in Paddy. When you opt in, **OpenClaw** runs the model path (Codex / channels / tools on that gateway).
+
+1. Install OpenClaw and start its gateway (default `http://127.0.0.1:18789`).
+2. Enable the OpenAI-compatible chat endpoint in `~/.openclaw/openclaw.json`:
+
+```json5
+{
+  gateway: {
+    http: {
+      endpoints: {
+        chatCompletions: { enabled: true },
+      },
+    },
+  },
+}
+```
+
+3. Point Paddy at it (`~/.paddy/config.json` or path-keyed CLI):
+
+```bash
+paddy config set openclaw.runtime openclaw
+paddy config set openclaw.url http://127.0.0.1:18789
+paddy config set openclaw.token   # writes ${OPENCLAW_GATEWAY_TOKEN} into ~/.paddy/.env
+paddy config set openclaw.model openclaw
+```
+
+4. Restart `paddy gateway`. Hosted/demo stays on `openclaw.runtime=paddy` + SuperGrok and never requires OpenClaw.
+
+**ChatGPT on OpenClaw:** operators on OpenClaw **2026.9.14** should run `openclaw update` before relying on ChatGPT-backed agents through this path. Paddy always calls chat completions with `stream: true` (required for that backend).
+
+Probe from the Control UI / FE via `probeOpenClaw` (server fn) or `probeBrain` when runtime is `openclaw` — hits `GET /v1/models`, not a full agent turn.
 
 ## Models
 
