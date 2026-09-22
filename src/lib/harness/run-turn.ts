@@ -5,7 +5,7 @@ import { callBrain, envPresence, listAvailableModels, resolveBrain, type BrainRo
 import { compactMessages } from "./compact";
 import { POLICY } from "./defaults";
 import { callMcpTool, isMcpToolName, listMcpTools, mcpOpenAiTools } from "./mcp";
-import { resolveSubagentToolPolicy, subagentMayUse, toolNeedsApproval } from "./subagent-policy";
+import { resolveSubagentToolPolicy, subagentMayUse, toolNeedsApproval, approvalReason } from "./subagent-policy";
 import { openaiTools } from "./tools";
 import { pollCodexDevice, startCodexDevice } from "./oauth-codex";
 import { pollXaiDevice, startXaiDevice } from "./oauth-xai";
@@ -270,12 +270,7 @@ export async function executeTurn(data: HelixTurnInput): Promise<HelixTurnResult
             for (const [k, v] of Object.entries(args)) {
               asStrings[k] = typeof v === "string" ? v : JSON.stringify(v);
             }
-            const reason =
-              name === "send_channel"
-                ? "Outbound channel send is delivered by the live bridge after you approve."
-                : isMcpToolName(name)
-                  ? "MCP tools are always approval-gated."
-                  : "Subagents spend a nested model call.";
+            const reason = approvalReason(name);
             heldApprovals.push({ tool: name, args: asStrings, reason });
             traces.push({
               kind: "permission",

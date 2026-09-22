@@ -11,6 +11,7 @@ import {
   pickModel,
   prettyModelName,
   PROVIDER_DEFS,
+  resolveCodexModel,
   TOKEN_MAX,
   type BrainKeys,
   type Compat,
@@ -159,7 +160,7 @@ export function resolveBrain(
       accountId = trimKey(keys.codexAccount) || env("CHATGPT_ACCOUNT_ID") || undefined;
       compat = "codex";
       baseUrl = CODEX_API;
-      model = pickModel(def, modelId);
+      model = resolveCodexModel(modelId || requested);
     } else {
       apiKey = trimKey(keys.openai) || env("OPENAI_API_KEY");
     }
@@ -260,7 +261,11 @@ export async function listAvailableModels(route: BrainRoute): Promise<ModelOptio
     ),
   ];
   const picked =
-    route.provider === "openrouter" ? rankOpenRouter(unique) : unique.slice(0, 48);
+    route.compat === "codex"
+      ? [...new Set(unique.map((id) => resolveCodexModel(id)))]
+      : route.provider === "openrouter"
+        ? rankOpenRouter(unique)
+        : unique.slice(0, 48);
   return picked.map((id) => ({ id, name: prettyModelName(id) }));
 }
 

@@ -122,7 +122,7 @@ const GROK_MODELS: ModelOption[] = [
   { id: "grok-3-mini", name: "Grok 3 Mini" },
 ];
 
-const CHATGPT_MODELS: ModelOption[] = [
+const CHATGPT_API_MODELS: ModelOption[] = [
   { id: "gpt-5.6", name: "GPT-5.6" },
   { id: "gpt-5.5", name: "GPT-5.5" },
   { id: "gpt-5.4", name: "GPT-5.4" },
@@ -132,6 +132,35 @@ const CHATGPT_MODELS: ModelOption[] = [
   { id: "o3", name: "o3" },
   { id: "o4-mini", name: "o4-mini" },
 ];
+
+/**
+ * ChatGPT *sign-in* talks to chatgpt.com Codex, not api.openai.com.
+ * Bare `gpt-5.6` is a ChatGPT-chat slug and 400s: "not supported when using
+ * Codex with a ChatGPT account." Same for `*-pro` API variants.
+ */
+export const CODEX_MODELS: ModelOption[] = [
+  { id: "gpt-5.5", name: "GPT-5.5" },
+  { id: "gpt-5.6-sol", name: "GPT-5.6 Sol" },
+  { id: "gpt-5.6-terra", name: "GPT-5.6 Terra" },
+  { id: "gpt-5.4", name: "GPT-5.4" },
+  { id: "gpt-5.4-mini", name: "GPT-5.4 Mini" },
+];
+
+/** Catalog shown for the ChatGPT provider — Codex slugs (sign-in is the main path). */
+const CHATGPT_MODELS: ModelOption[] = CODEX_MODELS;
+
+const CODEX_MODEL_ALIASES: Record<string, string> = {
+  "gpt-5.6": "gpt-5.5",
+  "gpt-5.6-sol-pro": "gpt-5.6-sol",
+  "gpt-5.6-terra-pro": "gpt-5.6-terra",
+  "gpt-5.6-luna": "gpt-5.5",
+  "gpt-5.6-luna-pro": "gpt-5.5",
+  "gpt-5": "gpt-5.5",
+  "gpt-5.1": "gpt-5.5",
+  "gpt-4.1": "gpt-5.4",
+  o3: "gpt-5.5",
+  "o4-mini": "gpt-5.4-mini",
+};
 
 const CLAUDE_MODELS: ModelOption[] = [
   { id: "claude-opus-4-5", name: "Opus 4.5" },
@@ -258,7 +287,7 @@ export const PROVIDER_DEFS: ProviderDef[] = [
     id: "chatgpt",
     name: "ChatGPT",
     plan: "OpenAI · Go / Plus / Pro",
-    blurb: "One ChatGPT sign-in. Go, Plus, and Pro all work — Paddy spends that plan’s Codex quota. An API key still works as a fallback.",
+    blurb: "One ChatGPT sign-in. Paddy spends that plan’s Codex quota (GPT-5.5 / 5.4 / 5.6 Sol). An API key still works as a fallback.",
     kind: "subscription",
     liveHere: false,
     auth: "subscription",
@@ -694,6 +723,19 @@ export function envNamesFor(def: { envVar: string; envAliases?: string[]; slot: 
 
 export function slotConnected(keys: BrainKeys, slot: KeySlot): boolean {
   return keysForSlot(slot).some((k) => Boolean(keys[k]?.trim()));
+}
+
+/** Map a ChatGPT-chat / API slug onto one Codex will accept for a ChatGPT account. */
+export function resolveCodexModel(requested?: string): string {
+  const want = canonicalizeModelId(requested ?? "").toLowerCase();
+  if (!want) return "gpt-5.5";
+  const aliased = CODEX_MODEL_ALIASES[want] ?? want;
+  const hit = CODEX_MODELS.find((m) => modelIdsMatch(m.id, aliased));
+  return hit?.id ?? "gpt-5.5";
+}
+
+export function chatgptModelsForAuth(opts: { codex?: boolean }): ModelOption[] {
+  return opts.codex ? CODEX_MODELS : CHATGPT_API_MODELS;
 }
 
 export function pickModel(def: ProviderDef, requested?: string, live?: ModelOption[]): string {

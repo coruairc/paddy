@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { POLICY } from "./defaults.ts";
 import { openaiTools } from "./tools.ts";
-import { resolveSubagentToolPolicy, subagentMayUse, toolNeedsApproval } from "./subagent-policy.ts";
+import { resolveSubagentToolPolicy, subagentMayUse, toolNeedsApproval, approvalReason } from "./subagent-policy.ts";
 import type { ToolName } from "./types.ts";
 
 test("subagent inherits auto-approve minus send_channel and spawn_subagent", () => {
@@ -47,4 +47,22 @@ test("MCP tools always need approval, even if the parent would auto-approve", ()
   assert.equal(toolNeedsApproval("write_memory", policy), false);
   assert.equal(toolNeedsApproval("send_channel", POLICY), true);
   assert.equal(subagentMayUse(POLICY, "mcp__paddy__echo"), false);
+});
+
+test("autoApprove wins when a stale persist also listed the tool in requireApproval", () => {
+  const stale = {
+    autoApprove: ["write_memory"] as ToolName[],
+    requireApproval: ["write_memory", "send_channel", "spawn_subagent"] as ToolName[],
+  };
+  assert.equal(toolNeedsApproval("write_memory", stale), false);
+  assert.equal(toolNeedsApproval("send_channel", stale), true);
+  assert.equal(toolNeedsApproval("spawn_subagent", stale), true);
+});
+
+test("approvalReason is tool-specific (write_memory is never the subagent copy)", () => {
+  assert.match(approvalReason("spawn_subagent"), /nested model call/i);
+  assert.match(approvalReason("send_channel"), /bridge/i);
+  assert.match(approvalReason("mcp__paddy__echo"), /MCP/);
+  assert.equal(/nested model call/i.test(approvalReason("write_memory")), false);
+  assert.match(approvalReason("write_memory"), /write_memory/);
 });

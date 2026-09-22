@@ -20,5 +20,15 @@ export function subagentMayUse(parent: Policy, name: string): boolean {
 /** One approval-policy check for built-in and MCP tools. MCP is always gated. */
 export function toolNeedsApproval(name: string, policy: Policy): boolean {
   if (looksLikeMcp(name)) return true;
+  if (policy.autoApprove.includes(name as ToolName)) return false;
   return policy.requireApproval.includes(name as ToolName);
+}
+
+export function approvalReason(name: string): string {
+  if (looksLikeMcp(name)) return "MCP tools are always approval-gated.";
+  if (name === "send_channel") {
+    return "Outbound channel send is delivered by the live bridge after you approve.";
+  }
+  if (name === "spawn_subagent") return "Subagents spend a nested model call.";
+  return `${name} is gated in this profile’s approval policy.`;
 }
