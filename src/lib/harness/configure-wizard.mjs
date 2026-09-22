@@ -11,6 +11,7 @@
 import { createInterface } from "node:readline/promises";
 import { stdin as defaultStdin, stdout as defaultStdout } from "node:process";
 import {
+  applyBrainModelSelection,
   canonicalConfigSchema,
   configGet,
   configSet,
@@ -32,6 +33,8 @@ import {
   brainProviderById,
   brainProviderMenuOptions,
 } from "./brain-catalog.mjs";
+
+export { applyBrainModelSelection } from "./config.mjs";
 
 export {
   BRAIN_PROVIDER_CATALOG,
@@ -190,10 +193,23 @@ export function applyConfigureSection(section, values = {}, opts = {}) {
     case "workspace":
       if (values.workspace != null) set("agents.defaults.workspace", String(values.workspace));
       break;
-    case "model":
-      if (values.preferred != null) set("brain.preferred", String(values.preferred));
-      if (values.model !== undefined) set("brain.model", values.model == null ? "" : String(values.model));
+    case "model": {
+      // Atomic preferred+model when both present (confirm path). Partial single-path otherwise.
+      if (values.preferred != null && values.model !== undefined) {
+        const result = applyBrainModelSelection(
+          {
+            preferred: String(values.preferred),
+            model: values.model == null ? "" : String(values.model),
+          },
+          { home },
+        );
+        writes.push({ path: "brain", result });
+      } else {
+        if (values.preferred != null) set("brain.preferred", String(values.preferred));
+        if (values.model !== undefined) set("brain.model", values.model == null ? "" : String(values.model));
+      }
       break;
+    }
     case "gateway":
       if (values.host != null) set("gateway.host", String(values.host));
       if (values.port != null) set("gateway.port", Number(values.port));
@@ -580,7 +596,7 @@ async function runWorkspaceSection(rl, home, log) {
 
 /**
  * OpenClaw-style searchable provider → model picker for Model / Brain.
- * Writes brain.preferred + brain.model only (no new secret storage).
+ * Writes brain.preferred + brain.model atomically via applyBrainModelSelection (no new secret storage).
  * @param {{
  *   home: string,
  *   log: (line: string) => void,

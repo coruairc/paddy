@@ -10,7 +10,7 @@ import {
   brainProviderMenuOptions,
 } from "./brain-catalog.mjs";
 
-/** Mirrors resolveModelPickerSelection in setup-model-picker.tsx */
+/** Mirrors resolveModelPickerSelection in setup-model-picker.ts */
 function resolveModelPickerSelection({
   providerChoice,
   modelChoice,
@@ -26,6 +26,15 @@ function resolveModelPickerSelection({
   else if (modelChoice === MENU_KEEP_MODEL) model = currentModel;
   else model = modelChoice;
   return { preferred, model };
+}
+
+/** Mirrors brainModelSelectionWrite — FE confirm must use this one-shot shape. */
+function brainModelSelectionWrite({ preferred, model }) {
+  return {
+    path: "brain",
+    value: { preferred: String(preferred), model: model == null ? "" : String(model) },
+    merge: true,
+  };
 }
 
 test("shared catalog helpers expose OpenClaw menu rows for Setup picker", () => {
@@ -76,4 +85,17 @@ test("resolveModelPickerSelection maps CLI sentinels like configure-wizard", () 
     }),
     { preferred: "claude", model: "claude-sonnet-4-5" },
   );
+});
+
+test("brainModelSelectionWrite is one merge configSet on brain (FE confirm contract)", () => {
+  assert.deepEqual(brainModelSelectionWrite({ preferred: "claude", model: "claude-haiku-4-5" }), {
+    path: "brain",
+    value: { preferred: "claude", model: "claude-haiku-4-5" },
+    merge: true,
+  });
+  assert.deepEqual(brainModelSelectionWrite({ preferred: "supergrok", model: "" }), {
+    path: "brain",
+    value: { preferred: "supergrok", model: "" },
+    merge: true,
+  });
 });

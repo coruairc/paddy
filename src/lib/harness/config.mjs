@@ -521,6 +521,27 @@ export function configSet(path, value, { home = paddyHome(), merge = false } = {
   };
 }
 
+/**
+ * Atomically write brain.preferred + brain.model in one configSet (merge on `brain`).
+ * Prefer this over two path writes so a failed model set cannot leave preferred alone.
+ * @param {{ preferred: string, model?: string | null }} selection
+ * @param {{ home?: string }} [opts]
+ */
+export function applyBrainModelSelection(selection, { home = paddyHome() } = {}) {
+  const preferred = String(selection?.preferred ?? "").trim();
+  if (!preferred) {
+    const err = new Error("brain.preferred must be a non-empty string");
+    err.code = "ECONFIG_VALUE";
+    throw err;
+  }
+  const model = selection?.model == null ? "" : String(selection.model);
+  return configSet(
+    "brain",
+    { preferred, model },
+    { home, merge: true },
+  );
+}
+
 export function configUnset(path, { home = paddyHome() } = {}) {
   const normalized = normalizeConfigPath(path);
   let alias = resolveConfigPathAlias(path);
