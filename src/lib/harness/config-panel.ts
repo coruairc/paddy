@@ -82,7 +82,7 @@ export const SETUP_SECTIONS: readonly SetupSectionDef[] = Object.freeze([
   {
     id: "model",
     label: "Model / Brain",
-    hint: "brain.preferred + brain.model",
+    hint: "searchable provider → model → brain.preferred / brain.model",
     paths: ["brain.preferred", "brain.model"],
   },
   {
