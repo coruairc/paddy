@@ -21,6 +21,7 @@ import {
 import { CODEX_API, isCodexAccess, refreshCodexToken } from "./oauth-codex";
 import { isXaiAccess, refreshXaiToken } from "./oauth-xai";
 import { secret } from "./secret-scope";
+import { readCodexHttp } from "./codex-stream";
 
 export type ChatMsg =
   | { role: "system"; content: string }
@@ -469,10 +470,11 @@ async function callCodex(
   const body: Record<string, unknown> = {
     model: route.model,
     store: false,
+    stream: true,
     instructions: system || undefined,
     input,
-    max_output_tokens: maxTokens,
   };
+  void maxTokens;
   if (useTools) {
     const tools = resolvedTools(useTools) ?? openaiTools();
     body.tools = tools.map((t) => ({
@@ -485,6 +487,7 @@ async function callCodex(
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    Accept: "text/event-stream",
     Authorization: `Bearer ${route.apiKey}`,
     originator: "codex_cli_rs",
     "OpenAI-Beta": "responses=experimental",
@@ -515,42 +518,7 @@ async function callCodex(
       body: JSON.stringify(body),
     });
   }
-  const json = (await res.json()) as {
-    output_text?: string;
-    output?: {
-      type?: string;
-      call_id?: string;
-      name?: string;
-      arguments?: string;
-      content?: { type?: string; text?: string }[];
-    }[];
-    error?: { message?: string };
-    detail?: string;
-    usage?: {
-      input_tokens?: number;
-      output_tokens?: number;
-      prompt_tokens?: number;
-      completion_tokens?: number;
-    };
-  };
-  if (!res.ok) {
-    throw new Error(json.error?.message || json.detail || `ChatGPT error ${res.status}`);
-  }
-  const toolCalls: ToolCall[] = [];
-  let content = json.output_text ?? "";
-  for (const item of json.output ?? []) {
-    if (item.type === "function_call" && item.call_id && item.name) {
-      toolCalls.push({
-        id: item.call_id,
-        type: "function",
-        function: { name: item.name, arguments: item.arguments ?? "{}" },
-      });
-    }
-    if (item.type === "message") {
-      content += (item.content ?? []).map((c) => c.text ?? "").join("");
-    }
-  }
-  return { content, toolCalls, usage: readUsage(json.usage) };
+  return readCodexHttp(res);
 }
 
 async function callOpenAiCompat(
