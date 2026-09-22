@@ -240,7 +240,7 @@ function ContextPane({
       {lastTurnMemory?.usage ? (
         <dl className="grid grid-cols-2 gap-2">
           <div className="rounded-lg bg-bg px-3 py-2">
-            <dt className="text-[11px] text-muted">Memory cap</dt>
+            <dt className="text-[11px] text-muted">Hermes mem cap</dt>
             <dd className="font-mono text-sm tabular-nums">{lastTurnMemory.usage.memory}</dd>
           </div>
           <div className="rounded-lg bg-bg px-3 py-2">
@@ -252,7 +252,7 @@ function ContextPane({
       {lastTurnMemory?.injected?.length ? (
         <section>
           <h3 className="mb-1 text-[11px] font-medium tracking-wide text-muted uppercase">
-            Last turn recall
+            Hermes recall · last turn
           </h3>
           <ul className="space-y-1.5">
             {lastTurnMemory.injected.slice(0, 8).map((h) => (

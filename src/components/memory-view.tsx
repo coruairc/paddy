@@ -12,6 +12,15 @@ import {
   memoryStatus,
   memoryWrite,
 } from "@/lib/harness/memory-api";
+import { getConfig } from "@/lib/harness/config-api";
+import {
+  configuredRuntimeFromConfig,
+  describeHermesMemoryPath,
+  formatSyncConflictMessage,
+  isHostedPaddyDemoEnv,
+  isSyncConflictResult,
+  type HermesMemoryPathStatus,
+} from "@/lib/harness/hermes-memory-ux";
 import {
   isCliAuthFailure,
   markCliAuthNeeded,
@@ -76,14 +85,18 @@ export function MemoryView() {
   const [writeKind, setWriteKind] = useState<MemoryKind>("fact");
   const [writeTarget, setWriteTarget] = useState<MemoryTarget>("memory");
   const [writeAction, setWriteAction] = useState<MemoryWriteAction>("add");
+  const [hermesPath, setHermesPath] = useState<HermesMemoryPathStatus>(() =>
+    describeHermesMemoryPath({ hostedDemo: true }),
+  );
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [st, list] = await Promise.all([
+      const [st, list, cfg] = await Promise.all([
         memoryStatus(),
         memoryList({ data: {} }),
+        getConfig().catch(() => null),
       ]);
       if (st?.ok) setStatus(st as StatusOk);
       if (list?.ok) {
@@ -95,6 +108,15 @@ export function MemoryView() {
         setMemoryEntries(both.memory?.entries ?? []);
         setUserEntries(both.user?.entries ?? []);
       }
+      const configured = cfg?.ok ? configuredRuntimeFromConfig(cfg.config) : null;
+      // Trust disk/config runtime. Hosted demo defaults openclaw.runtime=paddy
+      // (SuperGrok + Hermes) — never pretend OpenClaw loopback in the panel.
+      setHermesPath(
+        describeHermesMemoryPath({
+          configuredRuntime: configured,
+          hostedDemo: configured !== "openclaw" && isHostedPaddyDemoEnv(),
+        }),
+      );
     } catch (err) {
       if (!handleAuth(err)) {
         const msg = err instanceof Error ? err.message : "Failed to load memory";
@@ -193,6 +215,14 @@ export function MemoryView() {
         },
       });
       if (!res?.ok) {
+        if (isSyncConflictResult(res)) {
+          toast.error("Memory sync conflict", {
+            description: formatSyncConflictMessage(res),
+            action: { label: "Reload", onClick: () => void refresh() },
+          });
+          await refresh();
+          return;
+        }
         const msg =
           (res as { error?: string; usage?: string })?.error ||
           "Write rejected";
@@ -220,13 +250,14 @@ export function MemoryView() {
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <p className="text-[11px] font-medium tracking-wide text-accent uppercase">
-              Hermes memory APIs
+              Hermes memory · both runtimes
             </p>
             <h1 className="mt-1 font-display text-3xl tracking-tight">Memory</h1>
             <p className="mt-2 text-sm text-muted">
-              Status, list, search, write, and recall against live caps. Prefetch profile{" "}
-              <span className="font-mono text-fg/80">paddy</span>. Overflow rejects surface as
-              errors — no silent truncate.
+              Default path for <span className="font-mono text-fg/80">paddy</span> and{" "}
+              <span className="font-mono text-fg/80">openclaw</span> runtimes. Prefetch profile{" "}
+              <span className="font-mono text-fg/80">paddy</span>. Sync conflicts (409) surface with
+              reload — no silent truncate.
             </p>
           </div>
           <Button
@@ -253,6 +284,29 @@ export function MemoryView() {
             </Button>
           </div>
         ) : null}
+
+        <section
+          aria-label="Hermes MemoryStore path"
+          className="rounded-2xl border border-accent/25 bg-elevated p-4 shadow-[var(--shadow-border)]"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h2 className="font-display text-lg tracking-tight">{hermesPath.title}</h2>
+              <p className="mt-1 text-sm text-muted">{hermesPath.blurb}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="accent">{hermesPath.memoryPath}</Badge>
+              <Badge variant={hermesPath.openclawModelOnly ? "warn" : "ok"}>
+                runtime · {hermesPath.runtime}
+                {hermesPath.openclawModelOnly ? " · model only" : ""}
+              </Badge>
+              {hermesPath.hostedDemo ? <Badge variant="default">hosted demo</Badge> : null}
+            </div>
+          </div>
+          <p className="mt-3 font-mono text-[11px] tracking-wide text-subtle">
+            lifecycle · {hermesPath.lifecycleLabel}
+          </p>
+        </section>
 
         {loading && !status ? (
           <p className="flex items-center gap-2 text-sm text-muted">

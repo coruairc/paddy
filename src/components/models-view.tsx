@@ -608,6 +608,9 @@ export function ModelsView() {
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
                     {!isPreferred ? (
+                      // TODO(phase-d): Prefer still mirrors chat preferredProvider only.
+                      // applyBrainModelSelection is on Backend D (config.mjs) but Node/disk-backed —
+                      // not a one-line FE swap. Wire brainModelSelectionWrite + configSet (FE C) later.
                       <Button size="sm" variant="secondary" onClick={() => setPreferredProvider(def.id)}>
                         Prefer
                       </Button>

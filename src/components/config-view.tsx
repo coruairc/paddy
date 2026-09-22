@@ -48,7 +48,7 @@ const SECTIONS: { id: ConfigFieldDef["section"]; title: string; blurb: string }[
   {
     id: "memory",
     title: "Memory limits",
-    blurb: "Hermes-shaped caps (agents.defaults.memory). Read by resolveMemoryLimits at runtime.",
+    blurb: "Hermes MemoryStore caps (agents.defaults.memory) — default for paddy and openclaw runtimes via resolveMemoryLimits.",
   },
 ];
 

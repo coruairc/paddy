@@ -38,6 +38,10 @@ import {
 } from "@/components/ui/dialog";
 import { loadWorkspaces, runStoredSubagent, saveWorkspaceFn } from "@/lib/harness/memory-api";
 import { getConfig } from "@/lib/harness/config-api";
+import {
+  formatSyncConflictMessage,
+  isSyncConflictResult,
+} from "@/lib/harness/hermes-memory-ux";
 import { helixRuntime } from "@/lib/harness/run-turn";
 import { CliTokenBar } from "@/components/cli-token-bar";
 import { isCliAuthFailure, markCliAuthNeeded } from "@/lib/harness/cli-token";
@@ -46,6 +50,51 @@ import { useHelix } from "@/lib/harness/store";
 import type { ProfileMeta, ViewId } from "@/lib/harness/types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+
+/** Persist workspace; on SyncConflictError/409 reload server tip (recoverable, not silent). */
+async function persistWorkspaceRecovering(profileId: string, workspace: import("@/lib/harness/types").WorkspaceState) {
+  try {
+    const res = await saveWorkspaceFn({ data: { profileId, workspace } });
+    if (isSyncConflictResult(res)) {
+      toast.error("Memory sync conflict", {
+        description: formatSyncConflictMessage(res),
+        action: {
+          label: "Reload",
+          onClick: () => {
+            void loadWorkspaces()
+              .then((snap) => {
+                if (snap?.ok && snap.workspaces) {
+                  useHelix.getState().hydrateWorkspaces(snap.workspaces);
+                  toast.success("Workspace reloaded from server");
+                }
+              })
+              .catch((err) => {
+                if (isCliAuthFailure(err)) markCliAuthNeeded();
+              });
+          },
+        },
+      });
+      try {
+        const snap = await loadWorkspaces();
+        if (snap?.ok && snap.workspaces) {
+          useHelix.getState().hydrateWorkspaces(snap.workspaces);
+        }
+      } catch (err) {
+        if (isCliAuthFailure(err)) markCliAuthNeeded();
+      }
+      return false;
+    }
+    return true;
+  } catch (err) {
+    if (isCliAuthFailure(err)) {
+      markCliAuthNeeded();
+      return false;
+    }
+    toast.error(err instanceof Error ? err.message : "Workspace save failed");
+    return false;
+  }
+}
 
 const NAV_GROUPS: {
   id: string;
@@ -120,7 +169,7 @@ export function AppShell() {
               const remoteMsg = remote?.messages?.length ?? 0;
               if (!remote || localMem + localMsg > remoteMem + remoteMsg) {
                 merged[id] = ws;
-                void saveWorkspaceFn({ data: { profileId: id, workspace: ws } });
+                void persistWorkspaceRecovering(id, ws);
               }
             }
             useHelix.getState().hydrateWorkspaces(merged);
@@ -171,7 +220,7 @@ export function AppShell() {
         const id = st.activeProfileId;
         const ws = st.workspaces[id];
         if (!ws) return;
-        void saveWorkspaceFn({ data: { profileId: id, workspace: ws } });
+        void persistWorkspaceRecovering(id, ws);
       }, 400);
     });
     return () => {

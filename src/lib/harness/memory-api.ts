@@ -309,7 +309,19 @@ export const memoryWrite = createServerFn({ method: "POST" })
         usage: (result as { usage?: string }).usage,
       };
     }
-    await store.syncTurn("paddy", result.workspace);
+    try {
+      await store.syncTurn("paddy", result.workspace);
+    } catch (err) {
+      if (err instanceof SyncConflictError) {
+        return {
+          ok: false as const,
+          error: "sync_conflict",
+          expected: err.expected,
+          actual: err.actual,
+        };
+      }
+      throw err;
+    }
     return {
       ok: true as const,
       message: result.message,
@@ -346,7 +358,19 @@ export const memoryReset = createServerFn({ method: "POST" })
     if (!result.ok) {
       return { ok: false as const, error: result.error as string };
     }
-    await store.syncTurn("paddy", result.workspace);
+    try {
+      await store.syncTurn("paddy", result.workspace);
+    } catch (err) {
+      if (err instanceof SyncConflictError) {
+        return {
+          ok: false as const,
+          error: "sync_conflict",
+          expected: err.expected,
+          actual: err.actual,
+        };
+      }
+      throw err;
+    }
     return {
       ok: true as const,
       message: result.message,
