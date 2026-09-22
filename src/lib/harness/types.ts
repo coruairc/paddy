@@ -10,7 +10,8 @@ export type ViewId =
   | "memory"
   | "checkpoints"
   | "observatory"
-  | "models";
+  | "models"
+  | "config";
 
 export type ToolName =
   | "write_memory"

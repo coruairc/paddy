@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Activity,
   BookOpen,
+  SlidersHorizontal,
   Columns3,
   Cpu,
   Fingerprint,
@@ -20,6 +21,7 @@ import { ConsoleView } from "@/components/console-view";
 import { GatewayView } from "@/components/gateway-view";
 import { IdentityView } from "@/components/identity-view";
 import { MemoryView } from "@/components/memory-view";
+import { ConfigView } from "@/components/config-view";
 import { ModelsView } from "@/components/models-view";
 import { ObservatoryView } from "@/components/observatory-view";
 import { SessionsView } from "@/components/sessions-view";
@@ -65,6 +67,7 @@ const NAV_GROUPS: {
   {
     id: "ops",
     items: [
+      { id: "config", label: "Config", icon: SlidersHorizontal },
       { id: "models", label: "Models", icon: Cpu },
       { id: "checkpoints", label: "Checkpoints", icon: History },
       { id: "observatory", label: "Observatory", icon: Activity },
@@ -258,6 +261,7 @@ export function AppShell() {
           {view === "memory" && <MemoryView key={activeProfileId} />}
           {view === "checkpoints" && <CheckpointsView key={activeProfileId} />}
           {view === "observatory" && <ObservatoryView key={activeProfileId} />}
+          {view === "config" && <ConfigView />}
           {view === "models" && <ModelsView />}
         </main>
       </div>
