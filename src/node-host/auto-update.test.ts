@@ -7,6 +7,7 @@ import { startNodeHostAutoUpdate } from "./auto-update.js";
 
 const mocks = vi.hoisted(() => ({
   config: {} as OpenClawConfig,
+  optIn: true,
   configValid: true,
   readConfig: vi.fn(),
   lstat: vi.fn(),
@@ -54,6 +55,23 @@ const candidate: PreparedNodeRuntimeUpdate = {
     "/synthetic-node-state/node-runtime/releases/2026.9.18-integrity/lib/node_modules/openclaw",
   integrity: "sha512-synthetic-fixture",
 };
+// Paddy defaults nodeHost.autoUpdate.enabled and update.checkOnStart to false. The controller
+// cases below exercise the opted-in behavior, so unset keys read as enabled unless a case turns
+// `mocks.optIn` off; explicit values in a case config still win.
+function withNodeAutoUpdateOptIn(config: OpenClawConfig): OpenClawConfig {
+  if (!mocks.optIn) {
+    return config;
+  }
+  return {
+    ...config,
+    update: { checkOnStart: true, ...config.update },
+    nodeHost: {
+      ...config.nodeHost,
+      autoUpdate: { enabled: true, ...config.nodeHost?.autoUpdate },
+    },
+  };
+}
+
 const controllers: Array<ReturnType<typeof startNodeHostAutoUpdate>> = [];
 const releases: Array<() => void> = [];
 
@@ -88,10 +106,11 @@ beforeEach(() => {
   vi.stubEnv("OPENCLAW_NO_RESPAWN", "");
   vi.resetAllMocks();
   mocks.config = {};
+  mocks.optIn = true;
   mocks.configValid = true;
   mocks.readConfig.mockImplementation(async () => ({
     valid: mocks.configValid,
-    config: mocks.config,
+    config: withNodeAutoUpdateOptIn(mocks.config),
   }));
   mocks.launcherChild.mockReturnValue(true);
   mocks.packageRoot.mockResolvedValue("/synthetic-installed-openclaw");
@@ -176,6 +195,23 @@ describe("node auto-update controller", () => {
       await vi.advanceTimersByTimeAsync(HOUR);
       expect(mocks.discover).not.toHaveBeenCalled();
       expect(mocks.prepare).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { label: "empty config", config: {} },
+    { label: "node setting only", config: { nodeHost: { autoUpdate: { enabled: true } } } },
+    { label: "startup check only", config: { update: { checkOnStart: true } } },
+  ] satisfies Array<{ label: string; config: OpenClawConfig }>)(
+    "stays off by default in Paddy ($label)",
+    async ({ config }) => {
+      mocks.optIn = false;
+      mocks.config = config;
+      start();
+      await vi.advanceTimersByTimeAsync(24 * HOUR);
+      expect(mocks.discover).not.toHaveBeenCalled();
+      expect(mocks.prepare).not.toHaveBeenCalled();
+      expect(mocks.restart).not.toHaveBeenCalled();
     },
   );
 

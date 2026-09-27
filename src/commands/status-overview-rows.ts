@@ -5,6 +5,7 @@ import { formatCliCommand } from "../cli/command-format.js";
 import { resolveIsNixMode } from "../config/paths.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import type { HeartbeatEventPayload } from "../infra/heartbeat-events.js";
+import { isUpdateCheckOnStartEnabled } from "../infra/paddy-update-policy.js";
 import type { PluginCompatibilityNotice } from "../plugins/status.js";
 import type { BackupRunFreshness } from "../state/backup-run-records.js";
 import type { MemoryPluginStatus } from "../status/memory-plugin.js";
@@ -167,7 +168,7 @@ export function buildStatusCommandOverviewRows(
     warn: params.warn,
   });
   const updatesDisabled =
-    params.surface.cfg.update?.checkOnStart === false ||
+    !isUpdateCheckOnStartEnabled(params.surface.cfg) ||
     isTruthyEnvValue(params.env.OPENCLAW_NO_AUTO_UPDATE) ||
     resolveIsNixMode(params.env);
   const doNotTrack = params.env.DO_NOT_TRACK?.trim().toLowerCase();

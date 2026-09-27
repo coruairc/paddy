@@ -27,6 +27,7 @@ import {
   EXTERNAL_SUPERVISOR_UPDATE_REQUIRED_REASON,
   isGatewayExternallySupervised,
 } from "./gateway-supervision.js";
+import { isUpdateCheckOnStartEnabled } from "./paddy-update-policy.js";
 import { checkTelemetryUpdate } from "./telemetry.js";
 import { UpdateCampaignController } from "./update-campaign.js";
 import {
@@ -305,7 +306,7 @@ async function runGatewayUpdateCheckOwned(
     });
   const autoEnabled = Boolean(cfg.update?.auto?.enabled);
   const autoDisabledByEnv = isTruthyEnvValue(process.env.OPENCLAW_NO_AUTO_UPDATE);
-  if (cfg.update?.checkOnStart === false || autoDisabledByEnv) {
+  if (!isUpdateCheckOnStartEnabled(cfg) || autoDisabledByEnv) {
     updateCampaign.clear();
     setAvailable(null);
     const schedule = getUpdateSchedule();
@@ -349,7 +350,7 @@ async function runGatewayUpdateCheckOwned(
     const current = params.getConfig();
     return (
       current.update?.auto?.enabled === true &&
-      current.update?.checkOnStart !== false &&
+      isUpdateCheckOnStartEnabled(current) &&
       !isTruthyEnvValue(process.env.OPENCLAW_NO_AUTO_UPDATE) &&
       !isGatewayExternallySupervised() &&
       resolveEffectiveUpdateChannel({

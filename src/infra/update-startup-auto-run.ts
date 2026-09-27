@@ -6,6 +6,11 @@ import {
   EXTERNAL_SUPERVISOR_UPDATE_REQUIRED_REASON,
   isGatewayExternallySupervised,
 } from "./gateway-supervision.js";
+import {
+  isPaddySelfUpdateAvailable,
+  PADDY_SELF_UPDATE_UNAVAILABLE_MESSAGE,
+  PADDY_SELF_UPDATE_UNAVAILABLE_REASON,
+} from "./paddy-update-policy.js";
 import { resolveGatewayRestartDeferralTimeoutMs } from "./restart-budget.js";
 import {
   readRestartSentinelSnapshot,
@@ -80,6 +85,13 @@ export async function runAutoUpdateCommand(
     },
     message,
   });
+  if (!isPaddySelfUpdateAvailable()) {
+    return failure(
+      PADDY_SELF_UPDATE_UNAVAILABLE_REASON,
+      PADDY_SELF_UPDATE_UNAVAILABLE_MESSAGE,
+      "skipped",
+    );
+  }
   if (isGatewayExternallySupervised()) {
     return failure(
       EXTERNAL_SUPERVISOR_UPDATE_REQUIRED_REASON,

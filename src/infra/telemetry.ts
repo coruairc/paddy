@@ -18,6 +18,7 @@ import type { OpenClawStateWorkerContext } from "../state/openclaw-state-worker-
 import { runOpenClawStateWorkerOperation } from "../state/openclaw-state-worker-store.js";
 import { VERSION } from "../version.js";
 import { isTruthyEnvValue } from "./env.js";
+import { isUpdateCheckOnStartEnabled } from "./paddy-update-policy.js";
 import type { SuccessfulTelemetryState, TelemetryState } from "./telemetry-worker-contract.js";
 
 const DEFAULT_TELEMETRY_ENDPOINT = "https://telemetry.openclaw.ai/api/latest-version";
@@ -104,7 +105,7 @@ function isAutomatedEnvironment(): boolean {
 
 function isUpdateCheckDisabled(config: OpenClawConfig): boolean {
   return (
-    config.update?.checkOnStart === false ||
+    !isUpdateCheckOnStartEnabled(config) ||
     isTruthyEnvValue(process.env.OPENCLAW_NO_AUTO_UPDATE) ||
     isAutomatedEnvironment() ||
     resolveIsNixMode()

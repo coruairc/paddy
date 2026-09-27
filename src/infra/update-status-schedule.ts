@@ -2,6 +2,7 @@ import type { UpdateScheduleState } from "../../packages/gateway-protocol/src/in
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { VERSION } from "../version.js";
 import { isTruthyEnvValue } from "./env.js";
+import { isUpdateCheckOnStartEnabled } from "./paddy-update-policy.js";
 import {
   normalizeUpdateChannel,
   resolveEffectiveUpdateChannel,
@@ -34,7 +35,7 @@ export function getGatewayUpdateSchedule(
     ...facts,
     autoEnabled:
       Boolean(cfg.update?.auto?.enabled) &&
-      cfg.update?.checkOnStart !== false &&
+      isUpdateCheckOnStartEnabled(cfg) &&
       !isTruthyEnvValue(process.env.OPENCLAW_NO_AUTO_UPDATE),
     ...(campaign ? { campaign } : {}),
   };

@@ -82,7 +82,8 @@ it.each([false, true])(
   "reports cold configured scheduler policy without checkout discovery (auto=%s)",
   async (enabled) => {
     vi.stubEnv("OPENCLAW_SUPERVISOR_MODE", "external");
-    const config = { update: { channel: "dev" as const, auto: { enabled } } };
+    // Paddy: update.checkOnStart is opt-in, so auto policy needs it set explicitly.
+    const config = { update: { channel: "dev" as const, checkOnStart: true, auto: { enabled } } };
     const result = await status(config);
     expect(result.schedule).toMatchObject({ channel: "dev", autoEnabled: enabled });
     expect(result.schedule.campaign).toBeUndefined();
@@ -132,9 +133,17 @@ it.each(["config", "environment"] as const)(
   },
 );
 
+it("reports auto policy off while Paddy's update.checkOnStart default applies", async () => {
+  const result = await status({ update: { channel: "dev", auto: { enabled: true } } });
+  expect(result.schedule).toMatchObject({ channel: "dev", autoEnabled: false });
+  expect(install).not.toHaveBeenCalled();
+});
+
 it("does not report a newly enabled policy as idle from an old cache", async () => {
   setUpdateScheduleCache({ next: { channel: "dev", autoEnabled: false } });
-  const result = await status({ update: { channel: "dev", auto: { enabled: true } } });
+  const result = await status({
+    update: { channel: "dev", checkOnStart: true, auto: { enabled: true } },
+  });
   expect(result.schedule.autoEnabled).toBe(true);
 });
 
@@ -167,6 +176,7 @@ it.each(["replace", "remove"])("uses current channel after history lookup (%s)",
     config = {
       update: {
         ...(change === "replace" ? { channel: "beta" as const } : {}),
+        checkOnStart: true,
         auto: { enabled: true },
       },
     };

@@ -196,6 +196,22 @@ describe("update-startup", () => {
     isNixMode?: boolean;
   };
 
+  // Paddy defaults update.checkOnStart to false. These suites exercise the inherited check
+  // machinery, so fixtures opt in unless a case sets checkOnStart explicitly. Cached so a
+  // fixture config keeps a stable identity across getConfig() calls.
+  const startupCheckConfigs = new WeakMap<OpenClawConfig, OpenClawConfig>();
+  function withStartupChecks(cfg: OpenClawConfig): OpenClawConfig {
+    if (cfg.update?.checkOnStart !== undefined) {
+      return cfg;
+    }
+    let enabled = startupCheckConfigs.get(cfg);
+    if (!enabled) {
+      enabled = { ...cfg, update: { ...cfg.update, checkOnStart: true } };
+      startupCheckConfigs.set(cfg, enabled);
+    }
+    return enabled;
+  }
+
   function createTestUpdateCheck({
     cfg,
     log = { info: vi.fn() },
@@ -206,7 +222,7 @@ describe("update-startup", () => {
       ...params,
       log,
       isNixMode,
-      getConfig: () => cfg,
+      getConfig: () => withStartupChecks(cfg),
       lifecycle: createGatewayUpdateLifecycle(scheduler),
     });
     updateChecks.add(check);
@@ -235,7 +251,7 @@ describe("update-startup", () => {
       log,
       isNixMode,
       allowInTests,
-      getConfig: () => cfg,
+      getConfig: () => withStartupChecks(cfg),
     });
   }
 
@@ -245,7 +261,7 @@ describe("update-startup", () => {
 
   function expectLastTelemetryConfig(config: OpenClawConfig) {
     const call = checkTelemetryUpdateMock.mock.lastCall;
-    expect([call?.[0](), call?.[1]]).toEqual([config, { surface: "gateway" }]);
+    expect([call?.[0](), call?.[1]]).toEqual([withStartupChecks(config), { surface: "gateway" }]);
   }
 
   function writePersistedUpdateCheckState(state: PersistedUpdateCheckState): void {
@@ -1771,7 +1787,7 @@ describe("update-startup", () => {
     process.env.NODE_ENV = "production";
     let cfg: OpenClawConfig = { update: { channel: "beta" } };
     const params = {
-      getConfig: () => cfg,
+      getConfig: () => withStartupChecks(cfg),
       log: { info: vi.fn() },
       isNixMode: false,
       lifecycle: createGatewayUpdateLifecycle(scheduler),
@@ -1789,7 +1805,7 @@ describe("update-startup", () => {
     };
     await vi.advanceTimersByTimeAsync(6 * 60 * 60_000);
     expect(refreshRemoteModelCatalogMock).toHaveBeenLastCalledWith({
-      config: cfg,
+      config: withStartupChecks(cfg),
       signal: expect.any(AbortSignal),
     });
     await vi.advanceTimersByTimeAsync(18 * 60 * 60_000);
@@ -1803,7 +1819,7 @@ describe("update-startup", () => {
     vi.mocked(checkUpdateStatus).mockReturnValueOnce(discovery.promise);
     let cfg: OpenClawConfig = { telemetry: { enabled: true } };
     const params = {
-      getConfig: () => cfg,
+      getConfig: () => withStartupChecks(cfg),
       log: { info: vi.fn() },
       isNixMode: false,
       allowInTests: true,
@@ -1836,7 +1852,7 @@ describe("update-startup", () => {
       let cfg: OpenClawConfig = { update: { channel, auto: { enabled: true } } };
       const runAutoUpdate = createAutoUpdateSuccessMock();
       const params = {
-        getConfig: () => cfg,
+        getConfig: () => withStartupChecks(cfg),
         log: { info: vi.fn() },
         isNixMode: false,
         allowInTests: true,
@@ -1867,7 +1883,7 @@ describe("update-startup", () => {
     const runAutoUpdate = vi.fn(() => applying.promise);
     let cfg: OpenClawConfig = createBetaAutoUpdateConfig();
     const params = {
-      getConfig: () => cfg,
+      getConfig: () => withStartupChecks(cfg),
       log: { info: vi.fn() },
       isNixMode: false,
       allowInTests: true,
@@ -2365,6 +2381,31 @@ describe("update-startup", () => {
       path: path.join(tempDir, "update-check.json"),
       syscall: "stat",
     });
+    expect(runAutoUpdate).not.toHaveBeenCalled();
+    expect(checkTelemetryUpdateMock).not.toHaveBeenCalled();
+    expect(resolveNpmChannelTag).not.toHaveBeenCalled();
+    expect(checkUpdateStatus).not.toHaveBeenCalled();
+    expect(getUpdateAvailable()).toBeNull();
+    expect(getUpdateSchedule()).toMatchObject({ channel: "beta", autoEnabled: false });
+  });
+
+  it("keeps all automatic update traffic off while checkOnStart is unset (Paddy default)", async () => {
+    mockPackageUpdateStatus("beta", "2.0.0-beta.1");
+    const runAutoUpdate = createAutoUpdateSuccessMock();
+    const log = { info: vi.fn() };
+
+    // Bypasses withStartupChecks: this is the shipped default, with auto.enabled=true set.
+    await runGatewayUpdateCheckOwner({
+      getConfig: () => createBetaAutoUpdateConfig(),
+      runAutoUpdate,
+      log,
+      isNixMode: false,
+      allowInTests: true,
+    });
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(log.info).not.toHaveBeenCalled();
+    expect(readPersistedUpdateCheckState()).toBeNull();
     expect(runAutoUpdate).not.toHaveBeenCalled();
     expect(checkTelemetryUpdateMock).not.toHaveBeenCalled();
     expect(resolveNpmChannelTag).not.toHaveBeenCalled();
