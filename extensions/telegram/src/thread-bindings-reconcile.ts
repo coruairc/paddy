@@ -1,10 +1,12 @@
 import * as acpRuntime from "openclaw/plugin-sdk/acp-runtime";
 import { isAcpSessionKey } from "openclaw/plugin-sdk/routing";
-import { logVerbose } from "openclaw/plugin-sdk/runtime-env";
+import { createSubsystemLogger, logVerbose } from "openclaw/plugin-sdk/runtime-env";
 import { persistBindingMutation } from "./thread-bindings-persistence.js";
 import { resolveBindingKey } from "./thread-bindings-session.js";
 import { getThreadBindingsState } from "./thread-bindings-state.js";
 import type { TelegramThreadBindingRecord } from "./thread-bindings-store.js";
+
+const log = createSubsystemLogger("telegram/thread-bindings");
 
 export async function reconcileTelegramAcpBindingsOnStartup(params: {
   accountId: string;
@@ -22,12 +24,13 @@ export async function reconcileTelegramAcpBindingsOnStartup(params: {
 
   const staleSessionKeys = new Set<string>();
   const readAcpSessionEntryAsync = acpRuntime.readAcpSessionEntryAsync;
+  if (acpSessionKeys.size > 0 && typeof readAcpSessionEntryAsync !== "function") {
+    log.warn(
+      "Skipping ACP thread binding reconciliation: this OpenClaw host lacks asynchronous metadata reads. Existing bindings are retained. Upgrade the OpenClaw host to enable startup cleanup.",
+    );
+    return;
+  }
   for (const targetSessionKey of acpSessionKeys) {
-    if (typeof readAcpSessionEntryAsync !== "function") {
-      throw new Error(
-        "ACP thread binding reconciliation requires asynchronous metadata reads. Upgrade the OpenClaw host.",
-      );
-    }
     const sessionEntry = await readAcpSessionEntryAsync({ sessionKey: targetSessionKey });
     if (!sessionEntry || sessionEntry.storeReadFailed) {
       continue;

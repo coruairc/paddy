@@ -6,6 +6,7 @@ import {
   resolveThreadBindingIntroText,
   resolveThreadBindingThreadName,
 } from "openclaw/plugin-sdk/conversation-runtime";
+import { createSubsystemLogger } from "openclaw/plugin-sdk/runtime-env";
 import {
   normalizeOptionalLowercaseString,
   normalizeOptionalString,
@@ -52,6 +53,8 @@ type AcpThreadBindingHealthProbe = (params: {
   status: AcpThreadBindingHealthStatus;
   reason?: string;
 }>;
+
+const log = createSubsystemLogger("discord/thread-bindings");
 
 // Cap startup fan-out so large binding sets do not create unbounded ACP probe spikes.
 const ACP_STARTUP_HEALTH_PROBE_CONCURRENCY_LIMIT = 8;
@@ -236,12 +239,14 @@ export async function reconcileAcpThreadBindingsOnStartup(params: {
   }> = [];
   const readAcpSessionEntryAsync = acpRuntime.readAcpSessionEntryAsync;
 
+  if (acpBindings.length > 0 && typeof readAcpSessionEntryAsync !== "function") {
+    log.warn(
+      "Skipping ACP thread binding reconciliation: this OpenClaw host lacks asynchronous metadata reads. Existing bindings are retained. Upgrade the OpenClaw host to enable startup cleanup.",
+    );
+    return { checked: 0, removed: 0, staleSessionKeys: [] };
+  }
+
   for (const binding of acpBindings) {
-    if (typeof readAcpSessionEntryAsync !== "function") {
-      throw new Error(
-        "ACP thread binding reconciliation requires asynchronous metadata reads. Upgrade the OpenClaw host.",
-      );
-    }
     const sessionKey = binding.targetSessionKey.trim();
     if (!sessionKey) {
       staleBindings.push(binding);

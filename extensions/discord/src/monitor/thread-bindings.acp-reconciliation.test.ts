@@ -1,19 +1,78 @@
 import { createDeferred } from "openclaw/plugin-sdk/extension-shared";
+import { createPluginStateKeyedStoreForTests } from "openclaw/plugin-sdk/plugin-state-test-runtime";
+import { withOpenClawTestState } from "openclaw/plugin-sdk/test-state";
 import { describe, expect, it, vi } from "vitest";
 import { EMPTY_DISCORD_TEST_CONFIG } from "../test-support/config.js";
 import {
   createNonSweepingTestManager,
+  createTestThreadBindingManager,
   expectFields,
   hoisted,
   installThreadBindingLifecycleTestHooks,
   requireBinding,
   requireRecord,
 } from "./thread-bindings.lifecycle.test-support.js";
+import { resetThreadBindingsForTests } from "./thread-bindings.test-support.js";
 
 const { reconcileAcpThreadBindingsOnStartup } = await import("./thread-bindings.lifecycle.js");
 
 describe("thread binding ACP startup reconciliation", () => {
   installThreadBindingLifecycleTestHooks();
+
+  it.each(["acp", "subagent", "plugin"] as const)(
+    "retains persisted %s bindings without async host metadata reads",
+    async (kind) => {
+      await withOpenClawTestState({ label: "discord-old-host-bindings" }, async () => {
+        const manager = await createTestThreadBindingManager({ persist: true });
+        const targetSessionKey = `agent:main:${kind === "subagent" ? "subagent" : "acp"}:retained`;
+        await manager.bindTarget({
+          threadId: "retained-thread",
+          channelId: "parent-1",
+          targetKind: kind === "subagent" ? "subagent" : "acp",
+          targetSessionKey,
+          agentId: "main",
+          webhookId: "wh-1",
+          webhookToken: "tok-1",
+          ...(kind === "plugin" ? { metadata: { pluginBindingOwner: "plugin" } } : {}),
+        });
+        const store = createPluginStateKeyedStoreForTests("discord", {
+          namespace: "thread-bindings",
+          maxEntries: 10_000,
+        });
+        const persisted = await store.entries();
+        expect(persisted).toHaveLength(1);
+        await resetThreadBindingsForTests();
+        hoisted.acpReaderAvailable = false;
+        const reloaded = await createTestThreadBindingManager({ persist: true });
+        const unbind = vi.spyOn(reloaded, "unbindThread");
+        const healthProbe = vi.fn(async () => ({ status: "stale" as const }));
+        hoisted.sendMessageDiscord.mockClear();
+        hoisted.sendWebhookMessageDiscord.mockClear();
+        try {
+          await expect(
+            reconcileAcpThreadBindingsOnStartup({ cfg: EMPTY_DISCORD_TEST_CONFIG, healthProbe }),
+          ).resolves.toEqual({ checked: 0, removed: 0, staleSessionKeys: [] });
+          expect(reloaded.getByThreadId("retained-thread")?.targetSessionKey).toBe(
+            targetSessionKey,
+          );
+          expect(await store.entries()).toEqual(persisted);
+          expect(hoisted.readAcpSessionEntryAsync).not.toHaveBeenCalled();
+          expect(healthProbe).not.toHaveBeenCalled();
+          expect(unbind).not.toHaveBeenCalled();
+          expect(hoisted.sendMessageDiscord).not.toHaveBeenCalled();
+          expect(hoisted.sendWebhookMessageDiscord).not.toHaveBeenCalled();
+          expect(hoisted.warn).toHaveBeenCalledTimes(kind === "acp" ? 1 : 0);
+          if (kind === "acp") {
+            expect(hoisted.warn).toHaveBeenCalledWith(
+              expect.stringContaining("Upgrade the OpenClaw host"),
+            );
+          }
+        } finally {
+          await resetThreadBindingsForTests();
+        }
+      });
+    },
+  );
 
   it("removes stale ACP bindings during startup reconciliation", async () => {
     const manager = await createNonSweepingTestManager({

@@ -45,6 +45,8 @@ const hoisted = vi.hoisted(() => {
     createDiscordRestClient,
     createThreadDiscord,
     readAcpSessionEntryAsync,
+    acpReaderAvailable: true,
+    warn: vi.fn(),
   };
 });
 
@@ -62,10 +64,34 @@ vi.mock("../send.messages.js", () => ({
   createThreadDiscord: hoisted.createThreadDiscord,
 }));
 
+vi.mock("openclaw/plugin-sdk/acp-runtime", async () => {
+  const actual = await vi.importActual<typeof import("openclaw/plugin-sdk/acp-runtime")>(
+    "openclaw/plugin-sdk/acp-runtime",
+  );
+  return {
+    ...actual,
+    get readAcpSessionEntryAsync() {
+      return hoisted.acpReaderAvailable ? hoisted.readAcpSessionEntryAsync : undefined;
+    },
+  };
+});
+
+vi.mock("openclaw/plugin-sdk/runtime-env", async () => {
+  const actual = await vi.importActual<typeof import("openclaw/plugin-sdk/runtime-env")>(
+    "openclaw/plugin-sdk/runtime-env",
+  );
+  return {
+    ...actual,
+    createSubsystemLogger: (...args: Parameters<typeof actual.createSubsystemLogger>) => ({
+      ...actual.createSubsystemLogger(...args),
+      warn: hoisted.warn,
+    }),
+  };
+});
+
 const { createThreadBindingManager } = await import("./thread-bindings.manager.js");
 const discordClientModule = await import("../client.js");
 const discordThreadBindingApi = await import("./thread-bindings.discord-api.js");
-const acpRuntime = await import("openclaw/plugin-sdk/acp-runtime");
 
 export function createTestThreadBindingManager(
   params: Omit<Parameters<typeof createThreadBindingManager>[0], "cfg"> & {
@@ -155,6 +181,8 @@ export function installThreadBindingLifecycleTestHooks() {
       },
     }));
     hoisted.createThreadDiscord.mockReset().mockResolvedValue({ id: "thread-created" });
+    hoisted.acpReaderAvailable = true;
+    hoisted.warn.mockReset();
     hoisted.readAcpSessionEntryAsync.mockReset().mockReturnValue(null);
     vi.spyOn(discordClientModule, "createDiscordRestClient").mockImplementation(
       (...args) =>
@@ -255,9 +283,6 @@ export function installThreadBindingLifecycleTestHooks() {
           accountId: params.record.accountId,
         });
       },
-    );
-    vi.spyOn(acpRuntime, "readAcpSessionEntryAsync").mockImplementation(
-      hoisted.readAcpSessionEntryAsync,
     );
     vi.useRealTimers();
   });
