@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { afterEach, expect, it } from "vitest";
 import { useAutoCleanupTempDirTracker } from "../../../test/helpers/temp-dir.js";
+import { resolveSandboxFileMutationQueueKey } from "./file-mutation-identity.js";
 import { createRemoteShellSandboxFsBridge } from "./remote-fs-bridge.js";
 import { createLocalRemoteShellScriptRunner } from "./remote-fs-bridge.test-helpers.js";
 
@@ -31,6 +32,13 @@ it.runIf(process.platform !== "win32")(
         runRemoteShellScript: createLocalRemoteShellScriptRunner(),
       },
     });
+
+    const absentPath = path.join(workspaceDir, "absent");
+    for (const filePath of [absentPath, `${absentPath}/`]) {
+      await expect(
+        resolveSandboxFileMutationQueueKey({ bridge, root: workspaceDir, filePath }),
+      ).resolves.toBe(`${workspaceDir}\0${absentPath}`);
+    }
 
     await expect(bridge.readFileWithSource!({ filePath: "existing\n/note.txt" })).resolves.toEqual({
       data: Buffer.from("original"),

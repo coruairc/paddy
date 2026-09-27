@@ -355,7 +355,17 @@ export async function readChildCompletionFindings(
   }
   return {
     text: buildChildCompletionFindings(
-      results.map(({ child, text }) => ({ ...child, announceResult: text })),
+      results.map(({ child, text }) => ({
+        announceResult: text,
+        childSessionKey: child.childSessionKey,
+        task: child.task,
+        taskName: child.taskName,
+        label: child.label,
+        createdAt: child.createdAt,
+        execution: child.execution,
+        endedReason: child.endedReason,
+        completion: child.completion,
+      })),
     ),
     isCurrent,
   };

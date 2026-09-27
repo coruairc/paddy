@@ -27,10 +27,18 @@ import {
   type ExtensionErrorListener,
   ExtensionRunner,
   type ExtensionUIContext,
+  type MessageEndEvent,
+  type MessageStartEvent,
+  type MessageUpdateEvent,
   type SessionStartEvent,
   type ShutdownHandler,
   type ToolDefinition,
+  type ToolExecutionEndEvent,
+  type ToolExecutionStartEvent,
+  type ToolExecutionUpdateEvent,
   type ToolInfo,
+  type TurnEndEvent,
+  type TurnStartEvent,
 } from "./extensions/index.js";
 import type { CustomMessage } from "./messages.js";
 import { getModelRegistryRuntime } from "./model-registry-runtime.js";
@@ -471,62 +479,70 @@ export abstract class AgentSessionBase {
     } else if (event.type === "agent_end") {
       await this.currentExtensionRunner.emit({ type: "agent_end", messages: event.messages });
     } else if (event.type === "turn_start") {
-      await this.currentExtensionRunner.emit({
+      const extensionEvent: TurnStartEvent = {
         type: "turn_start",
         turnIndex: this.turnIndex,
         timestamp: Date.now(),
-      });
+      };
+      await this.currentExtensionRunner.emit(extensionEvent);
     } else if (event.type === "turn_end") {
-      await this.currentExtensionRunner.emit({
+      const extensionEvent: TurnEndEvent = {
         type: "turn_end",
         turnIndex: this.turnIndex,
         message: event.message,
         toolResults: event.toolResults,
-      });
+      };
+      await this.currentExtensionRunner.emit(extensionEvent);
       this.turnIndex++;
     } else if (event.type === "message_start") {
-      await this.currentExtensionRunner.emit({
+      const extensionEvent: MessageStartEvent = {
         type: "message_start",
         message: event.message,
-      });
+      };
+      await this.currentExtensionRunner.emit(extensionEvent);
     } else if (event.type === "message_update") {
-      await this.currentExtensionRunner.emit({
+      const extensionEvent: MessageUpdateEvent = {
         type: "message_update",
         message: event.message,
         assistantMessageEvent: event.assistantMessageEvent,
-      });
+      };
+      await this.currentExtensionRunner.emit(extensionEvent);
     } else if (event.type === "message_end") {
-      const replacement = await this.currentExtensionRunner.emitMessageEnd({
+      const extensionEvent: MessageEndEvent = {
         type: "message_end",
         message: event.message,
-      });
+      };
+      const replacement = await this.currentExtensionRunner.emitMessageEnd(extensionEvent);
       if (replacement) {
         replaceAgentMessageInPlace(event.message, replacement);
         return true;
       }
     } else if (event.type === "tool_execution_start") {
-      await this.currentExtensionRunner.emit({
+      const extensionEvent: ToolExecutionStartEvent = {
         type: "tool_execution_start",
         toolCallId: event.toolCallId,
         toolName: event.toolName,
         args: event.args,
-      });
+      };
+      await this.currentExtensionRunner.emit(extensionEvent);
     } else if (event.type === "tool_execution_update") {
-      await this.currentExtensionRunner.emit({
+      const extensionEvent: ToolExecutionUpdateEvent = {
         type: "tool_execution_update",
         toolCallId: event.toolCallId,
         toolName: event.toolName,
         args: event.args,
         partialResult: event.partialResult,
-      });
+      };
+      await this.currentExtensionRunner.emit(extensionEvent);
     } else if (event.type === "tool_execution_end") {
-      await this.currentExtensionRunner.emit({
+      const extensionEvent: ToolExecutionEndEvent = {
         type: "tool_execution_end",
         toolCallId: event.toolCallId,
         toolName: event.toolName,
         result: event.result,
         isError: event.isError,
-      });
+      };
+      await this.currentExtensionRunner.emit(extensionEvent);
     }
     return false;
   }

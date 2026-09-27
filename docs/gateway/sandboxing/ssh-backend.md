@@ -19,6 +19,9 @@ utility contract, not a Linux-only Gateway requirement.
 
 Canonical workspace and parent-directory paths retain their whitespace, including
 embedded and trailing newlines, during remote reads and writes.
+Remove and rename operations follow in-mount parent-directory aliases while acting
+on the final entry itself. Removing a final symlink leaves its target intact;
+parents that resolve outside the allowed mounts are rejected.
 
 Creating a new remote workspace also requires atomic no-replace directory rename:
 `renameat2` on Linux or `renameatx_np` on macOS, supported by the remote filesystem.

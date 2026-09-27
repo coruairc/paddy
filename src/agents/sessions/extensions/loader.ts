@@ -290,19 +290,31 @@ function createExtensionAPI(
       return runtime.flagValues.get(name);
     },
 
-    sendMessage: (message, options) => void activeRuntime().sendMessage(message, options),
-    sendUserMessage: (content, options) => void activeRuntime().sendUserMessage(content, options),
-    appendEntry: (customType, data) => void activeRuntime().appendEntry(customType, data),
-    setSessionName: (name) => void activeRuntime().setSessionName(name),
+    sendMessage: (message, options) => {
+      activeRuntime().sendMessage(message, options);
+    },
+    sendUserMessage: (content, options) => {
+      activeRuntime().sendUserMessage(content, options);
+    },
+    appendEntry: (customType, data) => {
+      activeRuntime().appendEntry(customType, data);
+    },
+    setSessionName: (name) => {
+      activeRuntime().setSessionName(name);
+    },
     getSessionName: () => activeRuntime().getSessionName(),
-    setLabel: (entryId, label) => void activeRuntime().setLabel(entryId, label),
+    setLabel: (entryId, label) => {
+      activeRuntime().setLabel(entryId, label);
+    },
     exec(command: string, args: string[], options?: ExecOptions) {
       runtime.assertActive();
       return execCommand(command, args, options?.cwd ?? cwd, options);
     },
     getActiveTools: () => activeRuntime().getActiveTools(),
     getAllTools: () => activeRuntime().getAllTools(),
-    setActiveTools: (toolNames) => void activeRuntime().setActiveTools(toolNames),
+    setActiveTools: (toolNames) => {
+      activeRuntime().setActiveTools(toolNames);
+    },
     getCommands: () => activeRuntime().getCommands(),
     setModel: (model) => activeRuntime().setModel(model),
     getThinkingLevel: () => activeRuntime().getThinkingLevel(),
