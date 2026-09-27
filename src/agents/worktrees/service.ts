@@ -625,10 +625,11 @@ export class ManagedWorktreeService {
         base: sourceProfile?.commit ?? gitBase,
         sourceProfile,
         prepareCommit: async (commit) => {
-          return (gitBytes = await estimateWorktreeGitBytes(repository.repoRoot, commit, {
+          gitBytes = await estimateWorktreeGitBytes(repository.repoRoot, commit, {
             signal: params.signal,
             assertCurrent: params.commitGuard,
-          }));
+          });
+          return gitBytes;
         },
         requireSpace: (cloneBytes) =>
           this.requireAllocationSpace(
