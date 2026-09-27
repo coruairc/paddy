@@ -127,6 +127,42 @@ describe("runtime conversation binding route", () => {
     ).toThrow(expect.objectContaining({ code: "AGENT_SELECTION_REQUIRED" }));
   });
 
+  it.each(["main", "home"])(
+    "projects the bound agent's main session from a completed ordinary route (%s)",
+    (mainKey) => {
+      const ordinaryRoute = resolveAgentRoute({
+        cfg: {
+          agents: { list: [{ id: "main" }, { id: "review" }] },
+          bindings: [{ agentId: "main", match: { channel: "demo" } }],
+          session: { mainKey },
+        },
+        channel: "demo",
+        peer: { kind: "group", id: "room-1" },
+      });
+      const result = inspectRuntimeConversationBindingRoute({
+        route: ordinaryRoute,
+        inspection: {
+          status: "available",
+          binding: createBinding({ targetSessionKey: `agent:review:${mainKey}` }),
+        },
+      });
+
+      expect(result.route).toMatchObject({
+        agentId: "review",
+        sessionKey: `agent:review:${mainKey}`,
+        mainSessionKey: `agent:review:${mainKey}`,
+        lastRoutePolicy: "main",
+        matchedBy: "binding.channel",
+      });
+      expect(ordinaryRoute).toMatchObject({
+        agentId: "main",
+        sessionKey: "agent:main:demo:group:room-1",
+        mainSessionKey: `agent:main:${mainKey}`,
+        lastRoutePolicy: "session",
+      });
+    },
+  );
+
   it("rechecks the binding after awaiting activity persistence and keeps inspection pure", async () => {
     let binding = createBinding();
     const gate = createDeferredCore();
@@ -267,7 +303,7 @@ describe("runtime conversation binding route", () => {
       accountId: "default",
       channel: "demo",
       sessionKey: "agent:review:acp:session-1",
-      mainSessionKey: "agent:main:main",
+      mainSessionKey: "agent:review:main",
       lastRoutePolicy: "session",
       matchedBy: "binding.channel",
     });

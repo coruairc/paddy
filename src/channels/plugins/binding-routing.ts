@@ -10,7 +10,11 @@ import {
 } from "../../infra/outbound/session-binding-service.js";
 import type { ResolvedAgentRoute } from "../../routing/resolve-route.js";
 import { deriveLastRoutePolicy } from "../../routing/resolve-route.js";
-import { parseAgentSessionKey, resolveAgentIdFromSessionKey } from "../../routing/session-key.js";
+import {
+  buildAgentMainSessionKey,
+  parseAgentSessionKey,
+  resolveAgentIdFromSessionKey,
+} from "../../routing/session-key.js";
 import {
   resolveConversationBindingSelection,
   projectConfiguredConversationBindingRouteFacts,
@@ -195,13 +199,21 @@ export function inspectRuntimeConversationBindingRoute(
     selection.binding,
     baseRoute.agentId,
   );
+  const mainSessionKey =
+    resolvedBoundAgentId === baseRoute.agentId
+      ? baseRoute.mainSessionKey
+      : buildAgentMainSessionKey({
+          agentId: resolvedBoundAgentId,
+          mainKey: parseAgentSessionKey(baseRoute.mainSessionKey)?.rest,
+        });
   const route: ResolvedAgentRoute = {
     ...baseRoute,
     sessionKey: boundSessionKey,
     agentId: resolvedBoundAgentId,
+    mainSessionKey,
     lastRoutePolicy: deriveLastRoutePolicy({
       sessionKey: boundSessionKey,
-      mainSessionKey: baseRoute.mainSessionKey,
+      mainSessionKey,
     }),
     matchedBy: "binding.channel",
   };

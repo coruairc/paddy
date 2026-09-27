@@ -122,7 +122,7 @@ store or pruning expired rows.
 `resolveRuntimeConversationBindingRoute` also accept a deferred `resolveRoute` callback
 instead of a completed `route`.
 Pass exactly one of `route` or `resolveRoute`; the input type rejects supplying both
-or neither. Existing callers can keep passing a completed route with unchanged behavior.
+or neither. Existing callers can keep passing a completed route.
 The callback receives `{ inspection, bindingOwnerAvailable, bindingRecord, boundAgentId }`
 after the owner has classified the binding, before ordinary agent selection:
 
@@ -155,7 +155,12 @@ channel can distinguish a plugin fallback from an unbound parent lookup.
 `inspection` retains the prepared conversation identity for composing a thread
 observation before its selected parent without reading the binding store again.
 The callback owns route construction; core still projects the selected session
-and ownership facts. Preserve those facts through context construction so reply
+and ownership facts. If an agent-owned binding selects a different agent, core
+rebuilds `mainSessionKey` for that agent while preserving the base route's main-key
+name, then derives `lastRoutePolicy` against the bound agent's main session. This
+also applies to completed-route inputs and leaves the ordinary route unchanged
+for channel-specific stale-binding comparison.
+Preserve those facts through context construction so reply
 admission can reject a revoked, reassigned, or unavailable owner. When activity
 must retain a captured selection, await the scoped `touchAsync` after projection
 and keep that route for admission rather than silently selecting a replacement.

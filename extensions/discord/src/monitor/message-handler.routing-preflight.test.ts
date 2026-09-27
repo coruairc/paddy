@@ -14,7 +14,7 @@ import {
 } from "./message-handler.preflight.test-helpers.js";
 import { resolveDiscordPreflightRoute } from "./message-handler.routing-preflight.js";
 
-it.each(["default", "ambiguous", "stale"])(
+it.each(["default", "ambiguous", "stale", "main-session"])(
   "resolves conversation bindings with %s routing",
   async (routing) => {
     const channelId = "channel-bound";
@@ -23,7 +23,9 @@ it.each(["default", "ambiguous", "stale"])(
       targetSessionKey:
         routing === "stale"
           ? `agent:second:discord:channel:${channelId}`
-          : "agent:second:acp:bound-session",
+          : routing === "main-session"
+            ? "agent:second:home"
+            : "agent:second:acp:bound-session",
       targetKind: "session",
       conversation: { channel: "discord", accountId: "default", conversationId: channelId },
       status: "active",
@@ -40,7 +42,13 @@ it.each(["default", "ambiguous", "stale"])(
         ? { agents: { ownership: "explicit", entries: { first: {}, second: {} } } }
         : routing === "stale"
           ? { agents: { list: [{ id: "first" }] } }
-          : {};
+          : routing === "main-session"
+            ? {
+                agents: { ownership: "explicit", entries: { first: {}, second: {} } },
+                bindings: [{ agentId: "first", match: { channel: "discord" } }],
+                session: { mainKey: "home" },
+              }
+            : {};
     const message = createDiscordMessage({
       id: "message-bound",
       channelId,
@@ -74,5 +82,13 @@ it.each(["default", "ambiguous", "stale"])(
       routing === "stale" ? `agent:first:discord:channel:${channelId}` : binding.targetSessionKey,
     );
     expect(result.threadBinding).toEqual(routing === "stale" ? undefined : binding);
+    if (routing === "main-session") {
+      expect(result.effectiveRoute).toMatchObject({
+        agentId: "second",
+        sessionKey: "agent:second:home",
+        mainSessionKey: "agent:second:home",
+        lastRoutePolicy: "main",
+      });
+    }
   },
 );
