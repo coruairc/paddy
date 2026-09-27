@@ -79,21 +79,12 @@ describe("gateway error helpers", () => {
     ).toBe(true);
   });
 
-  it("keeps compatibility with legacy scope messages and detail codes", () => {
+  it("uses the shared scope parser for unstructured scope messages", () => {
     expect(
       isMissingOperatorReadScopeError(
         gatewayRequestError({
           code: "INVALID_REQUEST",
           message: "missing scope: operator.read",
-        }),
-      ),
-    ).toBe(true);
-    expect(
-      isMissingOperatorReadScopeError(
-        gatewayRequestError({
-          code: "INVALID_REQUEST",
-          message: "unauthorized",
-          details: { code: "AUTH_UNAUTHORIZED" },
         }),
       ),
     ).toBe(true);

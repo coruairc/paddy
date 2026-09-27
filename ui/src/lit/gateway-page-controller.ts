@@ -45,8 +45,6 @@ export class GatewayPageController implements ReactiveController {
   private readonly subscriptions: SubscriptionsController;
   private currentGateway: ApplicationContext["gateway"] | null = null;
   private currentSnapshot: ApplicationGatewaySnapshot | null = null;
-  private currentClient: GatewayBrowserClient | null = null;
-  private currentConnected = false;
   private hasBoundGateway = false;
 
   private readonly handlePageActivation = () => {
@@ -63,12 +61,11 @@ export class GatewayPageController implements ReactiveController {
       this.hasBoundGateway = true;
       this.currentGateway = gateway;
       this.applySnapshot(gateway.snapshot, { initial, sourceChanged });
-      const unsubscribe = gateway.subscribe((snapshot) => {
+      return gateway.subscribe((snapshot) => {
         if (this.currentGateway === gateway && this.options.getGateway() === gateway) {
           this.applySnapshot(snapshot, { initial: false, sourceChanged: false });
         }
       });
-      return () => unsubscribe();
     });
     // Register after subscriptions so source cleanup happens before the
     // synthetic stopped transition on disconnect.
@@ -84,11 +81,11 @@ export class GatewayPageController implements ReactiveController {
   }
 
   get client(): GatewayBrowserClient | null {
-    return this.currentClient;
+    return this.currentSnapshot?.client ?? null;
   }
 
   get connected(): boolean {
-    return this.currentConnected;
+    return this.currentSnapshot?.phase === "connected";
   }
 
   get epoch(): number {
@@ -145,11 +142,9 @@ export class GatewayPageController implements ReactiveController {
     if (previous) {
       const stopped = { ...previous, client: null, phase: "stopped" } as const;
       const lifecycleChanged = this.lifecycle.transition(stopped);
-      const clientChanged = this.currentClient !== null;
-      const connectionChanged = this.currentConnected;
+      const clientChanged = this.client !== null;
+      const connectionChanged = this.connected;
       this.currentSnapshot = null;
-      this.currentClient = null;
-      this.currentConnected = false;
       if (lifecycleChanged) {
         this.options.invalidateRequests?.({
           snapshot: stopped,
@@ -172,8 +167,8 @@ export class GatewayPageController implements ReactiveController {
     snapshot: ApplicationGatewaySnapshot,
     binding: { initial: boolean; sourceChanged: boolean },
   ): void {
-    const previousClient = this.currentClient;
-    const previousConnected = this.currentConnected;
+    const previousClient = this.client;
+    const previousConnected = this.connected;
     const previousAvailable =
       this.currentSnapshot !== null && isGatewayAvailable(this.currentSnapshot);
     const nextConnected = snapshot.phase === "connected";
@@ -185,8 +180,6 @@ export class GatewayPageController implements ReactiveController {
       this.lifecycle.invalidate();
     }
     this.currentSnapshot = snapshot;
-    this.currentClient = snapshot.client;
-    this.currentConnected = nextConnected;
     const change: GatewayPageChange = {
       snapshot,
       initial: binding.initial,
