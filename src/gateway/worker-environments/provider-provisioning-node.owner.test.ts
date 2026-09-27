@@ -6,8 +6,10 @@ import type {
   NodeWorkerSupervisorNodeProof,
   NodeWorkerSupervisorTransport,
 } from "../node-registry-private.js";
+import type { WorkerInstallationArtifact } from "./bundle.js";
 import { createGatewayNodeWorkerBundleInstaller } from "./node-worker-bundle-installer.js";
 import { createNodeWorkerBundleTransferService } from "./node-worker-bundle-transfer-service.js";
+import { createWorkerNodeProvisioning } from "./provider-node-provisioning.js";
 import * as support from "./service.test-support.js";
 
 function createHeldInstaller(boundary: "attachment read" | "discovery" | "installation") {
@@ -195,4 +197,162 @@ describe("node provisioning installer ownership", () => {
       fixture.transfer.closeAll();
     }
   });
+});
+
+async function createPreparation() {
+  const record = await support.testState.store.createIntent({
+    environmentId: "cold-node-preparation",
+    providerId: "fake",
+    profileId: "development",
+    provisionOperationId: "prepare-cold-node",
+    profileSnapshot: { project: {}, executionMode: "worker-turn" },
+  });
+  const node = createDeferredCore<string>();
+  const bundle = createDeferredCore<WorkerInstallationArtifact>();
+  const nodeStarted = createDeferredCore();
+  const controller = new AbortController();
+  const beforeProvision = vi.fn();
+  const prepareNodeBootstrap = vi.fn(() => {
+    nodeStarted.resolve();
+    return node.promise;
+  });
+  const prepareInstallation = vi.fn(() => bundle.promise);
+  const move = vi.fn<Parameters<typeof createWorkerNodeProvisioning>[0]["move"]>(
+    (current, to, patch) =>
+      support.testState.store.transition({
+        environmentId: current.environmentId,
+        from: current.state,
+        to,
+        patch,
+      }),
+  );
+  const provisioning = createWorkerNodeProvisioning({
+    store: support.testState.store,
+    isStopping: () => false,
+    prepareNodeBootstrap,
+    prepareInstallation,
+    move,
+    saveError: async () => {
+      throw new Error("Unexpected provisioning error write");
+    },
+    serviceError: (code, message) => Object.assign(new Error(message), { code }),
+    commitReady: async () => {
+      throw new Error("Artifact preparation cannot publish ready");
+    },
+    failBootstrap: async () => {
+      throw new Error("Artifact preparation cannot destroy a lease");
+    },
+  });
+  let settled = false;
+  const start = () =>
+    provisioning
+      .prepare(
+        record,
+        support.createProvider({ requiresNodeEnrollment: true }),
+        controller.signal,
+        beforeProvision,
+      )
+      .then(
+        (value) => ({ value }),
+        (error: unknown) => ({ error }),
+      )
+      .finally(() => {
+        settled = true;
+      });
+  const release = () => {
+    node.resolve(support.NODE_BOOTSTRAP.sha256);
+    bundle.resolve(support.BUNDLE_ARTIFACT);
+  };
+  return {
+    record,
+    node,
+    bundle,
+    nodeStarted,
+    controller,
+    beforeProvision,
+    prepareNodeBootstrap,
+    prepareInstallation,
+    move,
+    start,
+    release,
+    isSettled: () => settled,
+  };
+}
+
+describe("provider node artifact preparation", () => {
+  support.setupWorkerEnvironmentServiceSuite();
+
+  it("starts both artifacts before either completes and publishes identity only after both", async () => {
+    const fixture = await createPreparation();
+    const preparation = fixture.start();
+    try {
+      await fixture.nodeStarted.promise;
+      expect(fixture.prepareInstallation).toHaveBeenCalledExactlyOnceWith(
+        "bundle",
+        fixture.controller.signal,
+      );
+      expect(fixture.prepareNodeBootstrap).toHaveBeenCalledExactlyOnceWith(
+        fixture.record,
+        fixture.controller.signal,
+      );
+      fixture.node.resolve(support.NODE_BOOTSTRAP.sha256);
+      await fixture.node.promise;
+      expect(fixture.isSettled()).toBe(false);
+      expect(fixture.beforeProvision).not.toHaveBeenCalled();
+      fixture.bundle.resolve(support.BUNDLE_ARTIFACT);
+      expect(await preparation).toEqual({
+        value: {
+          identity: {
+            nodeBootstrapSha256: support.NODE_BOOTSTRAP.sha256,
+            workerBundleSha256: support.BUNDLE_ARTIFACT.tarballSha256,
+            executionMode: "worker-turn",
+          },
+          installation: support.BUNDLE_ARTIFACT,
+        },
+      });
+      expect(fixture.beforeProvision).toHaveBeenCalledOnce();
+    } finally {
+      fixture.release();
+      await preparation;
+    }
+  });
+
+  it.each(["rejection", "synchronous throw", "cancellation"] as const)(
+    "settles both producers before propagating node preparation %s",
+    async (failure) => {
+      const fixture = await createPreparation();
+      const error = new Error("Node artifact preparation failed");
+      if (failure === "synchronous throw") {
+        fixture.prepareNodeBootstrap.mockImplementationOnce(() => {
+          fixture.nodeStarted.resolve();
+          throw error;
+        });
+      }
+      const preparation = fixture.start();
+      try {
+        await fixture.nodeStarted.promise;
+        expect(fixture.prepareInstallation).toHaveBeenCalledOnce();
+        if (failure === "cancellation") {
+          fixture.controller.abort(error);
+        }
+        fixture.node.reject(error);
+        await fixture.node.promise.catch(() => undefined);
+        await Promise.resolve();
+        expect(fixture.isSettled()).toBe(false);
+        expect(fixture.move).not.toHaveBeenCalled();
+        expect(fixture.beforeProvision).not.toHaveBeenCalled();
+        fixture.bundle.resolve(support.BUNDLE_ARTIFACT);
+        expect(await preparation).toEqual({
+          error: expect.objectContaining({ message: expect.stringContaining(error.message) }),
+        });
+        expect(fixture.beforeProvision).not.toHaveBeenCalled();
+        expect(support.testState.store.get(fixture.record.environmentId)?.state).toBe(
+          failure === "cancellation" ? "requested" : "failed",
+        );
+      } finally {
+        fixture.release();
+        await preparation;
+      }
+    },
+  );
 });
