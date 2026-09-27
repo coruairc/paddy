@@ -277,11 +277,13 @@ it.each(["cold start", "hot enable"] as const)(
             },
           );
           expect(logs.info).toHaveBeenCalledWith(`Plugin replacement applied: ${pluginId}`);
-          await refreshModelRuntimeAfterHotReload({
-            config,
-            agentIds: undefined,
-            pluginMetadataSnapshot: runtime.pluginMetadataSnapshot,
-          });
+          await withPluginRuntimeRegistryScope(registryOwner.registry, () =>
+            refreshModelRuntimeAfterHotReload({
+              config,
+              agentIds: undefined,
+              pluginMetadataSnapshot: runtime.pluginMetadataSnapshot,
+            }),
+          );
         }
         // Use the published owner and the same acquisition as Gateway agent admission.
         const published = await loadPublishedGatewayReplyDispatchRuntime({ agentId: "main" });
@@ -291,18 +293,20 @@ it.each(["cold start", "hot enable"] as const)(
         const gatewayInstance = getPluginInstance(record);
         assert(gatewayInstance);
         const retainedBeforeRun = gatewayInstance.retainedWorkCount;
-        runLease = await acquireAgentRunPreparedModelRuntime(
-          {
-            config: published.config,
-            agentId: published.agentId,
-            agentDir: published.agentDir,
-            workspaceDir: published.workspaceDir,
-            allowGatewaySubagentBinding: true,
-            runtimePluginSelections: [
-              { provider: "fixture", modelId: "probe", runtime: "openclaw" },
-            ],
-          },
-          { catalogMode: "static", pluginGeneration: published.pluginGeneration },
+        runLease = await withPluginRuntimeRegistryScope(registryOwner.registry, () =>
+          acquireAgentRunPreparedModelRuntime(
+            {
+              config: published.config,
+              agentId: published.agentId,
+              agentDir: published.agentDir,
+              workspaceDir: published.workspaceDir,
+              allowGatewaySubagentBinding: true,
+              runtimePluginSelections: [
+                { provider: "fixture", modelId: "probe", runtime: "openclaw" },
+              ],
+            },
+            { catalogMode: "static", pluginGeneration: published.pluginGeneration },
+          ),
         );
         const tool = resolveTools().find(({ name }) => name === toolName);
         assert(tool, "enabled tool must resolve for the owner agent");

@@ -16,7 +16,7 @@ export function adoptRuntimeToolRegistrations(
     return target;
   }
   const sourceConfig = projectConfigOntoRuntimeSourceSnapshot(config);
-  const replacements = new Map<string, PluginToolRegistration[]>();
+  const replacements = new Map<PluginToolRegistration, PluginToolRegistration>();
   for (const pluginId of new Set(target.tools.map((entry) => entry.pluginId))) {
     const localRecord = target.plugins.find((record) => record.id === pluginId);
     const runtimeRecord = runtime.plugins.find((record) => record.id === pluginId);
@@ -34,29 +34,25 @@ export function adoptRuntimeToolRegistrations(
       continue;
     }
     const owned = runtime.tools.filter((entry) => entry.pluginId === pluginId);
-    const local = target.tools.filter((entry) => entry.pluginId === pluginId);
-    if (
-      owned.length > 0 &&
-      (owned.length !== local.length || owned.some((entry, index) => entry !== local[index]))
-    ) {
-      replacements.set(pluginId, owned);
+    for (const local of target.tools.filter((entry) => entry.pluginId === pluginId)) {
+      const names = new Set(local.names);
+      if (names.size === 0) {
+        continue;
+      }
+      const replacement = owned.find((entry) => {
+        const ownedNames = new Set(entry.names);
+        return (
+          entry.optional === local.optional &&
+          ownedNames.size === names.size &&
+          [...names].every((name) => ownedNames.has(name))
+        );
+      });
+      if (replacement && replacement !== local) {
+        replacements.set(local, replacement);
+      }
     }
   }
-  if (replacements.size === 0) {
-    return target;
-  }
-  // Keep target plugin precedence and the donor's registration order within each plugin.
-  const emitted = new Set<string>();
-  const tools = target.tools.flatMap((entry) => {
-    const replacement = replacements.get(entry.pluginId);
-    if (!replacement) {
-      return [entry];
-    }
-    if (emitted.has(entry.pluginId)) {
-      return [];
-    }
-    emitted.add(entry.pluginId);
-    return replacement;
-  });
-  return { ...target, tools };
+  return replacements.size === 0
+    ? target
+    : { ...target, tools: target.tools.map((entry) => replacements.get(entry) ?? entry) };
 }
