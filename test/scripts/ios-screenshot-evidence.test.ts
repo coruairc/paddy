@@ -308,6 +308,35 @@ describe("iOS screenshot evidence", () => {
     expect(() => reduceAll(input, path.join(root, "reduced"))).toThrow(/topology mismatch/u);
   });
 
+  it.each([
+    { label: "iPad-only rerun", runAttempts: { iphone: 1, "ipad-13": 2, watch: 2 } },
+    { label: "reducer-only rerun", runAttempts: { iphone: 1, "ipad-13": 1, watch: 1 } },
+  ])("accepts shard evidence retained from an earlier attempt: $label", ({ runAttempts }) => {
+    const root = tempDirs.make("ios-screenshot-partial-rerun-");
+    const input = collectAll(root, TARGET_SHA, runAttempts);
+
+    const manifest = reduceAll(input, path.join(root, "reduced"));
+
+    expect(manifest.runAttempt).toBe(2);
+    expect(
+      Object.fromEntries(
+        (manifest.families as Array<Record<string, any>>).map((family) => [
+          family.family,
+          family.runAttempt,
+        ]),
+      ),
+    ).toEqual(runAttempts);
+  });
+
+  it("rejects one shard job's families from different attempts", () => {
+    const root = tempDirs.make("ios-screenshot-mixed-attempt-");
+    const input = collectAll(root, TARGET_SHA, { watch: 1 });
+
+    expect(() => reduceAll(input, path.join(root, "reduced"))).toThrow(
+      `${containerName("watch")} mixes evidence from different workflow run attempts`,
+    );
+  });
+
   it("rejects cross-SHA shard evidence", () => {
     const root = tempDirs.make("ios-screenshot-cross-sha-");
     const input = collectAll(root);
