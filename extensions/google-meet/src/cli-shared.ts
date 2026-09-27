@@ -35,16 +35,19 @@ export type OAuthLoginOptions = {
   timeoutSec?: string;
 };
 
-export type ResolveSpaceOptions = {
-  meeting?: string;
-  today?: boolean;
-  event?: string;
-  calendar?: string;
+type OAuthTokenOptions = {
   accessToken?: string;
   refreshToken?: string;
   clientId?: string;
   clientSecret?: string;
   expiresAt?: string;
+};
+
+export type ResolveSpaceOptions = OAuthTokenOptions & {
+  meeting?: string;
+  today?: boolean;
+  event?: string;
+  calendar?: string;
   json?: boolean;
 };
 
@@ -135,16 +138,11 @@ type GoogleMeetGatewayCallResult = { ok: true; payload: unknown } | { ok: false;
 const GOOGLE_MEET_GATEWAY_DEFAULT_TIMEOUT_MS = 5000;
 const PLAIN_DECIMAL_NUMBER_RE = /^\d+(?:\.\d+)?$/;
 
-export type DoctorOptions = {
+export type DoctorOptions = OAuthTokenOptions & {
   json?: boolean;
   oauth?: boolean;
   meeting?: string;
   createSpace?: boolean;
-  accessToken?: string;
-  refreshToken?: string;
-  clientId?: string;
-  clientSecret?: string;
-  expiresAt?: string;
 };
 
 export type JsonOptions = {
@@ -155,23 +153,13 @@ export type RecoverTabOptions = JsonOptions & {
   transport?: string;
 };
 
-export type CreateOptions = {
-  accessToken?: string;
-  refreshToken?: string;
-  clientId?: string;
-  clientSecret?: string;
-  expiresAt?: string;
-  accessType?: string;
-  entryPointAccess?: string;
-  join?: boolean;
-  transport?: string;
-  mode?: string;
-  message?: string;
-  dialInNumber?: string;
-  pin?: string;
-  dtmfSequence?: string;
-  json?: boolean;
-};
+export type CreateOptions = OAuthTokenOptions &
+  Omit<JoinOptions, "timeoutMs"> & {
+    accessType?: string;
+    entryPointAccess?: string;
+    join?: boolean;
+    json?: boolean;
+  };
 
 export function parseGoogleMeetMode(value: string | undefined): GoogleMeetModeInput | undefined {
   if (

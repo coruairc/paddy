@@ -19,6 +19,7 @@ import {
   iterateSqliteQuerySync,
   sqliteStringSet,
 } from "openclaw/plugin-sdk/sqlite-worker-runtime";
+import { filterStringRecord } from "openclaw/plugin-sdk/string-coerce-runtime";
 export type Row = Record<string, unknown>;
 
 export function jsonValue(value: unknown): string | null {
@@ -292,10 +293,6 @@ function readMetadata(
     const endedAt = numberValue(child, "ended_at");
     const engine = stringValue(child, "engine");
     const mode = stringValue(child, "mode");
-    const model = stringValue(child, "model");
-    const sessionKey = stringValue(child, "session_key");
-    const runId = stringValue(child, "run_id");
-    const error = stringValue(child, "error");
     if (endedAt !== undefined) {
       entry.endedAt = endedAt;
     }
@@ -307,19 +304,15 @@ function readMetadata(
       // SAFETY: Attempt rows preserve WorkboardRunAttempt.mode.
       entry.mode = mode as WorkboardRunAttempt["mode"];
     }
-    if (model) {
-      entry.model = model;
-    }
-    if (sessionKey) {
-      entry.sessionKey = sessionKey;
-    }
-    if (runId) {
-      entry.runId = runId;
-    }
-    if (error) {
-      entry.error = error;
-    }
-    return entry;
+    return {
+      ...entry,
+      ...filterStringRecord({
+        model: stringValue(child, "model"),
+        sessionKey: stringValue(child, "session_key"),
+        runId: stringValue(child, "run_id"),
+        error: stringValue(child, "error"),
+      }),
+    };
   });
   const comments = childRows(db, "workboard_card_comments", cardId, preloaded).map((child) => {
     const entry: WorkboardComment = {
@@ -333,96 +326,61 @@ function readMetadata(
     }
     return entry;
   });
-  const links = childRows(db, "workboard_card_links", cardId, preloaded).map((child) => {
-    const entry: WorkboardLink = {
+  const links = childRows(db, "workboard_card_links", cardId, preloaded).map(
+    (child): WorkboardLink => ({
       id: requiredString(child, "id"),
       // SAFETY: Link rows preserve WorkboardLink.type.
       type: requiredString(child, "type") as WorkboardLink["type"],
       createdAt: requiredNumber(child, "created_at"),
-    };
-    const targetCardId = stringValue(child, "target_card_id");
-    const title = stringValue(child, "title");
-    const url = stringValue(child, "url");
-    if (targetCardId) {
-      entry.targetCardId = targetCardId;
-    }
-    if (title) {
-      entry.title = title;
-    }
-    if (url) {
-      entry.url = url;
-    }
-    return entry;
-  });
-  const proof = childRows(db, "workboard_card_proof", cardId, preloaded).map((child) => {
-    const entry: WorkboardProof = {
+      ...filterStringRecord({
+        targetCardId: stringValue(child, "target_card_id"),
+        title: stringValue(child, "title"),
+        url: stringValue(child, "url"),
+      }),
+    }),
+  );
+  const proof = childRows(db, "workboard_card_proof", cardId, preloaded).map(
+    (child): WorkboardProof => ({
       id: requiredString(child, "id"),
       // SAFETY: Proof rows preserve WorkboardProof.status.
       status: requiredString(child, "status") as WorkboardProof["status"],
       createdAt: requiredNumber(child, "created_at"),
-    };
-    const label = stringValue(child, "label");
-    const command = stringValue(child, "command");
-    const url = stringValue(child, "url");
-    const note = stringValue(child, "note");
-    if (label) {
-      entry.label = label;
-    }
-    if (command) {
-      entry.command = command;
-    }
-    if (url) {
-      entry.url = url;
-    }
-    if (note) {
-      entry.note = note;
-    }
-    return entry;
-  });
-  const artifacts = childRows(db, "workboard_card_artifacts", cardId, preloaded).map((child) => {
-    const entry: WorkboardArtifact = {
+      ...filterStringRecord({
+        label: stringValue(child, "label"),
+        command: stringValue(child, "command"),
+        url: stringValue(child, "url"),
+        note: stringValue(child, "note"),
+      }),
+    }),
+  );
+  const artifacts = childRows(db, "workboard_card_artifacts", cardId, preloaded).map(
+    (child): WorkboardArtifact => ({
       id: requiredString(child, "id"),
       createdAt: requiredNumber(child, "created_at"),
-    };
-    const label = stringValue(child, "label");
-    const url = stringValue(child, "url");
-    const artifactPath = stringValue(child, "path");
-    const mimeType = stringValue(child, "mime_type");
-    if (label) {
-      entry.label = label;
-    }
-    if (url) {
-      entry.url = url;
-    }
-    if (artifactPath) {
-      entry.path = artifactPath;
-    }
-    if (mimeType) {
-      entry.mimeType = mimeType;
-    }
-    return entry;
-  });
+      ...filterStringRecord({
+        label: stringValue(child, "label"),
+        url: stringValue(child, "url"),
+        path: stringValue(child, "path"),
+        mimeType: stringValue(child, "mime_type"),
+      }),
+    }),
+  );
   const attachments = childRows(db, "workboard_card_attachments", cardId, preloaded).map(
     readAttachment,
   );
-  const workerLogs = childRows(db, "workboard_worker_logs", cardId, preloaded).map((child) => {
-    const entry: WorkboardWorkerLog = {
+  const workerLogs = childRows(db, "workboard_worker_logs", cardId, preloaded).map(
+    (child): WorkboardWorkerLog => ({
       id: requiredString(child, "id"),
       createdAt: requiredNumber(child, "created_at"),
       // SAFETY: Worker log rows preserve WorkboardWorkerLog.level.
       level: requiredString(child, "level") as WorkboardWorkerLog["level"],
       message: requiredString(child, "message"),
-    };
-    const sessionKey = stringValue(child, "session_key");
-    const runId = stringValue(child, "run_id");
-    if (sessionKey) {
-      entry.sessionKey = sessionKey;
-    }
-    if (runId) {
-      entry.runId = runId;
-    }
-    return entry;
-  });
+      ...filterStringRecord({
+        sessionKey: stringValue(child, "session_key"),
+        runId: stringValue(child, "run_id"),
+      }),
+    }),
+  );
   const diagnostics = childRows(db, "workboard_card_diagnostics", cardId, preloaded).map(
     (child) => ({
       // SAFETY: Diagnostic rows preserve WorkboardDiagnostic.kind.
@@ -448,18 +406,16 @@ function readMetadata(
         message: requiredString(child, "message"),
       };
       const sequence = numberValue(child, "sequence");
-      const sessionKey = stringValue(child, "session_key");
-      const runId = stringValue(child, "run_id");
       if (sequence !== undefined) {
         entry.sequence = sequence;
       }
-      if (sessionKey) {
-        entry.sessionKey = sessionKey;
-      }
-      if (runId) {
-        entry.runId = runId;
-      }
-      return entry;
+      return {
+        ...entry,
+        ...filterStringRecord({
+          sessionKey: stringValue(child, "session_key"),
+          runId: stringValue(child, "run_id"),
+        }),
+      };
     },
   );
   const protocol = workerProtocolRow(db, cardId, preloaded);

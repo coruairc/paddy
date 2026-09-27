@@ -127,9 +127,12 @@ function parseEnvTokenAt(value: string, index: number): EnvToken | null {
  * the two drifted.
  */
 export function scanEnvTemplateTokens(value: string): EnvTemplateToken[] {
-  const tokens: EnvTemplateToken[] = [];
+  return Array.from(iterateEnvTemplateTokens(value));
+}
+
+function* iterateEnvTemplateTokens(value: string): Generator<EnvTemplateToken> {
   if (!value.includes("$")) {
-    return tokens;
+    return;
   }
 
   for (let i = 0; i < value.length; i += 1) {
@@ -140,10 +143,9 @@ export function scanEnvTemplateTokens(value: string): EnvTemplateToken[] {
     if (!token) {
       continue;
     }
-    tokens.push({ kind: token.kind, name: token.name, defaultValue: token.defaultValue });
+    yield { kind: token.kind, name: token.name, defaultValue: token.defaultValue };
     i = token.end;
   }
-  return tokens;
 }
 
 /** Missing environment variable warning emitted when substitution is configured to continue. */
@@ -229,22 +231,8 @@ function substituteString(
 
 /** Detects unescaped `${VAR}` references without treating escaped `$${VAR}` as references. */
 export function containsEnvVarReference(value: string): boolean {
-  if (!value.includes("$")) {
-    return false;
-  }
-
-  for (let i = 0; i < value.length; i += 1) {
-    const char = value[i];
-    if (char !== "$") {
-      continue;
-    }
-
-    const token = parseEnvTokenAt(value, i);
-    if (token?.kind === "escaped") {
-      i = token.end;
-      continue;
-    }
-    if (token?.kind === "substitution") {
+  for (const token of iterateEnvTemplateTokens(value)) {
+    if (token.kind === "substitution") {
       return true;
     }
   }
