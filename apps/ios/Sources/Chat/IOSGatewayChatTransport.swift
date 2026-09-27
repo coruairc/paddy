@@ -142,8 +142,9 @@ struct IOSGatewayChatTransport: OpenClawChatGatewayTransport {
         }
         return OpenClawChatNewSessionRouteLease(
             listAgents: {
-                let data = try await request(OpenClawChatGatewayRequests.agentsList())
-                return try OpenClawChatGatewayPayloadCodec.decodeAgentsList(data)
+                try await OpenClawChatAgentsListResponse.load(
+                    request: request,
+                    isCurrent: { await transport.gateway.currentRoute() == route })
             },
             createSession: { key, label, agentID, parentSessionKey, worktree, worktreeBaseRef in
                 let createRequest = transport.createSessionRequest(

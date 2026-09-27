@@ -2,6 +2,27 @@ import Foundation
 import OpenClawChatUI
 
 extension MacGatewayChatTransport {
+    func listAgents() async throws -> OpenClawChatAgentsListResponse? {
+        // The window's first catalog load can precede its event subscription connecting.
+        let serverLease = try await self.connection.acquireServerLease()
+        try await self.requireCurrentOutboxGateway()
+        return try await self.listAgents(ifCurrentServerLease: serverLease)
+    }
+
+    private func listAgents(
+        ifCurrentServerLease serverLease: GatewayConnection.ServerLease) async throws -> OpenClawChatAgentsListResponse
+    {
+        try await OpenClawChatAgentsListResponse.load(
+            request: { request in
+                try await self.connection.request(
+                    method: request.method,
+                    params: request.params,
+                    timeoutMs: request.timeoutMs,
+                    ifCurrentServerLease: serverLease)
+            },
+            isCurrent: { await self.connection.isCurrentServerLease(serverLease) })
+    }
+
     func acquireNewSessionRouteLease() async -> OpenClawChatNewSessionRouteLease? {
         guard let serverLease = await self.connection.captureServerLease() else { return nil }
         guard await self.currentOutboxGatewayMatchesConnection() else { return nil }
@@ -14,8 +35,7 @@ extension MacGatewayChatTransport {
         }
         return OpenClawChatNewSessionRouteLease(
             listAgents: {
-                let data = try await request(OpenClawChatGatewayRequests.agentsList())
-                return try OpenClawChatGatewayPayloadCodec.decodeAgentsList(data)
+                try await self.listAgents(ifCurrentServerLease: serverLease)
             },
             createSession: { key, label, explicitAgentID, parentSessionKey, worktree, worktreeBaseRef in
                 let agentID = explicitAgentID
