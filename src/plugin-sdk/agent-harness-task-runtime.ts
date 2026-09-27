@@ -247,11 +247,11 @@ export function createAgentHarnessTaskRuntime(
     transition: TaskRunTransition,
     ownership: AssignmentOwnership & { expectedTask: TaskPersistenceReceipt },
   ) => transitionTaskAssignment(assignmentTransition(transition, ownership));
-  const tryCreateRunningTaskRun = (
+  const prepareCreateParams = (
     taskParams: AgentHarnessScopedCreateRunningTaskRunParams,
-  ): TaskRecord | null => {
+  ): CreateRunningTaskRunParams => {
     assertRunId(taskParams.runId);
-    return createRunningTaskRun({
+    return {
       ...projectTaskContentForPersistence(incognito, taskParams),
       runtime,
       ...(taskKind ? { taskKind } : {}),
@@ -259,7 +259,22 @@ export function createAgentHarnessTaskRuntime(
       ownerKey: requesterSessionKey,
       scopeKind: "session",
       executionOwner,
-    });
+    };
+  };
+  const tryCreateRunningTaskRun = (taskParams: AgentHarnessScopedCreateRunningTaskRunParams) =>
+    createRunningTaskRun(prepareCreateParams(taskParams));
+  const scopeMutation = <T extends TaskRunTransition["params"]>(
+    taskParams: T & AssignmentOwnership,
+  ) => {
+    const { expectedTask, completionCustody, ...mutation } = projectTaskContentForPersistence(
+      incognito,
+      taskParams,
+    );
+    return {
+      expectedTask,
+      completionCustody,
+      scoped: { ...mutation, runtime, sessionKey: requesterSessionKey },
+    };
   };
   return {
     assertTaskAssignmentSupported() {
@@ -277,17 +292,8 @@ export function createAgentHarnessTaskRuntime(
     },
     tryCreateRunningTaskRun,
     async createRunningTaskRunAsync(taskParams) {
-      assertRunId(taskParams.runId);
       const task = await createRunningTaskRunAsync(
-        {
-          ...projectTaskContentForPersistence(incognito, taskParams),
-          runtime,
-          ...(taskKind ? { taskKind } : {}),
-          requesterSessionKey,
-          ownerKey: requesterSessionKey,
-          scopeKind: "session",
-          executionOwner,
-        },
+        prepareCreateParams(taskParams),
         assertRuntimeCurrent,
       );
       if (!task) {
@@ -297,66 +303,41 @@ export function createAgentHarnessTaskRuntime(
     },
     recordTaskRunProgressByRunId(taskParams) {
       assertRunId(taskParams.runId);
-      const { expectedTask, completionCustody, ...progress } = projectTaskContentForPersistence(
-        incognito,
-        taskParams,
-      );
+      const { expectedTask, completionCustody, scoped } = scopeMutation(taskParams);
       if (expectedTask) {
         return transitionAssignment(
-          { kind: "state", params: { ...progress, runtime, sessionKey: requesterSessionKey } },
+          { kind: "state", params: scoped },
           { expectedTask, completionCustody },
         );
       }
-      return recordTaskRunProgressByRunId({
-        ...progress,
-        runtime,
-        sessionKey: requesterSessionKey,
-      });
+      return recordTaskRunProgressByRunId(scoped);
     },
     finalizeTaskRunByRunId(taskParams) {
       assertRunId(taskParams.runId);
-      const { expectedTask, completionCustody, ...terminal } = projectTaskContentForPersistence(
-        incognito,
-        taskParams,
-      );
+      const { expectedTask, completionCustody, scoped } = scopeMutation(taskParams);
       if (expectedTask) {
         return transitionAssignment(
-          { kind: "state", params: { ...terminal, runtime, sessionKey: requesterSessionKey } },
+          { kind: "state", params: scoped },
           { expectedTask, completionCustody },
         );
       }
-      return finalizeTaskRunByRunId({
-        ...terminal,
-        runtime,
-        sessionKey: requesterSessionKey,
-      });
+      return finalizeTaskRunByRunId(scoped);
     },
     setDetachedTaskDeliveryStatusByRunId(taskParams) {
       assertRunId(taskParams.runId);
-      const { expectedTask, completionCustody, ...delivery } = projectTaskContentForPersistence(
-        incognito,
-        taskParams,
-      );
+      const { expectedTask, completionCustody, scoped } = scopeMutation(taskParams);
       if (expectedTask) {
         return transitionAssignment(
-          { kind: "delivery", params: { ...delivery, runtime, sessionKey: requesterSessionKey } },
+          { kind: "delivery", params: scoped },
           { expectedTask, completionCustody },
         );
       }
-      return setDetachedTaskDeliveryStatusByRunId({
-        ...delivery,
-        runtime,
-        sessionKey: requesterSessionKey,
-      });
+      return setDetachedTaskDeliveryStatusByRunId(scoped);
     },
     async finalizeTaskRunByRunIdAsync(taskParams) {
       assertRunId(taskParams.runId);
       assertRuntimeCurrent();
-      const { expectedTask, completionCustody, ...terminal } = projectTaskContentForPersistence(
-        incognito,
-        taskParams,
-      );
-      const scoped = { ...terminal, runtime, sessionKey: requesterSessionKey };
+      const { expectedTask, completionCustody, scoped } = scopeMutation(taskParams);
       return expectedTask
         ? await transitionTaskAssignmentAsync(
             assignmentTransition(
@@ -369,11 +350,7 @@ export function createAgentHarnessTaskRuntime(
     async setDetachedTaskDeliveryStatusByRunIdAsync(taskParams) {
       assertRunId(taskParams.runId);
       assertRuntimeCurrent();
-      const { expectedTask, completionCustody, ...delivery } = projectTaskContentForPersistence(
-        incognito,
-        taskParams,
-      );
-      const scoped = { ...delivery, runtime, sessionKey: requesterSessionKey };
+      const { expectedTask, completionCustody, scoped } = scopeMutation(taskParams);
       return expectedTask
         ? await transitionTaskAssignmentAsync(
             assignmentTransition(
@@ -470,7 +447,6 @@ export async function deliverAgentHarnessTaskCompletion(params: {
     return (
       current.length === 1 &&
       task !== undefined &&
-      taskReceipt !== undefined &&
       matchesTaskPersistenceReceipt(task, taskReceipt) &&
       task.status === params.status &&
       task.deliveryStatus === "pending"
