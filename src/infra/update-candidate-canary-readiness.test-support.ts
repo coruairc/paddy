@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import path from "node:path";
 import { getGlobalDispatcher, setGlobalDispatcher } from "undici";
 import { expect, it, onTestFinished, vi, type Mock } from "vitest";
+import { createDeferredCore } from "../shared/deferred.js";
 import {
   registerActiveManagedProxyUrl,
   stopActiveManagedProxyRegistration,
@@ -14,7 +15,7 @@ import { FakeChild, stubHealthyGateway } from "./update-candidate-canary.test-su
 import * as rehearsals from "./update-candidate-rehearsal.js";
 import type { UpdateStepResult } from "./update-step-result.js";
 
-export function expectCanaryReadinessWarning(
+function expectCanaryReadinessWarning(
   step: UpdateStepResult | undefined,
   check: string,
   status: number,
@@ -44,6 +45,125 @@ export function registerCanaryReadinessBudgetTests(
     snapshot: Mock;
   },
 ) {
+  it.each(["ready", "stalled", "unreachable", "readiness-unreachable", "exited"] as const)(
+    "follows completed startup milestones until the candidate is %s",
+    async (outcome) => {
+      onTestFinished(() => {
+        vi.useRealTimers();
+      });
+      const fetching = createDeferredCore();
+      const response = createDeferredCore<Response>();
+      const readinessFetching = createDeferredCore();
+      const readinessResponse = createDeferredCore<Response>();
+      let startupResponseSent = false;
+      let gateway: FakeChild | undefined;
+      const spawnNormally = mocks.spawn.getMockImplementation()!;
+      mocks.spawn.mockImplementation((command, args, options) => {
+        const child = spawnNormally(command, args, options);
+        if (args.includes("--update-canary")) {
+          gateway = child;
+        }
+        return child;
+      });
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (url: string, options: RequestInit) => {
+          if (url.endsWith("/readyz")) {
+            if (outcome === "readiness-unreachable") {
+              options.signal?.addEventListener("abort", () =>
+                readinessResponse.reject(options.signal?.reason),
+              );
+              readinessFetching.resolve();
+              return readinessResponse.promise;
+            }
+            return Response.json({ ready: true });
+          }
+          if (startupResponseSent) {
+            return Response.json({ status: "starting" }, { status: 503 });
+          }
+          options.signal?.addEventListener("abort", () => response.reject(options.signal?.reason));
+          fetching.resolve();
+          return response.promise;
+        }),
+      );
+      const onProgress = vi.fn();
+      const result = validateUpdateCandidateCanary({
+        root: root(),
+        stateDir: root(),
+        config: {},
+        env: {},
+        timeoutMs: 1_000,
+        onStep: (step) => {
+          if (step.name === "candidate-recovery") {
+            vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout"] });
+          }
+        },
+        onProgress,
+      });
+      await Promise.race([
+        fetching.promise,
+        result.then((validation) => {
+          throw new Error(`Candidate did not reach startup: ${JSON.stringify(validation)}`);
+        }),
+      ]);
+      await vi.advanceTimersByTimeAsync(300);
+      gateway!.stderr.write("openclaw-update-canary-progress: config.snapshot\n");
+      await vi.advanceTimersByTimeAsync(300);
+      gateway!.stderr.write("openclaw-update-canary-progress: plugins.bootstrap\n");
+      await vi.advanceTimersByTimeAsync(600);
+      if (outcome === "stalled" || outcome === "unreachable") {
+        // Repeating a completed milestone is not forward progress.
+        gateway!.stderr.write("openclaw-update-canary-progress: plugins.bootstrap\n");
+        if (outcome === "stalled") {
+          startupResponseSent = true;
+          response.resolve(Response.json({ status: "starting" }, { status: 503 }));
+        }
+        await vi.advanceTimersByTimeAsync(300);
+      } else {
+        if (outcome === "exited") {
+          gateway!.stderr.write("[openclaw] Reason: candidate startup failed\n");
+          gateway!.emit("exit", 78);
+        }
+        if (outcome === "ready" || outcome === "readiness-unreachable") {
+          response.resolve(Response.json({ status: "started" }));
+          if (outcome === "readiness-unreachable") {
+            await Promise.race([
+              readinessFetching.promise,
+              result.then((validation) => {
+                throw new Error(`Candidate did not reach readiness: ${JSON.stringify(validation)}`);
+              }),
+            ]);
+            await vi.advanceTimersByTimeAsync(900);
+          }
+        }
+      }
+      const validation = await result;
+      const step = validation.steps.find((entry) => entry.name === "candidate-gateway-startup");
+      if (outcome === "ready") {
+        expect(validation).toMatchObject({ status: "ok", phase: "readiness" });
+        expect(step).toMatchObject({
+          exitCode: 0,
+          warnings: [expect.stringContaining("still progressing")],
+        });
+        expect(step?.durationMs).toBe(1_200);
+      } else {
+        expect(validation.status).toBe("error");
+        expect(step?.failureFacts?.[0]?.message).toContain(
+          outcome === "exited" ? "candidate startup failed" : "stalled",
+        );
+        expect(step?.durationMs).toBe(
+          outcome === "exited" ? 1_200 : outcome === "readiness-unreachable" ? 2_100 : 1_500,
+        );
+      }
+      expect(onProgress).toHaveBeenCalledWith(
+        expect.objectContaining({
+          step: "warning:candidate-gateway-startup",
+          detail: expect.stringContaining("still progressing"),
+        }),
+      );
+    },
+  );
+
   it.each(["gateway-only", "proxy", "block"] as const)(
     "probes the canary with managed proxy mode %s",
     async (loopbackMode) => {
