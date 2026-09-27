@@ -5,7 +5,7 @@ import type { InternalSessionEntry, SessionEntry } from "../../config/sessions/t
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { assertAgentRunLifecycleGenerationCurrent } from "../../infra/agent-events.js";
 import { registerAgentRunContext } from "../../infra/agent-run-registry.js";
-import { resolveTurnDeliveryFormatPrompt } from "../../infra/outbound/delivery-format-prompt.js";
+import { buildDeliveryFormatPrompt } from "../../infra/outbound/delivery-format-prompt.js";
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import type { PluginMetadataSnapshot } from "../../plugins/plugin-metadata-snapshot.types.js";
 import { isSubagentCoordinationInputProvenance } from "../../sessions/input-provenance.js";
@@ -257,18 +257,16 @@ export async function prepareEmbeddedSessionState(params: {
 
   const runContext = resolveAgentRunContext(params.opts);
   // Announce and inter-session turns get the delivering channel's contract, like replies.
-  const deliveryFormat = await resolveTurnDeliveryFormatPrompt({
-    cfg: params.cfg,
-    agentId: params.sessionAgentId,
-    reply:
-      params.opts.deliver === true || params.opts.sourceReplyDeliveryMode === "message_tool_only"
-        ? {
-            // Delivery preflight records the actual outbound target as reply* options.
-            channel: params.opts.replyChannel ?? runContext.messageChannel,
-            accountId: params.opts.replyAccountId ?? runContext.accountId,
-          }
-        : undefined,
-  });
+  const deliveryFormat =
+    (params.opts.deliver === true || params.opts.sourceReplyDeliveryMode === "message_tool_only") &&
+    buildDeliveryFormatPrompt({
+      cfg: params.cfg,
+      // Delivery preflight records the actual outbound target as reply* options.
+      channel: params.opts.replyChannel ?? runContext.messageChannel,
+      accountId: params.opts.replyAccountId ?? runContext.accountId,
+      agentId: params.sessionAgentId,
+      allowBootstrap: true,
+    });
   const extraSystemPrompt = [params.opts.extraSystemPrompt, deliveryFormat].filter(Boolean);
   return {
     sessionEntry,
