@@ -42,7 +42,6 @@ import type {
   ExtensionShortcut,
   LoadExtensionsResult,
   MessageRenderer,
-  ProviderConfig,
   RegisteredCommand,
   ToolDefinition,
 } from "./types.js";
@@ -122,7 +121,7 @@ function resolvePath(extPath: string, cwd: string): string {
   return path.resolve(cwd, expanded);
 }
 
-type HandlerFn = (...args: unknown[]) => Promise<unknown>;
+type HandlerFn = NonNullable<ReturnType<Extension["handlers"]["get"]>>[number];
 
 type ExtensionCacheScope = {
   cwd: string;
@@ -224,6 +223,10 @@ function createExtensionAPI(
   cwd: string,
   eventBus: EventBus,
 ): ExtensionAPI {
+  const activeRuntime = () => {
+    runtime.assertActive();
+    return runtime;
+  };
   const api = {
     // Registration methods - write to extension
     on(event: string, handler: HandlerFn): void {
@@ -287,85 +290,28 @@ function createExtensionAPI(
       return runtime.flagValues.get(name);
     },
 
-    // Action methods - delegate to shared runtime
-    sendMessage(message, options): void {
-      runtime.assertActive();
-      runtime.sendMessage(message, options);
-    },
-
-    sendUserMessage(content, options): void {
-      runtime.assertActive();
-      runtime.sendUserMessage(content, options);
-    },
-
-    appendEntry(customType: string, data?: unknown): void {
-      runtime.assertActive();
-      runtime.appendEntry(customType, data);
-    },
-
-    setSessionName(name: string): void {
-      runtime.assertActive();
-      runtime.setSessionName(name);
-    },
-
-    getSessionName(): string | undefined {
-      runtime.assertActive();
-      return runtime.getSessionName();
-    },
-
-    setLabel(entryId: string, label: string | undefined): void {
-      runtime.assertActive();
-      runtime.setLabel(entryId, label);
-    },
-
+    sendMessage: (message, options) => void activeRuntime().sendMessage(message, options),
+    sendUserMessage: (content, options) => void activeRuntime().sendUserMessage(content, options),
+    appendEntry: (customType, data) => void activeRuntime().appendEntry(customType, data),
+    setSessionName: (name) => void activeRuntime().setSessionName(name),
+    getSessionName: () => activeRuntime().getSessionName(),
+    setLabel: (entryId, label) => void activeRuntime().setLabel(entryId, label),
     exec(command: string, args: string[], options?: ExecOptions) {
       runtime.assertActive();
       return execCommand(command, args, options?.cwd ?? cwd, options);
     },
-
-    getActiveTools(): string[] {
-      runtime.assertActive();
-      return runtime.getActiveTools();
+    getActiveTools: () => activeRuntime().getActiveTools(),
+    getAllTools: () => activeRuntime().getAllTools(),
+    setActiveTools: (toolNames) => void activeRuntime().setActiveTools(toolNames),
+    getCommands: () => activeRuntime().getCommands(),
+    setModel: (model) => activeRuntime().setModel(model),
+    getThinkingLevel: () => activeRuntime().getThinkingLevel(),
+    setThinkingLevel: (level) => activeRuntime().setThinkingLevel(level),
+    registerProvider: (name, config) => {
+      activeRuntime().registerProvider(name, config, extension.path);
     },
-
-    getAllTools() {
-      runtime.assertActive();
-      return runtime.getAllTools();
-    },
-
-    setActiveTools(toolNames: string[]): void {
-      runtime.assertActive();
-      runtime.setActiveTools(toolNames);
-    },
-
-    getCommands() {
-      runtime.assertActive();
-      return runtime.getCommands();
-    },
-
-    setModel(model) {
-      runtime.assertActive();
-      return runtime.setModel(model);
-    },
-
-    getThinkingLevel() {
-      runtime.assertActive();
-      return runtime.getThinkingLevel();
-    },
-
-    setThinkingLevel(level) {
-      runtime.assertActive();
-      return runtime.setThinkingLevel(level);
-    },
-
-    registerProvider(name: string, config: ProviderConfig) {
-      runtime.assertActive();
-      runtime.registerProvider(name, config, extension.path);
-    },
-
-    unregisterProvider(name: string) {
-      runtime.assertActive();
-      runtime.unregisterProvider(name, extension.path);
+    unregisterProvider: (name) => {
+      activeRuntime().unregisterProvider(name, extension.path);
     },
 
     events: eventBus,
@@ -390,13 +336,8 @@ function resolveExtensionFactory(module: unknown): ExtensionFactory | undefined 
 }
 
 function isJavaScriptExtensionPath(extensionPath: string): boolean {
-  switch (path.extname(extensionPath).toLowerCase()) {
-    case ".cjs":
-    case ".mjs":
-      return true;
-    default:
-      return false;
-  }
+  const extension = path.extname(extensionPath).toLowerCase();
+  return extension === ".cjs" || extension === ".mjs";
 }
 
 function extensionSourceNeedsJitiAliasResolution(extensionPath: string): boolean {

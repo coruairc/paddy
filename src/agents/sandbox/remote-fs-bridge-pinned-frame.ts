@@ -38,11 +38,11 @@ async function resolveRemotePinnedCanonicalFrame(params: {
   const pinnedPath = normalizeContainerPath(params.pinnedPath);
   const probePath = params.directory ? pinnedPath : path.posix.dirname(pinnedPath);
   const result = await params.runRemoteShellScript({
-    script: 'canonical_root=$(readlink -f -- "$1")\nprintf "%s\\n" "$canonical_root"',
+    script: 'readlink -n -f -- "$1"',
     args: [params.mountRootPath],
     signal: params.signal,
   });
-  const canonicalMountRoot = normalizeContainerPath(result.stdout.toString("utf8").trim());
+  const canonicalMountRoot = normalizeContainerPath(result.stdout.toString("utf8"));
   if (!canonicalMountRoot.startsWith("/")) {
     throw new Error(`Sandbox path canonicalization failed; cannot ${params.action}: ${pinnedPath}`);
   }
