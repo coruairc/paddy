@@ -23,7 +23,9 @@ export function observeTranscript(container: HTMLElement, cleanups: Array<() => 
       state.pendingScrollOffset = null;
     },
     requestUpdate() {},
-    onOffset() {},
+    onOffset() {
+      return false;
+    },
     onReaderScroll() {},
     onComposerInput() {},
     onComposerLayout() {},

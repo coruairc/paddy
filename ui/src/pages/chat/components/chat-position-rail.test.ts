@@ -588,28 +588,30 @@ describe("conversation position rail", () => {
     };
     const container = document.body.appendChild(document.createElement("div"));
     container.className = "chat-thread";
+    const readHeight = vi.fn(() => 600);
+    const readContentHeight = vi.fn(() => 4800);
+    const readOffset = vi.spyOn(container, "scrollTop", "get");
     Object.defineProperties(container, {
-      clientHeight: { configurable: true, value: 600 },
-      scrollHeight: { configurable: true, value: 4800 },
+      clientHeight: { configurable: true, get: readHeight },
+      scrollHeight: { configurable: true, get: readContentHeight },
     });
+    const transcriptView = () =>
+      transcript.renderSession("agent:main:rail-notification", (session) => {
+        session.syncMessageRows(
+          new Map(ids.map((id) => [id, id])),
+          new Map(ids.map((id) => [id, id])),
+        );
+        return session.render(
+          rows,
+          (row) => (row.kind === "content" ? row.content : nothing),
+          null,
+          false,
+          renderChatPositionRail({ positions, transcript: session, requestUpdate }),
+        );
+      });
     const renderRows = () => {
       transcript.hostUpdate();
-      render(
-        transcript.renderSession("agent:main:rail-notification", (session) => {
-          session.syncMessageRows(
-            new Map(ids.map((id) => [id, id])),
-            new Map(ids.map((id) => [id, id])),
-          );
-          return session.render(
-            rows,
-            (row) => (row.kind === "content" ? row.content : nothing),
-            null,
-            false,
-            renderChatPositionRail({ positions, transcript: session, requestUpdate }),
-          );
-        }),
-        container,
-      );
+      render(transcriptView(), container);
       transcript.hostUpdated();
     };
     const scrollTo = (offset: number) => {
@@ -641,6 +643,15 @@ describe("conversation position rail", () => {
       flushFrame();
       expect(current()?.dataset.positionMarkerId).toBe("row-2");
       expect(tabStops()).toEqual([current()]);
+      // A prior sibling commit can leave layout dirty in this checkpoint.
+      // Recording the render's scroll facts must consume already observed geometry.
+      readHeight.mockClear();
+      readContentHeight.mockClear();
+      readOffset.mockClear();
+      transcriptView();
+      expect(readHeight).not.toHaveBeenCalled();
+      expect(readContentHeight).not.toHaveBeenCalled();
+      expect(readOffset).not.toHaveBeenCalled();
       requestUpdate.mockClear();
 
       offsets.length = 0;

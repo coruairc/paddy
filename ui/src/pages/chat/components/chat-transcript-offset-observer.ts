@@ -24,7 +24,7 @@ type TranscriptOffsetState = {
   touchScrolling: boolean;
   readonly touchActive: boolean;
   renderedScrollState: TranscriptScrollRenderState;
-  renderState(element: HTMLDivElement | null): TranscriptScrollRenderState;
+  renderState(atEnd: boolean): TranscriptScrollRenderState;
   maintenanceScrollOffset: number | null;
   pendingInteractionAnchor: ChatTranscriptInteractionAnchor | null;
   syncNativeOffset: (() => void) | null;
@@ -42,12 +42,8 @@ export function createTranscriptOffsetState(): TranscriptOffsetState {
       return this.touching || this.touchScrolling;
     },
     renderedScrollState: { atEnd: false, touchActive: false },
-    renderState(element) {
-      const max = maxTranscriptScrollOffset(element);
-      return {
-        atEnd: element !== null && max !== null && Math.abs(max - element.scrollTop) <= 1,
-        touchActive: this.touchActive,
-      };
+    renderState(atEnd) {
+      return { atEnd, touchActive: this.touchActive };
     },
     maintenanceScrollOffset: null,
     pendingInteractionAnchor: null,
@@ -137,7 +133,7 @@ type OffsetOwner = {
   isProgrammaticScroll(): boolean;
   cancelScroll(): void;
   requestUpdate(): void;
-  onOffset(): void;
+  onOffset(): boolean;
   onReaderScroll(towardEnd?: boolean): void;
   onComposerInput(): void;
   onComposerLayout(changed: boolean): void;
@@ -226,11 +222,11 @@ export function observeTranscriptOffset(
       programmatic,
     });
     callback(offset, scrolling);
-    owner.onOffset();
+    const atEnd = owner.onOffset();
     // Range/isScrolling and pane follow policy already invalidate themselves.
     // The rail observes offsets directly; only changed lifecycle gates need a pane commit.
     const rendered = owner.state.renderedScrollState;
-    const current = owner.state.renderState(element);
+    const current = owner.state.renderState(atEnd);
     if (current.atEnd !== rendered.atEnd || current.touchActive !== rendered.touchActive) {
       owner.requestUpdate();
     }
