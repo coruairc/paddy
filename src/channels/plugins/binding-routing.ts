@@ -1,3 +1,4 @@
+import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { logVerbose } from "../../globals.js";
 import { readSessionBindingInspectionConversation } from "../../infra/outbound/session-binding-normalization.js";
@@ -47,8 +48,8 @@ type RuntimeConversationBindingRouteResolver = (selection: {
 }) => ResolvedAgentRoute;
 
 type RuntimeConversationBindingRouteInput =
-  | { route?: undefined; resolveRoute: RuntimeConversationBindingRouteResolver }
-  | { route: ResolvedAgentRoute; resolveRoute?: RuntimeConversationBindingRouteResolver };
+  | { route: ResolvedAgentRoute; resolveRoute?: never }
+  | { route?: never; resolveRoute: RuntimeConversationBindingRouteResolver };
 
 type ConfiguredBindingRouteConversationInput =
   | {
@@ -123,16 +124,6 @@ export function resolveConfiguredBindingRoute(
 }
 
 /** Projects prepared ownership facts without reading or changing binding storage. */
-export function inspectRuntimeConversationBindingRoute(params: {
-  resolveRoute: RuntimeConversationBindingRouteResolver;
-  route?: undefined;
-  inspection: ReturnType<typeof inspectSessionBindingByConversation>;
-}): RuntimeConversationBindingRouteResult;
-export function inspectRuntimeConversationBindingRoute(params: {
-  route: ResolvedAgentRoute;
-  resolveRoute?: RuntimeConversationBindingRouteResolver;
-  inspection: ReturnType<typeof inspectSessionBindingByConversation>;
-}): RuntimeConversationBindingRouteResult;
 export function inspectRuntimeConversationBindingRoute(
   params: RuntimeConversationBindingRouteInput & {
     inspection: ReturnType<typeof inspectSessionBindingByConversation>;
@@ -143,13 +134,14 @@ export function inspectRuntimeConversationBindingRoute(
     inspection.status === "available" ? inspection.binding : null,
   );
   const bindingRecord = selection.kind === "none" ? null : selection.binding;
-  const metadataAgentId = bindingRecord?.metadata?.agentId;
+  const explicitAgentId =
+    selection.kind === "agent"
+      ? (parseAgentSessionKey(selection.sessionKey)?.agentId ??
+        normalizeOptionalString(selection.binding.metadata?.agentId))
+      : undefined;
   const boundAgentId =
-    params.resolveRoute &&
-    selection.kind === "agent" &&
-    (parseAgentSessionKey(selection.sessionKey) ||
-      (typeof metadataAgentId === "string" && metadataAgentId.trim()))
-      ? resolveConversationBindingAgentId(selection.binding, "")
+    params.resolveRoute && selection.kind === "agent" && explicitAgentId
+      ? resolveConversationBindingAgentId(selection.binding, explicitAgentId)
       : undefined;
   const routeSelection = {
     inspection,
@@ -157,10 +149,7 @@ export function inspectRuntimeConversationBindingRoute(
     bindingRecord,
     boundAgentId,
   };
-  const baseRoute =
-    params.route === undefined
-      ? params.resolveRoute(routeSelection)
-      : (params.resolveRoute?.(routeSelection) ?? params.route);
+  const baseRoute = params.resolveRoute ? params.resolveRoute(routeSelection) : params.route;
   const inspectedConversation = readSessionBindingInspectionConversation(inspection);
   if (inspection.status === "unavailable") {
     return {
@@ -272,20 +261,6 @@ export async function resolveRuntimeConversationBindingRouteAsync(
 }
 
 export function resolveRuntimeConversationBindingRoute(
-  params: {
-    resolveRoute: RuntimeConversationBindingRouteResolver;
-    route?: undefined;
-    touchBinding?: boolean;
-  } & ConfiguredBindingRouteConversationInput,
-): RuntimeConversationBindingRouteResult;
-export function resolveRuntimeConversationBindingRoute(
-  params: {
-    route: ResolvedAgentRoute;
-    resolveRoute?: RuntimeConversationBindingRouteResolver;
-    touchBinding?: boolean;
-  } & ConfiguredBindingRouteConversationInput,
-): RuntimeConversationBindingRouteResult;
-export function resolveRuntimeConversationBindingRoute(
   params: RuntimeConversationBindingRouteInput & {
     touchBinding?: boolean;
   } & ConfiguredBindingRouteConversationInput,
@@ -293,14 +268,7 @@ export function resolveRuntimeConversationBindingRoute(
   const inspection = inspectSessionBindingByConversation(
     resolveConfiguredBindingConversationRef(params),
   );
-  const result =
-    params.route === undefined
-      ? inspectRuntimeConversationBindingRoute({ resolveRoute: params.resolveRoute, inspection })
-      : inspectRuntimeConversationBindingRoute({
-          route: params.route,
-          resolveRoute: params.resolveRoute,
-          inspection,
-        });
+  const result = inspectRuntimeConversationBindingRoute({ ...params, inspection });
   if (params.touchBinding !== false && result.bindingRecord) {
     getSessionBindingService().touch(
       result.bindingRecord.bindingId,

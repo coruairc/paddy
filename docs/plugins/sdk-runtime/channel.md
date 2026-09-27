@@ -121,7 +121,8 @@ store or pruning expired rows.
 `inspectRuntimeConversationBindingRoute` and the synchronous
 `resolveRuntimeConversationBindingRoute` also accept a deferred `resolveRoute` callback
 instead of a completed `route`.
-Existing callers can keep passing a completed route with unchanged behavior.
+Pass exactly one of `route` or `resolveRoute`; the input type rejects supplying both
+or neither. Existing callers can keep passing a completed route with unchanged behavior.
 The callback receives `{ inspection, bindingOwnerAvailable, bindingRecord, boundAgentId }`
 after the owner has classified the binding, before ordinary agent selection:
 
@@ -147,7 +148,9 @@ Import `resolveAgentRoute` from `openclaw/plugin-sdk/routing`. A bound agent can
 therefore supply the route even when the ordinary roster requires an explicit
 selection. Agent-scoped session keys take precedence over metadata; unscoped
 targets can use `metadata.agentId`. Missing, ignored cron-run, and plugin-owned
-bindings do not supply a bound agent. Plugin bindings retain their record so a
+bindings do not supply a bound agent. An unscoped target without a nonblank metadata
+agent ID also leaves `boundAgentId` undefined; it does not invent a default agent.
+Plugin bindings retain their record so a
 channel can distinguish a plugin fallback from an unbound parent lookup.
 `inspection` retains the prepared conversation identity for composing a thread
 observation before its selected parent without reading the binding store again.
