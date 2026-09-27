@@ -1,4 +1,3 @@
-// Shared update command primitives for channel resolution, install roots, and subprocess steps.
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -221,7 +220,6 @@ export async function resolveTargetVersion(
   return res.version ?? null;
 }
 
-/** Return true when `root` is a local git checkout directory. */
 export async function isGitCheckout(root: string): Promise<boolean> {
   try {
     await fs.stat(path.join(root, ".git"));
@@ -241,7 +239,6 @@ export async function isEmptyDir(targetPath: string): Promise<boolean> {
   }
 }
 
-/** Resolve the checkout path used by source-based self-update. */
 export function resolveGitInstallDir(): string {
   const override = process.env.OPENCLAW_GIT_DIR?.trim();
   if (override) {
@@ -254,7 +251,6 @@ export function resolveGitInstallDir(): string {
   return path.join(home, "openclaw");
 }
 
-/** Locate the installed OpenClaw package root that should receive update operations. */
 export async function resolveUpdateRoot(context?: { root: string }): Promise<string> {
   if (context) {
     return path.resolve(context.root);
@@ -395,9 +391,6 @@ async function cloneGitCheckoutTransactionally(params: {
           published = true;
           return targetDir;
         }
-      }
-
-      if (!preserveDir) {
         throw new Error(
           `OPENCLAW_GIT_DIR appeared while cloning: ${params.dir}. The existing path was left unchanged; move it or choose another OPENCLAW_GIT_DIR, then retry.`,
         );
@@ -414,16 +407,12 @@ async function cloneGitCheckoutTransactionally(params: {
         a === ".git" ? 1 : b === ".git" ? -1 : 0,
       );
       const moved: string[] = [];
-      let publishError: { value: unknown } | undefined;
       try {
         for (const entry of entries) {
           await fs.rename(path.join(stagingDir, entry), path.join(targetDir, entry));
           moved.push(entry);
         }
       } catch (error) {
-        publishError = { value: error };
-      }
-      if (publishError) {
         const rollbackErrors: unknown[] = [];
         for (const entry of moved.toReversed()) {
           try {
@@ -435,11 +424,11 @@ async function cloneGitCheckoutTransactionally(params: {
         if (rollbackErrors.length > 0) {
           cleanupStaging = false;
           throw new AggregateError(
-            [publishError.value, ...rollbackErrors],
+            [error, ...rollbackErrors],
             `Could not publish or fully roll back the cloned checkout at ${targetDir}; recovery files remain at ${stagingDir}`,
           );
         }
-        throw publishError.value;
+        throw error;
       }
       published = true;
       return targetDir;
