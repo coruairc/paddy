@@ -31,6 +31,15 @@ export function runGatesBash(
       "-c",
       [
         "set -euo pipefail",
+        // Direct library fixtures supply the command surface checked by scripts/pr preflight.
+        "rg() {",
+        '  if [ "${1-}" = "-F" ]; then',
+        "    shift",
+        '    command grep -F "$@"',
+        "  else",
+        '    command grep -E "$@"',
+        "  fi",
+        "}",
         `script_parent_dir='${repoRoot}/scripts'`,
         `source '${repoRoot}/scripts/pr-lib/common.sh'`,
         `source '${repoRoot}/scripts/pr-lib/gates.sh'`,
