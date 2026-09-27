@@ -41,6 +41,7 @@ import {
   getPluginRuntimeGatewayRequestScope,
   withPluginRuntimeRegistryScope,
 } from "../plugins/runtime/gateway-request-scope.js";
+import { adoptRuntimeToolRegistrations } from "../plugins/tool-registry-adoption.js";
 import { adoptRuntimeWidgetPresenterRegistrations } from "../plugins/widget-presenters.js";
 import { resolveUserPath } from "../utils.js";
 import {
@@ -194,7 +195,11 @@ function adoptAgentRuntimeRegistrations(
         config &&
           params.allowGatewaySubagentBinding === true &&
           (params.env === undefined || params.env === process.env)
-          ? adoptRuntimeDecisionProviders(memoryRegistry, activeRegistry, config)
+          ? adoptRuntimeToolRegistrations(
+              adoptRuntimeDecisionProviders(memoryRegistry, activeRegistry, config),
+              activeRegistry,
+              config,
+            )
           : memoryRegistry,
         activeRegistry,
       ),
