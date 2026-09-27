@@ -107,7 +107,7 @@ module.exports = {
     plugins: { allow: [pluginId], entries: { [pluginId]: { enabled: true } } },
   };
   fs.writeFileSync(configPath, JSON.stringify(config));
-  refreshPersistedInstalledPluginIndex({
+  await refreshPersistedInstalledPluginIndex({
     stateDir,
     env: process.env,
     config,
