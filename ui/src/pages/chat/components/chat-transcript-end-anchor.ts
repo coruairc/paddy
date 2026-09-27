@@ -176,6 +176,14 @@ export class TranscriptEndAnchor {
     this.composerResizePending = null;
   }
 
+  recordViewport(element: HTMLDivElement | null): number | null {
+    // Native offsets must stay current even when no pane commit is needed.
+    // Composer resize uses the prior offset to distinguish a return from a clamp.
+    this.maxOffset = maxTranscriptScrollOffset(element);
+    this.lastOffset = element?.scrollTop ?? null;
+    return this.maxOffset;
+  }
+
   clear(): void {
     this.cancelComposerResize();
     this.offset = null;
@@ -184,9 +192,7 @@ export class TranscriptEndAnchor {
   }
 
   capture(element: HTMLDivElement | null): void {
-    const max = maxTranscriptScrollOffset(element);
-    this.maxOffset = max;
-    this.lastOffset = element?.scrollTop ?? null;
+    const max = this.recordViewport(element);
     this.offset = element && max !== null && Math.abs(max - element.scrollTop) <= 1 ? max : null;
   }
 
@@ -196,9 +202,7 @@ export class TranscriptEndAnchor {
     suspended: boolean,
     follow: () => void,
   ): void {
-    const max = maxTranscriptScrollOffset(element);
-    this.maxOffset = max;
-    this.lastOffset = element?.scrollTop ?? null;
+    const max = this.recordViewport(element);
     // A resized viewport can clamp a reader to the end without granting follow.
     if (!canFollow) {
       this.clear();
