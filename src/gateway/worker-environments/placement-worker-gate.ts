@@ -10,6 +10,10 @@ import {
   getWorkerTurnExecutionIdentityCapability,
   type WorkerTurnExecutionIdentityCapability,
 } from "./placement-turn-claim-events.js";
+import {
+  isCurrentWorkerWorkspacePendingResultOwner,
+  type WorkerWorkspacePendingResult,
+} from "./placement-workspace-result.js";
 
 type WorkerPlacementBinding = Readonly<{
   sessionId: string;
@@ -19,7 +23,12 @@ type WorkerPlacementBinding = Readonly<{
 
 export type WorkerSessionPlacementGate = {
   /** Refresh runtime bytes without changing the retained workspace's owner epoch. */
-  assertWorkerRuntimeRefresh(binding: WorkerPlacementBinding): number;
+  prepareWorkerRuntimeRefresh(binding: WorkerPlacementBinding): Promise<{
+    generation: number;
+    reclaimResult?: WorkerWorkspacePendingResult;
+    assertCurrent: () => void;
+    release: () => void;
+  }>;
   /** Credential verification only; this does not grant operational worker authority. */
   readWorkerTurnClaim(binding: WorkerPlacementBinding): WorkerSessionTurnClaim | undefined;
   getExecutionIdentityCapability?(
@@ -94,24 +103,51 @@ export function createWorkerSessionPlacementGate(
   const validateWorkerTurn = (claim: WorkerSessionTurnClaim) => isOperational(claim);
 
   return {
-    assertWorkerRuntimeRefresh(binding): number {
-      const placement = store.get(binding.sessionId);
-      if (
-        placement?.state !== "active" ||
-        placement.environmentId !== binding.environmentId ||
-        placement.activeOwnerEpoch !== binding.ownerEpoch ||
-        store.getPlacementMove(binding.sessionId)
-      ) {
-        throw new Error("Worker runtime refresh lost its active placement owner");
+    async prepareWorkerRuntimeRefresh(binding) {
+      const prepared = await store.prepareRuntimeRefresh(binding.sessionId);
+      try {
+        const { placement, pendingResult } = prepared;
+        const reclaimResult =
+          placement?.state === "draining" &&
+          pendingResult &&
+          pendingResult.claimId === pendingResult.runId &&
+          pendingResult.claimId.startsWith("reclaim-") &&
+          (pendingResult.gatewayInstanceId !== store.workspaceResultInstanceId() ||
+            pendingResult.recoveryRequestedAtMs !== null) &&
+          isCurrentWorkerWorkspacePendingResultOwner(placement, pendingResult)
+            ? pendingResult
+            : undefined;
+        if (
+          (placement?.state !== "active" && !reclaimResult) ||
+          !placement ||
+          placement.environmentId !== binding.environmentId ||
+          placement.activeOwnerEpoch !== binding.ownerEpoch ||
+          prepared.move
+        ) {
+          throw new Error("Worker runtime refresh lost its placement recovery owner");
+        }
+        const claim = projectWorkerSessionTurnClaim(placement);
+        if (
+          !reclaimResult &&
+          placement.turnClaim &&
+          (!claim || !recoveryOnlyClaims.has(serializeWorkerSessionTurnClaim(claim)))
+        ) {
+          throw new Error("Worker runtime refresh is waiting for the current turn to finish");
+        }
+        prepared.assertCurrent();
+        if (reclaimResult && claim) {
+          recoveryOnlyClaims.add(serializeWorkerSessionTurnClaim(claim));
+        }
+        return {
+          generation: placement.generation,
+          ...(reclaimResult ? { reclaimResult } : {}),
+          assertCurrent: prepared.assertCurrent,
+          release: prepared.release,
+        };
+      } catch (error) {
+        prepared.release();
+        throw error;
       }
-      const claim = projectWorkerSessionTurnClaim(placement);
-      if (
-        placement.turnClaim &&
-        (!claim || !recoveryOnlyClaims.has(serializeWorkerSessionTurnClaim(claim)))
-      ) {
-        throw new Error("Worker runtime refresh is waiting for the current turn to finish");
-      }
-      return placement.generation;
     },
     readWorkerTurnClaim,
     getExecutionIdentityCapability: (claim) =>
