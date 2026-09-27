@@ -47,11 +47,6 @@ vi.mock("./update-command-service-maintenance.js", async (importOriginal) => ({
 vi.mock("./update-command-service.js", () => ({
   maybeStopManagedServiceBeforeMutableUpdate: mocks.stop,
   maybeRestartService: mocks.restart,
-  maybeResumeWindowsTaskAutoStartAfterPackageUpdate: async (
-    stopped: PreManagedServiceStop | undefined,
-    safe: boolean,
-    guard?: () => Promise<void>,
-  ) => stopped?.windowsTaskAutoStartRecovery?.restore(safe, guard),
   resolveUpdatedGatewayRestartPort: async () => 19101,
 }));
 import * as updateShared from "./shared.js";
