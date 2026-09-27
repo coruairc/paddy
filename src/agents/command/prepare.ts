@@ -187,9 +187,7 @@ export async function prepareAgentCommandExecution(
     throw new Error('Invalid verbose level. Use "on", "full", or "off".');
   }
 
-  const laneRaw = normalizeOptionalString(opts.lane) ?? "";
-  const subagentLane: string = AGENT_LANE_SUBAGENT;
-  const isSubagentLane = laneRaw === subagentLane;
+  const isSubagentLane = normalizeOptionalString(opts.lane) === AGENT_LANE_SUBAGENT;
   const hasExplicitTimeoutOption = opts.timeout !== undefined;
   const timeoutSecondsRaw = hasExplicitTimeoutOption
     ? (parseStrictNonNegativeInteger(opts.timeout) ?? Number.NaN)
@@ -442,7 +440,7 @@ export async function prepareAgentCommandExecution(
       opts.transcriptMessage ??
       resolveInternalEventTranscriptBody(message, opts.internalEvents, opts.inputProvenance);
 
-    const prepared = {
+    return {
       opts: commandOpts,
       body,
       transcriptBody,
@@ -479,7 +477,6 @@ export async function prepareAgentCommandExecution(
       acpResolution,
       runLease,
     };
-    return prepared;
   } catch (error) {
     await runLease?.release();
     throw error;
