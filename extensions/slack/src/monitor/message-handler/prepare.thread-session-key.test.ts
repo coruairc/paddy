@@ -561,6 +561,10 @@ describe("thread-level session keys", () => {
     registerSessionBindingAdapter(adapter);
     try {
       const ctx = buildCtx({ replyToMode: "all", dmScope: "per-channel-peer" });
+      ctx.cfg.agents = {
+        ownership: "explicit",
+        entries: { main: {}, review: {} },
+      };
       const account = buildAccount("all");
 
       const routing = resolveSlackRoutingContext({
