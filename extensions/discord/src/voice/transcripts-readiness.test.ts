@@ -15,7 +15,7 @@ defineDiscordVoiceTests(
     createConnectionMock,
     joinVoiceChannelMock,
     entersStateMock,
-    resolveRealtimeBootstrapContextInstructionsMock,
+    resolveRealtimeVoiceAgentContextInstructionsMock,
     realtimeSessionMock,
     createRealtimeSessionMock,
     createRealtimeVoiceBridgeSessionMock,
@@ -165,12 +165,21 @@ defineDiscordVoiceTests(
           stage === "ready"
             ? entersStateMock
             : stage === "bootstrap"
-              ? resolveRealtimeBootstrapContextInstructionsMock
+              ? resolveRealtimeVoiceAgentContextInstructionsMock
               : provider.connect;
-        pending.mockImplementationOnce(() => {
-          waiting.resolve();
-          return ready.promise;
-        });
+        if (stage === "bootstrap") {
+          resolveRealtimeVoiceAgentContextInstructionsMock.mockImplementationOnce(async () => {
+            waiting.resolve();
+            await ready.promise;
+            return "Agent context: shared voice agent context.";
+          });
+        } else {
+          const readiness = stage === "ready" ? entersStateMock : provider.connect;
+          readiness.mockImplementationOnce(() => {
+            waiting.resolve();
+            return ready.promise;
+          });
+        }
         const joins = vi.spyOn(f.manager, "join");
         const starting = recovery ? undefined : startTranscripts(f.manager, f.sink);
         if (recovery) {
