@@ -134,6 +134,17 @@ it("substitutes exact declared identities without widening or reordering discove
       .soft(adoptRuntimeToolRegistrations(target, runtime, config).tools)
       .toEqual([unnamed, ownedGroup, optional, x, unmatched]);
     expect(target.tools).toEqual([unnamed, grouped, optional, localX, unmatched]);
+
+    // A null-returning fallback may share its declared name with the registration that supplies it.
+    const fallback = tool(["z"]);
+    const supplier = tool(["z"]);
+    runtime.tools.push(fallback, supplier);
+    target.tools = [tool(["z"]), tool(["z"])];
+    const [first, second] = adoptRuntimeToolRegistrations(target, runtime, config).tools;
+    expect.soft(first).toBe(fallback);
+    expect.soft(second).toBe(supplier);
+    target.tools = [tool(["z"])];
+    expect(adoptRuntimeToolRegistrations(target, runtime, config)).toBe(target);
   } finally {
     markPluginRegistryRetired(runtime);
   }

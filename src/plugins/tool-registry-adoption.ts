@@ -33,26 +33,40 @@ export function adoptRuntimeToolRegistrations(
     ) {
       continue;
     }
-    const owned = runtime.tools.filter((entry) => entry.pluginId === pluginId);
-    for (const local of target.tools.filter((entry) => entry.pluginId === pluginId)) {
-      const names = new Set(local.names);
-      if (names.size === 0) {
+    const owned = groupByDeclaredIdentity(runtime.tools, pluginId);
+    // Repeated identities can be null-returning fallbacks: pair them one-to-one
+    // in registration order, or leave an ambiguous group on discovery.
+    for (const [identity, locals] of groupByDeclaredIdentity(target.tools, pluginId)) {
+      const donors = owned.get(identity);
+      if (donors?.length !== locals.length) {
         continue;
       }
-      const replacement = owned.find((entry) => {
-        const ownedNames = new Set(entry.names);
-        return (
-          entry.optional === local.optional &&
-          ownedNames.size === names.size &&
-          [...names].every((name) => ownedNames.has(name))
-        );
+      locals.forEach((local, index) => {
+        const donor = donors[index];
+        if (donor && donor !== local) {
+          replacements.set(local, donor);
+        }
       });
-      if (replacement && replacement !== local) {
-        replacements.set(local, replacement);
-      }
     }
   }
   return replacements.size === 0
     ? target
     : { ...target, tools: target.tools.map((entry) => replacements.get(entry) ?? entry) };
+}
+
+/** Unnamed registrations have no comparable identity and stay with discovery. */
+function groupByDeclaredIdentity(
+  tools: readonly PluginToolRegistration[],
+  pluginId: string,
+): Map<string, PluginToolRegistration[]> {
+  const groups = new Map<string, PluginToolRegistration[]>();
+  for (const entry of tools) {
+    const names = [...new Set(entry.names)].sort();
+    if (entry.pluginId !== pluginId || names.length === 0) {
+      continue;
+    }
+    const identity = JSON.stringify([entry.optional, names]);
+    groups.set(identity, [...(groups.get(identity) ?? []), entry]);
+  }
+  return groups;
 }
