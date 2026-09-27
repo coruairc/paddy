@@ -1,4 +1,4 @@
-import childProcess from "node:child_process";
+import childProcess, { ChildProcess } from "node:child_process";
 import { PassThrough } from "node:stream";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ErrorCodes } from "../../../packages/gateway-protocol/src/index.js";
@@ -23,10 +23,15 @@ describe("session catalog Gateway methods", () => {
 
   it("prepares the login-shell PATH before synchronous catalog availability checks", async () => {
     let finishProbe: (() => void) | undefined;
-    const asyncExec = vi.fn<typeof childProcess.spawn>(() => {
-      const child = new childProcess.ChildProcess();
-      child.stdout = new PassThrough();
-      child.stderr = new PassThrough();
+    type ShellProcess = childProcess.ChildProcessByStdio<null, PassThrough, PassThrough>;
+    type ShellSpawnOptions = childProcess.SpawnOptionsWithStdioTuple<"ignore", "pipe", "pipe">;
+    const asyncExec = vi.fn<
+      (command: string, args: readonly string[], options: ShellSpawnOptions) => ShellProcess
+    >(() => {
+      const stdout = new PassThrough();
+      const stderr = new PassThrough();
+      const stdio: ShellProcess["stdio"] = [null, stdout, stderr, null, null];
+      const child = Object.assign(new ChildProcess(), { stdin: null, stdout, stderr, stdio });
       finishProbe = () => {
         child.stdout?.emit("data", Buffer.from("\0PATH=/catalog/bin\0"));
         child.emit("close", 0, null);
@@ -45,13 +50,12 @@ describe("session catalog Gateway methods", () => {
     const shell = await vi.importActual<typeof import("../../infra/shell-env.js")>(
       "../../infra/shell-env.js",
     );
+    const options = { env: process.env, platform: "linux" as const };
     hoisted.prepareShellPathFromLoginShell.mockImplementation(() =>
-      shell.prepareShellPathFromLoginShell({ env: process.env, platform: "linux" }),
+      shell.prepareShellPathFromLoginShell(options),
     );
     const list = vi.fn(async () => {
-      expect(shell.getShellPathFromLoginShell({ env: process.env, platform: "linux" })).toBe(
-        "/catalog/bin",
-      );
+      expect(shell.getShellPathFromLoginShell(options)).toBe("/catalog/bin");
       return [];
     });
     hoisted.activeRegistry.sessionCatalogs = [{ provider: provider("local", { list }) }];

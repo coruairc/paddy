@@ -1,5 +1,5 @@
 // Covers shell environment fallback loading.
-import childProcess, { execFileSync } from "node:child_process";
+import childProcess, { ChildProcess, execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -45,12 +45,17 @@ describe("async login-shell PATH preparation", () => {
   });
 
   async function holdProbe() {
-    let child: childProcess.ChildProcess;
-    const exec = vi.fn<typeof childProcess.spawn>(() => {
-      child = new childProcess.ChildProcess();
-      child.stdout = new PassThrough();
-      child.stderr = new PassThrough();
-      child.kill = vi.fn(() => true);
+    type ShellProcess = childProcess.ChildProcessByStdio<null, PassThrough, PassThrough>;
+    type ShellSpawnOptions = childProcess.SpawnOptionsWithStdioTuple<"ignore", "pipe", "pipe">;
+    let child: ShellProcess;
+    const kill = vi.fn(() => true);
+    const exec = vi.fn<
+      (command: string, args: readonly string[], options: ShellSpawnOptions) => ShellProcess
+    >(() => {
+      const stdout = new PassThrough();
+      const stderr = new PassThrough();
+      const stdio: ShellProcess["stdio"] = [null, stdout, stderr, null, null];
+      child = Object.assign(new ChildProcess(), { stdin: null, stdout, stderr, stdio, kill });
       return child;
     });
     const sync = vi.fn<typeof childProcess.execFileSync>(() => {
@@ -63,11 +68,14 @@ describe("async login-shell PATH preparation", () => {
     return {
       exec,
       sync,
+      kill,
       get child() {
         return child;
       },
       finish: (error: Error | null, output = "\0PATH=/shell/bin\0") => {
-        if (error) child.emit("error", error);
+        if (error) {
+          child.emit("error", error);
+        }
         child.stdout?.emit("data", Buffer.from(output));
         child.emit("exit", error ? 1 : 0, null);
         child.emit("close", error ? 1 : 0, null);
@@ -139,7 +147,7 @@ describe("async login-shell PATH preparation", () => {
           const stream = failure === "stdout overflow" ? probe.child.stdout : probe.child.stderr;
           stream?.emit("data", Buffer.alloc(2 * 1024 * 1024 + 1));
         }
-        expect(probe.child.kill).toHaveBeenCalledOnce();
+        expect(probe.kill).toHaveBeenCalledOnce();
       }
       probe.finish(null);
       expect(probe.child.stdout?.destroyed).toBe(true);
