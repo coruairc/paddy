@@ -161,9 +161,15 @@ describe("candidate service capability startup", () => {
     try {
       const result = await fixture.run(["gateway", "install", "--json"]);
       expect(result.code).toBe(1);
-      expect(`${result.stderr}\n${result.stdout}`).toContain(
-        "because another Gateway owns that state directory",
-      );
+      expect(JSON.parse(result.stdout)).toMatchObject({
+        ok: false,
+        error: {
+          type: "cli_error",
+          message: expect.stringContaining(
+            `OpenClaw state database is busy at ${fixture.databasePath}.`,
+          ),
+        },
+      });
       expect(fs.readFileSync(fixture.databasePath)).toEqual(before);
     } finally {
       gateway.release();
