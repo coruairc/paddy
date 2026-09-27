@@ -267,16 +267,28 @@ function trimDirectiveMessageBoundaries(
   tailMode: DirectiveWhitespaceTailMode,
   preparedRegions?: readonly CodeRegion[],
 ): string {
-  const trimmedStart = text.replace(/^(?:\r?\n)+/u, "").replace(/^[ \t](?=\S)/u, "");
-  const contentEnd = trimmedStart.trimEnd().length;
-  if (tailMode === "preserve" || contentEnd === trimmedStart.length) {
-    return trimmedStart;
+  let regions = preparedRegions;
+  // Code regions own their padding, including a leading tab that starts an indented block.
+  const inCode = (offset: number) =>
+    (regions ??= findCodeRegions(text)).some(
+      (region) => region.start <= offset && offset < region.end,
+    );
+  let start = /^(?:\r?\n)*/u.exec(text)?.[0].length ?? 0;
+  if (/^[ \t]\S/u.test(text.slice(start, start + 2)) && !inCode(start)) {
+    start += 1;
   }
-  // An open code block at the end owns its trailing bytes.
-  const regions = preparedRegions ?? findCodeRegions(trimmedStart);
-  return regions.some((region) => region.start <= contentEnd && region.end === trimmedStart.length)
-    ? trimmedStart
-    : trimmedStart.slice(0, contentEnd);
+  let end = text.length;
+  if (tailMode === "trim") {
+    const contentEnd = text.trimEnd().length;
+    // An open code block at the end owns its trailing bytes.
+    const codeOwnsTail =
+      contentEnd < end &&
+      (regions ??= findCodeRegions(text)).some(
+        (region) => region.start <= contentEnd && region.end === text.length,
+      );
+    end = codeOwnsTail ? end : Math.max(contentEnd, start);
+  }
+  return text.slice(start, end);
 }
 
 type StripInlineDirectiveTagsResult = {
