@@ -171,7 +171,7 @@ function createDeliveryBaseOptions(turn: Turn) {
     thread: turn.context.threadSpec,
     tableMode: turn.tableMode,
     chunkMode: turn.chunkMode,
-    richMessages: turn.telegramCfg.richMessages,
+    richMessages: turn.richMessages,
     linkPreview: turn.telegramCfg.linkPreview,
     replyQuoteMessageId: turn.replyQuoteMessageId,
     replyQuoteText: turn.replyQuoteText,
@@ -676,7 +676,7 @@ export function createDeliveryState(
       resolveFinalTelegramPresentationText({
         payload,
         text,
-        richMessages: getTurn().telegramCfg.richMessages === true,
+        richMessages: getTurn().richMessages,
         allowWebAppButtons:
           resolveTelegramTargetChatType(String(getTurn().context.chatId)) === "direct",
       }),

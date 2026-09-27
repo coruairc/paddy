@@ -2,6 +2,7 @@ import { normalizeOptionalString } from "@openclaw/normalization-core/string-coe
 import { resolveStaticSessionMcpServerNames } from "../../agents/agent-bundle-mcp-runtime-config.js";
 import { resolveCodexMcpToolOverridesForAgent } from "../../agents/cli-runner/bundle-mcp-codex.js";
 import { wrapUntrustedPromptDataBlock } from "../../agents/sanitize-for-prompt.js";
+import { isRuntimeToolAllowed } from "../../agents/tool-policy-match.js";
 /** Delivery planning, prompt policy, and delivery trace construction for cron runs. */
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import type {
@@ -292,53 +293,55 @@ export async function resolveCronDeliveryContext(params: {
   agentId: string;
 }) {
   const deliveryPlan = resolveCronDeliveryPlan(params.job);
-  if (
+  const { resolveDeliveryTarget, resolveTurnDeliveryFormatPrompt } =
+    await loadCronDeliveryRuntime();
+  const resolvedDelivery =
     deliveryPlan.mode === "webhook" ||
     (deliveryPlan.mode === "none" && !hasExplicitCronDeliveryTarget(deliveryPlan))
-  ) {
-    const resolvedDelivery = {
-      ok: false as const,
-      channel: undefined,
-      to: undefined,
-      accountId: undefined,
-      threadId: undefined,
-      mode: "implicit" as const,
-      error: new Error(
-        deliveryPlan.mode === "webhook"
-          ? "webhook delivery has no chat target"
-          : "delivery is disabled",
-      ),
-    };
-    return {
-      deliveryPlan,
-      deliveryRequested: deliveryPlan.mode === "webhook" ? deliveryPlan.requested : false,
-      resolvedDelivery,
-      sourceDelivery: resolveCronSourceDeliveryPlan({ deliveryPlan, resolvedDelivery }),
-    };
-  }
-  const { buildDeliveryFormatPrompt, resolveDeliveryTarget } = await loadCronDeliveryRuntime();
-  const resolvedDelivery = await resolveDeliveryTarget(params.cfg, params.agentId, {
-    ...deliveryPlan,
-    sessionTarget: params.job.payload.kind === "agentTurn" ? params.job.sessionTarget : undefined,
-    // Match preview's sessionTarget precedence: custom jobs resolve their own
-    // delivery session rather than the creator's last conversation.
-    sessionKey: resolveCronDeliverySessionKey(params.job),
-  });
+      ? {
+          ok: false as const,
+          channel: undefined,
+          to: undefined,
+          accountId: undefined,
+          threadId: undefined,
+          mode: "implicit" as const,
+          error: new Error(
+            deliveryPlan.mode === "webhook"
+              ? "webhook delivery has no chat target"
+              : "delivery is disabled",
+          ),
+        }
+      : await resolveDeliveryTarget(params.cfg, params.agentId, {
+          ...deliveryPlan,
+          sessionTarget:
+            params.job.payload.kind === "agentTurn" ? params.job.sessionTarget : undefined,
+          // Match preview's sessionTarget precedence: custom jobs resolve their own
+          // delivery session rather than the creator's last conversation.
+          sessionKey: resolveCronDeliverySessionKey(params.job),
+        });
+  const deliveryRequested = deliveryPlan.mode !== "none" && deliveryPlan.requested;
+  const sourceDelivery = resolveCronSourceDeliveryPlan({ deliveryPlan, resolvedDelivery });
+  const messageToolAllowed =
+    sourceDelivery.messageTool.enabled &&
+    params.job.payload.kind === "agentTurn" &&
+    isRuntimeToolAllowed("message", params.job.payload.toolsAllow);
   return {
     deliveryPlan,
-    deliveryRequested: deliveryPlan.requested,
+    deliveryRequested,
     resolvedDelivery,
-    deliverySystemPrompt:
-      deliveryPlan.requested && resolvedDelivery.ok
-        ? buildDeliveryFormatPrompt({
-            cfg: params.cfg,
-            channel: resolvedDelivery.channel,
+    deliverySystemPrompt: await resolveTurnDeliveryFormatPrompt({
+      cfg: params.cfg,
+      agentId: params.agentId,
+      reply: deliveryRequested && resolvedDelivery.ok ? resolvedDelivery : undefined,
+      // A run without a reply route still reaches a channel through the message tool.
+      messageTool: messageToolAllowed
+        ? {
+            channel: sourceDelivery.target.channel,
             accountId: resolvedDelivery.accountId,
-            agentId: params.agentId,
-            allowBootstrap: true,
-          })
+          }
         : undefined,
-    sourceDelivery: resolveCronSourceDeliveryPlan({ deliveryPlan, resolvedDelivery }),
+    }),
+    sourceDelivery,
   };
 }
 

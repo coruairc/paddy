@@ -37,6 +37,7 @@ import { resolveTelegramDmHistoryLimit } from "./dm-history.js";
 import type { TelegramReplyChainEntry } from "./message-cache-codec.js";
 import { TELEGRAM_TEXT_CHUNK_LIMIT } from "./outbound-adapter.js";
 import { TELEGRAM_RICH_TEXT_LIMIT } from "./rich-message.js";
+import { resolveTelegramRichMessages } from "./rich-messages-config.js";
 import { resolveSpooledUpdatePersistenceRetryDelayMs } from "./telegram-ingress-spool.js";
 
 const telegramInboundLog = createSubsystemLogger("gateway/channels/telegram").child("inbound");
@@ -88,8 +89,13 @@ export function resolveTelegramMessageTurnSettings(params: {
   opts: Pick<TelegramBotOptions, "allowFrom" | "groupAllowFrom" | "replyToMode">;
 }) {
   const allowFrom = params.opts.allowFrom ?? params.telegramCfg.allowFrom;
-  const telegramTextLimit =
-    params.telegramCfg.richMessages === true ? TELEGRAM_RICH_TEXT_LIMIT : TELEGRAM_TEXT_CHUNK_LIMIT;
+  const telegramTextLimit = resolveTelegramRichMessages({
+    cfg: params.cfg,
+    accountId: params.accountId,
+    accountConfig: params.telegramCfg,
+  })
+    ? TELEGRAM_RICH_TEXT_LIMIT
+    : TELEGRAM_TEXT_CHUNK_LIMIT;
   return {
     ackReactionScope: params.cfg.messages?.ackReactionScope ?? "group-mentions",
     allowFrom,

@@ -62,7 +62,11 @@ function bootstrapTelegramWithFormattingHints() {
   );
 }
 
-async function runCron(delivery: Record<string, unknown>, accountId?: string) {
+async function runCron(
+  delivery: Record<string, unknown>,
+  accountId?: string,
+  toolsAllow?: string[],
+) {
   mockRunCronFallbackPassthrough();
   resolveCronDeliveryPlanMock.mockReturnValue({
     requested: delivery.mode === "announce",
@@ -84,7 +88,7 @@ async function runCron(delivery: Record<string, unknown>, accountId?: string) {
       name: "Daily digest",
       schedule: { kind: "every", everyMs: 60_000 },
       sessionTarget: "isolated",
-      payload: { kind: "agentTurn", message: "post the digest" },
+      payload: { kind: "agentTurn", message: "post the digest", toolsAllow },
       delivery,
     } as never,
     message: "post the digest",
@@ -131,10 +135,32 @@ describe("runCronIsolatedAgentTurn delivery formatting hints", () => {
     expect(prompt).toContain("Telegram rich OFF.");
   });
 
-  it("adds no channel hints when the run does not deliver to a chat", async () => {
+  it("gives a message-tool-only run the contract of the account its sends use", async () => {
     const prompt = await runCron(
       { mode: "none", channel: "telegram", to: "-100123", accountId: "rich" },
       "rich",
+    );
+
+    expect(prompt?.split("### Delivery Format")).toHaveLength(2);
+    expect(prompt).toContain("with the message tool");
+    expect(prompt).toContain("Telegram rich ON.");
+  });
+
+  it("keeps the rich OFF rules for a message-tool-only run on a plain account", async () => {
+    const prompt = await runCron(
+      { mode: "none", channel: "telegram", to: "-100123", accountId: "plain" },
+      "plain",
+    );
+
+    expect(prompt).toContain("Telegram rich OFF.");
+    expect(prompt).not.toContain("Telegram rich ON.");
+  });
+
+  it("adds no channel hints when the run can reach no chat", async () => {
+    const prompt = await runCron(
+      { mode: "none", channel: "telegram", to: "-100123", accountId: "rich" },
+      "rich",
+      ["web_fetch"],
     );
 
     expect(prompt).toBeUndefined();

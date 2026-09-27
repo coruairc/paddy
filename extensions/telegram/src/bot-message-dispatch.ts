@@ -34,7 +34,6 @@ import {
   getAgentScopedMediaLocalRoots,
   resolveAutoTopicLabelConfig,
   resolveChunkMode,
-  resolveMarkdownTableMode,
 } from "./bot-message-dispatch.runtime.js";
 import type {
   DispatchTelegramMessageParams,
@@ -47,6 +46,7 @@ import {
   buildTelegramNativeQuoteCandidate,
   type TelegramNativeQuoteCandidateByMessageId,
 } from "./bot/native-quote.js";
+import { resolveTelegramRichMessages, resolveTelegramTableMode } from "./rich-messages-config.js";
 import { cacheSticker, describeStickerImage } from "./sticker-cache.js";
 
 const EMPTY_RESPONSE_FALLBACK = "No response generated. Please try again.";
@@ -299,12 +299,13 @@ export const dispatchTelegramMessage = async (
   const loadFreshSessionEntry = createFreshTelegramSessionEntryLoader({ cfg, telegramDeps });
   const isRoomEvent = dispatchContext.ctxPayload.InboundEventKind === "room_event";
   const status = createTelegramDispatchStatus({ context: dispatchContext });
-  const tableMode = resolveMarkdownTableMode({
+  const richMessagesParams = {
     cfg,
-    channel: "telegram",
     accountId: dispatchContext.route.accountId,
-    supportsBlockTables: telegramCfg.richMessages === true,
-  });
+    accountConfig: telegramCfg,
+  };
+  const richMessages = resolveTelegramRichMessages(richMessagesParams);
+  const tableMode = resolveTelegramTableMode(richMessagesParams);
   const resolvedReasoningLevel = resolveTelegramReasoningLevel({
     cfg,
     sessionKey: dispatchContext.ctxPayload.SessionKey,
@@ -338,6 +339,7 @@ export const dispatchTelegramMessage = async (
     replyQuotePosition: quote.replyQuotePosition,
     replyQuoteText: quote.replyQuoteText,
     resolvedReasoningLevel,
+    richMessages,
     statusReactionController: status.controller,
     tableMode,
     telegramDeps,

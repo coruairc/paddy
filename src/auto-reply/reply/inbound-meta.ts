@@ -551,7 +551,10 @@ export function buildInboundMetaSystemPrompt(
   const deliveryFormat =
     options?.includeFormattingHints === false
       ? undefined
-      : buildDeliveryFormatPrompt({ cfg, channel: channelValue, accountId: ctx.AccountId });
+      : buildDeliveryFormatPrompt({
+          cfg,
+          route: { channel: channelValue, accountId: ctx.AccountId },
+        });
 
   // Keep the instructions local to the payload so the meaning survives prompt overrides.
   const messageContext = [
