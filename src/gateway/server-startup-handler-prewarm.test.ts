@@ -15,7 +15,6 @@ import {
 
 const mocks = vi.hoisted(() => ({
   events: [] as string[],
-  prepareShellPathFromLoginShell: vi.fn(async () => null),
   executeRequest: vi.fn(),
   ensureSkillsWatcher: vi.fn(),
   prepareWorkspaceSkillEntries: vi.fn<
@@ -41,10 +40,6 @@ const mocks = vi.hoisted(() => ({
     mocks.events.push("plugins");
     return { plugins: [] };
   }),
-}));
-
-vi.mock("../infra/shell-env.js", () => ({
-  prepareShellPathFromLoginShell: mocks.prepareShellPathFromLoginShell,
 }));
 
 vi.mock("../config/sessions/combined-store-gateway.js", () => ({
@@ -105,7 +100,6 @@ const workspaces = {
 
 beforeEach(() => {
   mocks.events.length = 0;
-  mocks.prepareShellPathFromLoginShell.mockClear();
   mocks.executeRequest.mockClear();
   mocks.ensureSkillsWatcher.mockClear();
   mocks.prepareWorkspaceSkillEntries.mockClear();
@@ -150,7 +144,6 @@ describe("scheduleGatewayHandlerPrewarm", () => {
       } while (vi.getTimerCount() > 0);
 
       expect(mocks.events).toContain("connection");
-      expect(mocks.prepareShellPathFromLoginShell).toHaveBeenCalledWith({ env: process.env });
       expect(mocks.events).toContain("agent-events");
       expect(mocks.events.filter((event) => event === "handlers")).toHaveLength(3);
       expect(mocks.executeRequest).not.toHaveBeenCalled();
@@ -446,7 +439,6 @@ it("skips optional discovery when foreground work arrives after idle admission",
       await vi.dynamicImportSettled();
     } while (vi.getTimerCount() > 0);
     expect(mocks.prepareWorkspaceSkillEntries).not.toHaveBeenCalled();
-    expect(mocks.prepareShellPathFromLoginShell).not.toHaveBeenCalled();
     expect(mocks.ensureSkillsWatcher).not.toHaveBeenCalled();
     expect(mocks.prewarmMemorySearchWorker).not.toHaveBeenCalled();
   } finally {
