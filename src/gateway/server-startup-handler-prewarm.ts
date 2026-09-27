@@ -21,6 +21,15 @@ function gatewayPrewarmItems(
   isCancelled: () => boolean,
 ): GatewayHandlerPrewarmItem[] {
   return [
+    {
+      name: "shell-path",
+      load: async () => {
+        const { prepareShellPathFromLoginShell } = await import("../infra/shell-env.js");
+        if (!isCancelled()) {
+          await prepareShellPathFromLoginShell({ env: process.env });
+        }
+      },
+    },
     { name: "connection", load: () => import("./server/ws-connection/message-handler.js") },
     ...["chat.history", "chat.send", "sessions.list"].map((method) => ({
       name: method,
