@@ -466,6 +466,10 @@ if [ "${OPENCLAW_UPGRADE_SURVIVOR_PUBLISHED_BASELINE:-0}" = "1" ]; then
   fi
 
   docker_e2e_build_or_reuse "$IMAGE_NAME" upgrade-survivor "$ROOT_DIR/scripts/e2e/Dockerfile" "$ROOT_DIR" "bare" "$SKIP_BUILD"
+  if [ "$UPDATE_RESTART_MODE" = auto-auth ]; then
+    # Have Docker load its default AppArmor profile before the setup process reattaches it.
+    docker_e2e_docker_cmd run --rm --network none --entrypoint true "$IMAGE_NAME"
+  fi
 
   echo "Running published upgrade survivor Docker E2E..."
   # Keep candidate images from selecting an older copy of the trusted release runner.
@@ -537,6 +541,9 @@ prepare_diagnostics_capture
 prepare_limit_summary
 
 docker_e2e_build_or_reuse "$IMAGE_NAME" upgrade-survivor "$ROOT_DIR/scripts/e2e/Dockerfile" "$ROOT_DIR" "bare" "$SKIP_BUILD"
+if [ "$UPDATE_RESTART_MODE" = auto-auth ]; then
+  docker_e2e_docker_cmd run --rm --network none --entrypoint true "$IMAGE_NAME"
+fi
 
 echo "Running upgrade survivor Docker E2E..."
 docker_e2e_run_with_harness \
