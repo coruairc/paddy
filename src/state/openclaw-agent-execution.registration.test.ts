@@ -16,7 +16,10 @@ import {
 } from "../infra/sqlite-worker-contract.js";
 import type { SqliteWorkerAdmissionRequest } from "../infra/sqlite-worker-operation-admission.js";
 import { createDeferredCore, type Deferred } from "../shared/deferred.js";
-import type { OpenClawAgentDatabaseRegistrationCommit } from "./openclaw-agent-db-contract.js";
+import type {
+  OpenClawAgentDatabaseRegistrationCommit,
+  OpenClawAgentDatabaseRegistrationObserver,
+} from "./openclaw-agent-db-contract.js";
 import type { AgentDatabaseExecutionOpen } from "./openclaw-agent-execution-contract.js";
 import { OpenClawQuarantineReadCleanupError } from "./openclaw-quarantine-error.js";
 import { hydrateOpenClawStateWorkerError } from "./openclaw-state-worker-error.js";
@@ -35,7 +38,7 @@ const edge = vi.hoisted(() => {
       (
         options: unknown,
         lease: unknown,
-        committed?: (receipt: OpenClawAgentDatabaseRegistrationCommit) => void,
+        registration?: OpenClawAgentDatabaseRegistrationObserver,
       ) => typeof database
     >(),
     request: vi.fn<(request: SqliteWorkerAdmissionRequest) => void>(),
@@ -255,8 +258,9 @@ afterEach(async () => {
 
 it("settles eager native factory creation synchronously", async () => {
   const { createSqliteWorkerBackend } = await import("./openclaw-agent-execution.worker.js");
-  edge.open.mockImplementation((_options, _lease, committed) => {
-    committed?.(receipt);
+  edge.open.mockImplementation((_options, _lease, registration) => {
+    registration?.starting?.();
+    registration?.committed?.(receipt);
     nativeOpened = true;
     return edge.database;
   });
@@ -310,11 +314,12 @@ it.each([
       return "ok";
     });
     edge.request.mockImplementation(actual.requestSqliteWorkerOperationAdmission);
-    edge.open.mockImplementation((_options, _lease, committed) => {
+    edge.open.mockImplementation((_options, _lease, registration) => {
       if (outcome === "ordinary closed") {
         throw nativeError;
       }
-      committed?.(receipt);
+      registration?.starting?.();
+      registration?.committed?.(receipt);
       if (outcome === "native and report failure") {
         throw nativeError;
       }
@@ -533,8 +538,9 @@ describe("committed agent registration across failed native opening", () => {
     async ({ openingSucceeds, reportRefused }) => {
       const openingError = new Error("Validation publication failed after registration COMMIT");
       const reportingError = new Error("Original caller retired before receipt acknowledgement");
-      edge.open.mockImplementation((_options, _lease, committed) => {
-        committed?.(receipt);
+      edge.open.mockImplementation((_options, _lease, registration) => {
+        registration?.starting?.();
+        registration?.committed?.(receipt);
         if (openingSucceeds) {
           nativeOpened = true;
           return edge.database;
@@ -595,8 +601,9 @@ describe("committed agent registration across failed native opening", () => {
   );
 
   it("keeps a fully initialized actor available without reporting registration again", async () => {
-    edge.open.mockImplementation((_options, _lease, committed) => {
-      committed?.(receipt);
+    edge.open.mockImplementation((_options, _lease, registration) => {
+      registration?.starting?.();
+      registration?.committed?.(receipt);
       nativeOpened = true;
       return edge.database;
     });

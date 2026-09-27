@@ -11,7 +11,7 @@ import { recordDeferredPluginMigrations } from "../infra/deferred-plugin-migrati
 import { resolveExistingSqliteFileUri } from "../infra/node-sqlite.js";
 import { clearLoadInstalledPluginIndexInstallRecordsCache } from "../plugins/installed-plugin-index-record-cache.js";
 import { seedInstalledPluginIndex } from "../plugins/test-helpers/installed-plugin-index.js";
-import { closeOpenClawStateDatabaseByPath } from "../state/openclaw-state-db-cache.js";
+import { closeOpenClawStateDatabaseByPathAsync } from "../state/openclaw-state-db-cache.js";
 import { resolveOpenClawStateSqlitePath } from "../state/openclaw-state-db.paths.js";
 import { runDoctorLintCli } from "./doctor-lint.js";
 import {
@@ -525,7 +525,7 @@ describe("runDoctorLintCli", () => {
     };
     await seedInstalledPluginIndex({}, { config, env, stateDir, workspaceDir: rootDir });
     const databasePath = resolveOpenClawStateSqlitePath(env);
-    closeOpenClawStateDatabaseByPath(databasePath);
+    await closeOpenClawStateDatabaseByPathAsync(databasePath);
     const before = snapshotDoctorLintSqliteFamily(databasePath);
     mocks.openNodeSqliteDatabase.mockClear();
     const sourceOpenStacks: string[] = [];
@@ -603,7 +603,7 @@ describe("runDoctorLintCli", () => {
     };
     await seedInstalledPluginIndex({}, { config, env, stateDir, workspaceDir: rootDir });
     const databasePath = resolveOpenClawStateSqlitePath(env);
-    closeOpenClawStateDatabaseByPath(databasePath);
+    await closeOpenClawStateDatabaseByPathAsync(databasePath);
     const before = snapshotDoctorLintSqliteFamily(databasePath);
     const originalEnv = {
       HOME: process.env.HOME,
@@ -663,7 +663,7 @@ describe("runDoctorLintCli", () => {
       OPENCLAW_STATE_DIR: stateDir,
     };
     await seedInstalledPluginIndex({}, { config, env, stateDir, workspaceDir: rootDir });
-    recordDeferredPluginMigrations({
+    await recordDeferredPluginMigrations({
       env,
       pending: [
         {
@@ -676,7 +676,7 @@ describe("runDoctorLintCli", () => {
       ],
     });
     const databasePath = resolveOpenClawStateSqlitePath(env);
-    closeOpenClawStateDatabaseByPath(databasePath);
+    await closeOpenClawStateDatabaseByPathAsync(databasePath);
     clearLoadInstalledPluginIndexInstallRecordsCache();
     createDoctorLintSemanticIndex(stateDir);
     const before = snapshotDoctorLintSqliteFamily(databasePath);
@@ -752,7 +752,7 @@ describe("runDoctorLintCli", () => {
     };
     await seedInstalledPluginIndex({}, { config, env, stateDir, workspaceDir: rootDir });
     const pluginDatabasePath = resolveOpenClawStateSqlitePath(env);
-    closeOpenClawStateDatabaseByPath(pluginDatabasePath);
+    await closeOpenClawStateDatabaseByPathAsync(pluginDatabasePath);
     createDoctorLintSemanticIndex(stateDir);
     const originalEnv = {
       HOME: process.env.HOME,
@@ -821,7 +821,7 @@ describe("runDoctorLintCli", () => {
     };
     await seedInstalledPluginIndex({}, { config, env, stateDir, workspaceDir: rootDir });
     const pluginDatabasePath = resolveOpenClawStateSqlitePath(env);
-    closeOpenClawStateDatabaseByPath(pluginDatabasePath);
+    await closeOpenClawStateDatabaseByPathAsync(pluginDatabasePath);
     createDoctorLintSemanticIndex(stateDir);
     const originalEnv = {
       HOME: process.env.HOME,

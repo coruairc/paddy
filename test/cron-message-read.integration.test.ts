@@ -566,7 +566,7 @@ describe("scheduled message actions", () => {
           channels: {
             discord: {
               enabled: true,
-              // The wall-clock jump must not restart this deliberately dormant transport.
+              // Advancing the grant clock must not start an unrelated Discord transport.
               healthMonitor: { enabled: false },
               ...(nativeCreator
                 ? {
