@@ -66,7 +66,7 @@ export async function resolveMessageToolDeliveryFormatPrompt(params: {
   agentId?: string;
   /** The message tool's current channel, when the run has one. */
   channel?: string | null;
-  /** The account the message tool sends through by default. */
+  /** The account the message tool sends through, when the run fixes one. */
   accountId?: string | null;
 }): Promise<string | undefined> {
   // Same default the message tool applies to a send without `channel`; with
@@ -81,12 +81,29 @@ export async function resolveMessageToolDeliveryFormatPrompt(params: {
       )
       .then((selection) => selection.channel)
       .catch(() => undefined));
-  return buildDeliveryFormatPrompt({
-    cfg: params.cfg,
+  const render = (accountId?: string | null) =>
+    buildDeliveryFormatPrompt({
+      cfg: params.cfg,
+      channel,
+      accountId,
+      via: "message_tool",
+      agentId: params.agentId,
+      allowBootstrap: true,
+    });
+  if (params.accountId?.trim() || !channel) {
+    return render(params.accountId);
+  }
+  // Without a fixed account, a send may resolve any account (for example through a
+  // target binding), so only a contract every account shares is safe to give.
+  const plugin = resolveOutboundChannelPlugin({
     channel,
-    accountId: params.accountId,
-    via: "message_tool",
+    cfg: params.cfg,
     agentId: params.agentId,
     allowBootstrap: true,
   });
+  const prompts = new Set(
+    (plugin?.config.listAccountIds(params.cfg) ?? []).map((accountId) => render(accountId)),
+  );
+  prompts.add(render(undefined));
+  return prompts.size === 1 ? [...prompts][0] : undefined;
 }

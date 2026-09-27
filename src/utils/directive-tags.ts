@@ -212,51 +212,107 @@ function replaceTextParts(
 
 type DirectiveWhitespaceTailMode = "trim" | "preserve";
 
-function isLineBreak(char: string): boolean {
+function isLineBreak(char: string | undefined): boolean {
   return char === "\n" || char === "\r";
 }
 
-/** Joins the text around each removed directive without touching other whitespace. */
+function isBlank(char: string | undefined): boolean {
+  return char === " " || char === "\t";
+}
+
+/**
+ * Joins the text around each removed directive without touching other whitespace.
+ * Output is built from pieces with incremental tail facts so many directives stay linear.
+ */
 function closeRemovedDirectiveGaps(text: string, marker: string): string {
-  let out = "";
+  if (!text.includes(marker)) {
+    return text;
+  }
+  const contentEnd = text.trimEnd().length;
+  const out: string[] = [];
+  // Last non-blank output character; undefined while the output is empty or blank.
+  let lastContentChar: string | undefined;
+  const push = (piece: string) => {
+    out.push(piece);
+    for (let i = piece.length - 1; i >= 0; i -= 1) {
+      if (!isBlank(piece[i])) {
+        lastContentChar = piece[i];
+        return;
+      }
+    }
+  };
+  // Each trimmed character leaves the output once, so repeated trims stay linear.
+  const trimTrailingBlanks = () => {
+    while (out.length > 0) {
+      const last = out[out.length - 1] ?? "";
+      let end = last.length;
+      while (end > 0 && isBlank(last[end - 1])) {
+        end -= 1;
+      }
+      if (end > 0) {
+        out[out.length - 1] = last.slice(0, end);
+        return;
+      }
+      out.pop();
+    }
+  };
+  // Consecutive line breaks ending the output, counted up to the two a seam may keep.
+  const trailingBreaks = () => {
+    let breaks = 0;
+    for (let p = out.length - 1; p >= 0; p -= 1) {
+      const piece = out[p] ?? "";
+      for (let i = piece.length - 1; i >= 0; i -= 1) {
+        if (piece[i] === "\n") {
+          breaks += 1;
+          if (breaks >= 2) {
+            return breaks;
+          }
+        } else if (piece[i] !== "\r") {
+          return breaks;
+        }
+      }
+    }
+    return breaks;
+  };
   let cursor = 0;
   for (;;) {
     const markerStart = text.indexOf(marker, cursor);
     if (markerStart < 0) {
-      return out + text.slice(cursor);
+      push(text.slice(cursor));
+      return out.join("");
     }
     let markerEnd = markerStart + marker.length;
     while (text.startsWith(marker, markerEnd)) {
       markerEnd += marker.length;
     }
-    const before = out + text.slice(cursor, markerStart);
-    const beforeContent = before.replace(/[ \t]+$/u, "");
+    push(text.slice(cursor, markerStart));
     let next = markerEnd;
-    while (next < text.length && (text[next] === " " || text[next] === "\t")) {
+    while (isBlank(text[next])) {
       next += 1;
     }
-    const atLineStart = beforeContent.length === 0 || isLineBreak(beforeContent.at(-1) ?? "");
-    const atLineEnd = next >= text.length || isLineBreak(text.charAt(next));
+    const atLineStart = lastContentChar === undefined || isLineBreak(lastContentChar);
+    const atLineEnd = next >= text.length || isLineBreak(text[next]);
     if (atLineStart && atLineEnd) {
       // A directive-only line leaves at most one blank line at its seam.
-      let breaks = (/(?:\r?\n)*$/u.exec(beforeContent)?.[0].match(/\n/gu) ?? []).length;
-      let kept = "";
-      while (next < text.length && isLineBreak(text.charAt(next))) {
+      trimTrailingBlanks();
+      let breaks = trailingBreaks();
+      while (isLineBreak(text[next])) {
         const width = text.startsWith("\r\n", next) ? 2 : 1;
         if (breaks < 2) {
-          kept += text.slice(next, next + width);
+          push(text.slice(next, next + width));
           breaks += 1;
         }
         next += width;
       }
-      out = beforeContent + kept;
-    } else if (atLineStart || !text.slice(next).trim()) {
+    } else if (atLineStart || next >= contentEnd) {
       // Following indentation belongs to the next content, and trailing message
       // whitespace belongs to the caller's tail mode, not to the directive.
-      out = before;
       next = markerEnd;
     } else {
-      out = atLineEnd ? beforeContent : `${beforeContent} `;
+      trimTrailingBlanks();
+      if (!atLineEnd) {
+        push(" ");
+      }
     }
     cursor = next;
   }

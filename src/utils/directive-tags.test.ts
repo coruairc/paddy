@@ -289,6 +289,16 @@ describe("parseInlineDirectives", () => {
     expect(parseInlineDirectives(input).text).toBe(expected);
   });
 
+  test("strips many separated directives while keeping each gap local", () => {
+    const count = 2_000;
+    const input = Array.from({ length: count }, (_, i) => `w${i}  [[audio_as_voice]]  x`).join(
+      "\n",
+    );
+    const result = parseInlineDirectives(input);
+    expect(result.audioAsVoice).toBe(true);
+    expect(result.text).toBe(Array.from({ length: count }, (_, i) => `w${i} x`).join("\n"));
+  });
+
   test.each([
     { name: "spaces before a newline", suffix: "  \n" },
     { name: "CRLF paragraph boundaries", suffix: "\r\n\r\n\r\n" },

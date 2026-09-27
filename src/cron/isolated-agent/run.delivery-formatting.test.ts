@@ -49,7 +49,14 @@ function bootstrapTelegramWithFormattingHints() {
         pluginId: "telegram",
         source: "test",
         plugin: {
-          ...createChannelTestPluginBase({ id: "telegram", label: "Telegram" }),
+          ...createChannelTestPluginBase({
+            id: "telegram",
+            label: "Telegram",
+            config: {
+              listAccountIds: (config: OpenClawConfig) =>
+                Object.keys(config.channels?.telegram?.accounts ?? {}),
+            },
+          }),
           outbound: { deliveryMode: "direct", sendText: async () => ({ messageId: "1" }) },
           agentPrompt: {
             inboundFormattingHints: (params: { cfg: OpenClawConfig; accountId?: string | null }) =>
@@ -160,6 +167,15 @@ describe("runCronIsolatedAgentTurn delivery formatting hints", () => {
     expect(withTool).toContain("with the message tool");
     expect(withTool).toContain("Telegram rich OFF.");
     expect(finalize(false)).not.toContain("### Delivery Format");
+  });
+
+  it("withholds the contract when the sending account is not fixed and accounts disagree", async () => {
+    const { finalize } = await runCron(
+      { mode: "none", channel: "telegram", to: "-100123" },
+      undefined,
+    );
+
+    expect(finalize(true)).not.toContain("### Delivery Format");
   });
 
   it("uses the scheduled owner's account, which the message tool sends through", async () => {
