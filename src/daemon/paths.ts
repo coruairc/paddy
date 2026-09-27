@@ -44,9 +44,10 @@ export function resolveGatewayStateDir(env: Record<string, string | undefined>):
   }
   const home = resolveDaemonHomeDir(env);
   const suffix = resolveGatewayProfileSuffix(env.OPENCLAW_PROFILE);
-  // Profile suffixes isolate managed service files while preserving the default
-  // historical ~/.openclaw state path.
-  return path.join(home, `.openclaw${suffix}`);
+  // Profile suffixes isolate managed service files. The default must match
+  // NEW_STATE_DIRNAME in config/state-dir.ts (~/.paddy), so service files never land in
+  // a separate OpenClaw install's ~/.openclaw.
+  return path.join(home, `.paddy${suffix}`);
 }
 
 export function resolveGatewayTaskScriptPath(env: Record<string, string | undefined>): string {

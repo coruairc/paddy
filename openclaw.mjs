@@ -380,15 +380,10 @@ const resolveLauncherConfigPaths = () => {
   const stateOverride = process.env.OPENCLAW_STATE_DIR?.trim();
   if (stateOverride) {
     const stateDir = resolveLauncherUserPath(stateOverride);
-    return [path.join(stateDir, "openclaw.json"), path.join(stateDir, "clawdbot.json")];
+    return [path.join(stateDir, "openclaw.json")];
   }
-  const homeDir = resolveLauncherHomeDir();
-  return [
-    path.join(homeDir, ".openclaw", "openclaw.json"),
-    path.join(homeDir, ".openclaw", "clawdbot.json"),
-    path.join(homeDir, ".clawdbot", "openclaw.json"),
-    path.join(homeDir, ".clawdbot", "clawdbot.json"),
-  ];
+  // Mirrors src/config/state-dir.ts and paths.ts: ~/.paddy only, no legacy dirs or filenames.
+  return [path.join(resolveLauncherHomeDir(), ".paddy", "openclaw.json")];
 };
 
 const shouldDeferRootHelpToRuntimeEntry = () => {

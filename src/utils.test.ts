@@ -118,7 +118,7 @@ describe("normalizeE164", () => {
 describe("resolveConfigDir", () => {
   it("resolves the default config directory", () => {
     const root = path.resolve("config-dir-home");
-    const newDir = path.join(root, ".openclaw");
+    const newDir = path.join(root, ".paddy");
     const resolved = resolveConfigDir({} as NodeJS.ProcessEnv, () => root);
     expect(resolved).toBe(newDir);
   });

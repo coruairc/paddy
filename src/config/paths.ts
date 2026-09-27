@@ -34,7 +34,8 @@ export function resolveIsConfigReadOnly(env: NodeJS.ProcessEnv = process.env): b
   return env.OPENCLAW_CONFIG_READONLY === "1" || resolveIsNixMode(env);
 }
 const CONFIG_FILENAME = "openclaw.json";
-const LEGACY_CONFIG_FILENAMES = ["clawdbot.json"] as const;
+// Paddy has no legacy config filenames; upstream's "clawdbot.json" is not discovered.
+const LEGACY_CONFIG_FILENAMES: readonly string[] = [];
 
 /** True when the root CLI selected a non-default isolated profile. */
 export function isNamedProfile(env: NodeJS.ProcessEnv = process.env): boolean {
@@ -217,7 +218,7 @@ export let STATE_DIR = resolveStateDir();
 /**
  * Config file path (JSON or JSON5).
  * Can be overridden via OPENCLAW_CONFIG_PATH.
- * Default: ~/.openclaw/openclaw.json (or $OPENCLAW_STATE_DIR/openclaw.json)
+ * Default: ~/.paddy/openclaw.json (or $OPENCLAW_STATE_DIR/openclaw.json)
  */
 export function resolveCanonicalConfigPath(
   env: NodeJS.ProcessEnv = process.env,

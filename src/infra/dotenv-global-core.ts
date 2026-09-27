@@ -191,7 +191,8 @@ function resolveGlobalDotEnvPaths(opts: GlobalRuntimeDotEnvOptions, env: NodeJS.
   const stateEnvPath = opts.stateEnvPath ?? path.join(resolveConfigDir(env), ".env");
   const globalEnvPaths = [...new Set([stateEnvPath, ...(opts.additionalEnvPaths ?? [])])];
   const home = resolveRequiredHomeDir(env, os.homedir);
-  const defaultStateEnvPath = path.join(home, ".openclaw", ".env");
+  // Must match the default root in resolveConfigDir (~/.paddy).
+  const defaultStateEnvPath = path.join(home, ".paddy", ".env");
   const hasExplicitNonDefaultStateDir =
     env.OPENCLAW_STATE_DIR?.trim() !== undefined &&
     path.resolve(stateEnvPath) !== path.resolve(defaultStateEnvPath);
