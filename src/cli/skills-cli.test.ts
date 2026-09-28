@@ -58,7 +58,7 @@ describe("skills-cli", () => {
     it("preserves the named profile on every human skill surface", () => {
       vi.stubEnv("OPENCLAW_PROFILE", "work");
       vi.stubEnv("OPENCLAW_CONTAINER_HINT", "");
-      const prefix = "openclaw --profile work";
+      const prefix = "paddy --profile work";
       const report = createMockReport([]);
       const outputs = [
         formatSkillsList(report, {}),
@@ -86,8 +86,8 @@ describe("skills-cli", () => {
       for (const output of outputs) {
         expect(() => JSON.parse(output)).not.toThrow();
         expect(output).not.toContain("Tip:");
-        expect(output).not.toContain("openclaw --profile");
-        expect(output).not.toContain("openclaw --container");
+        expect(output).not.toContain("paddy --profile");
+        expect(output).not.toContain("paddy --container");
       }
     });
   });

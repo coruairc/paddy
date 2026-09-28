@@ -28,10 +28,10 @@ const clearGatewayRestartIntentSync = vi.fn();
 const appendGatewayLifecycleAudit = vi.fn();
 const MISSING_SERVICE_PROGRAM = "/openclaw-test-missing-runtime/node";
 const SERVICE_REPAIR_COMMAND_CASES = [
-  ["Gateway", "", "", "openclaw gateway", "restart"],
-  ["Node", "", "", "openclaw node", "install --force"],
-  ["Node", "work", "", "openclaw --profile work node", "install --force"],
-  ["Node", "work", "demo", "openclaw --container demo node", "install --force"],
+  ["Gateway", "", "", "paddy gateway", "restart"],
+  ["Node", "", "", "paddy node", "install --force"],
+  ["Node", "work", "", "paddy --profile work node", "install --force"],
+  ["Node", "work", "demo", "paddy --container demo node", "install --force"],
 ] as const;
 const createGatewayLifecycleMutationAudit = vi.fn(
   (params: { action: string; source?: string }) => (mutation: { mode: string; pid?: number }) =>

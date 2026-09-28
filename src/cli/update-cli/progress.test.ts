@@ -342,7 +342,7 @@ describe("update progress", () => {
       exitCode: 1,
       stdoutTail: JSON.stringify(envelope),
       stderrTail:
-        "[openclaw] The CLI command failed.\n[openclaw] Reason: Unable to load plugin\n[openclaw] Help: openclaw --help",
+        "[paddy] The CLI command failed.\n[paddy] Reason: Unable to load plugin\n[paddy] Help: paddy --help",
       failureFacts: [{ check: "doctor", code: "doctor-failed", message: "Unable to load plugin" }],
     };
     presentation.progress.onStepComplete?.(failed);
@@ -356,7 +356,7 @@ describe("update progress", () => {
     );
     const report = log.mock.calls.flat().join("\n");
     expect(report.match(/Unable to load plugin/gu)).toHaveLength(1);
-    expect(report).not.toContain("Help: openclaw --help");
+    expect(report).not.toContain("Help: paddy --help");
     for (const stdoutTail of [
       "Additional diagnostic",
       JSON.stringify({ ...envelope, details: "Additional diagnostic" }),
@@ -380,7 +380,7 @@ describe("update progress", () => {
             ...failed,
             cwd: "/fixture",
             stdoutTail: "x".repeat(160),
-            stderrTail: `[openclaw] Reason: Unable to load plugin\nDistinct detail ${"y".repeat(160)}\n[openclaw] Help: openclaw --help\ndoctor: Candidate doctor failed (deadline exceeded) (1000ms)`,
+            stderrTail: `[paddy] Reason: Unable to load plugin\nDistinct detail ${"y".repeat(160)}\n[paddy] Help: paddy --help\ndoctor: Candidate doctor failed (deadline exceeded) (1000ms)`,
           },
         ],
       },

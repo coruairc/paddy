@@ -366,11 +366,11 @@ describe("eligible status recovery", () => {
       }),
       async (accountHome, print) => {
         print(await createStatus("missing-unit", accountHome), { json: false });
-        expect(humanOutput()).toContain("openclaw --profile work gateway install");
+        expect(humanOutput()).toContain("paddy --profile work gateway install");
         expect(humanOutput()).not.toContain("service management skipped");
         print(await createStatus("version-mismatch", accountHome), { json: false });
-        expect(humanOutput()).toContain("openclaw --profile work doctor --fix");
-        expect(humanOutput()).toContain("openclaw --profile work gateway install --force");
+        expect(humanOutput()).toContain("paddy --profile work doctor --fix");
+        expect(humanOutput()).toContain("paddy --profile work gateway install --force");
       },
     );
   });

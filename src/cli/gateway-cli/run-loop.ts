@@ -32,6 +32,7 @@ import {
 import { runWithProcessCleanupBudget } from "../../process/supervisor/cleanup-budget.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { createLazyImportLoader } from "../../shared/lazy-promise.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { createGatewayHostLifecycle } from "./host-lifecycle.js";
 import { drainGatewayActiveWork } from "./run-loop-drain.js";
@@ -86,9 +87,10 @@ export async function runGatewayLoop(params: {
   completeBoot?: (completion: GatewayBootLifecycleCompletion) => void;
   onRestartStartupFailure?: (error: unknown, signal: AbortSignal) => Promise<void>;
 }) {
-  // macOS/BSD process inspection reports process.title instead of the original
-  // argv. Give the long-running Gateway a verifiable identity for lock readers.
-  if (process.title === "openclaw") {
+  // Ordinary commands present as `paddy`. The long-running Gateway keeps the
+  // historical `openclaw-gateway` title so lock readers and service supervisors
+  // still recognize it. Also accept a process titled `openclaw` by the alias.
+  if (process.title === CLI_NAME || process.title === "openclaw") {
     process.title = "openclaw-gateway";
   }
   let startupStartedAt: number;

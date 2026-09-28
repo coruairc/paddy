@@ -112,7 +112,7 @@ it.each(
     });
 
     expect(result).toMatchObject({ status: "ok", mode: "git", root: gitRoot });
-    expect(result.steps.filter((step) => step.name === "openclaw doctor")).toEqual([
+    expect(result.steps.filter((step) => step.name === "paddy doctor")).toEqual([
       expect.objectContaining({ exitCode: 0 }),
     ]);
     expect(exposure).toHaveBeenCalledTimes(route === "package-to-git" ? 1 : 0);

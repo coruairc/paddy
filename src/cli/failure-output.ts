@@ -7,6 +7,7 @@ import {
   UpdateSchemaRefusalError,
   type UpdateSchemaRefusalDatabase,
 } from "../state/openclaw-update-schema-refusal.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import type { CronCliJobMatch } from "./cron-cli/cron-cli-error.js";
 
@@ -186,7 +187,7 @@ export function formatCliOperatorError(
 function pushPrefixed(out: string[], value: string): void {
   for (const line of value.split("\n")) {
     if (line.trim().length > 0) {
-      out.push(`[openclaw] ${line}`);
+      out.push(`[${CLI_NAME}] ${line}`);
     }
   }
 }
@@ -201,18 +202,18 @@ export function formatCliFailureLines(options: FormatCliFailureOptions): string[
   const env = options.env ?? process.env;
   const showDebugDetails = shouldShowDebugDetails(options.argv, env);
   const lines = [
-    `[openclaw] ${options.title}`,
-    `[openclaw] Reason: ${formatCliOperatorError(options.error, {
+    `[${CLI_NAME}] ${options.title}`,
+    `[${CLI_NAME}] Reason: ${formatCliOperatorError(options.error, {
       argv: options.argv,
       env,
     })}`,
   ];
 
   if (showDebugDetails) {
-    lines.push("[openclaw] Stack:");
+    lines.push(`[${CLI_NAME}] Stack:`);
     pushPrefixed(lines, formatUncaughtError(options.error));
   } else {
-    lines.push("[openclaw] Debug: set OPENCLAW_DEBUG=1 to include the stack trace.");
+    lines.push(`[${CLI_NAME}] Debug: set OPENCLAW_DEBUG=1 to include the stack trace.`);
   }
 
   // Doctor needs the same coordinators; inspect wrappers without loading the SQLite runtime.
@@ -222,8 +223,8 @@ export function formatCliFailureLines(options: FormatCliFailureOptions): string[
       (error) => error instanceof Error && error.name === "StateDatabaseCoordinatorContentionError",
     )
   ) {
-    lines.push(`[openclaw] Try: ${formatCliCommand("openclaw doctor", env)}`);
+    lines.push(`[${CLI_NAME}] Try: ${formatCliCommand("openclaw doctor", env)}`);
   }
-  lines.push(`[openclaw] Help: ${formatCliCommand("openclaw --help", env)}`);
+  lines.push(`[${CLI_NAME}] Help: ${formatCliCommand("openclaw --help", env)}`);
   return lines;
 }

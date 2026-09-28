@@ -24,7 +24,7 @@ import { isParentDefaultHelpAction } from "./parent-default-help.js";
 
 const HELP_OR_VERSION_FLAGS = new Set(["-h", "--help", "-V", "--version"]);
 
-// Every CLI invocation presents as `openclaw` in process listings instead of `node`; only the
+// Every CLI invocation presents as `paddy` in process listings instead of `node`; only the
 // long-running Gateway takes a distinct title (see gateway-cli/run-loop.ts), so lock readers and
 // operators can tell it apart from ordinary commands.
 function setProcessTitleForCommand() {

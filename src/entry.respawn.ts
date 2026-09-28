@@ -3,6 +3,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import path from "node:path";
 import { readNonBlankString } from "@openclaw/normalization-core/string-coerce";
 import { resolveNodeStartupTlsEnvironment } from "./bootstrap/node-startup-env.js";
+import { CLI_NAME } from "./brand.js";
 import {
   isTerminalInteractiveRespawnArgv,
   shouldSkipRespawnForArgv,
@@ -181,7 +182,7 @@ export function runCliRespawnPlan(
     runtime: resolvedRuntime,
     onError: (error) => {
       return resolvedRuntime.writeError(
-        "[openclaw] Failed to respawn CLI:",
+        `[${CLI_NAME}] Failed to respawn CLI:`,
         error instanceof Error ? (error.stack ?? error.message) : error,
       );
     },

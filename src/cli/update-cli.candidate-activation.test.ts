@@ -425,7 +425,7 @@ describe("update-cli", () => {
     expect(freshRestartCalls()).toEqual([]);
     expect(lastWriteJsonCall()).toMatchObject({
       status: "error",
-      reason: "openclaw doctor",
+      reason: "paddy doctor",
       steps: expect.arrayContaining([
         expect.objectContaining({
           exitCode: 1,

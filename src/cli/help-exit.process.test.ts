@@ -212,7 +212,7 @@ describe("CLI help process exit", () => {
     });
 
     expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("Usage: openclaw [options] [command]");
+    expect(result.stdout).toContain("Usage: paddy [options] [command]");
     expect(() => parseJsonLines(result.stdout)).toThrow();
   });
 
@@ -225,7 +225,7 @@ describe("CLI help process exit", () => {
     });
 
     expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("Usage: openclaw [options] [command]");
+    expect(result.stdout).toContain("Usage: paddy [options] [command]");
   });
 
   // One lazy process is representative by design; the matrix below exercises
@@ -238,7 +238,7 @@ describe("CLI help process exit", () => {
     });
 
     expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("Usage: openclaw backup [options] [command]");
+    expect(result.stdout).toContain("Usage: paddy backup [options] [command]");
   });
   it("flushes explicitly requested entry traces on precomputed help", async () => {
     const result = await runCliProcess({
@@ -288,13 +288,13 @@ describe("CLI help process exit", () => {
       expect(parseResult).toBeInstanceOf(CommanderError);
       expect(parseResult).toMatchObject({ code: "commander.helpDisplayed", exitCode: 0 });
       expect(stderr).toBe("");
-      expect(stdout).toContain(`Usage: openclaw ${usageCommand} [options] [command]`);
+      expect(stdout).toContain(`Usage: paddy ${usageCommand} [options] [command]`);
     },
   );
 
   it.concurrent.each([
-    { args: ["acp", "--help"], usage: "Usage: openclaw acp [options] [command]" },
-    { args: ["acp", "client", "--help"], usage: "Usage: openclaw acp client [options]" },
+    { args: ["acp", "--help"], usage: "Usage: paddy acp [options] [command]" },
+    { args: ["acp", "client", "--help"], usage: "Usage: paddy acp client [options]" },
   ])("renders in-process ACP help for $args", async ({ args, usage }) => {
     let stdout = "";
     let stderr = "";

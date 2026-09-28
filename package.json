@@ -8,20 +8,21 @@
       "agent": 23
     }
   },
-  "description": "Multi-channel AI gateway with extensible messaging integrations",
+  "description": "Paddy — multi-channel AI gateway with Hermes memory (fork of OpenClaw)",
   "keywords": [],
-  "homepage": "https://github.com/openclaw/openclaw#readme",
+  "homepage": "https://github.com/coruairc/paddy#readme",
   "bugs": {
-    "url": "https://github.com/openclaw/openclaw/issues"
+    "url": "https://github.com/coruairc/paddy/issues"
   },
   "license": "MIT",
   "author": "OpenClaw Foundation (https://openclaw.org)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openclaw/openclaw.git"
+    "url": "git+https://github.com/coruairc/paddy.git"
   },
   "bin": {
-    "openclaw": "openclaw.mjs"
+    "openclaw": "openclaw.mjs",
+    "paddy": "openclaw.mjs"
   },
   "publishConfig": {
     "executableFiles": [
@@ -1901,6 +1902,7 @@
     "mobile:release:record": "node --import ./scripts/tsx.mjs scripts/mobile-release-ref.ts record",
     "mobile:release:resolve": "node --import ./scripts/tsx.mjs scripts/mobile-release-ref.ts resolve",
     "openclaw": "node scripts/run-node.mjs",
+    "paddy": "node scripts/run-node.mjs",
     "openclaw:rpc": "node scripts/run-node.mjs agent --mode rpc --json",
     "perf:redaction": "node --import ./scripts/tsx.mjs scripts/bench-redaction-prefilters.ts",
     "perf:web-fetch": "node --import ./scripts/tsx.mjs scripts/bench-web-fetch.ts",

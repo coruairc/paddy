@@ -4,6 +4,7 @@
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { format } from "node:util";
+import { CLI_NAME } from "./cli/cli-name.js";
 import { resolveCliArgvInvocation } from "./cli/argv-invocation.js";
 import { isRootHelpInvocation } from "./cli/argv.js";
 import { parseCliContainerArgs, resolveCliContainerTarget } from "./cli/container-target.js";
@@ -70,7 +71,7 @@ async function writeCapturedCliArgumentError(message: string): Promise<void> {
   if (isJsonOutputModeActive(process.argv)) {
     defaultRuntime.writeJson(formatCliJsonFailure(message));
   }
-  console.error(`[openclaw] ${message}`);
+  console.error(`[${CLI_NAME}] ${message}`);
 }
 
 async function prepareCliDiagnosticBlockWriter(): Promise<
@@ -213,7 +214,7 @@ if (
       // Only the final child emits the diagnostic warning; parents still enforce admission.
       await assertSupportedRuntime(undefined, undefined, process.argv, true, inheritedRuntimeEnv);
       // Idle respawn parents retain argv so offline maintenance can identify its launchers.
-      process.title = "openclaw";
+      process.title = CLI_NAME;
       const parsedContainer = parseCliContainerArgs(process.argv);
       if (!parsedContainer.ok) {
         await writeCapturedCliArgumentError(parsedContainer.error);
@@ -289,7 +290,7 @@ export async function tryHandleRootHelpFastPath(
     (async (error: unknown) => {
       const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
       const writeError = await prepareCliDiagnosticBlockWriter();
-      await writeError(`[openclaw] Failed to display help: ${detail}\n`);
+      await writeError(`[${CLI_NAME}] Failed to display help: ${detail}\n`);
       process.exit(1);
     });
   try {

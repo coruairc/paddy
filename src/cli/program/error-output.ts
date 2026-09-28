@@ -3,6 +3,7 @@ import { stripAnsi } from "../../../packages/terminal-core/src/ansi.js";
 import { formatDocsLink } from "../../../packages/terminal-core/src/links.js";
 import { theme } from "../../../packages/terminal-core/src/theme.js";
 import { getCommandPathWithRootOptions } from "../argv.js";
+import { PRODUCT_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { ExpectedCliError } from "../failure-output.js";
 import { formatCliCommandSuggestions } from "./command-suggestions.js";
@@ -55,8 +56,8 @@ function formatCliMachineOutput(humanOutput: string): string {
 
 function formatUnknownCommandMessage(command: string, commandPath: readonly string[]): string {
   return commandPath.length > 0
-    ? `OpenClaw ${commandPath.join(" ")} has no command ${quote(command)}.`
-    : `OpenClaw does not know the command ${quote(command)}.`;
+    ? `${PRODUCT_NAME} ${commandPath.join(" ")} has no command ${quote(command)}.`
+    : `${PRODUCT_NAME} does not know the command ${quote(command)}.`;
 }
 
 function formatCliUnknownCommandOutput(
@@ -114,7 +115,7 @@ function formatOrdinaryCliParseErrorMessage(message: string): string {
   const unknownOption = message.match(/^unknown option ['"`](.+?)['"`]/i);
   if (unknownOption) {
     const option = unknownOption[1] ?? "";
-    return `OpenClaw does not recognize option ${quote(option)}.`;
+    return `${PRODUCT_NAME} does not recognize option ${quote(option)}.`;
   }
 
   const missingArgument = message.match(/^missing required argument ['"`](.+?)['"`]/i);
@@ -133,7 +134,7 @@ function formatOrdinaryCliParseErrorMessage(message: string): string {
     return "Too many arguments for this command.";
   }
 
-  return `OpenClaw could not parse this command: ${message}`;
+  return `${PRODUCT_NAME} could not parse this command: ${message}`;
 }
 
 /** Convert Commander parse errors into OpenClaw-specific help and docs guidance. */

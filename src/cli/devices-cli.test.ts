@@ -178,9 +178,9 @@ function mockApprovedReplacement() {
 
 const requireRecord = createRequireRecord("object", "label-not-object");
 const approvalCommandContexts = [
-  ["default", undefined, undefined, "openclaw"],
-  ["profile", "work", undefined, "openclaw --profile work"],
-  ["container", "work", "demo", "openclaw --container demo"],
+  ["default", undefined, undefined, "paddy"],
+  ["profile", "work", undefined, "paddy --profile work"],
+  ["container", "work", "demo", "paddy --container demo"],
 ] as const;
 
 const nodeApprovalLabelCases = [
@@ -1030,7 +1030,7 @@ describe("devices cli local fallback", () => {
       (error: unknown) => String(error),
     );
     expect(failure).toContain("superseded by a newer pending request");
-    expect(failure).toContain("openclaw --profile work devices approve req-default");
+    expect(failure).toContain("paddy --profile work devices approve req-default");
     expect(failure).not.toContain("OPENCLAW_PROFILE");
     expect(failure).not.toContain("--token");
     expect(readRuntimeOutput()).not.toContain(fallbackNotice);
@@ -1138,7 +1138,7 @@ describe("devices cli list", () => {
       if (operatorLabel?.trim()) {
         expect(output.split("\n")).toContain(`  android-node  ${expectedName}`);
       }
-      expect(output).toContain("openclaw --profile work nodes approve node-req-1");
+      expect(output).toContain("paddy --profile work nodes approve node-req-1");
       expect(output).toContain("Reuse the same connection options when rerunning: --url, --token.");
       expect(output).not.toContain("gateway-user");
       expect(output).not.toContain("url-secret");

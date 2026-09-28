@@ -342,8 +342,8 @@ describe("maybeRestartService", () => {
         if (pluginOnly) {
           const retry =
             change === "initial-plugin-unavailable"
-              ? "openclaw --container service-box doctor --fix"
-              : "openclaw --profile service-profile doctor --fix";
+              ? "paddy --container service-box doctor --fix"
+              : "paddy --profile service-profile doctor --fix";
           expect(result.pluginWarnings).toEqual([
             expect.objectContaining({
               pluginId: "fixture",
@@ -559,7 +559,7 @@ describe("maybeRestartService", () => {
         if (outcome !== "definition unchanged") {
           expect(result.steps[0]?.advisory?.message).toContain(outcome);
         }
-        const cli = profile === "default" ? "openclaw" : "openclaw --profile work";
+        const cli = profile === "default" ? "paddy" : "paddy --profile work";
         expect(result.steps).toEqual([
           expect.objectContaining({
             command: `${cli} gateway install --force`,
@@ -616,7 +616,7 @@ describe("maybeRestartService", () => {
           },
         }),
       ).toBe(false);
-      const cli = profile === "default" ? "openclaw" : "openclaw --profile work";
+      const cli = profile === "default" ? "paddy" : "paddy --profile work";
       expect(result.steps).toEqual([
         expect.objectContaining({
           command: `${cli} gateway install --force --port 19989`,

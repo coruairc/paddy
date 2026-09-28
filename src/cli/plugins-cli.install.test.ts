@@ -2605,10 +2605,10 @@ describe("plugins cli install", () => {
     expect(pathInstallCall().path).toBe(localPluginDir);
   });
   it.each([
-    ["default", undefined, undefined, "openclaw"],
-    ["profile", "work", undefined, "openclaw --profile work"],
-    ["container", undefined, "demo", "openclaw --container demo"],
-    ["container before profile", "work", "demo", "openclaw --container demo"],
+    ["default", undefined, undefined, "paddy"],
+    ["profile", "work", undefined, "paddy --profile work"],
+    ["container", undefined, "demo", "paddy --container demo"],
+    ["container before profile", "work", "demo", "paddy --container demo"],
   ] as const)(
     "preserves %s context in duplicate-install recovery guidance",
     async (_name, profile, container, prefix) => {

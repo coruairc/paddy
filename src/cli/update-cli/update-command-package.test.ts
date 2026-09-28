@@ -591,14 +591,14 @@ it.each(
           status: "error",
           reason: reason === "requester-revoked" ? reason : "repair-requires-config-change",
           failedStep: {
-            name: "openclaw doctor",
+            name: "paddy doctor",
             exitCode: 1,
             configChanges: receipt.configChanges,
             configWriteRefusal: receipt.configWriteRefusal,
             failureFacts: expect.arrayContaining([
               ...(receipt.failureFacts ?? []),
               expect.objectContaining({
-                check: "openclaw doctor",
+                check: "paddy doctor",
                 code: "Error",
                 message: "Doctor transport failed after the child settled.",
               }),
@@ -615,7 +615,7 @@ it.each(
             /Doctor transport failed after the child settled\./gu,
           ),
         ).toHaveLength(1);
-        expect(result.steps.filter((step) => step.name === "openclaw doctor")).toEqual([
+        expect(result.steps.filter((step) => step.name === "paddy doctor")).toEqual([
           result.failedStep,
         ]);
         assert(resultPath, "Doctor must write its receipt through the production callback");

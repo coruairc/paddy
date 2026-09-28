@@ -12,7 +12,7 @@ import {
 const readConfigFileSnapshotMock = vi.fn();
 const loadConfig = vi.fn(() => ({}));
 const newerConfigHints = [
-  "Run the newer openclaw binary on PATH, or reinstall the intended gateway service from the newer install.",
+  "Run the newer paddy binary on PATH, or reinstall the intended gateway service from the newer install.",
   "Set OPENCLAW_ALLOW_OLDER_BINARY_DESTRUCTIVE_ACTIONS=1 only for an intentional downgrade or recovery action.",
 ];
 const newerConfigHintItems = newerConfigHints.map((text) => ({ kind: "generic", text }));
@@ -166,7 +166,7 @@ describe("runServiceRestart config pre-flight (#35862)", () => {
     expect(service.restart).not.toHaveBeenCalled();
     expectLatestRuntimeJson({
       action: "restart",
-      error: `Gateway restart blocked: Refusing to restart the gateway service because this OpenClaw binary (${VERSION}) is older than the config last written by OpenClaw 9999.1.1.`,
+      error: `Gateway restart blocked: Refusing to restart the gateway service because this Paddy binary (${VERSION}) is older than the config last written by Paddy 9999.1.1.`,
       hints: newerConfigHints,
       hintItems: newerConfigHintItems,
     });
@@ -277,7 +277,7 @@ describe("runServiceStop future-config guard", () => {
     expect(service.stop).not.toHaveBeenCalled();
     expectLatestRuntimeJson({
       action: "stop",
-      error: `Gateway stop blocked: Refusing to stop the gateway service because this OpenClaw binary (${VERSION}) is older than the config last written by OpenClaw 9999.1.1.`,
+      error: `Gateway stop blocked: Refusing to stop the gateway service because this Paddy binary (${VERSION}) is older than the config last written by Paddy 9999.1.1.`,
       hints: newerConfigHints,
       hintItems: newerConfigHintItems,
     });

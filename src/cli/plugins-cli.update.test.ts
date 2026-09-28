@@ -355,11 +355,11 @@ describe("plugins cli update", () => {
   });
 
   it.each([
-    ["missing", "missing-plugin", [], undefined, undefined, "openclaw"],
-    ["preview", "missing-plugin", ["--dry-run"], undefined, undefined, "openclaw"],
-    ["profile", "missing-plugin", [], "work", undefined, "openclaw --profile work"],
-    ["container", "missing-plugin", [], undefined, "demo", "openclaw --container demo"],
-    ["container before profile", "missing-plugin", [], "work", "demo", "openclaw --container demo"],
+    ["missing", "missing-plugin", [], undefined, undefined, "paddy"],
+    ["preview", "missing-plugin", ["--dry-run"], undefined, undefined, "paddy"],
+    ["profile", "missing-plugin", [], "work", undefined, "paddy --profile work"],
+    ["container", "missing-plugin", [], undefined, "demo", "paddy --container demo"],
+    ["container before profile", "missing-plugin", [], "work", "demo", "paddy --container demo"],
   ] as const)(
     "rejects untracked update target with %s guidance",
     async (_name, id, args, profile, container, prefix) => {

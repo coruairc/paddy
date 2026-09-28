@@ -132,9 +132,9 @@ it.each([
       expect.objectContaining({ runId }),
     );
     expect(
-      getUpdateRun(runId, { env })?.steps.find((entry) => entry.step === "openclaw doctor"),
+      getUpdateRun(runId, { env })?.steps.find((entry) => entry.step === "paddy doctor"),
     ).toMatchObject({
-      step: "openclaw doctor",
+      step: "paddy doctor",
       status: "failed",
       exitCode,
     });
@@ -256,7 +256,7 @@ it("leaves the run ledger unchanged while the activation Doctor child is pending
     });
     const admitted = getUpdateRun(runId, { env });
     expect(admitted?.steps.at(-1)).toMatchObject({
-      step: "openclaw doctor",
+      step: "paddy doctor",
       status: "in_progress",
     });
     await vi.advanceTimersByTimeAsync(ABANDONED_UPDATE_RUN_MS + UPDATE_RUN_HEARTBEAT_MS);
@@ -274,7 +274,7 @@ it("leaves the run ledger unchanged while the activation Doctor child is pending
   expect(getUpdateRun(runId, { env })).toMatchObject({
     status: "running",
     steps: expect.arrayContaining([
-      expect.objectContaining({ step: "openclaw doctor", status: "completed" }),
+      expect.objectContaining({ step: "paddy doctor", status: "completed" }),
     ]),
   });
 });
@@ -354,7 +354,7 @@ it.each([
     } else {
       expect(onStepComplete).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({
-          name: "openclaw doctor",
+          name: "paddy doctor",
           exitCode: 1,
           configChanges: consumedReceipt?.configChanges,
           configWriteRefusal: consumedReceipt?.configWriteRefusal,
@@ -363,7 +363,7 @@ it.each([
     }
     expect(steps).toEqual([
       expect.objectContaining({
-        name: "openclaw doctor",
+        name: "paddy doctor",
         exitCode: 1,
         stderrTail: expect.stringContaining(
           consumedReceipt?.configWriteRefusal
@@ -381,7 +381,7 @@ it.each([
       expect.arrayContaining([
         ...(consumedReceipt?.failureFacts ?? []),
         expect.objectContaining({
-          check: "openclaw doctor",
+          check: "paddy doctor",
           message: expect.stringContaining(failed.message),
         }),
       ]),
@@ -438,14 +438,14 @@ it("completes Doctor as failed when config attribution cannot read the settled o
   expect(onConfigSnapshot).not.toHaveBeenCalled();
   expect(onStepComplete).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining({
-      name: "openclaw doctor",
+      name: "paddy doctor",
       exitCode: UPDATE_POST_INSTALL_DOCTOR_ADVISORY_EXIT_CODE,
       advisory: undefined,
     }),
   );
   expect(steps).toEqual([
     expect.objectContaining({
-      name: "openclaw doctor",
+      name: "paddy doctor",
       exitCode: UPDATE_POST_INSTALL_DOCTOR_ADVISORY_EXIT_CODE,
     }),
   ]);

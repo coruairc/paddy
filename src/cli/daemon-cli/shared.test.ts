@@ -38,21 +38,21 @@ describe("renderGatewayServiceStartHints", () => {
 
     expect(hints[0]).toContain("Nix mode detected; service install is disabled.");
     expect(hints.slice(1)).toEqual(existingHints.slice(1));
-    expect(hints).toContain("openclaw --profile work gateway start");
+    expect(hints).toContain("paddy --profile work gateway start");
   });
 
   it.each([
     {
       name: "the default profile",
       profile: "default",
-      installCommand: "openclaw gateway install",
-      startCommand: "openclaw gateway start",
+      installCommand: "paddy gateway install",
+      startCommand: "paddy gateway start",
     },
     {
       name: "a named profile",
       profile: "work",
-      installCommand: "openclaw --profile work gateway install",
-      startCommand: "openclaw --profile work gateway start",
+      installCommand: "paddy --profile work gateway install",
+      startCommand: "paddy --profile work gateway start",
     },
   ])(
     "recommends managed service commands for $name",

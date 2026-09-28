@@ -49,7 +49,7 @@ const ensureSupportedRuntimeVersion = async () => {
       return false;
     }
     process.stderr.write(
-      "openclaw: this Bun runtime is unsupported because it does not provide node:sqlite.\n" +
+      "paddy: this Bun runtime is unsupported because it does not provide node:sqlite.\n" +
         `Use Node.js ${SUPPORTED_NODE_RANGE}; Bun remains supported for installs and package scripts.\n`,
     );
     return process.exit(1);
@@ -70,7 +70,7 @@ const ensureSupportedRuntimeVersion = async () => {
     allowInstall: !diagnosticExemption,
   });
   if (!diagnosticExemption) {
-    process.stderr.write(`openclaw: ${failure}\n`);
+    process.stderr.write(`paddy: ${failure}\n`);
   }
   if (diagnosticExemption) {
     return false;
@@ -248,7 +248,7 @@ const exists = async (specifier) => {
 };
 
 const buildMissingEntryErrorMessage = async () => {
-  const lines = ["openclaw: missing dist/entry.(m)js (build output)."];
+  const lines = ["paddy: missing dist/entry.(m)js (build output)."];
   if (!(await exists("./src/entry.ts"))) {
     return lines.join("\n");
   }
@@ -425,7 +425,7 @@ function tryOutputLauncherVersion(argv) {
     }
     const version = resolveLauncherVersion();
     const commit = resolveLauncherCommit();
-    process.stdout.write(commit ? `OpenClaw ${version} (${commit})\n` : `OpenClaw ${version}\n`);
+    process.stdout.write(commit ? `Paddy ${version} (${commit})\n` : `Paddy ${version}\n`);
     return true;
   } catch {
     return false;
@@ -675,7 +675,7 @@ if (isBrowserNativeHostInvocation) {
         });
       } catch (error) {
         process.stderr.write(
-          `openclaw: package lifecycle is incomplete. Reinstall with package scripts enabled, then retry. ${error instanceof Error ? error.message : String(error)}\n`,
+          `paddy: package lifecycle is incomplete. Reinstall with package scripts enabled, then retry. ${error instanceof Error ? error.message : String(error)}\n`,
         );
         process.exit(1);
       }

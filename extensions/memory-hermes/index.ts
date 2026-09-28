@@ -53,7 +53,7 @@ export default definePluginEntry({
     api.registerMemoryCapability({
       deterministicRecallToolName: "memory_search",
       promptBuilder: () => [
-        "Hermes memory is on. Approved memories for this identity are injected when relevant. New facts stay proposals until `openclaw memory approve`.",
+        "Hermes memory is on. Approved memories for this identity are injected when relevant. New facts stay proposals until `paddy memory approve`.",
       ],
     });
 

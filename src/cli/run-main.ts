@@ -22,6 +22,7 @@ import { tryProcessCwd } from "../infra/safe-cwd.js";
 import type { PluginCliLoadSession } from "../plugins/cli-registry-loader.js";
 import { getPluginCache } from "../plugins/plugin-cache.js";
 import { resolveCliArgvInvocation } from "./argv-invocation.js";
+import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 import {
   normalizeGeneratedHelpCommandArgv,
   normalizeRootHelpTargetArgv,
@@ -1518,7 +1519,7 @@ async function runCliWithPreparedOutputMode(
         }
         if (isBenignUncaughtExceptionError(error)) {
           console.warn(
-            "[openclaw] Non-fatal uncaught exception (continuing):",
+            `[${CLI_NAME}] Non-fatal uncaught exception (continuing):`,
             formatUncaughtError(error),
           );
           return;
@@ -1527,14 +1528,14 @@ async function runCliWithPreparedOutputMode(
           defaultRuntime.writeJson(formatCliJsonFailure(error));
         }
         for (const line of formatCliFailureLines({
-          title: "OpenClaw hit an unexpected runtime error.",
+          title: `${PRODUCT_NAME} hit an unexpected runtime error.`,
           error,
           argv: normalizedArgv,
         })) {
           console.error(line);
         }
         for (const message of runFatalErrorHooks({ reason: "uncaught_exception", error })) {
-          console.error("[openclaw]", message);
+          console.error(`[${CLI_NAME}]`, message);
         }
         restoreRuntimeTerminalState("uncaught exception", { resumeStdinIfPaused: false });
         process.exit(1);

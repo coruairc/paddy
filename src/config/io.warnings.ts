@@ -1,4 +1,5 @@
 import { sanitizeTerminalText } from "../../packages/terminal-core/src/safe-text.js";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { VERSION } from "../version.js";
 import { hashConfigRaw } from "./io.read-helpers.js";
 import {
@@ -61,9 +62,9 @@ export function warnIfConfigFromFuture(
   }
   logger.warn(
     [
-      `Your OpenClaw config was written by version ${touched}, but this command is running ${VERSION}.`,
-      "Check: `openclaw --version`, `which openclaw`, and `openclaw gateway status --deep`.",
-      "If unexpected, update PATH so `openclaw` points to the version you want, or reinstall the Gateway service from that same OpenClaw install.",
+      `Your ${PRODUCT_NAME} config was written by version ${touched}, but this command is running ${VERSION}.`,
+      `Check: \`${CLI_NAME} --version\`, \`which ${CLI_NAME}\`, and \`${CLI_NAME} gateway status --deep\`.`,
+      `If unexpected, update PATH so \`${CLI_NAME}\` points to the version you want, or reinstall the Gateway service from that same ${PRODUCT_NAME} install.`,
     ].join("\n"),
   );
 }

@@ -1,9 +1,15 @@
-# OpenClaw 🦞 — Your assistant, on your devices, in your chats
+# Paddy — OpenClaw, with Hermes memory
+
+Paddy is a fork of [OpenClaw](https://github.com/openclaw/openclaw) with Hermes-style memory in the same install. One CLI, one gateway, one config. The command is `paddy`. `openclaw` stays as a compatibility alias and runs the same program. The npm package name remains `openclaw` so existing plugin imports keep working.
+
+State lives in `~/.paddy` (override with `OPENCLAW_STATE_DIR`). The config file inside that directory is still `openclaw.json`. Memory defaults to the `memory-hermes` plugin; promote a proposal with `paddy memory approve`. This fork is [coruairc/paddy](https://github.com/coruairc/paddy). Copyright stays with the OpenClaw Foundation (`LICENSE`).
+
+The rest of this README is the upstream OpenClaw guide. Where it says `openclaw`, `paddy` does the same thing, and installed help text prints `paddy`.
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/openclaw-banner-light.png">
-    <img src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/openclaw-banner-dark.png" alt="OpenClaw — EXFOLIATE! EXFOLIATE! Your AI assistant, running on your own devices.">
+    <img src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/openclaw-banner-dark.png" alt="Paddy — OpenClaw with Hermes memory, running on your own devices.">
   </picture>
 </p>
 
@@ -23,7 +29,7 @@ OpenClaw is an open-source AI assistant that runs on your own computer and meets
 
 ## Install
 
-The installer supports macOS, Linux, and Windows. It provisions a supported Node.js runtime when needed.
+The installer supports macOS, Linux, and Windows. It provisions a supported Node.js runtime when needed. Upstream installers still publish the `openclaw` package; this fork's command name is `paddy`.
 
 ```bash
 # macOS / Linux / WSL2
@@ -35,7 +41,7 @@ curl -fsSL https://openclaw.ai/install.sh | bash
 iwr -useb https://openclaw.ai/install.ps1 | iex
 ```
 
-Already manage Node.js? Install the published package instead (Node 24.16+ or 26.1+; Node 26 recommended):
+Already manage Node.js? Install the published package instead (Node 24.16+ or 26.1+; Node 26 recommended). The package name is `openclaw`; it installs both the `paddy` and `openclaw` commands:
 
 ```bash
 npm install -g openclaw@latest --allow-scripts=openclaw
@@ -53,17 +59,17 @@ Complete the wizard they open. If you installed the package directly with npm,
 pnpm, or Bun, run:
 
 ```bash
-openclaw onboard --install-daemon
+paddy onboard --install-daemon
 ```
 
 After onboarding:
 
 ```bash
-openclaw gateway status
-openclaw dashboard
+paddy gateway status
+paddy dashboard
 ```
 
-Onboarding verifies model access, creates the workspace, and configures the Gateway. The last command opens the Control UI; send a message there to confirm the assistant is working. See the [getting started guide](https://docs.openclaw.ai/start/getting-started) for channel setup and troubleshooting.
+`openclaw onboard` is the same program. Onboarding verifies model access, creates the workspace, and configures the Gateway. The last command opens the Control UI; send a message there to confirm the assistant is working. See the [getting started guide](https://docs.openclaw.ai/start/getting-started) for channel setup and troubleshooting.
 
 ## How it fits together
 
@@ -76,7 +82,7 @@ OpenClaw works with hosted and local [model providers](https://docs.openclaw.ai/
 
 ## Security
 
-Treat inbound messages as untrusted input. DM-capable channels pair unknown senders by default; approve a pairing request with `openclaw pairing approve <channel> <code>`.
+Treat inbound messages as untrusted input. DM-capable channels pair unknown senders by default; approve a pairing request with `paddy pairing approve <channel> <code>` (`openclaw pairing approve` is the same command).
 
 Tools run on the host for the main session unless you configure sandboxing. Read the [security guide](https://docs.openclaw.ai/gateway/security), [exposure runbook](https://docs.openclaw.ai/gateway/security/exposure-runbook), and [sandboxing guide](https://docs.openclaw.ai/gateway/sandboxing) before connecting other users or exposing the Gateway remotely.
 
@@ -96,12 +102,15 @@ Tools run on the host for the main session unless you configure sandboxing. Read
 The repository is a pnpm workspace. Plain `npm install` at the repository root is not supported.
 
 ```bash
-git clone https://github.com/openclaw/openclaw.git
-cd openclaw
+git clone https://github.com/coruairc/paddy.git
+cd paddy
 pnpm install
 pnpm build
 pnpm ui:build
+pnpm paddy
 ```
+
+Upstream is `openclaw/openclaw`. Merge `upstream/main`; do not rebase published history. `pnpm openclaw` is the same launcher.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and the [source setup guide](https://docs.openclaw.ai/start/setup) for the development loop.
 

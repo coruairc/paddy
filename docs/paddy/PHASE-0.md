@@ -8,7 +8,7 @@ OpenClaw is MIT, copyright 2026 OpenClaw Foundation (`LICENSE`). Forking, rebran
 
 ## Architecture
 
-Paddy is this fork. One CLI (`openclaw` until a later rebrand), one gateway, one agent runtime, one config system. The old TanStack app is `coruairc/paddy-gui` and is not part of this process.
+Paddy is this fork. One CLI (`paddy`, with `openclaw` kept as a compatibility alias), one gateway, one agent runtime, one config system. The old TanStack app is `coruairc/paddy-gui` and is not part of this process.
 
 Memory is an exclusive plugin slot. `plugins.slots.memory` has one owner. `src/plugins/slots.ts` `defaultSlotIdForKey("memory")` is the implicit owner when config leaves the slot unset. `memory-core` remains installed and selectable with `plugins.slots.memory: "memory-core"`.
 
@@ -55,7 +55,7 @@ Storage is `node:sqlite` `DatabaseSync` (Node 22, already used by OpenClaw's `no
 | Fail-open recall and curator | Ported. Errors go to `memory_errors` and stderr, not the user reply. |
 | Dreaming, embeddings, workspace MEMORY.md, LanceDB | Not ported. They stay `memory-core`. |
 | Old app memory rows | Not ported. Fresh database. |
-| Binary rename `openclaw` → `paddy` | Deferred. State dir is already `~/.paddy`. |
+| Binary rename `openclaw` → `paddy` | Landed for user-facing surfaces. `bin.paddy` and `bin.openclaw` both point at `openclaw.mjs`. npm package name, `OPENCLAW_*` env, `openclaw.json`, plugin imports, and service unit ids stay. |
 
 ## Files
 
@@ -87,7 +87,8 @@ Keep Hermes inside `extensions/memory-hermes/` plus the one default-slot string.
 
 ## Not done in this change
 
-- User-facing binary rename (`paddy` vs `openclaw`)
 - Calling `curatorModel` through a provider
 - Full OpenClaw suite on a clean install (needs the monorepo install)
 - Postgres adapter
+
+User-facing command name is `paddy`. `openclaw` remains an alias so the npm package check (`bin.openclaw`) and plugin SDK imports keep working.

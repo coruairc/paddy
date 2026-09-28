@@ -214,7 +214,7 @@ describe("formatCliParseErrorOutput", () => {
       args: ["system", "heartbeat", "last", "--unknown"],
       root: "system",
       children: ["heartbeat", "last"],
-      message: 'OpenClaw does not recognize option "--unknown".',
+      message: 'Paddy does not recognize option "--unknown".',
       machineOutput: isSystemMachineOutput,
     },
   ])("keeps $name parse failures machine-readable by default", async (testCase) => {
@@ -520,9 +520,9 @@ describe("formatCliParseErrorOutput", () => {
       argv: ["node", "openclaw", "pairng", "--json"],
     });
 
-    expect(error.message).toBe('OpenClaw does not know the command "pairng".');
+    expect(error.message).toBe('Paddy does not know the command "pairng".');
     expect(error.humanOutput).toBe(
-      'OpenClaw does not know the command "pairng".\nDid you mean this?\n  openclaw pairing\nTry: openclaw --help\nPlugin command? openclaw plugins list\nDocs: https://docs.openclaw.ai/cli\n',
+      'Paddy does not know the command "pairng".\nDid you mean this?\n  paddy pairing\nTry: paddy --help\nPlugin command? paddy plugins list\nDocs: https://docs.openclaw.ai/cli\n',
     );
   });
 
@@ -533,9 +533,9 @@ describe("formatCliParseErrorOutput", () => {
       commandNames: ["list"],
     });
 
-    expect(error.message).toBe('OpenClaw sessions has no command "lst".');
+    expect(error.message).toBe('Paddy sessions has no command "lst".');
     expect(error.message).not.toMatch(/^error:/i);
-    expect(error.humanOutput).toContain("Did you mean this?\n  openclaw sessions list\n");
+    expect(error.humanOutput).toContain("Did you mean this?\n  paddy sessions list\n");
   });
 
   it("explains unknown commands with root help and plugin hints", () => {
@@ -544,7 +544,7 @@ describe("formatCliParseErrorOutput", () => {
     });
 
     expect(output).toBe(
-      'OpenClaw does not know the command "wat".\nTry: openclaw --help\nPlugin command? openclaw plugins list\nDocs: https://docs.openclaw.ai/cli\n',
+      'Paddy does not know the command "wat".\nTry: paddy --help\nPlugin command? paddy plugins list\nDocs: https://docs.openclaw.ai/cli\n',
     );
   });
 
@@ -555,7 +555,7 @@ describe("formatCliParseErrorOutput", () => {
     });
 
     expect(output).toBe(
-      'OpenClaw webhooks has no command "list".\nTry: openclaw webhooks --help\nDocs: https://docs.openclaw.ai/cli\n',
+      'Paddy webhooks has no command "list".\nTry: paddy webhooks --help\nDocs: https://docs.openclaw.ai/cli\n',
     );
   });
 
@@ -567,7 +567,7 @@ describe("formatCliParseErrorOutput", () => {
     });
 
     expect(output).toBe(
-      'OpenClaw webhooks has no command "gmial".\nDid you mean this?\n  openclaw webhooks gmail\nTry: openclaw webhooks --help\nDocs: https://docs.openclaw.ai/cli\n',
+      'Paddy webhooks has no command "gmial".\nDid you mean this?\n  paddy webhooks gmail\nTry: paddy webhooks --help\nDocs: https://docs.openclaw.ai/cli\n',
     );
   });
 
@@ -580,7 +580,7 @@ describe("formatCliParseErrorOutput", () => {
 
     expect(error.code).toBe("commander.unknownCommand");
     expect(output).toBe(
-      'OpenClaw sessions has no command "lst".\nDid you mean this?\n  openclaw sessions list\nTry: openclaw sessions --help\nDocs: https://docs.openclaw.ai/cli\n',
+      'Paddy sessions has no command "lst".\nDid you mean this?\n  paddy sessions list\nTry: paddy sessions --help\nDocs: https://docs.openclaw.ai/cli\n',
     );
   });
 
@@ -593,7 +593,7 @@ describe("formatCliParseErrorOutput", () => {
 
     expect(error.code).toBe("commander.unknownCommand");
     expect(output).toBe(
-      'OpenClaw config has no command "gett".\nDid you mean this?\n  openclaw config get\nTry: openclaw config --help\nDocs: https://docs.openclaw.ai/cli\n',
+      'Paddy config has no command "gett".\nDid you mean this?\n  paddy config get\nTry: paddy config --help\nDocs: https://docs.openclaw.ai/cli\n',
     );
   });
 
@@ -608,7 +608,7 @@ describe("formatCliParseErrorOutput", () => {
     expect(error.exitCode).toBe(1);
     expect(stdout).toBe("");
     expect(output).toBe(
-      'OpenClaw sessions has no command "lst".\nDid you mean this?\n  openclaw sessions list\nTry: openclaw sessions --help\nDocs: https://docs.openclaw.ai/cli\n',
+      'Paddy sessions has no command "lst".\nDid you mean this?\n  paddy sessions list\nTry: paddy sessions --help\nDocs: https://docs.openclaw.ai/cli\n',
     );
   });
 
@@ -633,7 +633,7 @@ describe("formatCliParseErrorOutput", () => {
     });
 
     expect(error.code).toBe("commander.unknownCommand");
-    expect(output).toContain("Did you mean this?\n  openclaw cron remove\n");
+    expect(output).toContain("Did you mean this?\n  paddy cron remove\n");
   });
 
   it("keeps excess arguments on a matched lazy subcommand", async () => {
@@ -645,7 +645,7 @@ describe("formatCliParseErrorOutput", () => {
 
     expect(error.code).toBe("commander.excessArguments");
     expect(output).toBe(
-      "Too many arguments for this command.\nTry: openclaw sessions list --help\n",
+      "Too many arguments for this command.\nTry: paddy sessions list --help\n",
     );
   });
 
@@ -655,7 +655,7 @@ describe("formatCliParseErrorOutput", () => {
     });
 
     expect(output).toBe(
-      'OpenClaw does not know the command "upate".\nDid you mean this?\n  openclaw update\nTry: openclaw --help\nPlugin command? openclaw plugins list\nDocs: https://docs.openclaw.ai/cli\n',
+      'Paddy does not know the command "upate".\nDid you mean this?\n  paddy update\nTry: paddy --help\nPlugin command? paddy plugins list\nDocs: https://docs.openclaw.ai/cli\n',
     );
   });
 
@@ -664,7 +664,7 @@ describe("formatCliParseErrorOutput", () => {
       argv: ["node", "openclaw", "upgrade"],
     });
 
-    expect(output).toContain("Did you mean this?\n  openclaw update\n");
+    expect(output).toContain("Did you mean this?\n  paddy update\n");
   });
 
   it("preserves active profile context in command suggestions", () => {
@@ -675,7 +675,7 @@ describe("formatCliParseErrorOutput", () => {
         argv: ["node", "openclaw", "doctr"],
       });
 
-      expect(output).toContain("Did you mean this?\n  openclaw --profile work doctor\n");
+      expect(output).toContain("Did you mean this?\n  paddy --profile work doctor\n");
     } finally {
       if (originalProfile === undefined) {
         delete process.env.OPENCLAW_PROFILE;
@@ -691,7 +691,7 @@ describe("formatCliParseErrorOutput", () => {
     });
 
     expect(output).toBe(
-      'OpenClaw does not recognize option "--wat".\nTry: openclaw channels status --help\n',
+      'Paddy does not recognize option "--wat".\nTry: paddy channels status --help\n',
     );
   });
 
@@ -701,7 +701,7 @@ describe("formatCliParseErrorOutput", () => {
     });
 
     expect(output).toBe(
-      'Missing required argument "name".\nTry: openclaw plugins install --help\n',
+      'Missing required argument "name".\nTry: paddy plugins install --help\n',
     );
   });
 
@@ -714,7 +714,7 @@ describe("formatCliParseErrorOutput", () => {
     {
       name: "unclassified Commander diagnostic",
       raw: "error: option '--timeout <ms>' argument missing\n",
-      message: "OpenClaw could not parse this command: option '--timeout <ms>' argument missing",
+      message: "Paddy could not parse this command: option '--timeout <ms>' argument missing",
     },
   ])("preserves the complete ordinary $name diagnostic", ({ raw, message }) => {
     expect(
@@ -722,7 +722,7 @@ describe("formatCliParseErrorOutput", () => {
         argv: ["node", "openclaw", "nodes", "invoke"],
         commandPath: ["nodes", "invoke"],
       }),
-    ).toBe(`${message}\nTry: openclaw nodes invoke --help\n`);
+    ).toBe(`${message}\nTry: paddy nodes invoke --help\n`);
   });
 
   it("prefers the parsed Commander path over option-like argv values", () => {
@@ -732,7 +732,7 @@ describe("formatCliParseErrorOutput", () => {
     });
 
     expect(output).toBe(
-      'OpenClaw does not recognize option "--wat".\nTry: openclaw plugins list --help\n',
+      'Paddy does not recognize option "--wat".\nTry: paddy plugins list --help\n',
     );
   });
 });

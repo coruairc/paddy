@@ -561,7 +561,7 @@ describe("failed update recovery restart", () => {
 
       const nextAction = getUpdateRun(run.runId, { env })?.origin.nextAction;
       expect(mocks.restart).not.toHaveBeenCalled();
-      expect(nextAction).toContain("Run `openclaw --profile work triage`");
+      expect(nextAction).toContain("Run `paddy --profile work triage`");
       expect(nextAction?.includes("Keep the gateway stopped")).toBe(stopped);
       expect(mocks.printResult.mock.lastCall?.[2]).toEqual({ nextAction });
     },

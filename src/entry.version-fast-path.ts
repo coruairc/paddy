@@ -1,4 +1,5 @@
 // Handles fast version output before the full CLI graph loads.
+import { CLI_NAME, PRODUCT_NAME } from "./brand.js";
 import { isRootVersionInvocation } from "./cli/argv.js";
 import { resolveCliContainerTarget } from "./cli/container-target.js";
 
@@ -28,7 +29,7 @@ export function tryHandleRootVersionFastPath(
     deps.onError ??
     (async (error: unknown) => {
       const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
-      const message = `[openclaw] Failed to resolve version: ${detail}\n`;
+      const message = `[${CLI_NAME}] Failed to resolve version: ${detail}\n`;
       try {
         const [{ loadCliDotEnv }, { formatConsoleDiagnosticBlock }] = await Promise.all([
           import("./cli/dotenv.js"),
@@ -55,7 +56,7 @@ export function tryHandleRootVersionFastPath(
   resolveVersion()
     .then(({ VERSION, resolveCommitHash }) => {
       const commit = resolveCommitHash({ moduleUrl: deps.moduleUrl ?? import.meta.url });
-      output(commit ? `OpenClaw ${VERSION} (${commit})` : `OpenClaw ${VERSION}`);
+      output(commit ? `${PRODUCT_NAME} ${VERSION} (${commit})` : `${PRODUCT_NAME} ${VERSION}`);
       exit(0);
     })
     .catch(onError);

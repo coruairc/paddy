@@ -240,7 +240,7 @@ describe("telemetry cli", () => {
       }
 
       expect(exitCode).toEqual(0);
-      expect(stdout.join("")).toContain("Usage: openclaw telemetry [options] [command]");
+      expect(stdout.join("")).toContain("Usage: paddy telemetry [options] [command]");
       expect(stdout.join("")).toContain("Inspect and manage anonymous usage telemetry");
       expect(stderr).toEqual([]);
       expect(mocks.getRuntimeConfig).not.toHaveBeenCalled();
@@ -262,7 +262,7 @@ describe("telemetry cli", () => {
       await expect(
         program.parseAsync(["telemetry", ...args], { from: "user" }),
       ).rejects.toMatchObject({ exitCode: 0 });
-      expect(stdout.join("")).toContain(`Usage: openclaw ${usage}`);
+      expect(stdout.join("")).toContain(`Usage: paddy ${usage}`);
       expect(stderr).toEqual([]);
       expect(mocks.getRuntimeConfig).not.toHaveBeenCalled();
       expect(mocks.transformConfigFileWithRetry).not.toHaveBeenCalled();

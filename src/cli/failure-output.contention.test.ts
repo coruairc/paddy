@@ -19,11 +19,11 @@ it.each(["direct", "wrapped", "aggregate", "message-only"])(
       error: { type: "cli_error", message: error.message },
     });
     expect(formatCliFailureLines({ title: "The CLI command failed.", error, env: {} })).toEqual([
-      "[openclaw] The CLI command failed.",
-      `[openclaw] Reason: ${error.message}`,
-      "[openclaw] Debug: set OPENCLAW_DEBUG=1 to include the stack trace.",
-      ...(kind === "message-only" ? ["[openclaw] Try: openclaw doctor"] : []),
-      "[openclaw] Help: openclaw --help",
+      "[paddy] The CLI command failed.",
+      `[paddy] Reason: ${error.message}`,
+      "[paddy] Debug: set OPENCLAW_DEBUG=1 to include the stack trace.",
+      ...(kind === "message-only" ? ["[paddy] Try: paddy doctor"] : []),
+      "[paddy] Help: paddy --help",
     ]);
     expect(error.message).toContain("Wait for the other OpenClaw process to finish, then retry.");
   },
