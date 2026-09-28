@@ -1,0 +1,30 @@
+{
+  "id": "memory-hermes",
+  "name": "Hermes Memory",
+  "description": "Scoped SQLite memory with ranked recall, a conservative curator, and human promotion.",
+  "kind": "memory",
+  "categories": ["memory"],
+  "activation": {
+    "onStartup": false
+  },
+  "cliCommands": [
+    {
+      "name": "memory",
+      "description": "Inspect, approve, reject, and roll back Hermes memories",
+      "hasSubcommands": true
+    }
+  ],
+  "contracts": {
+    "tools": ["memory_search", "memory_get"]
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "curatorModel": {
+        "type": "string",
+        "description": "Optional provider/model for a future classifier. The default curator is deterministic and does not call a model."
+      }
+    }
+  }
+}

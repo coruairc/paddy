@@ -20,7 +20,8 @@ const SLOT_BY_KIND: Record<PluginKind, PluginSlotKey> = {
 };
 
 const DEFAULT_SLOT_BY_KEY: Record<PluginSlotKey, string> = {
-  memory: "memory-core",
+  // Paddy's default memory owner. memory-core stays available via plugins.slots.memory.
+  memory: "memory-hermes",
   contextEngine: "legacy",
 };
 

@@ -209,6 +209,7 @@ function createManifestRegistryFixture(): PluginManifestRegistry {
       },
     },
     { id: "voice-call", activation: { onStartup: true } },
+    { id: "memory-hermes", kind: "memory" },
     { id: "memory-core", kind: "memory" },
     { id: "memory-lancedb", kind: "memory" },
     { id: "demo-global-sidecar", origin: "global", activation: { onStartup: true } },
@@ -568,21 +569,21 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         enabledPluginIds: ["voice-call"],
         modelId: "demo-cli/demo-model",
       }),
-      ["demo-channel", "browser", "voice-call", "memory-core"],
+      ["demo-channel", "browser", "voice-call", "memory-hermes"],
     ],
     [
       "keeps provider plugins out of idle startup when only provider config references them",
       createStartupConfig({
         providerIds: ["demo-provider"],
       }),
-      ["demo-channel", "browser", "memory-core"],
+      ["demo-channel", "browser", "memory-hermes"],
     ],
     [
       "includes bundled model providers selected by agent defaults at startup",
       createStartupConfig({
         modelId: "amazon-bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0",
       }),
-      ["demo-channel", "browser", "amazon-bedrock", "memory-core"],
+      ["demo-channel", "browser", "amazon-bedrock", "memory-hermes"],
     ],
     [
       "includes bundled model providers selected only as agent fallbacks at startup",
@@ -595,7 +596,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["demo-channel", "browser", "amazon-bedrock", "memory-core"],
+      ["demo-channel", "browser", "amazon-bedrock", "memory-hermes"],
     ],
     [
       "honors explicit plugin disablement for selected model providers",
@@ -607,7 +608,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         },
         plugins: { entries: { "amazon-bedrock": { enabled: false } } },
       } as OpenClawConfig,
-      ["demo-channel", "browser", "memory-core"],
+      ["demo-channel", "browser", "memory-hermes"],
     ],
     [
       "includes configured bundled speech providers at startup",
@@ -615,17 +616,17 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         channels: {},
         tts: { provider: "microsoft" },
       } as OpenClawConfig,
-      ["browser", "microsoft", "memory-core"],
+      ["browser", "microsoft", "memory-hermes"],
     ],
     [
       "activates the sole Talk speech provider from its capability alias",
       { channels: {}, talk: { providers: { edge: {} } } } as OpenClawConfig,
-      ["browser", "microsoft", "memory-core"],
+      ["browser", "microsoft", "memory-hermes"],
     ],
     [
       "activates the selected Talk realtime capability alias",
       { channels: {}, talk: { realtime: { provider: "grok-voice" } } } as OpenClawConfig,
-      ["browser", "xai", "memory-core"],
+      ["browser", "xai", "memory-hermes"],
     ],
     [
       "includes bundled speech providers configured by provider block",
@@ -633,7 +634,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         channels: {},
         tts: { providers: { "tts-local-cli": { command: "say" } } },
       } as OpenClawConfig,
-      ["browser", "tts-local-cli", "memory-core"],
+      ["browser", "tts-local-cli", "memory-hermes"],
     ],
     [
       "maps legacy edge TTS selection to the Microsoft speech plugin",
@@ -641,7 +642,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         channels: {},
         tts: { provider: "edge" },
       } as OpenClawConfig,
-      ["browser", "microsoft", "memory-core"],
+      ["browser", "microsoft", "memory-hermes"],
     ],
     [
       "includes explicitly enabled external speech providers at startup",
@@ -650,7 +651,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         tts: { provider: "gradium" },
         plugins: { entries: { gradium: { enabled: true } } },
       } as OpenClawConfig,
-      ["browser", "gradium", "memory-core"],
+      ["browser", "gradium", "memory-hermes"],
     ],
     [
       "includes active persona speech providers at startup",
@@ -666,7 +667,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["browser", "microsoft", "memory-core"],
+      ["browser", "microsoft", "memory-hermes"],
     ],
     [
       "includes agent-inherited active persona speech providers at startup",
@@ -684,7 +685,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           list: [{ id: "reader", tts: { persona: "narrator" } }],
         },
       } as OpenClawConfig,
-      ["browser", "microsoft", "memory-core"],
+      ["browser", "microsoft", "memory-hermes"],
     ],
     [
       "includes channel-inherited active persona speech providers at startup",
@@ -701,7 +702,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["demo-channel", "browser", "microsoft", "memory-core"],
+      ["demo-channel", "browser", "microsoft", "memory-hermes"],
     ],
     [
       "includes account-inherited active persona speech providers at startup",
@@ -722,7 +723,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["demo-channel", "browser", "microsoft", "memory-core"],
+      ["demo-channel", "browser", "microsoft", "memory-hermes"],
     ],
     [
       "honors disabled speech provider config blocks at startup",
@@ -733,7 +734,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           providers: { microsoft: { enabled: false } },
         },
       } as OpenClawConfig,
-      ["browser", "memory-core"],
+      ["browser", "memory-hermes"],
     ],
     [
       "honors explicit plugin disablement for configured speech providers",
@@ -742,7 +743,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         tts: { provider: "microsoft" },
         plugins: { entries: { microsoft: { enabled: false } } },
       } as OpenClawConfig,
-      ["browser", "memory-core"],
+      ["browser", "memory-hermes"],
     ],
     [
       "includes bundled generation providers configured by media defaults at startup",
@@ -761,7 +762,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["browser", "openai", "google", "memory-core"],
+      ["browser", "openai", "google", "memory-hermes"],
     ],
     [
       "includes bundled voice providers configured by voice defaults at startup",
@@ -776,7 +777,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["browser", "openai", "google", "memory-core"],
+      ["browser", "openai", "google", "memory-hermes"],
     ],
     [
       "keeps configured memory embedding providers behind restrictive allowlists",
@@ -800,7 +801,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           defaults: {},
         },
       } as OpenClawConfig,
-      ["browser", "openai", "ollama", "memory-core"],
+      ["browser", "openai", "ollama", "memory-hermes"],
     ],
     [
       "includes the api-owner plugin for a custom models.providers memory embedding provider at startup",
@@ -821,7 +822,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["browser", "ollama", "memory-core"],
+      ["browser", "ollama", "memory-hermes"],
     ],
     [
       "includes the api-owner plugin for a custom models.providers memory embedding fallback at startup",
@@ -842,7 +843,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["browser", "openai", "ollama", "memory-core"],
+      ["browser", "openai", "ollama", "memory-hermes"],
     ],
     [
       "includes generic embedding provider owners for configured memory search at startup",
@@ -854,7 +855,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           defaults: {},
         },
       } as OpenClawConfig,
-      ["browser", "generic-embedding", "memory-core"],
+      ["browser", "generic-embedding", "memory-hermes"],
     ],
     [
       "does not load plugin owners for core generic memory embedding providers",
@@ -866,7 +867,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           defaults: {},
         },
       } as OpenClawConfig,
-      ["browser", "memory-core"],
+      ["browser", "memory-hermes"],
     ],
     [
       "does not load plugin owners for custom providers backed by core generic embeddings",
@@ -887,7 +888,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["browser", "memory-core"],
+      ["browser", "memory-hermes"],
     ],
     [
       "does not load memory embedding provider owners when the memory slot is disabled",
@@ -914,7 +915,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           defaults: {},
         },
       } as OpenClawConfig,
-      ["browser", "memory-core"],
+      ["browser", "memory-hermes"],
     ],
     [
       "includes the llama.cpp provider for configured local memory embeddings",
@@ -926,7 +927,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           defaults: {},
         },
       } as OpenClawConfig,
-      ["browser", "llama-cpp", "memory-core"],
+      ["browser", "llama-cpp", "memory-hermes"],
     ],
     [
       "skips memory embedding providers from disabled memory search blocks",
@@ -938,7 +939,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           defaults: {},
         },
       } as OpenClawConfig,
-      ["browser", "memory-core"],
+      ["browser", "memory-hermes"],
     ],
     [
       "skips a per-agent memory embedding provider when memory search is disabled by inherited defaults",
@@ -953,7 +954,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           ],
         },
       } as OpenClawConfig,
-      ["browser", "memory-core"],
+      ["browser", "memory-hermes"],
     ],
     [
       "includes the inherited default provider when a per-agent override re-enables memory search",
@@ -966,7 +967,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           list: [{ id: "researcher", memory: { search: { enabled: true } } }],
         },
       } as OpenClawConfig,
-      ["browser", "openai", "ollama", "memory-core"],
+      ["browser", "openai", "ollama", "memory-hermes"],
     ],
     [
       "includes default memory embedding providers for unlisted agents even when listed agents override memory search",
@@ -982,7 +983,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           ],
         },
       } as OpenClawConfig,
-      ["browser", "openai", "ollama", "memory-core"],
+      ["browser", "openai", "ollama", "memory-hermes"],
     ],
     [
       "includes explicitly selected external web search providers at startup",
@@ -1014,7 +1015,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
       createStartupConfig({
         enabledPluginIds: ["demo-global-sidecar", "voice-call"],
       }),
-      ["demo-channel", "browser", "voice-call", "memory-core", "demo-global-sidecar"],
+      ["demo-channel", "browser", "voice-call", "memory-hermes", "demo-global-sidecar"],
     ],
     [
       "includes explicitly enabled external channel plugins without channel config",
@@ -1026,7 +1027,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["browser", "external-env-channel-plugin", "memory-core"],
+      ["browser", "external-env-channel-plugin", "memory-hermes"],
     ],
     [
       "does not start explicitly enabled external channel plugins when every channel is disabled",
@@ -1040,7 +1041,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      ["browser", "memory-core"],
+      ["browser", "memory-hermes"],
     ],
     [
       "keeps default-enabled startup sidecars when a restrictive allowlist permits them",
@@ -1055,7 +1056,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
       createStartupConfig({
         channelIds: ["demo-channel", "demo-other-channel"],
       }),
-      ["demo-channel", "demo-other-channel", "browser", "memory-core"],
+      ["demo-channel", "demo-other-channel", "browser", "memory-hermes"],
     ],
   ] as const)("%s", (_name, config, expected) => {
     expectStartupPluginIds({ config, expected });
@@ -1083,7 +1084,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      expected: ["browser", "memory-core"],
+      expected: ["browser", "memory-hermes"],
     });
   });
 
@@ -1142,7 +1143,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
     expectStartupPluginIds({
       config: activationSourceConfig,
       activationSourceConfig,
-      expected: ["browser", "memory-core", "qa-lab"],
+      expected: ["browser", "memory-hermes", "qa-lab"],
     });
   });
 
@@ -1169,7 +1170,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
     expectStartupPluginIds({
       config: { channels: {} } as OpenClawConfig,
       workerProviderIds: [" Static-SSH ", "STATIC-SSH"],
-      expected: ["browser", "memory-core", "qa-lab"],
+      expected: ["browser", "memory-hermes", "qa-lab"],
     });
   });
 
@@ -1177,7 +1178,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
     expectStartupPluginIds({
       config: { channels: {} } as OpenClawConfig,
       workerProviderIds: ["external-ssh"],
-      expected: ["browser", "memory-core"],
+      expected: ["browser", "memory-hermes"],
     });
     expectStartupPluginIds({
       config: {
@@ -1185,7 +1186,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         plugins: { entries: { "external-worker-provider": { enabled: true } } },
       } as OpenClawConfig,
       workerProviderIds: ["external-ssh"],
-      expected: ["browser", "memory-core", "external-worker-provider"],
+      expected: ["browser", "memory-hermes", "external-worker-provider"],
     });
   });
 
@@ -1201,12 +1202,12 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         plugins: { entries: { "qa-lab": { enabled: false } } },
       } as OpenClawConfig,
       workerProviderIds: ["static-ssh"],
-      expected: ["browser", "memory-core"],
+      expected: ["browser", "memory-hermes"],
     });
     expectStartupPluginIds({
       config: { channels: {}, plugins: { deny: ["qa-lab"] } } as OpenClawConfig,
       workerProviderIds: ["static-ssh"],
-      expected: ["browser", "memory-core"],
+      expected: ["browser", "memory-hermes"],
     });
     expectStartupPluginIds({
       config: { channels: {}, plugins: { allow: ["browser"] } } as OpenClawConfig,
@@ -1726,7 +1727,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
     expectStartupPluginIds({
       config: effectiveConfig,
       activationSourceConfig: rawConfig,
-      expected: ["browser", "memory-core"],
+      expected: ["browser", "memory-hermes"],
     });
   });
 
@@ -1774,7 +1775,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
       env: createPluginPlanningTestEnv({
         DEMO_CHANNEL_ANYTHING: "1",
       }),
-      expected: ["demo-channel", "browser", "memory-core"],
+      expected: ["demo-channel", "browser", "memory-hermes"],
     });
   });
 
@@ -2110,7 +2111,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         },
       } as OpenClawConfig,
       env: createPluginPlanningTestEnv(),
-      expected: ["browser", "memory-core"],
+      expected: ["browser", "memory-hermes"],
     });
   });
 
@@ -2138,7 +2139,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
       env: createPluginPlanningTestEnv({
         OPENCLAW_STATE_DIR: "/tmp/openclaw-with-persisted-demo-channel",
       }),
-      expected: ["browser", "memory-core"],
+      expected: ["browser", "memory-hermes"],
     });
   });
 
@@ -2327,10 +2328,10 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
   it("includes the default memory slot plugin when the allowlist permits it", () => {
     expectStartupPluginIds({
       config: createStartupConfig({
-        allowPluginIds: ["browser", "memory-core"],
+        allowPluginIds: ["browser", "memory-hermes"],
         noConfiguredChannels: true,
       }),
-      expected: ["browser", "memory-core"],
+      expected: ["browser", "memory-hermes"],
     });
   });
 
@@ -2339,7 +2340,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
       config: createStartupConfig({
         enabledPluginIds: ["memory-lancedb"],
       }),
-      expected: ["demo-channel", "browser", "memory-core"],
+      expected: ["demo-channel", "browser", "memory-hermes"],
     });
   });
 
@@ -2349,7 +2350,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         enabledPluginIds: ["lossless-claw"],
         contextEngine: "lossless-claw",
       }),
-      expected: ["demo-channel", "browser", "memory-core", "lossless-claw"],
+      expected: ["demo-channel", "browser", "memory-hermes", "lossless-claw"],
     });
   });
 
@@ -2358,7 +2359,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
       config: createStartupConfig({
         enabledPluginIds: ["lossless-claw"],
       }),
-      expected: ["demo-channel", "browser", "memory-core"],
+      expected: ["demo-channel", "browser", "memory-hermes"],
     });
   });
 
@@ -2367,7 +2368,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
       config: createStartupConfig({
         contextEngine: "legacy",
       }),
-      expected: ["demo-channel", "browser", "memory-core"],
+      expected: ["demo-channel", "browser", "memory-hermes"],
     });
   });
 
@@ -2377,7 +2378,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         enabledPluginIds: ["lossless-claw"],
         contextEngine: "Lossless-Claw",
       }),
-      expected: ["demo-channel", "browser", "memory-core", "lossless-claw"],
+      expected: ["demo-channel", "browser", "memory-hermes", "lossless-claw"],
     });
   });
 
@@ -2387,7 +2388,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         agentRuntimeId: "codex",
         enabledPluginIds: ["codex"],
       }),
-      expected: ["demo-channel", "browser", "memory-core"],
+      expected: ["demo-channel", "browser", "memory-hermes"],
     });
   });
 
@@ -2407,7 +2408,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      expected: ["demo-channel", "browser", "openai", "codex", "memory-core"],
+      expected: ["demo-channel", "browser", "openai", "codex", "memory-hermes"],
     });
   });
 
@@ -2416,7 +2417,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
       config: createStartupConfig({
         modelId: "openai/gpt-5.5",
       }),
-      expected: ["demo-channel", "browser", "openai", "codex", "memory-core"],
+      expected: ["demo-channel", "browser", "openai", "codex", "memory-hermes"],
     });
   });
 
@@ -2432,7 +2433,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      expected: ["demo-channel", "browser", "anthropic", "openai", "codex", "memory-core"],
+      expected: ["demo-channel", "browser", "anthropic", "openai", "codex", "memory-hermes"],
     });
   });
 
@@ -2448,7 +2449,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      expected: ["demo-channel", "browser", "openai", "memory-core"],
+      expected: ["demo-channel", "browser", "openai", "memory-hermes"],
     });
   });
 
@@ -2458,7 +2459,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         agentRuntimeIds: ["codex"],
         enabledPluginIds: ["codex"],
       }),
-      expected: ["demo-channel", "browser", "memory-core"],
+      expected: ["demo-channel", "browser", "memory-hermes"],
     });
   });
 
@@ -2468,7 +2469,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
         enabledPluginIds: ["codex"],
       }),
       env: { OPENCLAW_AGENT_RUNTIME: "codex" },
-      expected: ["demo-channel", "browser", "memory-core"],
+      expected: ["demo-channel", "browser", "memory-hermes"],
     });
   });
 
@@ -2490,7 +2491,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      expected: ["demo-channel", "browser", "demo-provider-plugin", "memory-core"],
+      expected: ["demo-channel", "browser", "demo-provider-plugin", "memory-hermes"],
     });
   });
 
@@ -2505,7 +2506,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      expected: ["demo-channel", "browser", "anthropic", "memory-core"],
+      expected: ["demo-channel", "browser", "anthropic", "memory-hermes"],
     });
   });
 
@@ -2529,7 +2530,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      expected: ["demo-channel", "browser", "memory-core"],
+      expected: ["demo-channel", "browser", "memory-hermes"],
     });
   });
 
@@ -2551,7 +2552,7 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           },
         },
       } as OpenClawConfig,
-      expected: ["demo-channel", "browser", "openai", "memory-core"],
+      expected: ["demo-channel", "browser", "openai", "memory-hermes"],
     });
   });
 });

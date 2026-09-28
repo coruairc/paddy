@@ -959,7 +959,11 @@ describe("scoped vitest configs", () => {
       "test/setup.extensions.ts",
       "test/setup-openclaw-runtime.ts",
     ]);
-    expect(testConfig.include).toEqual(["memory-lancedb/**/*.test.ts", "memory-wiki/**/*.test.ts"]);
+    expect(testConfig.include).toEqual([
+      "memory-hermes/**/*.test.ts",
+      "memory-lancedb/**/*.test.ts",
+      "memory-wiki/**/*.test.ts",
+    ]);
   });
 
   it("keeps telegram plugin tests out of the shared extensions lane", () => {
