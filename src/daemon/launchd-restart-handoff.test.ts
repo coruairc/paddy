@@ -56,7 +56,7 @@ async function executeHandoff(
   const stubDir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "launchd-stub-")));
   try {
     const home = path.join(stubDir, "home");
-    const stateDir = path.join(home, ".openclaw");
+    const stateDir = path.join(home, ".paddy");
     const systemDaemonsDir = path.join(stubDir, "LaunchDaemons");
     const handoffEnv = {
       HOME: home,
@@ -207,7 +207,7 @@ describe("scheduleDetachedLaunchdRestartHandoff", () => {
     expect(args[2]).toBe("openclaw-launchd-restart-handoff");
     expect(args[6]).toBe("9876");
     expect(args[1]).toContain('while kill -0 "$wait_pid" >/dev/null 2>&1; do');
-    expect(args[1]).toContain("exec >>'/Users/test/.openclaw/logs/gateway-restart.log' 2>&1");
+    expect(args[1]).toContain("exec >>'/Users/test/.paddy/logs/gateway-restart.log' 2>&1");
     expect(args[1]).toContain("openclaw restart attempt source=handoff mode=kickstart");
     expect(args[1]).toContain("pid=%s interactive=0");
     expect(args[1]).toContain('launchctl enable "$service_target"');
@@ -391,7 +391,7 @@ esac`,
     });
 
     const [, args, options] = requireSpawnCall();
-    expect(args[1]).toContain("exec >>'/Users/test/.openclaw/logs/gateway-restart.log' 2>&1");
+    expect(args[1]).toContain("exec >>'/Users/test/.paddy/logs/gateway-restart.log' 2>&1");
     expect(args[1]).not.toContain("/tmp/evil-bin");
     expect(args[1]).not.toContain("/tmp/evil.dylib");
     expect(args[1]).not.toContain("/tmp/evil-npmrc");

@@ -124,7 +124,8 @@ function resolveLayout(
 } {
   if (layout === "home") {
     const home = path.join(root, "home");
-    const stateDir = path.join(home, ".openclaw");
+    // Mirrors the default state dir (~/.paddy) so "home" fixtures stay the default install.
+    const stateDir = path.join(home, ".paddy");
     return {
       home,
       stateDir,

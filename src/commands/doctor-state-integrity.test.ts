@@ -643,14 +643,14 @@ describe("doctor state directory discovery", () => {
         const osHome = path.join(root, "os-home");
         const effectiveHome =
           homeSource === "OPENCLAW_HOME" ? path.join(root, "relocated") : osHome;
-        const defaultState = path.join(effectiveHome, ".openclaw");
+        const defaultState = path.join(effectiveHome, ".paddy");
         const activeState = activeDefault ? defaultState : path.join(root, "selected-state");
         fs.mkdirSync(activeState, { recursive: true, mode: 0o700 });
         if (defaultExists) {
           fs.mkdirSync(defaultState, { recursive: true, mode: 0o700 });
         }
         if (homeSource === "OPENCLAW_HOME") {
-          fs.mkdirSync(path.join(osHome, ".openclaw"), { recursive: true, mode: 0o700 });
+          fs.mkdirSync(path.join(osHome, ".paddy"), { recursive: true, mode: 0o700 });
         }
         await withEnvAsync(
           {
@@ -707,9 +707,7 @@ describe("doctor state directory discovery", () => {
               expect(text.includes("Multiple state directories detected")).toBe(warns);
               if (warns) {
                 expect(text).toContain(
-                  homeSource === "OPENCLAW_HOME"
-                    ? "  - $OPENCLAW_HOME/.openclaw"
-                    : "  - ~/.openclaw",
+                  homeSource === "OPENCLAW_HOME" ? "  - $OPENCLAW_HOME/.paddy" : "  - ~/.paddy",
                 );
                 expect(text).toContain(`Active state dir: ${activeState}`);
               }

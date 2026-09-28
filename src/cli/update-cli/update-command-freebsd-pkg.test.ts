@@ -206,7 +206,7 @@ describe("FreeBSD pkg update admission", () => {
           reason: "pkg-owned-install",
         });
         expect(readCommand).not.toHaveBeenCalled();
-        await expect(fs.stat(path.join(base, ".openclaw"))).rejects.toMatchObject({
+        await expect(fs.stat(path.join(base, ".paddy"))).rejects.toMatchObject({
           code: "ENOENT",
         });
       });

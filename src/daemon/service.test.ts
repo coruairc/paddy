@@ -191,7 +191,7 @@ describe("resolveGatewayService", () => {
 
   it("guards mutating service adapters when config was written by a newer OpenClaw", async () => {
     const tempHome = await makeTempWorkspace("openclaw-service-future-config-");
-    const stateDir = path.join(tempHome, ".openclaw");
+    const stateDir = path.join(tempHome, ".paddy");
     const configPath = path.join(stateDir, "openclaw.json");
     const envSnapshot = captureEnv(["HOME", "OPENCLAW_STATE_DIR", "OPENCLAW_CONFIG_PATH"]);
     try {
@@ -336,9 +336,9 @@ describe("readGatewayServiceState", () => {
         process.env.XDG_RUNTIME_DIR = path.join(home, "runtime");
         const expectedPort = portSource === "config" ? 19902 : 19901;
         if (portSource === "config") {
-          await fs.mkdir(path.join(home, ".openclaw"), { recursive: true });
+          await fs.mkdir(path.join(home, ".paddy"), { recursive: true });
           await fs.writeFile(
-            path.join(home, ".openclaw/openclaw.json"),
+            path.join(home, ".paddy/openclaw.json"),
             JSON.stringify({ gateway: { port: expectedPort } }),
           );
         } else {

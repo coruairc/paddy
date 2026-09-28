@@ -572,7 +572,8 @@ const DIR_LINK_TYPE = process.platform === "win32" ? "junction" : "dir";
 
 function getStateDirMigrationPaths(root: string) {
   return {
-    targetDir: path.join(root, ".openclaw"),
+    // Paddy's own root; ~/.clawdbot is no longer a legacy source.
+    targetDir: path.join(root, ".paddy"),
     legacyDir: path.join(root, ".clawdbot"),
   };
 }
@@ -598,9 +599,9 @@ async function runFreshStateDirMigration(root: string, env = {} as NodeJS.Proces
 
 function getProfileWorkspaceMigrationPaths(root: string, profile = "work") {
   return {
-    legacyDir: path.join(root, ".openclaw", `workspace-${profile}`),
-    targetDir: path.join(root, `.openclaw-${profile}`, "workspace"),
-    stateDir: path.join(root, `.openclaw-${profile}`),
+    legacyDir: path.join(root, ".paddy", `workspace-${profile}`),
+    targetDir: path.join(root, `.paddy-${profile}`, "workspace"),
+    stateDir: path.join(root, `.paddy-${profile}`),
   };
 }
 
@@ -621,13 +622,6 @@ async function runProfileWorkspaceDoctorMigration(root: string, profile = "work"
     doctorOnlyStateMigrations: true,
   });
   return { log, paths, result };
-}
-
-function expectTargetAlreadyExistsWarning(result: StateDirMigrationResult, targetDir: string) {
-  expect(result.migrated).toBe(false);
-  expect(result.warnings).toEqual([
-    `State dir migration skipped: target already exists (${targetDir}). Remove or merge manually.`,
-  ]);
 }
 
 function expectUnmigratedWithoutWarnings(result: StateDirMigrationResult) {
@@ -898,7 +892,7 @@ describe("doctor legacy state migrations", () => {
 
   it("migrates the legacy shared state agent registry primary key", async () => {
     const root = makeDoctorStateDir();
-    const stateDir = path.join(root, ".openclaw");
+    const stateDir = path.join(root, ".paddy");
     const stateDatabasePath = await createLegacyAgentDatabaseRegistry(stateDir);
     const detected = await detectLegacyStateMigrations({
       cfg: {},
@@ -970,7 +964,7 @@ describe("doctor legacy state migrations", () => {
 
   it("does not repair newer shared state schemas", async () => {
     const root = makeDoctorStateDir();
-    const stateDir = path.join(root, ".openclaw");
+    const stateDir = path.join(root, ".paddy");
     const stateDatabasePath = await createLegacyAgentDatabaseRegistry(stateDir);
     const { DatabaseSync } = requireNodeSqlite();
     const seededDb = new DatabaseSync(stateDatabasePath);
@@ -2820,7 +2814,7 @@ describe("doctor legacy state migrations", () => {
     // Even direct doctor repair must not copy or archive default approvals.
     const root = makeDoctorStateDir();
     const stateDir = path.join(root, "custom-state");
-    const sourcePath = path.join(root, ".openclaw", "exec-approvals.json");
+    const sourcePath = path.join(root, ".paddy", "exec-approvals.json");
     const targetPath = path.join(stateDir, "exec-approvals.json");
     writeJson5(sourcePath, {
       version: 1,
@@ -2853,7 +2847,7 @@ describe("doctor legacy state migrations", () => {
   it("keeps default exec approvals in place during automatic state migration", async () => {
     const root = makeDoctorStateDir();
     const stateDir = path.join(root, "custom-state");
-    const sourcePath = path.join(root, ".openclaw", "exec-approvals.json");
+    const sourcePath = path.join(root, ".paddy", "exec-approvals.json");
     const targetPath = path.join(stateDir, "exec-approvals.json");
     writeJson5(sourcePath, {
       version: 1,
@@ -3240,11 +3234,13 @@ describe("doctor legacy state migrations", () => {
     expectUnmigratedWithoutWarnings(await runFreshStateDirMigration(nestedRoot));
   });
 
-  it("warns when target exists and legacy state is not a safe mirror", async () => {
+  it("never warns about or adopts ~/.clawdbot, even when it is not a safe mirror", async () => {
     const fileRoot = makeDoctorStateDir();
     const file = ensureLegacyAndTargetStateDirs(fileRoot);
     fs.writeFileSync(path.join(file.legacyDir, "sessions.json"), "{}", "utf-8");
-    expectTargetAlreadyExistsWarning(await runFreshStateDirMigration(fileRoot), file.targetDir);
+    expectUnmigratedWithoutWarnings(await runFreshStateDirMigration(fileRoot));
+    expect(fs.readFileSync(path.join(file.legacyDir, "sessions.json"), "utf-8")).toBe("{}");
+    expect(fs.lstatSync(file.legacyDir).isSymbolicLink()).toBe(false);
 
     const outsideRoot = makeDoctorStateDir();
     const outside = ensureLegacyAndTargetStateDirs(outsideRoot);
@@ -3252,10 +3248,7 @@ describe("doctor legacy state migrations", () => {
     fs.mkdirSync(path.join(outside.targetDir, "sessions"), { recursive: true });
     fs.mkdirSync(outsideDir, { recursive: true });
     fs.symlinkSync(outsideDir, path.join(outside.legacyDir, "sessions"), DIR_LINK_TYPE);
-    expectTargetAlreadyExistsWarning(
-      await runFreshStateDirMigration(outsideRoot),
-      outside.targetDir,
-    );
+    expectUnmigratedWithoutWarnings(await runFreshStateDirMigration(outsideRoot));
 
     const brokenRoot = makeDoctorStateDir();
     const broken = ensureLegacyAndTargetStateDirs(brokenRoot);
@@ -3263,7 +3256,7 @@ describe("doctor legacy state migrations", () => {
     fs.mkdirSync(targetSessionDir, { recursive: true });
     fs.symlinkSync(targetSessionDir, path.join(broken.legacyDir, "sessions"), DIR_LINK_TYPE);
     fs.rmSync(targetSessionDir, { recursive: true, force: true });
-    expectTargetAlreadyExistsWarning(await runFreshStateDirMigration(brokenRoot), broken.targetDir);
+    expectUnmigratedWithoutWarnings(await runFreshStateDirMigration(brokenRoot));
 
     const secondHopRoot = makeDoctorStateDir();
     const secondHop = ensureLegacyAndTargetStateDirs(secondHopRoot);
@@ -3272,10 +3265,7 @@ describe("doctor legacy state migrations", () => {
     const targetHop = path.join(secondHop.targetDir, "hop");
     fs.symlinkSync(secondHopOutsideDir, targetHop, DIR_LINK_TYPE);
     fs.symlinkSync(targetHop, path.join(secondHop.legacyDir, "sessions"), DIR_LINK_TYPE);
-    expectTargetAlreadyExistsWarning(
-      await runFreshStateDirMigration(secondHopRoot),
-      secondHop.targetDir,
-    );
+    expectUnmigratedWithoutWarnings(await runFreshStateDirMigration(secondHopRoot));
   });
 });
 /* oxlint-disable max-lines -- TODO: split this grandfathered oversized file. */

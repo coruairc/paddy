@@ -39,7 +39,7 @@ it.each([
     const requested = path.join(home, "current", "lib", "node_modules", "openclaw");
     const recorded = path.join(home, "old", "lib", "node_modules", "openclaw");
     const recordedNode = path.join(home, "old", "bin", "node");
-    const recordedState = path.join(home, ".openclaw-recorded");
+    const recordedState = path.join(home, ".paddy-recorded");
     await Promise.all([writePackageRoot(requested, "1.0.0"), writePackageRoot(recorded, "1.0.0")]);
     if (fault === "source checkout") {
       await fs.writeFile(path.join(recorded, ".git"), "gitdir: fixture\n");
@@ -97,7 +97,7 @@ it.each([
         const env = await resolveUpdateCommandAdmissionEnv({ root: admissionRoot, opts: {} });
         const sealed = fault === "sealed definition";
         const selected = fault === "none" || sealed;
-        const state = selected ? recordedState : path.join(home, ".openclaw");
+        const state = selected ? recordedState : path.join(home, ".paddy");
         expect
           .soft({
             root,

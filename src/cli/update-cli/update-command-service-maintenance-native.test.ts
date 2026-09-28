@@ -143,8 +143,8 @@ it
       const effectiveEnv = {
         HOME: home,
         OPENCLAW_LAUNCHD_LABEL: label,
-        OPENCLAW_STATE_DIR: path.join(home, ".openclaw"),
-        OPENCLAW_CONFIG_PATH: path.join(home, ".openclaw", "openclaw.json"),
+        OPENCLAW_STATE_DIR: path.join(home, ".paddy"),
+        OPENCLAW_CONFIG_PATH: path.join(home, ".paddy", "openclaw.json"),
       };
       await fs.writeFile(effectiveEnv.OPENCLAW_CONFIG_PATH, "{}");
       const plist = resolveLaunchAgentPlistPath(effectiveEnv);

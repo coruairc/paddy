@@ -77,7 +77,7 @@ const allCases = releases.flatMap((release) =>
 );
 
 function prepareState(home: string, release: string, configName: string) {
-  const stateDir = path.join(home, ".openclaw");
+  const stateDir = path.join(home, ".paddy");
   const configPath = path.join(stateDir, "openclaw.json");
   fs.cpSync(path.join(corpusDir, release, "state"), stateDir, { recursive: true });
   const fixture: StateFixture = JSON.parse(
@@ -164,7 +164,7 @@ export function createStateStartupCorpusFixture() {
       return lifetime.run(async () => {
         signal.throwIfAborted();
         const home = lifetime.createTempDir("openclaw-state-corpus-");
-        const stateDir = path.join(home, ".openclaw");
+        const stateDir = path.join(home, ".paddy");
         const scope = createSqliteReadOnlyWorkerScope({ signal, deadlineOwnedByCaller: false });
         const diagnostics = createFixtureDiagnostics("state-startup-corpus");
         const onAbort = () => diagnostics.report("abort");

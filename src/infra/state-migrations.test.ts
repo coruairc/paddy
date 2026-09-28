@@ -4187,10 +4187,12 @@ describe("state migrations", () => {
     expect(migrateLegacyState).not.toHaveBeenCalled();
   });
 
-  it("runs plugin doctor migrations against the canonical state dir after state-dir repair", async () => {
+  // Paddy: ~/.clawdbot is no longer a legacy source, so plugin migrations target ~/.paddy and the
+  // old dir is left in place.
+  it("runs plugin doctor migrations against the canonical state dir without adopting ~/.clawdbot", async () => {
     const root = await createTempDir();
     const legacyStateDir = path.join(root, ".clawdbot");
-    const canonicalStateDir = path.join(root, ".openclaw");
+    const canonicalStateDir = path.join(root, ".paddy");
     await fs.mkdir(legacyStateDir, { recursive: true });
     await fs.writeFile(path.join(legacyStateDir, "legacy.txt"), "legacy", "utf8");
     const env: NodeJS.ProcessEnv = { ...process.env, HOME: root };
@@ -4226,7 +4228,10 @@ describe("state migrations", () => {
     expect(result.changes).toContain("plugin state migrated");
     expect(detectedStateDirs).toStrictEqual([canonicalStateDir]);
     expect(migratedStateDirs).toStrictEqual([canonicalStateDir]);
-    await fs.access(path.join(canonicalStateDir, "legacy.txt"));
+    await expect(fs.readFile(path.join(legacyStateDir, "legacy.txt"), "utf8")).resolves.toBe(
+      "legacy",
+    );
+    await expect(fs.access(path.join(canonicalStateDir, "legacy.txt"))).rejects.toThrow();
   });
 
   it("routes explicit Doctor repair through the APNs SQLite importer", async () => {

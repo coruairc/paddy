@@ -538,8 +538,8 @@ module.exports = { stateMigrations: [{
   it("records named-profile workspace endpoints without authorizing unbound writes", async () => {
     const fixture = await makeFixture();
     fixture.env.OPENCLAW_PROFILE = "work";
-    const source = path.join(fixture.homeDir, ".openclaw", "workspace-work");
-    const target = path.join(fixture.homeDir, ".openclaw-work", "workspace");
+    const source = path.join(fixture.homeDir, ".paddy", "workspace-work");
+    const target = path.join(fixture.homeDir, ".paddy-work", "workspace");
     fs.mkdirSync(source, { recursive: true });
     fs.writeFileSync(path.join(source, "AGENTS.md"), "profile workspace\n");
     const before = snapshotFiles(fixture.root);

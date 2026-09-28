@@ -138,7 +138,7 @@ it.each([
     const env = fixture.input === "precloned" ? cloneEnvWithPlatformSemantics(rawEnv) : rawEnv;
     const scope = { agentId: "main", sessionKey: "agent:main:capture", env };
     const caseSensitiveMiss = fixture.platform === "linux" && fixture.key !== "OPENCLAW_STATE_DIR";
-    const expectedRoot = caseSensitiveMiss ? path.join(home, ".openclaw") : root;
+    const expectedRoot = caseSensitiveMiss ? path.join(home, ".paddy") : root;
     const expectedReadonly = caseSensitiveMiss ? undefined : "1";
     const ready = createDeferredCore();
     boundary.ready = ready.promise;

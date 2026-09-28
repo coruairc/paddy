@@ -655,7 +655,7 @@ describe("preserved update activation with real version guards", () => {
             : {
                 OPENCLAW_PROFILE: "default",
                 OPENCLAW_SYSTEMD_UNIT: "openclaw-gateway.service",
-                OPENCLAW_STATE_DIR: path.join(root, ".openclaw"),
+                OPENCLAW_STATE_DIR: path.join(root, ".paddy"),
                 OPENCLAW_CONFIG_PATH: configPath,
               }),
           ...(change === "unit"

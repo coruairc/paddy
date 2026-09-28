@@ -59,7 +59,8 @@ describe("status-overview-rows", () => {
       "1 files · 2 chunks · plugin memory · ok(vector ready) · warn(fts ready) · muted(cache warm)",
     );
     expect(findRowValue(rows, "Plugin compatibility")).toBe("warn(1 notice · 1 plugin)");
-    expect(findRowValue(rows, "Telemetry")).toBe("muted(disabled · update checks only)");
+    // Paddy: update.checkOnStart defaults to false, so update checks are off too.
+    expect(findRowValue(rows, "Telemetry")).toBe("muted(disabled · update checks off)");
     expect(findRowValue(rows, "Host desktop")).toBe("muted(disabled)");
     expect(findRowValue(rows, "Sessions")).toBe(
       "2 stored · default gpt-5.5 (12k ctx) · store.json",

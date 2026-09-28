@@ -1502,14 +1502,12 @@ describe("secrets apply", () => {
     ).rejects.toThrow(`Cannot apply plugin-managed SecretRef provider "vault" because ${reason}`);
   });
 
-  it("scrubs .env in legacy .clawdbot state directory via automatic fallback", async () => {
-    // Do NOT set OPENCLAW_STATE_DIR — rely on resolveStateDir's automatic
-    // legacy-directory fallback. A controlled HOME that contains only
-    // .clawdbot (no .openclaw) exercises the scrub path so the old
-    // resolveConfigDir call (which always returns $HOME/.openclaw) would
-    // miss the .env inside .clawdbot.
+  it("scrubs .env in the default ~/.paddy state directory without OPENCLAW_STATE_DIR", async () => {
+    // Do NOT set OPENCLAW_STATE_DIR — rely on resolveStateDir's default.
+    // Paddy: the default is $HOME/.paddy and there is no legacy ~/.clawdbot
+    // fallback any more.
     const homeDir = tempDirs.make("openclaw-secrets-apply-legacy-");
-    const legacyStateDir = path.join(homeDir, ".clawdbot");
+    const legacyStateDir = path.join(homeDir, ".paddy");
     const configPath = path.join(legacyStateDir, "openclaw.json");
     const agentDir = path.join(legacyStateDir, "agents", "main", "agent");
     const envPath = path.join(legacyStateDir, ".env");
@@ -1564,11 +1562,11 @@ describe("secrets apply", () => {
     // appearing or disappearing during the operation could direct .env
     // scrubbing at a different file.
     //
-    // Set up a HOME where both .openclaw and .clawdbot exist.
-    // resolveStateDir returns .openclaw when both exist because it checks
-    // .openclaw first. The apply must use that same root for .env.
+    // Set up a HOME where both .paddy and .clawdbot exist.
+    // Paddy: resolveStateDir returns .paddy (legacy dirs are never adopted).
+    // The apply must use that same root for .env.
     const homeDir = tempDirs.make("openclaw-secrets-apply-root-");
-    const openclawDir = path.join(homeDir, ".openclaw");
+    const openclawDir = path.join(homeDir, ".paddy");
     const clawdbotDir = path.join(homeDir, ".clawdbot");
     const configPath = path.join(openclawDir, "openclaw.json");
     const agentDir = path.join(openclawDir, "agents", "main", "agent");
@@ -1593,7 +1591,7 @@ describe("secrets apply", () => {
       },
     });
     await writeJsonFile(authStorePath, createAuthProfileStoreFixture({}));
-    // .env in the canonical .openclaw dir — this is the one that should be scrubbed
+    // .env in the canonical .paddy dir — this is the one that should be scrubbed
     await fs.writeFile(
       openclawEnvPath,
       "OPENAI_API_KEY=sk-openai-plaintext\nUNRELATED=value\n", // pragma: allowlist secret
@@ -1616,7 +1614,7 @@ describe("secrets apply", () => {
       expect(applied.mode).toBe("write");
       expect(applied.changed).toBe(true);
 
-      // Canonical .openclaw/.env was scrubbed
+      // Canonical .paddy/.env was scrubbed
       const nextOpenclawEnv = await fs.readFile(openclawEnvPath, "utf8");
       expect(nextOpenclawEnv).not.toContain("sk-openai-plaintext");
       expect(nextOpenclawEnv).toContain("UNRELATED=value");

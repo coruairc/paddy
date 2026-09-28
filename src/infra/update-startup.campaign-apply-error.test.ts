@@ -168,7 +168,10 @@ describe("update campaign apply exception boundary", () => {
     const log = { info: vi.fn() };
 
     await runGatewayUpdateCheck({
-      getConfig: () => ({ update: { channel: "dev", auto: { enabled: true } } }),
+      // Paddy: update.checkOnStart is opt-in.
+      getConfig: () => ({
+        update: { channel: "dev", checkOnStart: true, auto: { enabled: true } },
+      }),
       log,
       isNixMode: false,
       allowInTests: true,

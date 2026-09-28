@@ -36,7 +36,10 @@ export async function withTempHome<T>(fn: (home: string) => Promise<T>): Promise
 }
 
 export async function writeOpenClawConfig(home: string, config: unknown): Promise<string> {
-  const configPath = path.join(home, ".openclaw", "openclaw.json");
+  // Write where the runtime reads: an explicit OPENCLAW_STATE_DIR (withTempHome sets one), else
+  // the Paddy default ~/.paddy.
+  const stateDir = process.env.OPENCLAW_STATE_DIR?.trim() || path.join(home, ".paddy");
+  const configPath = path.join(stateDir, "openclaw.json");
   await fs.mkdir(path.dirname(configPath), { recursive: true });
   await fs.writeFile(configPath, JSON.stringify(config, null, 2), "utf-8");
   return configPath;

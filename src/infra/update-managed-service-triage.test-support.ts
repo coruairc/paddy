@@ -82,7 +82,7 @@ async function acquireTriageBoundary(
   const primaryFile = path.join(root, "primary.json");
   const bin = path.join(root, "bin");
   const metaPath = path.join(root, "meta.json");
-  const stateDir = path.join(root, ".openclaw");
+  const stateDir = path.join(root, ".paddy");
   await fs.mkdir(stateDir);
   await fs.writeFile(
     metaPath,

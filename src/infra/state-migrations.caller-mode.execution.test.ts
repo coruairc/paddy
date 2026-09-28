@@ -333,7 +333,7 @@ describe("legacy state migration caller execution", () => {
   it("relocates the legacy state root before running Doctor-owned migrations", async () => {
     const root = await tempDirs.make("openclaw-doctor-state-root-");
     const legacyStateDir = path.join(root, ".clawdbot");
-    const stateDir = path.join(root, ".openclaw");
+    const stateDir = path.join(root, ".paddy");
     fs.mkdirSync(legacyStateDir, { recursive: true });
     const { execPath } = writeLegacyDoctorSources(legacyStateDir);
     const env: NodeJS.ProcessEnv = {
@@ -367,7 +367,7 @@ describe("legacy state migration caller execution", () => {
   it("plans pending state-root relocation before every copied-state migration", async () => {
     const root = await tempDirs.make("openclaw-doctor-state-root-plan-");
     const legacyStateDir = path.join(root, ".clawdbot");
-    const stateDir = path.join(root, ".openclaw");
+    const stateDir = path.join(root, ".paddy");
     const configPath = path.join(legacyStateDir, "openclaw.json");
     fs.mkdirSync(legacyStateDir, { recursive: true });
     fs.writeFileSync(configPath, "{}\n");
@@ -416,7 +416,7 @@ describe("legacy state migration caller execution", () => {
   it("refuses later migrations when the legacy state root cannot be relocated", async () => {
     const root = await tempDirs.make("openclaw-doctor-state-root-refusal-");
     const legacyStateDir = path.join(root, ".clawdbot");
-    const stateDir = path.join(root, ".openclaw");
+    const stateDir = path.join(root, ".paddy");
     fs.mkdirSync(legacyStateDir, { recursive: true });
     fs.mkdirSync(stateDir, { recursive: true });
     fs.writeFileSync(path.join(stateDir, "existing-state"), "occupied\n");

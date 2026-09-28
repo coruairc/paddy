@@ -57,7 +57,7 @@ describe("legacy owner advisories", () => {
         OPENCLAW_DISABLE_BUNDLED_PLUGINS: "1",
       };
       const source = path.join(
-        standalone ? path.join(root, ".openclaw") : stateDir,
+        standalone ? path.join(root, ".paddy") : stateDir,
         "agent",
         database ? "openclaw-agent.sqlite" : "settings.json",
       );

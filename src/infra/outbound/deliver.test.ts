@@ -4091,7 +4091,7 @@ describe("deliverOutboundPayloads", () => {
       expect(sendFormattedMediaCall?.mediaLocalRoots).toContain(expectedPreferredTmpRoot);
       expect(
         sendFormattedMediaCall?.mediaLocalRoots?.some((root) =>
-          root.endsWith(path.join(".openclaw", "workspace-work")),
+          root.endsWith(path.join(".paddy", "workspace-work")),
         ),
       ).toBe(true);
       expect(sendMedia).not.toHaveBeenCalled();

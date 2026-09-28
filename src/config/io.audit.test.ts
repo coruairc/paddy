@@ -169,7 +169,7 @@ function createAuditRecordBase(configPath: string, argv?: string[]) {
 
 function createRenameAuditRecord(home: string) {
   return finalizeConfigWriteAuditRecord({
-    base: createAuditRecordBase(path.join(home, ".openclaw", "openclaw.json")),
+    base: createAuditRecordBase(path.join(home, ".paddy", "openclaw.json")),
     result: "rename",
     nextMetadata: {
       dev: "12",
@@ -183,7 +183,7 @@ function createRenameAuditRecord(home: string) {
 }
 
 function readLegacyAuditLog(home: string): unknown[] {
-  const auditPath = path.join(home, ".openclaw", "logs", "config-audit.jsonl");
+  const auditPath = path.join(home, ".paddy", "logs", "config-audit.jsonl");
   return fs
     .readFileSync(auditPath, "utf-8")
     .trim()
@@ -242,7 +242,7 @@ describe("config io audit helpers", () => {
       } as NodeJS.ProcessEnv,
       () => home,
     );
-    expect(auditPath).toBe(path.join(home, ".openclaw", "logs", "config-audit.jsonl"));
+    expect(auditPath).toBe(path.join(home, ".paddy", "logs", "config-audit.jsonl"));
     expect(auditPath.startsWith(path.resolve("undefined"))).toBe(false);
   });
 
@@ -381,7 +381,7 @@ describe("config io audit helpers", () => {
     const home = await suiteRootTracker.make("append-redacted");
     const record = finalizeConfigWriteAuditRecord({
       base: {
-        ...createAuditRecordBase(path.join(home, ".openclaw", "openclaw.json")),
+        ...createAuditRecordBase(path.join(home, ".paddy", "openclaw.json")),
         suspicious: [
           "provider returned ya29.fake-access-token-with-enough-length",
           "plugin returned AIzaSyD-very-real-looking-google-api-key-123",
@@ -570,14 +570,14 @@ describe("config io audit helpers", () => {
 
   it("redacts historical config audit entries while preserving file and directory modes", async () => {
     const home = await suiteRootTracker.make("scrub-historical");
-    const auditPath = path.join(home, ".openclaw", "logs", "config-audit.jsonl");
+    const auditPath = path.join(home, ".paddy", "logs", "config-audit.jsonl");
     fs.mkdirSync(path.dirname(auditPath), { recursive: true, mode: 0o700 });
     fs.chmodSync(path.dirname(auditPath), 0o755);
     const unredactedRecord = {
       ts: "2026-05-02T00:03:48.471Z",
       source: "config-io",
       event: "config.write",
-      configPath: path.join(home, ".openclaw", "openclaw.json"),
+      configPath: path.join(home, ".paddy", "openclaw.json"),
       pid: 1590563,
       ppid: 1590548,
       cwd: home,
@@ -597,7 +597,7 @@ describe("config io audit helpers", () => {
       ts: "2026-05-08T12:00:00.000Z",
       source: "config-io",
       event: "config.write",
-      configPath: path.join(home, ".openclaw", "openclaw.json"),
+      configPath: path.join(home, ".paddy", "openclaw.json"),
       pid: 1,
       ppid: 1,
       cwd: home,
@@ -651,13 +651,13 @@ describe("config io audit helpers", () => {
       homedir: () => home,
     });
     expect(result).toEqual({ scanned: 0, rewritten: 0, skipped: 0, aborted: false });
-    const auditPath = path.join(home, ".openclaw", "logs", "config-audit.jsonl");
+    const auditPath = path.join(home, ".paddy", "logs", "config-audit.jsonl");
     expect(fs.existsSync(auditPath)).toBe(false);
   });
 
   it("preserves malformed lines verbatim and counts them as skipped", async () => {
     const home = await suiteRootTracker.make("scrub-malformed");
-    const auditPath = path.join(home, ".openclaw", "logs", "config-audit.jsonl");
+    const auditPath = path.join(home, ".paddy", "logs", "config-audit.jsonl");
     fs.mkdirSync(path.dirname(auditPath), { recursive: true, mode: 0o700 });
     const malformed = "{this is not valid json";
     const validUnredacted = {
@@ -682,7 +682,7 @@ describe("config io audit helpers", () => {
 
   it("does not write when dryRun is true even if records would change", async () => {
     const home = await suiteRootTracker.make("scrub-dryrun");
-    const auditPath = path.join(home, ".openclaw", "logs", "config-audit.jsonl");
+    const auditPath = path.join(home, ".paddy", "logs", "config-audit.jsonl");
     fs.mkdirSync(path.dirname(auditPath), { recursive: true, mode: 0o700 });
     const unredacted = {
       ts: "2026-05-02T00:03:48.471Z",
@@ -715,7 +715,7 @@ describe("config io audit helpers", () => {
     "preserves concurrent appends after the scrub %s and cleans up staged output",
     async (phase) => {
       const home = await suiteRootTracker.make("scrub-race-after-temp-write");
-      const auditPath = path.join(home, ".openclaw", "logs", "config-audit.jsonl");
+      const auditPath = path.join(home, ".paddy", "logs", "config-audit.jsonl");
       fs.mkdirSync(path.dirname(auditPath), { recursive: true, mode: 0o700 });
       const unredacted = {
         ts: "2026-05-02T00:03:48.471Z",

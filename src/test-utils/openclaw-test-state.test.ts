@@ -458,7 +458,7 @@ describe("openclaw test state", () => {
 
     try {
       expect(state.home).toBe(path.join(state.root, "home"));
-      expect(state.stateDir).toBe(path.join(state.home, ".openclaw"));
+      expect(state.stateDir).toBe(path.join(state.home, ".paddy"));
       expect(state.configPath).toBe(path.join(state.stateDir, "openclaw.json"));
       expect(state.workspaceDir).toBe(path.join(state.home, "workspace"));
       expect(state.env.HOME).toBe(state.home);

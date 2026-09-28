@@ -17,10 +17,22 @@ import {
 import { VERSION } from "../version.js";
 import {
   buildTelemetryPayload,
-  checkTelemetryUpdate,
-  resolveTelemetryStatus,
+  checkTelemetryUpdate as checkTelemetryUpdateUnwrapped,
+  resolveTelemetryStatus as resolveTelemetryStatusUnwrapped,
 } from "./telemetry.js";
 import { blockTelemetryPersistence } from "./telemetry.test-support.js";
+
+// Paddy defaults update.checkOnStart to false, which also turns the anonymous update-check ping
+// off. These cases cover the opted-in behavior; explicit checkOnStart values still win.
+function withUpdateChecks(config: OpenClawConfig): OpenClawConfig {
+  return config.update?.checkOnStart === undefined
+    ? { ...config, update: { ...config.update, checkOnStart: true } }
+    : config;
+}
+const checkTelemetryUpdate: typeof checkTelemetryUpdateUnwrapped = (getConfig, options) =>
+  checkTelemetryUpdateUnwrapped(() => withUpdateChecks(getConfig()), options);
+const resolveTelemetryStatus: typeof resolveTelemetryStatusUnwrapped = (config) =>
+  resolveTelemetryStatusUnwrapped(withUpdateChecks(config));
 
 const NOW = Date.parse("2026-08-23T12:00:00.000Z");
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -595,6 +607,22 @@ describe("anonymous telemetry", () => {
       expect(mockHttp.requests()).toHaveLength(1);
     },
   );
+
+  it("never sends a request while update.checkOnStart is unset (Paddy default)", async () => {
+    await expect(
+      checkTelemetryUpdateUnwrapped(() => createFeatureConfig(), {
+        surface: "gateway",
+        fetchImpl: globalThis.fetch,
+        nowMs: NOW,
+      }),
+    ).resolves.toBeNull();
+    expect((await resolveTelemetryStatusUnwrapped(createFeatureConfig())).reason).toBe(
+      "update-disabled",
+    );
+
+    expect(mockHttp.requests()).toHaveLength(0);
+    expect(readConfigMachineState(TELEMETRY_STATE_KEY)).toBeUndefined();
+  });
 
   it("never sends a request when startup update checks are disabled", async () => {
     await expect(

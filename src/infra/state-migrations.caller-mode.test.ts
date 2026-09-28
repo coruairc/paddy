@@ -307,8 +307,8 @@ describe("legacy state migration caller mode", () => {
   it("defers an absent named-profile workspace until its external path is bound", async () => {
     const fixture = await makeFixture();
     fixture.env.OPENCLAW_PROFILE = "work";
-    const source = path.join(fixture.homeDir, ".openclaw", "workspace-work");
-    const target = path.join(fixture.homeDir, ".openclaw-work", "workspace");
+    const source = path.join(fixture.homeDir, ".paddy", "workspace-work");
+    const target = path.join(fixture.homeDir, ".paddy-work", "workspace");
     const before = snapshotFiles(fixture.root);
 
     const plan = await planLegacyStateMigrationsReadOnly({
@@ -331,8 +331,8 @@ describe("legacy state migration caller mode", () => {
   it("retains an occupied named-profile workspace as explicit deferred work", async () => {
     const fixture = await makeFixture();
     fixture.env.OPENCLAW_PROFILE = "work";
-    const source = path.join(fixture.homeDir, ".openclaw", "workspace-work");
-    const target = path.join(fixture.homeDir, ".openclaw-work", "workspace");
+    const source = path.join(fixture.homeDir, ".paddy", "workspace-work");
+    const target = path.join(fixture.homeDir, ".paddy-work", "workspace");
     fs.mkdirSync(source, { recursive: true });
     fs.mkdirSync(target, { recursive: true });
     const before = snapshotFiles(fixture.root);

@@ -117,7 +117,7 @@ export async function createServiceActivationFixture() {
   const unitPath = path.join(root, ".config/systemd/user/openclaw-gateway.service");
   await fs.mkdir(path.dirname(unitPath), { recursive: true, mode: 0o755 });
   await fs.writeFile(unitPath, "[Service]\nExecStart=/fixture/openclaw gateway\n", { mode: 0o600 });
-  const configPath = path.join(root, ".openclaw", "openclaw.json");
+  const configPath = path.join(root, ".paddy", "openclaw.json");
   await fs.mkdir(path.dirname(configPath), { mode: 0o700 });
   await fs.mkdir(path.join(root, "dist"));
   await fs.writeFile(

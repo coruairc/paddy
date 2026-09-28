@@ -179,7 +179,7 @@ describe("legacy state migration caller storage", () => {
       await withOpenClawTestState(
         { label: "install-agent-dir", layout: "split", agentEnv: "clear" },
         async (state) => {
-          const legacyDir = path.join(state.home, ".openclaw", "agent");
+          const legacyDir = path.join(state.home, ".paddy", "agent");
           const configuredDir = testCase.custom
             ? state.path("configured-agent")
             : state.agentDir(testCase.agentId);
@@ -225,7 +225,7 @@ describe("legacy state migration caller storage", () => {
           }
           await withEnvAsync(
             {
-              OPENCLAW_AGENT_DIR: testCase.override === "tilde" ? "~/.openclaw/agent" : overrideDir,
+              OPENCLAW_AGENT_DIR: testCase.override === "tilde" ? "~/.paddy/agent" : overrideDir,
               OPENCLAW_HOME: state.path("alternate-home"),
               OPENCLAW_OFFLINE: "1",
               SDK_FIXTURE_AGENT_DIR: undefined,
@@ -308,11 +308,11 @@ describe("legacy state migration caller storage", () => {
     "keeps rehearsal SDK sources confined when an ancestor symlink escapes %s",
     async (timing) => {
       const fixture = await makeFixture();
-      const externalParent = path.join(fixture.homeDir, ".openclaw");
+      const externalParent = path.join(fixture.homeDir, ".paddy");
       const externalBinary = path.join(externalParent, "agent/bin/fd");
       fs.mkdirSync(path.dirname(externalBinary), { recursive: true });
       fs.writeFileSync(externalBinary, "uncopied SDK binary");
-      const copiedParent = path.join(fixture.stateDir, ".openclaw");
+      const copiedParent = path.join(fixture.stateDir, ".paddy");
       const symlinkKind = process.platform === "win32" ? "junction" : "dir";
       if (timing === "before detection") {
         fs.symlinkSync(externalParent, copiedParent, symlinkKind);

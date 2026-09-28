@@ -34,8 +34,8 @@ export function createSnapshot(params: {
 }
 
 export async function createPluginIncludeFixture(home: string) {
-  const configPath = path.join(home, ".openclaw", "openclaw.json");
-  const pluginsPath = path.join(home, ".openclaw", "config", "plugins.json5");
+  const configPath = path.join(home, ".paddy", "openclaw.json");
+  const pluginsPath = path.join(home, ".paddy", "config", "plugins.json5");
   await fs.mkdir(path.dirname(pluginsPath), { recursive: true });
   await fs.writeFile(
     configPath,

@@ -149,7 +149,7 @@ afterEach(() => {
 describe("update config provenance", () => {
   it("reports unresolved ownership without writing when the original roster is unavailable", async () => {
     await withTempHome(async (home) => {
-      const stateDir = path.join(home, ".openclaw");
+      const stateDir = path.join(home, ".paddy");
       const configPath = path.join(stateDir, "openclaw.json");
       vi.stubEnv("OPENCLAW_CONFIG_PATH", configPath);
       vi.stubEnv("OPENCLAW_STATE_DIR", stateDir);
@@ -193,7 +193,7 @@ describe("update config provenance", () => {
     "preserves the historical account owner and narrower route through %s",
     async (flow) => {
       await withTempHome(async (home) => {
-        const stateDir = path.join(home, ".openclaw");
+        const stateDir = path.join(home, ".paddy");
         const configPath = path.join(stateDir, "openclaw.json");
         vi.stubEnv("OPENCLAW_CONFIG_PATH", configPath);
         vi.stubEnv("OPENCLAW_STATE_DIR", stateDir);
@@ -267,7 +267,7 @@ describe("update config provenance", () => {
     async ({ flow, requestedChannel }) => {
       await withTempHome(async (home) => {
         controls.root = home;
-        const stateDir = path.join(home, ".openclaw");
+        const stateDir = path.join(home, ".paddy");
         const configPath = path.join(stateDir, "openclaw.json");
         vi.stubEnv("OPENCLAW_CONFIG_PATH", configPath);
         vi.stubEnv("OPENCLAW_STATE_DIR", stateDir);

@@ -48,8 +48,8 @@ it.each(
   const home = dirs.make("update-service-admission-");
   const callerRoot = path.join(home, "caller-package");
   const serviceRoot = path.join(home, "service-package");
-  const callerState = path.join(home, ".openclaw-caller");
-  const serviceState = path.join(home, ".openclaw-service");
+  const callerState = path.join(home, ".paddy-caller");
+  const serviceState = path.join(home, ".paddy-service");
   await Promise.all([
     writePackageRoot(callerRoot, "1.0.0"),
     writePackageRoot(serviceRoot, "1.0.0"),

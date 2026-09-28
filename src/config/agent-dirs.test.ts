@@ -24,7 +24,7 @@ describe("findDuplicateAgentDirs", () => {
     {
       name: "OPENCLAW_HOME",
       env: { OPENCLAW_HOME: "/srv/openclaw-home", HOME: "/home/other" },
-      stateDir: "/srv/openclaw-home/.openclaw",
+      stateDir: "/srv/openclaw-home/.paddy",
     },
     {
       name: "OPENCLAW_STATE_DIR",
@@ -34,7 +34,7 @@ describe("findDuplicateAgentDirs", () => {
     {
       name: "the supplied home resolver",
       env: {},
-      stateDir: "/srv/fallback-home/.openclaw",
+      stateDir: "/srv/fallback-home/.paddy",
     },
   ])("detects a configured directory colliding with $name", ({ env, stateDir }) => {
     const agentDir = path.resolve(stateDir, "agents", "alpha", "agent");

@@ -396,8 +396,8 @@ process.emit=function(kind,message,...args){
       expect(events.find((event) => event.kind === "descendant")).toMatchObject({
         handoff: null,
         sentinel: null,
-        stateDir: `${boundary.root}/.openclaw`,
-        workspace: `${boundary.root}/.openclaw/workspace`,
+        stateDir: `${boundary.root}/.paddy`,
+        workspace: `${boundary.root}/.paddy/workspace`,
         shell: "exec",
         compileCache: "1",
       });

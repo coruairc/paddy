@@ -12,10 +12,10 @@ describe("Nix integration config selection", () => {
     expect(resolveIsNixMode({ OPENCLAW_NIX_MODE: value })).toBe(expected);
   });
 
-  it("defaults CONFIG_PATH to OPENCLAW_HOME/.openclaw/openclaw.json", () => {
+  it("defaults CONFIG_PATH to OPENCLAW_HOME/.paddy/openclaw.json", () => {
     const customHome = path.join(path.sep, "custom", "home");
     expect(resolveConfigPathCandidate({ OPENCLAW_HOME: customHome })).toBe(
-      path.join(path.resolve(customHome), ".openclaw", "openclaw.json"),
+      path.join(path.resolve(customHome), ".paddy", "openclaw.json"),
     );
   });
 
@@ -23,10 +23,10 @@ describe("Nix integration config selection", () => {
     await withTempHome(async (home) => {
       expect(
         resolveConfigPathCandidate(
-          { OPENCLAW_HOME: home, OPENCLAW_CONFIG_PATH: "~/.openclaw/custom.json" },
+          { OPENCLAW_HOME: home, OPENCLAW_CONFIG_PATH: "~/.paddy/custom.json" },
           () => home,
         ),
-      ).toBe(path.join(home, ".openclaw", "custom.json"));
+      ).toBe(path.join(home, ".paddy", "custom.json"));
     });
   });
 

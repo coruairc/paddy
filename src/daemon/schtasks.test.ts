@@ -142,12 +142,12 @@ describe("resolveTaskScriptPath", () => {
     {
       name: "uses default path when OPENCLAW_PROFILE is unset",
       env: { USERPROFILE: "C:\\Users\\test" },
-      expected: path.join("C:\\Users\\test", ".openclaw", "gateway.cmd"),
+      expected: path.join("C:\\Users\\test", ".paddy", "gateway.cmd"),
     },
     {
       name: "uses profile-specific path when OPENCLAW_PROFILE is set to a custom value",
       env: { USERPROFILE: "C:\\Users\\test", OPENCLAW_PROFILE: "jbphoenix" },
-      expected: path.join("C:\\Users\\test", ".openclaw-jbphoenix", "gateway.cmd"),
+      expected: path.join("C:\\Users\\test", ".paddy-jbphoenix", "gateway.cmd"),
     },
     {
       name: "prefers OPENCLAW_STATE_DIR over profile-derived defaults",
@@ -161,7 +161,7 @@ describe("resolveTaskScriptPath", () => {
     {
       name: "falls back to HOME when USERPROFILE is not set",
       env: { HOME: "/home/test", OPENCLAW_PROFILE: "default" },
-      expected: path.join("/home/test", ".openclaw", "gateway.cmd"),
+      expected: path.join("/home/test", ".paddy", "gateway.cmd"),
     },
     {
       name: "uses a custom task script file name inside the state directory",
@@ -169,7 +169,7 @@ describe("resolveTaskScriptPath", () => {
         USERPROFILE: "C:\\Users\\test",
         OPENCLAW_TASK_SCRIPT_NAME: "gateway-node.cmd",
       },
-      expected: path.join("C:\\Users\\test", ".openclaw", "gateway-node.cmd"),
+      expected: path.join("C:\\Users\\test", ".paddy", "gateway-node.cmd"),
     },
   ])("$name", ({ env, expected }) => {
     expect(resolveTaskScriptPath(env)).toBe(expected);
