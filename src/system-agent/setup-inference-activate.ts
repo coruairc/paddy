@@ -5,6 +5,7 @@ import { resolveAgentDir, resolveAgentEffectiveModelPrimary } from "../agents/ag
 import type { SetupRuntimeCredential } from "../agents/auth-profiles/setup-access.js";
 import { loadAuthProfileStoreWithoutExternalProfiles } from "../agents/auth-profiles/store-runtime.js";
 import { resolveCliRuntimeCanonicalProvider } from "../agents/cli-backends.js";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   ANTHROPIC_API_DEFAULT_MODEL_REF,
   CLAUDE_CLI_DEFAULT_MODEL_REF,
@@ -615,14 +616,14 @@ async function verifyAndActivateCandidate(
     try {
       await appendSystemAgentAuditEntry({
         operation: "openclaw.setup",
-        summary: "Verified an AI access candidate through OpenClaw setup",
+        summary: `Verified an AI access candidate through ${PRODUCT_NAME} setup`,
         configPath: after?.path ?? snapshot.path,
         configHashBefore: hashConfigRaw(snapshot.raw),
         configHashAfter: after ? hashConfigRaw(after.raw) : null,
         details: { modelRef: staged.modelRef, inferenceKind: params.kind },
       });
     } catch (error) {
-      const warning = `Inference was verified, but OpenClaw could not record its audit entry: ${formatErrorMessage(error)}`;
+      const warning = `Inference was verified, but ${PRODUCT_NAME} could not record its audit entry: ${formatErrorMessage(error)}`;
       params.runtime.error?.(warning);
       lines.push(warning);
     }

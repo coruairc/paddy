@@ -83,7 +83,7 @@ describe("entry run-main boundary", () => {
       expect(process.exitCode).toBe(1);
       expect(errorSpy.mock.calls).toEqual([[message]]);
       expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining("OPENCLAW_DEBUG"));
-      expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining("openclaw doctor"));
+      expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining("paddy doctor"));
       expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining("Could not start the CLI"));
     } finally {
       errorSpy.mockRestore();

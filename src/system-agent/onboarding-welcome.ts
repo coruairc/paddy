@@ -1,5 +1,6 @@
 // First-run onboarding welcome: state findings, propose setup, wait for "yes".
 import type { SystemAgentChatQuestion } from "../../packages/gateway-protocol/src/index.js";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { isSecretRef, normalizeSecretInputString } from "../config/types.secrets.js";
 import { resolveUserPath, shortenHomePath } from "../utils.js";
@@ -134,7 +135,7 @@ export async function buildOnboardingWelcome(params: {
   }
   if (!setupModel) {
     throw new Error(
-      "OpenClaw onboarding requires working inference first. Run `openclaw onboard` on the machine running OpenClaw to configure and verify a default model.",
+      `${PRODUCT_NAME} onboarding requires working inference first. Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME} to configure and verify a default model.`,
     );
   }
 
@@ -152,8 +153,8 @@ export async function buildOnboardingWelcome(params: {
   });
   const welcome = [
     overview.defaultModel
-      ? "## Hi, I'm OpenClaw — let's hatch your agent."
-      : "## Hi, I'm OpenClaw — let's get you set up.",
+      ? `## Hi, I'm ${PRODUCT_NAME} — let's hatch your agent.`
+      : `## Hi, I'm ${PRODUCT_NAME} — let's get you set up.`,
     "",
     "No menus here: tell me what you want and I'll do the configuring. I looked around this machine:",
     "",

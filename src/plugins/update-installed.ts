@@ -1,4 +1,5 @@
 import { PLUGIN_CAPABILITY_CONSENT_REQUIRED } from "../../packages/gateway-protocol/src/capability-consent-error-details.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
 import { resolveNpmSpecMetadata } from "../infra/install-source-utils.js";
@@ -383,7 +384,7 @@ async function runInstalledPluginUpdate(
       if (retainOnUnavailable && installedPayloadRunnable) {
         const retainedMessage =
           `Retained "${pluginId}" at ${currentVersion}: target ${effectiveSpec}` +
-          `${params.coreVersion ? ` for OpenClaw ${params.coreVersion}` : ""} is unavailable. ${message} ` +
+          `${params.coreVersion ? ` for ${PRODUCT_NAME} ${params.coreVersion}` : ""} is unavailable. ${message} ` +
           `Retry "${formatCliCommand(`openclaw plugins update ${pluginId}`)}" after the target is published or registry access recovers.`;
         logger.warn?.(retainedMessage);
         outcomes.push({

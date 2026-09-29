@@ -1,5 +1,6 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { Selectable } from "kysely";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   executeSqliteQuerySync,
   executeSqliteQueryTakeFirstSync,
@@ -43,7 +44,7 @@ function ensureTurnSchema(database: DatabaseSync): void {
   database.exec(
     extractSqliteTableSchema(OPENCLAW_STATE_SCHEMA_SQL, "node_worker_turns", {
       endMarker: "\n  WHERE state = 'running';",
-      errorMessage: "OpenClaw node worker turn schema marker is missing.",
+      errorMessage: `${PRODUCT_NAME} node worker turn schema marker is missing.`,
     }),
   );
 }

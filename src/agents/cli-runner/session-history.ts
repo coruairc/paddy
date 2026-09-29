@@ -5,6 +5,7 @@ import {
   iterateSessionContextEntries,
 } from "../../../packages/agent-core/src/harness/session/session.js";
 import { selectResetKeptEntries } from "../../../packages/agent-core/src/harness/session/tool-result-pairing.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   readSessionTranscriptBoundedMessageTailPage,
   readSessionTranscriptWatermark,
@@ -171,7 +172,7 @@ export function buildCliSessionHistoryPrompt(params: {
     .join("\n\n")
     .trim();
 
-  const truncationMarker = "[OpenClaw reseed history truncated; older turns dropped]";
+  const truncationMarker = `[${PRODUCT_NAME} reseed history truncated; older turns dropped]`;
   const renderTruncatedTail = (raw: string, budget: number): string => {
     if (budget <= truncationMarker.length + "\n".length) {
       return sliceUtf16Safe(raw, -budget).trimStart();
@@ -226,7 +227,7 @@ export function buildCliSessionHistoryPrompt(params: {
   }
 
   return [
-    "Continue this conversation using the OpenClaw transcript below as prior session history.",
+    `Continue this conversation using the ${PRODUCT_NAME} transcript below as prior session history.`,
     "Treat it as authoritative context for this fresh CLI session.",
     "",
     "<conversation_history>",

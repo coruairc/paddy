@@ -1,4 +1,5 @@
 // Legacy MCP runtime config migrations.
+import { PRODUCT_NAME } from "../../../brand.js";
 import {
   defineLegacyConfigMigration,
   getRecord,
@@ -29,7 +30,7 @@ function* mcpServerEntries(value: unknown): Generator<[string, Record<string, un
 const MCP_SERVER_TYPE_RULE: LegacyConfigRule = {
   path: ["mcp", "servers"],
   message:
-    'mcp.servers entries use OpenClaw transport names; CLI-native type aliases are legacy here. Run "openclaw doctor --fix".',
+    `mcp.servers entries use ${PRODUCT_NAME} transport names; CLI-native type aliases are legacy here. Run "openclaw doctor --fix".`,
   match: (value) =>
     isRecord(value) &&
     Object.values(value).some((server) => isRecord(server) && isKnownCliMcpTypeAlias(server.type)),

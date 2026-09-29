@@ -286,7 +286,7 @@ describe("status-overview-rows", () => {
     expect(findRowValue(rows, "Gateway self")).toBe("gateway app 1.2.3");
     expect(findRowValue(rows, "Update")).toContain("behind 2");
     expect(findRowValue(rows, "Update restart")).toBe("restart pending health verification");
-    expect(findRowValue(rows, "Security")).toBe("Run: openclaw security audit --deep");
+    expect(findRowValue(rows, "Security")).toBe("Run: paddy security audit --deep");
     expect(findRowValue(rows, "Secret egress proxy")).toBe(
       "Check OpenSSL, then retry the request.",
     );

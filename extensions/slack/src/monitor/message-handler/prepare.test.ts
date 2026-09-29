@@ -230,13 +230,13 @@ describe("slack prepareSlackMessage inbound contract", () => {
           token: "token",
           channel: "C_DENIED",
           user: "U1",
-          text: "Personal Claw can’t reply here because this channel isn’t in its OpenClaw channel allowlist. Ask the OpenClaw owner to allow this channel. <https://docs.openclaw.ai/channels/slack#access-control-and-routing|Learn how to configure Slack channel access.>",
+          text: "Personal Claw can’t reply here because this channel isn’t in its Paddy channel allowlist. Ask the Paddy owner to allow this channel. <https://docs.openclaw.ai/channels/slack#access-control-and-routing|Learn how to configure Slack channel access.>",
         });
         expect(enqueueSystemEventMock).not.toHaveBeenCalled();
       } else if (outcome === "name lookup failed") {
         expect(postEphemeral).toHaveBeenCalledExactlyOnceWith(
           expect.objectContaining({
-            text: expect.stringMatching(/^This OpenClaw bot can’t reply here/),
+            text: expect.stringMatching(/^This Paddy bot can’t reply here/),
           }),
         );
       } else {

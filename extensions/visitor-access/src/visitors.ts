@@ -268,7 +268,7 @@ export class VisitorAccessService {
   private actionStore(assertCurrent?: () => void): PluginStateKeyedStore<VisitorGrant, 2> {
     if (!this.store.withCurrent) {
       throw new VisitorAccessError(
-        "This Gateway cannot authorize visitor grant writes. Update OpenClaw before managing visitors.",
+        "This Gateway cannot authorize visitor grant writes. Update Paddy before managing visitors.",
       );
     }
     return this.store.withCurrent({

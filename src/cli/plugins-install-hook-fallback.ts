@@ -30,6 +30,7 @@ import { installManagedPlugin } from "../plugins/management-mutations.js";
 import { withPluginLifecycleLease } from "../plugins/plugin-lifecycle-lease.js";
 import { defaultRuntime, type RuntimeEnv } from "../runtime.js";
 import { shortenHomePath } from "../utils.js";
+import { CLI_NAME } from "./cli-name.js";
 import { persistHookPackInstall } from "./hook-install-persistence.js";
 import { resolvePinnedNpmInstallRecordForCli } from "./npm-resolution.js";
 import {
@@ -111,7 +112,7 @@ async function installHookPack(
     return {
       ok: false,
       error:
-        "--no-enable is only supported for plugins. Install hook packs separately with openclaw hooks install.",
+        `--no-enable is only supported for plugins. Install hook packs separately with ${CLI_NAME} hooks install.`,
     };
   }
   // Online plugin rejection can precede this fallback; acquire and reread only for the hook write.

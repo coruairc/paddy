@@ -1403,7 +1403,7 @@ describe("launchd install", () => {
     };
     await installLaunchAgent(
       launchAgentFixture(env, ["node", "node-host.js"], {
-        description: "OpenClaw Node Host",
+        description: "Paddy Node Host",
       }),
     );
 

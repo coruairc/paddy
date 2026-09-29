@@ -1,3 +1,4 @@
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 // Memory core host embedding exports expose host embedding primitives to the memory plugin.
 
 /**
@@ -8,7 +9,7 @@
 export function createLocalEmbeddingProvider(..._args: unknown[]): Promise<never> {
   return Promise.reject(
     new Error(
-      "The legacy in-process llama.cpp embedding runtime is retired. Run `openclaw update repair` to install the managed llama-server provider, then restart OpenClaw.",
+      `The legacy in-process llama.cpp embedding runtime is retired. Run \`${CLI_NAME} update repair\` to install the managed llama-server provider, then restart ${PRODUCT_NAME}.`,
     ),
   );
 }

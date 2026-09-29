@@ -820,7 +820,7 @@ describe("update-cli", () => {
                   pluginId: "telegram",
                   reason: "failed to load plugin dependency: ENOSPC",
                   message: expect.stringContaining("could not be loaded"),
-                  guidance: ["openclaw doctor --fix"],
+                  guidance: ["paddy doctor --fix"],
                 }),
               ]),
             },

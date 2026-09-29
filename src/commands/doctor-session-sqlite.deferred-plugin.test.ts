@@ -732,7 +732,7 @@ describe("session sources needed by deferred plugin migrations", () => {
             ? SessionStoreMigrationRequiredError
             : expect.objectContaining({
                 message: expect.stringContaining(
-                  `The imported session database is missing or no longer a regular file: ${sqlitePath}. Run openclaw doctor --session-sqlite recover --session-sqlite-all-agents`,
+                  `The imported session database is missing or no longer a regular file: ${sqlitePath}. Run paddy doctor --session-sqlite recover --session-sqlite-all-agents`,
                 ),
               }),
         );

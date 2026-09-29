@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { lstatSync, statSync } from "node:fs";
 import path from "node:path";
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { cloneEnvWithPlatformSemantics } from "../config/config-env-vars.js";
 import { resolveStateDir } from "../config/state-dir.js";
 import { resolveSqliteDatabaseFilePaths } from "../infra/sqlite-files.js";
@@ -219,7 +220,7 @@ export function readRegisteredAgentDatabases(
   const finish = (entries: OpenClawRegisteredAgentDatabase[] | undefined) => {
     if (entries === undefined) {
       if (hasUnavailableMissingSqlitePath(pathname)) {
-        throw new Error(`OpenClaw state database ${pathname} is unavailable.`);
+        throw new Error(`${PRODUCT_NAME} state database ${pathname} is unavailable.`);
       }
       return [];
     }

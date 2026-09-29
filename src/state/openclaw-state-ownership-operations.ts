@@ -29,6 +29,7 @@ import {
   STATE_SUPERVISION_KEY,
   type OpenClawExternalStateOwnership,
 } from "./openclaw-state-ownership.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 type OpenClawStateOwnershipOptions = Omit<OpenClawStateDatabaseOptions, "database" | "readOnly">;
 type OwnershipDatabase = Pick<OpenClawStateKyselyDatabase, "config_machine_state">;
@@ -61,7 +62,7 @@ function claimOwnershipRow(
   if (current) {
     if (current.managerId !== managerId) {
       throw new Error(
-        `OpenClaw shared state is already claimed by external manager ${current.managerId}; ` +
+        `${PRODUCT_NAME} shared state is already claimed by external manager ${current.managerId}; ` +
           `manager ${managerId} cannot replace that durable ownership.`,
       );
     }

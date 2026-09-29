@@ -15,16 +15,16 @@ export const legacyConfigRules: LegacyConfigRule[] = [
   {
     path: [...CONFIG_PATH, "whitelistHandles"],
     message:
-      'plugins.entries.facetime.config.whitelistHandles is legacy; use ownerHandles. Run "openclaw doctor --fix".',
+      'plugins.entries.facetime.config.whitelistHandles is legacy; use ownerHandles. Run "paddy doctor --fix".',
   },
   ...RETIRED_CONFIG_KEYS.map((key) => ({
     path: [...CONFIG_PATH, key],
-    message: `${[...CONFIG_PATH, key].join(".")} is retired; FaceTime now uses its local authenticated helper endpoint. Run "openclaw doctor --fix".`,
+    message: `${[...CONFIG_PATH, key].join(".")} is retired; FaceTime now uses its local authenticated helper endpoint. Run "paddy doctor --fix".`,
   })),
   {
     path: [...CONFIG_PATH, "realtime", "brain"],
     message:
-      'plugins.entries.facetime.config.realtime.brain is retired; FaceTime always consults the configured agent. Run "openclaw doctor --fix".',
+      'plugins.entries.facetime.config.realtime.brain is retired; FaceTime always consults the configured agent. Run "paddy doctor --fix".',
   },
 ];
 

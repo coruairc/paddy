@@ -417,7 +417,7 @@ describe("OpenClaw database integrity verifier", () => {
       await copyHealthyDatabase(state.path, healthyReplacementPath);
       createUnsafeIndexDrift(state.path);
       const targets: OpenClawDatabaseVerifyTarget[] = [
-        { kind: "state", label: "OpenClaw state database", path: state.path },
+        { kind: "state", label: "Paddy state database", path: state.path },
       ];
       const results = preparedVerificationResults(targets);
 
@@ -513,7 +513,7 @@ describe("OpenClaw database integrity verifier", () => {
     const state = openOpenClawStateDatabase({ env });
     const agent = openOpenClawAgentDatabase({ agentId: "worker-1", env });
     const targets: OpenClawDatabaseVerifyTarget[] = [
-      { kind: "state", label: "OpenClaw state database", path: state.path },
+      { kind: "state", label: "Paddy state database", path: state.path },
       { kind: "agent", label: "OpenClaw agent database worker-1", path: agent.path },
     ];
 

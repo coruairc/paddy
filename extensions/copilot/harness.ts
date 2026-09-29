@@ -887,7 +887,7 @@ export function createCopilotAgentHarness(
           typeof hostCapabilities.retainSourceAuthority !== "function"
         ) {
           throw new Error(
-            "This host did not provide compaction source authority. Update OpenClaw before compacting this session.",
+            "This host did not provide compaction source authority. Update Paddy before compacting this session.",
           );
         }
         hostCapabilities.assertActive();

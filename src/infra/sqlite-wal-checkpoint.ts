@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import type { DatabaseSync, SQLOutputValue } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 import { hasErrnoCode } from "./errno.js";
 import { formatErrorMessage } from "./errors.js";
@@ -146,7 +147,7 @@ export function truncateSqliteWal(database: DatabaseSync, sqlitePath: string): v
     throw new Error(`SQLite checkpoint returned an invalid result for ${sqlitePath}.`);
   }
   if (busy !== 0) {
-    throw new Error(`SQLite checkpoint remained busy for ${sqlitePath}. Stop OpenClaw and retry.`);
+    throw new Error(`SQLite checkpoint remained busy for ${sqlitePath}. Stop ${PRODUCT_NAME} and retry.`);
   }
 }
 

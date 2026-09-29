@@ -40,6 +40,7 @@ import { defaultRuntime } from "../../runtime.js";
 import { VERSION } from "../../version.js";
 import { parseUpdateTimeoutMs, resolveUpdateRoot, type UpdateStatusOptions } from "./shared.js";
 import { readUpdateChannelConfig } from "./update-command-config.js";
+import { CLI_NAME, PRODUCT_NAME } from "../../brand.js";
 
 async function readUpdateRecoverySetStatus() {
   try {
@@ -289,7 +290,7 @@ export async function updateStatusCommand(opts: UpdateStatusOptions): Promise<vo
     },
   ];
 
-  defaultRuntime.log(theme.heading("OpenClaw update status"));
+  defaultRuntime.log(theme.heading(`${PRODUCT_NAME} update status`));
   defaultRuntime.log("");
   for (const finding of runtimeFindings) {
     const color =
@@ -374,7 +375,7 @@ export async function updateStatusCommand(opts: UpdateStatusOptions): Promise<vo
       }
       if (abandonedRun) {
         defaultRuntime.log(
-          "Abandoned update detected; the Gateway will reconcile its recorded outcome. Run openclaw update repair to reconcile it now.",
+          `Abandoned update detected; the Gateway will reconcile its recorded outcome. Run ${CLI_NAME} update repair to reconcile it now.`,
         );
       }
       const report = renderUpdateRunReport(

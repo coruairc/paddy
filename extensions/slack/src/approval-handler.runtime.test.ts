@@ -590,9 +590,9 @@ describe("slackApprovalNativeRuntime", () => {
       expect(result).toMatchObject({
         kind: "update",
         payload: {
-          text: `*OpenClaw change approval: ${label}*\nResolved.\n\n*Change*\n\`\`\`\nrestart the Gateway\n\`\`\``,
+          text: `*Paddy change approval: ${label}*\nResolved.\n\n*Change*\n\`\`\`\nrestart the Gateway\n\`\`\``,
           blocks: [
-            { text: { text: `*OpenClaw change approval: ${label}*\nResolved.` } },
+            { text: { text: `*Paddy change approval: ${label}*\nResolved.` } },
             { text: { text: "*Change*\n```\nrestart the Gateway\n```" } },
           ],
         },

@@ -926,7 +926,7 @@ describe("google gemini cli backend auth bridge", () => {
       } as never);
       await expect(preparation).rejects.toBeInstanceOf(CliBackendAuthProfilePreparationError);
       await expect(preparation).rejects.toThrow(
-        /OAuth profile is incomplete and cannot be repaired by OpenClaw.*AI Studio API key/,
+        /OAuth profile is incomplete and cannot be repaired by Paddy.*AI Studio API key/,
       );
     } finally {
       await fs.rm(workspaceDir, { recursive: true, force: true });

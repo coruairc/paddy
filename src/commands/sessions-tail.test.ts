@@ -292,7 +292,7 @@ describe("sessionsTailCommand", () => {
     );
 
     expect(runtime.error).toHaveBeenCalledWith(
-      "Session not found: agent:main:missing. Run openclaw sessions list --all-agents --json to choose a valid key.",
+      "Session not found: agent:main:missing. Run paddy sessions list --all-agents --json to choose a valid key.",
     );
     expect(runtime.exit).toHaveBeenCalledWith(1);
     expect(runtime.log).not.toHaveBeenCalled();

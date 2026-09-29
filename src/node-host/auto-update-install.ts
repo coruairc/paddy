@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { withUpdateCommandExecutor } from "../cli/update-cli/update-command-executor.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { formatErrorMessage } from "../infra/errors.js";
@@ -51,7 +52,7 @@ export async function prepareNodeRuntimeUpdate(params: {
 }): Promise<PreparedNodeRuntimeUpdate> {
   const version = params.targetVersion.trim();
   if (!isExactSemverVersion(version) || /[\\/]/u.test(version)) {
-    throw new Error("Node auto-update requires an exact published OpenClaw version.");
+    throw new Error(`Node auto-update requires an exact published ${PRODUCT_NAME} version.`);
   }
   params.signal?.throwIfAborted();
   const spec = `openclaw@${version}`;

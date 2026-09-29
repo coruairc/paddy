@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 // Serialized into the standalone shell; keep runtime dependencies inside this function.
 export function runStandaloneMcpAppHost(config: {
   protocolVersion: string;
@@ -243,7 +244,7 @@ export function runStandaloneMcpAppHost(config: {
       initializeAccepted = true;
       respond(message.id, {
         protocolVersion: config.protocolVersion,
-        hostInfo: { name: "OpenClaw standalone host", version: "1.0.0" },
+        hostInfo: { name: `${PRODUCT_NAME} standalone host`, version: "1.0.0" },
         hostCapabilities: {
           sandbox: { csp: payload.csp ?? {} },
           ...(payload.serverTools === true ? { serverTools: {} } : {}),

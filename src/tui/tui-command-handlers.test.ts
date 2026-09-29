@@ -490,7 +490,7 @@ describe("tui command handlers", () => {
     await handleCommand("/openclaw restart gateway");
 
     expect(sendChat).not.toHaveBeenCalled();
-    expect(addSystem).toHaveBeenCalledWith("returning to OpenClaw with request: restart gateway");
+    expect(addSystem).toHaveBeenCalledWith("returning to Paddy with request: restart gateway");
     expect(requestExit).toHaveBeenCalledWith({
       exitReason: "return-to-system-agent",
       systemAgentMessage: "restart gateway",

@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { ChildProcess } from "node:child_process";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 import type { OpenClawDatabaseVerifyTarget } from "./openclaw-database-verify.worker.js";
@@ -112,7 +113,7 @@ export function startOpenClawDatabaseIntegrityVerifier(options: { env: NodeJS.Pr
         if (!targetsByPath.has(pathname)) {
           targetsByPath.set(pathname, {
             kind: "agent",
-            label: "OpenClaw agent database",
+            label: `${PRODUCT_NAME} agent database`,
             path: pathname,
             check: "quick",
           });

@@ -6,6 +6,7 @@ import {
   tryResolveSoleAgentId,
 } from "../agents/agent-scope-config.js";
 import { resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { withProgress } from "../cli/progress.js";
 import { configIncludeOwnsAgentRoster } from "../config/agent-roster-provenance.js";
@@ -79,7 +80,7 @@ export async function loadAndMaybeMigrateDoctorConfig(params: {
   const shouldRepair = params.options.repair === true || params.options.yes === true;
   let preflight = await withProgress(
     {
-      label: "Checking OpenClaw state…",
+      label: `Checking ${PRODUCT_NAME} state…`,
       enabled: params.options.nonInteractive !== true && params.options.json !== true,
       delayMs: 200,
     },

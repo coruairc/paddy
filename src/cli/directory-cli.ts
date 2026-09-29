@@ -25,6 +25,7 @@ import { formatErrorMessage } from "../infra/errors.js";
 import { resolveMessageChannelSelection } from "../infra/outbound/channel-selection.js";
 import { commitConfigWithPendingPluginInstalls } from "../plugins/install-record-commit.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { resolveCommandConfigWithSecrets } from "./command-config-resolution.js";
 import { getScopedChannelsCommandSecretTargets } from "./command-secret-targets.js";
 import { formatDocsHelp, formatHelpExamples } from "./help-format.js";
@@ -87,14 +88,14 @@ export function registerDirectoryCli(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw directory self --channel slack", "Show the connected account identity."],
+          [`${CLI_NAME} directory self --channel slack`, "Show the connected account identity."],
           [
-            'openclaw directory peers list --channel slack --query "alice"',
+            `${CLI_NAME} directory peers list --channel slack --query "alice"`,
             "Search contact/user IDs by name.",
           ],
-          ["openclaw directory groups list --channel discord", "List available groups/channels."],
+          [`${CLI_NAME} directory groups list --channel discord`, "List available groups/channels."],
           [
-            "openclaw directory groups members --channel discord --group-id <id>",
+            `${CLI_NAME} directory groups members --channel discord --group-id <id>`,
             "List members for a specific group.",
           ],
         ])}\n${formatDocsHelp("/cli/directory")}`,

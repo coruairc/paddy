@@ -30,6 +30,7 @@ import {
   pluginAuditOutcomeForReason,
   type PluginSecuritySourceFamily,
 } from "./security-events.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const pluginInstallRuntimeLoader = createLazyImportLoader(() => import("./install.runtime.js"));
 
@@ -46,7 +47,7 @@ type PluginCompatibilityRuntime = Pick<
 export const defaultLogger: PluginInstallLogger = {};
 
 export function formatUnresolvedOpenClawPeerLinkError(packageName: string): string {
-  return `Installed plugin ${packageName} declares an openclaw dependency, but OpenClaw could not create a plugin-local node_modules/openclaw link. Run from a packaged OpenClaw install or reinstall OpenClaw, then retry.`;
+  return `Installed plugin ${packageName} declares an openclaw dependency, but ${PRODUCT_NAME} could not create a plugin-local node_modules/openclaw link. Run from a packaged ${PRODUCT_NAME} install or reinstall ${PRODUCT_NAME}, then retry.`;
 }
 
 const MISSING_EXTENSIONS_ERROR =
@@ -72,13 +73,13 @@ export function validateOpenClawPackageInstallCompatibility(params: {
     if (minHostVersionCheck.kind === "unknown_host_version") {
       return {
         ok: false,
-        error: `plugin "${params.pluginId}" requires OpenClaw >=${minHostVersionCheck.requirement.minimumLabel}, but this host version could not be determined. Re-run from a released build or set OPENCLAW_VERSION and retry.`,
+        error: `plugin "${params.pluginId}" requires ${PRODUCT_NAME} >=${minHostVersionCheck.requirement.minimumLabel}, but this host version could not be determined. Re-run from a released build or set OPENCLAW_VERSION and retry.`,
         code: PLUGIN_INSTALL_ERROR_CODE.UNKNOWN_HOST_VERSION,
       };
     }
     return {
       ok: false,
-      error: `plugin "${params.pluginId}" requires OpenClaw >=${minHostVersionCheck.requirement.minimumLabel}, but this host is ${minHostVersionCheck.currentVersion}. Upgrade OpenClaw and retry.`,
+      error: `plugin "${params.pluginId}" requires ${PRODUCT_NAME} >=${minHostVersionCheck.requirement.minimumLabel}, but this host is ${minHostVersionCheck.currentVersion}. Upgrade ${PRODUCT_NAME} and retry.`,
       code: PLUGIN_INSTALL_ERROR_CODE.INCOMPATIBLE_HOST_VERSION,
     };
   }

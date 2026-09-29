@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { compareOpenClawVersions } from "../config/version.js";
 import { readResponseWithLimit } from "../infra/http-body.js";
@@ -58,7 +59,7 @@ function assertCompatibleMinVersion(bundle: RemoteModelCatalogWireBundle): void 
   }
   if (comparison < 0) {
     throw new Error(
-      `remote catalog requires OpenClaw ${bundle.minVersion} or newer (current ${VERSION})`,
+      `remote catalog requires ${PRODUCT_NAME} ${bundle.minVersion} or newer (current ${VERSION})`,
     );
   }
 }

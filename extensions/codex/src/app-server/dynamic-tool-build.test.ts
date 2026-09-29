@@ -1467,7 +1467,7 @@ describe("Codex app-server dynamic tool build", () => {
 
     expect(shellTestToolNames(tools)).toEqual(["message", "gateway_exec", "gateway_process"]);
     const gatewayExec = tools.find((tool) => tool.name === "gateway_exec");
-    expect(gatewayExec?.description).toContain("OpenClaw-managed Gateway environment access");
+    expect(gatewayExec?.description).toContain("Paddy-managed Gateway environment access");
     expect(tools.find((tool) => tool.name === "gateway_process")?.description).toContain(
       "gateway_exec",
     );
@@ -1778,7 +1778,7 @@ describe("Codex app-server dynamic tool build", () => {
     });
     expect(nodeList.success).toBe(false);
     expect(nodeList.contentItems).toEqual([
-      { type: "inputText", text: "Unknown OpenClaw tool: node_process" },
+      { type: "inputText", text: "Unknown Paddy tool: node_process" },
     ]);
     const nodeExec = tools.find((tool) => tool.name === "node_exec");
     expect(nodeExec?.description).toContain(

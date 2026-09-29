@@ -417,7 +417,7 @@ describe("Chrome preferences discovery", () => {
 
     expect(status.discovered).toEqual([]);
     expect(status.manualSetupRequired).toBe(true);
-    expect(status.issues.join("\n")).toContain("not OpenClaw-owned");
+    expect(status.issues.join("\n")).toContain("not Paddy-owned");
   });
 });
 

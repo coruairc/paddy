@@ -215,7 +215,7 @@ describe("Auth profile runtime contract - Codex app-server adapter", () => {
       expect(rejection).toMatchObject({
         code: "selected_auth_profile_unavailable",
         message: expect.stringContaining(
-          'auth profile "openai:missing" was not found in the OpenClaw credential store.',
+          'auth profile "openai:missing" was not found in the Paddy credential store.',
         ),
       });
       expect(rejection).not.toHaveProperty("status");

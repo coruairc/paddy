@@ -47,7 +47,7 @@ export async function runBrowserAction(params: {
           })
         : [];
       defaultRuntime.log(
-        `Action blocked by a modal dialog${ids.length ? ` (${ids.join(", ")})` : ""}. Use openclaw browser dialog --accept or --dismiss${ids.length ? " --dialog-id <id>" : ""} to continue.`,
+        `Action blocked by a modal dialog${ids.length ? ` (${ids.join(", ")})` : ""}. Use paddy browser dialog --accept or --dismiss${ids.length ? " --dialog-id <id>" : ""} to continue.`,
       );
     } else if (result.aborted) {
       const { reason, afterAction, skipped } = result.aborted;
@@ -125,7 +125,7 @@ const ACTIONS_INPUT_MAX_BYTES = 1_000_000;
 function createActionsInputTooLargeError(source: string, cause?: unknown): FsSafeError {
   return new FsSafeError(
     "too-large",
-    `${source} exceeds ${ACTIONS_INPUT_MAX_BYTES} bytes. Split the batch plan into smaller files or run multiple openclaw browser batch commands.`,
+    `${source} exceeds ${ACTIONS_INPUT_MAX_BYTES} bytes. Split the batch plan into smaller files or run multiple paddy browser batch commands.`,
     { cause },
   );
 }

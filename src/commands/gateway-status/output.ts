@@ -1,5 +1,6 @@
 import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/string-coerce";
 import { colorize, theme } from "../../../packages/terminal-core/src/theme.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import { writeRuntimeJson } from "../../runtime.js";
 import { serializeGatewayDiscoveryBeacon } from "./discovery.js";
@@ -92,7 +93,7 @@ export function buildGatewayStatusWarnings(params: {
   if (params.localTlsLoadError) {
     warnings.push({
       code: "local_tls_runtime_unavailable",
-      message: `Local gateway TLS is enabled but OpenClaw could not load the local certificate fingerprint: ${params.localTlsLoadError}`,
+      message: `Local gateway TLS is enabled but ${PRODUCT_NAME} could not load the local certificate fingerprint: ${params.localTlsLoadError}`,
       targetIds: ["localLoopback"],
     });
   }

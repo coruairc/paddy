@@ -306,7 +306,7 @@ export async function expectActiveRollbackIdentity(params: {
     expect(report.body).toContain(
       failure === "restart-verified"
         ? "Recovery outcome: package rollback verified; Gateway serving 2026.9.1; health verified"
-        : `Recovery outcome: package rollback verified (2026.9.1); Gateway health ${health}. Run \`openclaw gateway status --deep\``,
+        : `Recovery outcome: package rollback verified (2026.9.1); Gateway health ${health}. Run \`paddy gateway status --deep\``,
     );
   }
 }

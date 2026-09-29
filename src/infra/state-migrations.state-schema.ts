@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import {
   prepareOpenClawStateDatabaseSchema,
   type OpenClawStateDatabaseSchemaMigration,
@@ -42,7 +43,7 @@ export function describeStateSchemaMigration(
     case "github-publication-requester-authority-v18":
       return "GitHub publication receipts → original requesting authority";
     case "operator-approvals-system-agent":
-      return "operator approvals → OpenClaw system changes";
+      return `operator approvals → ${PRODUCT_NAME} system changes`;
     case "session-watch-cursor-provenance-v4":
       return "session watch cursors → provenance column";
     case "strict-tables-v3":

@@ -4,6 +4,7 @@ import { normalizeOptionalString } from "@openclaw/normalization-core/string-coe
 import { sliceUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import type { GatewayScheduler, GatewaySchedulerScope } from "../infra/gateway-scheduler.js";
 import type { NodeRegistry, NodeSession } from "./node-registry.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 type NotificationRegistry = Pick<
   NodeRegistry,
@@ -176,7 +177,7 @@ class NodeConnectionNotificationRouter {
         command: "system.notify",
         params: {
           title: "Node connected",
-          body: `${connectionLabel(source)} connected to OpenClaw.`,
+          body: `${connectionLabel(source)} connected to ${PRODUCT_NAME}.`,
           priority: "active",
           delivery: "auto",
         },

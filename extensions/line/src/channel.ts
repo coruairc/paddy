@@ -45,7 +45,7 @@ const lineSecurityAdapter = createRestrictSendersChannelSecurity<ResolvedLineAcc
   mentionGated: false,
   findingTitle: "LINE security warning",
   policyPathSuffix: "dmPolicy",
-  approveHint: "openclaw pairing approve line <code>",
+  approveHint: "paddy pairing approve line <code>",
   normalizeDmEntry: (raw) => raw.replace(/^line:(?:user:)?/i, ""),
 });
 
@@ -178,7 +178,7 @@ export const linePlugin: LineChannelPlugin = createChatChannelPlugin({
   pairing: {
     text: {
       idLabel: "lineUserId",
-      message: "OpenClaw: your access has been approved.",
+      message: "Paddy: your access has been approved.",
       normalizeAllowEntry: createPairingPrefixStripper(/^line:(?:user:)?/i),
       notify: async ({ cfg, id, message, accountId }) => {
         const account = (getLineRuntime().channel.line?.resolveLineAccount ?? resolveLineAccount)({

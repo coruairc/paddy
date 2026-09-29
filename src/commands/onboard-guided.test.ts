@@ -462,7 +462,7 @@ describe("runGuidedOnboarding", () => {
 
     expect(deps.runBrowserHandoff).not.toHaveBeenCalled();
     expect(deps.launchHatchTui).not.toHaveBeenCalled();
-    expect(prompter.outro).toHaveBeenCalledWith("OpenClaw is ready.");
+    expect(prompter.outro).toHaveBeenCalledWith("Paddy is ready.");
   });
 
   it("never attempts browser handoff for remote chat onboarding", async () => {
@@ -505,7 +505,7 @@ describe("runGuidedOnboarding", () => {
 
   it("persists explicit feature-stat consent with the guided onboarding acknowledgement", async () => {
     const select = vi.fn(async ({ message }: { message: string }) =>
-      message === "Help make OpenClaw better?" ? true : "full",
+      message === "Help make Paddy better?" ? true : "full",
     ) as unknown as WizardPrompter["select"];
     const prompter = createWizardPrompter({ select });
 
@@ -1066,9 +1066,9 @@ describe("runGuidedOnboarding", () => {
     const notes = JSON.stringify((prompter.note as ReturnType<typeof vi.fn>).mock.calls);
     expect(notes).toContain("/tmp/broken-openclaw.json");
     expect(notes).toContain("agents.defaults.model: Expected a model reference");
-    expect(prompter.outro).toHaveBeenCalledWith(expect.stringContaining("openclaw doctor --fix"));
+    expect(prompter.outro).toHaveBeenCalledWith(expect.stringContaining("paddy doctor --fix"));
     expect(prompter.outro).toHaveBeenCalledWith(
-      expect.stringContaining("openclaw config validate"),
+      expect.stringContaining("paddy config validate"),
     );
     expect(runtime.exit).toHaveBeenCalledWith(1);
     expect(deps.runSystemAgentChat).not.toHaveBeenCalled();

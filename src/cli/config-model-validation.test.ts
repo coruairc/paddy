@@ -45,7 +45,7 @@ describe("config model validation", () => {
       refsChecked: 1,
       refsTotal: 1,
       errors: [
-        'Cannot set model reference "missing/nope" at agents.defaults.model.primary: Unknown model: missing/nope. Run openclaw models list to list available models.',
+        'Cannot set model reference "missing/nope" at agents.defaults.model.primary: Unknown model: missing/nope. Run paddy models list to list available models.',
       ],
     });
   });

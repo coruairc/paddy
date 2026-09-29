@@ -5,6 +5,7 @@ import type { ClawHubPackageSearchResult } from "../infra/clawhub-packages.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { searchInstallablePluginPackages } from "../plugins/catalog-search.js";
 import { defaultRuntime, writeRuntimeJson, type RuntimeEnv } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import { ExpectedCliError } from "./failure-output.js";
 import { formatVersionLabel } from "./version-format.js";
@@ -24,7 +25,7 @@ function formatPackageSearchLine(entry: ClawHubPackageSearchResult): string {
     pkg.latestVersion ? formatVersionLabel(pkg.latestVersion) : undefined,
   ].filter(Boolean);
   const summary = pkg.summary ? theme.muted(` — ${pkg.summary}`) : "";
-  return `${pkg.name}  ${theme.muted(flags.join(" | "))}${summary}\n  ${theme.muted(`Install: ${formatCliCommand(`openclaw plugins install clawhub:${pkg.name}`)}`)}`;
+  return `${pkg.name}  ${theme.muted(flags.join(" | "))}${summary}\n  ${theme.muted(`Install: ${formatCliCommand(`${CLI_NAME} plugins install clawhub:${pkg.name}`)}`)}`;
 }
 
 /** Search ClawHub for installable plugins and write JSON or terminal output. */
@@ -37,7 +38,7 @@ export async function runPluginsSearchCommand(
     Array.isArray(queryParts) ? queryParts.join(" ") : queryParts,
   );
   if (!query) {
-    const message = "Usage: openclaw plugins search <query>";
+    const message = `Usage: ${CLI_NAME} plugins search <query>`;
     throw new ExpectedCliError({ message, humanOutput: message, machineOutput: message });
   }
 

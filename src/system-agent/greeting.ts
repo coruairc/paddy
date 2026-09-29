@@ -12,6 +12,7 @@ import { getHealthCache } from "../gateway/server/health-state.js";
 import { createSqliteAuditRecordStore } from "../infra/sqlite-audit-record-store.js";
 import { getUpdateAvailable, type UpdateAvailable } from "../infra/update-status-state.js";
 import { formatSystemAgentStartupMessage, type SystemAgentOverview } from "./overview.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const SYSTEM_AGENT_GREETING_SCOPE = "system-agent-greeting";
 const SYSTEM_AGENT_GREETING_KEY = "latest";
@@ -299,7 +300,7 @@ function normalizeGreetingText(text: string): string | null {
  * Appending deterministically removes that class instead of validating it.
  */
 export const SYSTEM_AGENT_EXTERNAL_EDIT_ALERT =
-  "Heads up: the config was edited outside OpenClaw while I was away — open History to review it.";
+  `Heads up: the config was edited outside ${PRODUCT_NAME} while I was away — open History to review it.`;
 
 function withHostOwnedAlerts(text: string, facts: SystemAgentGreetingFacts): string {
   if (!facts.recentExternalEdit) {

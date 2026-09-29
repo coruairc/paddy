@@ -4,6 +4,7 @@
  * Agent UIs use this config to map tool names/actions to stable titles,
  * icons, and detail keys without embedding presentation data in tool handlers.
  */
+import { PRODUCT_NAME } from "../brand.js";
 import type { ToolDisplaySpec as ToolDisplaySpecBase } from "./tool-display-common.js";
 import { MESSAGE_TOOL_DISPLAY_SPEC } from "./tool-display-message-config.js";
 
@@ -269,7 +270,7 @@ export const TOOL_DISPLAY_CONFIG: ToolDisplayConfig = {
     },
     openclaw: {
       emoji: "🦀",
-      title: "OpenClaw",
+      title: `${PRODUCT_NAME}`,
       detailKeys: ["action", "path", "model"],
     },
     gateway: {

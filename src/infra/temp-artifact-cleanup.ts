@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { PRODUCT_NAME } from "../brand.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 import { resolveRealpathOrAbsolute } from "./boundary-path.js";
@@ -146,7 +147,7 @@ export async function maintainRetainedUpdateRuntimes(params: {
           }
           if (census.pids.length) {
             throw new Error(
-              `other OpenClaw processes are still running (PIDs: ${census.pids.join(", ")})`,
+              `other ${PRODUCT_NAME} processes are still running (PIDs: ${census.pids.join(", ")})`,
             );
           }
           params.assertCurrent();

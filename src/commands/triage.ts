@@ -12,6 +12,7 @@ import {
   recordAgentCleanupFailure,
   createAgentCleanupScope,
 } from "../agents/run-cleanup-timeout.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { callGatewayFromCliWithTransport } from "../cli/gateway-rpc.js";
 import { exitCliAfterOutput } from "../cli/one-shot-exit.js";
 import { resolveSubprocessExitCode } from "../cli/subprocess-exit-code.js";
@@ -351,7 +352,7 @@ export async function triageCommand(
     canStartAgent &&
     (options.recovery !== undefined || automatic?.failure.kind === "update");
   const agentLabel = runEmbedded
-    ? "the embedded OpenClaw agent using your configured model"
+    ? `the embedded ${PRODUCT_NAME} agent using your configured model`
     : handoff?.agent;
   if (needsConfirmation) {
     runtime.log(`Agent: ${agentLabel}. This will use your own account/tokens.`);
@@ -568,7 +569,7 @@ export async function triageCommand(
     return;
   }
   if (!installRoot) {
-    throw new Error("Cannot locate the OpenClaw installation; use a suggested handoff command.");
+    throw new Error(`Cannot locate the ${PRODUCT_NAME} installation; use a suggested handoff command.`);
   }
   const failedResult =
     updateFailure && "result" in updateFailure ? updateFailure.result : undefined;

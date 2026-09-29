@@ -5,6 +5,7 @@ import tls from "node:tls";
 import { decodeTextPrefix } from "@openclaw/normalization-core";
 import { resolveTimerTimeoutMs } from "@openclaw/normalization-core/number-coercion";
 import { openProxyConnectTunnel } from "@openclaw/proxyline";
+import { PRODUCT_NAME } from "../brand.js";
 import { toErrorObject } from "./errors.js";
 import {
   getActiveManagedProxyUrl,
@@ -336,7 +337,7 @@ export async function probeApnsHttp2ReachabilityViaProxy(
         }
         resolve({ status, body: getApnsResponseBodyCaptureText(body), responseHeaders });
       });
-      request.end(JSON.stringify({ aps: { alert: "OpenClaw APNs proxy validation" } }));
+      request.end(JSON.stringify({ aps: { alert: `${PRODUCT_NAME} APNs proxy validation` } }));
     });
   } finally {
     if (!session.closed && !session.destroyed) {

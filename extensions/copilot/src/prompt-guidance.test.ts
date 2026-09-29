@@ -105,7 +105,7 @@ describe("buildCopilotPromptGuidance", () => {
     ]);
     expect(unavailable).toContain("remains private");
     expect(unavailable).not.toContain("Use `message`");
-    expect(unavailable).not.toContain("OpenClaw delivers your final response automatically");
+    expect(unavailable).not.toContain("Paddy delivers your final response automatically");
   });
 
   it.each([false, true])(

@@ -2,6 +2,7 @@ import { isConfigReadFailure } from "../../config/io.invalid-config.js";
 import { formatConfigIssueLines } from "../../config/issue-format.js";
 import type { ConfigFileSnapshot } from "../../config/types.openclaw.js";
 import { normalizeSupportDiagnosticErrorCode } from "../../logging/diagnostic-support-redaction.js";
+import { CLI_NAME } from "../cli-name.js";
 import { UpdatePreMutationError } from "./shared.js";
 
 /** Keep validation fields separate from diagnostics that can contain rejected secret values. */
@@ -12,7 +13,7 @@ export function createUpdateConfigFailure(
     const code = normalizeSupportDiagnosticErrorCode(snapshot.readError?.code ?? undefined);
     const nextAction = snapshot.readError
       ? "Check configuration file access before retrying."
-      : "Run `openclaw doctor --json` to inspect the configuration loading failure before retrying.";
+      : `Run \`${CLI_NAME} doctor --json\` to inspect the configuration loading failure before retrying.`;
     return new UpdatePreMutationError(
       "config-read-failed",
       `Update refused: configuration could not be read${code ? ` (${code})` : ""}. ${nextAction}`,
@@ -34,7 +35,7 @@ export function createUpdateConfigFailure(
     message: "Invalid configuration field",
   }));
   const nextAction =
-    "Run `openclaw doctor --fix` to repair retired or unrecognized configuration fields, then correct any remaining errors before retrying.";
+    `Run \`${CLI_NAME} doctor --fix\` to repair retired or unrecognized configuration fields, then correct any remaining errors before retrying.`;
   return new UpdatePreMutationError(
     "invalid-config",
     [

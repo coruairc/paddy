@@ -2,6 +2,7 @@
 import type { SourceReplyDeliveryMode } from "../auto-reply/get-reply-options.types.js";
 import { buildMessageToolTargetGuidance } from "../auto-reply/source-reply-delivery-mode.js";
 import { SILENT_REPLY_TOKEN } from "../auto-reply/tokens.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { ChatType } from "../channels/chat-type.js";
 import type { SilentReplyPromptMode } from "./system-prompt.types.js";
 
@@ -27,7 +28,7 @@ export function buildMessagingSection(params: {
     : `- Current-session final text normally routes to source.${messageToolAvailable ? " If turn says final private, visible output uses `message(action=send)`." : ""}`;
   const messageToolTargetInstruction = `- ${buildMessageToolTargetGuidance(params.requireExplicitMessageTarget === true)}`;
   const routingGuidance = [
-    "- OpenClaw messaging: use available messaging tools, never shell commands, the CLI, curl, or direct RPC. Missing messaging tools are not permission to use another route.",
+    `- ${PRODUCT_NAME} messaging: use available messaging tools, never shell commands, the CLI, curl, or direct RPC. Missing messaging tools are not permission to use another route.`,
     "- Subagents return results through their accepted completion path; parents relay required coordination. Do not send acknowledgments or duplicate completion reports.",
     "- Other services (e.g. email): user-authorized CLI/API use is allowed; normal tool permissions and approvals still apply.",
   ];

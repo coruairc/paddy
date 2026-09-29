@@ -2,6 +2,7 @@ import { resolveIntegerOption } from "@openclaw/normalization-core/number-coerci
 import { asOptionalObjectRecord, isRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { sliceUtf16Safe, truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   boundedJsonUtf8Bytes,
   firstEnumerableOwnKeys,
@@ -68,7 +69,7 @@ function redactPersistedDetailString(
   const redactedPrefix =
     boundaryIndex >= 0
       ? redactedScan.slice(0, boundaryIndex)
-      : "[OpenClaw persisted detail redacted: boundary marker removed]";
+      : `[${PRODUCT_NAME} persisted detail redacted: boundary marker removed]`;
   const safePrefixChars = Math.max(
     0,
     maxChars - Math.min(maxChars, MAX_PERSISTED_DETAIL_BOUNDARY_OVERLAP_CHARS),
@@ -77,10 +78,10 @@ function redactPersistedDetailString(
   const persistedPrefix =
     PARTIAL_STRUCTURED_SECRET_VALUE_RE.test(initialPersistedPrefix) ||
     PARTIAL_PRIVATE_KEY_BLOCK_RE.test(initialPersistedPrefix)
-      ? "[OpenClaw persisted detail redacted: partial secret span omitted]"
+      ? `[${PRODUCT_NAME} persisted detail redacted: partial secret span omitted]`
       : initialPersistedPrefix;
-  const boundaryNotice = "[OpenClaw persisted detail redacted: boundary overlap omitted]";
-  return `${persistedPrefix}${persistedPrefix ? "\n" : ""}${boundaryNotice}\n\n[OpenClaw persisted detail truncated: ${Math.max(
+  const boundaryNotice = `[${PRODUCT_NAME} persisted detail redacted: boundary overlap omitted]`;
+  return `${persistedPrefix}${persistedPrefix ? "\n" : ""}${boundaryNotice}\n\n[${PRODUCT_NAME} persisted detail truncated: ${Math.max(
     0,
     value.length - maxChars,
   )} original chars omitted]`;
@@ -124,7 +125,7 @@ function redactPersistedDetailValue(
     return value;
   }
   if (depth >= 8) {
-    return "[OpenClaw persisted detail redacted: max depth exceeded]";
+    return `[${PRODUCT_NAME} persisted detail redacted: max depth exceeded]`;
   }
   if (Array.isArray(value)) {
     let changed = false;

@@ -84,7 +84,7 @@ vi.mock("../../status/status-plugin-health.runtime.js", () => pluginHealthRuntim
 vi.mock("../../agents/harness/builtin-openclaw.js", () => ({
   createOpenClawAgentHarness: () => ({
     id: "openclaw",
-    label: "OpenClaw Default",
+    label: "Paddy Default",
     supports: () => ({ supported: true, priority: 0 }),
     runAttempt: async () => {
       throw new Error("not used in status tests");

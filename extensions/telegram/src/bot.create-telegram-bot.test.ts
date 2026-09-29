@@ -1886,7 +1886,7 @@ describe("createTelegramBot", () => {
     expect(replySpy).not.toHaveBeenCalled();
     expect(sendMessageSpy).toHaveBeenCalledWith(
       1234,
-      "Only an OpenClaw owner can sign in here. Ask the owner to connect this provider or grant you owner access.",
+      "Only a Paddy owner can sign in here. Ask the owner to connect this provider or grant you owner access.",
       {},
     );
   });
@@ -2012,7 +2012,7 @@ describe("createTelegramBot", () => {
     const pairingText = String(sendMessageSpy.mock.calls.at(0)?.[1]);
     expect(pairingText).toContain(`Your Telegram user id: ${senderId}`);
     expect(pairingText).toContain("Pairing code:");
-    expect(pairingText).toContain("openclaw pairing approve telegram");
+    expect(pairingText).toContain("paddy pairing approve telegram");
     expectRecordFields(
       sendMessageSpy.mock.calls.at(0)?.[2],
       { parse_mode: "HTML" },

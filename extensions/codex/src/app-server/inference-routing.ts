@@ -178,7 +178,7 @@ async function prepareCodexInferenceRoute(params: {
     readProviderField(params.config, provider, field) ??
     readProviderField(snapshot.config, provider, field);
   const nativeProviderName = owner.oauth
-    ? "OpenClaw subscription sharing"
+    ? "Paddy subscription sharing"
     : customProvider
       ? providerField("name")
       : "OpenAI";
@@ -488,7 +488,7 @@ export async function prepareCodexInferenceThreadConfig(params: {
 
 function responsesOAuthProvider(route: CodexInferenceProxy): JsonObject {
   return {
-    name: "OpenClaw subscription sharing",
+    name: "Paddy subscription sharing",
     base_url: route.baseUrl,
     wire_api: "responses",
     requires_openai_auth: true,

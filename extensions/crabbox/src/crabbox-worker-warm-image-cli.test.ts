@@ -220,7 +220,7 @@ describe("Crabbox warm-image CLI", () => {
 
       if (phase === "uncertain") {
         expect(output).toContain(
-          `openclaw crabbox warm-images --recover ${SELECTOR} --acknowledge-provider-cleanup`,
+          `paddy crabbox warm-images --recover ${SELECTOR} --acknowledge-provider-cleanup`,
         );
         expect(output).toContain("Stop the owning Gateway and capture processes");
       } else {

@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import { z } from "zod";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatInstallationTargetCommand } from "../cli/installation-target-format.js";
 import { resolveSubprocessExitCode } from "../cli/subprocess-exit-code.js";
 import {
@@ -184,7 +185,7 @@ async function runPreparedUpdateFailureTriage(
         return { status: "cancelled" };
       }
       if (!entryPath) {
-        throw new Error("The installed OpenClaw entrypoint is unavailable.");
+        throw new Error(`The installed ${PRODUCT_NAME} entrypoint is unavailable.`);
       }
       const args = [
         entryPath,

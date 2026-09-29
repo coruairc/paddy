@@ -83,7 +83,7 @@ describe("applyPostPluginConfigValidation", () => {
       reason: "post-plugin-doctor-invalid-config",
       warnings: [
         {
-          guidance: ["Run `openclaw doctor --fix`, then rerun `openclaw update repair`."],
+          guidance: ["Run `paddy doctor --fix`, then rerun `paddy update repair`."],
         },
       ],
     });
@@ -663,9 +663,9 @@ describe("formatPostUpdateGatewayRecoveryInstructions", () => {
     );
 
     expect(line).toContain("the systemd user service");
-    expect(line).toContain("openclaw gateway restart");
-    expect(line).toContain("openclaw gateway install --force");
-    expect(line).toContain("openclaw gateway status --deep");
+    expect(line).toContain("paddy gateway restart");
+    expect(line).toContain("paddy gateway install --force");
+    expect(line).toContain("paddy gateway status --deep");
     expect(line).not.toContain("Linux reports");
     expect(line).not.toContain("macOS");
     expect(line).not.toContain("LaunchAgent");

@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { ResolvedApprovalView } from "../infra/approval-view-model.types.js";
 
 type SystemAgentResolvedView = Extract<ResolvedApprovalView, { approvalKind: "system-agent" }>;
@@ -53,15 +54,15 @@ export function formatChannelApprovalResolvedLabel(
 export function buildSystemAgentApprovalResolvedText(view: SystemAgentResolvedView): string {
   const outcome = interpretApprovalTerminalOutcome(view, "denial");
   return outcome === "cancelled"
-    ? "⚠️ OpenClaw change was cancelled because its run ended. No change was made. Retry."
+    ? `⚠️ ${PRODUCT_NAME} change was cancelled because its run ended. No change was made. Retry.`
     : outcome === "deny"
-      ? "❌ OpenClaw change denied. No change was made."
+      ? `❌ ${PRODUCT_NAME} change denied. No change was made.`
       : outcome === "applied"
-        ? `✅ OpenClaw change approved and applied: ${view.operationSummary}`
+        ? `✅ ${PRODUCT_NAME} change approved and applied: ${view.operationSummary}`
         : outcome === "not-applied"
-          ? "⚠️ OpenClaw change approved, but completion could not be confirmed. Check the current settings before retrying."
-          : `✅ OpenClaw change approved. Applying: ${view.operationSummary}`;
+          ? `⚠️ ${PRODUCT_NAME} change approved, but completion could not be confirmed. Check the current settings before retrying.`
+          : `✅ ${PRODUCT_NAME} change approved. Applying: ${view.operationSummary}`;
 }
 
 /** Terminal copy for a system change approval that expired before a decision. */
-export const SYSTEM_AGENT_APPROVAL_EXPIRED_TEXT = "⏱️ OpenClaw change expired. No change was made.";
+export const SYSTEM_AGENT_APPROVAL_EXPIRED_TEXT = `⏱️ ${PRODUCT_NAME} change expired. No change was made.`;

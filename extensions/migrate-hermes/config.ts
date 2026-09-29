@@ -77,7 +77,7 @@ export function buildConfigItems(params: {
       target: "plugins.slots",
       path: ["plugins", "slots"],
       value: { memory: "memory-core" },
-      message: "Select the default OpenClaw memory plugin for imported file memory.",
+      message: "Select the default Paddy memory plugin for imported file memory.",
     });
   }
 
@@ -100,7 +100,7 @@ export function buildConfigItems(params: {
         id: "manual:memory-provider:honcho",
         source: "config.yaml:memory.provider",
         message:
-          "Hermes used Honcho memory. OpenClaw keeps built-in memory selected until the matching plugin is installed and reviewed.",
+          "Hermes used Honcho memory. Paddy keeps built-in memory selected until the matching plugin is installed and reviewed.",
         recommendation:
           "Install or review the Honcho memory plugin before selecting it for plugins.slots.memory.",
       }),
@@ -110,8 +110,8 @@ export function buildConfigItems(params: {
       createMigrationManualItem({
         id: `manual:memory-provider:${memoryProvider}`,
         source: "config.yaml:memory.provider",
-        message: `Hermes memory provider "${memoryProvider}" does not have a known OpenClaw mapping.`,
-        recommendation: "Install or configure an equivalent OpenClaw memory plugin manually.",
+        message: `Hermes memory provider "${memoryProvider}" does not have a known Paddy mapping.`,
+        recommendation: "Install or configure an equivalent Paddy memory plugin manually.",
       }),
     );
   }

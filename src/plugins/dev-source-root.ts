@@ -1,6 +1,7 @@
 // Resolves development source roots for local plugin installs.
 import fs from "node:fs";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveOpenClawPackageRootSync } from "../infra/openclaw-root.js";
 import { isPathInside } from "../infra/path-guards.js";
 import { resolveUserPath } from "../utils.js";
@@ -55,7 +56,7 @@ export function resolveBundledPluginSourceRoot(
 }
 
 export function formatSourceBundledPluginNotice(pluginId: string): string {
-  return `Kept bundled plugin "${pluginId}" from the OpenClaw source build; the registry artifact has no matching host SDK build identity. Matching version strings do not establish SDK compatibility.`;
+  return `Kept bundled plugin "${pluginId}" from the ${PRODUCT_NAME} source build; the registry artifact has no matching host SDK build identity. Matching version strings do not establish SDK compatibility.`;
 }
 
 /** Prioritizes already-bundled candidates; the selector itself never grants provenance. */

@@ -8,6 +8,7 @@ import { buildGatewayConnectionDetailsWithResolvers } from "../gateway/connectio
 import { normalizeWebSocketProtocol } from "../gateway/websocket-protocol.js";
 import { consumeRootOptionToken, FLAG_TERMINATOR } from "../infra/cli-root-options.js";
 import { parseAgentSessionKey } from "../routing/session-key.js";
+import { CLI_NAME } from "./cli-name.js";
 
 const SESSION_TARGET_HELP =
   "Accepted session targets: https://host[/base]/{chat|dashboard}/<agent>[/<ref>], <host>/<agent>/<ref>, or a bare <slug>-<shortid>, <shortid>, or agent:... key.";
@@ -200,7 +201,7 @@ function isSessionUrlInputCandidate(raw: string): boolean {
 
 function bareSessionOptionError(flag: string): Error {
   return new Error(
-    `Unsupported bare session URL option: ${sanitizeTerminalText(flag)}. Use \`openclaw tui <url> --help\` for the full option list.`,
+    `Unsupported bare session URL option: ${sanitizeTerminalText(flag)}. Use \`${CLI_NAME} tui <url> --help\` for the full option list.`,
   );
 }
 
@@ -240,7 +241,7 @@ export function parseBareSessionInvocation(argv: readonly string[]): BareSession
         continue;
       }
       throw new Error(
-        "Unexpected extra argument for bare session URL. Use `openclaw tui <url> --help` for the full option list.",
+        `Unexpected extra argument for bare session URL. Use \`${CLI_NAME} tui <url> --help\` for the full option list.`,
       );
     }
     const equalsIndex = arg.indexOf("=");

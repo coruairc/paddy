@@ -16,7 +16,7 @@ it("leaves startup failure handling intact when an update removed the recovery m
   expect(runtime.error).toHaveBeenCalledWith(
     expect.stringContaining("Automatic triage could not load:"),
   );
-  expect(runtime.error).toHaveBeenCalledWith(expect.stringContaining("openclaw triage"));
+  expect(runtime.error).toHaveBeenCalledWith(expect.stringContaining("paddy triage"));
   expect(runtime.exit).not.toHaveBeenCalled();
 });
 

@@ -65,7 +65,7 @@ describe("ensureSandboxContainer managed mounts", () => {
     ]);
     spawnState.calls.length = 0;
     await expect(harness.ensureSandboxContainer(params)).rejects.toThrow(
-      "Recreate first: openclaw sandbox recreate --all",
+      "Recreate first: paddy sandbox recreate --all",
     );
     expect(spawnState.calls.some((call) => ["rm", "create", "start"].includes(call.args[0]!))).toBe(
       false,

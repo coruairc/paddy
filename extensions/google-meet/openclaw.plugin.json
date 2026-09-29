@@ -311,7 +311,7 @@
           },
           "guestName": {
             "type": "string",
-            "default": "OpenClaw Agent"
+            "default": "Paddy Agent"
           },
           "reuseExistingTab": {
             "type": "boolean",

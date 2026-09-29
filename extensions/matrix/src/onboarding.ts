@@ -195,7 +195,7 @@ async function configureMatrixInviteAutoJoin(params: {
   await params.prompter.note(
     [
       "WARNING: Matrix invite auto-join defaults to off.",
-      "OpenClaw agents will not join invited rooms or fresh DM-style invites unless you set autoJoin.",
+      "Paddy agents will not join invited rooms or fresh DM-style invites unless you set autoJoin.",
       'Choose "allowlist" to restrict joins or "always" to join every invite.',
     ].join("\n"),
     "Matrix invite auto-join",

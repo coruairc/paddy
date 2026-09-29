@@ -1,4 +1,5 @@
 // Shared execution helpers keep the public dispatcher small and reviewable.
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { getAtPath, parseConfigSetPath } from "../cli/config-cli-path.js";
 import { hashConfigRaw } from "../config/io.read-helpers.js";
 import { ConfigWritePostCommitError } from "../config/io.write-errors.js";
@@ -286,7 +287,7 @@ export async function applyPersistentOperation(params: {
     // The mutation already committed. Keep success truthful while making the
     // missing audit record visible to every CLI/chat capture surface.
     runtime.error(
-      `${outcome.summary}, but OpenClaw could not record its audit entry: ${formatErrorMessage(error)}`,
+      `${outcome.summary}, but ${PRODUCT_NAME} could not record its audit entry: ${formatErrorMessage(error)}`,
     );
   }
   runtime.log(`[openclaw] done: ${auditOperation}`);
@@ -423,14 +424,14 @@ async function verifyCurrentSetupInference(
   const before = await readConfigFileSnapshot();
   if (!before.exists || !before.valid) {
     throw new Error(
-      "OpenClaw setup requires a valid configured inference route. Run `openclaw onboard` on the machine running OpenClaw, then retry.",
+      `${PRODUCT_NAME} setup requires a valid configured inference route. Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}, then retry.`,
     );
   }
   const beforeConfig = before.runtimeConfig ?? before.config;
   const beforeRoute = await projectDefaultInferenceRoute(beforeConfig);
   if (!beforeRoute.route) {
     throw new Error(
-      "OpenClaw setup requires working inference first. Run `openclaw onboard` on the machine running OpenClaw, then retry.",
+      `${PRODUCT_NAME} setup requires working inference first. Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}, then retry.`,
     );
   }
   const verifyInferenceConfig =
@@ -439,7 +440,7 @@ async function verifyCurrentSetupInference(
   const verification = await verifyInferenceConfig({ config: beforeConfig, runtime });
   if (!verification.ok) {
     throw new Error(
-      `OpenClaw setup requires working inference first. The configured route failed a live check: ${verification.error} Run \`openclaw onboard\` on the machine running OpenClaw, then retry.`,
+      `${PRODUCT_NAME} setup requires working inference first. The configured route failed a live check: ${verification.error} Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}, then retry.`,
     );
   }
 
@@ -476,13 +477,13 @@ export async function executeSetup(
   const modelRole = overview.defaultModel ? "default" : "setup";
   if (!setupModel) {
     throw new Error(
-      "OpenClaw setup requires working inference first. Run `openclaw onboard` on the machine running OpenClaw to configure and verify a default model, then start OpenClaw again.",
+      `${PRODUCT_NAME} setup requires working inference first. Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME} to configure and verify a default model, then start ${PRODUCT_NAME} again.`,
     );
   }
   const requestedModel = operation.model?.trim();
   if (requestedModel && requestedModel !== setupModel) {
     throw new Error(
-      `OpenClaw setup will preserve the verified ${modelRole} model ${setupModel}. Staging, live-testing, and saving a different inference route is \`openclaw onboard\` on the machine running OpenClaw.`,
+      `${PRODUCT_NAME} setup will preserve the verified ${modelRole} model ${setupModel}. Staging, live-testing, and saving a different inference route is \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}.`,
     );
   }
   if (!opts.approved) {
@@ -496,7 +497,7 @@ export async function executeSetup(
   const verified = await verifyCurrentSetupInference(runtime, opts.deps);
   if (requestedModel && requestedModel !== verified.modelRef) {
     throw new Error(
-      `The verified default model is now ${verified.modelRef}, not ${requestedModel}. Review the current route, or run \`openclaw onboard\` on the machine running OpenClaw, before retrying setup.`,
+      `The verified default model is now ${verified.modelRef}, not ${requestedModel}. Review the current route, or run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}, before retrying setup.`,
     );
   }
   return await applyPersistentOperation({

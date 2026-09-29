@@ -1,4 +1,5 @@
 import type { SystemAgentChatParams } from "@openclaw/gateway-protocol";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import type { RuntimeEnv } from "../runtime.js";
 import type {
   SystemAgentSession,
@@ -72,7 +73,7 @@ function createCaptureRuntime(): CaptureRuntime {
     log: (...args) => lines.push(args.join(" ")),
     error: (...args) => lines.push(args.join(" ")),
     exit: (code) => {
-      throw new Error(`OpenClaw operation exited with code ${String(code)}`);
+      throw new Error(`${PRODUCT_NAME} operation exited with code ${String(code)}`);
     },
     read: () => lines.join("\n").trim(),
   };
@@ -110,7 +111,7 @@ export function redactSensitiveCommandText(text: string): string {
 function formatPendingOperationForAssistant(operation: SystemAgentOperation): string {
   const description = describeSystemAgentPersistentOperation(operation);
   return operation.kind === "setup"
-    ? `${description}. Exact setup JSON: ${JSON.stringify(operation)}. Keep the verified model unless the user explicitly asks to leave OpenClaw and reconfigure inference.`
+    ? `${description}. Exact setup JSON: ${JSON.stringify(operation)}. Keep the verified model unless the user explicitly asks to leave ${PRODUCT_NAME} and reconfigure inference.`
     : description;
 }
 
@@ -205,7 +206,7 @@ export class ChatTurnRouter {
       };
     }
     if (/^(quit|exit)$/i.test(trimmed)) {
-      return { text: "OpenClaw retracts into shell. Bye.", action: "exit" };
+      return { text: `${PRODUCT_NAME} retracts into shell. Bye.`, action: "exit" };
     }
     if (this.awaitingSetupChannel) {
       if (/^(cancel|abort|stop)$/i.test(trimmed)) {
@@ -226,7 +227,7 @@ export class ChatTurnRouter {
       });
     }
     if (this.options.operatorApprovalOnly && this.getPendingOperatorProposal()) {
-      return { text: "Approval pending. Human must decide in OpenClaw UI.", action: "none" };
+      return { text: `Approval pending. Human must decide in ${PRODUCT_NAME} UI.`, action: "none" };
     }
     const typed = parseSystemAgentOperation(text);
     if (isInvalidConfigSetOperation(typed)) {
@@ -300,7 +301,7 @@ export class ChatTurnRouter {
     beforePersistentApply?: PersistentApplyGuard,
   ): Promise<SystemAgentChatReply> {
     if (!isPersistentSystemAgentOperation(operation)) {
-      throw new Error("OpenClaw host received a non-persistent approved operation.");
+      throw new Error(`${PRODUCT_NAME} host received a non-persistent approved operation.`);
     }
     const capture = createCaptureRuntime();
     const result = await this.executeOperation(operation, capture, true, beforePersistentApply);
@@ -463,13 +464,13 @@ export class ChatTurnRouter {
       this.clearPendingProposals();
       if (this.options.surface === "gateway") {
         return {
-          text: "Open Settings to change your model or connect a channel. To change providers from a shell, run `openclaw onboard` on the machine running OpenClaw.",
+          text: `Open Settings to change your model or connect a channel. To change providers from a shell, run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}.`,
           action: "none",
         };
       }
       if (!["channels", "search", "gateway"].includes(recordedOperation.target)) {
         return {
-          text: "Setup can replace the inference route powering this session. Exit OpenClaw and run `openclaw onboard`; it saves only a route that passes a live test. Then start OpenClaw again.",
+          text: `Setup can replace the inference route powering this session. Exit ${PRODUCT_NAME} and run \`${CLI_NAME} onboard\`; it saves only a route that passes a live test. Then start ${PRODUCT_NAME} again.`,
           action: "none",
         };
       }
@@ -610,7 +611,7 @@ export class ChatTurnRouter {
   private agentHandoffReturnHint(): string {
     // Only the TUI uses /openclaw for navigation; web chat runs rescue in place.
     return this.options.surface === "gateway"
-      ? "You can return through Settings → Ask OpenClaw."
+      ? `You can return through Settings → Ask ${PRODUCT_NAME}.`
       : "Use /openclaw to come back.";
   }
 

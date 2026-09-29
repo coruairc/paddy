@@ -3,6 +3,7 @@ import type {
   SystemAgentWizardCancel,
   WizardAnswer,
 } from "../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import type { RuntimeEnv } from "../runtime.js";
@@ -583,7 +584,7 @@ export class ChatWizardHost {
               : "Say `open search wizard` and I'll hand you to the masked terminal wizard, or run `openclaw configure --section web` yourself later.";
         return {
           text: [
-            "Sensitive input is not accepted in the OpenClaw chat because terminal input is visible.",
+            `Sensitive input is not accepted in the ${PRODUCT_NAME} chat because terminal input is visible.`,
             target,
           ].join("\n"),
           configWritten: false,

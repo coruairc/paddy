@@ -643,7 +643,7 @@ if (openClawCodexConfigs.length > 0) {
         typeof parsedOpenClawCodexConfig !== "object" ||
         Array.isArray(parsedOpenClawCodexConfig)
       ) {
-        throw new Error("invalid OpenClaw Codex config");
+        throw new Error("invalid Paddy Codex config");
       }
       existingCodexConfig = mergeCodexConfig(existingCodexConfig, parsedOpenClawCodexConfig);
     } catch {

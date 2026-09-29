@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { walkDirectory } from "@openclaw/fs-safe/walk";
 import { note } from "../../../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 import type { HealthFinding } from "../../../flows/health-checks.js";
 import { resolveOpenClawPackageRootSync } from "../../../infra/openclaw-root.js";
 import { shortenHomePath } from "../../../utils.js";
@@ -87,7 +88,7 @@ export async function noteStalePluginRuntimeSymlinks(
 
   const lines = [
     "- Plugin-runtime symlinks under the global Node prefix point at pruned",
-    `  ${PLUGIN_RUNTIME_DEPS_MARKER} directories from a previous OpenClaw install.`,
+    `  ${PLUGIN_RUNTIME_DEPS_MARKER} directories from a previous ${PRODUCT_NAME} install.`,
     "- Bundled plugin ESM imports can fail with ERR_MODULE_NOT_FOUND until repaired.",
   ];
   for (const item of stale.slice(0, MAX_REPORTED)) {

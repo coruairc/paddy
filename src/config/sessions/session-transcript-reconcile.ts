@@ -7,6 +7,7 @@ import type { MessagePort } from "node:worker_threads";
 import { toStringifiedError } from "@openclaw/normalization-core/error-coercion";
 import { err, ok, type Result } from "@openclaw/normalization-core/result";
 import { computeBackoffSchedule } from "../../../packages/retry/src/index.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { createAbortError, racePromiseWithAbortSignal } from "../../infra/abort-signal.js";
 import { isGatewayExternallySupervised } from "../../infra/gateway-supervision.js";
 import { isPathInside } from "../../infra/path-guards.js";
@@ -467,7 +468,7 @@ async function reconcilePreparedTranscriptIndexes(
       }
     } catch (error) {
       const failure = new Error(
-        `Transcript lease cleanup incomplete; restart OpenClaw before deleting this agent: ${toStringifiedError(error).message}`,
+        `Transcript lease cleanup incomplete; restart ${PRODUCT_NAME} before deleting this agent: ${toStringifiedError(error).message}`,
         { cause: error },
       );
       if (input.mode === "disk") {

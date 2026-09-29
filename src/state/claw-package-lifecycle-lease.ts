@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import {
   executeSqliteQuerySync,
@@ -91,7 +92,7 @@ export function acquireClawPackageLifecycleLease(
         );
         if (existing) {
           throw new ClawPackageLifecycleBusyError(
-            `Package ${artifact.ref} is being changed by another OpenClaw lifecycle; retry after ${new Date(existing.expires_at ?? expiresAt).toISOString()}.`,
+            `Package ${artifact.ref} is being changed by another ${PRODUCT_NAME} lifecycle; retry after ${new Date(existing.expires_at ?? expiresAt).toISOString()}.`,
           );
         }
         executeSqliteQuerySync(

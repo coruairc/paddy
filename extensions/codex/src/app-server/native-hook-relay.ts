@@ -73,7 +73,7 @@ export type CodexNativeHookRelay = ReturnType<typeof registerNativeHookRelayForB
 export class CodexManagedHooksOnlyError extends Error {
   constructor() {
     super(
-      "Codex managed-only hooks disable the OpenClaw native hook relay; refusing unenforced execution",
+      "Codex managed-only hooks disable the Paddy native hook relay; refusing unenforced execution",
     );
     this.name = "CodexManagedHooksOnlyError";
   }
@@ -607,7 +607,7 @@ export function buildCodexNativeHookRelayConfig(params: {
           command,
           timeout,
           async: false,
-          statusMessage: "OpenClaw native hook relay",
+          statusMessage: "Paddy native hook relay",
         },
       ],
     };
@@ -666,7 +666,7 @@ function buildCodexNativeToolMatcher(toolNames: readonly string[] | undefined): 
   for (const toolName of toolNames) {
     const canonicalToolName = toolName.trim();
     if (!canonicalToolName || canonicalToolName === "*") {
-      throw new TypeError("Codex native hook matcher requires canonical OpenClaw tool ids");
+      throw new TypeError("Codex native hook matcher requires canonical Paddy tool ids");
     }
     const nativeAliases = CODEX_HOOK_MATCHER_NAMES_BY_TOOL_ID[canonicalToolName];
     if (!nativeAliases) {

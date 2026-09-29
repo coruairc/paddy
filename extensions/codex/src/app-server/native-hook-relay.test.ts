@@ -46,7 +46,7 @@ function expectedCommandHook(event: string, timeout = 10, commandTimeout = 9_000
           command: `openclaw hooks relay --provider codex --relay-id relay-1 --generation generation-1 --event ${event} --timeout ${commandTimeout}`,
           timeout,
           async: false,
-          statusMessage: "OpenClaw native hook relay",
+          statusMessage: "Paddy native hook relay",
         },
       ],
     },
@@ -571,7 +571,7 @@ describe("Codex native hook relay managed policy", () => {
 
     await assertCodexNativeHookRelayAllowed(client as never);
     await expect(assertCodexNativeHookRelayAllowed(client as never)).rejects.toThrow(
-      /managed-only hooks.*OpenClaw native hook relay/i,
+      /managed-only hooks.*Paddy native hook relay/i,
     );
 
     expect(request).toHaveBeenCalledTimes(2);

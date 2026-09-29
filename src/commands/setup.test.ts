@@ -132,8 +132,8 @@ describe("setupCommand", () => {
         "",
         "Setup complete: config, workspace, and session directories are ready.",
         "Next guided path: openclaw onboard.",
-        "Next targeted changes: openclaw configure for models, channels, Gateway, plugins, skills, and health checks.",
-        "Add a chat channel later: openclaw channels add.",
+        "Next targeted changes: paddy configure for models, channels, Gateway, plugins, skills, and health checks.",
+        "Add a chat channel later: paddy channels add.",
       ]);
     });
   });
@@ -663,7 +663,7 @@ describe("setupCommand", () => {
 
         expect(runtime.exit).toHaveBeenCalledWith(1);
         expect(runtime.error).toHaveBeenCalledWith(
-          expect.stringContaining("openclaw doctor --fix"),
+          expect.stringContaining("paddy doctor --fix"),
         );
         if (json) {
           expect(runtime.log).toHaveBeenCalledOnce();
@@ -671,7 +671,7 @@ describe("setupCommand", () => {
             ok: false,
             error: {
               type: "cli_error",
-              message: "OpenClaw config is invalid: ~/.openclaw/openclaw.json",
+              message: "Paddy config is invalid: ~/.paddy/paddy.json",
             },
             issues: expect.arrayContaining([
               expect.objectContaining({ path: "<root>", message: expect.any(String) }),
@@ -713,7 +713,7 @@ describe("setupCommand", () => {
 
         expect(runtime.exit).toHaveBeenCalledWith(1);
         expect(runtime.error).toHaveBeenCalledWith(
-          expect.stringContaining("openclaw doctor --fix"),
+          expect.stringContaining("paddy doctor --fix"),
         );
         expect(await fs.readFile(configPath, "utf-8")).toBe(raw);
         expect(effects.replaceConfigFile).not.toHaveBeenCalled();

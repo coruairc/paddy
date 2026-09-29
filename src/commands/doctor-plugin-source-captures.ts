@@ -1,4 +1,5 @@
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { quoteCliArg } from "../cli/quote-cli-arg.js";
 import { resolveStateDir } from "../config/state-dir.js";
 import { inspectOtherOpenClawProcesses } from "../infra/openclaw-process-census.js";
@@ -34,7 +35,7 @@ export async function noteLegacyPluginSourceCaptures(
     }
     if (census.pids.length > 0) {
       throw new Error(
-        `Other OpenClaw processes are still running (PIDs: ${census.pids.join(", ")}).`,
+        `Other ${PRODUCT_NAME} processes are still running (PIDs: ${census.pids.join(", ")}).`,
       );
     }
     assertCurrent();

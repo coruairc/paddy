@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { PRODUCT_NAME } from "../brand.js";
 import { quoteCliArg, quotePowerShellArg } from "../cli/quote-cli-arg.js";
 import { resolveSqliteDatabaseFilePaths } from "./sqlite-files.js";
 import { planSqliteRecoveryMoves } from "./sqlite-recovery-files.js";
@@ -18,5 +19,5 @@ export function formatAgentDatabaseOwnershipRepairHint(pathname: string): string
         : `mv -n -- ${quoteCliArg(sourcePath)} ${quoteCliArg(destinationPath)}`,
     )
     .join(process.platform === "win32" ? "; " : " && ");
-  return `Preserve and inspect this database before accepting a fresh agent. With all OpenClaw processes stopped, the explicit quarantine move is${process.platform === "win32" ? " (PowerShell)" : ""}:\n${action}\nThen run openclaw doctor --fix and restart the Gateway.`;
+  return `Preserve and inspect this database before accepting a fresh agent. With all ${PRODUCT_NAME} processes stopped, the explicit quarantine move is${process.platform === "win32" ? " (PowerShell)" : ""}:\n${action}\nThen run openclaw doctor --fix and restart the Gateway.`;
 }

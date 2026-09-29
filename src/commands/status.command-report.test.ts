@@ -27,7 +27,7 @@ const params: Parameters<typeof buildStatusCommandReportLines>[0] = {
 it("renders the full report in section order and trims table output", async () => {
   expect((await buildStatusCommandReportLines(params)).join("\n")).toBe(
     [
-      "# OpenClaw status",
+      "# Paddy status",
       "# Overview\ntable:Item+Value:1",
       "# Plugin compatibility\nplugin warning",
       "pairing needed",
@@ -68,7 +68,7 @@ it("prepares empty-state messages before rendering and omits absent sections", a
   expect(events).toEqual(["No channels configured", "No sessions", "table"]);
   expect(lines.join("\n")).toBe(
     [
-      "# OpenClaw status",
+      "# Paddy status",
       "# Overview\ntable:Item+Value:1",
       "# Security audit\naudit line",
       "# Channels\nNo channels configured",

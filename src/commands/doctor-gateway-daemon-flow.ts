@@ -1,5 +1,6 @@
 /** Doctor gateway daemon repair flow for service install, bootstrap, restart, and port hints. */
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { resolveGatewayPort } from "../config/config.js";
 import { isDefaultInstallIdentity } from "../config/paths.js";
@@ -141,9 +142,9 @@ async function maybeRepairLaunchAgentBootstrap(params: {
 
 function renderBlockingSystemGatewayServices(services: ExtraGatewayService[]): string {
   return [
-    "System-level OpenClaw gateway service detected while the user gateway service is not installed.",
+    `System-level ${PRODUCT_NAME} gateway service detected while the user gateway service is not installed.`,
     ...services.map((svc) => `- ${svc.label} (${svc.detail})`),
-    "OpenClaw will not install a second user-level gateway service automatically.",
+    `${PRODUCT_NAME} will not install a second user-level gateway service automatically.`,
     "Run `openclaw gateway status --deep` or `openclaw doctor --deep` to inspect duplicate services.",
     `Set ${SERVICE_REPAIR_POLICY_ENV}=external if a system supervisor owns the gateway lifecycle.`,
   ].join("\n");
@@ -161,7 +162,7 @@ function renderEstablishedGatewayConnections(connections: PortConnection[]): str
       return `- ${pid} ${direction}${command}${address}${commandLine}`;
     }),
     ...(connections.length > 8 ? [`- ... ${connections.length - 8} more connection(s)`] : []),
-    "If logs show protocol mismatch after rollback, stop stale OpenClaw client processes listed here and rerun doctor.",
+    `If logs show protocol mismatch after rollback, stop stale ${PRODUCT_NAME} client processes listed here and rerun doctor.`,
   ].join("\n");
 }
 

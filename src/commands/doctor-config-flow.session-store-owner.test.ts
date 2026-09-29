@@ -84,7 +84,7 @@ describe("Doctor session-store owner recovery", () => {
         } else {
           expect(
             note.mock.calls.some(([message]) =>
-              message.includes("openclaw config set agents.defaults.sessionStore.agentId ops"),
+              message.includes("paddy config set agents.defaults.sessionStore.agentId ops"),
             ),
           ).toBe(true);
         }

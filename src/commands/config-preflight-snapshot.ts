@@ -1,5 +1,6 @@
 import { sanitizeTerminalText } from "../../packages/terminal-core/src/safe-text.js";
 import { listAgentIds } from "../agents/agent-scope-config.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { createConfigIO } from "../config/io.factory.js";
 import {
   createConfigReadError,
@@ -57,7 +58,7 @@ function throwPluginRegistryPersistenceFailed(
   repair = 'Run "openclaw doctor --fix" and retry.',
 ): never {
   throw new Error(
-    `OpenClaw refreshed the plugin registry but could not verify the persisted replacement (${reason}); refusing to accept the plugin registry. ${repair}`,
+    `${PRODUCT_NAME} refreshed the plugin registry but could not verify the persisted replacement (${reason}); refusing to accept the plugin registry. ${repair}`,
   );
 }
 

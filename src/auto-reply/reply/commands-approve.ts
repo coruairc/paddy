@@ -1,6 +1,7 @@
 import { expectDefined } from "@openclaw/normalization-core";
 // Implements approval commands for pending exec, plugin, and OpenClaw change requests.
 import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   getChannelPlugin,
   resolveChannelApprovalCapability,
@@ -255,7 +256,7 @@ export async function handleApproveCommandFromContext(
     !params.command.senderIsOwner &&
     authorizations["system-agent"].authorized;
   const ownerOnlyResult = commandReply(
-    "❌ Only the owner can approve OpenClaw changes in this chat.",
+    `❌ Only the owner can approve ${PRODUCT_NAME} changes in this chat.`,
   );
   const methods = approvalKinds.filter((approvalKind) => {
     if (approvalKind === "system-agent" && systemAgentRefusedForOwner) {

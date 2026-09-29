@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 
 export type OpenClawDatabaseKind = "agent" | "state";
@@ -18,7 +19,7 @@ export const OpenClawQuarantineReadCleanupError = resolveGlobalSingleton(
         errors: unknown[],
         readonly quarantine?: OpenClawDatabaseQuarantine,
       ) {
-        super(errors, "OpenClaw quarantine reader cleanup failed.", { cause: errors[0] });
+        super(errors, `${PRODUCT_NAME} quarantine reader cleanup failed.`, { cause: errors[0] });
         this.name = DATABASE_QUARANTINE_READ_CLEANUP_ERROR_NAME;
       }
     },

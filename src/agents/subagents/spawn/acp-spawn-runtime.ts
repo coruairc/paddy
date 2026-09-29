@@ -27,6 +27,7 @@ import { persistAcpSpawnSessionFileBestEffort } from "./acp-spawn-requester.js";
 import { buildSpawnThreadBinding } from "./spawn-thread-binding.js";
 import { splitModelRef } from "./subagent-spawn-plan.js";
 import { resolveSubagentThinkingOverride } from "./subagent-spawn-thinking.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 
 const ACP_RUNTIME_TIMEOUT_MAX_SECONDS = 24 * 60 * 60;
 
@@ -97,7 +98,7 @@ export function resolveAcpSpawnRuntimeOptions(params: {
     return {
       ok: false,
       error:
-        "ACP model overrides cannot select OpenClaw auth profiles; configure credentials in the ACP runtime instead.",
+        `ACP model overrides cannot select ${PRODUCT_NAME} auth profiles; configure credentials in the ACP runtime instead.`,
     };
   }
   const model = modelSelection.model || undefined;

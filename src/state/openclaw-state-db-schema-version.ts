@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { getNodeSqliteKysely, prepareSqliteQuerySync } from "../infra/kysely-sync.js";
 import { collectSqliteSchemaIssues } from "../infra/sqlite-schema-contract.js";
 import {
@@ -145,7 +146,7 @@ export function assertSupportedStateSchemaVersion(db: DatabaseSync, pathname: st
       userVersion > OPENCLAW_STATE_SCHEMA_VERSION ? userVersion : readStateSchemaContentVersion(db);
     if (contentVersion > OPENCLAW_STATE_SCHEMA_VERSION) {
       throw createNewerSqliteSchemaVersionError(
-        "OpenClaw state database",
+        `${PRODUCT_NAME} state database`,
         pathname,
         contentVersion,
         OPENCLAW_STATE_SCHEMA_VERSION,

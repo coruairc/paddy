@@ -6,6 +6,7 @@ import {
   resolveEffectiveHomeDir,
   resolveOsHomeDir,
 } from "@openclaw/normalization-core/home-dir";
+import { PRODUCT_NAME } from "../brand.js";
 import { tryProcessCwd } from "./safe-cwd.js";
 
 export { resolveEffectiveHomeDir, resolveOsHomeDir };
@@ -20,7 +21,7 @@ export function resolveRequiredHomeDir(
     return path.resolve(resolved);
   }
   throw new Error(
-    "Unable to resolve an OpenClaw home: set OPENCLAW_HOME, HOME, or USERPROFILE, or run from an existing directory.",
+    `Unable to resolve a ${PRODUCT_NAME} home: set OPENCLAW_HOME, HOME, or USERPROFILE, or run from an existing directory.`,
   );
 }
 

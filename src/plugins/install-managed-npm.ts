@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import { tempWorkspace, type TempWorkspace } from "@openclaw/fs-safe/temp";
 import { clean as cleanSemver } from "semver";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveInstallWorkTimeoutMs } from "../infra/install-mode-options.js";
 import {
   installPackageDir,
@@ -201,7 +202,7 @@ export async function installPluginFromManagedNpmRoot(
       } catch (error) {
         return {
           ok: false,
-          error: `${cause.error}, but OpenClaw could not quarantine ${npmRoot} for rebuild: ${String(error)}`,
+          error: `${cause.error}, but ${PRODUCT_NAME} could not quarantine ${npmRoot} for rebuild: ${String(error)}`,
         };
       }
       logger.warn?.(

@@ -151,10 +151,10 @@ export async function adoptAcpxStateDirectory(input: StateDirectoryInput) {
     result.stateDir = !published && legacyFallback ? source : input.stateDir;
     result.warnings.push(
       published
-        ? `ACPX state adopted at ${input.stateDir}; migration cleanup needs attention: ${String(error)}. Run openclaw doctor --fix.`
+        ? `ACPX state adopted at ${input.stateDir}; migration cleanup needs attention: ${String(error)}. Run paddy doctor --fix.`
         : legacyFallback
           ? `ACPX state migration failed: ${String(error)}. Using ${source} for this process; set plugins.entries.acpx.config.stateDir to ${JSON.stringify(source)} to keep the old location.`
-          : `ACPX state migration could not be inspected: ${String(error)}. Keeping ${input.stateDir}; run openclaw doctor --fix.`,
+          : `ACPX state migration could not be inspected: ${String(error)}. Keeping ${input.stateDir}; run paddy doctor --fix.`,
     );
   }
   return result;
@@ -174,7 +174,7 @@ function sessionDirectory(
 ): string {
   if (!input.serviceWorkspaceDir) {
     throw new Error(
-      "ACP ownership repair requires the Gateway service workspace; upgrade OpenClaw Doctor.",
+      "ACP ownership repair requires the Gateway service workspace; upgrade Paddy Doctor.",
     );
   }
   return path.join(
@@ -509,14 +509,14 @@ export const acpxSessionOwnerMigration: PluginDoctorStateMigration = {
       ) {
         return {
           preview: [
-            "ACPX session state in <workspace>/state will be migrated automatically to the OpenClaw state directory.",
+            "ACPX session state in <workspace>/state will be migrated automatically to the Paddy state directory.",
           ],
         };
       }
     } catch (error) {
       return {
         preview: [
-          `ACPX legacy state could not be inspected: ${String(error)}. Run openclaw doctor --fix.`,
+          `ACPX legacy state could not be inspected: ${String(error)}. Run paddy doctor --fix.`,
         ],
       };
     }
@@ -524,7 +524,7 @@ export const acpxSessionOwnerMigration: PluginDoctorStateMigration = {
     return ids.length
       ? {
           preview: [
-            `ACP backend has ${ids.length} unqualified record(s). Stop the Gateway and run openclaw doctor --fix; ambiguous histories remain intact.`,
+            `ACP backend has ${ids.length} unqualified record(s). Stop the Gateway and run paddy doctor --fix; ambiguous histories remain intact.`,
           ],
         }
       : null;

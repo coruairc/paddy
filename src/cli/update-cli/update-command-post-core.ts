@@ -58,6 +58,7 @@ import {
 } from "../../process/exec-result.js";
 import { runExec, runUtf8CommandWithTimeout } from "../../process/exec.js";
 import { VERSION } from "../../version.js";
+import { CLI_NAME } from "../cli-name.js";
 import { readPackageVersion, resolveNodeRunner, type UpdateCommandOptions } from "./shared.js";
 import { createUpdateCommandAuthority } from "./update-command-authority.js";
 import { writePostCoreSourceConfigFile } from "./update-command-config.js";
@@ -166,7 +167,7 @@ export async function readPostCorePluginInstallRecordsFile(
       return undefined;
     }
     throw new Error(
-      `Unable to read plugin install records file: ${filePath}. Run openclaw doctor to inspect and repair plugin installation state.`,
+      `Unable to read plugin install records file: ${filePath}. Run ${CLI_NAME} doctor to inspect and repair plugin installation state.`,
       { cause: err },
     );
   }
@@ -175,7 +176,7 @@ export async function readPostCorePluginInstallRecordsFile(
     parsed = JSON.parse(raw);
   } catch (err) {
     throw new Error(
-      `Malformed JSON in plugin install records file: ${filePath}. Run openclaw doctor to inspect and repair plugin installation state.`,
+      `Malformed JSON in plugin install records file: ${filePath}. Run ${CLI_NAME} doctor to inspect and repair plugin installation state.`,
       { cause: err },
     );
   }
@@ -187,7 +188,7 @@ export async function readPostCorePluginInstallRecordsFile(
     return records;
   } catch (err) {
     throw new Error(
-      `Invalid plugin install records in handoff file: ${filePath}. Run openclaw doctor to inspect and repair plugin installation state.`,
+      `Invalid plugin install records in handoff file: ${filePath}. Run ${CLI_NAME} doctor to inspect and repair plugin installation state.`,
       { cause: err },
     );
   }

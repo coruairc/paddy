@@ -83,7 +83,7 @@ describe("logNonInteractiveOnboardingFailure", () => {
 
     const parsed = JSON.parse(readCapturedJson()) as { hints: string[] };
     expect(parsed.hints).toEqual([
-      "Fix: start `openclaw gateway run`, or run `openclaw gateway restart` for a managed gateway.",
+      "Fix: start `paddy gateway run`, or run `paddy gateway restart` for a managed gateway.",
     ]);
   });
 
@@ -237,7 +237,7 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
           },
         };
         const message =
-          "Config invalid. Run `openclaw doctor --fix` to apply supported repairs, then re-run setup.";
+          "Config invalid. Run `paddy doctor --fix` to apply supported repairs, then re-run setup.";
 
         await expect(
           runNonInteractiveSetup(
@@ -868,7 +868,7 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
       expect(parsed.installDaemon).toBe(true);
       expect(parsed.detail).toContain("1006 abnormal closure");
       expect(parsed.gateway?.wsUrl).toContain("ws://127.0.0.1:");
-      expect(parsed.hints).toContain("Run `openclaw gateway status --deep` for more detail.");
+      expect(parsed.hints).toContain("Run `paddy gateway status --deep` for more detail.");
       expect(parsed.diagnostics?.service?.label).toBe("LaunchAgent");
       expect(parsed.diagnostics?.service?.loaded).toBe(true);
       expect(parsed.diagnostics?.service?.loadState).toEqual({ status: "loaded" });
@@ -916,7 +916,7 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
         expect(parsed.phase).toBe("gateway-health");
         expect(parsed.message).toContain("health check failed");
         expect(parsed.detail).toContain("Gateway credentials rejected.");
-        expect(parsed.hints).toContain("Run `openclaw health` for full diagnostics.");
+        expect(parsed.hints).toContain("Run `paddy health` for full diagnostics.");
       });
     },
     60_000,
@@ -1005,7 +1005,7 @@ describe("onboard (non-interactive): gateway and remote auth", () => {
       expect(parsed.ok).toBe(false);
       expect(parsed.phase).toBe("gateway-health");
       expect(parsed.classification).toBe("service-stopped");
-      expect(parsed.hints).toContain("Fix: run `openclaw --profile work gateway restart`.");
+      expect(parsed.hints).toContain("Fix: run `paddy --profile work gateway restart`.");
     });
   }, 60_000);
 });

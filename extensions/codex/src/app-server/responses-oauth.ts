@@ -38,7 +38,7 @@ export function isCodexResponsesOAuth(prepared: CodexAppServerPreparedAuth | und
 /** The OAuth owner verified this ID token. Decoding here compares identity, never proves it. */
 function fingerprintCodexResponsesOAuth(credential: AuthProfileCredential | undefined) {
   if (!isCodexResponsesOAuthCredential(credential) || credential?.type !== "oauth") {
-    throw new Error("ChatGPT subscription sharing is unavailable; sign in with OpenClaw again.");
+    throw new Error("ChatGPT subscription sharing is unavailable; sign in with Paddy again.");
   }
   const subject = credential.idToken && decodeOpenAICodexJwtPayload(credential.idToken)?.sub;
   if (!credential.issuer || !credential.clientId || typeof subject !== "string" || !subject) {

@@ -234,7 +234,7 @@ export function validateToolPluginProject(params: {
     existingManifest: params.manifest,
   });
   if (!jsonSchemaValuesEqual(params.manifest, expectedManifest)) {
-    errors.push("openclaw.plugin.json generated metadata is stale. Run openclaw plugins build.");
+    errors.push(`openclaw.plugin.json generated metadata is stale. Run paddy plugins build.`);
   }
   if (params.manifest.id !== params.metadata.id) {
     errors.push(
@@ -351,7 +351,7 @@ export async function collectPluginsValidationResult(
   if (browserSource) {
     const declaration = await buildPluginControlUi({ rootDir, source: browserSource, check: true });
     if (!jsonSchemaValuesEqual(manifest.controlUi, declaration)) {
-      errors.push("Control UI manifest is stale. Run openclaw plugins build.");
+      errors.push(`Control UI manifest is stale. Run paddy plugins build.`);
     }
   }
   if (errors.length > 0) {
@@ -498,7 +498,7 @@ function writeToolPluginScaffold(params: { rootDir: string; id: string; name: st
   };
   const idLiteral = JSON.stringify(params.id);
   const nameLiteral = JSON.stringify(params.name);
-  const description = `Add ${params.name} tools to OpenClaw.`;
+  const description = `Add ${params.name} tools to Paddy.`;
   const descriptionLiteral = JSON.stringify(description);
   const indexSource = `import { Type } from "typebox";
 import { defineToolPlugin } from "openclaw/plugin-sdk/tool-plugin";
@@ -531,7 +531,7 @@ describe(${idLiteral}, () => {
 `;
   const readmeSource = `# ${params.name}
 
-Simple OpenClaw tool plugin.
+Simple Paddy tool plugin.
 
 ## Build
 
@@ -565,11 +565,11 @@ function writeProviderPluginScaffold(params: { rootDir: string; id: string; name
   const flagName = `--${params.id}-api-key`;
   const defaultModelId = "example-chat";
   const defaultModelRef = `${params.id}/${defaultModelId}`;
-  const description = `Add ${params.name} models to OpenClaw.`;
+  const description = `Add ${params.name} models to Paddy.`;
   const packageManifest = {
     name: packageName,
     version: "0.1.0",
-    description: `OpenClaw provider plugin for ${params.name}.`,
+    description: `Paddy provider plugin for ${params.name}.`,
     type: "module",
     scripts: {
       build: "tsc -p tsconfig.json",
@@ -765,7 +765,7 @@ describe(${idLiteral}, () => {
 `;
   const readmeSource = `# ${params.name}
 
-OpenClaw provider plugin for ${params.name}.
+Paddy provider plugin for ${params.name}.
 
 ## Commands
 

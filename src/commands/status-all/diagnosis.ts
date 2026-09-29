@@ -43,6 +43,7 @@ import type { NodeOnlyGatewayInfo } from "../status.node-mode.js";
 import { formatTelemetryExporterSummary } from "../telemetry-exporter-summary.js";
 import { formatTimeAgo, redactStatusSecrets } from "./format.js";
 import { readFileTailLines, summarizeLogTail } from "./gateway.js";
+import { PRODUCT_NAME } from "../../brand.js";
 
 type ConfigIssueLike = { path: string; message: string };
 type ConfigSnapshotLike = {
@@ -254,7 +255,7 @@ export async function appendStatusAllDiagnosis(params: {
       const gatewayPidCount = countGatewayListenerPids(params.portUsage);
       if (gatewayPidCount > 1) {
         lines.push(
-          `  ${muted(`${gatewayPidCount} OpenClaw gateway processes appear to be listening on port ${params.port}; stop stale gateway processes before trusting channel health.`)}`,
+          `  ${muted(`${gatewayPidCount} ${PRODUCT_NAME} gateway processes appear to be listening on port ${params.port}; stop stale gateway processes before trusting channel health.`)}`,
         );
       }
       for (const line of formatPortDiagnostics(params.portUsage)) {
@@ -265,7 +266,7 @@ export async function appendStatusAllDiagnosis(params: {
         `  ${muted("Detected dual-stack loopback listeners (127.0.0.1 + ::1) for one gateway process.")}`,
       );
     } else if (expectedGatewayListeners) {
-      lines.push(`  ${muted("Detected OpenClaw Gateway listener on the configured port.")}`);
+      lines.push(`  ${muted(`Detected ${PRODUCT_NAME} Gateway listener on the configured port.`)}`);
     }
   }
 

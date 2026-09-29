@@ -3335,7 +3335,7 @@ describe("doctor health contributions", () => {
         findings: [
           expect.objectContaining({
             checkId: "core/doctor/write-config",
-            message: "Doctor config writes are disabled because OpenClaw is running in Nix mode.",
+            message: "Doctor config writes are disabled because Paddy is running in Nix mode.",
             path: "/tmp/fake-openclaw.json",
             requirement: "mutable-config-write-path",
           }),

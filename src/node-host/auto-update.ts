@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { sleepWithAbort } from "@openclaw/retry";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { createConfigIO } from "../config/io.js";
 import { resolveStateDir } from "../config/paths.js";
@@ -60,7 +61,7 @@ export function startNodeHostAutoUpdate(params: {
     const snapshot = await configIO.readConfigFileSnapshot();
     signal.throwIfAborted();
     if (!snapshot.valid) {
-      throw new Error("Node auto-update deferred: fix the invalid OpenClaw configuration first.");
+      throw new Error(`Node auto-update deferred: fix the invalid ${PRODUCT_NAME} configuration first.`);
     }
     const channel = resolveEffectiveUpdateChannel({
       configChannel: snapshot.config.update?.channel,

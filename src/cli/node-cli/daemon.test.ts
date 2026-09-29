@@ -104,7 +104,7 @@ vi.mock("../../daemon/runtime-hints.js", () => ({
     "Logs: node service log",
     "Restart attempts: node restart log",
   ],
-  buildPlatformServiceStartHints: () => ["openclaw node install", "openclaw node start"],
+  buildPlatformServiceStartHints: () => ["paddy node install", "paddy node start"],
 }));
 
 vi.mock("../../daemon/systemd.js", async () => {
@@ -690,7 +690,7 @@ describe("runNodeDaemonInstall", () => {
         "Systemd lingering is disabled for pi. The node service will stop when you log out. Run: sudo loginctl enable-linger pi";
       const message = "Node service already loaded.";
       expect(mocks.runtime.log.mock.calls).toEqual(
-        json ? [] : [[warning], [message], ["Reinstall with: openclaw node install --force"]],
+        json ? [] : [[warning], [message], ["Reinstall with: paddy node install --force"]],
       );
       expect(mocks.runtime.writeJson.mock.calls.map(([value]) => JSON.stringify(value))).toEqual(
         json
@@ -852,7 +852,7 @@ describe("runNodeDaemonStatus", () => {
     );
     expect(mocks.runtime.exit).toHaveBeenCalledWith(1);
     expect(stdout()).not.toContain("not loaded");
-    expect(stdout()).not.toContain("openclaw node install");
+    expect(stdout()).not.toContain("paddy node install");
   });
 
   it("reports a failed service check as JSON without inventing node status", async () => {

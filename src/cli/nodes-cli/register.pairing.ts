@@ -7,6 +7,7 @@ import { resolveNodePairApprovalScopes } from "../../infra/node-pairing-authz.js
 import { defaultRuntime } from "../../runtime.js";
 import { parsePairingList } from "../../shared/node-list-parse.js";
 import type { PendingRequest } from "../../shared/node-list-types.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { formatConnectionFlagReminder, getNodesTheme, runNodesCommand } from "./cli-utils.js";
 import { renderPendingPairingRequestsTable } from "./pairing-render.js";
@@ -100,7 +101,7 @@ function buildUnknownNodePairRequestIdMessage(
       lines.push("No pending node pairing requests are currently visible.");
     }
   }
-  lines.push(`Run ${formatCliCommand("openclaw nodes pending")} to inspect current requests.`);
+  lines.push(`Run ${formatCliCommand(`${CLI_NAME} nodes pending`)} to inspect current requests.`);
   const connectionReminder = formatConnectionFlagReminder(opts);
   if (connectionReminder) {
     lines.push(connectionReminder);
@@ -220,7 +221,7 @@ export function registerNodesPairingCommands(nodes: Command) {
           const name = normalizeOptionalString(opts.name) ?? "";
           if (!name) {
             throw new Error(
-              `--name must not be empty. Run ${formatCliCommand("openclaw nodes list")} to see paired nodes, then rerun with --name <displayName>.`,
+              `--name must not be empty. Run ${formatCliCommand(`${CLI_NAME} nodes list`)} to see paired nodes, then rerun with --name <displayName>.`,
             );
           }
           const nodeId = await resolveCliNodeId(opts, normalizeOptionalString(opts.node) ?? "");

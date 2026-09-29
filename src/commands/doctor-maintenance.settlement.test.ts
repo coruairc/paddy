@@ -247,7 +247,7 @@ it("does not suggest an unsafe manual stop after a reported write-custody refusa
   const error = await begin().catch((reason: unknown) => reason);
   expect(error).toBeInstanceOf(Error);
   expect(String(error)).toContain(refusal.message);
-  expect(String(error)).not.toContain("Stop the Gateway service and other OpenClaw processes");
+  expect(String(error)).not.toContain("Stop the Gateway service and other Paddy processes");
   expect(boundary.restart).not.toHaveBeenCalled();
 });
 

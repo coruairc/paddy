@@ -9,6 +9,7 @@ import {
 import { restoreTerminalState } from "../../packages/terminal-core/src/restore.js";
 import { isRich, theme } from "../../packages/terminal-core/src/theme.js";
 import type { RuntimeEnv } from "../runtime.js";
+import { PRODUCT_NAME } from "./cli-name.js";
 
 // Mascot and wordmark are separate so they can be tinted independently; the
 // wordmark starts on mascot row 3, keeping the claws above the text line.
@@ -88,7 +89,8 @@ function composeFrame(params: {
 
 function plainTitleLine(): string {
   const icon = decorativeEmoji("🦞");
-  return supportsDecorativeEmoji() && icon ? `${icon} OPENCLAW ${icon}` : "OPENCLAW";
+  const title = PRODUCT_NAME.toUpperCase();
+  return supportsDecorativeEmoji() && icon ? `${icon} ${title} ${icon}` : title;
 }
 
 const defaultSleep = (ms: number) =>

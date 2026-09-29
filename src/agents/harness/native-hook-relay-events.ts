@@ -1,4 +1,5 @@
 import { stableStringify } from "@openclaw/normalization-core";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   getAgentToolResultMiddlewareMatcherScope,
   listAgentToolResultMiddlewares,
@@ -198,7 +199,7 @@ async function runNativeHookRelayPreToolUse(
   ) {
     // Native execution must not retain custody of rewritten inputs it will not use.
     return params.adapter.renderPreToolUseBlockResponse(
-      "OpenClaw tool policy rewrote Codex app-server approval params; refusing original request.",
+      `${PRODUCT_NAME} tool policy rewrote Codex app-server approval params; refusing original request.`,
     );
   }
   try {

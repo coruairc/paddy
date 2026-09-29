@@ -77,7 +77,7 @@ export async function doctorCommand() {
     throw new Error('Update Doctor unexpectedly allowed gateway activation');
   }
   ${repairDeadline ? `if ((await fs.readFile(${JSON.stringify(path.join(process.env.OPENCLAW_STATE_DIR!, "managed-service-state"))}, 'utf8')) !== 'stopped') throw new Error('Doctor ran before the parent parked its service');` : ""}
-  intro('OpenClaw doctor');
+  intro('Paddy doctor');
   note('Doctor panel diagnostic', 'Repair');
   if (!process.argv.includes('--no-workspace-suggestions')) note('Doctor workspace diagnostic', 'Workspace');
   console.log('Doctor console diagnostic');
@@ -99,7 +99,7 @@ export async function doctorCommand() {
   ${
     scenario === "doctor-warning"
       ? `await fs.writeFile(process.env.OPENCLAW_UPDATE_POST_INSTALL_DOCTOR_RESULT_PATH,
-        JSON.stringify({status:'ok', warnings:['Optional probe failed; run openclaw doctor after updating.']}));`
+        JSON.stringify({status:'ok', warnings:['Optional probe failed; run paddy doctor after updating.']}));`
       : ""
   }
 }

@@ -12,6 +12,7 @@ import {
   hasCommandProcessCleanupError,
 } from "../../process/exec-result.js";
 import { defaultRuntime } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import {
   createGatewayRestartDeadline,
   GatewayRestartDeadlineError,
@@ -88,7 +89,7 @@ export async function verifyPreviousGatewayForUpdate(params: {
     }
     lastProgress = { stage, at: now };
     const outcome = warning
-      ? `Ended (${stage}); continuing with readiness unverified; automatic rollback cannot restart it. Run openclaw gateway status --deep --require-rpc to inspect it.`
+      ? `Ended (${stage}); continuing with readiness unverified; automatic rollback cannot restart it. Run ${CLI_NAME} gateway status --deep --require-rpc to inspect it.`
       : `Remaining ${Math.ceil(deadline.remainingMs())}ms.`;
     const detail = `Previous-Gateway readiness verification: service, listener identity, version/build, health RPC and /readyz. Budget ${timeoutMs}ms (${derivation}). ${outcome} Last observation: ${redactSupportDiagnosticLine(reason, { env, stateDir: resolveStateDir(env) })}`;
     const fact: UpdateRunStep = {

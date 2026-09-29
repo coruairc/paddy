@@ -30,6 +30,7 @@ import {
   inspectManagedGatewayServiceBeforeUpdate,
   observedSystemdManagerUid,
 } from "./update-command-service-plan.js";
+import { CLI_NAME } from "../../brand.js";
 
 function matchesStoppedService(
   before: Pick<PreManagedServiceStop, "serviceEnv" | "serviceUpdateVerdict" | "serviceManagerUid">,
@@ -289,7 +290,7 @@ export async function revalidateManagedGatewayServiceAfterUpdate(params: {
       inspection.kind === "unavailable"
         ? params.state.runtime?.inspectionFailure?.timeoutMs !== undefined
           ? inspection.message
-          : "Gateway service ownership could not be verified because inspection is unavailable. Run `openclaw gateway status --deep` and retry."
+          : `Gateway service ownership could not be verified because inspection is unavailable. Run \`${CLI_NAME} gateway status --deep\` and retry.`
         : "Gateway service ownership or manager identity changed; inspect it before restarting manually.",
       undefined,
       inspection.kind === "unavailable" ? inspection.inspectionReason : undefined,

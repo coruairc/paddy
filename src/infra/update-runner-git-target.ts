@@ -27,6 +27,7 @@ import { gitCleanCheckArgs } from "./update-runner-git-commands.js";
 import { runGitCandidatePreflight } from "./update-runner-git-preflight.js";
 import type { CommandRunner, RunStepOptions, UpdateRunnerOptions } from "./update-runner-types.js";
 import type { UpdateStepResult } from "./update-step-result.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const UNVERIFIED_GIT_CORRUPTION =
   /(?:in the commit graph file but not in the object database|probably due to repo corruption)/iu;
@@ -87,7 +88,7 @@ export async function classifyPartialCloneGitFailure(params: {
   return {
     ...params.result,
     stderr:
-      "Git reported an object-database inconsistency, but OpenClaw did not verify repository " +
+      `Git reported an object-database inconsistency, but ${PRODUCT_NAME} did not verify repository ` +
       "corruption with git fsck. Retry the update; if it recurs, inspect the repository with " +
       "git fsck before attempting repair.",
   };

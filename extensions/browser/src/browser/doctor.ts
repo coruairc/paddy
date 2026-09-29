@@ -86,13 +86,13 @@ export function buildBrowserDoctorReport(params: {
       label: "Chrome extension relay",
       status: status.running ? "pass" : "fail",
       summary: status.running
-        ? "OpenClaw Chrome extension is connected"
-        : "OpenClaw Chrome extension is not connected",
+        ? "Paddy Chrome extension is connected"
+        : "Paddy Chrome extension is not connected",
       ...(status.running
         ? {}
         : {
             fixHint:
-              "Install the OpenClaw Chrome extension (openclaw browser extension path), run openclaw browser extension pair, and paste the pairing string into the extension popup.",
+              "Install the Paddy Chrome extension (paddy browser extension path), run paddy browser extension pair, and paste the pairing string into the extension popup.",
           }),
     });
 
@@ -119,7 +119,7 @@ export function buildBrowserDoctorReport(params: {
       ...(mismatch
         ? {
             fixHint:
-              "Reload the OpenClaw extension from chrome://extensions. If the versions still differ, fully quit and reopen Chrome.",
+              "Reload the Paddy extension from chrome://extensions. If the versions still differ, fully quit and reopen Chrome.",
           }
         : {}),
     });
@@ -183,7 +183,7 @@ export function buildBrowserDoctorReport(params: {
       ...(status.cdpHttp || !status.running
         ? {}
         : {
-            fixHint: "Run openclaw browser start or inspect browser.cdpUrl/CDP port reachability.",
+            fixHint: "Run paddy browser start or inspect browser.cdpUrl/CDP port reachability.",
           }),
     });
 

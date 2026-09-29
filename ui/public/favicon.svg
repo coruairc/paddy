@@ -1,54 +1,81 @@
 <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="lobster-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ff4d4d"/>
-      <stop offset="100%" stop-color="#991b1b"/>
+    <linearGradient id="paddy-suit" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#27a34f"/>
+      <stop offset="100%" stop-color="#12562e"/>
+    </linearGradient>
+    <linearGradient id="paddy-beard" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f09740"/>
+      <stop offset="100%" stop-color="#b25d1c"/>
+    </linearGradient>
+    <linearGradient id="paddy-skin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8d5ad"/>
+      <stop offset="100%" stop-color="#e2b184"/>
+    </linearGradient>
+    <linearGradient id="paddy-cap" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7a6249"/>
+      <stop offset="100%" stop-color="#4a3a2b"/>
     </linearGradient>
   </defs>
-  <!-- SMIL, not CSS: Chromium/Safari only run declarative SMIL inside <img>-loaded
-       SVGs, and every app surface loads this file via <img src>. Mirrors the
-       openclaw.ai hero mascot keyframes (float 4s, wiggle 2s, blink 3s, snap 4s). -->
+  <!-- Paddy is the product mascot. This file is the single source of the mark:
+       every app surface loads it via <img src>, including the shared native
+       plugin fallback identity (see extensions/ICON_SOURCES.md), so replacing
+       this file re-brands all bundled fallback icons at once.
+
+       SMIL, not CSS: Chromium/Safari only run declarative SMIL inside
+       <img>-loaded SVGs. Keeps the original mascot's animation vocabulary —
+       float 4s, accent-sway 2s, blink 3s — so every surface that already
+       expects those keyframes behaves identically with the new mark. -->
   <g>
     <animateTransform attributeName="transform" type="translate" additive="sum"
       values="0 0; 0 -5; 0 0" keyTimes="0; 0.5; 1" dur="4s" repeatCount="indefinite"
       calcMode="spline" keySplines="0.42 0 0.58 1; 0.42 0 0.58 1"/>
-    <!-- Body -->
-    <path d="M60 10 C30 10 15 35 15 55 C15 75 30 95 45 100 L45 110 L55 110 L55 100 C55 100 60 102 65 100 L65 110 L75 110 L75 100 C90 95 105 75 105 55 C105 35 90 10 60 10Z" fill="url(#lobster-gradient)"/>
-    <!-- Left Claw (hinges on its body-facing edge) -->
-    <path d="M20 45 C5 40 0 50 5 60 C10 70 20 65 25 55 C28 48 25 45 20 45Z" fill="url(#lobster-gradient)">
-      <animateTransform attributeName="transform" type="rotate"
-        values="0 26 53; 0 26 53; -8 26 53; 0 26 53; 0 26 53" keyTimes="0; 0.85; 0.9; 0.95; 1"
-        dur="4s" repeatCount="indefinite"
-        calcMode="spline" keySplines="0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1"/>
-    </path>
-    <!-- Right Claw (snaps 0.2s after the left) -->
-    <path d="M100 45 C115 40 120 50 115 60 C110 70 100 65 95 55 C92 48 95 45 100 45Z" fill="url(#lobster-gradient)">
-      <animateTransform attributeName="transform" type="rotate"
-        values="0 94 53; 0 94 53; -8 94 53; 0 94 53; 0 94 53" keyTimes="0; 0.85; 0.9; 0.95; 1"
-        dur="4s" begin="0.2s" repeatCount="indefinite"
-        calcMode="spline" keySplines="0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1"/>
-    </path>
-    <!-- Antenna -->
-    <path d="M45 15 Q35 5 30 8" stroke="#ff4d4d" stroke-width="3" stroke-linecap="round">
-      <animateTransform attributeName="transform" type="rotate"
-        values="0 37.5 11; -3 37.5 11; 3 37.5 11; 0 37.5 11" keyTimes="0; 0.25; 0.75; 1"
-        dur="2s" repeatCount="indefinite"
-        calcMode="spline" keySplines="0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1"/>
-    </path>
-    <path d="M75 15 Q85 5 90 8" stroke="#ff4d4d" stroke-width="3" stroke-linecap="round">
-      <animateTransform attributeName="transform" type="rotate"
-        values="0 82.5 11; -3 82.5 11; 3 82.5 11; 0 82.5 11" keyTimes="0; 0.25; 0.75; 1"
-        dur="2s" repeatCount="indefinite"
-        calcMode="spline" keySplines="0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1"/>
-    </path>
+
+    <!-- Shoulders / suit -->
+    <path d="M18 117 C20 99 38 91 60 91 C82 91 100 99 102 117 Z" fill="url(#paddy-suit)"/>
+
+    <!-- Beard: deliberately wider than the face so it frames it at favicon size -->
+    <path d="M60 40 C33 40 26 70 30 92 C33 106 45 115 60 115 C75 115 87 106 90 92 C94 70 87 40 60 40 Z"
+      fill="url(#paddy-beard)"/>
+
+    <!-- Ears -->
+    <circle cx="40" cy="53" r="4.5" fill="#e2b184"/>
+    <circle cx="80" cy="53" r="4.5" fill="#e2b184"/>
+
+    <!-- Face -->
+    <ellipse cx="60" cy="49" rx="19" ry="18" fill="url(#paddy-skin)"/>
+
+    <!-- Flat cap, with the brim jutting forward -->
+    <path d="M32 40 C13 38 9 49 26 51 L44 46 Z" fill="#3d2f22"/>
+    <path d="M23 38 C23 19 40 9 60 9 C80 9 97 19 97 38 C97 43 92 45 85 45 L35 45 C28 45 23 43 23 38 Z"
+      fill="url(#paddy-cap)"/>
+    <path d="M26 37 Q60 29 94 37" stroke="#33271c" stroke-width="3" stroke-linecap="round" fill="none"/>
+
+    <!-- Nose -->
+    <ellipse cx="60" cy="55" rx="4.4" ry="3.6" fill="#e0a878"/>
+
     <!-- Eyes -->
-    <circle cx="45" cy="35" r="6" fill="#050810"/>
-    <circle cx="75" cy="35" r="6" fill="#050810"/>
-    <circle cx="46" cy="34" r="2.5" fill="#00e5cc">
-      <animate attributeName="opacity" values="1; 1; 0.3; 1" keyTimes="0; 0.9; 0.95; 1" dur="3s" repeatCount="indefinite"/>
+    <circle cx="51" cy="48" r="4" fill="#101c14"/>
+    <circle cx="69" cy="48" r="4" fill="#101c14"/>
+    <circle cx="52" cy="47" r="1.6" fill="#7fe0a0">
+      <animate attributeName="opacity" values="1; 1; 0.3; 1" keyTimes="0; 0.9; 0.95; 1"
+        dur="3s" repeatCount="indefinite"/>
     </circle>
-    <circle cx="76" cy="34" r="2.5" fill="#00e5cc">
-      <animate attributeName="opacity" values="1; 1; 0.3; 1" keyTimes="0; 0.9; 0.95; 1" dur="3s" repeatCount="indefinite"/>
+    <circle cx="70" cy="47" r="1.6" fill="#7fe0a0">
+      <animate attributeName="opacity" values="1; 1; 0.3; 1" keyTimes="0; 0.9; 0.95; 1"
+        dur="3s" repeatCount="indefinite"/>
     </circle>
+
+    <!-- Shamrock lapel badge -->
+    <g>
+      <animateTransform attributeName="transform" type="rotate"
+        values="0 86 104; -7 86 104; 7 86 104; 0 86 104" keyTimes="0; 0.25; 0.75; 1"
+        dur="2s" repeatCount="indefinite"
+        calcMode="spline" keySplines="0.42 0 0.58 1; 0.42 0 0.58 1; 0.42 0 0.58 1"/>
+      <circle cx="86" cy="100" r="3" fill="#4ade80"/>
+      <circle cx="82" cy="105.2" r="3" fill="#4ade80"/>
+      <circle cx="90" cy="105.2" r="3" fill="#4ade80"/>
+      <path d="M86 107.2 L86 112" stroke="#2e9c4f" stroke-width="1.7" stroke-linecap="round"/>
+    </g>
   </g>
 </svg>

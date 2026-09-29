@@ -170,7 +170,7 @@ export const GatewayStateOwnerContentionError = resolveGlobalSingleton(
         public override readonly cause?: unknown,
       ) {
         super(
-          `OpenClaw state database is busy at ${databasePath}. Wait for the other OpenClaw process to finish, then retry. If it persists, run \`openclaw gateway status\` and check for other OpenClaw processes using the same state directory. A running Gateway can hold this ownership until it stops; stop it through its service manager or original terminal before retrying.`,
+          `Paddy state database is busy at ${databasePath}. Wait for the other Paddy process to finish, then retry. If it persists, run \`paddy gateway status\` and check for other Paddy processes using the same state directory. A running Gateway can hold this ownership until it stops; stop it through its service manager or original terminal before retrying.`,
         );
         this.name = "GatewayStateOwnerContentionError";
       }

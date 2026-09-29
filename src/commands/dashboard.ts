@@ -1,4 +1,5 @@
 // Implements `openclaw dashboard` URL resolution, readiness check, clipboard, and browser launch.
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { readConfigFileSnapshot } from "../config/config.js";
 import { copyToClipboard } from "../infra/clipboard.js";
 import { isRemoteEnvironment } from "../infra/remote-env.js";
@@ -30,7 +31,7 @@ async function resolveDashboardTarget() {
   const snapshot = await readConfigFileSnapshot();
   if (snapshot.exists && !snapshot.valid) {
     throw new Error(
-      `OpenClaw config is invalid: ${snapshot.path}. Run \`openclaw doctor --fix\` or \`openclaw config validate\`.`,
+      `${PRODUCT_NAME} config is invalid: ${snapshot.path}. Run \`${CLI_NAME} doctor --fix\` or \`${CLI_NAME} config validate\`.`,
     );
   }
   return await resolveControlUiHandoffTarget({
@@ -233,7 +234,7 @@ export async function dashboardCommand(
     options.noOpen === true && (fallbackToManualAuth || fallbackToJsonHandoff);
 
   if (opened) {
-    runtime.log("Opened in your browser. Keep that tab to control OpenClaw.");
+    runtime.log(`Opened in your browser. Keep that tab to control ${PRODUCT_NAME}.`);
   } else if (hint && !suppressNoOpenHint) {
     runtime.log(hint);
   }

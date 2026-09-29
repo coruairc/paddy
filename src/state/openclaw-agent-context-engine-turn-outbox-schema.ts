@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { extractSqliteTableSchema } from "../infra/sqlite-schema-sql.js";
 import { runSqliteImmediateTransactionSync } from "../infra/sqlite-transaction.js";
 import { OPENCLAW_AGENT_SCHEMA_SQL } from "./openclaw-agent-schema.js";
@@ -26,7 +27,7 @@ export function ensureContextEngineTurnOutboxSchema(db: DatabaseSync): void {
       extractSqliteTableSchema(OPENCLAW_AGENT_SCHEMA_SQL, CONTEXT_ENGINE_TURN_OUTBOX_TABLE, {
         endMarker: "CREATE TABLE IF NOT EXISTS cache_entries (",
         includeEndMarker: false,
-        errorMessage: "OpenClaw context-engine turn outbox schema markers are missing.",
+        errorMessage: `${PRODUCT_NAME} context-engine turn outbox schema markers are missing.`,
       }),
     );
   };

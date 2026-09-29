@@ -15,6 +15,7 @@ import {
   type DoctorSqliteCompactSnapshot,
 } from "./doctor-sqlite-compact.js";
 import { withDoctorSqliteMaintenanceLock } from "./doctor-sqlite-maintenance-lock.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 type DoctorStateSqliteCompactReport =
   | {
@@ -59,7 +60,7 @@ export async function runDoctorStateSqliteCompact(
     };
   }
   if (!stat.isFile()) {
-    throw new Error(`Canonical OpenClaw state database is not a regular file: ${sqlitePath}`);
+    throw new Error(`Canonical ${PRODUCT_NAME} state database is not a regular file: ${sqlitePath}`);
   }
   const withMaintenanceLock = deps.withMaintenanceLock ?? withDoctorSqliteMaintenanceLock;
   return await withMaintenanceLock({

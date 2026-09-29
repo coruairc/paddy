@@ -116,7 +116,7 @@ describe("Doctor source update delegation", () => {
     mocks.confirm.mockResolvedValue(false);
     await expect(offer()).resolves.toEqual({ updated: false });
     expect(mocks.confirm).toHaveBeenCalledWith({
-      message: "Update OpenClaw from git before running doctor?",
+      message: "Update Paddy from git before running doctor?",
       initialValue: true,
     });
     expect(mocks.updateCommand).not.toHaveBeenCalled();
@@ -202,7 +202,7 @@ describe("Doctor source update delegation", () => {
         termination: "exit",
       });
       await expect(offer()).resolves.toEqual({ updated: false });
-      expect(mocks.note).toHaveBeenCalledWith(expect.stringContaining("openclaw update"), "Update");
+      expect(mocks.note).toHaveBeenCalledWith(expect.stringContaining("paddy update"), "Update");
       expect(mocks.confirm).not.toHaveBeenCalled();
       expect(mocks.updateCommand).not.toHaveBeenCalled();
     },

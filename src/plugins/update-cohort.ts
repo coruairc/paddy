@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { UpdateChannel } from "../infra/update-channels.js";
 import { resolveSourceCheckoutBundledPluginIds } from "./bundled-sources.js";
@@ -100,7 +101,7 @@ async function convergePluginReleaseCohortWithLease(
       const shadowed = shadowedInstallRecord
         ? ` It shadows the ${shadowedInstallRecord.source} install ${shadowedInstallRecord.spec ?? plugin.pluginId}${shadowedInstallRecord.installPath ? ` at ${shadowedInstallRecord.installPath}` : ""}.`
         : "";
-      const guidance = `This copy was not updated; verify it against ${params.coreVersion ?? "the updated OpenClaw version"} or remove it from plugins.load.paths.`;
+      const guidance = `This copy was not updated; verify it against ${params.coreVersion ?? `the updated ${PRODUCT_NAME} version`} or remove it from plugins.load.paths.`;
       const message = `Plugin "${plugin.pluginId}" is operator-managed by plugins.load.paths. ${guidance} Source: ${rootDir}.${shadowed}`;
       operatorManaged.push({
         pluginId: plugin.pluginId,

@@ -924,7 +924,7 @@ describe("native Codex thread tool", () => {
           thread_id: "other-thread",
           confirm: true,
         }),
-      ).rejects.toThrow("owned by another OpenClaw session");
+      ).rejects.toThrow("owned by another Paddy session");
 
       expect(request).toHaveBeenCalledOnce();
       expect(request).not.toHaveBeenCalledWith(
@@ -973,7 +973,7 @@ describe("native Codex thread tool", () => {
             thread_id: "parent-thread",
             confirm: true,
           }),
-        ).rejects.toThrow("spawned descendant is owned by an OpenClaw session");
+        ).rejects.toThrow("spawned descendant is owned by a Paddy session");
 
         expect(request).toHaveBeenCalledWith(
           expect.anything(),

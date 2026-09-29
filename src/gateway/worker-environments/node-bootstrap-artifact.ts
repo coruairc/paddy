@@ -21,6 +21,7 @@ import {
   PACKAGE_LIFECYCLE_PENDING_RELATIVE_PATH,
 } from "../../../scripts/lib/package-lifecycle-marker.mjs";
 import { validateBundledPackageDependencyAlignment } from "../../../scripts/package-source-dependencies.mjs";
+import { PRODUCT_NAME } from "../../brand.js";
 import { racePromiseWithAbortSignal } from "../../infra/abort-signal.js";
 import { sha256File } from "../../infra/directory-durability.js";
 import { walkDirectory } from "../../infra/fs-safe.js";
@@ -243,7 +244,7 @@ async function prepareNodeBootstrapArtifact(
   const packageRoot = await fs.realpath(options.packageRoot);
   const sourcePackage = await readPackageManifest(packageRoot);
   if (sourcePackage.name !== "openclaw") {
-    throw new Error("Node bootstrap requires the running OpenClaw package root");
+    throw new Error(`Node bootstrap requires the running ${PRODUCT_NAME} package root`);
   }
   const buildInfoPath = path.join(packageRoot, "dist", "build-info.json");
   const buildInfo = await fs.readFile(buildInfoPath, "utf8").catch((cause: unknown) => {

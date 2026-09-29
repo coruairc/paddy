@@ -3,6 +3,7 @@ import {
   normalizeOptionalString,
   normalizeStringifiedOptionalString,
 } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.js";
 import { isValidEnvSecretRefId, type SecretRef } from "../config/types.secrets.js";
 import { formatErrorMessage } from "../infra/errors.js";
@@ -139,7 +140,7 @@ async function promptEnvSecretRefForSetup(params: {
   };
   await params.prompter.note(
     params.copy?.envValidatedMessage?.(envVar) ??
-      `Validated environment variable ${envVar}. OpenClaw will store a reference, not the key value.`,
+      `Validated environment variable ${envVar}. ${PRODUCT_NAME} will store a reference, not the key value.`,
     "Reference validated",
   );
   return { ref, resolvedValue };
@@ -265,7 +266,7 @@ async function promptProviderSecretRefForSetup(params: {
     });
     await params.prompter.note(
       params.copy?.providerValidatedMessage?.(selectedProvider, id, providerEntry.source) ??
-        `Validated ${providerEntry.source} reference ${selectedProvider}:${id}. OpenClaw will store a reference, not the key value.`,
+        `Validated ${providerEntry.source} reference ${selectedProvider}:${id}. ${PRODUCT_NAME} will store a reference, not the key value.`,
       "Reference validated",
     );
     return { ref, resolvedValue };
@@ -307,7 +308,7 @@ export async function promptSecretRefForSetup(params: {
         },
         {
           value: "store",
-          label: "OpenClaw secret store",
+          label: `${PRODUCT_NAME} secret store`,
           hint: "Reference a team-scoped value in the shared state database",
         },
         {
@@ -352,7 +353,7 @@ export async function promptSecretRefForSetup(params: {
         env: params.env ?? process.env,
       });
       await params.prompter.note(
-        `Validated store reference ${ref.provider}:${id}. OpenClaw will store a reference, not the value.`,
+        `Validated store reference ${ref.provider}:${id}. ${PRODUCT_NAME} will store a reference, not the value.`,
         "Reference validated",
       );
       return { ref, resolvedValue };

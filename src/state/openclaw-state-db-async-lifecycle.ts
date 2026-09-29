@@ -10,6 +10,7 @@ import {
 } from "../infra/sqlite-worker-identity.js";
 import { createDeferredCore } from "../shared/deferred.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const STATE_DATABASE_READ_ADMISSION_INVALIDATED = "STATE_DATABASE_READ_ADMISSION_INVALIDATED";
 
@@ -426,7 +427,7 @@ export function createOpenClawStateDatabaseAsyncLifecycle() {
   const assertOpen = (record: IdentityRecord) => {
     if (isSealed(record)) {
       throw new StateDatabaseReadAdmissionInvalidatedError(
-        "OpenClaw state database read admission is closed",
+        `${PRODUCT_NAME} state database read admission is closed`,
       );
     }
   };
@@ -568,7 +569,7 @@ export function createOpenClawStateDatabaseAsyncLifecycle() {
           record.admissions.get(databasePath) !== admission
         ) {
           throw new StateDatabaseReadAdmissionInvalidatedError(
-            "OpenClaw state database read admission changed",
+            `${PRODUCT_NAME} state database read admission changed`,
           );
         }
       },
@@ -716,7 +717,7 @@ export function createOpenClawStateDatabaseAsyncLifecycle() {
               }),
             );
           }
-          throwSqliteLifecycleErrors(errors, "OpenClaw state resource drainage failed");
+          throwSqliteLifecycleErrors(errors, `${PRODUCT_NAME} state resource drainage failed`);
           const retired = retireNative(record?.identity);
           attempts.delete(record);
           seals.delete(current.seal);

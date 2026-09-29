@@ -104,7 +104,7 @@ describe("FeishuConfigSchema webhook validation", () => {
       const result = FeishuConfigSchema.safeParse(input);
       expectSchemaIssue(result, issuePath);
       if (!result.success) {
-        expect(result.error.issues[0]?.message).toContain("openclaw doctor --fix");
+        expect(result.error.issues[0]?.message).toContain("paddy doctor --fix");
       }
     }
   });

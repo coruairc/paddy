@@ -197,7 +197,7 @@ it.concurrent.for(["current", "historical-v1", "lost-journal"] as const)(
         expect(first.code, output).toBe(1);
         expect(output).toContain("agent-deletion-journal");
         expect(output).toContain("held back");
-        expect(output).toContain("openclaw agents add");
+        expect(output).toContain("paddy agents add");
         expect(output).toContain("--non-interactive");
         for (const [index, pathname] of databasePaths.entries()) {
           expect(output).toContain(pathname);

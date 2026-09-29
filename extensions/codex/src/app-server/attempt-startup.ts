@@ -393,7 +393,7 @@ export async function startCodexAttemptThread(params: {
               }
               if (sandboxEnvironmentRequired && !startupSandboxEnvironment) {
                 throw new Error(
-                  "Codex app-server did not register an OpenClaw sandbox exec-server environment.",
+                  "Codex app-server did not register a Paddy sandbox exec-server environment.",
                 );
               }
             } catch (error) {

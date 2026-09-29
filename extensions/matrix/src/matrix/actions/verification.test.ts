@@ -640,7 +640,7 @@ describe("matrix verification actions", () => {
     expect(crypto.startVerification).not.toHaveBeenCalled();
     expect(crypto.cancelVerification).toHaveBeenCalledWith("verification-1", {
       code: "m.user",
-      reason: "OpenClaw self-verification did not complete",
+      reason: "Paddy self-verification did not complete",
     });
   });
 
@@ -764,7 +764,7 @@ describe("matrix verification actions", () => {
 
     expect(crypto.cancelVerification).toHaveBeenCalledWith("verification-1", {
       code: "m.user",
-      reason: "OpenClaw self-verification did not complete",
+      reason: "Paddy self-verification did not complete",
     });
   });
 
@@ -792,7 +792,7 @@ describe("matrix verification actions", () => {
     expect(crypto.listVerifications).toHaveBeenCalledTimes(1);
     expect(crypto.cancelVerification).toHaveBeenCalledWith("verification-1", {
       code: "m.user",
-      reason: "OpenClaw self-verification did not complete",
+      reason: "Paddy self-verification did not complete",
     });
   });
 
@@ -825,7 +825,7 @@ describe("matrix verification actions", () => {
 
     expect(crypto.cancelVerification).toHaveBeenCalledWith("verification-1", {
       code: "m.user",
-      reason: "OpenClaw self-verification did not complete",
+      reason: "Paddy self-verification did not complete",
     });
   });
 

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import { sanitizeForLog as safeLogValue } from "../../packages/terminal-core/src/ansi.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { openRootFile } from "../infra/boundary-file-read.js";
 import { safeRealpathSync } from "../infra/boundary-path.js";
@@ -124,7 +125,7 @@ export async function prepareInternalHooks(
       if (unknownEvents.length > 0) {
         log.warn(
           `Hook '${safeLogValue(entry.hook.name)}' subscribes to event${unknownEvents.length === 1 ? "" : "s"} ` +
-            `${unknownEvents.map((event) => safeLogValue(event)).join(", ")} not emitted by OpenClaw core — ` +
+            `${unknownEvents.map((event) => safeLogValue(event)).join(", ")} not emitted by ${PRODUCT_NAME} core — ` +
             `likely a typo; unless a plugin emits it, the hook never fires. ` +
             `Known events: https://docs.openclaw.ai/automation/hooks`,
         );

@@ -1,10 +1,10 @@
 {
-  "name": "OpenClaw Control",
-  "short_name": "OpenClaw",
-  "description": "Multi-channel AI gateway control panel",
+  "name": "Paddy Control",
+  "short_name": "Paddy",
+  "description": "Paddy control panel for your multi-channel AI gateway",
   "start_url": "./",
   "display": "standalone",
-  "theme_color": "#0a0a0a",
+  "theme_color": "#0d2116",
   "background_color": "#0a0a0a",
   "icons": [
     {

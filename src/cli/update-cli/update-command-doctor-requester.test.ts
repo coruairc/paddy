@@ -180,7 +180,7 @@ it.each([
       } else {
         expect((await update)?.result).toMatchObject({
           status: "ok",
-          steps: [{ name: "openclaw doctor", exitCode: 0 }],
+          steps: [{ name: "paddy doctor", exitCode: 0 }],
         });
         expect(await fs.readFile(marker, "utf8")).toBe("owned");
         expect(requesterAuthority.isCurrent).toThrow(/newer schema version/);

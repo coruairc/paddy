@@ -985,7 +985,7 @@ class CodexAppServerVersionError extends Error {
   constructor(detectedVersion: string | undefined) {
     const detected = detectedVersion
       ? `detected ${detectedVersion}`
-      : "OpenClaw could not determine the running Codex version";
+      : "Paddy could not determine the running Codex version";
     super(
       `Codex app-server ${MIN_SUPPORTED_CODEX_APP_SERVER_VERSION} or newer is required, but ${detected}. Update the configured Codex app-server binary, or remove custom command overrides to use the managed binary.`,
     );
@@ -1005,7 +1005,7 @@ function assertSupportedCodexAppServerVersion(response: CodexInitializeResponse)
   }
   if (detected.compare(CODEX_APP_SERVER_VERSION) > 0) {
     embeddedAgentLog.warn(
-      "codex app-server is newer than OpenClaw's managed runtime; continuing with normal startup validation",
+      "codex app-server is newer than Paddy's managed runtime; continuing with normal startup validation",
       {
         detectedVersion,
         validatedVersion: CODEX_APP_SERVER_VERSION,

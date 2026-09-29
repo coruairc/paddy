@@ -1,5 +1,6 @@
 // Read-only diagnostics for Windows LAN Gateway reachability.
 import { safeParseJson } from "@openclaw/normalization-core";
+import { PRODUCT_NAME } from "../brand.js";
 import { runCommandWithTimeout as defaultRunCommandWithTimeout } from "../process/exec.js";
 import { getWindowsPowerShellExePath } from "./windows-install-roots.js";
 
@@ -597,7 +598,7 @@ export async function inspectWindowsGatewayFirewall(
   );
   if (quickJson === null) {
     return firewallInspectionFailed(
-      "OpenClaw could not quickly inspect Windows Firewall LAN Gateway policy.",
+      `${PRODUCT_NAME} could not quickly inspect Windows Firewall LAN Gateway policy.`,
     );
   }
   const quickPayload = safeParseJson(quickJson.trim()) as QuickFirewallPayload | null;
@@ -608,7 +609,7 @@ export async function inspectWindowsGatewayFirewall(
     !quickPayload.State
   ) {
     return firewallInspectionFailed(
-      "OpenClaw could not parse Windows Firewall LAN Gateway policy.",
+      `${PRODUCT_NAME} could not parse Windows Firewall LAN Gateway policy.`,
     );
   }
   const state = quickPayload.State as FirewallStatePayload;

@@ -2,6 +2,7 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 import type { DatabaseSync } from "node:sqlite";
 import { isMainThread, threadId } from "node:worker_threads";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   disposeNodeSqliteDependents,
   registerNodeSqliteDisposeCallback,
@@ -215,7 +216,7 @@ export function startAgentDatabaseOpenTiming(
     }
     // Registration is the final checkpoint; intermediate phases never emit a partial summary.
     if (phase === "registration" && elapsedMs >= OPENCLAW_AGENT_DB_SLOW_OPEN_MS) {
-      agentDbLog.warn("slow OpenClaw agent database open", {
+      agentDbLog.warn(`slow ${PRODUCT_NAME} agent database open`, {
         agentId,
         elapsedMs,
         path: pathname,

@@ -7,6 +7,7 @@ import {
   normalizeOptionalLowercaseString,
 } from "@openclaw/normalization-core/string-coerce";
 import type { EventFrame } from "../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { GatewayClient } from "../gateway/client.js";
 import type { ChannelApprovalKind } from "../infra/approval-types.js";
@@ -137,7 +138,7 @@ export class OpenClawChannelBridge {
       preauthHandshakeTimeoutMs: bootstrap.preauthHandshakeTimeoutMs,
       tlsFingerprint: bootstrap.tlsFingerprint,
       clientName: GATEWAY_CLIENT_NAMES.CLI,
-      clientDisplayName: "OpenClaw MCP",
+      clientDisplayName: `${PRODUCT_NAME} MCP`,
       clientVersion: VERSION,
       mode: GATEWAY_CLIENT_MODES.CLI,
       caps: [GATEWAY_CLIENT_CAPS.APPROVALS],

@@ -112,7 +112,7 @@ describe("ONNX decision contract", () => {
     await expect(
       createOnnxProvider({ classify }, warn).evaluate(batch, context()),
     ).resolves.toEqual({ status: "unavailable", reason: "transport" });
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining(`openclaw onnx verify ${model}`));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining(`paddy onnx verify ${model}`));
   });
 
   it.for([[], [{ logits: [Number.NaN, 1], inputTokens: 1 }]])(

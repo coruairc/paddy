@@ -4,6 +4,7 @@ import {
   WORKER_PROTOCOL_MAX_FEATURES,
   WORKER_PROTOCOL_MAX_IDENTIFIER_LENGTH,
 } from "../../../packages/gateway-protocol/src/schema/worker-admission.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type {
   WorkerDesktopEndpoint,
   WorkerSshEndpoint,
@@ -81,7 +82,7 @@ export function normalizeBootstrapReceipt(value: {
     bundleHash,
     openclawVersion: requireWorkerEnvironmentString(
       value.openclawVersion,
-      "bootstrap OpenClaw version",
+      `bootstrap ${PRODUCT_NAME} version`,
     ),
     protocolFeatures: normalizeSortedUniqueTrimmedStringList(value.protocolFeatures),
     ...(value.installKind ? { installKind: value.installKind } : {}),

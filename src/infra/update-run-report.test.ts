@@ -134,7 +134,7 @@ describe("update run report", () => {
       const before = structuredClone(record);
       const report = renderUpdateRunReport(record);
 
-      expect(report.headline).toBe("ℹ️ OpenClaw abandoned update reconciled.");
+      expect(report.headline).toBe("ℹ️ Paddy abandoned update reconciled.");
       expect(report.lines).toContain("Failed: reconcile:abandoned — inactive-driver-dead");
       expect(report.markdown).not.toContain("Run openclaw");
       expect(report.markdown).not.toContain("to retry");
@@ -152,7 +152,7 @@ describe("update run report", () => {
           steps: [{ step: "reconcile:acknowledged", status }],
         }),
       );
-      expect(report.headline).toBe("⚠️ OpenClaw update failed: abandoned.");
+      expect(report.headline).toBe("⚠️ Paddy update failed: abandoned.");
       expect(report.markdown).toContain("Run openclaw triage");
     },
   );
@@ -345,7 +345,7 @@ describe("update run report", () => {
         after: { version: "2026.8.1", sha: "9f3c21a0000000000000000000000000000000aa" },
       }),
     );
-    expect(report.headline).toBe("✅ OpenClaw updated to 9f3c21a0 (from 11111111).");
+    expect(report.headline).toBe("✅ Paddy updated to 9f3c21a0 (from 11111111).");
     expect(report.markdown).toContain(report.headline);
   });
 
@@ -362,15 +362,15 @@ describe("update run report", () => {
     ].map((record) => renderUpdateRunReport(record).markdown);
     expect(reports).toMatchInlineSnapshot(`
       [
-        "✅ OpenClaw updated to 2026.9.2 (from 2026.9.1).
+        "✅ Paddy updated to 2026.9.2 (from 2026.9.1).
       Phases: staging (300ms)",
-        "⚠️ OpenClaw update failed: restart-unhealthy. The gateway is running 2026.9.1.
+        "⚠️ Paddy update failed: restart-unhealthy. The gateway is running 2026.9.1.
       Phases: staging (300ms)
       Verification: service running.
       Run openclaw triage to diagnose and repair the failed update.",
-        "ℹ️ OpenClaw update skipped: dry-run.
+        "ℹ️ Paddy update skipped: dry-run.
       Phases: staging (300ms)",
-        "↩️ OpenClaw update rolled back to 2026.9.1: build-failed.
+        "↩️ Paddy update rolled back to 2026.9.1: build-failed.
       Phases: staging (300ms)",
       ]
     `);
@@ -577,7 +577,7 @@ describe("update run report", () => {
         ],
       }),
     );
-    expect(report.headline).toBe("⬆️ OpenClaw update in progress: verifying.");
+    expect(report.headline).toBe("⬆️ Paddy update in progress: verifying.");
     expect(report.markdown).not.toContain("openclaw doctor");
     expect(report.markdown).not.toContain("Run the update manually");
     expect(report.markdown).toContain(
@@ -651,7 +651,7 @@ describe("update run report", () => {
         ],
       }),
     );
-    expect(report.headline).toBe(`⚠️ OpenClaw update failed: ${expected}.`);
+    expect(report.headline).toBe(`⚠️ Paddy update failed: ${expected}.`);
   });
 
   it.each(["skipped", "rolled-back"] as const)(
@@ -686,7 +686,7 @@ describe("update run report", () => {
       Object.freeze(record);
 
       const report = renderUpdateRunReport(record);
-      expect(report.headline).toBe("⚠️ OpenClaw update failed: finalize:doctor.");
+      expect(report.headline).toBe("⚠️ Paddy update failed: finalize:doctor.");
       expect(renderUpdateRunNotice(record, "finished")).toBe(report.markdown);
       expect(JSON.stringify(record)).toBe(saved);
     });
@@ -711,8 +711,8 @@ describe("update run report", () => {
       const report = renderUpdateRunReport(record);
       expect(report.headline).toBe(
         reconciled
-          ? "ℹ️ OpenClaw abandoned update reconciled."
-          : "⚠️ OpenClaw update failed: finalize:doctor.",
+          ? "ℹ️ Paddy abandoned update reconciled."
+          : "⚠️ Paddy update failed: finalize:doctor.",
       );
       expect(report.lines).toContain("Failed: finalize:doctor");
       expect(report.markdown.includes("Run openclaw")).toBe(!reconciled);
@@ -724,7 +724,7 @@ describe("update run report", () => {
       const record = run({ status: "failed", steps: [{ step: phase, status: "failed" }] });
       const saved = JSON.stringify(record);
       const report = renderUpdateRunReport(record);
-      expect(report.headline).toBe(`⚠️ OpenClaw update failed: ${"x".repeat(238)}….`);
+      expect(report.headline).toBe(`⚠️ Paddy update failed: ${"x".repeat(238)}….`);
       expect(report.headline.length).toBeLessThanOrEqual(500);
       expect(report.markdown.length).toBeLessThanOrEqual(1500);
       expect(Buffer.from(report.markdown).toString("utf8")).toBe(report.markdown);

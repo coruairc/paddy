@@ -12,6 +12,7 @@ import path from "node:path";
 import { Readable, type Duplex, type Writable } from "node:stream";
 import { createSecureContext, createServer as createTlsServer, rootCertificates } from "node:tls";
 import { URL } from "node:url";
+import { PRODUCT_NAME } from "../../brand.js";
 import { normalizeExactAllowedHost as normalizeHostname } from "../exact-hostname.js";
 import {
   containsSecretSentinel,
@@ -39,7 +40,7 @@ import {
 } from "./stream-substitution.js";
 
 const PROXY_AUTH_USERNAME = "openclaw";
-const PROXY_AUTH_REALM = "OpenClaw secret egress";
+const PROXY_AUTH_REALM = `${PRODUCT_NAME} secret egress`;
 
 export type SecretEgressProxyAuditEvent = {
   kind: "forwarded" | "refused";

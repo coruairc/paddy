@@ -713,11 +713,11 @@ const codexSessionRoutesCheck: HealthCheck = {
         fixHint: issue.repairBlocked
           ? [
               "Enable plugins.entries.codex and plugin loading, and remove codex from plugins.deny;",
-              "or set the affected OpenAI models to an OpenClaw runtime policy.",
+              `or set the affected OpenAI models to a Paddy runtime policy.`,
             ].join(" ")
           : [
               "Run `openclaw doctor --fix`: it enables plugins.entries.codex,",
-              "or set the affected OpenAI models to an OpenClaw runtime policy.",
+              `or set the affected OpenAI models to a Paddy runtime policy.`,
             ].join(" "),
       }),
     );

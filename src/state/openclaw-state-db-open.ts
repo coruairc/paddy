@@ -1,5 +1,6 @@
 import { statSync, type BigIntStats } from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { assertStateDatabaseAccessAllowed } from "../infra/gateway-state-owner.js";
 import { enableNodeSqliteKyselyStatementCache } from "../infra/kysely-sync.js";
@@ -215,7 +216,7 @@ function openNativeStateDatabase(
     if (errors.length > 0) {
       throw createSqliteLifecycleAggregateError(
         [error, ...errors],
-        `OpenClaw state database acquisition and cleanup failed for ${params.pathname}.`,
+        `${PRODUCT_NAME} state database acquisition and cleanup failed for ${params.pathname}.`,
         error,
       );
     }

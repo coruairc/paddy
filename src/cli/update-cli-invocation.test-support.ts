@@ -71,7 +71,7 @@ export function expectPluginCapabilityRetryNotice(
           ? {
               sync: {
                 errors: [
-                  'Failed to update consent-fixture: Operator review token changed.\nBundled relocation did not install the replacement plugin payload; resolve the error above, then run "openclaw update repair".',
+                  'Failed to update consent-fixture: Operator review token changed.\nBundled relocation did not install the replacement plugin payload; resolve the error above, then run "paddy update repair".',
                 ],
               },
             }

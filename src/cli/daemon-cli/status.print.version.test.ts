@@ -90,7 +90,7 @@ describe("daemon status version reporting", () => {
     const output = humanOutput();
     expect(output).toContain("CLI version: 2026.4.23 (/usr/local/bin/openclaw)");
     expect(output).toContain("Gateway version: 2026.5.6");
-    expect(output).toContain("this OpenClaw command is version 2026.4.23");
+    expect(output).toContain("this Paddy command is version 2026.4.23");
     expect(output).toContain(
       "if this mismatch is unexpected, update PATH so `openclaw` points to the version you want",
     );
@@ -108,7 +108,7 @@ describe("daemon status version reporting", () => {
 
     const output = humanOutput();
     expect(output).toContain("Gateway version: 2026.5.7");
-    expect(output).toContain("this OpenClaw command is version 2026.4.23");
+    expect(output).toContain("this Paddy command is version 2026.4.23");
   });
 
   it("reports the installed service version when the Gateway never reported one", () => {

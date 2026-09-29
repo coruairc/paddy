@@ -11,6 +11,7 @@ import {
 } from "../../../agents/provider-tool-policy.js";
 import { isToolAllowedByPolicyName } from "../../../agents/tool-policy-match.js";
 import { mergeAlsoAllowPolicy, resolveToolProfilePolicy } from "../../../agents/tool-policy.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import type { ToolPolicyConfig } from "../../../config/types.tools.js";
 import { collectChannelRouteTargets } from "../../../routing/channel-route-targets.js";
@@ -128,7 +129,7 @@ function collectVisibleReplyToolPolicyWarnings(cfg: OpenClawConfig): string[] {
     warnings.push(
       `- ${groupPolicy.path} is set to "message_tool", but the message tool is unavailable for ${formatTargets(
         targets,
-      )}; OpenClaw falls back to automatic visible replies, so normal replies may post to the source chat. Enable the message tool or set ${groupPolicy.path} to "automatic".`,
+      )}; ${PRODUCT_NAME} falls back to automatic visible replies, so normal replies may post to the source chat. Enable the message tool or set ${groupPolicy.path} to "automatic".`,
     );
   }
 
@@ -141,7 +142,7 @@ function collectVisibleReplyToolPolicyWarnings(cfg: OpenClawConfig): string[] {
     warnings.push(
       `- messages.visibleReplies is set to "message_tool", but the message tool is unavailable for ${formatTargets(
         targets,
-      )}; OpenClaw falls back to automatic direct-chat replies, so normal replies may post to the source chat. Enable the message tool or set messages.visibleReplies to "automatic".`,
+      )}; ${PRODUCT_NAME} falls back to automatic direct-chat replies, so normal replies may post to the source chat. Enable the message tool or set messages.visibleReplies to "automatic".`,
     );
   }
   return warnings;

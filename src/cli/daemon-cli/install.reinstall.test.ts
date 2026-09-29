@@ -198,7 +198,7 @@ describe("runDaemonInstall reinstall", () => {
   );
 
   it.each([
-    { failure: "probe", message: "openclaw gateway install --force" },
+    { failure: "probe", message: "paddy gateway install --force" },
     { failure: "no-replacement", message: "No supported Node runtime is available" },
     { failure: "sealed-definition", message: "SERVICE_DEFINITION_UNKNOWN" },
   ])(

@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../../brand.js";
 import { DEVICE_WORKER_PROVIDER_ID } from "./device-provider-identity.js";
 import {
   isUnavailableEnvironment,
@@ -87,7 +88,7 @@ export function createWorkerPlacementMoveAbandonment(
     }
     if (runner.status === "available") {
       throw new Error(
-        "Device runner is available; use Move session so OpenClaw can reconcile its workspace safely",
+        `Device runner is available; use Move session so ${PRODUCT_NAME} can reconcile its workspace safely`,
       );
     }
   };

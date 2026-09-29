@@ -327,7 +327,7 @@ export async function loginTokenSharing(ctx: ProviderAuthContext): Promise<Provi
               ]),
           ...(ctx.isRemote
             ? [
-                "Open the sign-in link in your browser. Its localhost:8080 callback must reach this OpenClaw process. For an SSH host, forward the port with: ssh -N -L 8080:127.0.0.1:8080 user@gateway-host",
+                "Open the sign-in link in your browser. Its localhost:8080 callback must reach this Paddy process. For an SSH host, forward the port with: ssh -N -L 8080:127.0.0.1:8080 user@gateway-host",
               ]
             : []),
           ...(ctx.prompter.openUrl ? [] : [`Sign-in URL: ${url.toString()}`]),

@@ -29,6 +29,6 @@ it("keeps the container target ahead of the profile in its repair command", () =
   expect(entries).toEqual([
     "- Config file is invalid: /tmp/openclaw.json",
     "- gateway.port: invalid",
-    "- Fix: openclaw --container staging doctor --fix",
+    "- Fix: paddy --container staging doctor --fix",
   ]);
 });

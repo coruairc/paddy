@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../../brand.js";
 import type { NativeHookRelayProcessResponse } from "./native-hook-relay-types.js";
 
 /** Render the native Codex hook responses shared by server and cold client paths. */
@@ -36,7 +37,7 @@ export const codexNativeHookRelayResponseCodec = {
               ? { behavior: "allow" }
               : {
                   behavior: "deny",
-                  message: message?.trim() || "Denied by OpenClaw",
+                  message: message?.trim() || `Denied by ${PRODUCT_NAME}`,
                 },
         },
       })}\n`,

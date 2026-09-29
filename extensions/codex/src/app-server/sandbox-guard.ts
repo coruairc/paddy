@@ -170,8 +170,8 @@ function hasOpenClawSandboxEnvironmentSelection(value: unknown): boolean {
 
 function formatCodexNativeSandboxBlock(params: { surface: string }): string {
   return [
-    `Codex-native ${params.surface} is unavailable because OpenClaw sandboxing is active for this session.`,
-    "This mode cannot route execution through the OpenClaw sandbox backend.",
+    `Codex-native ${params.surface} is unavailable because Paddy sandboxing is active for this session.`,
+    "This mode cannot route execution through the Paddy sandbox backend.",
     "Use a normal Codex harness turn, or run an intentionally unsandboxed session.",
   ].join(" ");
 }

@@ -217,6 +217,6 @@ async function resolveXaiRealtimeApiKey(
     return oauthKey;
   }
   throw new Error(
-    "xAI credentials missing for realtime STT. Sign in with `openclaw onboard --auth-choice xai-oauth`, or run `openclaw onboard --auth-choice xai-api-key`, or set XAI_API_KEY.",
+    "xAI credentials missing for realtime STT. Sign in with `paddy onboard --auth-choice xai-oauth`, or run `paddy onboard --auth-choice xai-api-key`, or set XAI_API_KEY.",
   );
 }

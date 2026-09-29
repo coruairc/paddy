@@ -1,4 +1,5 @@
 // Creates temporary OpenClaw directories for runtime scratch work.
+import { PRODUCT_NAME } from "../brand.js";
 import { getSealedRuntimeSecureTempRoot } from "./sealed-runtime-registry.js";
 
 /** Preferred shared OpenClaw temp root on POSIX systems when ownership and permissions are safe. */
@@ -72,7 +73,7 @@ export function resolvePreferredOpenClawTmpDir(
     preferredDir: options.preferredDir ?? DEFAULT_POSIX_TMP_ROOT,
     fallbackPrefix: "openclaw",
     warningPrefix: "[openclaw]",
-    unsafeFallbackLabel: "OpenClaw temp dir",
+    unsafeFallbackLabel: `${PRODUCT_NAME} temp dir`,
     skipPreferredOnWindows: true,
   });
 }

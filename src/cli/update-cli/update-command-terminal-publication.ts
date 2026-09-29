@@ -4,6 +4,7 @@ import { normalizeControlPlaneUpdateResult } from "../../infra/update-restart-se
 import type { UpdateRunResult } from "../../infra/update-runner-types.js";
 import { defaultRuntime } from "../../runtime.js";
 import { UPDATE_ACTIVATION_TIMEOUT_REASON } from "../../shared/update-outcome.js";
+import { CLI_NAME } from "../cli-name.js";
 import type { FinishUpdateParams } from "./update-command-finish-types.js";
 import type { UpdateCommandTerminalRecord } from "./update-command-terminal-record.js";
 import {
@@ -110,7 +111,7 @@ export function createPostUpdateFailureResult(
         ...params.result.steps,
         {
           name: "post-update verification",
-          command: "openclaw update",
+          command: `${CLI_NAME} update`,
           cwd: params.result.root ?? params.root,
           durationMs: Math.max(0, Date.now() - params.startedAt),
           exitCode: 1,

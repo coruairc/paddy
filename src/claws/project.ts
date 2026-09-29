@@ -2,6 +2,7 @@ import { lstat, mkdir, readdir, realpath, rmdir, unlink, writeFile } from "node:
 import { basename, dirname, isAbsolute, parse, relative, resolve, sep } from "node:path";
 import { coerceErrorMessage } from "@openclaw/normalization-core/error-coercion";
 import { asOptionalRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { root as fsSafeRoot } from "../infra/fs-safe.js";
 import { readClawManifestFile } from "./reader.js";
 import { isCanonicalClawHubPackageName, portableClawPathKey } from "./schema-portability.js";
@@ -244,7 +245,7 @@ export async function createClawProject(
     `  id: ${JSON.stringify(agentId)}`,
     `  name: ${JSON.stringify(displayName(agentId))}`,
     "---",
-    `You are ${displayName(agentId)}, a purpose-built OpenClaw agent.`,
+    `You are ${displayName(agentId)}, a purpose-built ${PRODUCT_NAME} agent.`,
     "",
   ].join("\n");
 

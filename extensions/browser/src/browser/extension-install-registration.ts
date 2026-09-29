@@ -312,7 +312,7 @@ export async function inspectRegistration(
         throw new Error("native host manifest does not contain exact allowed origins");
       }
       issue =
-        "registered native host origins require a supported path migration; run openclaw browser extension install";
+        "registered native host origins require a supported path migration; run paddy browser extension install";
     }
     try {
       for (const [index, target] of parsedLauncher.targets.entries()) {
@@ -320,7 +320,7 @@ export async function inspectRegistration(
       }
     } catch {
       issue ??=
-        "registered native host runtime or entry is unavailable or unsafe; run openclaw browser extension install";
+        "registered native host runtime or entry is unavailable or unsafe; run paddy browser extension install";
     }
     return {
       ...registration,
@@ -523,7 +523,7 @@ export async function repairChromeExtensionNativeHosts(params: {
         const installed = stableChromeExtensionDir(deps);
         if (!(await inspectInstalledCopy(installed)).owned) {
           throw new Error(
-            "stable extension copy is not OpenClaw-owned; run browser extension install explicitly",
+            "stable extension copy is not Paddy-owned; run browser extension install explicitly",
           );
         }
         const extensionIds = (await approvedInstallRealpaths(installed, params.bundledDir)).map(
@@ -550,7 +550,7 @@ export async function repairChromeExtensionNativeHosts(params: {
             deps,
             expectedNativeHostPath: fromNativeHostPath,
           });
-          changes.push(`Repaired ${root.label} OpenClaw native messaging registration.`);
+          changes.push(`Repaired ${root.label} Paddy native messaging registration.`);
         }
       } catch (error) {
         warnings.push(`${root.label} native host repair failed: ${String(error)}`);

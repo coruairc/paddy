@@ -61,6 +61,7 @@ import { assertExistingOpenClawStateSchemaCacheAdmission } from "./openclaw-stat
 import { assertSupportedStateSchemaVersion } from "./openclaw-state-db-schema-version.js";
 import { openClawStateSnapshotOwners } from "./openclaw-state-db-snapshot-owner.js";
 import type { OpenClawStateWorkerContext } from "./openclaw-state-worker-context.types.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const stateDatabaseLifecycle = resolveGlobalSingleton<StateDatabaseLifecycle>(
   Symbol.for("openclaw.stateDatabaseLifecycle"),
@@ -233,7 +234,7 @@ function closeOpenClawStateDatabaseHandle(
         retire: () => {
           throwSqliteLifecycleErrors(
             closeOpenClawStateDatabaseHandle(database, options),
-            `OpenClaw state database cleanup failed for ${database.path}.`,
+            `${PRODUCT_NAME} state database cleanup failed for ${database.path}.`,
           );
           owner.cleanupComplete = true;
           borrowers.delete(database.db);
@@ -353,7 +354,7 @@ function getCachedOpenClawStateDatabase(
   }
   const database = cachedDatabases.get(path.resolve(pathname));
   if (database && borrowers.get(database.db)?.retiring) {
-    throw new Error(`OpenClaw state database native borrower cleanup is pending: ${pathname}`);
+    throw new Error(`${PRODUCT_NAME} state database native borrower cleanup is pending: ${pathname}`);
   }
   if (database) {
     touchStateDatabase(database);
@@ -377,7 +378,7 @@ function closeStaleCachedOpenClawStateDatabase(database: OpenClawStateDatabase):
   notifyOpenClawStateDatabaseClosed(database);
   throwSqliteLifecycleErrors(
     errors,
-    `Stale OpenClaw state database cleanup failed for ${database.path}.`,
+    `Stale ${PRODUCT_NAME} state database cleanup failed for ${database.path}.`,
   );
 }
 
@@ -443,7 +444,7 @@ function assertOpenClawStateDatabaseOpenAllowed(pathname: string, ownership?: "c
       borrowers.get(database.db)?.retiring &&
       (database.path === resolvedPath || databaseIdentities.get(database.db)?.key === identity.key)
     ) {
-      throw new Error(`OpenClaw state database native borrower cleanup is pending: ${pathname}`);
+      throw new Error(`${PRODUCT_NAME} state database native borrower cleanup is pending: ${pathname}`);
     }
   }
 }
@@ -545,7 +546,7 @@ function retireOpenClawStateDatabaseHandles(
       errors.push(error);
     }
   }
-  throwSqliteLifecycleErrors(errors, "OpenClaw state database cleanup failed.");
+  throwSqliteLifecycleErrors(errors, `${PRODUCT_NAME} state database cleanup failed.`);
   return found;
 }
 

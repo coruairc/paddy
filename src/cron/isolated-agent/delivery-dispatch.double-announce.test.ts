@@ -1910,7 +1910,7 @@ describe("dispatchCronDelivery", () => {
     });
     expect(state.disposition).toMatchObject({
       error: expect.stringContaining(
-        "the agent used the message tool, but OpenClaw could not verify",
+        "the agent used the message tool, but Paddy could not verify",
       ),
     });
   });

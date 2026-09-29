@@ -163,7 +163,7 @@ describe("update-cli", () => {
 
     const logOutput = getLogOutput();
     expect(logOutput).toContain("timed out after 30s");
-    expect(logOutput).toContain("openclaw completion --write-state");
+    expect(logOutput).toContain("paddy completion --write-state");
   });
 
   it("keeps update completion refresh best-effort when profile install fails", async () => {
@@ -352,7 +352,7 @@ describe("update-cli", () => {
       argv: ["update", "wizard"],
       requireTty: false,
       expectedError:
-        "Update wizard requires a TTY. Use `openclaw update --channel <stable|extended-stable|beta|dev>` instead.",
+        "Update wizard requires a TTY. Use `paddy update --channel <stable|extended-stable|beta|dev>` instead.",
     },
   ] as const)(
     "validates update command invocation errors: $name",

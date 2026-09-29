@@ -5,6 +5,7 @@ import type { DatabaseSync } from "node:sqlite";
 import { toStringifiedError } from "@openclaw/normalization-core/error-coercion";
 import * as tar from "tar";
 import { loadSqliteVecExtension } from "../../packages/memory-host-sdk/src/host/sqlite-vec.js";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import {
   recordArchiveSymbolicLink,
   type BackupSymbolicLink,
@@ -532,7 +533,7 @@ async function verifyResolvedBackupArchive(
   });
   if (listing.invalidReason) {
     throw new Error(
-      `Archive is not a valid OpenClaw backup. ${listing.invalidReason.replace(/[.!?]*$/u, ".")} Choose another archive or create a new one with \`openclaw backup create\`.`,
+      `Archive is not a valid ${PRODUCT_NAME} backup. ${listing.invalidReason.replace(/[.!?]*$/u, ".")} Choose another archive or create a new one with \`${CLI_NAME} backup create\`.`,
     );
   }
   const rawEntries = listing.entries;

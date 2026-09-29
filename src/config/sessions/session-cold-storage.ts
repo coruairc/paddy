@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { PRODUCT_NAME } from "../../brand.js";
 import { hasErrnoCode } from "../../infra/errno.js";
 import {
   executeSqliteQuerySync,
@@ -151,7 +152,7 @@ async function runColdMutation(
         );
         if (!completed || completed.cleanupIncomplete) {
           throw new Error(
-            "Cold transcript worker cleanup is incomplete; restart OpenClaw before another maintenance operation",
+            `Cold transcript worker cleanup is incomplete; restart ${PRODUCT_NAME} before another maintenance operation`,
           );
         }
         if (plan.kind !== "cold-restore") {

@@ -1,5 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { resolveOnboardingSetupTarget } from "../commands/onboard-agent-target.js";
 import * as firstAgentOnboarding from "../commands/onboard-first-agent.js";
@@ -282,7 +283,7 @@ async function runSetupWizardOnce(
     const migratedSnapshot = await readSetupConfigFileSnapshot();
     if (!migratedSnapshot.valid) {
       throw new Error(
-        "Migration produced an invalid OpenClaw config. Run `openclaw doctor --fix` to apply supported repairs.",
+        `Migration produced an invalid ${PRODUCT_NAME} config. Run \`${CLI_NAME} doctor --fix\` to apply supported repairs.`,
       );
     }
     currentSetupSnapshot = migratedSnapshot;

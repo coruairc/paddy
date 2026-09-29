@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../../../brand.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import type { PluginInstallRecord } from "../../../config/types.plugins.js";
 import type { HealthFinding, HealthRepairEffect } from "../../../flows/health-checks.js";
@@ -300,7 +301,7 @@ const CONFIGURED_PLUGIN_INSTALL_ISSUE_DETAILS = {
   },
   "stale-version-bound-runtime": {
     message: (pluginId: string) =>
-      `Configured runtime plugin ${pluginId} is older than this OpenClaw version.`,
+      `Configured runtime plugin ${pluginId} is older than this ${PRODUCT_NAME} version.`,
     fixHint: "Run `openclaw doctor --fix` to refresh the configured runtime plugin.",
     action: "would-refresh-configured-runtime-plugin",
     dryRunSafe: false,

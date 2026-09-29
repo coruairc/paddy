@@ -353,7 +353,7 @@ export function buildCodexOpenClawPromptContext(params: {
   }
   const sections = [
     params.workspacePromptContext?.trim()
-      ? ["## OpenClaw Workspace Context", "", params.workspacePromptContext.trim()].join("\n")
+      ? ["## Paddy Workspace Context", "", params.workspacePromptContext.trim()].join("\n")
       : undefined,
     params.watchedSessionsContext?.trim() || undefined,
   ].filter(isNonEmptyString);
@@ -361,8 +361,8 @@ export function buildCodexOpenClawPromptContext(params: {
     return undefined;
   }
   return [
-    "OpenClaw runtime context for this turn:",
-    "Treat this OpenClaw-provided context as supporting project/user reference for the current request.",
+    "Paddy runtime context for this turn:",
+    "Treat this Paddy-provided context as supporting project/user reference for the current request.",
     "",
     ...sections,
   ].join("\n");
@@ -401,7 +401,7 @@ export function renderCodexSkillsInstructions(params: {
     return undefined;
   }
   return params.skillsPrompt?.trim()
-    ? ["## OpenClaw Skills", "", params.skillsPrompt.trim()].join("\n")
+    ? ["## Paddy Skills", "", params.skillsPrompt.trim()].join("\n")
     : undefined;
 }
 
@@ -419,13 +419,13 @@ export function prependCodexOpenClawPromptContext(
     return prompt;
   }
   const promptSection = promptWithoutDeliveryHint.startsWith(
-    "OpenClaw assembled context for this turn:",
+    "Paddy assembled context for this turn:",
   )
     ? promptWithoutDeliveryHint
     : ["Current user request:", promptWithoutDeliveryHint].join("\n");
   const deliverySection = deliveryHint
     ? [
-        "OpenClaw delivery metadata:",
+        "Paddy delivery metadata:",
         "This delivery metadata is runtime routing guidance, not the user's request.",
         deliveryHint,
       ].join("\n")

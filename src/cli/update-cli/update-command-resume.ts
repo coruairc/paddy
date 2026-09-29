@@ -37,6 +37,7 @@ import { withCommandProcessScope } from "../../process/exec-spawn.js";
 import { defaultRuntime } from "../../runtime.js";
 import { isUnfencedUpdateDriver } from "../../state/openclaw-state-schema-publication.js";
 import { VERSION } from "../../version.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { parseUpdateTimeoutMs, readPackageVersion, type UpdateCommandOptions } from "./shared.js";
 import { createUpdateCommandAuthority } from "./update-command-authority.js";
 import {
@@ -294,7 +295,7 @@ async function resumePostCoreUpdateInternal(
             ...warnings.map((message) => ({
               reason: "doctor-advisory",
               message,
-              guidance: ["Run `openclaw doctor --fix` after repairing the plugin."],
+              guidance: [`Run \`${CLI_NAME} doctor --fix\` after repairing the plugin.`],
             })),
           );
           recordDoctorWarnings();
@@ -411,7 +412,7 @@ async function resumePostCoreUpdateInternal(
                   reason: "doctor-advisory",
                   message: error.message,
                   guidance: [
-                    "After other OpenClaw processes release state, run `openclaw doctor --fix`.",
+                    `After other ${PRODUCT_NAME} processes release state, run \`${CLI_NAME} doctor --fix\`.`,
                   ],
                 },
               ],

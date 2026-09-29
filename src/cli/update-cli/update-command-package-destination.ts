@@ -16,6 +16,7 @@ import {
   resolveNpmGlobalPrefixLayoutFromGlobalRoot,
 } from "../../infra/update-npm-prefix.js";
 import { UPDATE_FOREIGN_DESTINATION_REASON } from "../../shared/update-outcome.js";
+import { PRODUCT_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { quoteCliArg, quotePowerShellArg } from "../quote-cli-arg.js";
 import {
@@ -117,7 +118,7 @@ export async function inspectNpmGlobalDestination(
           ).replace(/^openclaw\b/, () => `node ${quote(launcherTarget)}`)
         : undefined;
     const message = [
-      `Selected npm destination ${prefix} is occupied by another OpenClaw installation: package ${packageRoot}; launcher ${launcher}${launcherTarget ? ` -> ${launcherTarget}` : " (target unresolved)"}.`,
+      `Selected npm destination ${prefix} is occupied by another ${PRODUCT_NAME} installation: package ${packageRoot}; launcher ${launcher}${launcherTarget ? ` -> ${launcherTarget}` : " (target unresolved)"}.`,
       layout?.entrypoint
         ? `The selected service${layout.sourcePath ? ` (${layout.sourcePath})` : ""} uses ${layout.entrypoint}; it does not own this destination.`
         : "No selected managed service could be verified as owning this destination.",

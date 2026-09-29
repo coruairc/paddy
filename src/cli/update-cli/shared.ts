@@ -42,6 +42,7 @@ import { defaultRuntime } from "../../runtime.js";
 import type { UpdateRecoveryStep } from "../../shared/update-outcome.js";
 import { UPDATE_INSTALL_SKIP_GUIDANCE } from "../../shared/update-outcome.js";
 import { pathExists } from "../../utils.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { COMPLETION_SKIP_PLUGIN_COMMANDS_ENV } from "../completion-runtime.js";
 import { resolveNodeRunner } from "./node-runner.js";
 
@@ -510,7 +511,7 @@ export async function resolveGlobalManager(params: {
       const reason = resolveUnmanagedUpdateInstallReason();
       throw new UpdatePreMutationError(
         reason,
-        "This OpenClaw installation is managed by Homebrew. To update OpenClaw, run:\n\n  brew upgrade openclaw-cli\n\nThen restart the gateway:\n\n  openclaw gateway restart",
+        `This ${PRODUCT_NAME} installation is managed by Homebrew. To update ${PRODUCT_NAME}, run:\n\n  brew upgrade openclaw-cli\n\nThen restart the gateway:\n\n  ${CLI_NAME} gateway restart`,
         { failureFacts: [] },
       );
     }
@@ -543,7 +544,7 @@ export async function resolveGlobalManager(params: {
 
 const COMPLETION_CACHE_WRITE_TIMEOUT_MS = 30_000;
 const COMPLETION_CACHE_MANUAL_REFRESH_HINT =
-  "Shell tab-completion may be stale; refresh manually with: openclaw completion --write-state";
+  `Shell tab-completion may be stale; refresh manually with: ${CLI_NAME} completion --write-state`;
 
 /** Best-effort refresh of shell completion state after a successful update. */
 export async function tryWriteCompletionCache(

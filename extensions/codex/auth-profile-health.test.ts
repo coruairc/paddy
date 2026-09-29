@@ -14,7 +14,7 @@ import { registerCodexManagedAppServerDoctorChecks } from "./api.js";
 import plugin from "./index.js";
 
 const CHECK_ID = "codex/native-profile-recovery";
-const IMPORT_COMMAND = "openclaw models auth login --provider openai --method device-code";
+const IMPORT_COMMAND = "paddy models auth login --provider openai --method device-code";
 const config: OpenClawConfig = {
   auth: { profiles: { "openai:default": { provider: "openai", mode: "oauth" } } },
   agents: { entries: { main: {}, worker: {} } },
@@ -126,7 +126,7 @@ describe("native profile recovery", () => {
         expect.objectContaining({
           severity: "warning",
           message: expect.stringContaining("unreadable"),
-          fixHint: "openclaw doctor --fix",
+          fixHint: "paddy doctor --fix",
         }),
         expect.objectContaining({ message: expect.stringContaining("Affected agents: main.") }),
       ]);

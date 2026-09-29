@@ -571,7 +571,7 @@ describe("failed update recovery restart", () => {
 
       const nextAction = getUpdateRun(run.runId, { env })?.origin.nextAction;
       expect(mocks.restart).not.toHaveBeenCalled();
-      expect(nextAction).toContain("Run `openclaw --profile work triage`");
+      expect(nextAction).toContain("Run `paddy --profile work triage`");
       expect(nextAction?.includes("Keep the gateway stopped")).toBe(stopped);
       expect(mocks.printResult.mock.lastCall?.[2]).toEqual({ nextAction });
     },
@@ -871,7 +871,7 @@ describe("failed package update recovery safety", () => {
       // Cleanup is pre-terminal; rollback is recorded only after completion settles.
       expect(cleanupStatus).toBe("running");
       expect(recorded.status).toBe("rolled-back");
-      expect(renderUpdateRunReport(recorded).headline).toContain("↩️ OpenClaw update rolled back");
+      expect(renderUpdateRunReport(recorded).headline).toContain("↩️ Paddy update rolled back");
       expect(await fs.readFile(configPath, "utf8")).toBe(original);
       if (process.platform !== "win32") {
         expect((await fs.stat(configPath)).mode & 0o777).toBe(0o600);

@@ -73,7 +73,7 @@ const resolveSynologyChatDmPolicy = createScopedDmSecurityResolver<ResolvedSynol
   resolveAllowFrom: (account) => account.allowedUserIds,
   policyPathSuffix: "dmPolicy",
   defaultPolicy: "allowlist",
-  approveHint: "openclaw pairing approve synology-chat <code>",
+  approveHint: "paddy pairing approve synology-chat <code>",
   normalizeEntry: (raw) => normalizeLowercaseStringOrEmpty(raw),
 });
 
@@ -292,7 +292,7 @@ export const synologyChatPlugin = {
     selectionLabel: "Synology Chat (Webhook)",
     detailLabel: "Synology Chat (Webhook)",
     docsPath: "/channels/synology-chat",
-    blurb: "Connect your Synology NAS Chat to OpenClaw",
+    blurb: "Connect your Synology NAS Chat to Paddy",
     order: 90,
   },
   capabilities: {
@@ -409,7 +409,7 @@ export const synologyChatPlugin = {
       "  Example: `<https://example.com|Click here>` renders as a clickable link.",
       "",
       "**File sharing**: Send files through the media attachment field.",
-      "  OpenClaw freezes the bytes and gives the NAS a short-lived download capability (max 32 MB).",
+      "  Paddy freezes the bytes and gives the NAS a short-lived download capability (max 32 MB).",
       "",
       "**Limitations**:",
       "- No markdown, bold, italic, or code blocks",
@@ -428,7 +428,7 @@ export const synologyChatPlugin = {
   conversationBindings: { supportsCurrentConversationBinding: true },
   pairing: createTextPairingAdapter({
     idLabel: "synologyChatUserId",
-    message: "OpenClaw: your access has been approved.",
+    message: "Paddy: your access has been approved.",
     normalizeAllowEntry: (entry: string) => normalizeLowercaseStringOrEmpty(entry),
     notify: async (params) => {
       await sendSynologyChatText({ ...params, to: params.id, text: params.message });

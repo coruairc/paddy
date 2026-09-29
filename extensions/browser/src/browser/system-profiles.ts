@@ -244,7 +244,7 @@ export async function importSystemProfileCookies(
     profileCtx.profile.attachOnly
   ) {
     throw new Error(
-      `profile "${into}" is not a locally managed OpenClaw profile; import into a fresh profile name`,
+      `profile "${into}" is not a locally managed Paddy profile; import into a fresh profile name`,
     );
   }
   for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -261,12 +261,12 @@ export async function importSystemProfileCookies(
             path.resolve(runningUserDataDir) !== path.resolve(userDataDir)
           ) {
             throw new Error(
-              `managed profile "${into}" is not owned by this OpenClaw browser runtime; stop it and import into a fresh profile name`,
+              `managed profile "${into}" is not owned by this Paddy browser runtime; stop it and import into a fresh profile name`,
             );
           }
           if (!usesOpenClawMockKeychain(userDataDir)) {
             throw new Error(
-              `managed profile "${into}" does not use the OpenClaw mock keychain; import into a fresh profile name`,
+              `managed profile "${into}" does not use the Paddy mock keychain; import into a fresh profile name`,
             );
           }
 

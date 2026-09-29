@@ -7,6 +7,7 @@ import {
 import { sliceUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope-config.js";
 import { isMalformedApiKeyInput } from "../agents/auth-profiles/credential-state.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.js";
 import type { SecretInput } from "../config/types.secrets.js";
 import { createLazyRuntimeModule } from "../shared/lazy-runtime.js";
@@ -60,7 +61,7 @@ export const validateApiKeyInput = (value: string) => {
     return "Required";
   }
   if (isMalformedApiKeyInput(normalized)) {
-    return "Paste the API key value, not an OpenClaw onboarding command.";
+    return `Paste the API key value, not a ${PRODUCT_NAME} onboarding command.`;
   }
   return undefined;
 };

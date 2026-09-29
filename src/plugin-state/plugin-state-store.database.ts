@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { isTerminalSqliteIntegrityError } from "../infra/sqlite-integrity.js";
 import { isSqliteSchemaVersionError } from "../infra/sqlite-user-version.js";
@@ -33,7 +34,7 @@ export function wrapPluginStateError(
   if (fallbackCode === "PLUGIN_STATE_OPEN_FAILED") {
     if (isSqliteSchemaVersionError(error)) {
       publicMessage +=
-        "\nThe state database uses a newer schema. Run an OpenClaw build that supports it.";
+        `\nThe state database uses a newer schema. Run a ${PRODUCT_NAME} build that supports it.`;
     } else if (error instanceof Error && isTerminalSqliteIntegrityError(error)) {
       publicMessage +=
         "\nDatabase integrity verification failed. Restore or repair the state database, then run openclaw doctor --fix.";

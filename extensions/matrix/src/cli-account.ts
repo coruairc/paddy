@@ -273,7 +273,7 @@ export function registerMatrixAccountCommands(root: Command): void {
                 .map((deviceId) => cli.formatMatrixCliText(deviceId))
                 .join(", ");
               console.log(
-                `Matrix device hygiene warning: stale OpenClaw devices detected (${staleDeviceIds}). Run ${cli.formatMatrixCliCommand("devices prune-stale", result.accountId)}.`,
+                `Matrix device hygiene warning: stale Paddy devices detected (${staleDeviceIds}). Run ${cli.formatMatrixCliCommand("devices prune-stale", result.accountId)}.`,
               );
             }
             if (result.profile.attempted) {
@@ -293,7 +293,7 @@ export function registerMatrixAccountCommands(root: Command): void {
               }
             }
             console.log(
-              `Bind this account to an agent: openclaw agents bind --agent <id> --bind matrix:${result.accountId}`,
+              `Bind this account to an agent: paddy agents bind --agent <id> --bind matrix:${result.accountId}`,
             );
           },
           errorPrefix: "Account setup failed",

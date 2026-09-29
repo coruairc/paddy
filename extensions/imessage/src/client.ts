@@ -61,7 +61,7 @@ function isIMessageBridgeStall(error: unknown): boolean {
 
 const BRIDGE_STALL_GUIDANCE =
   "The imsg private API bridge stopped responding. Run `imsg launch` to re-inject the dylib, " +
-  "then `openclaw channels status --probe` to refresh capability detection.";
+  "then `paddy channels status --probe` to refresh capability detection.";
 
 // Direct sends bypass the capability cache. Preserve the original error prefix,
 // class, code, and data so recovery guidance does not break send reconciliation.

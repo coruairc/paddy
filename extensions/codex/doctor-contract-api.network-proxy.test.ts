@@ -36,7 +36,7 @@ describe("Codex network proxy Doctor repair", () => {
     const before = structuredClone(original);
 
     const rule = legacyConfigRules.find((candidate) => candidate.match(appServer));
-    expect(rule?.message).toContain('Run "openclaw doctor --fix"');
+    expect(rule?.message).toContain('Run "paddy doctor --fix"');
     expect(rule?.message).not.toContain("synthetic-secret");
 
     const result = normalizeCompatibilityConfig({ cfg: original });

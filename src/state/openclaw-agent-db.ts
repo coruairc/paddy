@@ -2,6 +2,7 @@
 import path from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { isMainThread } from "node:worker_threads";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveStateDir } from "../config/paths.js";
 import { isGatewayExternallySupervised } from "../infra/gateway-supervision.js";
 import { enableNodeSqliteKyselyStatementCache } from "../infra/kysely-sync.js";
@@ -612,7 +613,7 @@ export function getOpenClawAgentDatabaseIfOpen(
     isIncognitoOpenClawAgentSqlitePath(pathname, options) &&
     readAgentDeletionJournal(agentId, { env: options.env }, "runtime")
   ) {
-    throw new Error(`OpenClaw agent database is unavailable while agent ${agentId} is deleted.`);
+    throw new Error(`${PRODUCT_NAME} agent database is unavailable while agent ${agentId} is deleted.`);
   }
   const database = cache.databases.get(pathname);
   if (!database?.db.isOpen) {
@@ -624,7 +625,7 @@ export function getOpenClawAgentDatabaseIfOpen(
   }
   if (database.agentId !== agentId) {
     throw new Error(
-      `OpenClaw agent database ${pathname} is already open for agent ${database.agentId}; requested agent ${agentId}.`,
+      `${PRODUCT_NAME} agent database ${pathname} is already open for agent ${database.agentId}; requested agent ${agentId}.`,
     );
   }
   assertAgentDeletionDatabaseCleanupAccess(database, options);

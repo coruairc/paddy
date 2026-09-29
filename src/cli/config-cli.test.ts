@@ -453,7 +453,7 @@ describe("config cli", () => {
 
       expect(mockWriteConfigFile).not.toHaveBeenCalled();
       expectErrorIncludes("openclaw plugins install <spec>");
-      expectErrorIncludes("openclaw plugins update <plugin-id>");
+      expectErrorIncludes("paddy plugins update <plugin-id>");
     });
 
     it("rejects auto-managed meta.lastTouchedVersion config updates (#80849)", async () => {
@@ -753,7 +753,7 @@ describe("config cli", () => {
             ok: false,
             error: {
               type: "cli_error",
-              message: expect.stringContaining("OpenClaw config is invalid"),
+              message: expect.stringContaining("Paddy config is invalid"),
             },
             issues: [{ path: "gateway.bind", message: "Invalid enum value" }],
           });
@@ -823,7 +823,7 @@ describe("config cli", () => {
       expectErrorIncludes("This is a plugin packaging issue, not a local config problem.");
       expectErrorIncludes("disable/uninstall the plugin");
       expect(mockError.mock.calls.map((call) => String(call[0])).join("\n")).not.toContain(
-        "openclaw doctor --fix",
+        "paddy doctor --fix",
       );
       expect(mockLog).not.toHaveBeenCalled();
     });
@@ -869,7 +869,7 @@ describe("config cli", () => {
           ok: false,
           error: {
             type: "cli_error",
-            message: expect.stringContaining("OpenClaw config is invalid"),
+            message: expect.stringContaining("Paddy config is invalid"),
           },
           valid: false,
           path: "/tmp/openclaw.json",
@@ -2043,7 +2043,7 @@ describe("config cli", () => {
 
       expectLogExcludes("No change");
       expectErrorIncludes(
-        `Config path not found in authored config: ${aliasPath}. It only exists after runtime defaults are applied, so there is nothing for config unset to remove. Use openclaw config set <path> <value> to override the inherited value.`,
+        `Config path not found in authored config: ${aliasPath}. It only exists after runtime defaults are applied, so there is nothing for config unset to remove. Use paddy config set <path> <value> to override the inherited value.`,
       );
       expect(mockWriteConfigFile).not.toHaveBeenCalled();
 

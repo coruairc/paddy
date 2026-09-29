@@ -7,6 +7,7 @@
  */
 import { resolveTimerTimeoutMs } from "@openclaw/normalization-core/number-coercion";
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import type { MemorySearchResult } from "../memory-host-sdk/host/types.js";
@@ -67,7 +68,7 @@ function resolveLabels(
 ): RealtimeVoiceFastContextLabels {
   return {
     audienceLabel: labels?.audienceLabel?.trim() || "person",
-    contextName: labels?.contextName?.trim() || "OpenClaw memory context",
+    contextName: labels?.contextName?.trim() || `${PRODUCT_NAME} memory context`,
   };
 }
 

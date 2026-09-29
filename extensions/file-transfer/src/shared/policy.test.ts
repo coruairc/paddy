@@ -142,7 +142,7 @@ describe("evaluateFilePolicy — default deny", () => {
       code: "POLICY_MIGRATION_REQUIRED",
       askable: false,
     });
-    expect(result.ok ? "" : result.reason).toContain("openclaw file-transfer approvals migrate");
+    expect(result.ok ? "" : result.reason).toContain("paddy file-transfer approvals migrate");
   });
 });
 

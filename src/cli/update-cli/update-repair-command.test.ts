@@ -302,7 +302,7 @@ describe("update repair ledger recovery", () => {
         "age 3600s",
         `last activity ${new Date(current.updatedAtMs).toISOString()}`,
         "stop it through its owning host",
-        "openclaw update repair",
+        "paddy update repair",
       ]) {
         await expect(pending).rejects.toThrow(detail);
       }
@@ -374,7 +374,7 @@ describe("update repair ledger recovery", () => {
       expect(mocks.runtime.exit).not.toHaveBeenCalledWith(1);
       const repaired = getUpdateRun(run.runId)!;
       expect(await buildStatusUpdateRows(null)).toEqual([
-        { Item: "Update run", Value: "ℹ️ OpenClaw abandoned update reconciled." },
+        { Item: "Update run", Value: "ℹ️ Paddy abandoned update reconciled." },
       ]);
       expect(renderUpdateRunReport(repaired).markdown).not.toContain("openclaw triage");
       expect(
@@ -385,7 +385,7 @@ describe("update repair ledger recovery", () => {
             muted: (message) => `muted: ${message}`,
           },
         ),
-      ).toBe("muted: ℹ️ OpenClaw abandoned update reconciled.");
+      ).toBe("muted: ℹ️ Paddy abandoned update reconciled.");
       expect(getUpdateRun(run.runId)).toEqual(repaired);
     },
   );
@@ -438,7 +438,7 @@ describe("update repair ledger recovery", () => {
         expect.objectContaining({ message: expect.stringContaining("already reconciled") }),
       );
       expect(await buildStatusUpdateRows(null)).toEqual([
-        { Item: "Update run", Value: "ℹ️ OpenClaw abandoned update reconciled." },
+        { Item: "Update run", Value: "ℹ️ Paddy abandoned update reconciled." },
       ]);
     },
   );

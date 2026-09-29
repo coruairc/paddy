@@ -24,7 +24,7 @@ import {
 
 const cleanDoctorMessage =
   "Plugin discovery, module loading, compatibility, and configuration checks passed. " +
-  'Run "openclaw health" to check the running Gateway, including runtime quarantines and fallbacks.';
+  'Run "paddy health" to check the running Gateway, including runtime quarantines and fallbacks.';
 const originalExitCode = process.exitCode;
 
 function configuredCodexRuntime(): OpenClawConfig {
@@ -393,7 +393,7 @@ describe("plugins cli list", () => {
         `but "${id}" is ${state === "disabled" ? "disabled" : "blocked by plugin configuration"}`,
       );
       expect(output).not.toContain(`openclaw plugins install @openclaw/${id}`);
-      expect(output).not.toContain('Run "openclaw doctor --fix" to install');
+      expect(output).not.toContain('Run "paddy doctor --fix" to install');
       if (id === "acpx") {
         expect(output).toContain("disable ACP/acpx in acp config");
         expect(output).not.toContain('runtime policy to "openclaw"');

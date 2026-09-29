@@ -222,7 +222,7 @@ describe("runSystemAgentWithInference", () => {
     );
 
     expect(currentRuntime.error).toHaveBeenCalledWith(
-      "OpenClaw needs an interactive TTY. Use --message for one command.",
+      "Paddy needs an interactive TTY. Use --message for one command.",
     );
     expect(currentRuntime.exit).toHaveBeenCalledWith(1);
     expect(verifyInference).not.toHaveBeenCalled();
@@ -240,7 +240,7 @@ describe("runSystemAgentWithInference", () => {
     );
 
     expect(currentRuntime.error).toHaveBeenCalledWith(
-      "OpenClaw --yes requires --message so approval is limited to one request.",
+      "Paddy --yes requires --message so approval is limited to one request.",
     );
     expect(currentRuntime.exit).toHaveBeenCalledWith(1);
     expect(verifyInference).not.toHaveBeenCalled();
@@ -252,7 +252,7 @@ describe("runSystemAgentWithInference", () => {
     await runSystemAgentWithInference({ json: true, yes: true }, currentRuntime);
 
     expect(currentRuntime.log).toHaveBeenCalledWith(
-      expect.stringContaining('"error": "OpenClaw --yes requires --message'),
+      expect.stringContaining('"error": "Paddy --yes requires --message'),
     );
     expect(currentRuntime.error).not.toHaveBeenCalled();
     expect(exitMocks.requestExitAfterOneShotOutput).toHaveBeenCalledWith(currentRuntime, 1);

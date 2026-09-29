@@ -2161,7 +2161,7 @@ describe("Codex app-server thread lifecycle bindings", () => {
                   {
                     type: "input_text",
                     text: expect.stringContaining(
-                      skills ?? "The current OpenClaw skills catalog is empty",
+                      skills ?? "The current Paddy skills catalog is empty",
                     ),
                   },
                 ],

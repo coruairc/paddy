@@ -1,6 +1,7 @@
 import { formatSkillsForPrompt, type Skill } from "../../skills/loading/session.js";
 import { getDocsPath, getExamplesPath, getReadmePath } from "../package-metadata.js";
 import { buildPromisedWorkPromptSection } from "../promised-work-prompt.js";
+import { PRODUCT_NAME } from "../../brand.js";
 
 export interface BuildSystemPromptOptions {
   /** Custom system prompt (replaces default). */
@@ -87,7 +88,7 @@ export function buildSystemPrompt(options: BuildSystemPromptOptions): string {
     guidelines.add("Be concise in your responses");
     guidelines.add("Show file paths clearly when working with files");
 
-    prompt = `You are an expert coding assistant operating inside OpenClaw's embedded coding agent harness. You help users by reading files, executing commands, editing code, and writing new files.
+    prompt = `You are an expert coding assistant operating inside ${PRODUCT_NAME}'s embedded coding agent harness. You help users by reading files, executing commands, editing code, and writing new files.
 
 Available tools:
 ${toolsList}

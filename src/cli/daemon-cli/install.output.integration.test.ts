@@ -248,7 +248,7 @@ describe("runDaemonInstall integration", () => {
                 2,
               ),
             ]
-          : [warning, message, "Reinstall with: openclaw gateway install --force"],
+          : [warning, message, "Reinstall with: paddy gateway install --force"],
       );
       expect(runtimeErrors).toEqual([]);
       expect(serviceMock.install).not.toHaveBeenCalled();
@@ -280,7 +280,7 @@ describe("runDaemonInstall integration", () => {
 
       const warnings = ["", "repeat", "repeat"];
       const message =
-        "Gateway service installed. Runtime readiness has not been checked; startup may still be in progress. Check with openclaw gateway status and openclaw health.";
+        "Gateway service installed. Runtime readiness has not been checked; startup may still be in progress. Check with paddy gateway status and paddy health.";
       expect(runtimeLogs).toEqual(
         json
           ? [

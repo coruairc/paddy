@@ -437,7 +437,7 @@ describe("promptDefaultModel", () => {
     const options = pickerOptions(select as MockCallSource);
     const canonical = requireOption(options, "openai/gpt-5.5");
     expect(canonical.hint).toContain("Codex runtime route");
-    expect(canonical.hint).not.toContain("OpenClaw runtime route");
+    expect(canonical.hint).not.toContain("Paddy runtime route");
   });
 
   it.each([
@@ -466,7 +466,7 @@ describe("promptDefaultModel", () => {
       });
 
       const option = requireOption(pickerOptions(select as MockCallSource), "openai/gpt-5.5");
-      expect(option.hint).toContain("OpenClaw runtime route");
+      expect(option.hint).toContain("Paddy runtime route");
       expect(option.hint).not.toContain("Codex runtime route");
     },
   );
@@ -494,7 +494,7 @@ describe("promptDefaultModel", () => {
     });
 
     const option = requireOption(pickerOptions(select as MockCallSource), "openai/gpt-5.5");
-    expect(option.hint).toContain("OpenClaw runtime route");
+    expect(option.hint).toContain("Paddy runtime route");
     expect(option.hint).not.toContain("Codex runtime route");
   });
 

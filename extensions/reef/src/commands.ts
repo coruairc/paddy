@@ -16,7 +16,7 @@ export async function handleReefCommand({
   const decidesReview = words[0] === "review" && /^(approve|deny)$/.test(words[1] ?? "");
   if ((changesFriendship || decidesReview) && senderIsOwner !== true) {
     return {
-      text: "Only an authorized owner can change Reef friends or decide reviews. Ask an owner; friendship changes can also use openclaw reef locally.",
+      text: "Only an authorized owner can change Reef friends or decide reviews. Ask an owner; friendship changes can also use paddy reef locally.",
     };
   }
   const active = getActiveReef();

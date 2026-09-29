@@ -428,7 +428,7 @@ async function runInstallationCase(params: {
         const notes = mocks.note.mock.calls.flat().join("\n");
         expect(notes).toContain(`${oldRoot} (2026.9.4)`);
         expect(notes).toContain(`${mocks.activeRoot} (2026.9.17)`);
-        const cli = params.profile ? `openclaw --profile ${params.profile}` : "openclaw";
+        const cli = params.profile ? `paddy --profile ${params.profile}` : "paddy";
         expect(notes).toContain(`${cli} doctor --fix`);
         expect(notes).toContain(`${cli} gateway install --force`);
         if (params.bun) {
@@ -636,7 +636,7 @@ async function runInstallationCase(params: {
             expect.objectContaining({ check: "gateway-restoration", code }),
           ]);
           expect(maintenance?.warnings).toEqual([
-            expect.stringContaining("openclaw gateway install --force --port 19989"),
+            expect.stringContaining("paddy gateway install --force --port 19989"),
           ]);
           expect(runtime.error).toHaveBeenCalledWith(expect.stringContaining(outcome));
           expect(mocks.health).not.toHaveBeenCalled();
@@ -676,7 +676,7 @@ async function runInstallationCase(params: {
           expect(command.programArguments[1]).toBe(path.join(oldRoot, "dist/index.js"));
           expect(maintenance?.warnings).toEqual([
             expect.stringContaining(
-              "Stopped service definitions are preserved; run `openclaw gateway install --force --port 19989` from the active CLI.",
+              "Stopped service definitions are preserved; run `paddy gateway install --force --port 19989` from the active CLI.",
             ),
           ]);
           expect(maintenance?.warnings?.[0]).not.toContain("doctor --fix");

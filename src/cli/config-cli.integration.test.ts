@@ -220,7 +220,7 @@ describe("config cli integration", () => {
     { alias: "parent", outcome: "alias replacement" },
     { alias: "relative", outcome: "save" },
   ])(
-    "openclaw config set preserves $alias include identity during fallback: $outcome",
+    "paddy config set preserves $alias include identity during fallback: $outcome",
     async ({ alias, outcome }) => {
       const raw =
         JSON.stringify({
@@ -682,7 +682,7 @@ describe("config cli integration", () => {
       expect(read(configPath)).toBe(raw);
       expect(output.logs).toStrictEqual([]);
       expect(output.errors.join("\n")).toContain(
-        "Config path not found: gateway.bind. Nothing was changed. Run openclaw config get <path> first if you are unsure of the path.",
+        "Config path not found: gateway.bind. Nothing was changed. Run paddy config get <path> first if you are unsure of the path.",
       );
     });
   });

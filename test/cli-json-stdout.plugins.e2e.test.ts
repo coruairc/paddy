@@ -85,7 +85,7 @@ describe("cli json stdout contract", () => {
     {
       name: "the search query is missing",
       args: ["plugins", "search", "--json"],
-      message: "Usage: openclaw plugins search <query>",
+      message: "Usage: paddy plugins search <query>",
     },
     {
       name: "ClawHub transport fails",
@@ -148,12 +148,12 @@ describe("cli json stdout contract", () => {
           ok: false,
           error: {
             type: "cli_error",
-            message: "Usage: openclaw plugins search <query>",
+            message: "Usage: paddy plugins search <query>",
           },
         });
         expect(result.stdout).not.toContain("\u001B");
         expect(result.stdout).not.toContain("\u0007");
-        expect(result.stderr).toContain("Usage: openclaw plugins search <query>");
+        expect(result.stderr).toContain("Usage: paddy plugins search <query>");
         expect(result.stderr).toContain("\u001B[?25h");
       },
       { prefix: "openclaw-plugins-json-tty-failure-e2e-" },

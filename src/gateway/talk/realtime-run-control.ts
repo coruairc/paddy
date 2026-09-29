@@ -6,6 +6,7 @@ import {
   resolveRealtimeVoiceAgentControlIntent,
   type RealtimeVoiceAgentControlResult,
 } from "../../talk/agent-run-control.js";
+import { PRODUCT_NAME } from "../../brand.js";
 
 const REALTIME_CONTROL_MAX_PENDING = 8;
 
@@ -97,7 +98,7 @@ export function createTalkRealtimeRunControlOwner(params: {
       )
     ) {
       reply(
-        "OpenClaw's voice control queue is full. Please try again after the pending controls finish.",
+        `${PRODUCT_NAME}'s voice control queue is full. Please try again after the pending controls finish.`,
       );
     }
     return "control";

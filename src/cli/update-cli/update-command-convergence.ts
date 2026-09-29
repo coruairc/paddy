@@ -17,6 +17,7 @@ import type { loadInstalledPluginIndexInstallRecords } from "../../plugins/insta
 import { withPluginLifecycleLease } from "../../plugins/plugin-lifecycle-lease.js";
 import { defaultRuntime } from "../../runtime.js";
 import { VERSION } from "../../version.js";
+import { CLI_NAME } from "../cli-name.js";
 import { readPackageVersion, type UpdateCommandOptions } from "./shared.js";
 import {
   capturePreUpdateSourceConfig,
@@ -183,7 +184,7 @@ export async function convergeUpdatePlugins(params: {
                       ...params.result.steps,
                       {
                         name: "post-update verification",
-                        command: "openclaw update",
+                        command: `${CLI_NAME} update`,
                         cwd: postUpdateRoot,
                         durationMs: 0,
                         exitCode: freshProcessResult.exitCode,
@@ -206,7 +207,7 @@ export async function convergeUpdatePlugins(params: {
         return {
           resultWithPostUpdate: failedTargetRuntime(),
           detail:
-            "The installed target could not resume plugin convergence. Run openclaw update using the installed target executable.",
+            `The installed target could not resume plugin convergence. Run ${CLI_NAME} update using the installed target executable.`,
         };
       }
 
@@ -308,7 +309,7 @@ export async function convergeUpdatePlugins(params: {
             ? [
                 {
                   name: "source runtime publication",
-                  command: "openclaw update",
+                  command: `${CLI_NAME} update`,
                   cwd: postUpdateRoot,
                   durationMs: runtimeDurationMs,
                   exitCode: 0,
@@ -333,7 +334,7 @@ export async function convergeUpdatePlugins(params: {
       if (failureFacts.length) {
         resultWithPostUpdate.steps.push({
           name: "post-update verification",
-          command: "openclaw plugins update",
+          command: `${CLI_NAME} plugins update`,
           cwd: postUpdateRoot,
           durationMs: 0,
           exitCode: 1,
@@ -343,7 +344,7 @@ export async function convergeUpdatePlugins(params: {
       resultWithPostUpdate.steps.push(
         ...normalizeUpdatePostInstallDoctorWarnings(doctorWarnings).map((message, index) => ({
           name: `post-plugin-doctor-warning-${index + 1}`,
-          command: "openclaw doctor --fix",
+          command: `${CLI_NAME} doctor --fix`,
           cwd: postUpdateRoot,
           durationMs: 0,
           exitCode: 0,
@@ -353,7 +354,7 @@ export async function convergeUpdatePlugins(params: {
       resultWithPostUpdate.steps.push(
         ...collectPostCorePluginAdvisories(postCorePluginUpdate).map((message, index) => ({
           name: `finalize:plugins:${index}`,
-          command: "openclaw plugins update",
+          command: `${CLI_NAME} plugins update`,
           cwd: postUpdateRoot,
           durationMs: 0,
           exitCode: 0,

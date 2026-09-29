@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { PRODUCT_NAME } from "../../brand.js";
 import { shouldLogVerbose } from "../../globals.js";
 import {
   resolveEventSessionKeyForPolicy,
@@ -470,7 +471,7 @@ export async function executeCliProcess(params: {
         const stallNotice = [
           `CLI agent (${runParams.provider}) produced no output for ${timeoutSeconds}s and was terminated.`,
           "It may have been waiting for interactive input or an approval prompt.",
-          "Check CLI permission settings and OpenClaw approval prompts.",
+          `Check CLI permission settings and ${PRODUCT_NAME} approval prompts.`,
         ].join(" ");
         const routing = resolveEventSessionRoutingPolicy({
           cfg: runParams.config,

@@ -180,7 +180,7 @@ describe("noteDevicePairingHealth", () => {
       expect(requireNoteTitle()).toBe("Device pairing");
       expect(message).toContain("Pending scope upgrade");
       expect(message).toContain("operator.admin");
-      expect(message).toContain("openclaw devices approve");
+      expect(message).toContain("paddy devices approve");
       expect(callGatewayMock).not.toHaveBeenCalled();
 
       const findings = await collectDevicePairingHealthFindings({
@@ -194,7 +194,7 @@ describe("noteDevicePairingHealth", () => {
           target: identity.deviceId + ":" + pending.request.requestId,
           requirement: "scope-upgrade",
           message: expect.stringContaining("Pending scope upgrade"),
-          fixHint: expect.stringContaining("openclaw devices approve"),
+          fixHint: expect.stringContaining("paddy devices approve"),
         }),
       ]);
       expect(callGatewayMock).not.toHaveBeenCalled();
@@ -367,7 +367,7 @@ describe("noteDevicePairingHealth", () => {
       expect(noteMock).toHaveBeenCalledTimes(1);
       const message = requireNoteMessage();
       expect(message).toContain("stale device-token pattern");
-      expect(message).toContain("openclaw devices rotate");
+      expect(message).toContain("paddy devices rotate");
     });
   });
 
@@ -416,7 +416,7 @@ describe("noteDevicePairingHealth", () => {
       expect(findings).toContainEqual(
         expect.objectContaining({
           requirement: "token-outside-approved-scope",
-          fixHint: `Rotate it with openclaw devices rotate --device paired-device --role ${role}${recoveryOption}.`,
+          fixHint: `Rotate it with paddy devices rotate --device paired-device --role ${role}${recoveryOption}.`,
         }),
       );
     },
@@ -524,9 +524,9 @@ describe("noteDevicePairingHealth", () => {
     });
 
     const message = requireNoteMessage();
-    expect(message).toContain("openclaw devices remove 'device; echo pwn'");
+    expect(message).toContain("paddy devices remove 'device; echo pwn'");
     expect(message).toContain(
-      "openclaw devices rotate --device 'device; echo pwn' --role 'operator; touch /tmp/pwn'",
+      "paddy devices rotate --device 'device; echo pwn' --role 'operator; touch /tmp/pwn'",
     );
   });
 

@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 /**
  * Realtime bootstrap context loader.
  *
@@ -38,7 +39,7 @@ const REALTIME_BOOTSTRAP_CONTEXT_FILE_NAME_SET: ReadonlySet<string> = new Set(
   REALTIME_BOOTSTRAP_CONTEXT_FILE_NAMES,
 );
 const DEFAULT_REALTIME_BOOTSTRAP_CONTEXT_MAX_CHARS = 12_000;
-const REALTIME_BOOTSTRAP_CONTEXT_TITLE = "OpenClaw realtime voice profile context:";
+const REALTIME_BOOTSTRAP_CONTEXT_TITLE = `${PRODUCT_NAME} realtime voice profile context:`;
 const REALTIME_BOOTSTRAP_CONTEXT_GUIDANCE =
   "Use these profile files for identity, persona, and user grounding; do not mention them unless asked.";
 

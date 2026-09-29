@@ -131,7 +131,7 @@ describe("printDaemonStatus", () => {
       "detected BOTH a user-scope (/home/gateway/.config/systemd/user/openclaw-gateway.service) " +
       "and a system-scope (/etc/systemd/system/openclaw-gateway.service) gateway unit bound to port 18789; " +
       "they will SIGTERM each other in a restart loop. " +
-      "Run `openclaw doctor` interactively to inspect both scopes and review supported cleanup.";
+      "Run `paddy doctor` interactively to inspect both scopes and review supported cleanup.";
     printDaemonStatus(
       {
         extraServices: [],
@@ -436,7 +436,7 @@ describe("printDaemonStatus", () => {
     );
 
     expectMockLineContains(runtime.error, "Gateway runtime PID does not own the listening port");
-    expectMockLineContains(runtime.error, formatCliCommand("openclaw gateway restart"));
+    expectMockLineContains(runtime.error, formatCliCommand("paddy gateway restart"));
   });
 
   it("prints established gateway client guidance gathered by deep status", () => {
@@ -602,7 +602,7 @@ describe("printDaemonStatus", () => {
       expectMockLineContains(runtime.error, "keepalive=true");
       expectMockLineContains(runtime.error, "Gateway lifecycle=restart");
       expectMockLineContains(runtime.error, "3 external forced Gateway restart(s)");
-      expectMockLineContains(runtime.error, formatCliCommand("openclaw doctor --fix"));
+      expectMockLineContains(runtime.error, formatCliCommand("paddy doctor --fix"));
     }
   });
 
@@ -645,7 +645,7 @@ describe("printDaemonStatus", () => {
       report,
       testCase.warning
         ? "Foreign launchd jobs detected (macOS)."
-        : "Other OpenClaw launchd jobs (macOS)",
+        : "Other Paddy launchd jobs (macOS)",
     );
     expectMockLineContains(report, job.label);
     expectMockLineContains(report, job.program);
@@ -691,11 +691,11 @@ describe("printDaemonStatus", () => {
       { json: false },
     );
 
-    expectMockLineContains(runtime.error, "Stale OpenClaw updater launchd job(s) detected.");
+    expectMockLineContains(runtime.error, "Stale Paddy updater launchd job(s) detected.");
     expectMockLineContains(runtime.error, "ai.openclaw.update.2026.5.12");
     expectMockLineContains(runtime.error, "ai.openclaw.manual-update.1717168800");
     expectMockLineContains(runtime.error, "launchctl remove <label>");
-    expectMockLineContains(runtime.error, formatCliCommand("openclaw gateway restart"));
+    expectMockLineContains(runtime.error, formatCliCommand("paddy gateway restart"));
   });
 
   it("points macOS launchd stdout and stderr at one log when gateway is not listening", () => {
@@ -811,7 +811,7 @@ describe("printDaemonStatus", () => {
 
     expectMockLineContains(runtime.error, "macOS has no usable GUI session");
     expectMockLineContains(runtime.error, "logged-in macOS GUI session");
-    expectMockLineContains(runtime.error, "openclaw --profile work gateway restart");
+    expectMockLineContains(runtime.error, "paddy --profile work gateway restart");
   });
 
   it.each([

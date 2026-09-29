@@ -2,6 +2,7 @@
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { createExecTool } from "../../agents/bash-tools.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { listSessionEntriesReadOnly } from "../../config/sessions/session-accessor.js";
 import { logVerbose } from "../../globals.js";
@@ -371,9 +372,9 @@ function hasCodexHarnessMetadata(params: HandleCommandsParams): boolean {
 
 function isCodexDiagnosticsUnavailableText(text: string | undefined): boolean {
   return (
-    text?.startsWith("No Codex thread is attached to this OpenClaw session yet.") === true ||
+    text?.startsWith(`No Codex thread is attached to this ${PRODUCT_NAME} session yet.`) === true ||
     text?.startsWith(
-      "Cannot send Codex diagnostics because this command did not include an OpenClaw session file.",
+      `Cannot send Codex diagnostics because this command did not include a ${PRODUCT_NAME} session file.`,
     ) === true
   );
 }

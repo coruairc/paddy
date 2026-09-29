@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { isPathInside } from "@openclaw/fs-safe/path";
 import { resolveDateTimestampMs } from "@openclaw/normalization-core/number-coercion";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   sealBackupResourceInventory,
   describeCapturedBackupSqliteSnapshots,
@@ -395,8 +396,8 @@ export async function createBackupArchive(
   if (plan.included.length === 0) {
     throw new Error(
       onlyConfig
-        ? "No OpenClaw config file was found to back up."
-        : "No local OpenClaw state was found to back up.",
+        ? `No ${PRODUCT_NAME} config file was found to back up.`
+        : `No local ${PRODUCT_NAME} state was found to back up.`,
     );
   }
 

@@ -4,6 +4,7 @@ import type { OAuthClientProvider } from "@modelcontextprotocol/sdk/client/auth.
 import type { OAuthClientMetadata, OAuthTokens } from "@modelcontextprotocol/sdk/shared/auth.js";
 import type { FetchLike } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawStateAsyncLeaseContext } from "../state/openclaw-state-lease.js";
 import type { OpenClawStateWorkerContext } from "../state/openclaw-state-worker-context.types.js";
 import type { McpOAuthIdentity } from "./mcp-oauth-identity.js";
@@ -51,7 +52,7 @@ function buildOAuthClientMetadata(
 ): OAuthClientMetadata {
   const redirectUrl = resolveOAuthRedirectUrl(config, store);
   return {
-    client_name: "OpenClaw MCP",
+    client_name: `${PRODUCT_NAME} MCP`,
     redirect_uris: [redirectUrl],
     grant_types: ["authorization_code", "refresh_token"],
     response_types: ["code"],

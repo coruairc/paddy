@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { extractSqliteTableSchema } from "../infra/sqlite-schema-sql.js";
 import { runSqliteImmediateTransactionSync } from "../infra/sqlite-transaction.js";
 import { OPENCLAW_AGENT_SCHEMA_SQL } from "./openclaw-agent-schema.js";
@@ -18,7 +19,7 @@ export function ensureSessionTranscriptArchiveSchema(db: DatabaseSync): void {
       extractSqliteTableSchema(OPENCLAW_AGENT_SCHEMA_SQL, SESSION_TRANSCRIPT_ARCHIVES_TABLE, {
         endMarker: "CREATE TABLE IF NOT EXISTS transcript_rewrite_watermarks (",
         includeEndMarker: false,
-        errorMessage: "OpenClaw session transcript archive schema markers are missing.",
+        errorMessage: `${PRODUCT_NAME} session transcript archive schema markers are missing.`,
       }),
     );
   };

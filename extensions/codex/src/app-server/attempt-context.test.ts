@@ -255,7 +255,7 @@ describe("Codex app-server attempt context", () => {
 
       expect(context.threadDeveloperInstructions).toContain("Canonical agent instructions");
       expect(context.threadDeveloperInstructions).toContain(
-        "OpenClaw Agent Workspace Instructions",
+        "Paddy Agent Workspace Instructions",
       );
       expect(context.threadDeveloperInstructions).toContain(path.join(workspaceDir, "AGENTS.md"));
       expect(context.threadDeveloperInstructions).not.toContain("Canonical agent soul");

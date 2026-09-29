@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveChatAttachmentMaxBytes } from "../gateway/chat-attachment-policy.js";
 import { readLocalMediaFile } from "../media/local-media-access.js";
 import { resolveMediaReferenceLocalPath } from "../media/media-reference.js";
@@ -50,7 +51,7 @@ export async function prepareWorkspaceAttachments(
       const result = await bridge.createFileExclusive({ filePath, data, mkdir: true, signal });
       assertCurrent();
       if (result === "exists" && (await root.readText(filePath, { maxBytes: 1024 })) !== data) {
-        throw new Error("Input staging directory is not owned by OpenClaw");
+        throw new Error(`Input staging directory is not owned by ${PRODUCT_NAME}`);
       }
     },
   };

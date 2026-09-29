@@ -33,6 +33,7 @@ import { getPreparedModelRuntimeAuthStore } from "../../agents/prepared-model-ru
 import { PreparedModelRuntimePublicationSupersededError } from "../../agents/prepared-model-runtime.errors.js";
 import type { PreparedModelRuntimeSnapshot } from "../../agents/prepared-model-runtime.types.js";
 import { resolveDefaultAgentWorkspaceDir } from "../../agents/workspace.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { resolveProviderChannelLoginChoice } from "../../plugins/provider-login-options.js";
@@ -94,7 +95,7 @@ function buildRuntimeChoice(params: { cfg: OpenClawConfig; runtime: string }): M
     label,
     description:
       id === "openclaw"
-        ? "Use OpenClaw's built-in agent and tools."
+        ? `Use ${PRODUCT_NAME}'s built-in agent and tools.`
         : `Use ${label} to run this model.`,
   };
 }

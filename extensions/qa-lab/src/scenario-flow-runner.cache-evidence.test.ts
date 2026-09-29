@@ -68,6 +68,8 @@ describe("large read cache evidence", () => {
     "Warning: truncated output (original token count: 20000)\n…12345 tokens truncated…",
     "…12345 chars truncated…",
     "[Read output capped at 50KB]",
+    "...(Paddy truncated dynamic tool result: original 100000 chars)",
+    // Legacy marker from pre-rebrand artefacts; the matcher accepts both.
     "...(OpenClaw truncated dynamic tool result: original 100000 chars)",
     "...(truncated)...",
   ])("accepts a capped result with native marker %s", async (marker) => {

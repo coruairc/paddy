@@ -77,7 +77,7 @@ describe("printDaemonStatus plugin version drift", () => {
     );
 
     expectMockLineContains(runtime.log, "Plugin version drift: 1 active official plugin");
-    expectMockLineContains(runtime.log, "openclaw gateway status --deep");
+    expectMockLineContains(runtime.log, "paddy gateway status --deep");
     expect(runtime.log.mock.calls.map(([line]) => line).join("\n")).not.toContain("whatsapp:");
   });
 
@@ -212,7 +212,7 @@ describe("printDaemonStatus plugin version drift", () => {
       runtime.log,
       "openclaw plugins update @openclaw/brave-plugin@2026.6.10-beta.1",
     );
-    expectMockLineContains(runtime.log, "openclaw gateway restart");
+    expectMockLineContains(runtime.log, "paddy gateway restart");
   });
 
   it("fails loudly without an install command when npm cannot resolve a pinned target", () => {
@@ -256,6 +256,6 @@ describe("printDaemonStatus plugin version drift", () => {
       .flatMap((mock) => mock.mock.calls.map(([line]) => line))
       .join("\n");
     expect(output).not.toContain("openclaw plugins update");
-    expect(output).not.toContain("openclaw gateway restart");
+    expect(output).not.toContain("paddy gateway restart");
   });
 });

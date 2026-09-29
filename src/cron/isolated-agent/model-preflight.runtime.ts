@@ -8,6 +8,7 @@ import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { formatErrorMessageWithCode } from "../../infra/errors.js";
 import { fetchWithSsrFGuard } from "../../infra/net/fetch-guard.js";
 import type { SsrFPolicy } from "../../infra/net/ssrf.js";
+import { PRODUCT_NAME } from "../../brand.js";
 
 const PREFLIGHT_CACHE_TTL_MS = 5 * 60_000;
 const PREFLIGHT_TIMEOUT_MS = 2_500;
@@ -147,7 +148,7 @@ function buildUnavailableResult(params: {
     retryAfterMs: PREFLIGHT_CACHE_TTL_MS,
     reason: [
       `This automation uses ${params.provider}/${params.model} but the local provider preflight failed at ${params.baseUrl}.`,
-      `The candidate is unavailable for this run; OpenClaw will retry its provider preflight on a later scheduled run.`,
+      `The candidate is unavailable for this run; ${PRODUCT_NAME} will retry its provider preflight on a later scheduled run.`,
       `Last error: ${formatPreflightError(params.error)}`,
     ].join(" "),
   };

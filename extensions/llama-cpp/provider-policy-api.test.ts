@@ -12,7 +12,7 @@ describe("llama.cpp embedding setup policy", () => {
       reason: expect.stringMatching(/llama-server.*node-llama-cpp.*degraded/),
       requirement: "managed-llama-cpp-setup",
       fixHint:
-        "Run `openclaw models --agent main auth login --provider llama-cpp --method local` in an interactive terminal, then rerun this check.",
+        "Run `paddy models --agent main auth login --provider llama-cpp --method local` in an interactive terminal, then rerun this check.",
     });
   });
 

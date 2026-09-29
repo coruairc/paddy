@@ -135,7 +135,7 @@ describe("irc inbound behavior", () => {
     expect(sendReply).toHaveBeenCalledWith(
       "alice",
       [
-        "OpenClaw: access not configured.",
+        "Paddy: access not configured.",
         "",
         "Your IRC id: alice!ident@example.com",
         "Pairing code:",
@@ -145,7 +145,7 @@ describe("irc inbound behavior", () => {
         "",
         "Ask the bot owner to approve with:",
         "```",
-        "openclaw pairing approve irc CODE",
+        "paddy pairing approve irc CODE",
         "```",
       ].join("\n"),
       undefined,

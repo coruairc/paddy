@@ -263,7 +263,7 @@ describe("setupWizardCommand", () => {
 
       expect(runtime.log).toHaveBeenCalledWith(
         [
-          "Windows detected - OpenClaw runs great on WSL2!",
+          "Windows detected - Paddy runs great on WSL2!",
           "Native Windows might be trickier.",
           "Quick setup: wsl --install (one command, one reboot)",
           "Guide: https://docs.openclaw.ai/windows",
@@ -465,7 +465,7 @@ describe("setupWizardCommand", () => {
     await setupWizardCommand({ resetScope: "full" }, runtime);
 
     expect(runtime.error).toHaveBeenCalledWith(
-      "--reset-scope requires --reset. Re-run with openclaw onboard --reset --reset-scope full.",
+      "--reset-scope requires --reset. Re-run with paddy onboard --reset --reset-scope full.",
     );
     expect(runtime.exit).toHaveBeenCalledWith(1);
     expect(mocks.handleReset).not.toHaveBeenCalled();

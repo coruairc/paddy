@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { isPathInside } from "../infra/path-guards.js";
 import {
@@ -86,7 +87,7 @@ export function assertPluginNativeNamespaceHost(
     break;
   }
   throw new Error(
-    "Retained native directory does not resolve the selected OpenClaw host; repair the installed plugin's OpenClaw peer link before loading it.",
+    `Retained native directory does not resolve the selected ${PRODUCT_NAME} host; repair the installed plugin's ${PRODUCT_NAME} peer link before loading it.`,
   );
 }
 

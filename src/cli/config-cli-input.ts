@@ -25,6 +25,7 @@ import {
   toDotPath,
   type ConcreteConfigPathSegment,
 } from "../shared/dot-path.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import {
   formatConfigSetPath,
@@ -601,8 +602,8 @@ export function formatPluginInstallConfigSetError(): string {
     "plugins.installs is managed by the plugin index and cannot be edited with config set.",
     "",
     "Use plugin commands instead:",
-    `  ${formatCliCommand("openclaw plugins install <spec>")}`,
-    `  ${formatCliCommand("openclaw plugins update <plugin-id>")}`,
-    `  ${formatCliCommand("openclaw plugins uninstall <plugin-id>")}`,
+    `  ${formatCliCommand(`${CLI_NAME} plugins install <spec>`)}`,
+    `  ${formatCliCommand(`${CLI_NAME} plugins update <plugin-id>`)}`,
+    `  ${formatCliCommand(`${CLI_NAME} plugins uninstall <plugin-id>`)}`,
   ].join("\n");
 }

@@ -303,7 +303,7 @@ export async function finishUpdate(
       finalResult.recovery = { serviceRestartSafe: false, reason: "runtime-verification-failed" };
       finalResult.steps = finalResult.steps.concat({
         name: "windows-task-autostart-recovery",
-        command: "openclaw update",
+        command: `paddy update`,
         cwd: finalResult.root ?? params.root,
         durationMs: 0,
         exitCode: 1,

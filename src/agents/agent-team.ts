@@ -1,4 +1,5 @@
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { isUnconfiguredConfigSource } from "../cli/fresh-install-config.js";
 import { hasResolvedRosterBeforeMigrations } from "../config/agent-roster-provenance.js";
 import {
@@ -63,7 +64,7 @@ export async function createAgentTeam(
   return await withConfigMutationExclusive(async (lockedConfig) => {
     const snapshot = await readConfigFileSnapshot();
     if (!snapshot.valid) {
-      return { status: "error", message: "Cannot create a team from an invalid OpenClaw config." };
+      return { status: "error", message: `Cannot create a team from an invalid ${PRODUCT_NAME} config.` };
     }
     if (
       Object.hasOwn(params, "expectedConfigHash") &&

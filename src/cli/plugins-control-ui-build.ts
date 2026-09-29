@@ -10,6 +10,7 @@ import {
 import type { PluginManifestControlUi } from "../plugins/manifest-types.js";
 import { PLUGIN_MANIFEST_FILENAME } from "../plugins/manifest.js";
 import { buildPluginLoaderAliasMap } from "../plugins/sdk-alias.js";
+import { CLI_NAME } from "./cli-name.js";
 import { buildPluginBundle } from "./plugins-build-bundle.js";
 
 export async function writePluginBuildManifest(
@@ -95,7 +96,7 @@ export async function buildPluginControlUi(params: {
         .readFile(path.join(outputDir, path.basename(file.path)))
         .catch(() => null);
       if (!existing?.equals(Buffer.from(file.contents))) {
-        throw new Error("Control UI build is missing or stale. Run openclaw plugins build.");
+        throw new Error(`Control UI build is missing or stale. Run ${CLI_NAME} plugins build.`);
       }
     }
     return declaration;

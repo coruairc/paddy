@@ -736,7 +736,7 @@ describe("createCodexDynamicToolBridge", () => {
     expect(invalidResult.contentItems).toEqual([
       {
         type: "inputText",
-        text: `Unknown OpenClaw tool: ${testCase.name}`,
+        text: `Unknown Paddy tool: ${testCase.name}`,
       },
     ]);
   });
@@ -912,7 +912,7 @@ describe("createCodexDynamicToolBridge", () => {
   it("redacts a credential that crosses the dynamic tool result budget", async () => {
     const maxChars = 16_000;
     const totalChars = 20_000;
-    const noticeText = `...(OpenClaw truncated dynamic tool result: original ${totalChars} chars, weighted budget ${maxChars}; rerun with narrower args.)`;
+    const noticeText = `...(Paddy truncated dynamic tool result: original ${totalChars} chars, weighted budget ${maxChars}; rerun with narrower args.)`;
     const textBudget = maxChars - noticeText.length - 1;
     // Newlines bound the credential token so the filler stays outside its mask.
     const marker = `\nAuthorization: Bearer ${SYNTHETIC_BEARER_CREDENTIAL}\n`;
@@ -936,7 +936,7 @@ describe("createCodexDynamicToolBridge", () => {
       .join("");
     expect(text).not.toContain(SYNTHETIC_BEARER_CREDENTIAL);
     expect(text).not.toContain("bearer-model-visible");
-    expect(text).toContain("OpenClaw truncated dynamic tool result");
+    expect(text).toContain("Paddy truncated dynamic tool result");
     expect(result.contentItems).toContainEqual(expect.objectContaining({ type: "inputImage" }));
   });
 

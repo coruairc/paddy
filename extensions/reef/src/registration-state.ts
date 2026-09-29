@@ -80,7 +80,7 @@ function parseReefIdentityPendingRecord(value: unknown): ReefIdentityPendingReco
 
 function reefIdentityConflict(binding: ReefIdentityBinding): Error {
   return new Error(
-    `This OpenClaw state already holds the Reef identity @${binding.handle} on ${binding.relayUrl}. Re-register the same handle and relay.`,
+    `This Paddy state already holds the Reef identity @${binding.handle} on ${binding.relayUrl}. Re-register the same handle and relay.`,
   );
 }
 
@@ -114,7 +114,7 @@ export async function assertReefIdentityBinding(
   const existing = await loadReefIdentityBinding(runtime);
   if (!existing) {
     throw new Error(
-      "Reef identity binding is missing; run openclaw doctor --fix or register this claw",
+      "Reef identity binding is missing; run paddy doctor --fix or register this claw",
     );
   }
   if (existing.handle !== binding.handle || existing.relayUrl !== binding.relayUrl) {

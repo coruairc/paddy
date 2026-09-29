@@ -1,4 +1,5 @@
 import path from "node:path";
+import { PRODUCT_NAME } from "../../brand.js";
 import { prepareMemorySystemPromptAddition } from "../../context-engine/delegate.js";
 import { buildBootstrapContextForFiles, resolveBootstrapFilesForRun } from "../bootstrap-files.js";
 import type { EmbeddedContextFile } from "../embedded-agent-helpers/context-file.js";
@@ -152,11 +153,11 @@ function renderPersonaInstructions(files: readonly EmbeddedContextFile[]): strin
     return undefined;
   }
   const preamble =
-    "OpenClaw loaded these workspace instruction files from the active agent workspace. They are the canonical definitions of who you are, how you think and work, and the human you work alongside. Internalize and follow them accordingly." +
+    `${PRODUCT_NAME} loaded these workspace instruction files from the active agent workspace. They are the canonical definitions of who you are, how you think and work, and the human you work alongside. Internalize and follow them accordingly.` +
     (files.some((file) => file.personalUser === true)
       ? ` ${PERSONAL_USER_CONTEXT_INSTRUCTIONS}`
       : "");
-  const lines = ["## OpenClaw Agent Soul", "", preamble, "", "<AGENT_SOUL>", ""];
+  const lines = [`## ${PRODUCT_NAME} Agent Soul`, "", preamble, "", "<AGENT_SOUL>", ""];
   for (const file of files) {
     lines.push(`### ${file.path}`, "", file.content, "");
   }

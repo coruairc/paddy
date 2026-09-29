@@ -4,6 +4,7 @@ import { theme } from "../../packages/terminal-core/src/theme.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { POST_CORE_UPDATE_ENV } from "../infra/update-post-core-context.js";
 import { defaultRuntime, ExitError } from "../runtime.js";
+import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 import { inheritOptionFromParent } from "./command-options.js";
 import { formatHelpExamples } from "./help-format.js";
 import { isJsonOutputModeActive } from "./json-output-mode.js";
@@ -72,12 +73,12 @@ function createUpdateLeafAction(
     try {
       if (inheritOptionFromParent<boolean>(command, "reapplyLocalOverrides")) {
         throw new Error(
-          `--reapply-local-overrides is not supported for openclaw update ${command.name()}. Use it with openclaw update.`,
+          `--reapply-local-overrides is not supported for ${CLI_NAME} update ${command.name()}. Use it with ${CLI_NAME} update.`,
         );
       }
       if (!options.supportsDryRun && inheritOptionFromParent<boolean>(command, "dryRun")) {
         throw new Error(
-          `--dry-run is not supported for \`openclaw update ${command.name()}\`. Run \`openclaw update --dry-run\` instead.`,
+          `--dry-run is not supported for \`${CLI_NAME} update ${command.name()}\`. Run \`${CLI_NAME} update --dry-run\` instead.`,
         );
       }
       await action(opts, command);
@@ -101,13 +102,13 @@ function registerUpdateFinalizationCommand(update: Command, name: string, hidden
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw update repair", "Reconcile abandoned runs or repair post-update state."],
+          [`${CLI_NAME} update repair`, "Reconcile abandoned runs or repair post-update state."],
           [
-            "openclaw update repair --accept-capabilities",
+            `${CLI_NAME} update repair --accept-capabilities`,
             "Accept reviewed plugin capability changes during repair.",
           ],
-          ["openclaw update repair --channel beta", "Repair against the beta update channel."],
-          ["openclaw update repair --json", "JSON output for automation."],
+          [`${CLI_NAME} update repair --channel beta`, "Repair against the beta update channel."],
+          [`${CLI_NAME} update repair --json`, "JSON output for automation."],
         ])}\n\n${theme.heading("Notes:")}\n${theme.muted(
           "- Reconciles abandoned runs when the Gateway is healthy; otherwise repairs post-update state",
         )}\n${theme.muted("- Runs Doctor repair and plugin convergence; repair restores only a service it stops")}\n\n${theme.muted(
@@ -139,29 +140,29 @@ export function registerUpdateCli(program: Command) {
   program.enablePositionalOptions();
   const update = program
     .command("update")
-    .description("Update OpenClaw and inspect update channel status");
+    .description(`Update ${PRODUCT_NAME} and inspect update channel status`);
   for (const [flags, description, defaultValue] of UPDATE_OPTION_SPECS) {
     update.option(flags, description, defaultValue);
   }
   update
     .addHelpText("after", () => {
       const examples = [
-        ["openclaw update", "Update a source checkout (git)"],
+        [`${CLI_NAME} update`, "Update a source checkout (git)"],
         [
-          "openclaw update --channel extended-stable",
+          `${CLI_NAME} update --channel extended-stable`,
           "Switch to the monthly supported npm channel",
         ],
-        ["openclaw update --channel beta", "Switch to beta channel (git + npm)"],
-        ["openclaw update --channel dev", "Switch to dev channel (git + npm)"],
-        ["openclaw update --tag beta", "One-off update to a dist-tag or version"],
-        ["openclaw update --dry-run", "Preview actions without changing anything"],
-        ["openclaw update --no-restart", "Update without restarting the service"],
-        ["openclaw update --json", "Output result as JSON"],
-        ["openclaw update --yes", "Non-interactive (accept downgrade prompts)"],
-        ["openclaw update --accept-capabilities", "Accept reviewed plugin capability changes"],
-        ["openclaw update repair", "Repair stranded post-update plugin state"],
-        ["openclaw update wizard", "Interactive update wizard"],
-        ["openclaw --update", "Shorthand for openclaw update"],
+        [`${CLI_NAME} update --channel beta`, "Switch to beta channel (git + npm)"],
+        [`${CLI_NAME} update --channel dev`, "Switch to dev channel (git + npm)"],
+        [`${CLI_NAME} update --tag beta`, "One-off update to a dist-tag or version"],
+        [`${CLI_NAME} update --dry-run`, "Preview actions without changing anything"],
+        [`${CLI_NAME} update --no-restart`, "Update without restarting the service"],
+        [`${CLI_NAME} update --json`, "Output result as JSON"],
+        [`${CLI_NAME} update --yes`, "Non-interactive (accept downgrade prompts)"],
+        [`${CLI_NAME} update --accept-capabilities`, "Accept reviewed plugin capability changes"],
+        [`${CLI_NAME} update repair`, "Repair stranded post-update plugin state"],
+        [`${CLI_NAME} update wizard`, "Interactive update wizard"],
+        [`${CLI_NAME} --update`, `Shorthand for ${CLI_NAME} update`],
       ] as const;
       const fmtExamples = formatHelpExamples(examples, true);
       return `
@@ -171,7 +172,7 @@ ${theme.heading("What this does:")}
 
 ${theme.heading("Switch channels:")}
   - Use --channel stable|extended-stable|beta|dev to persist the update channel in config
-  - Run openclaw update status to see the active channel and source
+  - Run ${CLI_NAME} update status to see the active channel and source
   - Use --tag <dist-tag|version|spec> for a one-off package update without persisting
   - Use --channel dev for the moving GitHub main checkout; package installs reject --tag main
 
@@ -243,7 +244,7 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.openclaw.ai/cli/up
               update.getOptionValueSource(key) !== "default"
             ) {
               throw new Error(
-                `--${key === "restart" ? "no-restart" : key === "acceptCapabilities" ? "accept-capabilities" : key} is not supported for openclaw update cleanup.`,
+                `--${key === "restart" ? "no-restart" : key === "acceptCapabilities" ? "accept-capabilities" : key} is not supported for ${CLI_NAME} update cleanup.`,
               );
             }
           }
@@ -266,8 +267,8 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.openclaw.ai/cli/up
     .command("migration-plan", { hidden: true })
     .description("Plan Doctor-owned state migrations against an isolated snapshot")
     .requiredOption("--snapshot-home <path>", "Copied environment home")
-    .requiredOption("--snapshot-config <path>", "Copied OpenClaw config")
-    .requiredOption("--snapshot-state <path>", "Copied OpenClaw state directory")
+    .requiredOption("--snapshot-config <path>", `Copied ${PRODUCT_NAME} config`)
+    .requiredOption("--snapshot-state <path>", `Copied ${PRODUCT_NAME} state directory`)
     .option("--dry-run", "Accepted for parity; migration planning is always read-only", true)
     .option("--json", "Output result as JSON", true)
     .action(
@@ -316,9 +317,9 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.openclaw.ai/cli/up
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw update status", "Show channel + version status."],
-          ["openclaw update status --json", "JSON output."],
-          ["openclaw update status --timeout 10", "Custom timeout."],
+          [`${CLI_NAME} update status`, "Show channel + version status."],
+          [`${CLI_NAME} update status --json`, "JSON output."],
+          [`${CLI_NAME} update status --timeout 10`, "Custom timeout."],
         ])}\n\n${theme.heading("Notes:")}\n${theme.muted(
           "- Shows current update channel (stable/extended-stable/beta/dev) and source",
         )}\n${theme.muted("- Includes git tag/branch/SHA for source checkouts")}\n\n${theme.muted(

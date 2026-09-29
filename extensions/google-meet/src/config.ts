@@ -106,7 +106,7 @@ export const DEFAULT_GOOGLE_MEET_AUDIO_INPUT_COMMAND =
 export const DEFAULT_GOOGLE_MEET_AUDIO_OUTPUT_COMMAND =
   DEFAULT_GOOGLE_MEET_AUDIO_COMMANDS.outputCommand;
 
-const DEFAULT_GOOGLE_MEET_REALTIME_INSTRUCTIONS = `You are joining a private Google Meet as an OpenClaw voice transport. Keep spoken replies brief and natural. In agent mode, wait for OpenClaw consult results and speak them exactly. In bidi mode, answer directly and call ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} for deeper reasoning, current information, or tools.`;
+const DEFAULT_GOOGLE_MEET_REALTIME_INSTRUCTIONS = `You are joining a private Google Meet as a Paddy voice transport. Keep spoken replies brief and natural. In agent mode, wait for Paddy consult results and speak them exactly. In bidi mode, answer directly and call ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} for deeper reasoning, current information, or tools.`;
 const DEFAULT_GOOGLE_MEET_REALTIME_INTRO_MESSAGE = "Say exactly: I'm here and listening.";
 
 function resolveOptionalNumber(value: unknown): number | undefined {

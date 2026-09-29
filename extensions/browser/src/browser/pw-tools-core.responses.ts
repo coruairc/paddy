@@ -67,7 +67,7 @@ export async function responseBodyViaPlaywright(opts: {
         new Error(
           matched
             ? `Response body timed out after ${timeout}ms for url pattern "${pattern}".`
-            : `Response not found for url pattern "${pattern}". Run 'openclaw browser requests' to inspect recent network activity.`,
+            : `Response not found for url pattern "${pattern}". Run 'paddy browser requests' to inspect recent network activity.`,
         ),
       );
     }, timeout);

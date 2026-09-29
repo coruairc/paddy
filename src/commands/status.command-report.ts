@@ -2,6 +2,7 @@
 // Report data assembly stays separate so tests can validate rows without terminal formatting.
 
 import type { RenderTableOptions, TableColumn } from "../../packages/terminal-core/src/table.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { statusOverviewTableColumns } from "./status-all/report-tables.js";
 import { appendStatusReportLines, appendStatusReportTable } from "./status-all/text-report.js";
 
@@ -28,7 +29,7 @@ export async function buildStatusCommandReportLines(params: {
   footerLines: string[];
 }) {
   const lines: string[] = [];
-  lines.push(params.heading("OpenClaw status"));
+  lines.push(params.heading(`${PRODUCT_NAME} status`));
 
   const report = {
     lines,

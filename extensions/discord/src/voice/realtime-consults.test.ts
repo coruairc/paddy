@@ -292,7 +292,7 @@ defineDiscordVoiceTests(
         "call-late",
         {
           status: "already_delivered",
-          message: "OpenClaw already delivered this answer to Discord voice. Do not repeat it.",
+          message: "Paddy already delivered this answer to Discord voice. Do not repeat it.",
         },
         { suppressResponse: true },
       );
@@ -315,7 +315,7 @@ defineDiscordVoiceTests(
           "call-late-unsuppressed",
           {
             status: "already_delivered",
-            message: "OpenClaw already delivered this answer to Discord voice. Do not repeat it.",
+            message: "Paddy already delivered this answer to Discord voice. Do not repeat it.",
           },
         ]);
       });
@@ -420,7 +420,7 @@ defineDiscordVoiceTests(
                   {
                     status: "already_delivered",
                     message:
-                      "OpenClaw already delivered this answer to Discord voice. Do not repeat it.",
+                      "Paddy already delivered this answer to Discord voice. Do not repeat it.",
                   },
                   { suppressResponse: true },
                 ]
@@ -475,7 +475,7 @@ defineDiscordVoiceTests(
         "call-late",
         {
           status: "already_delivered",
-          message: "OpenClaw already delivered this answer to Discord voice. Do not repeat it.",
+          message: "Paddy already delivered this answer to Discord voice. Do not repeat it.",
         },
         { suppressResponse: true },
       );
@@ -533,7 +533,7 @@ defineDiscordVoiceTests(
         "call-new",
         {
           status: "already_delivered",
-          message: "OpenClaw already delivered this answer to Discord voice. Do not repeat it.",
+          message: "Paddy already delivered this answer to Discord voice. Do not repeat it.",
         },
         { suppressResponse: true },
       );

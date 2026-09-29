@@ -22,7 +22,7 @@ vi.mock("../../infra/container-environment.js", () => ({ isContainerEnvironment:
 
 const dirs = useAutoCleanupTempDirTracker(afterEach);
 const hostGuidance =
-  "Run `openclaw triage` on this machine to open a coding agent that can diagnose and repair the installation.";
+  "Run `paddy triage` on this machine to open a coding agent that can diagnose and repair the installation.";
 const redeploy = "recreate or redeploy the container";
 const permissionDetail =
   "Package update cannot write /usr/lib/node_modules (EPERM; owner UID 0 (root), GID 0). Run the package update as the directory's owning account, keeping the Gateway's existing state/configuration.";
@@ -110,7 +110,7 @@ describe("update recovery reporting", () => {
       } finally {
         read.mockRestore();
       }
-      expect(nextAction).toContain("openclaw triage");
+      expect(nextAction).toContain("paddy triage");
       const after = getUpdateRun(run.runId, { env });
       if (terminal) {
         expect(after).toEqual(before);
@@ -267,10 +267,10 @@ describe("update recovery reporting", () => {
       reason: "update-activation-timeout",
     });
     const action = stored?.origin.nextAction;
-    expect(action).toContain("openclaw --profile work update status");
-    expect(action).toContain("openclaw --profile work doctor");
+    expect(action).toContain("paddy --profile work update status");
+    expect(action).toContain("paddy --profile work doctor");
     expect(action).toContain("Wait for the owning updater and its child processes to stop");
-    expect(action).toContain("openclaw --profile work update repair");
+    expect(action).toContain("paddy --profile work update repair");
     expect(output.mock.calls[0]?.[0]).toMatchObject({ run: { origin: { nextAction: action } } });
     expect(stored && renderUpdateRunReport(stored).markdown).toContain(action);
   });
@@ -303,7 +303,7 @@ describe("update recovery reporting", () => {
       if (reason === "global-install-foreign-destination") {
         expect(action).toBe(
           container
-            ? `${foreignDetail} Detected a foreign npm destination inside a container. Pull or build an OpenClaw image with the target version, then recreate or redeploy the container with the same state/config mounts. In-container package changes are not durable.`
+            ? `${foreignDetail} Detected a foreign npm destination inside a container. Pull or build a Paddy image with the target version, then recreate or redeploy the container with the same state/config mounts. In-container package changes are not durable.`
             : foreignDetail,
         );
       }
@@ -312,7 +312,7 @@ describe("update recovery reporting", () => {
       }
       if (container) {
         expect(action).toContain("inside a container");
-        expect(action).toContain("Pull or build an OpenClaw image");
+        expect(action).toContain("Pull or build a Paddy image");
         expect(action).toContain(redeploy);
         expect(action).toContain("same state/config mounts");
         expect(action).not.toMatch(/sudo|npm config set prefix/);

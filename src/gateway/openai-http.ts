@@ -783,7 +783,7 @@ export async function handleOpenAiHttpRequest(
       const toolCalls =
         stopReason === "tool_calls" && pendingToolCalls?.length ? pendingToolCalls : undefined;
       const content =
-        resolveAssistantResultText(result) || (toolCalls ? "" : "No response from OpenClaw.");
+        resolveAssistantResultText(result) || (toolCalls ? "" : `No response from Paddy.`);
       sendJson(res, 200, {
         id: runId,
         object: "chat.completion",
@@ -873,7 +873,7 @@ export async function handleOpenAiHttpRequest(
         pending: pendingAssistantText,
         resultText: finalResultText,
         streamedText: streamedAssistantText.text,
-        fallbackText: finalToolCalls ? "" : "No response from OpenClaw.",
+        fallbackText: finalToolCalls ? "" : `No response from Paddy.`,
       });
       if (!text.startsWith(streamedAssistantText.text)) {
         finishStreamWithError({

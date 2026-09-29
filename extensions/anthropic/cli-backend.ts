@@ -116,7 +116,7 @@ function resolveClaudeCliAuthInput(
     const expires = "expires" in credential ? credential.expires : undefined;
     if (typeof expires !== "number" || !Number.isFinite(expires) || expires <= Date.now()) {
       throw new Error(
-        "Selected Claude CLI OAuth credential is expired or invalid. Re-authenticate the selected profile and retry. OpenClaw did not start the run.",
+        "Selected Claude CLI OAuth credential is expired or invalid. Re-authenticate the selected profile and retry. Paddy did not start the run.",
       );
     }
     if (typeof credential.access !== "string") {

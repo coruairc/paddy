@@ -11,6 +11,7 @@ import type { AgentExecutionAuthBinding } from "../agents/execution-auth-binding
 import { describeFailoverError } from "../agents/failover-error.js";
 import type { FailoverReason } from "../agents/failover/signal.js";
 import { DEFAULT_AGENT_WORKSPACE_DIR } from "../agents/workspace-default.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type {
   detectInferenceBackends,
   InferenceBackendKind,
@@ -337,7 +338,7 @@ export function invalidSetupConfigError(snapshot: {
 }): string {
   const issue = snapshot.issues?.[0];
   const detail = issue ? ` (${issue.path ? `${issue.path}: ` : ""}${issue.message})` : "";
-  return `OpenClaw config ${snapshot.path} is invalid${detail}. Fix it before running setup.`;
+  return `${PRODUCT_NAME} config ${snapshot.path} is invalid${detail}. Fix it before running setup.`;
 }
 
 export async function redactSetupInferenceError(
@@ -446,7 +447,7 @@ export function validateSetupInferenceOwnerEvidence(params: {
       ok: false,
       status: "unknown",
       error:
-        "Inference succeeded, but its runtime did not report an owner that OpenClaw can safely reuse. No default model was changed.",
+        `Inference succeeded, but its runtime did not report an owner that ${PRODUCT_NAME} can safely reuse. No default model was changed.`,
     };
   }
   if (

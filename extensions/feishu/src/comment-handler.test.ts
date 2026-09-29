@@ -422,7 +422,7 @@ describe("handleFeishuCommentEvent", () => {
       file_type: "docx",
       comment_id: "comment_1",
       content: [
-        "OpenClaw: access not configured.",
+        "Paddy: access not configured.",
         "",
         "Your Feishu user id: ou_sender",
         "Pairing code:",
@@ -432,7 +432,7 @@ describe("handleFeishuCommentEvent", () => {
         "",
         "Ask the bot owner to approve with:",
         "```",
-        "openclaw pairing approve feishu TESTCODE",
+        "paddy pairing approve feishu TESTCODE",
         "```",
       ].join("\n"),
       is_whole_comment: false,

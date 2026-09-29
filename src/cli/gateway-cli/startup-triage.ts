@@ -1,5 +1,6 @@
 import { formatErrorMessage } from "../../infra/errors.js";
 import type { RuntimeEnv } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 
 export async function triageGatewayStartupFailure(
@@ -13,7 +14,7 @@ export async function triageGatewayStartupFailure(
   } catch (importError) {
     // An in-place update can remove the old recovery chunk before a restart fails.
     runtime.error(
-      `Automatic triage could not load: ${formatErrorMessage(importError)}. Run ${formatCliCommand("openclaw triage")} manually.`,
+      `Automatic triage could not load: ${formatErrorMessage(importError)}. Run ${formatCliCommand(`${CLI_NAME} triage`)} manually.`,
     );
     return;
   }

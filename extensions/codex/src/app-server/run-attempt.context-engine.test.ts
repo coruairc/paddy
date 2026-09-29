@@ -193,7 +193,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
       expect(readStringValue(threadStartParams.developerInstructions) ?? "").toContain(
         "context-engine system",
       );
-      expectRequestInputTextContains(harness, "OpenClaw assembled context for this turn:");
+      expectRequestInputTextContains(harness, "Paddy assembled context for this turn:");
       expectRequestInputTextContains(harness, `[${summaryRole}]\n${summary}`);
       expectRequestInputTextContains(harness, "[assistant]\nACK: existing context");
       expectRequestInputTextContains(
@@ -439,7 +439,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
 
     const firstRun = runCodexAppServerAttempt(firstParams);
     await firstHarness.waitForMethod("turn/start");
-    expectRequestInputTextContains(firstHarness, "OpenClaw assembled context for this turn:");
+    expectRequestInputTextContains(firstHarness, "Paddy assembled context for this turn:");
     expectRequestInputTextContains(firstHarness, "bootstrap-only context");
     await firstHarness.completeTurn();
     await firstRun;
@@ -469,7 +469,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
       "turn/start",
     ]);
     const secondInputText = getRequestInputTextAt(firstHarness, 1);
-    expect(secondInputText).not.toContain("OpenClaw assembled context for this turn:");
+    expect(secondInputText).not.toContain("Paddy assembled context for this turn:");
     expect(secondInputText).not.toContain("bootstrap-only context");
     expect(secondInputText).toBe("hello");
     await firstHarness.completeTurn();
@@ -562,10 +562,10 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
       if (resumed) {
         expect(inputText).toBe("hello");
       } else if (active) {
-        expect(inputText).toContain("OpenClaw assembled context for this turn:");
+        expect(inputText).toContain("Paddy assembled context for this turn:");
         expect(inputText).toContain("reprojected context");
       } else {
-        expect(inputText).not.toContain("OpenClaw assembled context for this turn:");
+        expect(inputText).not.toContain("Paddy assembled context for this turn:");
         expect(inputText).not.toContain("previous stale-bootstrap request");
         expect(inputText).not.toContain("previous stale-bootstrap answer");
         expect(inputText).not.toContain("Current user request:");
@@ -616,7 +616,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
       "turn/start",
     ]);
     const inputText = getRequestInputText(harness);
-    expect(inputText).toContain("OpenClaw assembled context for this turn:");
+    expect(inputText).toContain("Paddy assembled context for this turn:");
     expect(inputText).toContain("previous per-turn request");
     expect(inputText).toContain("previous per-turn answer");
     expect(inputText).toContain("Current user request:");
@@ -679,7 +679,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
         "thread/start",
         "turn/start",
       ]);
-      expectRequestInputTextContains(harness, "OpenClaw assembled context for this turn:");
+      expectRequestInputTextContains(harness, "Paddy assembled context for this turn:");
       expectRequestInputTextContains(harness, "reprojected context");
       await harness.completeTurn("completed", "thread-new");
       await run;
@@ -776,7 +776,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
         "thread/start",
         "turn/start",
       ]);
-      expectRequestInputTextContains(harness, "OpenClaw assembled context for this turn:");
+      expectRequestInputTextContains(harness, "Paddy assembled context for this turn:");
       expectRequestInputTextContains(harness, "native-disabled context");
 
       await harness.completeTurn("completed", "thread-transient");
@@ -808,7 +808,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
     await harness.waitForMethod("turn/start");
 
     const inputText = getRequestInputText(harness);
-    expect(inputText).toContain("OpenClaw assembled context for this turn:");
+    expect(inputText).toContain("Paddy assembled context for this turn:");
     expect(inputText).toContain("Current user request:\nhello");
     expect(inputText).toContain("[reply target] OpenClaw: anchor REPLYCTX");
     expect(inputText.trim().startsWith("Conversation context (chronological")).toBe(true);

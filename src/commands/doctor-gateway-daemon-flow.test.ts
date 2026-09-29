@@ -894,9 +894,9 @@ describe("maybeRepairGatewayDaemon", () => {
     expect(service.restart).not.toHaveBeenCalled();
     expect(note).toHaveBeenCalledWith(
       [
-        "System-level OpenClaw gateway service detected while the user gateway service is not installed.",
+        "System-level Paddy gateway service detected while the user gateway service is not installed.",
         "- openclaw-gateway.service (unit: /etc/systemd/system/openclaw-gateway.service)",
-        "OpenClaw will not install a second user-level gateway service automatically.",
+        "Paddy will not install a second user-level gateway service automatically.",
         "Run `openclaw gateway status --deep` or `openclaw doctor --deep` to inspect duplicate services.",
         `Set ${SERVICE_REPAIR_POLICY_ENV}=external if a system supervisor owns the gateway lifecycle.`,
       ].join("\n"),

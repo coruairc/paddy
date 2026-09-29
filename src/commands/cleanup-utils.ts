@@ -23,6 +23,7 @@ import type { RuntimeEnv } from "../runtime.js";
 import { prepareOpenClawStateDatabaseRemoval } from "../state/openclaw-state-db-cache.js";
 import { resolveOpenClawStateSqlitePath } from "../state/openclaw-state-db.paths.js";
 import { resolveHomeDir, shortenHomeInString, shortenHomePath } from "../utils.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 type RemovalResult = {
   ok: boolean;
@@ -230,14 +231,14 @@ async function acquireStateCleanupOwnership(
   } catch (error) {
     if (error instanceof GatewayLockError) {
       throw new Error(
-        "Cannot remove OpenClaw state while the Gateway or another state maintenance command owns this state directory. Stop the Gateway and retry.",
+        `Cannot remove ${PRODUCT_NAME} state while the Gateway or another state maintenance command owns this state directory. Stop the Gateway and retry.`,
         { cause: error },
       );
     }
     throw error;
   }
   if (!lock) {
-    throw new Error("Cannot remove OpenClaw state without exclusive state ownership.");
+    throw new Error(`Cannot remove ${PRODUCT_NAME} state without exclusive state ownership.`);
   }
   return lock;
 }
@@ -503,7 +504,7 @@ export async function removeStateAndLinkedPaths(
     );
     if (overlappingPreservePath) {
       throw new Error(
-        `Cannot remove OpenClaw state while preserving ${shortenHomeInString(overlappingPreservePath)} because it overlaps the active state lock. Move the workspace outside the lock directory and retry.`,
+        `Cannot remove ${PRODUCT_NAME} state while preserving ${shortenHomeInString(overlappingPreservePath)} because it overlaps the active state lock. Move the workspace outside the lock directory and retry.`,
       );
     }
     removalAdmission.assertCurrent();
@@ -514,7 +515,7 @@ export async function removeStateAndLinkedPaths(
       { label: cleanup.stateDir },
     );
     if (!stateRemoval.ok) {
-      throw new Error("Failed to remove non-preserved OpenClaw state while ownership was held.");
+      throw new Error(`Failed to remove non-preserved ${PRODUCT_NAME} state while ownership was held.`);
     }
 
     removalAdmission.assertCurrent();

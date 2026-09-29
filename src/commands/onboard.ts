@@ -5,6 +5,7 @@
  * routes to interactive or non-interactive onboarding.
  */
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { readConfigFileSnapshot, resolveGatewayPort } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
@@ -625,7 +626,7 @@ export async function setupWizardCommand(
   if (process.platform === "win32") {
     runtime.log(
       [
-        "Windows detected - OpenClaw runs great on WSL2!",
+        `Windows detected - ${PRODUCT_NAME} runs great on WSL2!`,
         "Native Windows might be trickier.",
         "Quick setup: wsl --install (one command, one reboot)",
         "Guide: https://docs.openclaw.ai/windows",

@@ -170,7 +170,7 @@ describe("Doctor CLI migration refusal", () => {
       expect(output).toContain(databasePath);
       expect(output).toContain(workspaceDir);
       expect(text).toContain("unsupported workspace setup version 99");
-      expect(text).toContain("compatible OpenClaw build");
+      expect(text).toContain("compatible Paddy build");
       expect(output).toContain(sourcePath);
       expect(text).toContain("reconcile this file");
       expect(text).not.toMatch(/(?:openclaw\s+)?doctor\s+--(?:fix|repair)/i);

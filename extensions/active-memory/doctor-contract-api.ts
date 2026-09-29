@@ -14,7 +14,7 @@ export const legacyConfigRules = [
   {
     path: RETIRED_QMD_CONFIG_PATH,
     message:
-      'plugins.entries.active-memory.config.qmd is retired because the QMD memory backend was removed. Run "openclaw doctor --fix".',
+      'plugins.entries.active-memory.config.qmd is retired because the QMD memory backend was removed. Run "paddy doctor --fix".',
   },
 ];
 
@@ -53,7 +53,7 @@ async function collectRetiredToggleWarnings(stateDir: string): Promise<string[]>
     return [];
   }
   return [
-    `Preserved retired Active Memory JSON state at ${source}. Run openclaw doctor --fix on 2026.9.5 before upgrading to latest: https://docs.openclaw.ai/install/updating#upgrading-very-old-versions`,
+    `Preserved retired Active Memory JSON state at ${source}. Run paddy doctor --fix on 2026.9.5 before upgrading to latest: https://docs.openclaw.ai/install/updating#upgrading-very-old-versions`,
   ];
 }
 

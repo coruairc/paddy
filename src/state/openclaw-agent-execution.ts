@@ -44,6 +44,7 @@ import {
   captureOpenClawStateReadContext,
   captureOpenClawStateWorkerContext,
 } from "./openclaw-state-worker-context.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 export type OpenClawAgentDatabaseExecution = {
   readonly agentId: string;
@@ -158,7 +159,7 @@ export function captureOpenClawAgentDatabaseExecution(
   }
   if (existing.agentId !== agentId) {
     throw new Error(
-      `OpenClaw agent database ${pathname} is already open for agent ${existing.agentId}; requested agent ${agentId}.`,
+      `${PRODUCT_NAME} agent database ${pathname} is already open for agent ${existing.agentId}; requested agent ${agentId}.`,
     );
   }
   const env =

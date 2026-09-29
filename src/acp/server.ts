@@ -19,6 +19,7 @@ import {
   GATEWAY_CLIENT_MODES,
   GATEWAY_CLIENT_NAMES,
 } from "../../packages/gateway-protocol/src/client-info.js";
+import { CLI_NAME } from "../brand.js";
 import { getRuntimeConfig } from "../config/config.js";
 import { resolveGatewayClientBootstrap } from "../gateway/client-bootstrap.js";
 import { GatewayClient } from "../gateway/client.js";
@@ -166,10 +167,10 @@ export async function serveAcpGateway(opts: AcpServerOptions = {}): Promise<void
       // Gateway delivery stays non-blocking, but translator failures must not
       // escape this callback as unhandled process rejections.
       void agent?.handleGatewayEvent(evt).catch((err: unknown) => {
-        process.stderr.write(`openclaw acp: gateway event ${evt.event} failed\n`);
+        process.stderr.write(`${CLI_NAME} acp: gateway event ${evt.event} failed\n`);
         if (opts.verbose) {
           process.stderr.write(
-            `openclaw acp: gateway event ${evt.event} error: ${formatErrorMessage(err)}\n`,
+            `${CLI_NAME} acp: gateway event ${evt.event} error: ${formatErrorMessage(err)}\n`,
           );
         }
       });
@@ -298,7 +299,7 @@ export async function serveAcpGateway(opts: AcpServerOptions = {}): Promise<void
     .pipeTo(stream.writable)
     .catch(async (err: unknown) => {
       if (opts.verbose) {
-        process.stderr.write(`openclaw acp: outbound stream failed: ${formatErrorMessage(err)}\n`);
+        process.stderr.write(`${CLI_NAME} acp: outbound stream failed: ${formatErrorMessage(err)}\n`);
       }
       await shutdown();
     })
@@ -443,7 +444,7 @@ function parseArgs(args: string[]): AcpServerOptions {
 }
 
 function printHelp(): void {
-  console.log(`Usage: openclaw acp [options]
+  console.log(`Usage: paddy acp [options]
 
 Gateway-backed ACP server for IDE integration.
 

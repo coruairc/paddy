@@ -1,5 +1,6 @@
+import { PRODUCT_NAME } from "../brand.js";
 const CRON_EXECUTION_ROOT_RUNTIME_ERROR =
-  "collection review requires a runtime that enforces the Workshop root through OpenClaw tools";
+  `collection review requires a runtime that enforces the Workshop root through ${PRODUCT_NAME} tools`;
 
 export class CronExecutionRootRuntimeError extends Error {
   constructor() {

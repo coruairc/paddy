@@ -4,6 +4,7 @@
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import { getTerminalTableWidth, renderTable } from "../../../packages/terminal-core/src/table.js";
 import { isRich, theme } from "../../../packages/terminal-core/src/theme.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { ProgressReporter } from "../../cli/progress.js";
 import type { BestEffortConfigSnapshot } from "../../config/io.js";
 import { formatStatusConfigDiagnosticEntries } from "../status.format.js";
@@ -53,7 +54,7 @@ export async function buildStatusAllReportLines(params: {
       "",
     );
   }
-  lines.push(heading("OpenClaw status --all"));
+  lines.push(heading(`${PRODUCT_NAME} status --all`));
   const report = { lines, heading, width: tableWidth, renderTable };
   const overviewColumns = [...statusOverviewTableColumns];
   const overviewRows = params.overviewRows;

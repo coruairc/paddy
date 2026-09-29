@@ -785,7 +785,7 @@ describe("shared Codex app-server client", () => {
     });
     expect(desktop.process.stdin.destroyed).toBe(false);
     expect(mocks.embeddedAgentLog.warn).toHaveBeenCalledExactlyOnceWith(
-      "codex app-server is newer than OpenClaw's managed runtime; continuing with normal startup validation",
+      "codex app-server is newer than Paddy's managed runtime; continuing with normal startup validation",
       {
         detectedVersion: desktopVersion,
         validatedVersion: CODEX_APP_SERVER_VERSION,

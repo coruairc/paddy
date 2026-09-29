@@ -33,6 +33,7 @@ import { createUpdatePreflightFailure } from "../../infra/update-preflight-detai
 import { recordUpdateRunStep } from "../../infra/update-run-ledger.js";
 import type { UpdateRunResult } from "../../infra/update-runner-types.js";
 import { isPidAlive } from "../../shared/pid-alive.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { formatInstallationTargetCommand } from "../installation-target-format.js";
 import { printResult } from "./progress.js";
 import { resolveNodeRunner, UpdatePreMutationError, type UpdateCommandOptions } from "./shared.js";
@@ -122,7 +123,7 @@ ${GATEWAY_ANCESTRY_SHELL_GUIDANCE}`,
 
 const ANCESTRY_BLOCK_MARKER = "inside the gateway process tree";
 const UPDATE_CHAT_HANDOFF_GUIDANCE =
-  "From chat, the OpenClaw owner can start the update with the gateway update action or /update, which hands it to a managed helper.";
+  `From chat, the ${PRODUCT_NAME} owner can start the update with the gateway update action or /update, which hands it to a managed helper.`;
 
 /** Update-specific follow-up for an ancestry block: the chat path hands off to the managed helper. */
 export function formatUpdateAncestryBlockMessage(blockMessage: string): string {
@@ -220,7 +221,7 @@ export async function handoffUpdateFromGateway(params: {
   if (!argv1) {
     throw new UpdatePreMutationError(
       "managed-service-handoff-failed",
-      "Cannot locate the installed updater; run `openclaw doctor` before retrying.",
+      `Cannot locate the installed updater; run \`${CLI_NAME} doctor\` before retrying.`,
     );
   }
   if (params.opts.run?.executorFence) {
@@ -249,7 +250,7 @@ export async function handoffUpdateFromGateway(params: {
   if (started.status === "joined") {
     throw new UpdatePreMutationError(
       "managed-service-handoff-already-running",
-      "Another managed update is already running. Check progress with `openclaw update status`.",
+      `Another managed update is already running. Check progress with \`${CLI_NAME} update status\`.`,
     );
   }
   const identity = {
@@ -258,11 +259,11 @@ export async function handoffUpdateFromGateway(params: {
     installRoot: started.installRoot,
   };
   const target = resolveInstallationTarget(env);
-  const statusCommand = formatInstallationTargetCommand(["openclaw", "update", "status"], target, {
+  const statusCommand = formatInstallationTargetCommand([CLI_NAME, "update", "status"], target, {
     env,
   });
   const healthCommand = formatInstallationTargetCommand(
-    ["openclaw", "gateway", "status", "--deep"],
+    [CLI_NAME, "gateway", "status", "--deep"],
     target,
     { env },
   );

@@ -3,6 +3,7 @@ import path from "node:path";
 import { tempWorkspace } from "@openclaw/fs-safe/temp";
 import { redactSensitiveUrlLikeString } from "@openclaw/net-policy/redact-sensitive-url";
 import { sliceUtf16Safe, truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { canonicalPathFromExistingAncestor, isPathInside } from "../infra/fs-safe.js";
 import {
@@ -145,7 +146,7 @@ export async function initializeGitBackupRepository(params: {
     isPathInside(canonicalRepositoryPath, canonicalStateDir)
   ) {
     throw new Error(
-      `Git backup repository must be outside the OpenClaw state directory: ${stateDir}`,
+      `Git backup repository must be outside the ${PRODUCT_NAME} state directory: ${stateDir}`,
     );
   }
   try {
@@ -212,7 +213,7 @@ async function isBackupOwnedScope(scopePath: string): Promise<boolean> {
 async function assertBackupOwnedScope(scopePath: string): Promise<void> {
   if (!(await isBackupOwnedScope(scopePath))) {
     throw new Error(
-      `Refusing to replace non-backup-owned path ${scopePath}; the repository must be dedicated to OpenClaw backups.`,
+      `Refusing to replace non-backup-owned path ${scopePath}; the repository must be dedicated to ${PRODUCT_NAME} backups.`,
     );
   }
 }

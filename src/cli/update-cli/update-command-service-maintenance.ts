@@ -29,6 +29,7 @@ import { hasCommandProcessCleanupError } from "../../process/exec-result.js";
 import { withCommandProcessScope } from "../../process/exec-spawn.js";
 import { defaultRuntime } from "../../runtime.js";
 import { isPidAlive } from "../../shared/pid-alive.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { UpdatePreMutationError, type UpdateCommandOptions } from "./shared.js";
 import {
   gatewayServiceMembershipBlock,
@@ -415,7 +416,7 @@ async function stopManagedServiceBeforeMutableUpdate(
       serviceMutationAllowed: false,
       serviceMutationSkipMessage:
         serviceUpdateVerdict.kind === "foreign"
-          ? "Gateway service management skipped: the service belongs to a different OpenClaw installation and was left untouched."
+          ? `Gateway service management skipped: the service belongs to a different ${PRODUCT_NAME} installation and was left untouched.`
           : "Gateway restart skipped: no Gateway service or listener is running.",
     };
   }
@@ -584,7 +585,7 @@ async function stopManagedServiceBeforeMutableUpdate(
         if (hasCommandProcessCleanupError(error) || findServiceOwnershipRefusal(error)) {
           throw error;
         }
-        const message = `Gateway restoration identity could not be inspected; the managed service was not stopped. ${error instanceof ServiceInspectionError ? error.message : "Run openclaw gateway status --deep to inspect the native service manager."}`;
+        const message = `Gateway restoration identity could not be inspected; the managed service was not stopped. ${error instanceof ServiceInspectionError ? error.message : `Run ${CLI_NAME} gateway status --deep to inspect the native service manager.`}`;
         return {
           ...inspected,
           serviceMutationAllowed: false,

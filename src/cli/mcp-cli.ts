@@ -83,7 +83,7 @@ function failUnknownMcpServer(
   opts?: { json?: boolean },
 ): never {
   fail(
-    `No MCP server named "${name}" in ${configPath}. Run ${formatCliCommand("openclaw mcp list")} to see configured servers.`,
+    `No MCP server named "${name}" in ${configPath}. Run ${formatCliCommand(`paddy mcp list`)} to see configured servers.`,
     opts?.json,
   );
 }
@@ -409,14 +409,14 @@ async function collectMcpDoctorIssues(params: {
             issues.push(
               issue(
                 "warning",
-                `OAuth credentials require additional authorization; run ${formatCliCommand(`openclaw mcp login ${name}`)}`,
+                `OAuth credentials require additional authorization; run ${formatCliCommand(`paddy mcp login ${name}`)}`,
               ),
             );
           } else if (authStatus.state !== "authorized") {
             issues.push(
               issue(
                 "warning",
-                `OAuth credentials are not authorized; run ${formatCliCommand(`openclaw mcp login ${name}`)}`,
+                `OAuth credentials are not authorized; run ${formatCliCommand(`paddy mcp login ${name}`)}`,
               ),
             );
           }
@@ -710,16 +710,16 @@ async function probeMcpServersOrFail(params: {
 }
 
 const OPENCLAW_MCP_REGISTRY_SCOPE_NOTE =
-  "Note: this command only shows OpenClaw-managed mcp.servers entries and does not include mcporter servers from config/mcporter.json.";
+  `Note: this command only shows Paddy-managed mcp.servers entries and does not include mcporter servers from config/mcporter.json.`;
 
 export function registerMcpCli(program: Command) {
   const mcp = program
     .command("mcp")
-    .description("Manage OpenClaw mcp.servers config and channel bridge");
+    .description(`Manage Paddy mcp.servers config and channel bridge`);
 
   mcp
     .command("serve")
-    .description("Expose OpenClaw channels over MCP stdio")
+    .description(`Expose Paddy channels over MCP stdio`)
     .option("--url <url>", "Gateway WebSocket URL (defaults to gateway.remote.url when configured)")
     .option("--token <token>", "Gateway token (if required)")
     .option("--token-file <path>", "Read gateway token from file")
@@ -754,7 +754,7 @@ export function registerMcpCli(program: Command) {
         });
       } catch (err) {
         defaultRuntime.error(
-          `MCP server failed to start: ${formatErrorMessage(err)}. Run ${formatCliCommand("openclaw gateway status --deep --require-rpc")} to inspect Gateway health.`,
+          `MCP server failed to start: ${formatErrorMessage(err)}. Run ${formatCliCommand(`paddy gateway status --deep --require-rpc`)} to inspect Gateway health.`,
         );
         defaultRuntime.exit(1);
       }
@@ -762,7 +762,7 @@ export function registerMcpCli(program: Command) {
 
   mcp
     .command("list")
-    .description("List OpenClaw-managed MCP servers from mcp.servers")
+    .description(`List Paddy-managed MCP servers from mcp.servers`)
     .option("--json", "Print JSON")
     .action(async (opts: { json?: boolean }) => {
       const loaded = await loadMcpConfig(opts);
@@ -773,12 +773,12 @@ export function registerMcpCli(program: Command) {
       const entries = Object.entries(loaded.mcpServers).toSorted(([a], [b]) => a.localeCompare(b));
       if (entries.length === 0) {
         defaultRuntime.log(
-          `No OpenClaw-managed MCP servers configured in ${loaded.path}. Add one with ${formatCliCommand('openclaw mcp set <name> \'{"command":"uvx","args":["context7-mcp"]}\'')}.`,
+          `No Paddy-managed MCP servers configured in ${loaded.path}. Add one with ${formatCliCommand(`paddy mcp set <name> '{"command":"uvx","args":["context7-mcp"]}'`)}.`,
         );
         defaultRuntime.log(OPENCLAW_MCP_REGISTRY_SCOPE_NOTE);
         return;
       }
-      defaultRuntime.log(`OpenClaw-managed MCP servers (${loaded.path}):`);
+      defaultRuntime.log(`Paddy-managed MCP servers (${loaded.path}):`);
       for (const [name, server] of entries) {
         const connectedPrincipals = await countConnectedMcpPrincipals(name, server);
         const connected =
@@ -793,7 +793,7 @@ export function registerMcpCli(program: Command) {
 
   mcp
     .command("show")
-    .description("Show one OpenClaw-managed MCP server or the full mcp.servers config")
+    .description(`Show one Paddy-managed MCP server or the full mcp.servers config`)
     .argument("[name]", "MCP server name")
     .option("--json", "Print JSON")
     .action(async (name: string | undefined, opts: { json?: boolean }) => {
@@ -873,7 +873,7 @@ export function registerMcpCli(program: Command) {
       const servers = selectMcpServers(loaded, name, opts);
       if (name && loaded.mcpServers[name]?.enabled === false) {
         fail(
-          `MCP server "${name}" is disabled in ${loaded.path}. Run ${formatCliCommand(`openclaw mcp configure ${name} --enable`)} before probing it.`,
+          `MCP server "${name}" is disabled in ${loaded.path}. Run ${formatCliCommand(`paddy mcp configure ${name} --enable`)} before probing it.`,
           opts.json,
         );
       }
@@ -881,7 +881,7 @@ export function registerMcpCli(program: Command) {
       // Explain the intentional non-outcome; JSON keeps its existing empty envelope.
       if (!opts.json && Object.values(servers).every((server) => server.enabled === false)) {
         defaultRuntime.log(
-          `No enabled MCP servers in ${loaded.path}. Add one with ${formatCliCommand("openclaw mcp add <name> --command <command>")} or enable one with ${formatCliCommand("openclaw mcp configure <name> --enable")}.`,
+          `No enabled MCP servers in ${loaded.path}. Add one with ${formatCliCommand(`paddy mcp add <name> --command <command>`)} or enable one with ${formatCliCommand(`paddy mcp configure <name> --enable`)}.`,
         );
         return;
       }
@@ -968,7 +968,7 @@ export function registerMcpCli(program: Command) {
       }
       if (servers.length === 0) {
         defaultRuntime.log(
-          `No MCP servers configured in ${loaded.path}. Add one with ${formatCliCommand("openclaw mcp add <name> --command <command>")}.`,
+          `No MCP servers configured in ${loaded.path}. Add one with ${formatCliCommand(`paddy mcp add <name> --command <command>`)}.`,
         );
         return;
       }
@@ -1090,7 +1090,7 @@ export function registerMcpCli(program: Command) {
         defaultRuntime.log(`Saved MCP server "${name}" to ${result.path}.`);
         if (server.auth === "oauth") {
           defaultRuntime.log(
-            `Run ${formatCliCommand(`openclaw mcp login ${name}`)} to authorize this MCP server.`,
+            `Run ${formatCliCommand(`paddy mcp login ${name}`)} to authorize this MCP server.`,
           );
         }
       },
@@ -1098,7 +1098,7 @@ export function registerMcpCli(program: Command) {
 
   mcp
     .command("set")
-    .description("Set one OpenClaw-managed MCP server from a JSON object")
+    .description(`Set one Paddy-managed MCP server from a JSON object`)
     .argument("<name>", "MCP server name")
     .argument("<value>", 'JSON object, for example {"command":"uvx","args":["context7-mcp"]}')
     .action(async (name: string, rawValue: string) => {
@@ -1298,7 +1298,7 @@ export function registerMcpCli(program: Command) {
       }
 
       let callbackServer: OAuthLoopbackCallbackServer | undefined;
-      const manualCommand = formatCliCommand(`openclaw mcp login ${name} --code <code>`);
+      const manualCommand = formatCliCommand(`paddy mcp login ${name} --code <code>`);
       try {
         const session = await startMcpOAuthAuthorization(identity, resolved, {});
         if (session.status === "authorized") {
@@ -1321,7 +1321,7 @@ export function registerMcpCli(program: Command) {
         defaultRuntime.log(`Open this URL to authorize "${name}":`);
         defaultRuntime.log(session.authorizationUrl);
         if (callbackServer) {
-          defaultRuntime.log("Waiting for the browser to return to OpenClaw...");
+          defaultRuntime.log(`Waiting for the browser to return to Paddy...`);
           defaultRuntime.log(`If the callback cannot reach this terminal, run ${manualCommand}.`);
         } else {
           defaultRuntime.log(`After approval, run ${manualCommand}.`);
@@ -1380,7 +1380,7 @@ export function registerMcpCli(program: Command) {
 
   mcp
     .command("unset")
-    .description("Remove one OpenClaw-managed MCP server")
+    .description(`Remove one Paddy-managed MCP server`)
     .argument("<name>", "MCP server name")
     .action(async (name: string) => {
       const result = await unsetConfiguredMcpServer({ name });

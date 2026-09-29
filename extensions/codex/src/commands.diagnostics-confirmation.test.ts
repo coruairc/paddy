@@ -172,7 +172,7 @@ describe("Codex diagnostics confirmation", () => {
       [
         "Codex runtime thread detected.",
         "Approving diagnostics will also send this thread's feedback bundle to OpenAI servers.",
-        "The completed diagnostics reply will list the OpenClaw session ids and Codex thread ids that were sent.",
+        "The completed diagnostics reply will list the Paddy session ids and Codex thread ids that were sent.",
         "Note: flaky tool call",
         "Included: Codex logs and spawned Codex subthreads when available.",
       ].join("\n"),

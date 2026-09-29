@@ -450,7 +450,7 @@ export async function runQaMultipass(
   await mkdir(plan.outputDir, { recursive: true });
   await writeFile(
     plan.hostLogPath,
-    `# OpenClaw QA Multipass host log\nvmName=${plan.vmName}\noutputDir=${plan.outputDir}\n\n`,
+    `# Paddy QA Multipass host log\nvmName=${plan.vmName}\noutputDir=${plan.outputDir}\n\n`,
     "utf8",
   );
   await writeFile(
@@ -471,7 +471,7 @@ export async function runQaMultipass(
       });
     }
     throw new Error(
-      `Multipass is not installed on this host. Install it with '${resolveMultipassInstallHint()}', then rerun 'pnpm openclaw qa suite --runner multipass'.`,
+      `Multipass is not installed on this host. Install it with '${resolveMultipassInstallHint()}', then rerun 'pnpm paddy qa suite --runner multipass'.`,
       { cause: error },
     );
   }

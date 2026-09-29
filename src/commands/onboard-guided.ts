@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { isUnconfiguredConfigSource } from "../cli/fresh-install-config.js";
 import { hasResolvedRosterBeforeMigrations } from "../config/agent-roster-provenance.js";
@@ -569,7 +570,7 @@ async function runGuidedOnboardingFlow(
             })
           : await readConfigFileSnapshot();
       if (!appliedSnapshot.valid) {
-        throw new Error("Setup wrote an invalid OpenClaw config.");
+        throw new Error(`Setup wrote an invalid ${PRODUCT_NAME} config.`);
       }
       persistedConfig = appliedSnapshot.sourceConfig ?? appliedSnapshot.config;
       applyProgress.stop(t("wizard.guided.setupDone"));
@@ -689,7 +690,7 @@ async function runGuidedOnboardingFlow(
     }
   }
   if (setupOnly) {
-    await prompter.outro("Continuing with the OpenClaw setup assistant.");
+    await prompter.outro(`Continuing with the ${PRODUCT_NAME} setup assistant.`);
     return { workspace: hatchWorkspace, next: "chat" };
   }
   await prompter.note(t("wizard.guided.findMeLater"), t("wizard.guided.welcomeTitle"));

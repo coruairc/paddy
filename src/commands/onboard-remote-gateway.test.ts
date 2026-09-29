@@ -915,7 +915,7 @@ describe("runRemoteGatewayInferenceOnboarding", () => {
               ? "authenticated-profile"
               : (options.deviceIdentity?.deviceId ?? `connection:${++connections}`);
           if (chatOwner && chatOwner !== owner) {
-            throw new Error("OpenClaw session belongs to another caller.");
+            throw new Error("Paddy session belongs to another caller.");
           }
           chatOwner = owner;
           return {
@@ -954,7 +954,7 @@ describe("runRemoteGatewayInferenceOnboarding", () => {
         "openclaw.chat",
         "openclaw.chat",
       ]);
-      expect(prompter.outro).toHaveBeenCalledWith("OpenClaw setup paused.");
+      expect(prompter.outro).toHaveBeenCalledWith("Paddy setup paused.");
       expect(runTui).not.toHaveBeenCalled();
     },
   );

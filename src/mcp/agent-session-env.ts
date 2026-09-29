@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { normalizeAgentId, parseAgentSessionKey } from "../routing/session-key.js";
 
 export const OPENCLAW_TOOLS_MCP_AGENT_SESSION_KEY_ENV = "OPENCLAW_TOOLS_MCP_AGENT_SESSION_KEY";
@@ -12,7 +13,7 @@ export function resolveToolsMcpAgentId(
   }
   const value = argv[index + 1]?.trim();
   if (!value || value.startsWith("--") || argv.includes("--openclaw-agent-id", index + 1)) {
-    throw new Error("--openclaw-agent-id requires one OpenClaw agent owner");
+    throw new Error(`--openclaw-agent-id requires one ${PRODUCT_NAME} agent owner`);
   }
   return normalizeAgentId(value);
 }
@@ -30,7 +31,7 @@ export function resolveToolsMcpSessionContext(params: {
     (!sessionKey && agentId)
   ) {
     throw new Error(
-      `${OPENCLAW_TOOLS_MCP_AGENT_SESSION_KEY_ENV} must be a canonical agent session key or have a matching explicit OpenClaw owner`,
+      `${OPENCLAW_TOOLS_MCP_AGENT_SESSION_KEY_ENV} must be a canonical agent session key or have a matching explicit ${PRODUCT_NAME} owner`,
     );
   }
   return sessionKey ? { sessionKey, agentId } : {};

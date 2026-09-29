@@ -6,6 +6,7 @@ import { safeStatSync } from "@openclaw/fs-safe/path";
 import { note } from "../../packages/terminal-core/src/note.js";
 import { resolveAgentWorkspaceDir, tryResolveDefaultAgentId } from "../agents/agent-scope.js";
 import { DEFAULT_AGENTS_FILENAME } from "../agents/workspace.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { safeRealpathSync } from "../infra/boundary-path.js";
 import { formatErrorMessage } from "../infra/errors.js";
@@ -162,7 +163,7 @@ function formatRootMemoryFilesWarning(detection: RootMemoryFilesDetection): stri
       "Split root durable memory files detected:",
       `- canonical: ${shortenHomePath(detection.canonicalPath)} (${formatBytes(detection.canonicalBytes)})`,
       `- legacy: ${shortenHomePath(detection.legacyPath)} (${formatBytes(detection.legacyBytes)})`,
-      `OpenClaw uses ${CANONICAL_ROOT_MEMORY_FILENAME} as the canonical durable memory file.`,
+      `${PRODUCT_NAME} uses ${CANONICAL_ROOT_MEMORY_FILENAME} as the canonical durable memory file.`,
       `Dreaming writes durable promotions to ${CANONICAL_ROOT_MEMORY_FILENAME}, so older facts in ${LEGACY_ROOT_MEMORY_FILENAME} can be shadowed.`,
       `Run "openclaw doctor --fix" to merge the legacy file into ${CANONICAL_ROOT_MEMORY_FILENAME} with a backup.`,
     ].join("\n");

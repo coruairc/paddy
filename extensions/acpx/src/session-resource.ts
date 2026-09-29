@@ -13,7 +13,7 @@ export function resolveAcpxSessionResource(target: {
   if (!sessionKey || (encodedOwner && agentId !== encodedOwner) || (!encodedOwner && !agentId)) {
     throw new AcpRuntimeError(
       "ACP_SESSION_INIT_FAILED",
-      "ACP session owner is missing or disagrees with its logical key. Pass the OpenClaw agentId that owns this session.",
+      "ACP session owner is missing or disagrees with its logical key. Pass the Paddy agentId that owns this session.",
       { detailCode: "SESSION_OWNER_UNSUPPORTED" },
     );
   }

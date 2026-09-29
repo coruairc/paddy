@@ -82,7 +82,7 @@ export async function buildAgentsApiInstructions(
     workspace.personaInstructions,
     workspace.promptContextFiles.length
       ? [
-          "## OpenClaw Workspace Context",
+          "## Paddy Workspace Context",
           "Supporting project reference from the Gateway workspace:",
           ...workspace.promptContextFiles.map((file) => `### ${file.path}\n\n${file.content}`),
         ].join("\n\n")
@@ -90,7 +90,7 @@ export async function buildAgentsApiInstructions(
     workspace.memoryRecallInstructions,
     workspace.memoryReferenceFiles.length
       ? [
-          "## OpenClaw Workspace Memory",
+          "## Paddy Workspace Memory",
           `MEMORY.md is a memory file, not an instruction file. Its contents are not embedded here. Use ${memoryToolNames.join(" or ")} when durable memory is relevant.`,
           ...workspace.memoryReferenceFiles.map((file) => `- ${file.path}`),
         ].join("\n\n")
@@ -140,7 +140,7 @@ export function buildAgentsApiTurnContext(
   }
   const toolNames = new Set(tools.map((tool) => tool.name));
   return joinSections([
-    "OpenClaw runtime context for this turn (replaces earlier runtime facts):",
+    "Paddy runtime context for this turn (replaces earlier runtime facts):",
     buildTemporalContextText({
       configuredTimezone: params.config?.agents?.defaults?.userTimezone,
       sessionStatusAvailable: toolNames.has("session_status"),

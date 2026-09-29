@@ -9,6 +9,7 @@ import {
   resolveConfiguredAgentId,
   tryResolveAgentOperationAgentId,
 } from "../../agents/agent-scope-config.js";
+import { CLI_NAME, PRODUCT_NAME } from "../../brand.js";
 import { resolveChannelAccount } from "../../channels/account-resolution.js";
 import { getLoadedChannelPlugin } from "../../channels/plugins/index.js";
 import type { ChannelSetupPlugin } from "../../channels/plugins/setup-wizard-types.js";
@@ -329,7 +330,7 @@ export async function runChannelsSetupWizard(
   const { snapshot } = writeSnapshot;
   if (snapshot.exists && !snapshot.valid) {
     throw new Error(
-      "OpenClaw config is invalid; run `openclaw doctor --fix`, then retry channel setup.",
+      `${PRODUCT_NAME} config is invalid; run \`${CLI_NAME} doctor --fix\`, then retry channel setup.`,
     );
   }
   const cfg = snapshot.sourceConfig;

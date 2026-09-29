@@ -1,6 +1,7 @@
 // Persists restart sentinel state that coordinates deferred restarts.
 import { isRecord as isPlainRecord } from "@openclaw/normalization-core/record-coerce";
 import { sliceUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { withExistingOpenClawStateDatabaseReadOnly } from "../state/openclaw-state-db-readonly.js";
@@ -61,7 +62,7 @@ export function formatDoctorNonInteractiveHint(
   return `Recommended follow-up: run ${formatCliCommand(
     "openclaw doctor --non-interactive",
     env,
-  )} in a terminal or approvals-capable OpenClaw surface.`;
+  )} in a terminal or approvals-capable ${PRODUCT_NAME} surface.`;
 }
 
 export async function writeRestartSentinel(

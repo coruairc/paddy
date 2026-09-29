@@ -190,7 +190,7 @@ describe("runQaGatewayCliCommand", () => {
       if (!(error instanceof Error)) {
         throw new Error("expected CLI failure");
       }
-      expect(error.message).toContain("OpenClaw CLI exited 7: Doctor panel:");
+      expect(error.message).toContain("Paddy CLI exited 7: Doctor panel:");
       expect(error.message).toContain('"reason":"readiness execution failed"');
       expect(error.message.length).toBeLessThanOrEqual(2_048);
       expect(error.message).toContain("Bearer <redacted>");
@@ -461,7 +461,7 @@ describe("buildQaRuntimeEnv", () => {
         useRepoCli: true,
         transportBaseUrl: "http://127.0.0.1:43123",
       }),
-    ).rejects.toThrow("OpenClaw CLI entry not found");
+    ).rejects.toThrow("Paddy CLI entry not found");
     await expect(owner.stop()).resolves.toMatchObject({ errors: [] });
 
     await expect(readdir(tempParent)).resolves.toStrictEqual([]);
@@ -1554,8 +1554,8 @@ describe("buildQaRuntimeEnv", () => {
         ? `installed package mock auth bootstrap failed for ${provider}: `
         : `installed package plugin setup failed (update repair${phase === "help" ? " --help" : ""}): `;
       const detail = provider
-        ? "OpenClaw CLI exited 9: Authorization: Bearer <redacted>"
-        : "OpenClaw CLI exited 8: plugin fixture rejected: Authorization: Bearer <redacted>";
+        ? "Paddy CLI exited 9: Authorization: Bearer <redacted>"
+        : "Paddy CLI exited 8: plugin fixture rejected: Authorization: Bearer <redacted>";
       expect(error.message).toContain(`${prefix}${detail}\ncontext retained\n`);
       expect(error.cause.message.length).toBeLessThanOrEqual(prefix.length + 2_048);
       expect(error.cause.message).not.toContain("diagnostic ".repeat(400));
@@ -1831,7 +1831,7 @@ describe("buildQaRuntimeEnv", () => {
   });
 
   it("does not retry an incomplete migration-convergence diagnostic", () => {
-    const details = "OpenClaw plugin migration inputs changed during startup convergence";
+    const details = "Paddy plugin migration inputs changed during startup convergence";
     expect(
       resolveQaGatewayStartupRetry({
         attempt: 1,
@@ -1845,7 +1845,7 @@ describe("buildQaRuntimeEnv", () => {
     const first = resolveQaGatewayStartupRetry({
       attempt: 1,
       details:
-        "OpenClaw plugin migration inputs changed during startup convergence; refusing readiness.",
+        "Paddy plugin migration inputs changed during startup convergence; refusing readiness.",
       migrationConvergenceRestartUsed: false,
     });
 
@@ -1858,7 +1858,7 @@ describe("buildQaRuntimeEnv", () => {
       resolveQaGatewayStartupRetry({
         attempt: 2,
         details:
-          "OpenClaw plugin migration inputs changed during startup convergence; refusing readiness.",
+          "Paddy plugin migration inputs changed during startup convergence; refusing readiness.",
         migrationConvergenceRestartUsed: first?.migrationConvergenceRestartUsed ?? false,
       }),
     ).toBeNull();

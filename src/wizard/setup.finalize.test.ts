@@ -514,7 +514,7 @@ describe("finalizeSetupWizard", () => {
     expect(stop).toHaveBeenCalledOnce();
     expectNoteContains(prompter, "Web UI: http://127.0.0.1:18789", "Control UI");
     expect(prompter.outro).toHaveBeenCalledWith(
-      "Onboarding complete. Use the dashboard link above to control OpenClaw.",
+      "Onboarding complete. Use the dashboard link above to control Paddy.",
     );
     expect(runTui).toHaveBeenCalledOnce();
     expect(vi.mocked(prompter.outro).mock.invocationCallOrder[0]).toBeLessThan(
@@ -542,7 +542,7 @@ describe("finalizeSetupWizard", () => {
     expectNoteNotContains(prompter, "Web UI:");
     expectNoteNotContains(prompter, gatewayToken);
     expect(prompter.outro).toHaveBeenCalledWith(
-      "OpenClaw is ready. When you're ready: openclaw dashboard",
+      "Paddy is ready. When you're ready: paddy dashboard",
     );
     expect(runTui).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -781,7 +781,7 @@ describe("finalizeSetupWizard", () => {
     expect(runTui).toHaveBeenCalledWith(expect.objectContaining({ message: undefined }));
     expectNoteTitleNotCalled(prompter, "Model auth missing");
     expectNoteNotContains(prompter, "No credentials are configured");
-    expectNoteNotContains(prompter, "openclaw configure --section model");
+    expectNoteNotContains(prompter, "paddy configure --section model");
   });
 
   it("does not resend the bootstrap hatch message on setup reruns", async () => {
@@ -1237,7 +1237,7 @@ describe("finalizeSetupWizard", () => {
       .flatMap((writer) => writer.mock.calls.flat())
       .join("\n");
     expect(terminalOutput).toContain("http://127.0.0.1:18789");
-    expect(terminalOutput).toContain("openclaw dashboard --no-open");
+    expect(terminalOutput).toContain("paddy dashboard --no-open");
     for (const output of [terminalOutput, runtimeOutput]) {
       expect(output).not.toContain("session-token");
       expect(output).not.toContain("#token=");
@@ -1790,7 +1790,7 @@ describe("finalizeSetupWizard", () => {
       expectNoteContains(prompter, "Setup was run without Gateway service install", "Gateway");
       expectNoteTitleNotCalled(prompter, "Dashboard ready");
       expect(prompter.outro).toHaveBeenCalledWith(
-        "Gateway not detected yet. Start now: openclaw gateway run",
+        "Gateway not detected yet. Start now: paddy gateway run",
       );
       expect(readSystemdUserLingerStatus).not.toHaveBeenCalled();
       expect(gatewayServiceIsLoaded).not.toHaveBeenCalled();

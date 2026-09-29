@@ -12,6 +12,7 @@ import { resolveUpdateInstallIdentity } from "../../infra/update-check.js";
 import { defaultRuntime } from "../../runtime.js";
 import { pathExists } from "../../utils.js";
 import { VERSION } from "../../version.js";
+import { CLI_NAME } from "../cli-name.js";
 import {
   isEmptyDir,
   isGitCheckout,
@@ -24,7 +25,7 @@ import {
 export async function updateWizardCommand(opts: UpdateWizardOptions = {}): Promise<void> {
   if (!process.stdin.isTTY) {
     defaultRuntime.error(
-      "Update wizard requires a TTY. Use `openclaw update --channel <stable|extended-stable|beta|dev>` instead.",
+      `Update wizard requires a TTY. Use \`${CLI_NAME} update --channel <stable|extended-stable|beta|dev>\` instead.`,
     );
     defaultRuntime.exit(1);
     return;

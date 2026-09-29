@@ -30,6 +30,7 @@ import {
 } from "./installed-plugin-id-recovery.js";
 import { repairMissingConfiguredPluginInstalls } from "./missing-configured-plugin-install.js";
 import { resolvePostCoreConvergenceEnv } from "./update-phase.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 
 type PostCoreConvergenceWarning = {
   kind?: "load" | "repair";
@@ -75,7 +76,7 @@ function smokeFailureGuidance(failure: PluginPayloadSmokeFailure): string[] {
     ? path.join(failure.installPath, "package.json")
     : "the plugin package.json";
   return [
-    `Fix file access for ${packageJsonPath} so it is readable by the user running OpenClaw. For EACCES or EPERM, correct its ownership or permissions; otherwise resolve the reported filesystem I/O error, then retry.`,
+    `Fix file access for ${packageJsonPath} so it is readable by the user running ${PRODUCT_NAME}. For EACCES or EPERM, correct its ownership or permissions; otherwise resolve the reported filesystem I/O error, then retry.`,
     inspectGuidance(failure.pluginId),
   ];
 }
@@ -144,11 +145,11 @@ async function repairInstalledOpenClawHostLinks(params: {
     return {
       changes: [
         ...(repaired > 0
-          ? [`Repaired OpenClaw host peer link(s) for ${repaired} managed npm plugin package(s).`]
+          ? [`Repaired ${PRODUCT_NAME} host peer link(s) for ${repaired} managed npm plugin package(s).`]
           : []),
         ...(registeredRepair.repaired > 0
           ? [
-              `Repaired OpenClaw host peer link(s) for ${registeredRepair.repaired} registered plugin package(s).`,
+              `Repaired ${PRODUCT_NAME} host peer link(s) for ${registeredRepair.repaired} registered plugin package(s).`,
             ]
           : []),
       ],
@@ -169,7 +170,7 @@ async function repairInstalledOpenClawHostLinks(params: {
 }
 
 function formatPeerLinkPackageReadWarning(failure: { error: unknown }): PostCoreConvergenceWarning {
-  const message = `Failed to repair installed OpenClaw host peer links: ${failure.error instanceof Error ? failure.error.message : String(failure.error)}`;
+  const message = `Failed to repair installed ${PRODUCT_NAME} host peer links: ${failure.error instanceof Error ? failure.error.message : String(failure.error)}`;
   return {
     reason: message,
     message,

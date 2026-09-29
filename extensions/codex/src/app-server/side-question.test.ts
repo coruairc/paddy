@@ -654,7 +654,7 @@ describe("runCodexAppServerSideQuestion", () => {
       action: "decline",
       content: null,
       _meta: {
-        message: "OpenClaw Codex side questions do not support interactive MCP input.",
+        message: "Paddy Codex side questions do not support interactive MCP input.",
       },
     });
 
@@ -1455,7 +1455,7 @@ describe("runCodexAppServerSideQuestion", () => {
     });
     expect(toolResponse).toEqual({
       success: false,
-      contentItems: [{ type: "inputText", text: "Unknown OpenClaw tool: web_search" }],
+      contentItems: [{ type: "inputText", text: "Unknown Paddy tool: web_search" }],
     });
     expect(toolExecuteMock).not.toHaveBeenCalled();
   });
@@ -1568,7 +1568,7 @@ describe("runCodexAppServerSideQuestion", () => {
     });
     expect(toolResponse).toEqual({
       success: false,
-      contentItems: [{ type: "inputText", text: "Unknown OpenClaw tool: web_search" }],
+      contentItems: [{ type: "inputText", text: "Unknown Paddy tool: web_search" }],
     });
     expect(toolExecuteMock).not.toHaveBeenCalled();
   });
@@ -1585,7 +1585,7 @@ describe("runCodexAppServerSideQuestion", () => {
     });
     expect(toolResponse).toEqual({
       success: false,
-      contentItems: [{ type: "inputText", text: "Unknown OpenClaw tool: web_search" }],
+      contentItems: [{ type: "inputText", text: "Unknown Paddy tool: web_search" }],
     });
     expect(toolExecuteMock).not.toHaveBeenCalled();
   });
@@ -1612,7 +1612,7 @@ describe("runCodexAppServerSideQuestion", () => {
     });
     expect(toolResponse).toEqual({
       success: false,
-      contentItems: [{ type: "inputText", text: "Unknown OpenClaw tool: web_search" }],
+      contentItems: [{ type: "inputText", text: "Unknown Paddy tool: web_search" }],
     });
     expect(toolExecuteMock).not.toHaveBeenCalled();
     expect(resolveCodexProviderWebSearchSupportForClientMock).not.toHaveBeenCalled();
@@ -1640,7 +1640,7 @@ describe("runCodexAppServerSideQuestion", () => {
     });
     expect(toolResponse).toEqual({
       success: false,
-      contentItems: [{ type: "inputText", text: "Unknown OpenClaw tool: web_search" }],
+      contentItems: [{ type: "inputText", text: "Unknown Paddy tool: web_search" }],
     });
     expect(toolExecuteMock).not.toHaveBeenCalled();
     expect(resolveCodexProviderWebSearchSupportForClientMock).not.toHaveBeenCalled();
@@ -1655,7 +1655,7 @@ describe("runCodexAppServerSideQuestion", () => {
         }),
       ),
     ).rejects.toThrow(
-      "Codex-native /btw side-question mode is unavailable because OpenClaw sandboxing is active for this session.",
+      "Codex-native /btw side-question mode is unavailable because Paddy sandboxing is active for this session.",
     );
 
     expect(getSharedCodexAppServerClientMock).not.toHaveBeenCalled();
@@ -1676,7 +1676,7 @@ describe("runCodexAppServerSideQuestion", () => {
         }),
       ),
     ).rejects.toThrow(
-      "Codex-native /btw side-question mode is unavailable because OpenClaw sandboxing is active for this session.",
+      "Codex-native /btw side-question mode is unavailable because Paddy sandboxing is active for this session.",
     );
 
     expect(getSharedCodexAppServerClientMock).not.toHaveBeenCalled();
@@ -1691,7 +1691,7 @@ describe("runCodexAppServerSideQuestion", () => {
         }),
       ),
     ).rejects.toThrow(
-      "Codex-native /btw side-question mode is unavailable because OpenClaw exec host=node is active for this session.",
+      "Codex-native /btw side-question mode is unavailable because Paddy exec host=node is active for this session.",
     );
 
     expect(getSharedCodexAppServerClientMock).not.toHaveBeenCalled();
@@ -1715,7 +1715,7 @@ describe("runCodexAppServerSideQuestion", () => {
         }),
       ),
     ).rejects.toThrow(
-      "Codex-native /btw side-question mode is unavailable because OpenClaw exec host=node is active for this session.",
+      "Codex-native /btw side-question mode is unavailable because Paddy exec host=node is active for this session.",
     );
 
     expect(getSharedCodexAppServerClientMock).not.toHaveBeenCalled();
@@ -2904,7 +2904,7 @@ describe("runCodexAppServerSideQuestion", () => {
     expect(computerExecute).not.toHaveBeenCalled();
     expect(toolResponse).toEqual({
       success: false,
-      contentItems: [{ type: "inputText", text: "Unknown OpenClaw tool: computer" }],
+      contentItems: [{ type: "inputText", text: "Unknown Paddy tool: computer" }],
     });
   });
 

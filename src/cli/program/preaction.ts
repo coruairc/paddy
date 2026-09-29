@@ -115,7 +115,7 @@ async function runStateStoreGuard(commandPath: string[]): Promise<void> {
   let outcome: import("../state-dir-gateway-check.js").CliGatewayStateDirOutcome;
   try {
     const { checkCliGatewayStateDir } = await import("../state-dir-gateway-check.js");
-    outcome = await checkCliGatewayStateDir({ command: `openclaw ${commandPath.join(" ")}` });
+    outcome = await checkCliGatewayStateDir({ command: `${CLI_NAME} ${commandPath.join(" ")}` });
   } catch (error) {
     const { formatErrorMessage } = await import("../../infra/errors.js");
     const { logDebug } = await import("../../logger.js");

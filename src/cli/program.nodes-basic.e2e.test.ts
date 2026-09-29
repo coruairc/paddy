@@ -719,7 +719,7 @@ describe("cli program (nodes basics)", () => {
 
     const output = getRuntimeOutput();
     expect(output).toContain(
-      "openclaw --profile work nodes approve request-reapproval --timeout 3000",
+      "paddy --profile work nodes approve request-reapproval --timeout 3000",
     );
     expect(output).toContain("Reuse the same connection options when rerunning: --url, --token.");
     expect(output).not.toContain("gateway-user");

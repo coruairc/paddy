@@ -3,6 +3,7 @@ import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import { createDeferredCore } from "../shared/deferred.js";
 import { oauthErrorHtml, renderOAuthPage } from "../shared/oauth-page.js";
 import { OAUTH_PAGE_CSP } from "./oauth-page-csp.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 type OAuthLoopbackCallbackResult =
   | { type: "authorization_code"; code: string; state: string; parameters: URLSearchParams }
@@ -263,7 +264,7 @@ export async function startOAuthLoopbackCallbackServer(params: {
       body: renderOAuthPage({
         title: "Authorization received",
         heading: "Authorization received",
-        message: "Return to the terminal while OpenClaw finishes.",
+        message: `Return to the terminal while ${PRODUCT_NAME} finishes.`,
       }),
       contentType: "text/html; charset=utf-8",
     }));

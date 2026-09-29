@@ -9,6 +9,7 @@ import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import { stylePromptTitle } from "../../packages/terminal-core/src/prompt-style.js";
 import { resolveAgentEffectiveModelPrimary, resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { DEFAULT_AGENT_WORKSPACE_DIR, ensureAgentWorkspace } from "../agents/workspace.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { printClawBanner } from "../cli/claw-banner.js";
 import { readSourceConfigBestEffort } from "../config/config.js";
 import { inheritLegacyDefaultAgentId } from "../config/legacy.default-agent-owner.js";
@@ -231,7 +232,7 @@ async function assertFullResetPreservesOnboardingLock(workspaceDir: string): Pro
   ) {
     throw new Error(
       "Full reset workspace overlaps the active onboarding lock directory. " +
-        "Choose a workspace outside the OpenClaw state migration directory or use a narrower reset scope.",
+        `Choose a workspace outside the ${PRODUCT_NAME} state migration directory or use a narrower reset scope.`,
     );
   }
 }

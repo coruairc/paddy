@@ -1,4 +1,5 @@
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import type { createTuiLocalCliRunner } from "./tui-local-cli.js";
 
 const PHASES = new Set([
@@ -17,7 +18,7 @@ const NEXT_ACTIONS: Readonly<Record<string, string>> = {
   approve_extension:
     "Approve the extension in Chrome on the TUI process host, then run /browser-setup verify.",
   install_from_store:
-    "Install the OpenClaw extension from the Chrome Web Store, then run /browser-setup verify.",
+    `Install the ${PRODUCT_NAME} extension from the Chrome Web Store, then run /browser-setup verify.`,
   check_connection: "Run /browser-setup verify to check the local Chrome connection.",
   repair_native_host:
     "Repair the local native host with openclaw browser extension install, then retry.",
@@ -109,7 +110,7 @@ export async function runTuiBrowserSetup(params: {
   }
   const lines = formatSetupResult(result.value, action);
   if (!lines) {
-    params.report("browser setup: invalid_response; check the installed OpenClaw CLI version");
+    params.report(`browser setup: invalid_response; check the installed ${PRODUCT_NAME} CLI version`);
     return;
   }
   for (const line of lines) {

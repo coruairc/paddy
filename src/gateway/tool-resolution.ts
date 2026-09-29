@@ -49,6 +49,7 @@ import { createChannelQuestionPromptDelivery } from "../agents/tools/question-pr
 import { prepareSessionPortalToolTarget } from "../agents/tools/session-portal-target.js";
 import { hasSessionControlAuthority } from "../agents/tools/sessions-control-authority.js";
 import type { SourceReplyDeliveryMode } from "../auto-reply/get-reply-options.types.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { ConversationReadInvocationOrigin } from "../channels/plugins/conversation-read-origin.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { resolveEventSessionRoutingPolicy } from "../infra/event-session-routing.js";
@@ -592,7 +593,7 @@ export function resolveGatewayScopedTools(
           },
           {
             description:
-              "Execute a shell command on a connected OpenClaw node. This tool is node-only; use the CLI native shell for Gateway-local commands when it is available. Commands run synchronously. The sole connected node that can execute commands is selected automatically; set node when several can.",
+              `Execute a shell command on a connected ${PRODUCT_NAME} node. This tool is node-only; use the CLI native shell for Gateway-local commands when it is available. Commands run synchronously. The sole connected node that can execute commands is selected automatically; set node when several can.`,
             displaySummary: "Run commands on a connected node",
             parameters: nodeExecSchema,
           },

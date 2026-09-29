@@ -3,6 +3,7 @@ import { resolveDefaultAgentDir } from "../agents/agent-scope-config.js";
 import { resolveAgentHarnessPolicy } from "../agents/harness/policy.js";
 import { resolveDefaultModelForAgent } from "../agents/model-selection.js";
 import { hasAuthProfileForProvider } from "../agents/tools/model-config.helpers.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { SecretInputMode } from "../commands/onboard-types.js";
 import { resolveAgentModelPrimaryValue } from "../config/model-input.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
@@ -589,7 +590,7 @@ export async function runSearchSetupFlow(
     await prompter.note(
       [
         `${entry.label} works without an API key.`,
-        "OpenClaw will enable the plugin and use it as your web_search provider.",
+        `${PRODUCT_NAME} will enable the plugin and use it as your web_search provider.`,
         `Docs: ${entry.docsUrl ?? "https://docs.openclaw.ai/tools/web"}`,
       ].join("\n"),
       "Web search",
@@ -626,7 +627,7 @@ export async function runSearchSetupFlow(
     const ref = buildSearchEnvRef(config, choice);
     await prompter.note(
       [
-        "Secret references enabled — OpenClaw will store a reference instead of the API key.",
+        `Secret references enabled — ${PRODUCT_NAME} will store a reference instead of the API key.`,
         `Env var: ${ref.id}${envAvailable ? " (detected)" : ""}.`,
         ...(envAvailable ? [] : [`Set ${ref.id} in the Gateway environment.`]),
         "Docs: https://docs.openclaw.ai/tools/web",

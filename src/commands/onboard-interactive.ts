@@ -4,6 +4,7 @@
  * It wires the Clack prompter to the setup wizard and restores terminal state
  * on every exit path so canceled setup cannot leave stdin paused.
  */
+import { PRODUCT_NAME } from "../brand.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { defaultRuntime } from "../runtime.js";
 import { createClackPrompter } from "../wizard/clack-prompter.js";
@@ -45,7 +46,7 @@ export async function runConversationalOnboarding(
   const { verifySetupInference } = await import("../system-agent/setup-inference.js");
   const inference = await verifySetupInference({ runtime, bindSession: true });
   if (!inference.ok) {
-    runtime.error(`OpenClaw requires working inference: ${inference.error}`);
+    runtime.error(`${PRODUCT_NAME} requires working inference: ${inference.error}`);
     runtime.exit(1);
     return;
   }

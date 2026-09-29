@@ -1358,7 +1358,7 @@ describe("runEmbeddedAttempt context engine sessionKey forwarding", () => {
 
       attemptOverrides: {
         currentInboundEventKind: "room_event",
-        currentInboundContext: { text: "[OpenClaw room event]" },
+        currentInboundContext: { text: "[Paddy room event]" },
         suppressNextUserMessagePersistence: true,
         transcriptPrompt: "",
       },

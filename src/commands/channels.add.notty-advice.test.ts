@@ -51,7 +51,7 @@ describe("channelsAddCommand non-TTY advice", () => {
     await channelsAddCommand({ channel: "fixture-signal" }, runtime, { hasFlags: false });
 
     expect(runtime.error).toHaveBeenCalledWith(
-      expect.stringContaining("openclaw channels add --channel fixture-signal --help"),
+      expect.stringContaining("paddy channels add --channel fixture-signal --help"),
     );
     expect(runtime.error).not.toHaveBeenCalledWith(
       expect.stringContaining("channels add --channel <id> --use-env"),

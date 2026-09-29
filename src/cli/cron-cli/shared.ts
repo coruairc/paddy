@@ -26,6 +26,7 @@ import { parseOffsetlessIsoDateTimeInTimeZone } from "../../infra/format-time/pa
 import { formatTimestamp } from "../../logging/timestamps.js";
 import { defaultRuntime, ExitError, type RuntimeEnv } from "../../runtime.js";
 import { isOffsetlessIsoDateTime } from "../../shared/iso-time.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatLookupMiss } from "../error-format.js";
 import {
   ExpectedCliError,
@@ -352,7 +353,7 @@ export const formatCronLookupMiss = (jobId: string) =>
   formatLookupMiss({
     noun: "Automation",
     value: sanitizeTerminalText(jobId),
-    listCommand: "openclaw cron list",
+    listCommand: `${CLI_NAME} cron list`,
     valueLabel: "automation id",
   });
 

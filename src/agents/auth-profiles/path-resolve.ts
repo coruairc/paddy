@@ -4,6 +4,7 @@
  */
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveStateDir } from "../../config/paths.js";
 import { readConfigMachineState } from "../../state/config-machine-state.js";
 import { isArtifactPreservingStateRead } from "../../state/openclaw-state-db-readonly.js";
@@ -71,7 +72,7 @@ export function resolveSharedAuthStoreOwnership(
   }
   if (sharedAuthStoreOwnershipByDatabasePath.size >= SHARED_AUTH_STORE_OWNERSHIP_CACHE_LIMIT) {
     throw new Error(
-      "Shared auth store ownership cache exceeded its process root limit; restart OpenClaw.",
+      `Shared auth store ownership cache exceeded its process root limit; restart ${PRODUCT_NAME}.`,
     );
   }
   const ownership = parseSharedAuthStoreOwnership(
@@ -107,7 +108,7 @@ export async function resolveSharedAuthStoreOwnershipAsync(
   }
   if (sharedAuthStoreOwnershipByDatabasePath.size >= SHARED_AUTH_STORE_OWNERSHIP_CACHE_LIMIT) {
     throw new Error(
-      "Shared auth store ownership cache exceeded its process root limit; restart OpenClaw.",
+      `Shared auth store ownership cache exceeded its process root limit; restart ${PRODUCT_NAME}.`,
     );
   }
   const ownership = parseSharedAuthStoreOwnership(value);

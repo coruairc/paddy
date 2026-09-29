@@ -13,6 +13,7 @@ import { hasSudoToRootSystemdUserManagerMismatch } from "../../daemon/systemd-us
 import { resolveGatewayServiceMutationError } from "../../infra/gateway-supervision.js";
 import { parseTcpPort } from "../../infra/tcp-port.js";
 import { defaultRuntime } from "../../runtime.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { createDaemonActionContext } from "./response.js";
 export { formatRuntimeStatus } from "../../daemon/runtime-format.js";
@@ -58,7 +59,7 @@ export function resolveDaemonInstallBlockMessage(
   if (process.platform === "linux" && hasSudoToRootSystemdUserManagerMismatch(env)) {
     return (
       "Gateway install blocked: Refusing a sudo-to-root systemd user-service install because " +
-      "OpenClaw state and service files would belong to root while systemctl targets the " +
+      `${PRODUCT_NAME} state and service files would belong to root while systemctl targets the ` +
       "invoking user's manager. Rerun the same command without sudo. If [unsafe-permissions] " +
       "blocked the non-sudo command, repair the reported directory with `chmod go-w <path>` " +
       "and retry; do not use sudo or --force to bypass it. " +
@@ -71,7 +72,7 @@ export function resolveDaemonInstallBlockMessage(
 export function formatDaemonServiceInstallCommand(env: NodeJS.ProcessEnv, port?: number): string {
   const servicePort = port ?? parseTcpPort(env.OPENCLAW_GATEWAY_PORT);
   return formatCliCommand(
-    `openclaw gateway install --force${servicePort ? ` --port ${servicePort}` : ""}`,
+    `${CLI_NAME} gateway install --force${servicePort ? ` --port ${servicePort}` : ""}`,
     env,
   );
 }
@@ -88,7 +89,7 @@ export function resolveDaemonServiceInstallGuidance(
     resolveDaemonInstallBlockMessage("gateway", env) ??
     (service?.stopped
       ? `Stopped service definitions are preserved; run \`${formatDaemonServiceInstallCommand(env, service.port)}\` from the active CLI. Installation may start the service.`
-      : `Run \`${formatCliCommand("openclaw doctor --fix", env)}\` or \`${formatDaemonServiceInstallCommand(env, service?.port)}\` from the active CLI.`)
+      : `Run \`${formatCliCommand(`${CLI_NAME} doctor --fix`, env)}\` or \`${formatDaemonServiceInstallCommand(env, service?.port)}\` from the active CLI.`)
   );
 }
 
@@ -99,7 +100,7 @@ export function formatGatewayServiceInstallationDrift(
   service?: { stopped?: boolean; port?: number },
 ): string {
   const { serviceRoot, serviceVersion, activeRoot, activeVersion } = drift;
-  const facts = `Gateway service targets a different OpenClaw install: ${serviceRoot} (${serviceVersion ?? "version unknown"}); active CLI: ${activeRoot} (${activeVersion ?? "version unknown"}).`;
+  const facts = `Gateway service targets a different ${PRODUCT_NAME} install: ${serviceRoot} (${serviceVersion ?? "version unknown"}); active CLI: ${activeRoot} (${activeVersion ?? "version unknown"}).`;
   const guidance = resolveDaemonServiceInstallGuidance(targetRole, env, service);
   return guidance ? `${facts} ${guidance}` : facts;
 }
@@ -210,10 +211,10 @@ export function renderGatewayServiceStartHints(env: NodeJS.ProcessEnv = process.
   const profile = env.OPENCLAW_PROFILE;
   const installHint =
     resolveDaemonInstallBlockMessage("gateway", env) ??
-    formatCliCommand("openclaw gateway install", env);
+    formatCliCommand(`${CLI_NAME} gateway install`, env);
   return buildPlatformServiceStartHints({
     installHint,
-    startCommand: formatCliCommand("openclaw gateway start", env),
+    startCommand: formatCliCommand(`${CLI_NAME} gateway start`, env),
     launchAgentPlistPath: `~/Library/LaunchAgents/${resolveGatewayLaunchAgentLabel(profile)}.plist`,
     systemdServiceName: resolveGatewaySystemdServiceName(profile),
     windowsTaskName: resolveGatewayWindowsTaskName(profile),

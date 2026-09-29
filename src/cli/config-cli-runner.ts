@@ -23,6 +23,7 @@ import type { RuntimeEnv } from "../runtime.js";
 import { ExitError, writeRuntimeJson } from "../runtime.js";
 import { toDotPath } from "../shared/dot-path.js";
 import { parseConfigPathArrayIndex } from "../shared/path-array-index.js";
+import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import {
   formatPluginInstallConfigSetError,
@@ -154,9 +155,9 @@ function findAutoManagedMetaTargets(
 function formatAutoManagedMetaError(paths: readonly PathSegment[][]): string {
   const subject = paths.map(toDotPath).join(", ");
   return [
-    `${subject} is auto-managed by OpenClaw and cannot be edited; the value would be overwritten on the next config write.`,
+    `${subject} is auto-managed by ${PRODUCT_NAME} and cannot be edited; the value would be overwritten on the next config write.`,
     "",
-    "These fields are stamped on every config write to record the OpenClaw version and timestamp that produced the file.",
+    `These fields are stamped on every config write to record the ${PRODUCT_NAME} version and timestamp that produced the file.`,
   ].join("\n");
 }
 
@@ -617,7 +618,7 @@ export function handleConfigMutationError(params: {
     params.runtime.error("Config change declined. No settings were saved.");
     params.runtime.error(message);
     params.runtime.error(
-      `Correct the setting above and retry. Run ${formatCliCommand("openclaw config schema")} to inspect supported settings and values.`,
+      `Correct the setting above and retry. Run ${formatCliCommand(`${CLI_NAME} config schema`)} to inspect supported settings and values.`,
     );
   } else {
     params.runtime.error(danger(message));

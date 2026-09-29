@@ -123,7 +123,7 @@ async function loadConfiguredManager(output: ReefCliOutput): Promise<{
 }> {
   const config = currentReefConfig();
   if (!config?.handle) {
-    return await fail(output, "Reef is not configured. Run `openclaw reef register` first.");
+    return await fail(output, "Reef is not configured. Run `paddy reef register` first.");
   }
   const keys = await loadOrCreateKeys(false);
   const runtime = getReefRuntime();
@@ -210,7 +210,7 @@ async function runRegister(output: ReefCliOutput, options: RegisterOptions): Pro
   ) {
     return await fail(
       output,
-      `This OpenClaw state already holds the Reef identity @${identity.handle} on ${identity.relayUrl}. Re-register the same handle and relay.`,
+      `This Paddy state already holds the Reef identity @${identity.handle} on ${identity.relayUrl}. Re-register the same handle and relay.`,
     );
   }
   const requestedHandle = explicitHandle ?? identity?.handle;
@@ -394,7 +394,7 @@ async function runRegister(output: ReefCliOutput, options: RegisterOptions): Pro
   emit(output, { status: "registered", handle, relayUrl, fingerprint: printed }, [
     `Registered @${handle} on ${relayUrl}.`,
     `Safety fingerprint (share out of band): ${printed}`,
-    "Restart the gateway to connect: openclaw gateway restart",
+    "Restart the gateway to connect: paddy gateway restart",
   ]);
 }
 

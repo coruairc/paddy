@@ -8,6 +8,7 @@ import type {
   WorktreePreservationReason,
 } from "../../packages/gateway-protocol/src/index.js";
 import { resolveConfiguredAgentId } from "../agents/agent-scope-config.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { formatCliJsonFailure, rethrowExpectedCliError } from "../cli/failure-output.js";
 import { callGatewayFromCliWithTransport } from "../cli/gateway-rpc.js";
@@ -83,8 +84,8 @@ function notFoundResult(key: string, agent?: string): SessionsLifecycleResult {
 const WORKTREE_PRESERVATION_REASON_COPY = {
   "owner-mismatch": "registered to another owner",
   busy: "still in use by a live run or another cleanup",
-  "foreign-lock": "Git reports a lock owned outside OpenClaw",
-  "snapshot-failed": "OpenClaw could not create a safety snapshot",
+  "foreign-lock": `Git reports a lock owned outside ${PRODUCT_NAME}`,
+  "snapshot-failed": `${PRODUCT_NAME} could not create a safety snapshot`,
   "cleanup-failed": "cleanup did not finish normally",
 } as const satisfies Record<WorktreePreservationReason, string>;
 

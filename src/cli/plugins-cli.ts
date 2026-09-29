@@ -3,6 +3,7 @@ import type { Command } from "commander";
 import { formatDocsLink } from "../../packages/terminal-core/src/links.js";
 import { theme } from "../../packages/terminal-core/src/theme.js";
 import { createLazyRuntimeMethodBinder, createLazyRuntimeModule } from "../shared/lazy-runtime.js";
+import { PRODUCT_NAME } from "./cli-name.js";
 import type { PluginInspectOptions } from "./plugins-inspect-command.js";
 import type { PluginsListOptions } from "./plugins-list-command.js";
 import type { PluginsReloadOptions } from "./plugins-reload-command.js";
@@ -48,7 +49,7 @@ const authoringAction = createLazyRuntimeMethodBinder(
 export function registerPluginsCli(program: Command) {
   const plugins = program
     .command("plugins")
-    .description("Manage OpenClaw plugins and extensions")
+    .description(`Manage ${PRODUCT_NAME} plugins and extensions`)
     .addHelpText(
       "after",
       () =>
@@ -250,7 +251,7 @@ export function registerPluginsCli(program: Command) {
 
   marketplace
     .command("entries")
-    .description("List entries from the configured OpenClaw marketplace feed")
+    .description(`List entries from the configured ${PRODUCT_NAME} marketplace feed`)
     .option("--feed-profile <name>", "Configured marketplace feed profile to list")
     .option("--feed-url <url>", "Explicit hosted marketplace feed URL")
     .option("--offline", "Read the latest accepted snapshot without fetching the feed", false)
@@ -259,7 +260,7 @@ export function registerPluginsCli(program: Command) {
 
   marketplace
     .command("refresh")
-    .description("Refresh the configured OpenClaw marketplace feed snapshot")
+    .description(`Refresh the configured ${PRODUCT_NAME} marketplace feed snapshot`)
     .option("--feed-profile <name>", "Configured marketplace feed profile to refresh")
     .option("--feed-url <url>", "Explicit hosted marketplace feed URL")
     .option("--expected-sha256 <hash>", "Expected hosted feed SHA-256 payload checksum")

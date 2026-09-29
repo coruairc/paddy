@@ -142,7 +142,7 @@ function readTelegramLifecycleEvent(params: {
       kind: chatId.startsWith("-") ? "group" : "direct",
     },
     senderId: "openclaw",
-    senderName: "OpenClaw QA",
+    senderName: "Paddy QA",
     text,
     timestamp: Date.now(),
     ...(threadId ? { threadId } : {}),

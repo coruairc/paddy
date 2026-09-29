@@ -5,6 +5,7 @@ import { validatePluginUiCapabilities } from "../../packages/gateway-protocol/sr
 import { normalizeOptionalString } from "../../packages/normalization-core/src/string-coerce.js";
 import { normalizeTrimmedStringList } from "../../packages/normalization-core/src/string-normalization.js";
 import { validatePluginCategories } from "../../packages/plugin-package-contract/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { matchRootFileOpenFailure } from "../infra/boundary-file-read.js";
 import { isRecord } from "../utils.js";
 import { coerceDoctorSessionRouteStateOwners } from "./doctor-session-route-state-owner-types.js";
@@ -197,7 +198,7 @@ export function loadPluginManifest(
   if (isCoreReservedPluginId(id)) {
     return cacheResult({
       ok: false,
-      error: `plugin manifest id "${id}" is reserved by OpenClaw core`,
+      error: `plugin manifest id "${id}" is reserved by ${PRODUCT_NAME} core`,
       manifestPath,
     });
   }

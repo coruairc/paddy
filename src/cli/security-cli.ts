@@ -11,6 +11,7 @@ import { defaultRuntime } from "../runtime.js";
 import { runSecurityAuditCore } from "../security/audit.js";
 import { fixSecurityFootguns } from "../security/fix.js";
 import { shortenHomeInString, shortenHomePath } from "../utils.js";
+import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import { resolveCommandSecretRefsViaGateway } from "./command-secret-gateway.js";
 import { getSecurityAuditCommandSecretTargetIds } from "./command-secret-targets.js";
@@ -77,22 +78,28 @@ export function registerSecurityCli(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw security audit", "Run a local security audit."],
+          [`${CLI_NAME} security audit`, "Run a local security audit."],
           [
-            "openclaw security audit --deep",
+            `${CLI_NAME} security audit --deep`,
             "Include best-effort live Gateway probes and plugin-owned security audit collectors.",
           ],
-          ["openclaw security audit --deep --token <token>", "Use explicit token for deep probe."],
           [
-            "openclaw security audit --deep --password <password>",
+            `${CLI_NAME} security audit --deep --token <token>`,
+            "Use explicit token for deep probe.",
+          ],
+          [
+            `${CLI_NAME} security audit --deep --password <password>`,
             "Use explicit password for deep probe.",
           ],
           [
-            "openclaw security audit --auth password --password <password>",
+            `${CLI_NAME} security audit --auth password --password <password>`,
             "Audit a runtime-only password-mode Gateway secret.",
           ],
-          ["openclaw security audit --fix", "Apply safe remediations and file-permission fixes."],
-          ["openclaw security audit --json", "Output machine-readable JSON."],
+          [
+            `${CLI_NAME} security audit --fix`,
+            "Apply safe remediations and file-permission fixes.",
+          ],
+          [`${CLI_NAME} security audit --json`, "Output machine-readable JSON."],
         ])}\n${formatDocsHelp("/cli/security")}`,
     );
 
@@ -159,18 +166,18 @@ export function registerSecurityCli(program: Command) {
       const muted = (text: string) => (rich ? theme.muted(text) : text);
 
       const lines: string[] = [];
-      lines.push(heading("OpenClaw security audit"));
+      lines.push(heading(`${PRODUCT_NAME} security audit`));
       lines.push(muted(`Summary: ${formatSummary(report.summary)}`));
       if ((report.suppressedFindings?.length ?? 0) > 0) {
         lines.push(muted(`Suppressed: ${report.suppressedFindings?.length ?? 0} configured`));
       }
-      lines.push(muted(`Run deeper: ${formatCliCommand("openclaw security audit --deep")}`));
+      lines.push(muted(`Run deeper: ${formatCliCommand(`${CLI_NAME} security audit --deep`)}`));
       for (const diagnostic of secretDiagnostics) {
         lines.push(muted(`[secrets] ${diagnostic}`));
       }
 
       if (opts.fix) {
-        lines.push(muted(`Fix: ${formatCliCommand("openclaw security audit --fix")}`));
+        lines.push(muted(`Fix: ${formatCliCommand(`${CLI_NAME} security audit --fix`)}`));
         if (!fixResult) {
           lines.push(muted("Fixes: failed to apply (unexpected error)"));
         } else if (

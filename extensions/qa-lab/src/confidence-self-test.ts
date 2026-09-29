@@ -281,7 +281,7 @@ async function buildQaConfidenceSelfTestSummary(
 
 function renderQaConfidenceSelfTestMarkdownReport(summary: QaConfidenceSelfTestSummary): string {
   const lines = [
-    "# OpenClaw QA Confidence Self-Test",
+    "# Paddy QA Confidence Self-Test",
     "",
     `- Generated at: ${summary.generatedAt}`,
     `- Verdict: ${summary.pass ? "pass" : "fail"}`,

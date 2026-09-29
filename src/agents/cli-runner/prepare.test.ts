@@ -1490,7 +1490,7 @@ describe("prepareCliRunContext", () => {
       provider: "anthropic",
       agentDir,
     });
-    await expect(preparation).rejects.toThrow("openclaw models auth login --provider anthropic");
+    await expect(preparation).rejects.toThrow("paddy models auth login --provider anthropic");
     expect(prepareExecution).not.toHaveBeenCalled();
   });
 
@@ -2365,7 +2365,7 @@ describe("prepareCliRunContext", () => {
         sessionKey: "agent:main:test",
         agentId: "main",
         trigger: "user",
-        prompt: "[OpenClaw room event]",
+        prompt: "[Paddy room event]",
         currentInboundEventKind: "room_event",
         currentInboundContext: {
           text: "Room context:\nAlice: lunch?\n\nCurrent event:\nBob: yes",
@@ -2558,7 +2558,7 @@ describe("prepareCliRunContext", () => {
     const context = await fixture.prepare({});
 
     expect(context.params.prompt).toBe("latest ask");
-    expect(context.systemPrompt).toContain("You are a personal assistant running inside OpenClaw.");
+    expect(context.systemPrompt).toContain("You are a personal assistant running inside Paddy.");
     expect(context.systemPrompt).toContain("Current model identity: test-cli/test-model.");
     expect(context.systemPrompt).not.toContain("hook exploded");
     expect(hookRunner.runBeforePromptBuild).toHaveBeenCalledOnce();
@@ -3343,7 +3343,7 @@ describe("prepareCliRunContext", () => {
     });
     expect(context.openClawHistoryPrompt).toBeUndefined();
     expect(context.params.prompt).toContain(
-      "OpenClaw resumed this CLI session after prompt content changed.",
+      "Paddy resumed this CLI session after prompt content changed.",
     );
     expect(context.params.prompt).toContain("changed=system-prompt");
     expect(context.params.prompt).toContain("latest ask");
@@ -3367,7 +3367,7 @@ describe("prepareCliRunContext", () => {
       invalidatedReason: "system-prompt",
     });
     expect(context.params.prompt).not.toContain(
-      "OpenClaw resumed this CLI session after prompt content changed.",
+      "Paddy resumed this CLI session after prompt content changed.",
     );
   });
 
@@ -4516,7 +4516,7 @@ describe("prepareCliRunContext", () => {
       toolsAllow: ["read", "web_search"],
     });
     await expect(run).rejects.toThrow(
-      `CLI backend "test-cli" cannot enforce this run's tool cap. Upgrade its plugin and retry; if current, ask its maintainer to add exact-cap support. OpenClaw did not start the run.`,
+      `CLI backend "test-cli" cannot enforce this run's tool cap. Upgrade its plugin and retry; if current, ask its maintainer to add exact-cap support. Paddy did not start the run.`,
     );
 
     expect(getActiveMcpLoopbackRuntime).not.toHaveBeenCalled();
@@ -5038,7 +5038,7 @@ describe("prepareCliRunContext", () => {
     ).rejects.toMatchObject({
       code: "unsupported",
       message:
-        'CLI backend "external-cli" does not support isolated completion; OpenClaw did not start the run.',
+        'CLI backend "external-cli" does not support isolated completion; Paddy did not start the run.',
     });
     expect(cleanup).toHaveBeenCalledOnce();
   });
@@ -6928,10 +6928,10 @@ describe("prepareCliRunContext", () => {
       expect(context.openClawHistoryPrompt).toBeDefined();
       expect(context.openClawHistoryPrompt).toContain("RESEED_RETAINED_PREFIX");
       if (testCase.expectsTruncation) {
-        expect(context.openClawHistoryPrompt).toContain("OpenClaw reseed history truncated");
+        expect(context.openClawHistoryPrompt).toContain("Paddy reseed history truncated");
       } else {
         expect(context.openClawHistoryPrompt).toContain(testCase.marker);
-        expect(context.openClawHistoryPrompt).not.toContain("OpenClaw reseed history truncated");
+        expect(context.openClawHistoryPrompt).not.toContain("Paddy reseed history truncated");
       }
     });
   });
@@ -6989,7 +6989,7 @@ describe("prepareCliRunContext", () => {
       expect(context.openClawHistoryPrompt).toBeDefined();
       expect(context.openClawHistoryPrompt).toContain(recentMarker);
       expect(context.openClawHistoryPrompt).toContain("EARLIEST_USER");
-      expect(context.openClawHistoryPrompt).not.toContain("OpenClaw reseed history truncated");
+      expect(context.openClawHistoryPrompt).not.toContain("Paddy reseed history truncated");
     });
   });
 });

@@ -74,7 +74,7 @@ it("keeps pending startup guidance distinct from reachability failure", async ()
   expect(
     stripAnsi(report.overviewRows.find(({ Item }) => Item === "Last heartbeat")?.Value ?? ""),
   ).toBe("not checked (gateway still starting; phase plugins)");
-  expect(report.footerLines.at(-1)).toBe("  Retry after startup: openclaw status --deep");
+  expect(report.footerLines.at(-1)).toBe("  Retry after startup: paddy status --deep");
   expect(report.footerLines.join("\n")).not.toContain("Fix reachability first");
 });
 
@@ -83,8 +83,8 @@ it("shows skipped audit text when fast status omits the security audit", async (
     createStatusCommandReportDataParams({ securityAudit: undefined }),
   );
   expect(report.securityAuditLines.map(stripAnsi)).toEqual([
-    "Skipped in fast status. Full report: openclaw security audit",
-    "Deep probe: openclaw status --deep",
+    "Skipped in fast status. Full report: paddy security audit",
+    "Deep probe: paddy status --deep",
   ]);
 });
 

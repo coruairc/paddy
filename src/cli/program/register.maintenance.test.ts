@@ -232,11 +232,11 @@ describe("registered maintenance commands", () => {
   const errors = {
     state: "doctor shared-state SQLite maintenance can only be combined with --json.",
     orphan:
-      "doctor session SQLite options require --session-sqlite. Use `openclaw doctor --session-sqlite dry-run ...`.",
+      "doctor session SQLite options require --session-sqlite. Use `paddy doctor --session-sqlite dry-run ...`.",
     operations:
       "doctor operations are mutually exclusive: choose one of --lint, --fix/--repair, --post-upgrade, --state-sqlite, or --session-sqlite.",
     github: "--github-issue requires --session-sqlite recover.",
-    selectors: "doctor lint options require --lint. Use `openclaw doctor --lint ...`.",
+    selectors: "doctor lint options require --lint. Use `paddy doctor --lint ...`.",
     repair:
       "doctor --lint runs read-only lint checks and cannot be combined with --repair, --fix, or --force.",
     yes: "doctor --lint runs read-only lint checks and cannot be combined with --yes.",

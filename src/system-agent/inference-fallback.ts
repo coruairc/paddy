@@ -3,6 +3,7 @@ import { normalizeProviderId } from "@openclaw/model-catalog-core/provider-id";
 import { resolveAmbientOwnerAgentId } from "../agents/agent-scope-config.js";
 import { listAgentIds } from "../agents/agent-scope.js";
 import { hasAvailableAuthForProvider } from "../agents/model-auth.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { ConfigFileSnapshot, OpenClawConfig } from "../config/types.openclaw.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
@@ -197,7 +198,7 @@ export async function verifySystemAgentInferenceWithFallback(
     lastFailure ?? {
       ok: false,
       status: "unknown",
-      error: "OpenClaw could not verify a usable inference route. Check model setup and try again.",
+      error: `${PRODUCT_NAME} could not verify a usable inference route. Check model setup and try again.`,
     }
   );
 }

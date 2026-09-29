@@ -97,7 +97,7 @@ export async function assertCrabboxWarmImageMigrationReady(state: CrabboxState):
   const leases = openLegacyLeases(state);
   if ((leases.count ? await leases.count() : (await leases.entries()).length) > 0) {
     throw new Error(
-      "Crabbox has legacy worker allocations whose original image choices are unknown; run openclaw doctor --fix and follow its provider-cleanup recovery instructions before provisioning workers.",
+      "Crabbox has legacy worker allocations whose original image choices are unknown; run paddy doctor --fix and follow its provider-cleanup recovery instructions before provisioning workers.",
     );
   }
 }
@@ -105,7 +105,7 @@ export async function assertCrabboxWarmImageMigrationReady(state: CrabboxState):
 function requireCanonicalProfile(record: WarmProfileRecord | undefined) {
   if (record && record.version !== 3) {
     throw new Error(
-      "Crabbox warm-image state requires migration; run openclaw doctor --fix before provisioning workers.",
+      "Crabbox warm-image state requires migration; run paddy doctor --fix before provisioning workers.",
     );
   }
   const preparationKey = (value: unknown) =>
@@ -152,7 +152,7 @@ function requireCanonicalProfile(record: WarmProfileRecord | undefined) {
             !validGeneration(allocation.publicationBase)),
       ))
   ) {
-    throw new Error("Crabbox warm-image preparation state is invalid; run openclaw doctor --fix.");
+    throw new Error("Crabbox warm-image preparation state is invalid; run paddy doctor --fix.");
   }
   return record;
 }
@@ -281,7 +281,7 @@ export function openCrabboxWarmImageStore(state: CrabboxState, env?: NodeJS.Proc
     );
     if (entries.length > 1) {
       throw new Error(
-        `Crabbox lease ${id} has conflicting warm-image owners; run openclaw doctor --fix.`,
+        `Crabbox lease ${id} has conflicting warm-image owners; run paddy doctor --fix.`,
       );
     }
     const entry = entries[0];
@@ -501,10 +501,10 @@ export function crabboxWarmImageCaptureStatus(record: WarmProfileRecord) {
 }
 
 export const CRABBOX_WARM_IMAGE_WAIT_HINT =
-  "The capture may still be preparing its source or waiting for provider readiness. Inspect openclaw crabbox warm-images --json and allow the owning capture to settle.";
+  "The capture may still be preparing its source or waiting for provider readiness. Inspect paddy crabbox warm-images --json and allow the owning capture to settle.";
 
 export function crabboxWarmImageRecoveryHint(selector: string): string {
-  return `Stop the owning Gateway and capture processes, confirm any worker being recovered is stopped, and resolve any untracked checkpoint in the Crabbox catalog before running: openclaw crabbox warm-images --recover ${selector} --acknowledge-provider-cleanup. Then restart the Gateway; the next eligible worker can capture again.`;
+  return `Stop the owning Gateway and capture processes, confirm any worker being recovered is stopped, and resolve any untracked checkpoint in the Crabbox catalog before running: paddy crabbox warm-images --recover ${selector} --acknowledge-provider-cleanup. Then restart the Gateway; the next eligible worker can capture again.`;
 }
 
 export async function listCrabboxWarmImages(state: CrabboxState, env?: NodeJS.ProcessEnv) {
@@ -604,7 +604,7 @@ export async function recoverCrabboxWarmImageCapture(
       })))
     ) {
       throw new Error(
-        "Legacy allocation selector is absent or changed; rerun openclaw crabbox warm-images --json. No state was changed.",
+        "Legacy allocation selector is absent or changed; rerun paddy crabbox warm-images --json. No state was changed.",
       );
     }
     return;
@@ -615,7 +615,7 @@ export async function recoverCrabboxWarmImageCapture(
   );
   if (!entry || !(await clearCrabboxWarmImageCapture(store, entry.key, selector))) {
     throw new Error(
-      "Capture selector is absent or changed; rerun openclaw crabbox warm-images --json. No state was changed.",
+      "Capture selector is absent or changed; rerun paddy crabbox warm-images --json. No state was changed.",
     );
   }
 }

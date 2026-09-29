@@ -428,7 +428,7 @@ describe("doctor session transcript repair", () => {
       });
       expect(note).toHaveBeenCalledWith(
         expect.stringContaining(
-          'Inspect with "openclaw doctor --session-sqlite dry-run --session-sqlite-all-agents".',
+          'Inspect with "paddy doctor --session-sqlite dry-run --session-sqlite-all-agents".',
         ),
         "Session SQLite",
       );
@@ -450,7 +450,7 @@ describe("doctor session transcript repair", () => {
         expect(output).toContain(`${count - 5} omitted`);
         expect(output).toContain("originals and migration manifests remain protected");
         expect(output).toContain(
-          "openclaw doctor --session-sqlite dry-run --session-sqlite-all-agents --json",
+          "paddy doctor --session-sqlite dry-run --session-sqlite-all-agents --json",
         );
         expect(output).not.toContain("history-5:");
         expect(output.split("\n").length).toBeLessThan(20);

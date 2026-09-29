@@ -269,7 +269,7 @@ describe("post-core plugin payload degradation", () => {
                   expect.stringContaining(
                     failure === "config-read-file" ? "file access" : "openclaw doctor",
                   ),
-                  "Once the config loads successfully, rerun `openclaw update repair`.",
+                  "Once the config loads successfully, rerun `paddy update repair`.",
                 ]),
               }),
             ]);

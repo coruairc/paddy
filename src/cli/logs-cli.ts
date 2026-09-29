@@ -435,7 +435,7 @@ function createLogWriters(onOutputClosed?: () => void) {
       onOutputClosed?.();
       const code = err.code ?? "EPIPE";
       const target = stream === process.stdout ? "stdout" : "stderr";
-      const message = `openclaw logs: output ${target} closed (${code}). Stopping tail.`;
+      const message = `paddy logs: output ${target} closed (${code}). Stopping tail.`;
       try {
         clearActiveProgressLine();
         process.stderr.write(`${message}\n`);
@@ -461,7 +461,7 @@ async function emitGatewayError(
   emitJsonLine: (payload: Record<string, unknown>, toStdErr?: boolean) => boolean,
   errorLine: (text: string) => boolean,
 ) {
-  const hint = `Hint: run \`${formatCliCommand("openclaw doctor")}\`.`;
+  const hint = `Hint: run \`${formatCliCommand(`paddy doctor`)}\`.`;
   const errorText = redactSensitiveUrlLikeString(formatErrorMessage(err));
 
   const details = projectGatewayConnectionDetailsForDiagnostics(

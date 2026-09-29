@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { lstatSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { PRODUCT_NAME } from "../../brand.js";
 import { sha256Hex } from "../../infra/crypto-digest.js";
 import { isErrno } from "../../infra/errors.js";
 import { resolveClawHubSkillStatusLinkSync } from "./clawhub-status.js";
@@ -71,7 +72,7 @@ async function planTrackedClawHubSkillState(params: {
       ok: false,
       code: "ambiguous",
       error: link.valid
-        ? `Skill ${JSON.stringify(slug)} was installed before OpenClaw recorded file fingerprints, so local changes cannot be detected.`
+        ? `Skill ${JSON.stringify(slug)} was installed before ${PRODUCT_NAME} recorded file fingerprints, so local changes cannot be detected.`
         : link.reason,
     };
   }

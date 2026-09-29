@@ -129,7 +129,7 @@ describe("resolveAgentRuntimeLabel", () => {
         fallbackProvider: "anthropic",
         classifyCliProvider: () => false,
       },
-      expected: "OpenClaw Default (previous runtime: OpenAI Codex)",
+      expected: "Paddy Default (previous runtime: OpenAI Codex)",
     },
     {
       name: "an unmapped pin is reported by its sanitized id",

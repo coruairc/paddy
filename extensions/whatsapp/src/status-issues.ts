@@ -64,8 +64,8 @@ export function collectWhatsAppStatusIssues(
       const addIssue = (kind: ChannelStatusIssue["kind"], message: string, fix: string) => {
         issues.push({ channel: "whatsapp", accountId, kind, message, fix });
       };
-      const relink = `Run: ${formatCliCommand("openclaw channels login")} (scan QR on the gateway host).`;
-      const repair = `Run: ${formatCliCommand("openclaw doctor")} (or restart the gateway). If it persists, relink via channels login and check logs.`;
+      const relink = `Run: ${formatCliCommand("paddy channels login")} (scan QR on the gateway host).`;
+      const repair = `Run: ${formatCliCommand("paddy doctor")} (or restart the gateway). If it persists, relink via channels login and check logs.`;
       const linkedRuntimePrefix = linked ? "Linked but " : "";
 
       if (statusState === "unstable") {
@@ -140,7 +140,7 @@ export function collectWhatsAppStatusIssues(
         addIssue(
           "runtime",
           `Linked but recently reconnected (reconnectAttempts=${reconnectAttempts})${lastError ? `: ${lastError}` : "."}`,
-          `Watch: ${formatCliCommand("openclaw logs --follow")} and run ${formatCliCommand("openclaw channels status --probe")} if disconnects continue. If it keeps flapping, restart the gateway or relink via channels login.`,
+          `Watch: ${formatCliCommand("paddy logs --follow")} and run ${formatCliCommand("paddy channels status --probe")} if disconnects continue. If it keeps flapping, restart the gateway or relink via channels login.`,
         );
         return;
       }

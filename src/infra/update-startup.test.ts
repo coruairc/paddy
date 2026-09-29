@@ -2412,7 +2412,7 @@ describe("update-startup", () => {
       kind: "update",
       status: "skipped",
       message: expect.stringMatching(
-        /Stop the foreground Gateway.*`openclaw --profile work update --yes --channel beta --tag 2\.0\.0-beta\.1`.*then launch the Gateway again/s,
+        /Stop the foreground Gateway.*`paddy --profile work update --yes --channel beta --tag 2\.0\.0-beta\.1`.*then launch the Gateway again/s,
       ),
       stats: { reason: "managed-service-handoff-unavailable" },
     });

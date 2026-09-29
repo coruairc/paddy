@@ -57,6 +57,7 @@ import {
   recordUpdateDoctorRefusal,
   resolveUpdateDoctorGitRecovery,
 } from "./doctor-update-refusal.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 export async function beginDoctorMaintenance(
   params: DoctorMaintenanceParams,
@@ -366,7 +367,7 @@ export async function beginDoctorMaintenance(
       error instanceof DoctorMaintenanceRefusalError
         ? error
         : new DoctorMaintenanceRefusalError(
-            `Doctor could not enter maintenance. ${String(error)}${hasGatewayServiceStopUnsafeError(error) ? "" : ` Stop the Gateway service and other OpenClaw processes using this state, then run ${formatCliCommand("openclaw doctor --fix", env)} from an independent shell.`}`,
+            `Doctor could not enter maintenance. ${String(error)}${hasGatewayServiceStopUnsafeError(error) ? "" : ` Stop the Gateway service and other ${PRODUCT_NAME} processes using this state, then run ${formatCliCommand("openclaw doctor --fix", env)} from an independent shell.`}`,
             classifyDoctorMaintenanceRefusal(error),
             {
               cause: error,

@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../../brand.js";
 import { DEPRECATION_MARKING_COMPAT_RECORDS } from "./deprecation-marking.js";
 import { MEDIA_LEGACY_PROJECTION_COMPAT_RECORD } from "./media-legacy-projection.js";
 import {
@@ -627,7 +628,7 @@ export const PLUGIN_COMPAT_RECORDS = [
     ],
     tests: ["src/plugin-sdk/shipped-channel-compat.test.ts", "src/plugins/compat/registry.test.ts"],
     releaseNote:
-      "Published OpenClaw channel packages through 2026.7.1 remain loadable while they migrate to plugin-owned config and setup helpers.",
+      `Published ${PRODUCT_NAME} channel packages through 2026.7.1 remain loadable while they migrate to plugin-owned config and setup helpers.`,
   },
   {
     code: "generated-bundled-channel-config-fallback",

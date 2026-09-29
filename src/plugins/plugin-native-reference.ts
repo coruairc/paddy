@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { isPathInside } from "../infra/path-guards.js";
 import {
@@ -111,7 +112,7 @@ export function assertPluginNativeReferenceNamespace(
       }
     }
     if (expectedHost && resolveNativeHost(target) !== expectedHost) {
-      throw new Error("The native companion directory resolves a different OpenClaw host");
+      throw new Error(`The native companion directory resolves a different ${PRODUCT_NAME} host`);
     }
   } catch (cause) {
     throw new Error(

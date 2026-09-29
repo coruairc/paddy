@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { MeetingRealtimeAudioFormat } from "./realtime-audio-format.js";
 import { buildMeetingSoxAudioCommands, type MeetingSoxAudioFormat } from "./sox-audio-command.js";
 
@@ -20,7 +21,7 @@ export type MeetingAudioCommandResult = {
 const PIPEWIRE_SINK_NAME = "openclaw_meeting_audio";
 const PIPEWIRE_MONITOR_NAME = `${PIPEWIRE_SINK_NAME}.monitor`;
 const PIPEWIRE_SOURCE_NAME = PIPEWIRE_SINK_NAME;
-const PIPEWIRE_MEETING_AUDIO_DEVICE_LABEL = "OpenClaw Meeting Audio";
+const PIPEWIRE_MEETING_AUDIO_DEVICE_LABEL = `${PRODUCT_NAME} Meeting Audio`;
 const BLACKHOLE_MEETING_AUDIO_DEVICE_LABEL = "BlackHole 2ch";
 
 function resolveMeetingAudioBackend(
@@ -165,7 +166,7 @@ export async function ensureMeetingAudioBackend(params: {
     if (loaded.code !== 0) {
       sinks = await params.run(["pactl", "list", "short", "sinks"], params.timeoutMs);
       if (!pulseListContains(sinks.stdout ?? "", PIPEWIRE_SINK_NAME)) {
-        assertCommandSucceeded(loaded, "Could not create the OpenClaw PipeWire-Pulse sink");
+        assertCommandSucceeded(loaded, `Could not create the ${PRODUCT_NAME} PipeWire-Pulse sink`);
       }
     }
   }
@@ -189,7 +190,7 @@ export async function ensureMeetingAudioBackend(params: {
     if (loaded.code !== 0) {
       sources = await params.run(["pactl", "list", "short", "sources"], params.timeoutMs);
       if (!pulseListContains(sources.stdout ?? "", PIPEWIRE_SOURCE_NAME)) {
-        assertCommandSucceeded(loaded, "Could not create the OpenClaw PipeWire-Pulse source");
+        assertCommandSucceeded(loaded, `Could not create the ${PRODUCT_NAME} PipeWire-Pulse source`);
       }
     }
   }
@@ -199,6 +200,6 @@ export async function ensureMeetingAudioBackend(params: {
     !pulseListContains(sinks.stdout ?? "", PIPEWIRE_SINK_NAME) ||
     !pulseListContains(sources.stdout ?? "", PIPEWIRE_SOURCE_NAME)
   ) {
-    throw new Error("OpenClaw PipeWire-Pulse sink or monitor source was not created.");
+    throw new Error(`${PRODUCT_NAME} PipeWire-Pulse sink or monitor source was not created.`);
   }
 }

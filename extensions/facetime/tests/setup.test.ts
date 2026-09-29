@@ -388,7 +388,7 @@ describe("FaceTime guided setup", () => {
     expect(report.actions).toContainEqual({
       id: "restart-call-apps",
       kind: "manual-test",
-      label: "Quit and reopen FaceTime and Phone, then let OpenClaw reinject the helper",
+      label: "Quit and reopen FaceTime and Phone, then let Paddy reinject the helper",
     });
   });
 

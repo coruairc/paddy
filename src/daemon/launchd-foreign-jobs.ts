@@ -3,6 +3,7 @@ import { constants } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { sanitizeForLog } from "../../packages/terminal-core/src/ansi.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveGatewayLaunchAgentLabel, resolveNodeLaunchAgentLabel } from "./constants.js";
 import {
   execLaunchctl,
@@ -322,14 +323,14 @@ export async function findForeignLaunchdJobs(
   ].toSorted();
   if (labels.length > MAX_JOBS) {
     throw new Error(
-      `Too many OpenClaw launchd jobs to inspect safely (${labels.length}; limit ${MAX_JOBS}).`,
+      `Too many ${PRODUCT_NAME} launchd jobs to inspect safely (${labels.length}; limit ${MAX_JOBS}).`,
     );
   }
   const jobs: ForeignLaunchdJob[] = [];
   const deadline = Date.now() + 10_000;
   for (const label of labels) {
     if (Date.now() >= deadline) {
-      throw new Error("OpenClaw launchd job inspection exceeded its 10-second budget.");
+      throw new Error(`${PRODUCT_NAME} launchd job inspection exceeded its 10-second budget.`);
     }
     const job = await inspectJob(label, env);
     if (job) {

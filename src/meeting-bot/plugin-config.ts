@@ -8,6 +8,7 @@ import {
   normalizeOptionalString,
 } from "@openclaw/normalization-core/string-coerce";
 import { normalizeOptionalTrimmedStringList } from "@openclaw/normalization-core/string-normalization";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawPluginConfigSchema } from "../plugins/plugin-config-schema.types.js";
 import {
   resolveRealtimeVoiceAgentConsultToolPolicy,
@@ -59,7 +60,7 @@ type MeetingPluginConfigOptions = {
 const DEFAULT_AUDIO_BUFFER_BYTES = 4_096;
 const DEFAULT_AUDIO_FORMAT: MeetingRealtimeAudioFormat = "pcm16-24khz";
 const DEFAULT_MODE_HELP =
-  "Agent consults OpenClaw, bidi uses direct realtime voice, and transcribe observes only.";
+  `Agent consults ${PRODUCT_NAME}, bidi uses direct realtime voice, and transcribe observes only.`;
 const CHROME_NODE_HELP = "Node id/name/IP that owns Chrome and the native virtual-audio backend.";
 
 function resolveBoolean(value: unknown, fallback: boolean): boolean {
@@ -134,7 +135,7 @@ export function createMeetingPluginConfigSchema(options: MeetingPluginConfigOpti
       audioFormat: DEFAULT_AUDIO_FORMAT,
       audioBufferBytes: DEFAULT_AUDIO_BUFFER_BYTES,
       launch: true,
-      guestName: "OpenClaw Agent",
+      guestName: `${PRODUCT_NAME} Agent`,
       reuseExistingTab: true,
       autoJoin: true,
       joinTimeoutMs: 30_000,

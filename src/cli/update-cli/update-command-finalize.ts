@@ -33,6 +33,7 @@ import { withCommandProcessScope } from "../../process/exec-spawn.js";
 import { createNonExitingRuntime, defaultRuntime } from "../../runtime.js";
 import { resolveOpenClawStateSqlitePath } from "../../state/openclaw-state-db.paths.js";
 import { assertOpenClawStateWriteAllowedAtPath } from "../../state/openclaw-state-ownership.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { exitCliAfterOutput } from "../one-shot-exit.js";
 import { retainCliProcessJobUntilExit } from "../runtime-cleanup-scope.js";
@@ -177,7 +178,7 @@ export async function updateFinalizeCommand(
                 error.refusal.kind === "deferred"
               ) {
                 const warnings = normalizeUpdatePostInstallDoctorWarnings([
-                  `Doctor and plugin maintenance remain pending. Resolve the maintenance refusal, then run ${formatCliCommand("openclaw update repair")}. ${error.message}`,
+                  `Doctor and plugin maintenance remain pending. Resolve the maintenance refusal, then run ${formatCliCommand(`${CLI_NAME} update repair`)}. ${error.message}`,
                 ]);
                 lifecycle.recordWarnings(warnings);
                 defaultRuntime.error(warnings[0]);

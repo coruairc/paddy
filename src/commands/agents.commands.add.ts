@@ -26,6 +26,7 @@ import {
   resolveAuthProfileDatabasePath,
 } from "../agents/auth-profiles/sqlite.js";
 import { loadAuthProfileStoreWithoutExternalProfiles } from "../agents/auth-profiles/store-runtime.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { ExpectedCliError } from "../cli/failure-output.js";
 import { isTerminalInteractive } from "../cli/terminal-interactivity.js";
@@ -222,7 +223,7 @@ export async function agentsAddCommand(
     ? { ...runtime, log: (...args) => runtime.error(...args) }
     : runtime;
   try {
-    await prompter.intro("Add OpenClaw agent");
+    await prompter.intro(`Add ${PRODUCT_NAME} agent`);
     const name =
       nameInput ??
       (await prompter.text({

@@ -8,6 +8,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import type { SystemAgentToolOptions } from "../agents/tools/system-agent-tool.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveOpenClawPackageRootSync } from "../infra/openclaw-root.js";
 import type { BundleMcpConfig } from "../plugins/bundle-mcp.js";
 
@@ -99,7 +100,7 @@ function resolveOpenClawToolsServeCommand(): { command: string; args: string[] }
     cwd: process.cwd(),
   });
   if (!packageRoot) {
-    throw new Error("openclaw-tools MCP: could not resolve the OpenClaw package root");
+    throw new Error(`openclaw-tools MCP: could not resolve the ${PRODUCT_NAME} package root`);
   }
   const distEntry = path.join(packageRoot, "dist", "mcp", "openclaw-tools-serve.js");
   if (fs.existsSync(distEntry)) {

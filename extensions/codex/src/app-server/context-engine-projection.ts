@@ -36,7 +36,7 @@ export type CodexProjectedImageGroup = CodexProjectedContextRange & {
   images: ImageContent[];
 };
 
-const CONTEXT_HEADER = "OpenClaw assembled context for this turn:";
+const CONTEXT_HEADER = "Paddy assembled context for this turn:";
 const CONTEXT_OPEN = "<conversation_context>";
 const CONTEXT_CLOSE = "</conversation_context>";
 const REQUEST_HEADER = "Current user request:";

@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { ConfigUiHints } from "../shared/config-ui-hints-types.js";
 
 /**
@@ -14,7 +15,7 @@ const SHARED_CHANNEL_FIELD_HELP: Record<string, string> = {
   allowFrom:
     'Sender ids allowed to reach the agent. Required by "allowlist"; use ["*"] to allow everyone.',
   botLoopProtection: "Guards against bot-to-bot reply loops once bot messages are accepted.",
-  capabilities: "Override the channel capabilities OpenClaw assumes this account supports.",
+  capabilities: `Override the channel capabilities ${PRODUCT_NAME} assumes this account supports.`,
   commands: "Native command surface for this channel, such as slash commands and command menus.",
   configWrites: "Let this channel write config in response to its own commands and events.",
   contextVisibility:
@@ -60,7 +61,7 @@ const SHARED_CHANNEL_FIELD_HELP: Record<string, string> = {
   sendReadReceipts: "Mark inbound messages as read on this channel.",
   streaming: "How replies stream back to this channel while the agent is still working.",
   systemPrompt: "Extra system prompt applied to runs started from this channel.",
-  textChunkLimit: "Maximum characters per outbound message before OpenClaw splits it.",
+  textChunkLimit: `Maximum characters per outbound message before ${PRODUCT_NAME} splits it.`,
   threadBindings: "How chat threads bind to agent sessions, including idle expiry and spawning.",
   tokenFile: "Read the token from this file instead of storing it inline in config.",
   typingIndicator: "How this channel signals that the agent is working.",

@@ -738,7 +738,7 @@ describe("Claude native stdio boundary", () => {
 
     expect(resultDetail(records).lateDecision).toMatchObject({
       behavior: "deny",
-      message: "The OpenClaw run is no longer active.",
+      message: "The Paddy run is no longer active.",
     });
     expect(context.requestToolPermission).toHaveBeenCalledOnce();
   });

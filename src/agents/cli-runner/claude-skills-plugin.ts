@@ -5,6 +5,7 @@ import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolvePreferredOpenClawTmpDir } from "../../infra/tmp-openclaw-dir.js";
 import type { SkillSnapshot } from "../../skills/types.js";
 import { cliBackendLog } from "./log.js";
@@ -95,7 +96,7 @@ export async function prepareClaudeCliSkillsPlugin(params: {
   const manifest = {
     name: OPENCLAW_CLAUDE_PLUGIN_NAME,
     version: "0.0.0",
-    description: "Session-scoped OpenClaw skills selected for this agent run.",
+    description: `Session-scoped ${PRODUCT_NAME} skills selected for this agent run.`,
     skills: "./skills",
   };
   await fs.writeFile(

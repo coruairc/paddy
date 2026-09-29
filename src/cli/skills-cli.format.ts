@@ -15,6 +15,7 @@ import {
   type SkillStatusReport,
 } from "../skills/discovery/status.js";
 import { shortenHomePath } from "../utils.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import { formatCliJsonFailure } from "./failure-output.js";
 import { quoteCliArg } from "./quote-cli-arg.js";
@@ -36,7 +37,7 @@ export type SkillsCheckOptions = {
 };
 
 function appendClawHubHint(output: string): string {
-  const command = formatCliCommand("openclaw skills");
+  const command = formatCliCommand(`${CLI_NAME} skills`);
   return `${output}\n\nTip: use \`${command} search\`, \`${command} install\`, and \`${command} update\` for ClawHub-backed skills.`;
 }
 
@@ -157,7 +158,7 @@ export function formatSkillsList(report: SkillStatusReport, opts: SkillsListOpti
 
   if (skills.length === 0) {
     const message = opts.eligible
-      ? `No eligible skills found. Run \`${formatCliCommand("openclaw skills list")}\` to see all skills.`
+      ? `No eligible skills found. Run \`${formatCliCommand(`${CLI_NAME} skills list`)}\` to see all skills.`
       : "No skills found.";
     return appendClawHubHint(message);
   }
@@ -214,7 +215,7 @@ export function formatSkillInfo(
     }
     const safeRequestedName = sanitizeJsonString(sanitizeForLog(requestedName));
     return appendClawHubHint(
-      `Skill "${safeRequestedName}" not found. Run \`${formatCliCommand("openclaw skills list")}\` to see available skills.`,
+      `Skill "${safeRequestedName}" not found. Run \`${formatCliCommand(`${CLI_NAME} skills list`)}\` to see available skills.`,
     );
   }
 
@@ -276,7 +277,7 @@ export function formatSkillInfo(
     lines.push(
       `  Save via UI: ${theme.muted("Control UI → Skills → ")}${safeName}${theme.muted(" → Save key")}`,
     );
-    lines.push(`  Save via CLI: ${formatCliCommand(`openclaw config set ${apiKeyPath} YOUR_KEY`)}`);
+    lines.push(`  Save via CLI: ${formatCliCommand(`${CLI_NAME} config set ${apiKeyPath} YOUR_KEY`)}`);
     lines.push(
       `  Stored in: ${theme.muted("$OPENCLAW_CONFIG_PATH")} ${theme.muted("(default: ~/.openclaw/openclaw.json)")}`,
     );

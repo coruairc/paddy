@@ -29,6 +29,7 @@ import { ensureOpenClawAgentDatabaseSchemaSteps } from "./openclaw-agent-db-sche
 import { OPENCLAW_AGENT_SCHEMA_SQL } from "./openclaw-agent-schema.js";
 import { OPENCLAW_SQLITE_BUSY_TIMEOUT_MS } from "./openclaw-state-db.js";
 import type { OpenClawStateLeaseContext } from "./openclaw-state-lease.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const agentDbLog = createSubsystemLogger("state/agent-db");
 
@@ -47,7 +48,7 @@ export function assertOpenClawAgentDatabaseOwner(
   assertExistingAgentSchemaOwner(metadata, agentId, options.pathname);
   if (metadata.agentId !== agentId) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw agent database ${options.pathname} belongs to agent ${metadata.agentId}; requested agent ${agentId}.`,
+      `${PRODUCT_NAME} agent database ${options.pathname} belongs to agent ${metadata.agentId}; requested agent ${agentId}.`,
     );
   }
   return metadata;
@@ -63,12 +64,12 @@ export function assertOpenClawAgentDatabaseForMaintenance(
   const userVersion = assertSupportedAgentSchemaVersion(database, options.pathname);
   if (userVersion !== OPENCLAW_AGENT_SCHEMA_VERSION) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw agent database ${options.pathname} uses schema version ${userVersion}; run openclaw doctor --fix before compacting it.`,
+      `${PRODUCT_NAME} agent database ${options.pathname} uses schema version ${userVersion}; run openclaw doctor --fix before compacting it.`,
     );
   }
   if (metadata.schemaVersion !== OPENCLAW_AGENT_SCHEMA_VERSION) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw agent database ${options.pathname} metadata schema version ${metadata.schemaVersion ?? "invalid"} does not match ${OPENCLAW_AGENT_SCHEMA_VERSION}; run openclaw doctor --fix before compacting it.`,
+      `${PRODUCT_NAME} agent database ${options.pathname} metadata schema version ${metadata.schemaVersion ?? "invalid"} does not match ${OPENCLAW_AGENT_SCHEMA_VERSION}; run openclaw doctor --fix before compacting it.`,
     );
   }
   assertOpenClawAgentSchemaContains(

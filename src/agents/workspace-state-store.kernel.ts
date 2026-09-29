@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   executeSqliteQuerySync,
   executeSqliteQueryTakeFirstSync,
@@ -240,7 +241,7 @@ export function readWorkspaceStateSnapshotFromDatabase(params: {
     throw new Error(
       formatDoctorStateRepairFailure(
         `unsupported workspace setup version ${setupRow.version} in ${params.database.path} for ${identity.workspacePath}`,
-        "Use a compatible OpenClaw build that supports this workspace version; preserve the database unchanged.",
+        `Use a compatible ${PRODUCT_NAME} build that supports this workspace version; preserve the database unchanged.`,
       ),
     );
   }

@@ -32,6 +32,7 @@ import type { SessionPlacementTurnParams } from "../../agents/session-placement-
 import { resolveEffectiveAgentRuntime } from "../../agents/thinking-runtime.js";
 import { capturePresenceToolAuthority } from "../../agents/tools/presence-tool-authority.js";
 import { hasNonzeroUsage, normalizeUsage } from "../../agents/usage.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { emitTrustedDiagnosticEvent, isDiagnosticsEnabled } from "../../infra/diagnostic-events.js";
 import type { WorkerLaunchPlan } from "../../worker/launch-descriptor.js";
 import {
@@ -365,7 +366,7 @@ export function assertSupportedTurn(params: SessionPlacementTurnParams): {
           sessionKey: params.sessionKey,
         });
   if (runtime !== OPENCLAW_AGENT_RUNTIME_ID) {
-    throw new Error(`Cloud worker turns require the OpenClaw runtime, not ${runtime}`);
+    throw new Error(`Cloud worker turns require the ${PRODUCT_NAME} runtime, not ${runtime}`);
   }
   return modelRef;
 }

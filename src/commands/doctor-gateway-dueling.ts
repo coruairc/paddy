@@ -1,5 +1,6 @@
 /** Doctor repair for a user-scope leftover that duels a system gateway unit. */
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { renderGatewayServiceCleanupHints } from "../daemon/inspect.js";
 import {
   findSystemdGatewayInstallation,
@@ -37,7 +38,7 @@ export async function maybeResolveDuelingSystemdGatewayScopes(
   const { user, system } = installation;
   note(
     [
-      "Both a user-scope and a system-scope OpenClaw gateway unit are installed:",
+      `Both a user-scope and a system-scope ${PRODUCT_NAME} gateway unit are installed:`,
       `- user:   ${user.unitPath}`,
       `- system: ${system.unitPath}`,
       "They bind the same port and will SIGTERM each other in a restart loop.",

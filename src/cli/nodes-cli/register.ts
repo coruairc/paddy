@@ -4,6 +4,7 @@ import { formatDocsLink } from "../../../packages/terminal-core/src/links.js";
 import { theme } from "../../../packages/terminal-core/src/theme.js";
 import { resolveCliArgvInvocation } from "../argv-invocation.js";
 import { hasFlag } from "../argv.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatHelpExamples } from "../help-format.js";
 import { withConsoleLogsRoutedToStderrForJson } from "../json-output-mode.js";
 import { setCommandJsonMode } from "../program/json-mode.js";
@@ -26,14 +27,14 @@ export async function registerNodesCli(program: Command, argv: readonly string[]
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw nodes status", "List known nodes with live status."],
-          ["openclaw nodes pending", "Show pending node pairing requests."],
-          ["openclaw nodes remove --node <id|name|ip>", "Remove a stale paired node entry."],
+          [`${CLI_NAME} nodes status`, "List known nodes with live status."],
+          [`${CLI_NAME} nodes pending`, "Show pending node pairing requests."],
+          [`${CLI_NAME} nodes remove --node <id|name|ip>`, "Remove a stale paired node entry."],
           [
-            'openclaw nodes invoke --node <id> --command system.which --params \'{"bins":["uname"]}\'',
+            `${CLI_NAME} nodes invoke --node <id> --command system.which --params '{"bins":["uname"]}'`,
             "Invoke a node command directly.",
           ],
-          ["openclaw nodes camera snap --node <id>", "Capture a photo from a node camera."],
+          [`${CLI_NAME} nodes camera snap --node <id>`, "Capture a photo from a node camera."],
         ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/nodes", "docs.openclaw.ai/cli/nodes")}\n`,
     );
 

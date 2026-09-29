@@ -5,6 +5,7 @@ import {
 } from "@openclaw/normalization-core/record-coerce";
 import { normalizeBoundedOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { sanitizeForLog } from "../../../packages/terminal-core/src/ansi.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import { toErrorObject } from "../../infra/errors.js";
 import { resolveGlobalSingleton } from "../../shared/global-singleton.js";
@@ -528,7 +529,7 @@ export function buildAuthProfileUnusableHint(params: {
       // The legacy runtime has no auth method of its own. Recovery creates a
       // supported Google API-key profile and then selects it for that runtime.
       const command = formatCliCommand("openclaw models auth login --provider google");
-      return `Gemini CLI OAuth cannot be repaired by OpenClaw. Connect Google with an AI Studio API key using ${formatOAuthRefreshFailureLoginCommandMarkdown(command)}, then select that Google profile for the Gemini CLI runtime.`;
+      return `Gemini CLI OAuth cannot be repaired by ${PRODUCT_NAME}. Connect Google with an AI Studio API key using ${formatOAuthRefreshFailureLoginCommandMarkdown(command)}, then select that Google profile for the Gemini CLI runtime.`;
     }
     const command = buildOAuthRefreshFailureLoginCommand(params.provider, {
       profileId: params.profileId,

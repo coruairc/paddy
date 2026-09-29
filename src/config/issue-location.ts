@@ -1,6 +1,7 @@
 import path from "node:path";
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import JSON5 from "json5";
+import { PRODUCT_NAME } from "../brand.js";
 import { VERSION } from "../version.js";
 import { formatConfigIssueLines } from "./issue-format.js";
 import { isSensitiveConfigPath } from "./sensitive-paths.js";
@@ -310,7 +311,7 @@ export function renderConfigValidationIssueLines(
   return shouldWarnOnTouchedVersion(VERSION, touchedVersion)
     ? [
         ...lines,
-        `Config was last written by OpenClaw ${touchedVersion}, but you are running ${VERSION} — upgrade or re-run setup.`,
+        `Config was last written by ${PRODUCT_NAME} ${touchedVersion}, but you are running ${VERSION} — upgrade or re-run setup.`,
       ]
     : lines;
 }

@@ -1,6 +1,7 @@
 /** CLI registration for ClawHub promotional model offers. */
 import type { Command } from "commander";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { runCommandWithRuntime } from "./cli-utils.js";
 import { formatDocsHelp } from "./help-format.js";
 
@@ -24,7 +25,7 @@ export function registerPromosCli(program: Command) {
   promos
     .command("claim")
     .description("Claim a promotion: set up provider auth and register its models")
-    .argument("<slug>", "Promotion slug from `openclaw promos list`")
+    .argument("<slug>", `Promotion slug from \`${CLI_NAME} promos list\``)
     // Credential-on-argv matches the shipped `onboard --<provider>-api-key` /
     // `onboard --token` non-interactive contract (AGENTS.md: public API). The
     // no-argv alternative is the provider's env var, detected as existing auth.

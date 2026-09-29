@@ -5,6 +5,7 @@ import { resolveNodeRunner } from "../cli/update-cli/node-runner.js";
 import { hasCommandProcessCleanupError } from "../process/exec-result.js";
 import type { UpdateRepairTarget } from "./update-repair-protocol.js";
 import { buildUpdateDoctorEnv } from "./update-runner-doctor.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const UPDATE_REPAIR_MAINTENANCE_TOOL = "request_update_maintenance";
 const requestSchema = z.strictObject({ operation: z.enum(["doctor-fix", "update-repair"]) });
@@ -62,7 +63,7 @@ export async function runUpdateRepairMaintenance(params: {
   params.signal.throwIfAborted();
   params.assertCurrent();
   if (!entrypoint) {
-    throw new Error("The installed OpenClaw entrypoint is unavailable.");
+    throw new Error(`The installed ${PRODUCT_NAME} entrypoint is unavailable.`);
   }
   const args =
     params.request.operation === "update-repair"

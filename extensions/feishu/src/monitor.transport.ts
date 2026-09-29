@@ -610,7 +610,7 @@ export async function monitorWebhook(params: MonitorTransportParams): Promise<vo
   if (normalizeFeishuWebhookPath(rawPath) !== rawPath) {
     throw new Error(
       `Feishu account "${accountId}" webhookPath must be a canonical HTTP request path; ` +
-        'run "openclaw doctor --fix" to repair it',
+        'run "paddy doctor --fix" to repair it',
     );
   }
   const pathConflict = describeFeishuWebhookPathConflict(rawPath);

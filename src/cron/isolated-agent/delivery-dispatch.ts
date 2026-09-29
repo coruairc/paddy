@@ -1,6 +1,7 @@
 /** Dispatches isolated cron output to direct delivery, mirrors, and follow-up queues. */
 import type { NormalizeReplySkipReason } from "../../auto-reply/reply/normalize-reply-skip-reason.js";
 import { isSilentReplyText, SILENT_REPLY_TOKEN } from "../../auto-reply/tokens.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveControlUiSessionUrl } from "../../config/control-ui-link-base.js";
 import { resolveSessionStorePathCore } from "../../config/sessions/inbound.runtime.js";
 import { formatErrorMessage } from "../../infra/errors.js";
@@ -133,7 +134,7 @@ export async function dispatchCronDelivery(
   };
   const formatDeliveryTargetError = (error: string) =>
     params.sourceDeliveryOutcome.unverifiedMessageToolDelivery
-      ? `${error}; the agent used the message tool, but OpenClaw could not verify that message matched the cron delivery target`
+      ? `${error}; the agent used the message tool, but ${PRODUCT_NAME} could not verify that message matched the cron delivery target`
       : error;
   const failDeliveryTarget = (error: string): CronDeliveryDisposition => ({
     kind: "error",

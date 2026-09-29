@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import type { ReplyPayload } from "../auto-reply/reply-payload.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { getChannelPlugin, normalizeChannelId } from "../channels/plugins/index.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { buildChannelAccountKey } from "../infra/outbound/session-binding-normalization.js";
@@ -354,7 +355,7 @@ function buildDetachHintSuffix(detachHint?: string): string {
 }
 
 export function buildPluginBindingUnavailableText(binding: PluginConversationBinding): string {
-  return `The bound plugin ${resolvePluginBindingDisplayName(binding)} is not currently loaded. Routing this message to OpenClaw instead. If this started after an update, run "openclaw doctor --fix"; otherwise reinstall or enable the plugin.${buildDetachHintSuffix(binding.detachHint)}`;
+  return `The bound plugin ${resolvePluginBindingDisplayName(binding)} is not currently loaded. Routing this message to ${PRODUCT_NAME} instead. If this started after an update, run "openclaw doctor --fix"; otherwise reinstall or enable the plugin.${buildDetachHintSuffix(binding.detachHint)}`;
 }
 
 export function buildPluginBindingDeclinedText(binding: PluginConversationBinding): string {

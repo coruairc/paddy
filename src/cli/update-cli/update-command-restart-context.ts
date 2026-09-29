@@ -2,6 +2,7 @@ import type { ConfigFileSnapshot } from "../../config/types.openclaw.js";
 import { resolveManagedGatewayServiceProcessEnv } from "../../daemon/service-types.js";
 import { resolveGatewayService } from "../../daemon/service.js";
 import { formatErrorMessage } from "../../infra/errors.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import type { UpdateRestartParams } from "./update-command-service-context-types.js";
 import {
   resolveServiceRefreshEnv,
@@ -76,7 +77,7 @@ export async function prepareUpdateRestart(
       } else if (serviceUpdateVerdict.kind === "foreign") {
         serviceMutationAllowed = false;
         serviceMutationSkipMessage =
-          "Gateway service management skipped: the service belongs to a different OpenClaw installation and was left untouched.";
+          `Gateway service management skipped: the service belongs to a different ${PRODUCT_NAME} installation and was left untouched.`;
       } else if (
         !skipLegacyServiceRestart &&
         shouldPrepareUpdatedInstallRestart({
@@ -127,7 +128,7 @@ export async function prepareUpdateRestart(
       serviceMutationAllowed = false;
       serviceMutationSkipMessage =
         "Code update completed; gateway service management skipped because its current ownership could not be inspected. " +
-        "Run `openclaw gateway status --deep` before restarting it manually.";
+        `Run \`${CLI_NAME} gateway status --deep\` before restarting it manually.`;
     }
   }
   if (

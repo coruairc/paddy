@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { cloneEnvWithPlatformSemantics } from "../config/config-env-vars.js";
 import type { ConfigSnapshotReadMeasure, ConfigSnapshotReadOptions } from "../config/io.js";
 import type { ConfigFileSnapshot } from "../config/types.js";
@@ -118,7 +119,7 @@ async function prepareStartupConfig(
           heartbeatError =
             error instanceof Error
               ? error
-              : new Error("OpenClaw startup lease heartbeat failed.", { cause: error });
+              : new Error(`${PRODUCT_NAME} startup lease heartbeat failed.`, { cause: error });
         }
       }, 60_000);
       heartbeat.unref();

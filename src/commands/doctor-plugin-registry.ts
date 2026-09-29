@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
@@ -453,7 +454,7 @@ export function pluginRegistryIssueToHealthFinding(
       return {
         checkId: PLUGIN_REGISTRY_CHECK_ID,
         severity: "warning",
-        message: `Managed npm package ${issue.packageName} has a broken OpenClaw peer link: ${issue.reason}.`,
+        message: `Managed npm package ${issue.packageName} has a broken ${PRODUCT_NAME} peer link: ${issue.reason}.`,
         path: issue.packageDir,
         target: issue.packageName,
         fixHint: "Run `openclaw doctor --fix` to relink managed npm plugin packages.",
@@ -462,7 +463,7 @@ export function pluginRegistryIssueToHealthFinding(
       return {
         checkId: PLUGIN_REGISTRY_CHECK_ID,
         severity: "warning",
-        message: `Registered plugin ${issue.packageName} has a broken OpenClaw host link: ${issue.reason}.`,
+        message: `Registered plugin ${issue.packageName} has a broken ${PRODUCT_NAME} host link: ${issue.reason}.`,
         path: issue.packageDir,
         target: issue.packageName,
         fixHint: "Run `openclaw doctor --fix` to relink the installed plugin package.",

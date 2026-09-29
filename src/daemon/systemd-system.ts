@@ -13,6 +13,7 @@ import {
   isRunningAsRoot,
   readSystemctlDetail,
 } from "./systemd-exec.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 type SystemSystemdOwnership =
   | { status: "absent"; unitName: string }
@@ -282,7 +283,7 @@ function formatSystemSystemdOwnershipError(ownership: SystemSystemdConflict): st
   return [
     summary,
     "Refusing to create or activate a user systemd unit with the same name because duplicate managers can restart-loop the gateway.",
-    "OpenClaw does not manage system-scope units, and --force does not override system ownership.",
+    `${PRODUCT_NAME} does not manage system-scope units, and --force does not override system ownership.`,
     recovery,
   ].join("\n");
 }

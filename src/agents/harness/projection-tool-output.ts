@@ -1,4 +1,5 @@
 import { formatToolAggregate } from "../../auto-reply/tool-meta.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { redactToolDetail } from "../../logging/redact.js";
 import { formatFencedCodeBlock } from "../../shared/markdown-code.js";
 import { truncateUtf16Safe } from "../../utils.js";
@@ -168,6 +169,6 @@ function appendBoundedToolTranscriptText(
 }
 
 function toolTranscriptTruncationNotice(originalLength: number, nativeToolLabel: string): string {
-  const noticeText = `...(OpenClaw truncated ${nativeToolLabel} native tool output: original ${originalLength} chars, showing ${TOOL_TRANSCRIPT_OUTPUT_MAX_CHARS}; rerun with narrower args.)`;
+  const noticeText = `...(${PRODUCT_NAME} truncated ${nativeToolLabel} native tool output: original ${originalLength} chars, showing ${TOOL_TRANSCRIPT_OUTPUT_MAX_CHARS}; rerun with narrower args.)`;
   return `\n${noticeText}`;
 }

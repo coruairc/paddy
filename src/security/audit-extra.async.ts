@@ -14,6 +14,7 @@ import {
   uniqueStrings,
 } from "@openclaw/normalization-core/string-normalization";
 import { resolveAuthProfileDatabaseFilePaths } from "../agents/auth-profiles/sqlite.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig, ConfigFileSnapshot } from "../config/config.js";
 import { collectIncludePathsRecursive } from "../config/includes-scan.js";
@@ -308,7 +309,7 @@ function buildSandboxBrowserDockerProbeTimeoutFinding(timeoutMs: number): Securi
     title: "Sandbox browser Docker audit probe timed out",
     detail:
       `Docker did not answer within ${timeoutMs}ms while checking sandbox browser containers. ` +
-      "OpenClaw skipped any remaining sandbox browser container drift checks for this status run.",
+      `${PRODUCT_NAME} skipped any remaining sandbox browser container drift checks for this status run.`,
     remediation:
       "Retry after Docker is responsive, or recreate sandbox browser containers if drift is suspected.",
   };

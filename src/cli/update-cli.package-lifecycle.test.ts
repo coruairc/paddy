@@ -169,7 +169,7 @@ describe("update-cli", () => {
       expect(cleanupStaleManagedServiceUpdateHandoffs).not.toHaveBeenCalled();
     }
     expect(defaultRuntime.exit).not.toHaveBeenCalled();
-    expect(getErrorOutput()).toContain("openclaw update --channel dev");
+    expect(getErrorOutput()).toContain("paddy update --channel dev");
   });
 
   it("retains the exact package and launchers for explicit rollback after managed Doctor fails", async () => {

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import path from "node:path";
 import { persistAuthProfileBatch } from "../agents/auth-profiles.js";
 import { OAUTH_REFRESH_LOCK_OPTIONS } from "../agents/auth-profiles/constants.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveStateDir } from "../config/paths.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { isValidEnvSecretRefId, type SecretRef } from "../config/types.secrets.js";
@@ -178,7 +179,7 @@ function materializeProviderAuthProfiles(params: {
         });
       } catch (error) {
         throw new Error(
-          "Could not write the protected secret store. Check the OpenClaw state-directory permissions and retry; the auth profile was not changed.",
+          `Could not write the protected secret store. Check the ${PRODUCT_NAME} state-directory permissions and retry; the auth profile was not changed.`,
           { cause: error },
         );
       }

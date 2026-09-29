@@ -437,12 +437,12 @@ describe("formatGatewayCrashLoopManualChannelStartHint", () => {
   });
 
   it.each([
-    { name: "named profile", profile: "work", container: "", command: "openclaw --profile work" },
+    { name: "named profile", profile: "work", container: "", command: "paddy --profile work" },
     {
       name: "container and profile",
       profile: "work",
       container: "demo",
-      command: "openclaw --container demo",
+      command: "paddy --container demo",
     },
   ])("targets the active gateway for $name", ({ profile, container, command }) => {
     vi.stubEnv("OPENCLAW_PROFILE", profile);

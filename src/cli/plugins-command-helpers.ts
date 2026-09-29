@@ -4,6 +4,7 @@ import { theme } from "../../packages/terminal-core/src/theme.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { HOOK_INSTALL_ERROR_CODE } from "../hooks/install.js";
 import { defaultRuntime, type RuntimeEnv } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 export { quietPluginJsonLogger } from "./plugins-json-logger.js";
 
@@ -59,7 +60,7 @@ export function formatPluginInstallWithHookFallbackError(
 ): string {
   const formattedPluginError = formatPluginInstallAttemptError(pluginError);
   if (/plugin already exists: .+ \(delete it first\)/.test(pluginError)) {
-    return `${formattedPluginError}\nUse \`${formatCliCommand("openclaw plugins update <id-or-npm-spec>")}\` to upgrade the tracked plugin, or rerun install with \`--force\` to replace it.`;
+    return `${formattedPluginError}\nUse \`${formatCliCommand(`${CLI_NAME} plugins update <id-or-npm-spec>`)}\` to upgrade the tracked plugin, or rerun install with \`--force\` to replace it.`;
   }
   if (
     pluginError.startsWith("Invalid extensions directory:") ||

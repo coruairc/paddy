@@ -6,6 +6,7 @@ import { parseStrictPositiveInteger } from "@openclaw/normalization-core/number-
 import type { Command } from "commander";
 import { getRuntimeConfig } from "../config/io.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import {
   callSessionTargetGateway,
   resolveSessionTarget,
@@ -52,7 +53,7 @@ export async function registerAttachCli(program: Command, _argv: string[] = proc
     )
     .addHelpText(
       "after",
-      "\nExamples:\n  openclaw attach                       Attach Claude Code to the main session\n  openclaw attach movies-a1166b81       Attach to a short session reference\n  openclaw attach --session agent:main:telegram:123 --ttl 600000\n  openclaw attach --print-config        Set up the grant + config and print how to launch it yourself\n",
+      `\nExamples:\n  ${CLI_NAME} attach                       Attach Claude Code to the main session\n  ${CLI_NAME} attach movies-a1166b81       Attach to a short session reference\n  ${CLI_NAME} attach --session agent:main:telegram:123 --ttl 600000\n  ${CLI_NAME} attach --print-config        Set up the grant + config and print how to launch it yourself\n`,
     )
     .action(
       async (

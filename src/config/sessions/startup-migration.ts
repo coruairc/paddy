@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { PRODUCT_NAME } from "../../brand.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import { readDeferredPluginSessionImport } from "../../infra/deferred-plugin-session-sources.js";
 import { formatDoctorStateRepairFailure } from "../../infra/state-repair-message.js";
@@ -204,7 +205,7 @@ export function assertSessionStoreMigrationComplete(params: {
             `Legacy session store requires migration at ${legacyStore}`,
             "Repair the retained source using the migration report's named file and validation error, preserving the original history.",
           )
-        : `Legacy session store requires migration: ${legacyStore}. Run "${formatCliCommand("openclaw doctor --fix", env)}" against the same state/config before starting OpenClaw.`,
+        : `Legacy session store requires migration: ${legacyStore}. Run "${formatCliCommand("openclaw doctor --fix", env)}" against the same state/config before starting ${PRODUCT_NAME}.`,
     );
   }
 }

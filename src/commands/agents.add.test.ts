@@ -433,7 +433,7 @@ describe("agents add command", () => {
       });
 
       const message =
-        "Agent creation needs an interactive TTY. Use `openclaw agents add <id> --non-interactive --workspace <dir>` for automation.";
+        "Agent creation needs an interactive TTY. Use `paddy agents add <id> --non-interactive --workspace <dir>` for automation.";
       await expect(agentsAddCommand({ json }, runtime)).rejects.toMatchObject({
         name: "ExpectedCliError",
         message,
@@ -468,7 +468,7 @@ describe("agents add command", () => {
     expect(terminalMocks.isTerminalInteractive).toHaveBeenCalledOnce();
     expect(terminalMocks.isTerminalInteractive).toHaveBeenCalledWith(process.stdout);
     expect(wizardMocks.createClackPrompter).toHaveBeenCalledWith(process.stdout);
-    expect(prompter.intro).toHaveBeenCalledWith("Add OpenClaw agent");
+    expect(prompter.intro).toHaveBeenCalledWith("Add Paddy agent");
     expect(authChoiceMocks.warnIfModelConfigLooksOff).toHaveBeenCalledOnce();
     expect(authChoiceMocks.warnIfModelConfigLooksOff).toHaveBeenCalledWith(
       expect.objectContaining({ agents: expect.any(Object) }),

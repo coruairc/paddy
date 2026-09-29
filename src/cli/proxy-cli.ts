@@ -3,6 +3,7 @@ import { parseStrictInteger } from "@openclaw/normalization-core/number-coercion
 import { InvalidArgumentError, type Command } from "commander";
 import type { CaptureQueryPreset } from "../proxy-capture/types.js";
 import { createLazyImportLoader } from "../shared/lazy-promise.js";
+import { PRODUCT_NAME } from "./cli-name.js";
 import { collectOption } from "./program/helpers.js";
 import { setCommandJsonMode } from "./program/json-mode.js";
 import { isProxyMachineOutput } from "./proxy-output-mode.js";
@@ -40,7 +41,7 @@ function parsePositiveIntegerOption(value: string | undefined, flag: string): nu
 export function registerProxyCli(program: Command) {
   const proxy = program
     .command("proxy")
-    .description("Run the OpenClaw debug proxy and inspect captured traffic");
+    .description(`Run the ${PRODUCT_NAME} debug proxy and inspect captured traffic`);
   setCommandJsonMode(proxy, "output", ({ argv }) => isProxyMachineOutput(argv));
 
   proxy
@@ -55,7 +56,7 @@ export function registerProxyCli(program: Command) {
 
   proxy
     .command("run")
-    .description("Run a child command with OpenClaw debug proxy capture enabled")
+    .description(`Run a child command with ${PRODUCT_NAME} debug proxy capture enabled`)
     .allowUnknownOption(true)
     .allowExcessArguments(true)
     .option("--host <host>", "Bind host", "127.0.0.1")

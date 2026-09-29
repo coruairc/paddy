@@ -52,7 +52,7 @@ vi.mock("../infra/update-run-reader.js", async (importOriginal) => ({
 const activationReason =
   "The update parent must stop the managed Gateway before Doctor maintenance; Doctor left the service unchanged.";
 const maintenanceSuffix =
-  " Stop the Gateway service and other OpenClaw processes using this state, then run openclaw doctor --fix from an independent shell.";
+  " Stop the Gateway service and other Paddy processes using this state, then run paddy doctor --fix from an independent shell.";
 const runtime = { log: vi.fn(), error: vi.fn(), exit: vi.fn() };
 const quote = process.platform === "win32" ? quotePowerShellArg : quoteCliArg;
 
@@ -337,7 +337,7 @@ describe("Doctor refusal recovery under the released Git update driver", () => {
           .slice(-10)
           .join("\n");
         const reason =
-          "[openclaw] Reason: Doctor refused update-time schema repair driven by OpenClaw 2026.9.2:";
+          "[paddy] Reason: Doctor refused update-time schema repair driven by OpenClaw 2026.9.2:";
         expect(message).toContain(reason);
         expect(message.indexOf(reason)).toBeLessThan(
           message.indexOf("The previous source is intact in Git."),

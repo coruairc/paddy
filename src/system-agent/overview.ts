@@ -11,6 +11,7 @@ import {
   resolveConfiguredPrimaryModelForAgent,
   resolveConfiguredSetupModelForAgent,
 } from "../agents/utility-model.js";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   readConfigFileSnapshot,
   resolveConfigPath,
@@ -266,7 +267,7 @@ export function formatSystemAgentOverview(overview: SystemAgentOverview): string
       ? ["Config issues:", ...overview.config.issues.map((issue) => `  - ${issue}`)]
       : [];
   return [
-    "OpenClaw online. Little claws, typed tools.",
+    `${PRODUCT_NAME} online. Little claws, typed tools.`,
     "",
     `Config: ${configStatus}`,
     `Path: ${overview.config.path}`,
@@ -285,7 +286,7 @@ export function formatSystemAgentOverview(overview: SystemAgentOverview): string
     `AI: ${
       overview.defaultModel || overview.setupModel
         ? `conversation runs on ${overview.defaultModel ?? overview.setupModel}`
-        : "inference unavailable; run openclaw onboard before starting OpenClaw"
+        : `inference unavailable; run openclaw onboard before starting ${PRODUCT_NAME}`
     }`,
     `Docs: ${overview.references.docsPath ?? overview.references.docsUrl}`,
     overview.references.sourcePath
@@ -370,7 +371,7 @@ export function formatSystemAgentStartupMessage(overview: SystemAgentOverview): 
     ? `${overview.defaultAgentId} (${agent.name})`
     : overview.defaultAgentId;
   return [
-    "Hi, I'm OpenClaw — caretaker of this gateway, config, channels, and agents.",
+    `Hi, I'm ${PRODUCT_NAME} — caretaker of this gateway, config, channels, and agents.`,
     // Inference status stays independent of the recovery action line: with an
     // invalid config AND no model, both problems must be visible.
     overview.defaultModel

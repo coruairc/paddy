@@ -16,6 +16,7 @@ import {
 } from "../plugins/package-entry-resolution.js";
 import { createPluginCache, withPluginCache } from "../plugins/plugin-cache.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { collectPluginsValidationResult } from "./plugins-authoring-command.js";
 import { buildPluginBundle } from "./plugins-build-bundle.js";
 
@@ -31,7 +32,7 @@ async function packFeaturePlugin(opts: PluginsPackOptions) {
   const source = await root(rootDir, { symlinks: "reject", hardlinks: "reject" });
   const packageManifest = await source.readJson("package.json");
   if (!isRecord(packageManifest) || !isRecord(packageManifest.openclaw)) {
-    throw new Error("Plugin package metadata is missing. Run openclaw plugins build.");
+    throw new Error(`Plugin package metadata is missing. Run ${CLI_NAME} plugins build.`);
   }
   const extensions = resolvePackageExtensionEntries(packageManifest);
   if (extensions.status !== "ok" || extensions.entries.length !== 1) {

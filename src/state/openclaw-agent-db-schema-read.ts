@@ -15,6 +15,7 @@ import {
   type ExistingAgentSchemaMeta,
 } from "./openclaw-agent-db-metadata.js";
 import { OpenClawAgentDatabaseMediaMigrationRequiredError } from "./openclaw-agent-db-migration-required.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 export { readExistingAgentSchemaMeta } from "./openclaw-agent-db-metadata.js";
 
@@ -22,7 +23,7 @@ export function assertSupportedAgentSchemaVersion(db: DatabaseSync, pathname: st
   const userVersion = getAdmittedSqliteSchemaFacts(db)?.userVersion ?? readSqliteUserVersion(db);
   if (userVersion > OPENCLAW_AGENT_SCHEMA_VERSION) {
     throw createNewerSqliteSchemaVersionError(
-      "OpenClaw agent database",
+      `${PRODUCT_NAME} agent database`,
       pathname,
       userVersion,
       OPENCLAW_AGENT_SCHEMA_VERSION,
@@ -47,7 +48,7 @@ export function assertCanonicalAgentPersistenceVersion(
   }
   if (userVersion < OPENCLAW_AGENT_SCHEMA_VERSION && !isNewUnownedDatabase) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw agent database ${pathname} uses schema version ${userVersion}; stop active agents and run openclaw doctor --fix to migrate session identities before using it.`,
+      `${PRODUCT_NAME} agent database ${pathname} uses schema version ${userVersion}; stop active agents and run openclaw doctor --fix to migrate session identities before using it.`,
     );
   }
 }
@@ -73,7 +74,7 @@ export function assertExistingAgentSchemaOwner(
   }
   if (normalizeAgentId(existing.agentId) !== agentId) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw agent database ${pathname} belongs to agent ${existing.agentId}; requested agent ${agentId}.`,
+      `${PRODUCT_NAME} agent database ${pathname} belongs to agent ${existing.agentId}; requested agent ${agentId}.`,
     );
   }
 }

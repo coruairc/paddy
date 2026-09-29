@@ -14,6 +14,7 @@ import {
 } from "../runtime.js";
 import { parseConcreteConfigPathTokens } from "../shared/dot-path.js";
 import { shortenHomePath } from "../utils.js";
+import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import type { ConfigPatchOptions, ConfigUnsetOptions } from "./config-cli-input.js";
 import { getAtPath, isConfigSchemaPath, parseConfigSetPath } from "./config-cli-path.js";
@@ -29,22 +30,22 @@ import { quoteCliArg } from "./quote-cli-arg.js";
 const CONFIG_SET_DESCRIPTION = [
   "Set config values by path (value mode, ref/provider builder mode, or batch JSON mode).",
   "Examples:",
-  formatCliCommand("openclaw config set gateway.port 19001 --strict-json"),
+  formatCliCommand(`${CLI_NAME} config set gateway.port 19001 --strict-json`),
   formatCliCommand(
-    "openclaw config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN",
+    `${CLI_NAME} config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN`,
   ),
   formatCliCommand(
-    "openclaw config set secrets.providers.vault --provider-source file --provider-path /etc/openclaw/secrets.json --provider-mode json",
+    `${CLI_NAME} config set secrets.providers.vault --provider-source file --provider-path /etc/openclaw/secrets.json --provider-mode json`,
   ),
-  formatCliCommand("openclaw config set --batch-file ./config-set.batch.json --dry-run"),
+  formatCliCommand(`${CLI_NAME} config set --batch-file ./config-set.batch.json --dry-run`),
 ].join("\n");
 
 const CONFIG_PATCH_DESCRIPTION = [
   "Patch config from a JSON5 object in one validated write.",
   "Objects merge recursively, arrays/scalars replace, and null deletes a path.",
   "Examples:",
-  formatCliCommand("openclaw config patch --file ./openclaw.patch.json5 --dry-run"),
-  formatCliCommand("openclaw config patch --stdin"),
+  formatCliCommand(`${CLI_NAME} config patch --file ./openclaw.patch.json5 --dry-run`),
+  formatCliCommand(`${CLI_NAME} config patch --stdin`),
 ].join("\n");
 
 export async function runConfigSet(opts: {
@@ -145,8 +146,8 @@ export async function runConfigGet(opts: { path: string; json?: boolean; runtime
     const res = getAtPath(redactConfigObject(snapshot.config, uiHints), parsedPath);
     if (!res.found || res.value === undefined) {
       const message = isConfigSchemaPath(schema, parsedPath)
-        ? `Config path is valid but unset: ${opts.path}. The runtime default applies until you set an authored value with ${formatCliCommand(`openclaw config set ${quoteCliArg(opts.path)} <value>`)}.`
-        : `Unknown config path: ${opts.path}. Run ${formatCliCommand("openclaw config schema")} to inspect valid paths.`;
+        ? `Config path is valid but unset: ${opts.path}. The runtime default applies until you set an authored value with ${formatCliCommand(`${CLI_NAME} config set ${quoteCliArg(opts.path)} <value>`)}.`
+        : `Unknown config path: ${opts.path}. Run ${formatCliCommand(`${CLI_NAME} config schema`)} to inspect valid paths.`;
       if (opts.json) {
         writeRuntimeJson(runtime, formatCliJsonFailure(message));
         exitCliAfterOutput(runtime, 1);
@@ -267,7 +268,7 @@ async function runConfigValidate(opts: { json?: boolean; runtime?: RuntimeEnv } 
       } else {
         runtime.error(danger(`Config file not found: ${shortPath}`));
         runtime.error(
-          `Create one with ${formatCliCommand("openclaw onboard")} or run ${formatCliCommand("openclaw doctor --fix")}.`,
+          `Create one with ${formatCliCommand(`${CLI_NAME} onboard`)} or run ${formatCliCommand(`${CLI_NAME} doctor --fix`)}.`,
         );
       }
       exitCliAfterOutput(runtime, 1);
@@ -276,7 +277,7 @@ async function runConfigValidate(opts: { json?: boolean; runtime?: RuntimeEnv } 
       const issues = normalizeConfigIssues(snapshot.issues);
       if (opts.json) {
         writeRuntimeJson(runtime, {
-          ...formatCliJsonFailure(`OpenClaw config is invalid: ${shortPath}`),
+          ...formatCliJsonFailure(`${PRODUCT_NAME} config is invalid: ${shortPath}`),
           valid: false,
           path: outputPath,
           issues,
@@ -291,7 +292,7 @@ async function runConfigValidate(opts: { json?: boolean; runtime?: RuntimeEnv } 
           formatInvalidConfigRepairHint(snapshot, "to repair, or fix the keys above manually."),
         );
         runtime.error(
-          `Run ${formatCliCommand("openclaw config schema")} to inspect supported settings and values, then rerun ${formatCliCommand("openclaw config validate")}.`,
+          `Run ${formatCliCommand(`${CLI_NAME} config schema`)} to inspect supported settings and values, then rerun ${formatCliCommand(`${CLI_NAME} config validate`)}.`,
         );
       }
       exitCliAfterOutput(runtime, 1);

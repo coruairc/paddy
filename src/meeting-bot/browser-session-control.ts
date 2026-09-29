@@ -1,4 +1,5 @@
 import { coerceErrorMessage } from "@openclaw/normalization-core/error-coercion";
+import { PRODUCT_NAME } from "../brand.js";
 import { sleep } from "../utils/sleep.js";
 import { runMeetingBrowserAct } from "./browser-act-lock.js";
 import { asMeetingBrowserTabs } from "./browser-request.js";
@@ -194,12 +195,12 @@ export async function leaveMeetingWithBrowser<
       if (leaveResult.sessionConflict !== true) {
         return {
           left: false,
-          note: `Browser control could not verify that the ${params.adapter.browserLabel} tab still belongs to this OpenClaw meeting session.`,
+          note: `Browser control could not verify that the ${params.adapter.browserLabel} tab still belongs to this ${PRODUCT_NAME} meeting session.`,
         };
       }
       return {
         left: true,
-        note: `${params.adapter.browserLabel} tab belongs to another OpenClaw meeting session; left its current call untouched.`,
+        note: `${params.adapter.browserLabel} tab belongs to another ${PRODUCT_NAME} meeting session; left its current call untouched.`,
       };
     }
     if (leaveResult.urlMatched !== true && !leaveResult.departed) {
@@ -270,7 +271,7 @@ export async function readMeetingTranscriptWithBrowser<
   }
   if (snapshot.sessionMatched === false) {
     throw new Error(
-      `The tracked ${params.adapter.browserLabel} tab now belongs to another OpenClaw meeting session.`,
+      `The tracked ${params.adapter.browserLabel} tab now belongs to another ${PRODUCT_NAME} meeting session.`,
     );
   }
   return {

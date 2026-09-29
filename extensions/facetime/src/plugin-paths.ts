@@ -39,7 +39,7 @@ function resolveHelperBuildStamp(): string {
     homedir(),
     "Library",
     "Application Support",
-    "OpenClaw",
+    "Paddy",
     "FaceTime",
     "helper-build.sha256",
   );
@@ -142,7 +142,7 @@ export async function inspectFaceTimeArtifacts(params: {
         homedir(),
         "Library",
         "Caches",
-        "OpenClaw",
+        "Paddy",
         "FaceTime",
         "driver",
         "OpenClawBridge.driver",

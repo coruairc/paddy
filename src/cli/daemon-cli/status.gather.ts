@@ -557,7 +557,7 @@ async function gatherDaemonStatusImpl(
               pluginVersionRestartReadiness = {
                 status: "unresolved",
                 reason:
-                  "Gateway service command is unavailable, so the post-restart OpenClaw version is unknown.",
+                  `Gateway service command is unavailable, so the post-restart Paddy version is unknown.`,
                 ...(runningGatewayVersion ? { runningGatewayVersion } : {}),
               };
             } else {
@@ -566,7 +566,7 @@ async function gatherDaemonStatusImpl(
                 pluginVersionRestartReadiness = {
                   status: "unresolved",
                   reason:
-                    "Gateway service package version is unavailable, so the post-restart OpenClaw version is unknown.",
+                    `Gateway service package version is unavailable, so the post-restart Paddy version is unknown.`,
                   ...(runningGatewayVersion ? { runningGatewayVersion } : {}),
                 };
               } else {
@@ -632,7 +632,7 @@ async function gatherDaemonStatusImpl(
       runtime: runtime?.inspectionFailure
         ? {
             ...runtime,
-            detail: `${runtime.detail}; retry with openclaw gateway status --deep`,
+            detail: `${runtime.detail}; retry with paddy gateway status --deep`,
           }
         : runtime,
       configAudit,

@@ -363,7 +363,7 @@ vi.mock("../command-format.js", () => ({
 vi.mock("../terminal-interactivity.js", () => ({
   isTerminalInteractive: () => isTerminalInteractive(),
   NON_INTERACTIVE_GATEWAY_RUN_FORCE_MESSAGE:
-    "Refusing to kill the operator's running gateway service from a non-interactive shell. Use an isolated dev gateway (openclaw gateway run --dev, or --profile <name> with a free port) for testing.",
+    "Refusing to kill the operator's running gateway service from a non-interactive shell. Use an isolated dev gateway (paddy gateway run --dev, or --profile <name> with a free port) for testing.",
 }));
 
 vi.mock("../invalid-config-recovery.js", () => ({
@@ -1105,7 +1105,7 @@ describe("gateway run option collisions", () => {
     expect(findVerifiedGatewayListenerPidsOnPortSync).toHaveBeenCalledWith(18789);
     expect(forceFreePortAndWait).toHaveBeenCalledTimes(1);
     expect(startGatewayServer).not.toHaveBeenCalled();
-    expect(runtimeErrors.join("\n")).toContain("openclaw gateway run --dev");
+    expect(runtimeErrors.join("\n")).toContain("paddy gateway run --dev");
     expect(runtimeErrors.join("\n")).toContain("--profile <name> with a free port");
   });
 
@@ -1947,7 +1947,7 @@ describe("gateway run option collisions", () => {
         expect(refusal).toBeInstanceOf(Error);
         const message = (refusal as Error).message;
         expect(message).toBe(
-          `Legacy session store requires migration: ${storePath}. Run "openclaw doctor --fix" against the same state/config before starting OpenClaw.`,
+          `Legacy session store requires migration: ${storePath}. Run "paddy doctor --fix" against the same state/config before starting Paddy.`,
         );
         const failure =
           kind === "cause"
@@ -2070,7 +2070,7 @@ describe("gateway run option collisions", () => {
   it("does not park launchd for a nonrepairable shared-state schema", async () => {
     startGatewayServer.mockRejectedValueOnce(
       new Error(
-        "OpenClaw state database /tmp/openclaw.sqlite has a noncanonical agent database registry schema that cannot be repaired automatically.",
+        "Paddy state database /tmp/paddy.sqlite has a noncanonical agent database registry schema that cannot be repaired automatically.",
       ),
     );
 
@@ -2150,7 +2150,7 @@ describe("gateway run option collisions", () => {
       expect(runtimeErrors.join("\n")).toContain("newer");
       expect(runtimeErrors.join("\n")).toContain("restore your pre-update backup");
       expect(runtimeErrors.join("\n")).toMatch(
-        /Stop the service.*then restore your pre-update backup created with openclaw backup create, then start it again/s,
+        /Stop the service.*then restore your pre-update backup created with paddy backup create, then start it again/s,
       );
     }
     expect(triageAfterFailure).not.toHaveBeenCalled();
@@ -2212,7 +2212,7 @@ describe("gateway run option collisions", () => {
     };
     await expect(runGatewayCli(["gateway", "run"])).rejects.toThrow("__exit__:78");
     expect(runtimeErrors).toContain(
-      "Gateway start blocked: existing config is missing gateway.mode. Treat this as suspicious or clobbered config. Re-run `openclaw onboard --mode local` or `openclaw setup`, set gateway.mode=local manually, or pass --allow-unconfigured.",
+      "Gateway start blocked: existing config is missing gateway.mode. Treat this as suspicious or clobbered config. Re-run `paddy onboard --mode local` or `paddy setup`, set gateway.mode=local manually, or pass --allow-unconfigured.",
     );
     expect(runtimeErrors).toContain(`Config write audit: ${CONFIG_AUDIT_STORE_LABEL}`);
     expect(readConfigFileSnapshotWithPluginMetadata).toHaveBeenCalledOnce();

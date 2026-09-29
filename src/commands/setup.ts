@@ -11,6 +11,7 @@ import {
   resolveAmbientOwnerAgentId,
   toAgentEntriesRecord,
 } from "../agents/agent-scope-config.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import {
   configIncludeOwnsAgentRoster,
@@ -52,7 +53,7 @@ export async function setupCommand(
         import("../config/issue-format.js"),
       ]);
       writeRuntimeJson(runtime, {
-        ...formatCliJsonFailure(`OpenClaw config is invalid: ${shortenHomePath(configPath)}`),
+        ...formatCliJsonFailure(`${PRODUCT_NAME} config is invalid: ${shortenHomePath(configPath)}`),
         issues: normalizeConfigIssues(snapshot.issues),
       });
     }

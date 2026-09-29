@@ -2430,7 +2430,7 @@ describe("runCopilotAttempt", () => {
           ?.content,
         "Copilot appended developer instructions",
       );
-      expect(content).toContain("You are a personal agent running inside OpenClaw.");
+      expect(content).toContain("You are a personal agent running inside Paddy.");
       expect(content).toContain("## Skill Workshop");
       expect(content).toContain("## Delegation");
       expect(content).toContain("spawn `sessions_spawn` with `visible=true`");

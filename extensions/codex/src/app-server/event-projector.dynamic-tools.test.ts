@@ -418,11 +418,11 @@ describe("CodexAppServerEventProjector dynamic tool projection", () => {
         arguments: { action: "send", text: "hello" },
         executionStarted: false,
         outcome: "failure",
-        failure: { error: "Unknown OpenClaw tool: message" },
+        failure: { error: "Unknown Paddy tool: message" },
       }),
       success: false,
       terminalType: "error",
-      contentItems: [{ type: "inputText", text: "Unknown OpenClaw tool: message" }],
+      contentItems: [{ type: "inputText", text: "Unknown Paddy tool: message" }],
     });
 
     const result = projector.buildResult(buildEmptyToolTelemetry());

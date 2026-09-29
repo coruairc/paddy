@@ -324,7 +324,7 @@ function evaluateFilePolicyInternal(
       ok: false,
       code: "POLICY_MIGRATION_REQUIRED",
       reason:
-        "older file-transfer permissions need review; run `openclaw file-transfer approvals migrate`",
+        "older file-transfer permissions need review; run `paddy file-transfer approvals migrate`",
       askable: false,
     };
   }
@@ -523,7 +523,7 @@ export async function persistLiteralGrant(input: PersistLiteralGrantInput): Prom
         hasLegacyPositiveRules(policyConfig)
       ) {
         throw new Error(
-          "older file-transfer permissions need review; run `openclaw file-transfer approvals migrate`",
+          "older file-transfer permissions need review; run `paddy file-transfer approvals migrate`",
         );
       }
       policyConfig.policyVersion = FILE_TRANSFER_POLICY_VERSION;

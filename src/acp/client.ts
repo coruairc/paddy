@@ -14,6 +14,7 @@ import {
   type SessionNotification,
 } from "@agentclientprotocol/sdk";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { ensureOpenClawCliOnPath } from "../infra/path-env.js";
 import { killProcessTree, signalProcessTree } from "../process/kill-tree.js";
 import {
@@ -241,7 +242,7 @@ export async function runAcpClientInteractive(opts: AcpClientOptions = {}): Prom
     output: process.stdout,
   });
 
-  console.log("OpenClaw ACP client");
+  console.log(`${PRODUCT_NAME} ACP client`);
   console.log(`Session: ${sessionId}`);
   console.log('Type a prompt, or "exit" to quit.\n');
 

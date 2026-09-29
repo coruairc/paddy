@@ -618,7 +618,7 @@ describe("createAgentSession tool defaults", () => {
       noTools: "builtin",
       customTools: [customTool],
     });
-    const systemPrompt = "You are a personal assistant running inside OpenClaw.";
+    const systemPrompt = "You are a personal assistant running inside Paddy.";
 
     session.setBaseSystemPrompt(systemPrompt);
     session.setActiveToolsByName(["bash", "custom_lookup"]);

@@ -547,7 +547,7 @@ describe("handleApproveCommand", () => {
     it("rejects a command-authorized non-owner before any canonical decision", async () => {
       const result = await approveOnSlack({ senderIsOwner: false });
 
-      expect(result?.reply?.text).toContain("Only the owner can approve OpenClaw changes");
+      expect(result?.reply?.text).toContain("Only the owner can approve Paddy changes");
       const canonicalCalls = resolveApprovalOverGatewayMock.mock.calls.filter(
         ([request]) => (request as { approvalKind?: string }).approvalKind === "system-agent",
       );

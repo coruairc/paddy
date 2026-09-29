@@ -251,10 +251,10 @@ function formatCodexDiagnosticsTargetBlock(
     lines.push(`Channel: ${formatCodexDisplayText(target.channel)}`);
   }
   if (target.sessionKey) {
-    lines.push(`OpenClaw session key: ${formatCodexCopyableValueForDisplay(target.sessionKey)}`);
+    lines.push(`Paddy session key: ${formatCodexCopyableValueForDisplay(target.sessionKey)}`);
   }
   if (target.sessionId) {
-    lines.push(`OpenClaw session id: ${formatCodexCopyableValueForDisplay(target.sessionId)}`);
+    lines.push(`Paddy session id: ${formatCodexCopyableValueForDisplay(target.sessionId)}`);
   }
   lines.push(`Codex thread id: ${formatCodexCopyableValueForDisplay(target.threadId)}`);
   lines.push(`Inspect locally: ${formatCodexResumeCommandForDisplay(target.threadId)}`);
@@ -268,7 +268,7 @@ function formatCodexDiagnosticsTargetLine(target: CodexDiagnosticsTarget): strin
   }
   const sessionLabel = target.sessionId || target.sessionKey;
   if (sessionLabel) {
-    parts.push(`OpenClaw session ${formatCodexDisplayText(sessionLabel)}`);
+    parts.push(`Paddy session ${formatCodexDisplayText(sessionLabel)}`);
   }
   parts.push(`Codex thread ${formatCodexDisplayText(target.threadId)}`);
   return `- ${parts.join(", ")}`;

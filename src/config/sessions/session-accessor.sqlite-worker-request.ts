@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { toStringifiedError } from "@openclaw/normalization-core/error-coercion";
+import { PRODUCT_NAME } from "../../brand.js";
 import { createDeferredCore, type Deferred } from "../../shared/deferred.js";
 import { registerOpenClawAgentDatabaseAsyncResource } from "../../state/openclaw-agent-db-lifecycle.js";
 import type { OpenClawAgentReadOnlyDatabase } from "../../state/openclaw-agent-db-readonly.js";
@@ -274,7 +275,7 @@ export function runSqliteMutationWorkerRequest<Result>(params: {
         if (admission || message.admissionId !== admissionId + 1) {
           fail(
             new Error(
-              "SQLite reclamation Worker requested invalid write admission; cleanup is uncertain, restart OpenClaw before deleting the owning agent",
+              `SQLite reclamation Worker requested invalid write admission; cleanup is uncertain, restart ${PRODUCT_NAME} before deleting the owning agent`,
             ),
           );
           return;
@@ -324,7 +325,7 @@ export function runSqliteMutationWorkerRequest<Result>(params: {
                 fail(
                   new AggregateError(
                     [workerError, dispatchError],
-                    "SQLite reclamation admission failed and Worker cleanup is uncertain; restart OpenClaw before deleting the owning agent",
+                    `SQLite reclamation admission failed and Worker cleanup is uncertain; restart ${PRODUCT_NAME} before deleting the owning agent`,
                   ),
                 );
               }
@@ -336,7 +337,7 @@ export function runSqliteMutationWorkerRequest<Result>(params: {
         if (!admission || message.admissionId !== admission.id) {
           fail(
             new Error(
-              "SQLite reclamation Worker released invalid write admission; cleanup is uncertain, restart OpenClaw before deleting the owning agent",
+              `SQLite reclamation Worker released invalid write admission; cleanup is uncertain, restart ${PRODUCT_NAME} before deleting the owning agent`,
             ),
           );
           return;

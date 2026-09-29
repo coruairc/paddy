@@ -355,7 +355,7 @@ describe("openclaw.chat caretaker welcome", () => {
   it("does not plan a greeting when a fresh session is created with a message", async () => {
     const sessions = new Map<string, SystemAgentChatSession>();
     greetingMocks.resolveSystemAgentGreeting.mockResolvedValueOnce({
-      text: "Hi, I'm OpenClaw — caretaker of this gateway, config, channels, and agents.",
+      text: "Hi, I'm Paddy — caretaker of this gateway, config, channels, and agents.",
       source: "template",
     });
 
@@ -375,7 +375,7 @@ describe("openclaw.chat caretaker welcome", () => {
     expect(sessions.get("fresh-with-message")?.welcomeAuditSequence).toBe(0);
     const welcome = await callChat(context, { sessionId: "fresh-with-message" });
     expect(welcome.payload).toMatchObject({
-      reply: "Hi, I'm OpenClaw — caretaker of this gateway, config, channels, and agents.",
+      reply: "Hi, I'm Paddy — caretaker of this gateway, config, channels, and agents.",
     });
     expect(greetingMocks.acknowledgeSystemAgentGreetingDelivery).toHaveBeenCalledWith({
       auditSequence: 0,

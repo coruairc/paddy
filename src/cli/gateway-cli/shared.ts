@@ -6,11 +6,12 @@ import {
 } from "../../daemon/constants.js";
 import { resolveGatewayService } from "../../daemon/service.js";
 import { defaultRuntime } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 
 function renderGatewayServiceStopHints(env: NodeJS.ProcessEnv = process.env): string[] {
   const profile = env.OPENCLAW_PROFILE;
-  const hints = [`Tip: ${formatCliCommand("openclaw gateway stop")}`];
+  const hints = [`Tip: ${formatCliCommand(`${CLI_NAME} gateway stop`)}`];
   switch (process.platform) {
     case "darwin":
       hints.push(`Or: launchctl bootout gui/$UID/${resolveGatewayLaunchAgentLabel(profile)}`);

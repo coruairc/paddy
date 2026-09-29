@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { extractSqliteTableSchema } from "../infra/sqlite-schema-sql.js";
 import { runSqliteImmediateTransactionSync } from "../infra/sqlite-transaction.js";
 import { SESSION_PARTICIPANTS_TABLE } from "./openclaw-agent-db-contract.js";
@@ -10,7 +11,7 @@ export function sessionParticipantsSchemaSql(): string {
   return extractSqliteTableSchema(OPENCLAW_AGENT_SCHEMA_SQL, SESSION_PARTICIPANTS_TABLE, {
     endMarker: "CREATE TABLE IF NOT EXISTS session_key_contract (",
     includeEndMarker: false,
-    errorMessage: "OpenClaw session participant schema markers are missing.",
+    errorMessage: `${PRODUCT_NAME} session participant schema markers are missing.`,
   });
 }
 

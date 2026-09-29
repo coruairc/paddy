@@ -1260,7 +1260,7 @@ describe("maybeCompactCodexAppServerSession", () => {
       expect(result.ok).toBe(false);
       expect(result.compacted).toBe(false);
       expect(result.reason).toContain(
-        "Codex-native native compaction is unavailable because OpenClaw sandboxing is active for this session.",
+        "Codex-native native compaction is unavailable because Paddy sandboxing is active for this session.",
       );
     }
     expect(fake.request).not.toHaveBeenCalled();
@@ -1278,7 +1278,7 @@ describe("maybeCompactCodexAppServerSession", () => {
     expect(result.ok).toBe(false);
     expect(result.compacted).toBe(false);
     expect(result.reason).toContain(
-      "Codex-native native compaction is unavailable because OpenClaw exec host=node is active for this session.",
+      "Codex-native native compaction is unavailable because Paddy exec host=node is active for this session.",
     );
     expect(fake.request).not.toHaveBeenCalled();
   });
@@ -1318,7 +1318,7 @@ describe("maybeCompactCodexAppServerSession", () => {
       expect(result.ok).toBe(false);
       expect(result.compacted).toBe(false);
       expect(result.reason).toContain(
-        "Codex-native native compaction is unavailable because OpenClaw exec host=node is active for this session.",
+        "Codex-native native compaction is unavailable because Paddy exec host=node is active for this session.",
       );
       expect(fake.request).not.toHaveBeenCalled();
     },
@@ -2289,7 +2289,7 @@ describe("maybeCompactCodexAppServerSession", () => {
       { assertCurrent: expect.any(Function), signal: expect.any(AbortSignal) },
     );
     expect(warn).toHaveBeenCalledWith(
-      "ignoring OpenClaw compaction overrides for Codex app-server compaction; Codex uses native server-side compaction",
+      "ignoring Paddy compaction overrides for Codex app-server compaction; Codex uses native server-side compaction",
       {
         sessionId: "session-1",
         sessionKey: "agent:main:session-1",
@@ -2344,7 +2344,7 @@ describe("maybeCompactCodexAppServerSession", () => {
       { assertCurrent: expect.any(Function), signal: expect.any(AbortSignal) },
     );
     expect(warn).toHaveBeenCalledWith(
-      "ignoring OpenClaw compaction overrides for Codex app-server compaction; Codex uses native server-side compaction",
+      "ignoring Paddy compaction overrides for Codex app-server compaction; Codex uses native server-side compaction",
       {
         sessionId: "session-1",
         sessionKey: "agent:lossless:session-1",

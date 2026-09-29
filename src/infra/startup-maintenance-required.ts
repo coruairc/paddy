@@ -1,10 +1,11 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { collectNestedErrorCandidates } from "./error-graph-internal.js";
 
 export const GATEWAY_STARTUP_MAINTENANCE_REQUIRED_REASON = "gateway.maintenance_required";
 
 const maintenanceReasons = {
   "state-migrations": "state migration",
-  "newer-schema": "a newer OpenClaw build",
+  "newer-schema": `a newer ${PRODUCT_NAME} build`,
   "agent-media": "offline media migration",
   "agent-databases-composite-primary-key": "state database schema migration",
   "audit-events-v2": "state database schema migration",

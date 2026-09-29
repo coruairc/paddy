@@ -644,7 +644,7 @@ describe("executeAgentTurn: terminal failures", () => {
       expect(result.payload.text).toContain("gateway is unaffected");
       if (mode === "overall") {
         expect(result.payload.text).toContain("overall turn limit");
-        expect(result.payload.text).toContain("detached OpenClaw sub-agent");
+        expect(result.payload.text).toContain("detached Paddy sub-agent");
         expect(result.payload.text).toContain("agents.defaults.timeoutSeconds");
         expect(result.payload.text).not.toContain("noOutputTimeoutMs");
       } else {

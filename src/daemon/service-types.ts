@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { DaemonRuntimePinUpdate } from "./runtime-pin-types.js";
 import type { ServiceInspectionReason } from "./service-inspection-error.js";
 import type { GatewayServiceRuntime } from "./service-runtime.js";
@@ -246,7 +247,7 @@ const SERVICE_DEFINITION_REASONS = {
   "invalid-artifact":
     "has an unexpected file type. Inspect the service directories and files locally; have their owner repair the layout before retrying. Changing permissions alone will not repair it.",
   symlink:
-    "is a symbolic link. Ask the deployment owner to replace the managed file through the deployment process; OpenClaw will not rewrite the link or its target.",
+    `is a symbolic link. Ask the deployment owner to replace the managed file through the deployment process; ${PRODUCT_NAME} will not rewrite the link or its target.`,
   "foreign-owner":
     "belongs to another account. Ask the privileged deployment owner to repair or replace it; do not take ownership or use --force to bypass this check.",
   "sealed-mount":

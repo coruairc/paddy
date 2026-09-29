@@ -2,6 +2,7 @@ import {
   GATEWAY_CLIENT_MODES,
   GATEWAY_CLIENT_NAMES,
 } from "../../packages/gateway-protocol/src/client-info.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { storeDeviceAuthToken } from "../infra/device-auth-store.js";
 import {
   loadOrCreateDeviceIdentity,
@@ -60,7 +61,7 @@ export async function ensureStartupLocalCliPairing(): Promise<StartupLocalCliPai
   const pairing = await requestDevicePairing({
     deviceId: identity.deviceId,
     publicKey,
-    displayName: "OpenClaw CLI",
+    displayName: `${PRODUCT_NAME} CLI`,
     ...resolveGatewayClientPlatformIdentity(process.platform),
     clientId: GATEWAY_CLIENT_NAMES.CLI,
     clientMode: GATEWAY_CLIENT_MODES.CLI,
@@ -73,7 +74,7 @@ export async function ensureStartupLocalCliPairing(): Promise<StartupLocalCliPai
     callerScopes: [ADMIN_SCOPE],
     approvedVia: "silent",
     accessMetadata: {
-      displayName: "OpenClaw CLI",
+      displayName: `${PRODUCT_NAME} CLI`,
       remoteIp: "127.0.0.1",
       lastSeenAtMs: Date.now(),
       lastSeenReason: "runtime-token-startup",

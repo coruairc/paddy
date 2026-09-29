@@ -9,6 +9,7 @@ import type {
   WizardStartResult,
   WizardStep,
 } from "../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { resolveDeviceIdentityForGatewayCall } from "../gateway/call-device-auth.js";
 import {
@@ -394,7 +395,7 @@ export async function runRemoteGatewayInferenceOnboarding(
         import("../wizard/clack-prompter.js").then(({ createClackPrompter }) =>
           createClackPrompter(),
         ));
-      await prompter.intro("OpenClaw");
+      await prompter.intro(`${PRODUCT_NAME}`);
       // One-shot RPCs have different connections. Preserve a signed device
       // owner across chat replies even when loopback shared auth needs no device.
       const deviceIdentity = resolveDeviceIdentityForGatewayCall();
@@ -409,9 +410,9 @@ export async function runRemoteGatewayInferenceOnboarding(
       let agentDraft: SystemAgentChatResult["agentDraft"];
       try {
         for (;;) {
-          await prompter.note(reply.reply, "OpenClaw");
+          await prompter.note(reply.reply, `${PRODUCT_NAME}`);
           if (reply.action === "exit") {
-            await prompter.outro("OpenClaw setup finished.");
+            await prompter.outro(`${PRODUCT_NAME} setup finished.`);
             return;
           }
           if (reply.action === "open-agent") {
@@ -420,7 +421,7 @@ export async function runRemoteGatewayInferenceOnboarding(
             break;
           }
           const message = await prompter.text({
-            message: "Reply to OpenClaw",
+            message: `Reply to ${PRODUCT_NAME}`,
             ...(reply.sensitive ? { sensitive: true } : {}),
             validate: (value) => (value.trim() ? undefined : "Required"),
           });
@@ -433,7 +434,7 @@ export async function runRemoteGatewayInferenceOnboarding(
         }
       } catch (error) {
         if (error instanceof WizardCancelledError) {
-          await prompter.outro("OpenClaw setup paused.");
+          await prompter.outro(`${PRODUCT_NAME} setup paused.`);
           return;
         }
         throw error;

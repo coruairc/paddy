@@ -280,8 +280,8 @@ describe("plugins cli update", () => {
   });
 
   it.each([
-    ["profile", "missing-plugin", [], "work", undefined, "openclaw --profile work"],
-    ["container before profile", "missing-plugin", [], "work", "demo", "openclaw --container demo"],
+    ["profile", "missing-plugin", [], "work", undefined, "paddy --profile work"],
+    ["container before profile", "missing-plugin", [], "work", "demo", "paddy --container demo"],
   ] as const)(
     "rejects untracked update target with %s guidance",
     async (_name, id, args, profile, container, prefix) => {
@@ -1115,7 +1115,7 @@ describe("plugins cli update", () => {
     });
     expect(pluginsCliRuntimeLogs.join("\n")).toContain("Plugin update committed");
     expect(pluginsCliRuntimeLogs).toContain("Updated alpha -> 1.1.0");
-    expect(pluginsCliRuntimeLogs.join("\n")).toContain("Run openclaw plugins doctor");
+    expect(pluginsCliRuntimeLogs.join("\n")).toContain("Run paddy plugins doctor");
     expectOfflineNoticeLogged();
   });
 

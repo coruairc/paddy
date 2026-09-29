@@ -24,6 +24,7 @@ import { loadInstalledPluginIndexInstallRecordsSync } from "../../plugins/instal
 import { defaultRuntime } from "../../runtime.js";
 import { parsePackageOpenClawSchemaVersions } from "../../state/openclaw-schema-versions.js";
 import { withArtifactPreservingStateReads } from "../../state/openclaw-state-db-readonly.js";
+import { CLI_NAME } from "../cli-name.js";
 import {
   captureTargetDatabaseSchemaContext,
   checkTargetDatabaseSchemasForContexts,
@@ -115,7 +116,7 @@ async function inspectUpdateAdmission(
           error.reason,
           error.message,
           error.nextAction ??
-            "Run openclaw doctor --fix, then correct any remaining configuration errors and retry.",
+            `Run ${CLI_NAME} doctor --fix, then correct any remaining configuration errors and retry.`,
         );
         databaseContext = undefined;
       }

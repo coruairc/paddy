@@ -1,4 +1,5 @@
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import { withContainerEnvFile } from "../../infra/container-env-file.js";
 import { markOpenClawExecEnv } from "../../infra/openclaw-exec-env.js";
 /**
@@ -168,7 +169,7 @@ export async function ensureContainerImage(engine: SandboxContainerEngine, image
         ? "scripts/sandbox-setup.sh before enabling Docker sandboxing"
         : `podman build -t ${image} -f scripts/docker/sandbox/Dockerfile . before enabling container sandboxing`;
     throw new Error(
-      `${missingImage} Build it with ${setup}. The default image includes python3 for sandbox write/edit helpers; OpenClaw will not substitute plain debian:bookworm-slim.`,
+      `${missingImage} Build it with ${setup}. The default image includes python3 for sandbox write/edit helpers; ${PRODUCT_NAME} will not substitute plain debian:bookworm-slim.`,
     );
   }
   throw new Error(`${missingImage} Build or pull it first.`);

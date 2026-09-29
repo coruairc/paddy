@@ -11,6 +11,7 @@ import {
   type DaemonInstallWarnFn,
 } from "./daemon-install-runtime-warning.js";
 import type { GatewayDaemonRuntime } from "./daemon-runtime.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 /** Builds launch arguments, environment, and metadata for a managed node-host service install. */
 export async function buildNodeInstallPlan(params: {
@@ -86,6 +87,6 @@ export async function buildNodeInstallPlan(params: {
       CF_ACCESS_CLIENT_ID: "file",
       CF_ACCESS_CLIENT_SECRET: "file", // pragma: allowlist secret
     },
-    description: "OpenClaw Node Host",
+    description: `${PRODUCT_NAME} Node Host`,
   };
 }

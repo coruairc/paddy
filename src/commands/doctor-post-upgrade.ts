@@ -4,6 +4,7 @@ import fsSync from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import type { UpdateChannel } from "../infra/update-channels.js";
 import { formatConsoleDiagnosticLine } from "../logging/json-console-line.js";
@@ -132,7 +133,7 @@ export async function runPostUpgradeProbes(params: {
       level: "warn",
       code: "plugin.version_drift",
       plugin: entry.pluginId,
-      message: `Plugin ${entry.pluginId} is ${entry.installedVersion}, but OpenClaw is ${VERSION}. ${repair}`,
+      message: `Plugin ${entry.pluginId} is ${entry.installedVersion}, but ${PRODUCT_NAME} is ${VERSION}. ${repair}`,
     });
   }
 

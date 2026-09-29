@@ -194,7 +194,7 @@ describe("update completion ownership", () => {
         {
           reason: "doctor-advisory",
           message: beforeWarning.trim(),
-          guidance: ["Run `openclaw doctor --fix` after repairing the plugin."],
+          guidance: ["Run `paddy doctor --fix` after repairing the plugin."],
         },
       ],
     });

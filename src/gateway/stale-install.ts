@@ -12,6 +12,7 @@ import {
   errorShape,
   type ErrorShape,
 } from "../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { tryReadJson } from "../infra/json-files.js";
 import {
@@ -200,7 +201,7 @@ export function classifyGatewayStaleInstall(error: unknown): GatewayStaleInstall
   return {
     error: errorShape(
       ErrorCodes.UNAVAILABLE,
-      `The running Gateway can no longer load part of its OpenClaw installation. The installation may have changed while the Gateway was running. Restart it with: ${restartCommand}`,
+      `The running Gateway can no longer load part of its ${PRODUCT_NAME} installation. The installation may have changed while the Gateway was running. Restart it with: ${restartCommand}`,
       { details: { code: "STALE_INSTALL", restartCommand }, retryable: false },
     ),
     restartCommand,

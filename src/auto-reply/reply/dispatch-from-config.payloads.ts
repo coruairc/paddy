@@ -5,6 +5,7 @@ import {
   hasOutboundReplyContent,
   resolveSendableOutboundReplyParts,
 } from "openclaw/plugin-sdk/reply-payload";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { InboundEventKind } from "../../channels/inbound-event/kind.js";
 import { RUN_STALE_TAKEOVER_MS } from "../../logging/diagnostic-run-activity.js";
 import { createLazyImportLoader } from "../../shared/lazy-promise.js";
@@ -23,7 +24,7 @@ import type { ReplyOperation } from "./reply-run-registry.js";
 const ttsRuntimeLoader = createLazyImportLoader(() => import("../../tts/tts.runtime.js"));
 
 const NO_VISIBLE_REPLY_FALLBACK_TEXT =
-  "⚠️ OpenClaw couldn't produce or deliver a reply. Please try again. If this keeps happening, ask the operator to check the gateway logs.";
+  `⚠️ ${PRODUCT_NAME} couldn't produce or deliver a reply. Please try again. If this keeps happening, ask the operator to check the gateway logs.`;
 
 export function buildNoVisibleReplyFallbackText(runId?: string): string {
   const reference = normalizeOptionalString(runId);

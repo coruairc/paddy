@@ -14,6 +14,7 @@ import { resolvePairingIdLabel } from "../pairing/pairing-labels.js";
 import { approveChannelPairingCode, listChannelPairingRequests } from "../pairing/pairing-store.js";
 import type { PairingChannel } from "../pairing/pairing-store.types.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import { formatDocsHelp } from "./help-format.js";
 
@@ -22,7 +23,7 @@ function parseChannel(raw: unknown, channels: PairingChannel[]): PairingChannel 
   const value = normalizeLowercaseStringOrEmpty(normalizeStringifiedOptionalString(raw) ?? "");
   if (!value) {
     throw new Error(
-      `Missing channel. Use ${formatCliCommand("openclaw pairing list --channel <channel>")}.`,
+      `Missing channel. Use ${formatCliCommand(`${CLI_NAME} pairing list --channel <channel>`)}.`,
     );
   }
 
@@ -78,7 +79,7 @@ export function registerPairingCli(program: Command) {
           // `pairing` is chat DM only; TUI/device approvals live under `openclaw devices`.
           throw new Error(
             `No chat DM pairing channels are configured. To approve a TUI or device request, ` +
-              `use ${formatCliCommand("openclaw devices approve")} instead.`,
+              `use ${formatCliCommand(`${CLI_NAME} devices approve`)} instead.`,
           );
         }
         throw new Error(`Channel required (expected one of: ${channelHint}).`);
@@ -153,12 +154,12 @@ export function registerPairingCli(program: Command) {
           : codeOrChannel;
       if (!channelRaw || !resolvedCode) {
         throw new Error(
-          `Usage: ${formatCliCommand("openclaw pairing approve <channel> <code>")} (or: ${formatCliCommand("openclaw pairing approve --channel <channel> <code>")})`,
+          `Usage: ${formatCliCommand(`${CLI_NAME} pairing approve <channel> <code>`)} (or: ${formatCliCommand(`${CLI_NAME} pairing approve --channel <channel> <code>`)})`,
         );
       }
       if (opts.channel && code != null) {
         throw new Error(
-          `Too many arguments. Use: ${formatCliCommand("openclaw pairing approve --channel <channel> <code>")}`,
+          `Too many arguments. Use: ${formatCliCommand(`${CLI_NAME} pairing approve --channel <channel> <code>`)}`,
         );
       }
       const channel = parseChannel(channelRaw, channels);
@@ -170,7 +171,7 @@ export function registerPairingCli(program: Command) {
       });
       if (!approved) {
         throw new Error(
-          `No pending pairing request found for code "${String(resolvedCode)}". Run ${formatCliCommand(`openclaw pairing list --channel ${channel}`)} to list pending requests.`,
+          `No pending pairing request found for code "${String(resolvedCode)}". Run ${formatCliCommand(`${CLI_NAME} pairing list --channel ${channel}`)} to list pending requests.`,
         );
       }
 

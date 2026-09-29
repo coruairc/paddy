@@ -1,7 +1,8 @@
 import crypto from "node:crypto";
+import { PRODUCT_NAME } from "../../brand.js";
 
 const RESEED_HEADER = [
-  "Continue this conversation using the OpenClaw transcript below as prior session history.",
+  `Continue this conversation using the ${PRODUCT_NAME} transcript below as prior session history.`,
   "Treat it as authoritative context for this fresh CLI session.",
   "",
   "<conversation_history>",

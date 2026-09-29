@@ -15,7 +15,7 @@ export function policyEvidenceFinding(
     severity: "error",
     message: params.message,
     source: "policy",
-    path: "openclaw config",
+    path: "paddy config",
     ocPath: entry.source,
     target: entry.source,
     requirement: params.requirement,

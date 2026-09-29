@@ -2,6 +2,7 @@
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { note } from "../../packages/terminal-core/src/note.js";
 import { listAgentEntriesWithSource } from "../agents/agent-scope-config.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { listReadOnlyChannelPluginsForConfig } from "../channels/plugins/read-only.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig, GatewayBindMode } from "../config/config.js";
@@ -78,8 +79,8 @@ function collectExecPolicyConflictWarnings(
   approvals: ExecApprovalsFile,
 ): SecurityAuditFinding[] {
   const findings: SecurityAuditFinding[] = [];
-  const defaultRequestedSecuritySource = "OpenClaw default (full)";
-  const defaultRequestedAskSource = "OpenClaw default (off)";
+  const defaultRequestedSecuritySource = `${PRODUCT_NAME} default (full)`;
+  const defaultRequestedAskSource = `${PRODUCT_NAME} default (off)`;
 
   const maybeWarn = (params: {
     scopeLabel: string;

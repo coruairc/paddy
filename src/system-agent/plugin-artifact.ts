@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { containsConfigIncludeDirective } from "../config/io.read-helpers.js";
 import { GUARDED_CONFIG_INCLUDE_WRITE_ERROR } from "../config/mutation-conflict.js";
 import { resolveStateDir } from "../config/paths.js";
@@ -235,7 +236,7 @@ export async function prepareSystemAgentPluginArtifact(
   await assertArtifactConfigPublicationSupported();
   if (await isPluginBackingDefaultInferenceRoute(review.pluginId)) {
     throw new Error(
-      "This plugin backs OpenClaw's active inference route. Stop OpenClaw and install the artifact from a trusted shell.",
+      `This plugin backs ${PRODUCT_NAME}'s active inference route. Stop ${PRODUCT_NAME} and install the artifact from a trusted shell.`,
     );
   }
   return await withArtifactImports(async (files, assertOwned) => {
@@ -295,7 +296,7 @@ export async function executePluginArtifactActivation(
             await assertArtifactConfigPublicationSupported();
             if (await isPluginBackingDefaultInferenceRoute(review.pluginId)) {
               throw new Error(
-                "Artifact activation stopped: this plugin now backs the active inference route. Stop OpenClaw and install it from a trusted shell.",
+                `Artifact activation stopped: this plugin now backs the active inference route. Stop ${PRODUCT_NAME} and install it from a trusted shell.`,
               );
             }
             assertPersistentApply();

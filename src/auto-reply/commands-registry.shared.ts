@@ -1,6 +1,7 @@
 /** Shared command registry builders used by browser-safe and runtime command lists. */
 import { normalizeOptionalLowercaseString } from "../../packages/normalization-core/src/string-coerce.js";
 import { normalizeStringEntries } from "../../packages/normalization-core/src/string-normalization.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatFastModeAutoLabel, resolveFastModeModelAutoOnSeconds } from "../shared/fast-mode.js";
 import { COMMAND_ARG_FORMATTERS } from "./commands-args.js";
 import type {
@@ -272,7 +273,7 @@ export function buildBuiltinChatCommands(
     }),
     defineBuiltinCommand(
       "openclaw",
-      "Run the OpenClaw setup and repair helper.",
+      `Run the ${PRODUCT_NAME} setup and repair helper.`,
       "management",
       "essential",
       {
@@ -477,7 +478,7 @@ export function buildBuiltinChatCommands(
       argsParsing: "none",
       formatArgs: COMMAND_ARG_FORMATTERS.config,
     }),
-    defineBuiltinCommand("mcp", "Show or set OpenClaw MCP servers.", "management", "power", {
+    defineBuiltinCommand("mcp", `Show or set ${PRODUCT_NAME} MCP servers.`, "management", "power", {
       modelIndependent: "always",
       args: [
         defineCommandArgument("action", "show | get | set | unset", {
@@ -532,10 +533,10 @@ export function buildBuiltinChatCommands(
       activeRunSafe: true,
       modelIndependent: "no-args",
     }),
-    defineBuiltinCommand("restart", "Restart OpenClaw.", "tools", "power", {
+    defineBuiltinCommand("restart", `Restart ${PRODUCT_NAME}.`, "tools", "power", {
       modelIndependent: "no-args",
     }),
-    defineBuiltinCommand("update", "Update OpenClaw and restart.", "tools", "power", {
+    defineBuiltinCommand("update", `Update ${PRODUCT_NAME} and restart.`, "tools", "power", {
       modelIndependent: "no-args",
     }),
     defineBuiltinCommand("activation", "Set group activation mode.", "management", "power", {

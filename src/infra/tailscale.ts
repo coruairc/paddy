@@ -11,6 +11,7 @@ import {
   normalizeLowercaseStringOrEmpty,
   normalizeOptionalString,
 } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { runExec } from "../process/exec.js";
 import { signalProcessTree } from "../process/kill-tree.js";
 import { createDeferredCore } from "../shared/deferred.js";
@@ -451,7 +452,7 @@ async function claimTailscaleRouteOwned(
     }
   }
   if (adopted) {
-    info("Tailscale route adopted from a previous OpenClaw release");
+    info(`Tailscale route adopted from a previous ${PRODUCT_NAME} release`);
   }
   return {
     ...claim,

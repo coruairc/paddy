@@ -3,6 +3,7 @@ import type { DatabaseSync } from "node:sqlite";
 import { isDeepStrictEqual } from "node:util";
 import type { MessagePort } from "node:worker_threads";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import { clearNodeSqliteKyselyCacheForDatabase } from "../../infra/kysely-sync-cache-state.js";
 import { sqliteReaderDatabasePathKey } from "../../infra/sqlite-reader-lifecycle.js";
 import { onSqliteWalCheckpoint } from "../../infra/sqlite-wal-checkpoint.js";
@@ -85,7 +86,7 @@ function throwReclamationFailure(
   if (!cleanup.settled) {
     throw new AggregateError(
       [error, ...cleanup.cleanupWarnings.map((warning) => new Error(warning))],
-      "SQLite session reclamation failed and Worker cleanup is incomplete; restart OpenClaw before deleting the owning agent",
+      `SQLite session reclamation failed and Worker cleanup is incomplete; restart ${PRODUCT_NAME} before deleting the owning agent`,
       { cause: error },
     );
   }

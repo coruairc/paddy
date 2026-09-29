@@ -6,6 +6,7 @@ import {
 } from "../../stale-install.js";
 import type { GatewayConnectionFrame } from "../connection-transport.js";
 import type { GatewayWsMessageHandlerParams } from "./message-handler-types.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 
 export function attachGatewayWsMessageHandlerOnDemand(params: GatewayWsMessageHandlerParams): void {
   const queued: GatewayConnectionFrame[] = [];
@@ -41,7 +42,7 @@ export function attachGatewayWsMessageHandlerOnDemand(params: GatewayWsMessageHa
           restartCommand: staleInstall.restartCommand,
         });
         params.logWsControl.error(
-          `failed to load ws message handler because the OpenClaw installation changed while the Gateway was running conn=${params.connId}; run: ${staleInstall.restartCommand}; error: ${formattedError}`,
+          `failed to load ws message handler because the ${PRODUCT_NAME} installation changed while the Gateway was running conn=${params.connId}; run: ${staleInstall.restartCommand}; error: ${formattedError}`,
         );
         params.close(1011, GATEWAY_STALE_INSTALL_CLOSE_REASON);
         return;

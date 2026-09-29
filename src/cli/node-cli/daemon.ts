@@ -30,6 +30,7 @@ import {
 import { formatErrorMessage } from "../../infra/errors.js";
 import { loadNodeHostConfig } from "../../node-host/config.js";
 import { defaultRuntime } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import {
   runServiceRestart,
@@ -72,8 +73,8 @@ type NodeDaemonOutputOptions = {
 
 function renderNodeServiceStartHints(): string[] {
   return buildPlatformServiceStartHints({
-    installHint: formatCliCommand("openclaw node install"),
-    startCommand: formatCliCommand("openclaw node start"),
+    installHint: formatCliCommand(`${CLI_NAME} node install`),
+    startCommand: formatCliCommand(`${CLI_NAME} node start`),
     launchAgentPlistPath: `~/Library/LaunchAgents/${resolveNodeLaunchAgentLabel()}.plist`,
     systemdServiceName: resolveNodeSystemdServiceName(),
     windowsTaskName: resolveNodeWindowsTaskName(),
@@ -200,7 +201,7 @@ export async function runNodeDaemonInstall(opts: NodeDaemonInstallOptions) {
       warnings: warnings.length ? warnings : undefined,
     });
     if (!json) {
-      defaultRuntime.log(`Reinstall with: ${formatCliCommand("openclaw node install --force")}`);
+      defaultRuntime.log(`Reinstall with: ${formatCliCommand(`${CLI_NAME} node install --force`)}`);
     }
     return;
   }

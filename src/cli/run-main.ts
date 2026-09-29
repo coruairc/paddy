@@ -187,7 +187,7 @@ async function tryRunGatewayRunFastPath(
     emitCliBanner(VERSION, { argv });
   }
   const program = new Command();
-  program.name("openclaw");
+  program.name("paddy");
   program.enablePositionalOptions();
   program.option("--no-color", "Disable ANSI colors", false);
   program.exitOverride((err) => {
@@ -1282,7 +1282,7 @@ async function runCliWithPreparedOutputMode(
     if (bareSessionInvocation) {
       if (!process.stdin.isTTY || !process.stdout.isTTY) {
         console.error(
-          "OpenClaw TUI needs an interactive TTY. Use `openclaw agent --local ...` for automation.",
+          `Paddy TUI needs an interactive TTY. Use \`paddy agent --local ...\` for automation.`,
         );
         process.exitCode = 1;
         return;
@@ -1328,7 +1328,7 @@ async function runCliWithPreparedOutputMode(
       if (bareRootLaunchTarget.kind === "remote-gateway-inference") {
         if (!process.stdin.isTTY || !process.stdout.isTTY) {
           console.error(
-            "Remote Gateway inference setup needs an interactive TTY. Re-run `openclaw` in a terminal connected to this Gateway.",
+            `Remote Gateway inference setup needs an interactive TTY. Re-run \`paddy\` in a terminal connected to this Gateway.`,
           );
           process.exitCode = 1;
           return;
@@ -1342,8 +1342,8 @@ async function runCliWithPreparedOutputMode(
         if (!process.stdin.isTTY || !process.stdout.isTTY) {
           console.error(
             bareRootLaunchTarget.classic
-              ? "OpenClaw config is invalid. Run `openclaw doctor --fix` before onboarding."
-              : "Onboarding needs an interactive TTY. Use `openclaw onboard --non-interactive --accept-risk ...` for automation.",
+              ? `Paddy config is invalid. Run \`paddy doctor --fix\` before onboarding.`
+              : `Onboarding needs an interactive TTY. Use \`paddy onboard --non-interactive --accept-risk ...\` for automation.`,
           );
           process.exitCode = 1;
           return;
@@ -1355,7 +1355,7 @@ async function runCliWithPreparedOutputMode(
       if (bareRootLaunchTarget.kind === "tui") {
         if (!process.stdin.isTTY || !process.stdout.isTTY) {
           console.error(
-            "OpenClaw TUI needs an interactive TTY. Use `openclaw agent --local ...` for automation.",
+            `Paddy TUI needs an interactive TTY. Use \`paddy agent --local ...\` for automation.`,
           );
           process.exitCode = 1;
           return;
@@ -1440,7 +1440,7 @@ async function runCliWithPreparedOutputMode(
     const suppressStartupProgress = options.builtInMachineOutput || hasJsonOutputFlag(parseArgv);
     const { createCliProgress } = await import("./progress.js");
     const startupProgress = createCliProgress({
-      label: "Loading OpenClaw CLI…",
+      label: `Loading Paddy CLI…`,
       indeterminate: true,
       delayMs: 0,
       ...(suppressStartupProgress ? { enabled: false } : {}),
@@ -1482,7 +1482,7 @@ async function runCliWithPreparedOutputMode(
         }
         if (isBenignUncaughtExceptionError(error)) {
           console.warn(
-            "[openclaw] Non-fatal uncaught exception (continuing):",
+            `[paddy] Non-fatal uncaught exception (continuing):`,
             formatUncaughtError(error),
           );
           return;
@@ -1491,14 +1491,14 @@ async function runCliWithPreparedOutputMode(
           defaultRuntime.writeJson(formatCliJsonFailure(error));
         }
         for (const line of formatCliFailureLines({
-          title: "OpenClaw hit an unexpected runtime error.",
+          title: `Paddy hit an unexpected runtime error.`,
           error,
           argv: normalizedArgv,
         })) {
           console.error(line);
         }
         for (const message of runFatalErrorHooks({ reason: "uncaught_exception", error })) {
-          console.error("[openclaw]", message);
+          console.error(`[paddy]`, message);
         }
         restoreRuntimeTerminalState("uncaught exception", { resumeStdinIfPaused: false });
         process.exit(1);

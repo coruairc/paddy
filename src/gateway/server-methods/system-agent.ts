@@ -13,6 +13,7 @@ import {
   validateSystemAgentSetupVerifyParams,
   type SystemAgentChatQuestion,
 } from "../../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { racePromiseWithAbortSignal } from "../../infra/abort-signal.js";
 import { defaultRuntime } from "../../runtime.js";
 import { getAsyncWorkSignal } from "../../shared/async-work-scope.js";
@@ -355,7 +356,7 @@ export const systemAgentHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "OpenClaw caller identity unavailable."),
+          errorShape(ErrorCodes.INVALID_REQUEST, `${PRODUCT_NAME} caller identity unavailable.`),
         );
         return undefined;
       }
@@ -366,7 +367,7 @@ export const systemAgentHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, "OpenClaw session belongs to another caller.", {
+          errorShape(ErrorCodes.INVALID_REQUEST, `${PRODUCT_NAME} session belongs to another caller.`, {
             details: buildSystemAgentSessionInvalidatedErrorDetails(),
           }),
         );
@@ -393,8 +394,8 @@ export const systemAgentHandlers: GatewayRequestHandlers = {
           errorShape(
             ErrorCodes.INVALID_REQUEST,
             params.wizardCancel !== undefined
-              ? "No active OpenClaw chat session is awaiting that wizard cancel."
-              : "No active OpenClaw chat session is awaiting that wizard answer.",
+              ? `No active ${PRODUCT_NAME} chat session is awaiting that wizard cancel.`
+              : `No active ${PRODUCT_NAME} chat session is awaiting that wizard answer.`,
             { details: buildSystemAgentSessionInvalidatedErrorDetails() },
           ),
         );
@@ -418,7 +419,7 @@ export const systemAgentHandlers: GatewayRequestHandlers = {
             undefined,
             errorShape(
               ErrorCodes.UNAVAILABLE,
-              `OpenClaw requires working inference: ${inference.error}`,
+              `${PRODUCT_NAME} requires working inference: ${inference.error}`,
               {
                 details: buildSystemAgentInferenceUnavailableErrorDetails(),
               },
@@ -579,7 +580,7 @@ export const systemAgentHandlers: GatewayRequestHandlers = {
           respond(
             false,
             undefined,
-            errorShape(ErrorCodes.INVALID_REQUEST, "OpenClaw chat input is missing."),
+            errorShape(ErrorCodes.INVALID_REQUEST, `${PRODUCT_NAME} chat input is missing.`),
           );
           return undefined;
         }

@@ -34,6 +34,7 @@ import {
 } from "../../packages/gateway-protocol/src/index.js";
 import { GATEWAY_SERVER_CAPS } from "../../packages/gateway-protocol/src/server-capabilities.js";
 import { isRetryableGatewayStartupUnavailableError } from "../../packages/gateway-protocol/src/startup-unavailable.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { getRuntimeConfig } from "../config/config.js";
 import type { ConfigFileSnapshot, OpenClawConfig } from "../config/types.openclaw.js";
 import { assertExplicitGatewayAuthModeWhenBothConfigured } from "../gateway/auth-mode-policy.js";
@@ -733,7 +734,7 @@ async function resolveGatewayConnection(
     explicitTlsFingerprint: opts.tlsFingerprint,
     allowStoredOriginAuth: hasStoredOriginDeviceAuth,
     overrideAuthErrorHint:
-      "Fix: pass --token or --password once to request pairing, approve it in that gateway's Control UI (Settings -> Devices), then retry with the same credential so OpenClaw can store the device token.",
+      `Fix: pass --token or --password once to request pairing, approve it in that gateway's Control UI (Settings -> Devices), then retry with the same credential so ${PRODUCT_NAME} can store the device token.`,
     buildConnectionDetails: buildGatewayConnectionDetails,
   });
   const hasStoredOriginAuth = Boolean(

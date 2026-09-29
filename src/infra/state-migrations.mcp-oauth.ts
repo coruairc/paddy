@@ -4,6 +4,7 @@ import path from "node:path";
 import { root, type Root } from "@openclaw/fs-safe";
 import { mcpOAuthStoreKeyFromLegacyFileName } from "../agents/mcp-oauth-identity.js";
 import { parseMcpOAuthStoreJson } from "../agents/mcp-oauth-store.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { DB as OpenClawStateKyselyDatabase } from "../state/openclaw-state-db.generated.js";
 import { runOpenClawStateWriteTransaction } from "../state/openclaw-state-db.js";
 import {
@@ -415,7 +416,7 @@ async function migrateWithExclusiveStateOwnership(params: {
     } catch (error) {
       const staleGuidance =
         (error as { code?: unknown }).code === "file_lock_stale"
-          ? " Verify no older OpenClaw process is running, remove the retired .lock sidecar, and rerun Doctor."
+          ? ` Verify no older ${PRODUCT_NAME} process is running, remove the retired .lock sidecar, and rerun Doctor.`
           : "";
       warnings.push(
         `Failed locking legacy MCP OAuth store ${path.basename(sourcePath)}: ${String(error)}.${staleGuidance}`,

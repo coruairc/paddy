@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { FsSafeError, root as openFsRoot } from "./fs-safe.js";
 import { readPackageDistContentInventoryIfPresent } from "./package-dist-inventory.js";
 import {
@@ -138,7 +139,7 @@ export function localOverrideInspectionConflict(
       reason: "target-inspection-failed" as const,
     })),
     warnings: [
-      "Local OpenClaw changes were preserved but not reapplied because the updated package could not be safely inspected.",
+      `Local ${PRODUCT_NAME} changes were preserved but not reapplied because the updated package could not be safely inspected.`,
     ],
   };
 }

@@ -1,5 +1,6 @@
 // Core root-command descriptor catalog used for help placeholders and lazy registration.
 import { isExperimentalClawsEnabled } from "../../claws/experimental.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { isConfigMachineOutput } from "../config-output-mode.js";
 import { isDoctorMachineOutput } from "../doctor-output-mode.js";
 import { hasMachineOutputOption } from "../machine-output-argv.js";
@@ -8,12 +9,12 @@ import type { NamedCommandDescriptor } from "./command-group-descriptors.js";
 export const CORE_CLI_COMMAND_DESCRIPTORS = [
   {
     name: "setup",
-    description: "Chat with OpenClaw; onboard when setup is incomplete",
+    description: `Chat with ${PRODUCT_NAME}; onboard when setup is incomplete`,
     hasSubcommands: false,
   },
   {
     name: "crestodian", // hidden alias
-    description: "Deprecated: use openclaw setup",
+    description: `Deprecated: use ${CLI_NAME} setup`,
     hasSubcommands: false,
     hidden: true,
   },
@@ -36,7 +37,7 @@ export const CORE_CLI_COMMAND_DESCRIPTORS = [
   },
   {
     name: "claws",
-    description: "Inspect and add experimental OpenClaw Claws",
+    description: `Inspect and add experimental ${PRODUCT_NAME} Claws`,
     hasSubcommands: true,
     parentDefaultHelp: true,
   },
@@ -90,7 +91,7 @@ export const CORE_CLI_COMMAND_DESCRIPTORS = [
   },
   {
     name: "mcp",
-    description: "Manage OpenClaw mcp.servers config and channel bridge",
+    description: `Manage ${PRODUCT_NAME} mcp.servers config and channel bridge`,
     hasSubcommands: true,
     parentDefaultHelp: true,
   },

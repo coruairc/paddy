@@ -243,7 +243,7 @@ export async function runPluginsRegistryCommand(opts: PluginRegistryOptions): Pr
         const message = [
           "Plugin registry refresh could not verify the persisted replacement.",
           ...differenceLines.map((difference) => `- ${difference}`),
-          "Stop plugin package changes, then run `openclaw plugins registry --refresh` again.",
+          `Stop plugin package changes, then run \`paddy plugins registry --refresh\` again.`,
         ].join("\n");
         if (opts.json) {
           defaultRuntime.writeJson({
@@ -345,7 +345,7 @@ export async function runPluginsDoctorCommand(opts: PluginDoctorOptions = {}): P
         ),
         ...collectStalePluginConfigWarnings({
           hits: scanStalePluginConfig(sourceCfg, process.env),
-          doctorFixCommand: "openclaw doctor --fix",
+          doctorFixCommand: `paddy doctor --fix`,
           autoRepairBlocked: isStalePluginAutoRepairBlocked(sourceCfg, process.env),
         }),
         ...collectConfiguredRuntimePluginWarnings({ cfg: sourceCfg, plugins: report.plugins }),
@@ -388,10 +388,10 @@ export async function runPluginsDoctorCommand(opts: PluginDoctorOptions = {}): P
                   : {}),
                 ...(entry.source ? { shadowedSource: shortenHomePath(entry.source) } : {}),
                 repair: [
-                  `openclaw plugins inspect ${entry.pluginId ?? "<plugin-id>"}`,
+                  `paddy plugins inspect ${entry.pluginId ?? "<plugin-id>"}`,
                   "edit or remove the config-selected plugin source",
-                  "openclaw plugins registry --refresh",
-                  `openclaw plugins reload ${entry.pluginId ?? "<plugin-id>"}`,
+                  `paddy plugins registry --refresh`,
+                  `paddy plugins reload ${entry.pluginId ?? "<plugin-id>"}`,
                 ],
               };
             }),
@@ -408,7 +408,7 @@ export async function runPluginsDoctorCommand(opts: PluginDoctorOptions = {}): P
 
       const healthyMessage =
         "Plugin discovery, module loading, compatibility, and configuration checks passed. " +
-        'Run "openclaw health" to check the running Gateway, including runtime quarantines and fallbacks.';
+        `Run "paddy health" to check the running Gateway, including runtime quarantines and fallbacks.`;
       if (!hasInstallTreeIssues && pluginConfigWarnings.size === 0 && compatibility.length === 0) {
         return healthyMessage;
       }

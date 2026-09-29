@@ -236,7 +236,7 @@ export async function reconcileShortTermDreamingCronJob(params: {
   }
   const needsDoctor = (removed: number): ReconcileResult => {
     params.logger.warn(
-      "memory-core: historical dreaming cron jobs require repair; run openclaw doctor --fix. Runtime reconciliation left legacy jobs unchanged.",
+      "memory-core: historical dreaming cron jobs require repair; run paddy doctor --fix. Runtime reconciliation left legacy jobs unchanged.",
     );
     return { status: "doctor-required", removed };
   };

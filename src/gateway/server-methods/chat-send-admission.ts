@@ -15,6 +15,7 @@ import {
   type ReplyOperation,
 } from "../../auto-reply/reply/reply-run-registry.js";
 import { resolveActiveReplyRunOwnerForSignal } from "../../auto-reply/reply/reply-run-registry.state.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveSessionWorkStartError } from "../../config/sessions.js";
 import { hasRestartRecoveryTerminalRun } from "../../config/sessions/restart-recovery-state.js";
 import type { SessionEntry } from "../../config/sessions/types.js";
@@ -344,7 +345,7 @@ export async function admitChatSend(
     });
     if (request.goalOperation && !restartSafeAdmission) {
       throw new Error(
-        "Goal start or resume requires the built-in OpenClaw runtime and an idle local session with recoverable history. This action is unavailable for native Codex and other external runtimes.",
+        `Goal start or resume requires the built-in ${PRODUCT_NAME} runtime and an idle local session with recoverable history. This action is unavailable for native Codex and other external runtimes.`,
       );
     }
     if (retryableClaim && !restartSafeAdmission) {

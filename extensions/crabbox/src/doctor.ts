@@ -89,12 +89,12 @@ function createCrabboxCloudWorkerProfileCheck(openclawRoot: string): HealthCheck
           checkId: CRABBOX_CLOUD_WORKER_PROFILE_CHECK_ID,
           severity: "warning",
           source: "crabbox",
-          message: `Cloud worker profile "${profileId}" ${reason}. OpenClaw will install its managed Crabbox before use.`,
+          message: `Cloud worker profile "${profileId}" ${reason}. Paddy will install its managed Crabbox before use.`,
           ...((binary ?? explicitBinary) ? { path: binary ?? explicitBinary } : {}),
           ocPath: `cloudWorkers.profiles.${profileId}.settings.binary`,
           target: profileId,
           requirement: `Crabbox ${managedBinary.CRABBOX_MIN_VERSION} or newer`,
-          fixHint: `Run \`openclaw doctor --fix\` to install the managed Crabbox now, or provision Crabbox ${managedBinary.CRABBOX_MIN_VERSION} or newer using \`cloudWorkers.profiles.${profileId}.settings.binary\`. The existing executable and profile configuration are preserved.`,
+          fixHint: `Run \`paddy doctor --fix\` to install the managed Crabbox now, or provision Crabbox ${managedBinary.CRABBOX_MIN_VERSION} or newer using \`cloudWorkers.profiles.${profileId}.settings.binary\`. The existing executable and profile configuration are preserved.`,
         });
       }
       return findings;
@@ -183,7 +183,7 @@ export function registerCrabboxWorkerProviderDoctorChecks(
               ...details,
               message: `Warm-image checkpoint ${image.retirement.checkpointId}${display} is still awaiting deletion.`,
               fixHint:
-                "Cleanup retries during the next warm-image capture or worker teardown. Inspect `openclaw crabbox warm-images --json` and resolve provider deletion errors if it remains pending.",
+                "Cleanup retries during the next warm-image capture or worker teardown. Inspect `paddy crabbox warm-images --json` and resolve provider deletion errors if it remains pending.",
             });
           }
         }

@@ -1,6 +1,7 @@
 import path from "node:path";
 import { normalizeStringifiedOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { z } from "zod";
+import { PRODUCT_NAME } from "../brand.js";
 import { parseDurationMs } from "../cli/parse-duration.js";
 import { SilentReplyPolicyConfigSchema } from "./zod-schema.agent-defaults.js";
 import { ToolsSchema } from "./zod-schema.agent-runtime.js";
@@ -186,7 +187,7 @@ export const OpenClawSchemaShape = {
                 ctx.addIssue({
                   code: "custom",
                   path: ["attachOnly"],
-                  message: "Lightpanda requires attachOnly: true; OpenClaw does not launch it",
+                  message: `Lightpanda requires attachOnly: true; ${PRODUCT_NAME} does not launch it`,
                 });
               }
               if (value.driver !== undefined && value.driver !== "openclaw") {

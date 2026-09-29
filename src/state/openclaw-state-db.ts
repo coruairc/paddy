@@ -73,6 +73,7 @@ import {
   readStateSchemaPublicationBlocker,
   type StateSchemaPublicationBlocker,
 } from "./openclaw-state-schema-publication.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 export { registerOpenClawStateDatabaseLifecycleListener } from "./openclaw-state-db-cache.js";
 
@@ -324,7 +325,7 @@ function openOpenClawStateDatabaseWithBusyTimeout(
       if (errors.length > 0) {
         throw createSqliteLifecycleAggregateError(
           [error, ...errors],
-          `Fresh OpenClaw state database open failed releasing access and closing its unpublished handle for ${pathname}.`,
+          `Fresh ${PRODUCT_NAME} state database open failed releasing access and closing its unpublished handle for ${pathname}.`,
           error,
         );
       }

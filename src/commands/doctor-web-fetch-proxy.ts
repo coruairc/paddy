@@ -1,6 +1,7 @@
 /** Doctor diagnostics for managed loopback and web_fetch proxy routing. */
 import tls from "node:tls";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { resolveGatewayService, type GatewayService } from "../daemon/service.js";
@@ -106,7 +107,7 @@ async function collectWebFetchProxyDiagnostic(params: {
     directProbe,
     "- If direct web_fetch requests time out and the proxy is operator-controlled, enable the explicit opt-in:",
     `  ${formatCliCommand("openclaw config set tools.web.fetch.useTrustedEnvProxy true")}`,
-    "- Keep the opt-in disabled for untrusted proxies; enabling it lets the proxy resolve DNS after OpenClaw's hostname checks.",
+    `- Keep the opt-in disabled for untrusted proxies; enabling it lets the proxy resolve DNS after ${PRODUCT_NAME}'s hostname checks.`,
   ].join("\n");
 }
 

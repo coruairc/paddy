@@ -99,7 +99,7 @@ export async function inspectActivatedUpdateState(
     result.reason = "rollback-state-unverified";
     result.steps.push({
       name: "state-schema-verification",
-      command: "openclaw update",
+      command: `${CLI_NAME} update`,
       cwd: result.root ?? root,
       durationMs: 0,
       exitCode: 1,

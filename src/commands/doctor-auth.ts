@@ -35,6 +35,7 @@ import {
   resolveAuthProfileDatabasePath,
 } from "../agents/auth-profiles/sqlite.js";
 import { buildProviderAuthRecoveryHint } from "../agents/provider-auth-recovery-hint.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { HealthFinding } from "../flows/health-checks.js";
 import { formatErrorMessage } from "../infra/errors.js";
@@ -286,7 +287,7 @@ async function resolveAuthIssueHint(
     return "Invalid token expires metadata. Set a future Unix ms timestamp or remove expires.";
   }
   if (issue.reasonCode === "malformed_api_key") {
-    return "Paste the API key value, not an OpenClaw onboarding command.";
+    return `Paste the API key value, not a ${PRODUCT_NAME} onboarding command.`;
   }
   const providerHint = await formatAuthDoctorHint({
     cfg,

@@ -870,7 +870,7 @@ describe("createVoiceCallRuntime lifecycle", () => {
     mocks.resolveRealtimeFastContextConsult.mockResolvedValue({
       handled: true,
       result: {
-        text: "Fast OpenClaw memory or session context found.\nThe caller's basement lights are on.",
+        text: "Fast Paddy memory or session context found.\nThe caller's basement lights are on.",
       },
     });
 

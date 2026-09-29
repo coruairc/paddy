@@ -12,6 +12,7 @@ import {
   GATEWAY_CLIENT_MODES,
   GATEWAY_CLIENT_NAMES,
 } from "../../../packages/gateway-protocol/src/client-info.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { getRuntimeConfig, resolveGatewayPort } from "../../config/config.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import {
@@ -377,7 +378,7 @@ async function resolveApprovalRequesterDeviceIdentityForGatewayTool(params: {
       throw new Error(
         [
           "approved node gateway calls require a stable device identity.",
-          "Fix the OpenClaw state directory permissions and retry the approval.",
+          `Fix the ${PRODUCT_NAME} state directory permissions and retry the approval.`,
         ].join(" "),
         { cause: error },
       );
@@ -385,7 +386,7 @@ async function resolveApprovalRequesterDeviceIdentityForGatewayTool(params: {
     throw new Error(
       [
         "remote approval gateway calls require a stable device identity.",
-        "Fix the OpenClaw state directory permissions or use the local approval-runtime gateway.",
+        `Fix the ${PRODUCT_NAME} state directory permissions or use the local approval-runtime gateway.`,
       ].join(" "),
       { cause: error },
     );

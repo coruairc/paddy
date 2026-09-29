@@ -1016,7 +1016,7 @@ describe("plugins cli install", () => {
     expect(record.spec).toBe("@openclaw/discord@2026.5.20");
     expect(record.sourcePath).toBe(bundledPath);
     expect(record.installPath).toBe(bundledPath);
-    expect(runtimeLogsContain("ships with the current OpenClaw build")).toBe(true);
+    expect(runtimeLogsContain("ships with the current Paddy build")).toBe(true);
     expect(runtimeLogsContain("npm:@openclaw/discord@2026.5.20")).toBe(true);
   });
 
@@ -1088,8 +1088,8 @@ describe("plugins cli install", () => {
   });
 
   it.each([
-    ["profile", "work", undefined, "openclaw --profile work"],
-    ["container before profile", "work", "demo", "openclaw --container demo"],
+    ["profile", "work", undefined, "paddy --profile work"],
+    ["container before profile", "work", "demo", "paddy --container demo"],
   ] as const)(
     "preserves %s context in duplicate-install recovery guidance",
     async (_name, profile, container, prefix) => {

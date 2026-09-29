@@ -19,6 +19,7 @@ import type {
 } from "../plugins/status.js";
 import { defaultRuntime } from "../runtime.js";
 import { shortenHomeInString, shortenHomePath } from "../utils.js";
+import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 import { formatMissingPluginMessage } from "./error-format.js";
 import { formatCliJsonFailure } from "./failure-output.js";
 import { quietPluginJsonLogger } from "./plugins-json-logger.js";
@@ -230,7 +231,7 @@ export async function runPluginsInspectCommand(
       // An explicit multi-agent roster has no single default diagnostic owner.
       const agentIds = listAgentIds(cfg);
       const lines = [
-        "Skill Workshop is built into OpenClaw, not a plugin; configure it under skills.workshop.",
+        `Skill Workshop is built into ${PRODUCT_NAME}, not a plugin; configure it under skills.workshop.`,
       ];
       for (const agentId of agentIds.length > 0 ? agentIds : [undefined]) {
         const diagnostic = detectSkillWorkshopToolPolicyDiagnostic({
@@ -282,7 +283,7 @@ export async function runPluginsInspectCommand(
   process.stderr.write(globalDiagnostics);
   if (output === undefined) {
     failPluginInspect(
-      formatMissingPluginMessage({ id, listCommand: "openclaw plugins list --json" }),
+      formatMissingPluginMessage({ id, listCommand: `${CLI_NAME} plugins list --json` }),
       opts.json,
     );
   } else if (opts.json) {

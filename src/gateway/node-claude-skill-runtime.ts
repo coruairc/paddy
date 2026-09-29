@@ -11,6 +11,7 @@ import {
   getGatewayToolCallerIdentity,
   withGatewayToolCallerIdentity,
 } from "../agents/tools/gateway-caller-context.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { loadSessionEntryReadOnly } from "../config/sessions/session-accessor.js";
 import { registerAgentRunDelegatedAuthorityClosedHandler } from "../infra/agent-run-registry.js";
 import {
@@ -63,7 +64,7 @@ export async function prepareNodeClaudeSkillRuntime(
     target.kind === "node" ? gateway?.nodeRegistry.get(target.placement.nodeId) : undefined;
   if (!gateway || !node || !node.caps.includes(NODE_CLAUDE_SKILLS_CAPABILITY)) {
     throw new Error(
-      "Paired node needs claude-cli-skills-v1. Upgrade OpenClaw on the paired node, restart its node host, and retry this turn.",
+      `Paired node needs claude-cli-skills-v1. Upgrade ${PRODUCT_NAME} on the paired node, restart its node host, and retry this turn.`,
     );
   }
   const assertRun = resolveAdmittedRunActiveAssertion(run.admittedRunContext, signal);

@@ -21,6 +21,7 @@ import {
   isExistingOpenClawStateSchema,
 } from "../../state/openclaw-state-db-schema-policy.js";
 import { resolveOpenClawStateSqlitePath } from "../../state/openclaw-state-db.paths.js";
+import { CLI_NAME } from "../cli-name.js";
 import type { InvalidConfigRecoveryDeps } from "../invalid-config-recovery.js";
 
 const ALLOWED_INVALID_COMMANDS = new Set(["audit", "doctor", "logs", "health", "help", "status"]);
@@ -275,11 +276,11 @@ export async function ensureConfigReady(
         ? (await import("../../config/config-write-guard.js")).createConfigMutationError({
             configPath: snapshot.path,
           }).message
-        : commandText(formatCliCommand("openclaw doctor --fix"));
+        : commandText(formatCliCommand(`${CLI_NAME} doctor --fix`));
     params.runtime.error(`${muted("Fix:")} ${fixHint}`);
   }
   params.runtime.error(
-    `${muted("Inspect:")} ${commandText(formatCliCommand("openclaw config validate"))}`,
+    `${muted("Inspect:")} ${commandText(formatCliCommand(`${CLI_NAME} config validate`))}`,
   );
   params.runtime.error(
     muted(

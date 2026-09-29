@@ -16,6 +16,7 @@ import { registerMessageReadEditDeleteCommands } from "./message/register.read-e
 import { registerMessageSendCommand } from "./message/register.send.js";
 import { registerMessageThreadCommands } from "./message/register.thread.js";
 import { applyParentDefaultHelpAction } from "./parent-default-help.js";
+import { CLI_NAME } from "../../brand.js";
 
 /** Register the `message` command group with shared channel option helpers. */
 export function registerMessageCommands(program: Command, ctx: ProgramContext) {
@@ -28,17 +29,17 @@ export function registerMessageCommands(program: Command, ctx: ProgramContext) {
         `
 ${theme.heading("Examples:")}
 ${formatHelpExamples([
-  ['openclaw message send --target +15555550123 --message "Hi"', "Send a text message."],
+  [`${CLI_NAME} message send --target +15555550123 --message "Hi"`, "Send a text message."],
   [
-    'openclaw message send --target +15555550123 --message "Hi" --media photo.jpg',
+    `${CLI_NAME} message send --target +15555550123 --message "Hi" --media photo.jpg`,
     "Send a message with media.",
   ],
   [
-    'openclaw message poll --channel discord --target channel:123 --poll-question "Snack?" --poll-option Pizza --poll-option Sushi',
+    `${CLI_NAME} message poll --channel discord --target channel:123 --poll-question "Snack?" --poll-option Pizza --poll-option Sushi`,
     "Create a Discord poll.",
   ],
   [
-    'openclaw message react --channel discord --target 123 --message-id 456 --emoji "✅"',
+    `${CLI_NAME} message react --channel discord --target 123 --message-id 456 --emoji "✅"`,
     "React to a message.",
   ],
 ])}

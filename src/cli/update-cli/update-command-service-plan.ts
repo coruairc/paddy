@@ -65,6 +65,7 @@ import {
   type UpdateRecoveryStep,
 } from "../../shared/update-outcome.js";
 import { resolveNodeVersionManager } from "../../shared/version-manager-path.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { quoteCliArg, quotePowerShellArg } from "../quote-cli-arg.js";
 import { resolveNodeRunner } from "./shared.js";
@@ -107,8 +108,8 @@ export function assertGatewayServiceAdmissionUnchanged(
   if (expectedVerdict && expectedVerdict.kind !== serviceUpdateVerdict.kind) {
     throw new GatewayServiceUpdateOwnershipError(
       serviceUpdateVerdict.kind === "unavailable"
-        ? "Gateway service ownership could not be verified because inspection is unavailable. Run `openclaw gateway status --deep` and retry."
-        : "Gateway service ownership changed after database admission; run `openclaw gateway status --deep` and retry.",
+        ? `Gateway service ownership could not be verified because inspection is unavailable. Run \`${CLI_NAME} gateway status --deep\` and retry.`
+        : `Gateway service ownership changed after database admission; run \`${CLI_NAME} gateway status --deep\` and retry.`,
       undefined,
       serviceUpdateVerdict.kind === "unavailable"
         ? serviceUpdateVerdict.inspectionReason
@@ -165,7 +166,7 @@ export function isGatewayServiceManagementAllowedForUpdate(
 }
 
 export const GATEWAY_SERVICE_INSPECTION_WARNING =
-  "Gateway service inspection is unavailable; automatic service restart was skipped. Restart the Gateway you launched manually after the update. Any recorded service definition was left unchanged; inspect it with `openclaw gateway status --deep`.";
+  `Gateway service inspection is unavailable; automatic service restart was skipped. Restart the Gateway you launched manually after the update. Any recorded service definition was left unchanged; inspect it with \`${CLI_NAME} gateway status --deep\`.`;
 
 function serviceInspectionWarningMessage(state: GatewayServiceState): string {
   if (state.inspectionReason) {
@@ -405,7 +406,7 @@ export async function resolvePackageRuntimePreflight(params: {
       const version = normalizeOptionalString(manifest?.version);
       if (!version) {
         return resultError(
-          "Cannot inspect the installed OpenClaw runtime requirement; repair its package.json before retrying openclaw update.",
+          `Cannot inspect the installed ${PRODUCT_NAME} runtime requirement; repair its package.json before retrying ${CLI_NAME} update.`,
         );
       }
       target = {
@@ -556,8 +557,8 @@ export async function resolvePackageRuntimePreflight(params: {
     const upgrade = recoverySteps
       ? `Recovery:\n${formatUpdateRecoverySteps(recoverySteps)}`
       : recommendation
-        ? "Select a published OpenClaw version before installing it under a supported Node runtime."
-        : `No Node version satisfies both this range and this updater's supported range (${SUPPORTED_NODE_VERSION_RANGE}). This candidate version cannot be run by this updater with a supported Node release; install a supported Node and select a compatible OpenClaw target.`;
+        ? `Select a published ${PRODUCT_NAME} version before installing it under a supported Node runtime.`
+        : `No Node version satisfies both this range and this updater's supported range (${SUPPORTED_NODE_VERSION_RANGE}). This candidate version cannot be run by this updater with a supported Node release; install a supported Node and select a compatible ${PRODUCT_NAME} target.`;
     return {
       ...(recoverySteps ? { recoverySteps } : {}),
       ...resultError<PackageRuntimePreflight, string>(

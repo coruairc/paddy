@@ -881,7 +881,7 @@ describe("memory_search real manager", () => {
       warning:
         "Memory search is unavailable because the session catalog requires canonical-key migration.",
       action:
-        "Stop the Gateway and run openclaw doctor --fix, then restart the Gateway and retry memory_search.",
+        "Stop the Gateway and run paddy doctor --fix, then restart the Gateway and retry memory_search.",
     };
 
     expect(first.details).toMatchObject(expected);

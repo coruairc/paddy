@@ -15,6 +15,7 @@ import {
   validateWebPushUnsubscribeParams,
   validateWebPushVapidPublicKeyParams,
 } from "../../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   clearApnsRegistrationIfCurrent,
   loadApnsRegistration,
@@ -219,7 +220,7 @@ export const pushHandlers = {
       return;
     }
 
-    const title = normalizeOptionalString(params.title) ?? "OpenClaw";
+    const title = normalizeOptionalString(params.title) ?? `${PRODUCT_NAME}`;
     const body = normalizeOptionalString(params.body) ?? `Push test for node ${nodeId}`;
 
     await respondUnavailableOnThrow(respond, async () => {
@@ -513,7 +514,7 @@ export const pushHandlers = {
       return;
     }
 
-    const title = normalizeOptionalString(params.title) ?? "OpenClaw";
+    const title = normalizeOptionalString(params.title) ?? `${PRODUCT_NAME}`;
     const body = normalizeOptionalString(params.body) ?? "Web push test notification";
 
     await respondUnavailableOnThrow(respond, async () => {

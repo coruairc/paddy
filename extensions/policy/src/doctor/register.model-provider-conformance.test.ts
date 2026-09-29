@@ -13,7 +13,7 @@ function atConfigPath(path: string) {
   return {
     severity: "error",
     source: "policy",
-    path: "openclaw config",
+    path: "paddy config",
     ocPath: `oc://openclaw.config/${path}`,
     target: `oc://openclaw.config/${path}`,
   };

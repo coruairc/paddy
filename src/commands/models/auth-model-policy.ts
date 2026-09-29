@@ -5,6 +5,7 @@ import {
   LEGACY_MODEL_POLICY_ALLOW_CONFIG_PATH,
   resolveConfiguredModelPolicyAllow,
 } from "../../agents/model-selection-shared.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { logConfigUpdated } from "../../config/logging.js";
 import { normalizeAgentModelRefForConfig } from "../../config/model-input.js";
 import { materializeModelPolicyAllowlist } from "../../config/model-policy-allowlist-migration.js";
@@ -176,7 +177,7 @@ export async function completeProviderModelAccess(params: {
     status === "applied"
       ? `All ${prepared.providerLabel} models are now visible.`
       : application.claimed
-        ? "Model access was saved, but OpenClaw has not confirmed it is active. Open Settings and select Apply changes, then send /models."
+        ? `Model access was saved, but ${PRODUCT_NAME} has not confirmed it is active. Open Settings and select Apply changes, then send /models.`
         : "Model access saved. Application by the running Gateway is not confirmed. Run `openclaw gateway restart` to apply it.";
   params.runtime.log(message);
   return { kind: "saved", application: status, message };

@@ -4,6 +4,7 @@ import { statSync } from "node:fs";
 import { performance } from "node:perf_hooks";
 import { isDeepStrictEqual } from "node:util";
 import { toStringifiedError } from "@openclaw/normalization-core/error-coercion";
+import { PRODUCT_NAME } from "../../brand.js";
 import { SQLITE_IDLE_HANDLE_TTL_MS } from "../../infra/sqlite-handle-lifecycle.js";
 import { sqliteReaderDatabasePathKey } from "../../infra/sqlite-reader-lifecycle.js";
 import { publishSqliteWalCheckpointObservation } from "../../infra/sqlite-wal-checkpoint.js";
@@ -689,7 +690,7 @@ export class SqliteReclamationWorker {
         (!this.cleanup?.settled || (transport.kind === "pooled" && !this.taskCustodyReleased))
       ) {
         throw new Error(
-          "SQLite reclamation Worker cleanup is uncertain; restart OpenClaw before deleting the owning agent",
+          `SQLite reclamation Worker cleanup is uncertain; restart ${PRODUCT_NAME} before deleting the owning agent`,
         );
       }
       if (this.cleanup?.cleanupWarnings.length) {

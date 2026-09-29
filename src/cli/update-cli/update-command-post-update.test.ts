@@ -406,7 +406,7 @@ describe("successful update finalization ordering", () => {
     expect(output).toContain("completion cache generation failed");
     expect(output).toContain("Resolve the reported error before retrying");
     expect(output).not.toContain("source /tmp/openclaw-completion.zsh");
-    expect(output).toContain("openclaw completion --write-state --install");
+    expect(output).toContain("paddy completion --write-state --install");
     expect(mocks.restartService).toHaveBeenCalledOnce();
     expect(mocks.restartService.mock.invocationCallOrder[0]).toBeLessThan(
       mocks.ensureCompletionCache.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
@@ -539,7 +539,7 @@ describe("successful update finalization ordering", () => {
       .mockImplementationOnce(async ({ result }) => ({ result, rolledBack: false }));
     const retained = {
       name: "package backup retained",
-      command: "openclaw update",
+      command: "paddy update",
       cwd: previousRoot,
       durationMs: 0,
       exitCode: 0,

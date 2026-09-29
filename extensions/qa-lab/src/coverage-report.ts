@@ -404,7 +404,7 @@ function formatSuiteCommand(matches: readonly QaScenarioSearchMatch[]) {
     requiredProviderMode && requiredProviderMode !== DEFAULT_QA_LIVE_PROVIDER_MODE
       ? ` --provider-mode ${requiredProviderMode}`
       : "";
-  return `pnpm openclaw qa suite${driverArg}${channelArg}${providerModeArg} ${scenarioArgs}`;
+  return `pnpm paddy qa suite${driverArg}${channelArg}${providerModeArg} ${scenarioArgs}`;
 }
 
 function scenarioMatchCommandGroups(matches: readonly QaScenarioSearchMatch[]) {

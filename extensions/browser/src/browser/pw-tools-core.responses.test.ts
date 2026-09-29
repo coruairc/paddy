@@ -71,7 +71,7 @@ describe("response body operation lifecycle", () => {
   it("preserves the missing-response recovery hint and removes its listeners", async () => {
     const result = responseBodyViaPlaywright(options).catch((error: unknown) => error);
     await vi.advanceTimersByTimeAsync(500);
-    expect(String(await result)).toContain("openclaw browser requests");
+    expect(String(await result)).toContain("paddy browser requests");
     expectCleanedUp();
   });
 

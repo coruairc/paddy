@@ -3,6 +3,7 @@ import { redactSensitiveUrlLikeString } from "@openclaw/net-policy/redact-sensit
 import { GatewayProtocolRequestTimeoutError } from "../../packages/gateway-client/src/protocol-request.js";
 import { note } from "../../packages/terminal-core/src/note.js";
 import { sanitizeTerminalText } from "../../packages/terminal-core/src/safe-text.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { probeGatewayStatus } from "../cli/daemon-cli/probe.js";
 import { DEFAULT_RESTART_HEALTH_TIMEOUT_MS } from "../cli/daemon-cli/restart-health.constants.js";
@@ -225,11 +226,11 @@ function noteCliGatewayVersionSkew(status: StatusSummary | undefined): void {
   }
   note(
     [
-      `This command is OpenClaw ${VERSION}; the running Gateway is OpenClaw ${gatewayVersion}.`,
+      `This command is ${PRODUCT_NAME} ${VERSION}; the running Gateway is ${PRODUCT_NAME} ${gatewayVersion}.`,
       "Check `openclaw --version`, `which openclaw`, and `openclaw gateway status --deep`.",
-      "If this mismatch is unexpected, update PATH so `openclaw` points to the version you want, or reinstall the Gateway service from that same OpenClaw install.",
+      `If this mismatch is unexpected, update PATH so \`openclaw\` points to the version you want, or reinstall the Gateway service from that same ${PRODUCT_NAME} install.`,
     ].join("\n"),
-    "OpenClaw version mismatch",
+    `${PRODUCT_NAME} version mismatch`,
   );
 }
 

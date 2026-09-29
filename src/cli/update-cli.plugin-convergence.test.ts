@@ -122,7 +122,7 @@ describe("update-cli", () => {
       mockFileBackedPathExists();
       const message =
         "discord is pinned to @openclaw/discord@2026.9.2 (installed 2026.9.2); " +
-        "registry latest resolves to 2026.9.3. Pass `openclaw plugins update " +
+        "registry latest resolves to 2026.9.3. Pass `paddy plugins update " +
         "@openclaw/discord@latest` to replace this version pin.";
       const record: PluginInstallRecord = {
         source: "npm",
@@ -480,7 +480,7 @@ describe("update-cli", () => {
     ]);
     expect(jsonOutput?.postUpdate?.plugins?.status).toBe("warning");
     expect(pluginWarning(jsonOutput)?.pluginId).toBe("demo");
-    expect(pluginWarning(jsonOutput)?.guidance).toEqual(["openclaw plugins update demo"]);
+    expect(pluginWarning(jsonOutput)?.guidance).toEqual(["paddy plugins update demo"]);
     expect(pluginWarning(jsonOutput)?.reason).toContain("npm package integrity drift");
     expect(jsonOutput?.postUpdate?.plugins?.npm.outcomes[0]?.status).toBe("error");
     expect(jsonOutput?.postUpdate?.plugins?.npm.outcomes[0]?.message).toContain(
@@ -573,7 +573,7 @@ describe("update-cli", () => {
     const output = getLogOutput();
     const trustWarningOccurrences = output.split(trustWarning).length - 1;
     expect(trustWarningOccurrences).toBe(1);
-    expect(output).toContain("openclaw plugins update demo");
+    expect(output).toContain("paddy plugins update demo");
   });
 
   it("detects missing plugin payloads from persisted records before npm updates", async () => {
@@ -612,8 +612,8 @@ describe("update-cli", () => {
     expect(pluginWarning(jsonOutput)?.reason).toContain("package.json is missing");
     expect(pluginWarning(jsonOutput)).toMatchObject({
       message:
-        'Plugin "demo" could not be loaded. Run `openclaw doctor --fix` to check and repair the load problem.',
-      guidance: ["openclaw doctor --fix"],
+        'Plugin "demo" could not be loaded. Run `paddy doctor --fix` to check and repair the load problem.',
+      guidance: ["paddy doctor --fix"],
     });
     expect(pluginOutcome(jsonOutput)?.pluginId).toBe("demo");
     expect(pluginOutcome(jsonOutput)?.status).toBe("error");
@@ -630,7 +630,7 @@ describe("update-cli", () => {
           pluginId: "demo",
           status: "skipped",
           message:
-            'Disabled "demo" after plugin update failure; OpenClaw will continue without it. Failed to update demo: registry timeout',
+            'Disabled "demo" after plugin update failure; Paddy will continue without it. Failed to update demo: registry timeout',
         },
       ],
       true,
@@ -642,7 +642,7 @@ describe("update-cli", () => {
     const jsonOutput = lastWriteJsonCall() as UpdateRunResult | undefined;
     expect(jsonOutput?.postUpdate?.plugins?.status).toBe("warning");
     expect(pluginWarning(jsonOutput)?.pluginId).toBe("demo");
-    expect(pluginWarning(jsonOutput)?.guidance).toEqual(["openclaw plugins update demo"]);
+    expect(pluginWarning(jsonOutput)?.guidance).toEqual(["paddy plugins update demo"]);
     expect(pluginOutcome(jsonOutput)?.pluginId).toBe("demo");
     expect(pluginOutcome(jsonOutput)?.status).toBe("skipped");
   });
@@ -779,7 +779,7 @@ describe("update-cli", () => {
     expect(pluginOutcome(jsonOutput)?.message).toContain(
       "Existing installed plugin left unchanged",
     );
-    expect(pluginWarning(jsonOutput)?.guidance).toEqual(["openclaw plugins update demo"]);
+    expect(pluginWarning(jsonOutput)?.guidance).toEqual(["paddy plugins update demo"]);
   });
 
   it.each([["npm update", updateNpmInstalledPlugins]] as const)(
@@ -825,14 +825,14 @@ describe("update-cli", () => {
         : [repairWarning];
       const reportedRepairWarning = {
         ...repairWarning,
-        message: "Plugin updates could not complete. Run `openclaw update repair` to retry.",
-        guidance: ["openclaw update repair"],
+        message: "Plugin updates could not complete. Run `paddy update repair` to retry.",
+        guidance: ["paddy update repair"],
       };
       const reportedSmokeWarning = {
         ...smokeWarning,
         message:
-          'Plugin "reporting-fixture" could not be loaded. Run `openclaw doctor --fix` to check and repair the load problem.',
-        guidance: ["openclaw doctor --fix"],
+          'Plugin "reporting-fixture" could not be loaded. Run `paddy doctor --fix` to check and repair the load problem.',
+        guidance: ["paddy doctor --fix"],
       };
       mockPostCoreConvergenceOnce(runPostCorePluginConvergenceSpy, {
         warnings,

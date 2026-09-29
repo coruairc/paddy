@@ -1,5 +1,6 @@
 import { sliceUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import { UPDATE_RUN_PHASES } from "../../packages/gateway-protocol/src/update-run-vocabulary.js";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   formatUpdateActivationTimeoutGuidance,
   isVerifiedUpdateRollback,
@@ -27,7 +28,7 @@ import { formatUpdateSnapshotCapacity } from "./update-snapshot-capacity.js";
 
 export type UpdateRunReport = { headline: string; lines: string[]; markdown: string };
 
-const IN_PROGRESS_REPORT_PREFIX = "⬆️ OpenClaw update in progress: ";
+const IN_PROGRESS_REPORT_PREFIX = `⬆️ ${PRODUCT_NAME} update in progress: `;
 
 /** Recognizes pending projections written by this renderer, including shipped reports. */
 export function isUpdateRunReportInProgress(markdown: string): boolean {
@@ -163,7 +164,7 @@ export function renderUpdateRunNotice(
   const target = run.after.version ?? run.target.version;
   const to = target ? bounded(target, 120) : undefined;
   if (kind === "ack") {
-    return `⬆️ Updating OpenClaw ${from ?? "the current version"} → ${to ?? "the latest release"}. The gateway stays available while the update is validated; you'll get a message here when it finishes.`;
+    return `⬆️ Updating ${PRODUCT_NAME} ${from ?? "the current version"} → ${to ?? "the latest release"}. The gateway stays available while the update is validated; you'll get a message here when it finishes.`;
   }
   if (kind === "activating" || kind === "parking") {
     return `⏳ Restarting the gateway now${from && to ? ` (v${from} → v${to})` : ""}…`;
@@ -262,15 +263,15 @@ export function renderUpdateRunReport(
   switch (run.status) {
     case "succeeded":
       headline = after
-        ? `✅ OpenClaw updated to ${after}${before ? ` (from ${before})` : ""}.`
-        : "✅ OpenClaw updated.";
+        ? `✅ ${PRODUCT_NAME} updated to ${after}${before ? ` (from ${before})` : ""}.`
+        : `✅ ${PRODUCT_NAME} updated.`;
       break;
     case "failed":
       headline = reconciled
-        ? "ℹ️ OpenClaw abandoned update reconciled."
+        ? `ℹ️ ${PRODUCT_NAME} abandoned update reconciled.`
         : run.reason === LEGACY_UPDATE_RUN_EXPIRED_REASON
-          ? `ℹ️ OpenClaw update abandoned: ${reason}.`
-          : `⚠️ OpenClaw update failed: ${reason}.${running ? ` The gateway is running ${running}.` : ""}`;
+          ? `ℹ️ ${PRODUCT_NAME} update abandoned: ${reason}.`
+          : `⚠️ ${PRODUCT_NAME} update failed: ${reason}.${running ? ` The gateway is running ${running}.` : ""}`;
       break;
     case "skipped":
       headline =
@@ -278,10 +279,10 @@ export function renderUpdateRunReport(
           ? `ℹ️ OpenClaw${after ? ` ${after}` : ""} installed; Gateway still starting; readiness unverified; recovery backups retained.`
           : run.reason === "gateway-readiness-unverified"
             ? `ℹ️ OpenClaw${after ? ` ${after}` : ""} installed; Gateway readiness unverified; recovery backups retained.`
-            : `ℹ️ OpenClaw update skipped: ${reason}.`;
+            : `ℹ️ ${PRODUCT_NAME} update skipped: ${reason}.`;
       break;
     case "rolled-back":
-      headline = `↩️ OpenClaw update rolled back to ${after ?? running ?? before ?? "the previous version"}: ${reason}.`;
+      headline = `↩️ ${PRODUCT_NAME} update rolled back to ${after ?? running ?? before ?? "the previous version"}: ${reason}.`;
       break;
     case "running":
       headline = `${IN_PROGRESS_REPORT_PREFIX}${run.target?.installationMethod === "ocm" ? "managed by OCM" : run.phase}.`;

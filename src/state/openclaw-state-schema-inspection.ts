@@ -14,6 +14,7 @@ import {
   STATE_PERSISTENT_SCHEMA_COMPATIBILITY,
 } from "./openclaw-state-schema-compatibility.js";
 import { OPENCLAW_STATE_SCHEMA_SQL } from "./openclaw-state-schema.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 function deduplicateSchemaIssues(issues: readonly SqliteSchemaIssue[]): SqliteSchemaIssue[] {
   return [
@@ -31,7 +32,7 @@ export function inspectCurrentStateStartupSchema(
   const metadata = assertOpenClawStateDatabaseOwner(database, { pathname: databasePath });
   if (metadata?.schema_version !== foundVersion) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw state database ${databasePath} metadata schema version ${typeof metadata?.schema_version === "number" ? metadata.schema_version : "invalid"} does not match ${foundVersion}.`,
+      `${PRODUCT_NAME} state database ${databasePath} metadata schema version ${typeof metadata?.schema_version === "number" ? metadata.schema_version : "invalid"} does not match ${foundVersion}.`,
     );
   }
   // Both policies inspect the same private or immutable snapshot; later opens read fresh facts.

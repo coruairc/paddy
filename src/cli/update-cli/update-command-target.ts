@@ -42,7 +42,7 @@ import { runCommandWithTimeout } from "../../process/exec.js";
 import { defaultRuntime } from "../../runtime.js";
 import type { OpenClawSchemaVersions } from "../../state/openclaw-schema-versions.js";
 import { VERSION } from "../../version.js";
-import { CLI_NAME } from "../cli-name.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import {
   DEFAULT_PACKAGE_NAME,
   normalizeTag,
@@ -104,7 +104,7 @@ function printManagedServicePackageUpdatePlan(params: {
     );
     defaultRuntime.log(
       theme.warn(
-        `Shell OpenClaw root differs from the managed gateway service root: ${rootRedirect.previousRoot}`,
+        `Shell ${PRODUCT_NAME} root differs from the managed gateway service root: ${rootRedirect.previousRoot}`,
       ),
     );
     defaultRuntime.log(
@@ -317,7 +317,7 @@ export async function resolveUpdateCommandTarget(
             ? "unsupported-package-target"
             : EXTENDED_STABLE_TAG_UNSUPPORTED_REASON,
           unsupportedMainTag
-            ? "`--tag main` cannot update a package install. Run `openclaw update --channel dev` to switch to the supported Git checkout and build flow."
+            ? `\`--tag main\` cannot update a package install. Run \`${CLI_NAME} update --channel dev\` to switch to the supported Git checkout and build flow.`
             : undefined,
         );
         return undefined;

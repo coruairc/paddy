@@ -7,6 +7,7 @@ import { theme } from "../../packages/terminal-core/src/theme.js";
 import type { HookStatusEntry, HookStatusReport } from "../hooks/hooks-status.js";
 import { summarizeStringEntries } from "../shared/string-sample.js";
 import { shortenHomePath } from "../utils.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import { formatCliJsonFailure } from "./failure-output.js";
 import { formatCliRequirements } from "./skills-hooks-cli.format.js";
@@ -116,7 +117,7 @@ export function formatHooksList(report: HookStatusReport, opts: HooksListOptions
 
   if (hooks.length === 0) {
     const message = opts.eligible
-      ? `No eligible hooks found. Run \`${formatCliCommand("openclaw hooks list")}\` to see all hooks.`
+      ? `No eligible hooks found. Run \`${formatCliCommand(`${CLI_NAME} hooks list`)}\` to see all hooks.`
       : "No hooks found.";
     return message;
   }
@@ -165,7 +166,7 @@ export function formatHookInfo(
       const failure = formatCliJsonFailure(`Hook "${hookName}" not found.`);
       return JSON.stringify({ ...failure, hook: hookName }, null, 2);
     }
-    return `Hook "${hookName}" not found. Run \`${formatCliCommand("openclaw hooks list")}\` to see available hooks.`;
+    return `Hook "${hookName}" not found. Run \`${formatCliCommand(`${CLI_NAME} hooks list`)}\` to see available hooks.`;
   }
 
   if (opts.json) {

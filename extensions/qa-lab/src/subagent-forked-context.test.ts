@@ -27,7 +27,7 @@ function userInput(text: string) {
 // Mirror the runtime-owned projection, not a helper shared with the mock oracle.
 function projectedInput(history: string, current = childTask) {
   return userInput(
-    `OpenClaw assembled context for this turn:\n<conversation_context>\n${history}\n</conversation_context>\n\nCurrent user request:\n${current}`,
+    `Paddy assembled context for this turn:\n<conversation_context>\n${history}\n</conversation_context>\n\nCurrent user request:\n${current}`,
   );
 }
 

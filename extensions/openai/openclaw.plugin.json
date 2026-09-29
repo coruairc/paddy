@@ -327,7 +327,7 @@
         "aliases": ["codex"]
       },
       "choiceLabel": "Codex login (device code)",
-      "choiceHint": "Use a browser code when OpenClaw runs on a remote VM",
+      "choiceHint": "Use a browser code when Paddy runs on a remote VM",
       "docsUrl": "https://docs.openclaw.ai/providers/openai/authentication",
       "assistantPriority": -40,
       "groupId": "openai",

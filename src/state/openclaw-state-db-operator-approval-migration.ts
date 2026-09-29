@@ -4,6 +4,7 @@ import { SqliteSchemaMismatchError } from "../infra/sqlite-schema-issues.js";
 import { runSqliteImmediateTransactionSync } from "../infra/sqlite-transaction.js";
 import { tableExists } from "./openclaw-state-db-schema-helpers.js";
 import { OPENCLAW_STATE_SCHEMA_SQL } from "./openclaw-state-schema.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const COLUMNS = [
   "approval_id",
@@ -54,7 +55,7 @@ function hasCanonicalOperatorApprovalKinds(db: DatabaseSync): boolean {
 export function assertCanonicalOperatorApprovalKinds(db: DatabaseSync, pathname: string): void {
   if (!hasCanonicalOperatorApprovalKinds(db)) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw state database ${pathname} has a legacy operator approval schema; run openclaw doctor --fix to migrate it.`,
+      `${PRODUCT_NAME} state database ${pathname} has a legacy operator approval schema; run openclaw doctor --fix to migrate it.`,
     );
   }
 }
@@ -184,6 +185,6 @@ function repairOperatorApprovalKinds(db: DatabaseSync): boolean {
 
 export function repairOperatorApprovalSchema(db: DatabaseSync): string[] {
   return repairOperatorApprovalKinds(db)
-    ? ["Migrated shared state operator approvals → OpenClaw system changes"]
+    ? [`Migrated shared state operator approvals → ${PRODUCT_NAME} system changes`]
     : [];
 }

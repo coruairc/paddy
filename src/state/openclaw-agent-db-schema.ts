@@ -5,6 +5,7 @@ import {
   migrateMemoryIndexSourcesIdentity,
   migrateMemoryIndexStorage,
 } from "../../packages/memory-host-sdk/src/host/memory-schema.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { migrateSessionCostUsageRollupStorage } from "../infra/session-cost-usage-cache-migration.js";
 import {
   repairCanonicalSqliteIndexes,
@@ -334,7 +335,7 @@ function ensureAgentSchema(
       }
       if (previousVersion > targetVersion) {
         throw new Error(
-          `OpenClaw agent database ${pathname} uses schema version ${previousVersion}; expected at most ${targetVersion} for this migration.`,
+          `${PRODUCT_NAME} agent database ${pathname} uses schema version ${previousVersion}; expected at most ${targetVersion} for this migration.`,
         );
       }
       const isEmptyDatabase =

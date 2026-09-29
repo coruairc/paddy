@@ -2,6 +2,7 @@
 import { getRuntimeConfig } from "../config/config.js";
 import type { PluginRecord } from "../plugins/registry.js";
 import { defaultRuntime, writeRuntimeJson, type RuntimeEnv } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { quietPluginJsonLogger } from "./plugins-json-logger.js";
 
 /** Options accepted by the plugin list command. */
@@ -82,8 +83,8 @@ export async function runPluginsListCommand(
             cfg.plugins?.enabled === false
               ? "No enabled plugins found. Plugins are globally disabled."
               : "No enabled plugins found."
-          } Run ${formatCliCommand("openclaw plugins list")} to inspect installed plugins.`
-        : `No plugins found. Run ${formatCliCommand("openclaw plugins install <plugin>")} to add one, or ${formatCliCommand("openclaw plugins list --json")} to inspect raw discovery state.`;
+          } Run ${formatCliCommand(`${CLI_NAME} plugins list`)} to inspect installed plugins.`
+        : `No plugins found. Run ${formatCliCommand(`${CLI_NAME} plugins install <plugin>`)} to add one, or ${formatCliCommand(`${CLI_NAME} plugins list --json`)} to inspect raw discovery state.`;
     runtime.log(theme.muted(message));
     return;
   }

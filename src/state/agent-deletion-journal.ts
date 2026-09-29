@@ -2,6 +2,7 @@ import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import type { Selectable } from "kysely";
 import { normalizeAgentDirRegistryPath } from "../agents/agent-dir-registry.js";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   executeSqliteQuerySync,
   executeSqliteQueryTakeFirstSync,
@@ -81,7 +82,7 @@ function assertAgentDeletionIdentityClaimAllowed(
 ): void {
   if (deletedAgentId && normalizeAgentId(claimAgentId) === normalizeAgentId(deletedAgentId)) {
     throw new Error(
-      `OpenClaw agent database is unavailable while agent ${normalizeAgentId(deletedAgentId)} is deleted.`,
+      `${PRODUCT_NAME} agent database is unavailable while agent ${normalizeAgentId(deletedAgentId)} is deleted.`,
     );
   }
 }
@@ -254,7 +255,7 @@ export function assertAgentDeletionPathFence(
       );
       if (blockedPath) {
         throw new Error(
-          `OpenClaw agent database ${blockedPath} is unavailable while agent ${row.agent_id} deletion owns ${fence.path}.`,
+          `${PRODUCT_NAME} agent database ${blockedPath} is unavailable while agent ${row.agent_id} deletion owns ${fence.path}.`,
         );
       }
     }

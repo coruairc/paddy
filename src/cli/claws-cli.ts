@@ -1,6 +1,7 @@
 // Commander registration for experimental Claws inspection and add previews.
 import type { Command } from "commander";
 import { isExperimentalClawsEnabled } from "../claws/experimental.js";
+import { PRODUCT_NAME } from "./cli-name.js";
 import { collectOption } from "./program/helpers.js";
 import { applyParentDefaultHelpAction } from "./program/parent-default-help.js";
 
@@ -37,7 +38,7 @@ export function registerClawsCli(program: Command) {
   if (!isExperimentalClawsEnabled()) {
     return;
   }
-  const claws = program.command("claws").description("Manage experimental OpenClaw Claws");
+  const claws = program.command("claws").description(`Manage experimental ${PRODUCT_NAME} Claws`);
 
   claws
     .command("create")

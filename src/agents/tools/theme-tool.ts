@@ -6,6 +6,7 @@ import {
   type ThemesMutationResult,
 } from "../../../packages/gateway-protocol/src/schema/themes.js";
 import { normalizeThemeDefinition } from "../../../packages/gateway-protocol/src/theme.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { AnyAgentTool } from "./common.js";
 import { asToolParamsRecord, jsonResult, readToolStringParam, ToolInputError } from "./common.js";
 import { withGatewayPersonalToolUser } from "./gateway-caller-context.js";
@@ -87,7 +88,7 @@ export function createThemeTool(): AnyAgentTool {
     label: "Theme",
     name: "theme",
     description:
-      "Read and change the requesting user's OpenClaw appearance. list includes available built-in, plugin, and personal themes with descriptions and current selection. get inspects the current theme or an id, including its editable definition when available. set selects an id and/or mode; null clears that profile override. import saves a custom definition under user/<id>; apply:true also activates it in the same call. Each supplied light/dark palette requires all listed colors; use hex colors and optional font-sans/font-mono. Plugin themes follow plugin hot reload without a Gateway restart. Set/import return the saved result, so no extra get is needed. Requires a trusted requesting profile for personal changes; no connected browser is required. Saved does not confirm browser rendering.",
+      `Read and change the requesting user's ${PRODUCT_NAME} appearance. list includes available built-in, plugin, and personal themes with descriptions and current selection. get inspects the current theme or an id, including its editable definition when available. set selects an id and/or mode; null clears that profile override. import saves a custom definition under user/<id>; apply:true also activates it in the same call. Each supplied light/dark palette requires all listed colors; use hex colors and optional font-sans/font-mono. Plugin themes follow plugin hot reload without a Gateway restart. Set/import return the saved result, so no extra get is needed. Requires a trusted requesting profile for personal changes; no connected browser is required. Saved does not confirm browser rendering.`,
     parameters: ThemeToolSchema,
     execute: async (_toolCallId, rawArgs, signal) => {
       const params = asToolParamsRecord(rawArgs);

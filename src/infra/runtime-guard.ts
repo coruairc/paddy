@@ -16,6 +16,7 @@ import {
   parseNodeReleaseVersion,
   type NodeReleaseVersion,
 } from "../../node-version.mjs";
+import { PRODUCT_NAME } from "../brand.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { ensureSqliteLibrarySelected } from "./bun-sqlite-library.js";
 import { isSqliteWalResetSafeVersion } from "./sqlite-runtime-version.js";
@@ -252,7 +253,7 @@ export async function assertSupportedRuntime(
         "openclaw requires Node >=24.16.0 <25, or >=26.1.0.";
   const retryHint =
     details.kind === "bun"
-      ? "Upgrade Bun or run OpenClaw with a supported Node release."
+      ? `Upgrade Bun or run ${PRODUCT_NAME} with a supported Node release.`
       : "Upgrade Node and re-run openclaw.";
 
   runtime.error(

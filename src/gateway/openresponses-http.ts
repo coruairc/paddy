@@ -581,7 +581,7 @@ export async function handleOpenResponsesHttpRequest(
         output.push(
           createAssistantOutputItem({
             id: outputItemId,
-            text: assistantText || "No response from OpenClaw.",
+            text: assistantText || `No response from Paddy.`,
             phase: toolCalls ? "commentary" : "final_answer",
             status,
           }),
@@ -683,7 +683,7 @@ export async function handleOpenResponsesHttpRequest(
         pending: pendingAssistantText,
         resultText: finalResultText,
         streamedText: streamedAssistantText.text,
-        fallbackText: finalToolCalls ? "" : "No response from OpenClaw.",
+        fallbackText: finalToolCalls ? "" : `No response from Paddy.`,
       });
       if (!finalText.startsWith(streamedAssistantText.text)) {
         finalizeUnrepresentableAssistantReplacement();

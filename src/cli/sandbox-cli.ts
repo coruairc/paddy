@@ -4,35 +4,39 @@ import { theme } from "../../packages/terminal-core/src/theme.js";
 import type { sandboxExplainCommand } from "../commands/sandbox-explain.js";
 import type { sandboxListCommand, sandboxRecreateCommand } from "../commands/sandbox.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { runCommandWithRuntime } from "./cli-utils.js";
 import { formatDocsHelp, formatHelpExamples } from "./help-format.js";
 
 const SANDBOX_EXAMPLES = {
   main: [
-    ["openclaw sandbox list", "List all sandbox containers."],
-    ["openclaw sandbox list --browser", "List only browser containers."],
-    ["openclaw sandbox recreate --all", "Recreate all containers."],
-    ["openclaw sandbox recreate --session main", "Recreate a specific session."],
-    ["openclaw sandbox recreate --agent mybot", "Recreate agent containers."],
-    ["openclaw sandbox explain", "Explain effective sandbox config."],
+    [`${CLI_NAME} sandbox list`, "List all sandbox containers."],
+    [`${CLI_NAME} sandbox list --browser`, "List only browser containers."],
+    [`${CLI_NAME} sandbox recreate --all`, "Recreate all containers."],
+    [`${CLI_NAME} sandbox recreate --session main`, "Recreate a specific session."],
+    [`${CLI_NAME} sandbox recreate --agent mybot`, "Recreate agent containers."],
+    [`${CLI_NAME} sandbox explain`, "Explain effective sandbox config."],
   ],
   list: [
-    ["openclaw sandbox list", "List all sandbox containers."],
-    ["openclaw sandbox list --browser", "List only browser containers."],
-    ["openclaw sandbox list --json", "JSON output."],
+    [`${CLI_NAME} sandbox list`, "List all sandbox containers."],
+    [`${CLI_NAME} sandbox list --browser`, "List only browser containers."],
+    [`${CLI_NAME} sandbox list --json`, "JSON output."],
   ],
   recreate: [
-    ["openclaw sandbox recreate --all", "Recreate all containers."],
-    ["openclaw sandbox recreate --session main", "Recreate a specific session."],
-    ["openclaw sandbox recreate --agent mybot", "Recreate a specific agent (includes sub-agents)."],
-    ["openclaw sandbox recreate --browser --all", "Recreate only browser containers."],
-    ["openclaw sandbox recreate --all --force", "Skip confirmation."],
+    [`${CLI_NAME} sandbox recreate --all`, "Recreate all containers."],
+    [`${CLI_NAME} sandbox recreate --session main`, "Recreate a specific session."],
+    [
+      `${CLI_NAME} sandbox recreate --agent mybot`,
+      "Recreate a specific agent (includes sub-agents).",
+    ],
+    [`${CLI_NAME} sandbox recreate --browser --all`, "Recreate only browser containers."],
+    [`${CLI_NAME} sandbox recreate --all --force`, "Skip confirmation."],
   ],
   explain: [
-    ["openclaw sandbox explain", "Show effective sandbox config."],
-    ["openclaw sandbox explain --session agent:main:main", "Explain a specific session."],
-    ["openclaw sandbox explain --agent work", "Explain an agent sandbox."],
-    ["openclaw sandbox explain --json", "JSON output."],
+    [`${CLI_NAME} sandbox explain`, "Show effective sandbox config."],
+    [`${CLI_NAME} sandbox explain --session agent:main:main`, "Explain a specific session."],
+    [`${CLI_NAME} sandbox explain --agent work`, "Explain an agent sandbox."],
+    [`${CLI_NAME} sandbox explain --json`, "JSON output."],
   ],
 } as const;
 

@@ -2172,7 +2172,7 @@ describe("native hook relay registry", () => {
         hookEventName: "PreToolUse",
         permissionDecision: "deny",
         permissionDecisionReason:
-          "OpenClaw tool policy rewrote Codex app-server approval params; refusing original request.",
+          "Paddy tool policy rewrote Codex app-server approval params; refusing original request.",
       },
     });
     expect(beforeToolCall).toHaveBeenCalledTimes(1);
@@ -2205,7 +2205,7 @@ describe("native hook relay registry", () => {
         hookEventName: "PreToolUse",
         permissionDecision: "deny",
         permissionDecisionReason:
-          "OpenClaw tool policy rewrote Codex app-server approval params; refusing original request.",
+          "Paddy tool policy rewrote Codex app-server approval params; refusing original request.",
       },
     });
     expect(beforeToolCall).toHaveBeenCalledTimes(1);

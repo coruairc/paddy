@@ -420,7 +420,7 @@ export async function runCodexAppServerSideQuestion(
     });
     if (!environment) {
       throw new Error(
-        "Codex app-server did not register an OpenClaw sandbox exec-server environment.",
+        "Codex app-server did not register a Paddy sandbox exec-server environment.",
       );
     }
     sandboxEnvironment = environment;
@@ -499,7 +499,7 @@ export async function runCodexAppServerSideQuestion(
         return approvalResult.kind === "handled"
           ? approvalResult.response
           : createCodexElicitationResponse("decline", null, {
-              message: "OpenClaw Codex side questions do not support interactive MCP input.",
+              message: "Paddy Codex side questions do not support interactive MCP input.",
             });
       }
       if (request.method === "item/tool/requestUserInput") {

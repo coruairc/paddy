@@ -89,12 +89,12 @@ const SETUP_ACTIONS = {
   "configure-owner-handles": {
     kind: "command",
     label: "Configure ownerHandles",
-    command: "openclaw configure",
+    command: "paddy configure",
   },
   "restart-gateway": {
     kind: "command",
-    label: "Stop the stale gateway process, then restart OpenClaw",
-    command: "openclaw gateway restart",
+    label: "Stop the stale gateway process, then restart Paddy",
+    command: "paddy gateway restart",
   },
   "wait-for-helper": {
     kind: "automatic",
@@ -102,7 +102,7 @@ const SETUP_ACTIONS = {
   },
   "restart-call-apps": {
     kind: "manual-test",
-    label: "Quit and reopen FaceTime and Phone, then let OpenClaw reinject the helper",
+    label: "Quit and reopen FaceTime and Phone, then let Paddy reinject the helper",
   },
   "install-driver": {
     kind: "gateway",
@@ -116,13 +116,13 @@ const SETUP_ACTIONS = {
   },
   "grant-system-audio": {
     kind: "system-settings",
-    label: "Allow OpenClaw to capture FaceTime app audio",
+    label: "Allow Paddy to capture FaceTime app audio",
     settingsPath: "System Settings > Privacy & Security > Screen & System Audio Recording",
   },
   "configure-realtime-provider": {
     kind: "command",
     label: "Configure authentication for a registered realtime voice provider",
-    command: "openclaw configure",
+    command: "paddy configure",
   },
   "verify-focus": {
     kind: "system-settings",
@@ -443,7 +443,7 @@ export async function runFaceTimeSetup(params: SetupParams): Promise<FaceTimeSet
               ? `Automatic retry scheduled after: ${target.lastError}`
               : target.lastError
                 ? target.lastError
-                : "OpenClaw is launching the app and injecting the helper",
+                : "Paddy is launching the app and injecting the helper",
         ...(status === "repairing"
           ? { actionId: "wait-for-helper" }
           : status === "action-required"

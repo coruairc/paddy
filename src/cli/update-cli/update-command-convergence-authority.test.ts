@@ -288,7 +288,7 @@ await fs.writeFile(process.env.OPENCLAW_UPDATE_POST_CORE_RESULT_PATH, ${JSON.str
       mocks.runExec.mockImplementation(async (_command, args: string[]) => {
         if (args.includes("--help")) {
           events.push("target-declined-consent");
-          return { stdout: "Usage: openclaw update [--yes]", stderr: "" };
+          return { stdout: "Usage: paddy update [--yes]", stderr: "" };
         }
         return {
           stdout: args.includes("--lint")
@@ -462,7 +462,7 @@ await fs.writeFile(process.env.OPENCLAW_UPDATE_POST_CORE_RESULT_PATH, ${JSON.str
     let currentOwner: object | undefined = originalOwner;
     const stale = new Error("original updater is no longer current");
     const maintenanceRefusal = new DoctorMaintenanceRefusalError(
-      "Doctor could not enter maintenance; run openclaw doctor --fix after the current owner stops.",
+      "Doctor could not enter maintenance; run paddy doctor --fix after the current owner stops.",
       boundary === "maintenance-at-risk"
         ? { kind: "data-at-risk", reason: "incomplete-migration" }
         : { kind: "deferred", reason: "coordinator-contention" },

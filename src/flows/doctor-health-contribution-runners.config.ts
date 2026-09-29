@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import nodePath from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { shouldSkipLegacyUpdateDoctorConfigWrite } from "../commands/doctor/shared/update-phase.js";
 import { ConfigWritePostCommitError } from "../config/io.write-errors.js";
 import { resolveIsConfigReadOnly, resolveIsNixMode } from "../config/paths.js";
@@ -539,7 +540,7 @@ export async function collectWriteConfigHealthFindings(
       checkId: "core/doctor/write-config",
       severity: "warning",
       message: isNixMode
-        ? "Doctor config writes are disabled because OpenClaw is running in Nix mode."
+        ? `Doctor config writes are disabled because ${PRODUCT_NAME} is running in Nix mode.`
         : "Doctor config writes are disabled because config is externally managed.",
       ...(configPath ? { path: configPath } : {}),
       requirement: "mutable-config-write-path",

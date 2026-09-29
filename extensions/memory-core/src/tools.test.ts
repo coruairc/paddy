@@ -255,9 +255,9 @@ describe("memory_search unavailable payloads", () => {
     expectUnavailableMemorySearchDetails(result.details, {
       error,
       warning:
-        "Memory search is unavailable because this OpenClaw Node runtime does not provide SQLite support.",
+        "Memory search is unavailable because this Paddy Node runtime does not provide SQLite support.",
       action:
-        "Run OpenClaw with a Node runtime that includes node:sqlite, then retry memory_search.",
+        "Run Paddy with a Node runtime that includes node:sqlite, then retry memory_search.",
     });
   });
 
@@ -339,7 +339,7 @@ describe("memory_search unavailable payloads", () => {
         timeoutMs: 30_000,
         warning: "Memory search did not finish within its time limit.",
         action:
-          "Retry memory_search after a short wait: a memory-corpus timeout pauses retries for up to a minute. If memory-corpus timeouts persist, run: openclaw memory status --deep --agent main, and rebuild with openclaw memory index --force --agent main only if it reports the index dirty or incomplete",
+          "Retry memory_search after a short wait: a memory-corpus timeout pauses retries for up to a minute. If memory-corpus timeouts persist, run: paddy memory status --deep --agent main, and rebuild with paddy memory index --force --agent main only if it reports the index dirty or incomplete",
       });
       // The deadline must abort the orphaned search, not just race past it.
       expect(searchSignal?.aborted).toBe(true);
@@ -349,7 +349,7 @@ describe("memory_search unavailable payloads", () => {
         timeoutMs: 30_000,
         warning: "Memory search did not finish within its time limit.",
         action:
-          "Retry memory_search after a short wait: a memory-corpus timeout pauses retries for up to a minute. If memory-corpus timeouts persist, run: openclaw memory status --deep --agent main, and rebuild with openclaw memory index --force --agent main only if it reports the index dirty or incomplete",
+          "Retry memory_search after a short wait: a memory-corpus timeout pauses retries for up to a minute. If memory-corpus timeouts persist, run: paddy memory status --deep --agent main, and rebuild with paddy memory index --force --agent main only if it reports the index dirty or incomplete",
       });
       expect(searchCalls).toBe(1);
       setMemorySearchImpl(async () => {
@@ -394,7 +394,7 @@ describe("memory_search unavailable payloads", () => {
         timeoutMs: 30_000,
         warning: "Memory search did not finish within its time limit.",
         action:
-          "Retry memory_search after a short wait: a memory-corpus timeout pauses retries for up to a minute. If memory-corpus timeouts persist, run: openclaw memory status --deep --agent main, and rebuild with openclaw memory index --force --agent main only if it reports the index dirty or incomplete",
+          "Retry memory_search after a short wait: a memory-corpus timeout pauses retries for up to a minute. If memory-corpus timeouts persist, run: paddy memory status --deep --agent main, and rebuild with paddy memory index --force --agent main only if it reports the index dirty or incomplete",
       });
     } finally {
       vi.useRealTimers();

@@ -1,5 +1,6 @@
 import { resolveAgentEntry } from "../agents/agent-scope-config.js";
 // OpenClaw rescue policy gates remote writes by owner, DM, sandbox, and YOLO posture.
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { resolveExecModePolicy } from "../infra/exec-approvals.js";
 
@@ -91,28 +92,28 @@ export function resolveSystemAgentRescuePolicy(
       ...denied,
       reason: "sandbox-active",
       message:
-        "OpenClaw rescue is blocked because OpenClaw sandboxing is active. Fix the install locally or disable sandboxing before using remote rescue.",
+        `${PRODUCT_NAME} rescue is blocked because ${PRODUCT_NAME} sandboxing is active. Fix the install locally or disable sandboxing before using remote rescue.`,
     };
   }
   if (!enabled) {
     return {
       ...denied,
       reason: "disabled",
-      message: "OpenClaw rescue requires YOLO host posture with sandboxing off.",
+      message: `${PRODUCT_NAME} rescue requires YOLO host posture with sandboxing off.`,
     };
   }
   if (!input.senderIsOwner) {
     return {
       ...denied,
       reason: "not-owner",
-      message: "OpenClaw rescue only accepts commands from an OpenClaw owner.",
+      message: `${PRODUCT_NAME} rescue only accepts commands from a ${PRODUCT_NAME} owner.`,
     };
   }
   if (ownerDmOnly && !input.isDirectMessage) {
     return {
       ...denied,
       reason: "not-direct-message",
-      message: "OpenClaw rescue is restricted to owner DMs by default.",
+      message: `${PRODUCT_NAME} rescue is restricted to owner DMs by default.`,
     };
   }
   return {

@@ -1,5 +1,6 @@
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { getAcpRuntimeBackend } from "../../../acp/runtime/registry.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import { normalizeAgentIdStrict, normalizeOptionalAgentId } from "../../../routing/session-key.js";
 import { listAgentEntries, resolveAgentEntry } from "../../agent-scope-config.js";
@@ -54,8 +55,8 @@ export function resolveTargetAcpAgentId(params: {
       return {
         ok: false,
         error:
-          `agentId "${requested}" is an OpenClaw config agent, not an ACP harness. ` +
-          'Use runtime="subagent" or omit runtime for OpenClaw config agents. ' +
+          `agentId "${requested}" is a ${PRODUCT_NAME} config agent, not an ACP harness. ` +
+          `Use runtime="subagent" or omit runtime for ${PRODUCT_NAME} config agents. ` +
           'Use runtime="acp" only with external ACP harness ids such as codex, claude, droid, gemini, or opencode, or configure agents.entries.*.runtime.type="acp" with runtime.acp.agent.',
       };
     }

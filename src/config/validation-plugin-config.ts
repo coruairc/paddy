@@ -1,5 +1,6 @@
 import path from "node:path";
 import { sanitizeForLog } from "../../packages/terminal-core/src/ansi.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { isPathInside } from "../infra/path-guards.js";
 import {
   normalizePluginsConfig,
@@ -62,7 +63,7 @@ export function resolveDeferredChannelConfigWarning(params: {
 
 function formatRemovedPluginConfigWarning(pluginId: string): string {
   if (pluginId === "skill-workshop") {
-    return "plugin removed: skill-workshop (stale plugin config ignored; Skill Workshop is built into OpenClaw skills now. Use skills.workshop settings and openclaw skills workshop commands, then remove this plugins config entry)";
+    return `plugin removed: skill-workshop (stale plugin config ignored; Skill Workshop is built into ${PRODUCT_NAME} skills now. Use skills.workshop settings and openclaw skills workshop commands, then remove this plugins config entry)`;
   }
   return `plugin removed: ${pluginId} (stale config entry ignored; remove it from plugins config)`;
 }

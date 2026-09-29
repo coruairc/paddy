@@ -295,7 +295,7 @@ describe("update-cli", () => {
           }),
         ],
       });
-      expect(JSON.stringify(lastWriteJsonCall())).toContain("openclaw update status");
+      expect(JSON.stringify(lastWriteJsonCall())).toContain("paddy update status");
     },
   );
 

@@ -786,7 +786,7 @@ describe("codex command", () => {
         expect(result.text).toContain(
           rejectOldRelease
             ? "previous manual owner unsubscribe failed"
-            : "Attached this OpenClaw session",
+            : "Attached this Paddy session",
         );
         expect(operations).toEqual(
           rejectOldRelease
@@ -848,7 +848,7 @@ describe("codex command", () => {
       await expect(
         runCommand("resume thread-known-resume", { codexControlRequest }),
       ).resolves.toMatchObject({
-        text: "Attached this OpenClaw session to Codex thread thread-known-resume.",
+        text: "Attached this Paddy session to Codex thread thread-known-resume.",
       });
       expect(testCodexAppServerBindingStore.read(identity)).toMatchObject({
         dynamicToolsFingerprint: "known-dynamic-tools",
@@ -1024,7 +1024,7 @@ describe("codex command", () => {
       expect(order).toEqual(["resume-start"]);
       resumeResponse.resolve(createThreadResumeResponse({ threadId: "thread-123" }));
       await expect(command).resolves.toEqual({
-        text: "Attached this OpenClaw session to Codex thread thread-123. The next turn will validate its tools and apply this session's configuration before continuing.",
+        text: "Attached this Paddy session to Codex thread thread-123. The next turn will validate its tools and apply this session's configuration before continuing.",
       });
       await competingOwner;
       expect(order).toEqual(["resume-start", "resume-done", "competing-owner"]);
@@ -1051,7 +1051,7 @@ describe("codex command", () => {
 
     const result = await runCommand("resume thread-owned", { codexControlRequest });
 
-    expect(result.text).toContain("owned by another OpenClaw session");
+    expect(result.text).toContain("owned by another Paddy session");
     expect(codexControlRequest).not.toHaveBeenCalled();
     expect(testCodexAppServerBindingStore.read(otherIdentity)).toMatchObject({
       threadId: "thread-owned",
@@ -1090,7 +1090,7 @@ describe("codex command", () => {
     );
 
     expect(result.text).toBe(
-      "Attached this OpenClaw session to Codex thread thread-new. The next turn will validate its tools and apply this session's configuration before continuing.",
+      "Attached this Paddy session to Codex thread thread-new. The next turn will validate its tools and apply this session's configuration before continuing.",
     );
     expect(codexControlRequest).toHaveBeenCalledTimes(1);
     expect(
@@ -1356,7 +1356,7 @@ describe("codex command", () => {
     expect(result.text).toContain(
       "Codex thread binding changed while attaching the resumed thread",
     );
-    expect(result.text).not.toContain("Attached this OpenClaw session");
+    expect(result.text).not.toContain("Attached this Paddy session");
   });
 
   it("normalizes resumed global-session bindings against the host agent auth store", async () => {
@@ -1478,7 +1478,7 @@ describe("codex command", () => {
     expect(result.text).toContain(
       "Codex-native /codex " +
         args.split(/\s+/u)[0] +
-        " is unavailable because OpenClaw sandboxing is active for this session.",
+        " is unavailable because Paddy sandboxing is active for this session.",
     );
     expect(codexControlRequest).not.toHaveBeenCalled();
     expect(steerCodexConversationTurn).not.toHaveBeenCalled();
@@ -1514,7 +1514,7 @@ describe("codex command", () => {
     expect(result.text).toContain(
       "Codex-native /codex " +
         args.split(/\s+/u)[0] +
-        " is unavailable because OpenClaw exec host=node is active for this session.",
+        " is unavailable because Paddy exec host=node is active for this session.",
     );
     expect(codexControlRequest).not.toHaveBeenCalled();
     expect(steerCodexConversationTurn).not.toHaveBeenCalled();
@@ -1534,7 +1534,7 @@ describe("codex command", () => {
     );
 
     expect(result.text).toContain(
-      "Codex-native /codex bind is unavailable because OpenClaw exec host=node is active for this session.",
+      "Codex-native /codex bind is unavailable because Paddy exec host=node is active for this session.",
     );
   });
 
@@ -2727,7 +2727,7 @@ describe("codex command", () => {
         },
       ),
     ).resolves.toEqual({
-      text: "No Codex thread is attached to this OpenClaw session yet.",
+      text: "No Codex thread is attached to this Paddy session yet.",
     });
     expect(compactCurrent).not.toHaveBeenCalled();
   });
@@ -2770,7 +2770,7 @@ describe("codex command", () => {
     );
 
     expect(request.text).toContain("Codex runtime thread detected.");
-    expect(request.text).toContain("OpenClaw session key: `global`");
+    expect(request.text).toContain("Paddy session key: `global`");
     expect(request.text).toContain("Codex thread id: `thread-global`");
   });
 
@@ -3146,7 +3146,7 @@ describe("codex command", () => {
         "Codex diagnostics sent to OpenAI servers:",
         "Session 1",
         "Channel: test",
-        "OpenClaw session id: `session-1`",
+        "Paddy session id: `session-1`",
         "Codex thread id: thread-123'\uff40???; echo bad",
         "Inspect locally: run codex resume and paste the thread id shown above",
         "Included Codex logs and spawned Codex subthreads when available.",
@@ -3158,7 +3158,7 @@ describe("codex command", () => {
   it("explains diagnostics when no Codex thread is attached", async () => {
     await expect(runCommand("diagnostics")).resolves.toEqual({
       text: [
-        "No Codex thread is attached to this OpenClaw session yet.",
+        "No Codex thread is attached to this Paddy session yet.",
         "Use /codex threads to find a thread, then /codex resume <thread-id> before sending diagnostics.",
       ].join("\n"),
     });

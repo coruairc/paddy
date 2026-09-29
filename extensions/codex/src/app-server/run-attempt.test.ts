@@ -1228,7 +1228,7 @@ describe("runCodexAppServerAttempt", () => {
     ]);
     expect(firstResponse).toMatchObject({
       success: false,
-      contentItems: [{ type: "inputText", text: "Unknown OpenClaw tool: python" }],
+      contentItems: [{ type: "inputText", text: "Unknown Paddy tool: python" }],
     });
     expect(replayedResponse).toEqual(firstResponse);
     expect((await readTranscriptMessagesByIdentity(params)).map((message) => message.role)).toEqual(
@@ -1255,7 +1255,7 @@ describe("runCodexAppServerAttempt", () => {
         toolCallId: "call-1",
         isError: true,
         result: {
-          content: [{ type: "text", text: "Unknown OpenClaw tool: python" }],
+          content: [{ type: "text", text: "Unknown Paddy tool: python" }],
         },
       },
     });
@@ -1303,7 +1303,7 @@ describe("runCodexAppServerAttempt", () => {
         input?: Array<{ text?: string }>;
       };
       const inputText = turnStartParams.input?.[0]?.text ?? "";
-      expect(inputText).toContain("OpenClaw delivery metadata:");
+      expect(inputText).toContain("Paddy delivery metadata:");
       expect(inputText).toContain(
         "This delivery metadata is runtime routing guidance, not the user's request.",
       );
@@ -1688,10 +1688,10 @@ describe("runCodexAppServerAttempt", () => {
     expect(registeredToolNames).toContain("message");
     expect(registeredToolNames).toContain("heartbeat_respond");
     expect(normalInstructions).not.toContain(
-      "Deferred searchable OpenClaw dynamic tools available: heartbeat_respond",
+      "Deferred searchable Paddy dynamic tools available: heartbeat_respond",
     );
     expect(heartbeatInstructions).toContain(
-      "Deferred searchable OpenClaw dynamic tools available: heartbeat_respond.",
+      "Deferred searchable Paddy dynamic tools available: heartbeat_respond.",
     );
     for (const bridge of [normalBridge, heartbeatBridge, nextNormalBridge]) {
       const heartbeat = flattenSpecsWithNamespace(bridge.specs).find(
@@ -2651,7 +2651,7 @@ describe("runCodexAppServerAttempt", () => {
         (turnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]?.text ??
         "";
       expect(harness.requests.map((request) => request.method)).toContain("thread/start");
-      expect(inputText).toContain("OpenClaw assembled context for this turn:");
+      expect(inputText).toContain("Paddy assembled context for this turn:");
       if (boundary !== "none") {
         expect(inputText).toContain(`[${summaryRole}]\n${summary}`);
         expect(inputText).not.toContain("discarded seed");
@@ -2700,7 +2700,7 @@ describe("runCodexAppServerAttempt", () => {
       (turnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]?.text ??
       "";
     expect(inputText.length).toBeLessThanOrEqual(1 << 20);
-    expect(inputText).toContain("OpenClaw assembled context for this turn:");
+    expect(inputText).toContain("Paddy assembled context for this turn:");
     expect(inputText).toContain("recent continuity anchor: resume the database migration");
     expect(inputText).toContain("Current user request:");
     expect(inputText).toContain("current prompt survives");
@@ -2895,7 +2895,7 @@ describe("runCodexAppServerAttempt", () => {
     const inputText =
       (turnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]?.text ??
       "";
-    expect(inputText).toContain("OpenClaw assembled context for this turn:");
+    expect(inputText).toContain("Paddy assembled context for this turn:");
     expect(inputText).not.toContain("old native-owned context");
     expect(inputText).toContain("we were discussing the Sonnet leak screenshots");
     expect(inputText).toContain("David Ondrej was mentioned in that prior thread");
@@ -3067,7 +3067,7 @@ describe("runCodexAppServerAttempt", () => {
     const inputText =
       (turnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]?.text ??
       "";
-    expect(inputText).not.toContain("OpenClaw assembled context for this turn:");
+    expect(inputText).not.toContain("Paddy assembled context for this turn:");
     expect(inputText).not.toContain("codex mirrored user echo");
     expect(inputText).not.toContain("codex mirrored assistant echo");
     expect(inputText).toContain("continue from the real user message");
@@ -3106,7 +3106,7 @@ describe("runCodexAppServerAttempt", () => {
     const firstInputText =
       (firstTurnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]
         ?.text ?? "";
-    expect(firstInputText).toContain("OpenClaw assembled context for this turn:");
+    expect(firstInputText).toContain("Paddy assembled context for this turn:");
     expect(firstInputText).toContain("we were discussing the Sonnet leak screenshots");
     expect(firstInputText).toContain("is the previous message trustworthy?");
     firstHarness.close();
@@ -3123,7 +3123,7 @@ describe("runCodexAppServerAttempt", () => {
     const secondInputText =
       (secondTurnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]
         ?.text ?? "";
-    expect(secondInputText).not.toContain("OpenClaw assembled context for this turn:");
+    expect(secondInputText).not.toContain("Paddy assembled context for this turn:");
     expect(secondInputText).not.toContain("we were discussing the Sonnet leak screenshots");
     expect(secondInputText).not.toContain("is the previous message trustworthy?");
     expect(secondInputText).toContain("continue from there");
@@ -3169,7 +3169,7 @@ describe("runCodexAppServerAttempt", () => {
     expect(threadDeveloperInstructions).not.toContain(agentsGuidance);
     expect(collaborationInstructions).toContain("# Collaboration Mode: Default");
     expect(collaborationInstructions).toContain("request_user_input availability");
-    expect(collaborationInstructions).toContain("OpenClaw Agent Soul");
+    expect(collaborationInstructions).toContain("Paddy Agent Soul");
     expect(collaborationInstructions).toContain("<AGENT_SOUL>");
     expect(collaborationInstructions).toContain("</AGENT_SOUL>");
     expect(collaborationInstructions).toContain(soulGuidance);
@@ -3177,7 +3177,7 @@ describe("runCodexAppServerAttempt", () => {
     expect(collaborationInstructions).toContain(userProfile);
     expect(collaborationInstructions).toContain("## Memory Recall");
     expect(collaborationInstructions).toContain("MEMORY.md + memory/*.md");
-    expect(collaborationInstructions).toContain("OpenClaw Workspace Memory");
+    expect(collaborationInstructions).toContain("Paddy Workspace Memory");
     expect(collaborationInstructions).toContain(
       "MEMORY.md exists in the active agent workspace as a memory file, not an instruction file",
     );

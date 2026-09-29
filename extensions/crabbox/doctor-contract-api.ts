@@ -187,7 +187,7 @@ export const stateMigrations: PluginDoctorStateMigration[] = [
                 : []),
               ...leases.map(
                 (lease) =>
-                  `- Legacy Crabbox lease ${lease.leaseId} requires provider cleanup acknowledgement: openclaw crabbox warm-images --recover ${lease.selector} --acknowledge-provider-cleanup`,
+                  `- Legacy Crabbox lease ${lease.leaseId} requires provider cleanup acknowledgement: paddy crabbox warm-images --recover ${lease.selector} --acknowledge-provider-cleanup`,
               ),
             ],
           }
@@ -279,7 +279,7 @@ export const stateMigrations: PluginDoctorStateMigration[] = [
         );
         for (const lease of leases) {
           warnings.push(
-            `Resolve lease ${lease.leaseId} through its original Gateway or provider, stop the original Gateway/capture processes, and confirm provider cleanup before running: openclaw crabbox warm-images --recover ${lease.selector} --acknowledge-provider-cleanup. Then rerun openclaw doctor --fix. The row was not changed.`,
+            `Resolve lease ${lease.leaseId} through its original Gateway or provider, stop the original Gateway/capture processes, and confirm provider cleanup before running: paddy crabbox warm-images --recover ${lease.selector} --acknowledge-provider-cleanup. Then rerun paddy doctor --fix. The row was not changed.`,
           );
         }
       }

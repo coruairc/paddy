@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { lstatSync, realpathSync, statSync, type Stats } from "node:fs";
 import path from "node:path";
 import { safeParseJson } from "@openclaw/normalization-core/json-coercion";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliJsonFailure } from "../cli/failure-output.js";
 import { exitCliAfterOutput } from "../cli/one-shot-exit.js";
 import { resolveStateDir } from "../config/paths.js";
@@ -607,7 +608,7 @@ async function rehearseDeferredUpdateDoctorSchemaForParent(
   if (failure) {
     throw failure.error;
   }
-  const warning = `Validated schema repair on private copies for OpenClaw ${selected.updaterVersion}; live agent databases are unchanged. Repair is deferred to the fresh post-core updater.`;
+  const warning = `Validated schema repair on private copies for ${PRODUCT_NAME} ${selected.updaterVersion}; live agent databases are unchanged. Repair is deferred to the fresh post-core updater.`;
   const { UPDATE_POST_INSTALL_DOCTOR_RESULT_PATH_ENV, writeUpdatePostInstallDoctorResult } =
     await import("../infra/update-doctor-result.js");
   const resultPath = process.env[UPDATE_POST_INSTALL_DOCTOR_RESULT_PATH_ENV];

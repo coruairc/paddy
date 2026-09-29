@@ -69,7 +69,7 @@ export async function assertCodexArchiveDescendantsUnowned(params: {
       await params.assertDescendantIdle(descendantThreadId);
       if (await params.bindingStore.hasOtherThreadOwner(descendantThreadId)) {
         throw new Error(
-          "cannot archive a Codex thread while a spawned descendant is owned by an OpenClaw session",
+          "cannot archive a Codex thread while a spawned descendant is owned by a Paddy session",
         );
       }
     }

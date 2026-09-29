@@ -163,7 +163,7 @@ describe("owned completed update publication", () => {
       steps: [
         {
           name: "gateway verification",
-          command: "openclaw gateway status",
+          command: "paddy gateway status",
           cwd: root,
           durationMs: 1,
           exitCode: 0,

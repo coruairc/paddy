@@ -15,6 +15,7 @@ import {
   PAIRING_SETUP_BOOTSTRAP_PROFILE,
   VOICE_NODE_PAIRING_SETUP_BOOTSTRAP_PROFILE,
 } from "../shared/device-bootstrap-profile.js";
+import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 import { runCommandWithRuntime } from "./cli-utils.js";
 import { resolveCommandSecretRefsViaGateway } from "./command-secret-gateway.js";
 import { getQrRemoteCommandSecretTargetIds } from "./command-secret-targets.js";
@@ -229,7 +230,7 @@ export function registerQrCli(program: Command) {
 
         const lines: string[] = [
           theme.heading("Pairing QR"),
-          "Scan this with the OpenClaw mobile app (Onboarding -> Scan QR).",
+          `Scan this with the ${PRODUCT_NAME} mobile app (Onboarding -> Scan QR).`,
           "",
         ];
 
@@ -249,8 +250,8 @@ export function registerQrCli(program: Command) {
           `${theme.muted("Source:")} ${resolved.urlSource}`,
           "",
           "Approve after scan with:",
-          `  ${theme.command("openclaw devices list")}`,
-          `  ${theme.command("openclaw devices approve <requestId>")}`,
+          `  ${theme.command(`${CLI_NAME} devices list`)}`,
+          `  ${theme.command(`${CLI_NAME} devices approve <requestId>`)}`,
         );
 
         defaultRuntime.log(lines.join("\n"));

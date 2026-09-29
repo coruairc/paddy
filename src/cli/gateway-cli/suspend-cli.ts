@@ -5,6 +5,7 @@ import type {
 } from "../../../packages/gateway-protocol/src/index.js";
 import { colorize, isRich, theme } from "../../../packages/terminal-core/src/theme.js";
 import type { OutputRuntimeEnv } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import type { callGatewayFromCliWithTransport } from "../gateway-rpc.js";
 
@@ -100,7 +101,7 @@ export async function runGatewaySuspend(
         `${colorize(rich, theme.muted, "Expires:")} ${new Date(latest.expiresAtMs).toISOString()} (${latest.expiresAtMs} ms)`,
       );
       const port = options.rpcOpts.localPortOverride;
-      const command = `openclaw gateway resume ${latest.suspensionId}`;
+      const command = `${CLI_NAME} gateway resume ${latest.suspensionId}`;
       deps.runtime.log(
         `Resume with: ${formatCliCommand(port === undefined ? command : `${command} --port ${port}`)}`,
       );

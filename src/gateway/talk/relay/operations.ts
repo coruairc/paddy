@@ -53,6 +53,7 @@ import {
   type RelaySession,
 } from "./state.js";
 import { closeRelayVoiceSession, ensureRelayVoiceSession } from "./voice.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 
 export function adoptTalkRealtimeRelaySession(
   session: RelaySession,
@@ -285,7 +286,7 @@ export function submitTalkRealtimeRelayToolResult(params: {
   if (cancelledAgentCall) {
     const cancellationEpoch = session.toolResultEpoch;
     const providerResult = buildRealtimeVoiceAgentCancelProviderResult(
-      "OpenClaw cancelled this consult before completion. Do not restart it.",
+      `${PRODUCT_NAME} cancelled this consult before completion. Do not restart it.`,
     );
     const submitCancellation = () => {
       if (
@@ -633,7 +634,7 @@ export async function cancelTalkRealtimeRelayTurn(params: {
     session.harness.forcedConsults.markCancelled(handle);
     session.forcedTerminalProviderResults.set(handle.id, {
       result: buildRealtimeVoiceAgentCancelProviderResult(
-        "OpenClaw cancelled this consult before completion. Do not restart it.",
+        `${PRODUCT_NAME} cancelled this consult before completion. Do not restart it.`,
       ),
       options: suppressedToolResultOptions(session),
       turnId,

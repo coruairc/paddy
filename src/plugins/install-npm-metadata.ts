@@ -18,6 +18,7 @@ import {
   type PluginInstallLogger,
 } from "./install-types.js";
 import type { OpenClawPackageManifest } from "./manifest.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 export function isNpmPackageNotFoundMessage(error: string): boolean {
   const normalized = error.trim();
@@ -67,7 +68,7 @@ export async function resolveTrustedOfficialPrereleaseResolution(params: {
     }
     if (prereleaseVersion === params.resolvedPrereleaseVersion) {
       params.logger?.warn?.(
-        `Resolved ${params.spec.raw} to prerelease version ${params.resolvedPrereleaseVersion}; allowing it because this trusted official OpenClaw package has no stable npm versions yet.`,
+        `Resolved ${params.spec.raw} to prerelease version ${params.resolvedPrereleaseVersion}; allowing it because this trusted official ${PRODUCT_NAME} package has no stable npm versions yet.`,
       );
       return { kind: "allow-prerelease-only" };
     }
@@ -208,7 +209,7 @@ export async function resolveLatestCompatibleNpmResolution(params: {
     });
     if (!compatibilityError) {
       params.logger.warn?.(
-        `Resolved ${params.parsedSpec.raw} to ${params.currentResolution.resolvedSpec ?? currentVersion}, but that version is incompatible with this OpenClaw runtime; using newest compatible ${metadataResult.metadata.resolvedSpec ?? spec}.`,
+        `Resolved ${params.parsedSpec.raw} to ${params.currentResolution.resolvedSpec ?? currentVersion}, but that version is incompatible with this ${PRODUCT_NAME} runtime; using newest compatible ${metadataResult.metadata.resolvedSpec ?? spec}.`,
       );
       return metadataResult.metadata;
     }

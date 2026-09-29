@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../../../brand.js";
 import { buildRealtimeVoiceAgentCancelProviderResult } from "../../../talk/agent-run-control-shared.js";
 import type { RealtimeVoiceToolResultOptions } from "../../../talk/provider-types.js";
 import {
@@ -120,7 +121,7 @@ export function submitFinalProviderToolResult(params: {
       await params.session.bridge.submitToolResult(
         providerCallId,
         buildRealtimeVoiceAgentCancelProviderResult(
-          "OpenClaw cancelled this consult before completion. Do not restart it.",
+          `${PRODUCT_NAME} cancelled this consult before completion. Do not restart it.`,
         ),
         suppressedToolResultOptions(params.session),
       );

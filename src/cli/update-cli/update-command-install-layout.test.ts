@@ -164,7 +164,7 @@ it("reports an untouched fresh container profile", async () => {
 it("renders the container non-outcome in terminal output", async () => {
   vi.spyOn(container, "isContainerEnvironment").mockReturnValue(true);
   await expect(updateCommand({ yes: true })).rejects.toMatchObject({ code: 0 });
-  expect(lines.join("\n")).toContain("OpenClaw update skipped: container-image-install");
+  expect(lines.join("\n")).toContain("Paddy update skipped: container-image-install");
   expect(lines.join("\n")).toContain("Pull or build");
   expect(lines.join("\n")).not.toContain("rollback");
   expect(triage).not.toHaveBeenCalled();
@@ -278,7 +278,7 @@ it.skipIf(process.platform === "win32").each([false, true])(
       expect(output[0]).toMatchObject({ runId: run.runId, run: { origin: run.origin } });
       const report = renderUpdateRunReport(run).markdown;
       expect(report).toContain("brew upgrade openclaw-cli");
-      expect(report).toContain("openclaw gateway restart");
+      expect(report).toContain("paddy gateway restart");
       expect(report.length).toBeLessThanOrEqual(1500);
       expect(isReportableUpdateRun(run)).toBe(false);
       vi.spyOn(nodeRuntime, "collectNodeRuntimeFindings").mockResolvedValue([]);
@@ -300,9 +300,9 @@ it.skipIf(process.platform === "win32").each([false, true])(
 
     lines = [];
     await expect(updateCommand({ yes: true })).rejects.toMatchObject({ code: 0 });
-    expect(lines.join("\n")).toContain("OpenClaw update skipped: unmanaged-package-install");
+    expect(lines.join("\n")).toContain("Paddy update skipped: unmanaged-package-install");
     expect(lines.join("\n")).toContain("brew upgrade openclaw-cli");
-    expect(lines.join("\n")).toContain("openclaw gateway restart");
+    expect(lines.join("\n")).toContain("paddy gateway restart");
     expect(triage).not.toHaveBeenCalled();
   },
 );

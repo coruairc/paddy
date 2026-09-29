@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { AgentSelectionRequiredError } from "../agents/agent-scope-config.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { ExpectedCliError } from "../cli/failure-output.js";
 import {
   resolveSessionStoreTargets,
@@ -78,7 +79,7 @@ export function resolveExplicitSessionStorePath(params: {
       applicationTables.length > 0 &&
       !applicationTables.some((row) => row.name === "schema_meta")
     ) {
-      throw new Error("the SQLite file has application tables but no OpenClaw schema metadata");
+      throw new Error(`the SQLite file has application tables but no ${PRODUCT_NAME} schema metadata`);
     }
   } catch (error) {
     databaseFailure = { error };

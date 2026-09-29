@@ -29,7 +29,7 @@ import type {
 } from "./runtime-api.js";
 
 const DEFAULT_BOT_ID = "openclaw";
-const DEFAULT_BOT_NAME = "OpenClaw QA";
+const DEFAULT_BOT_NAME = "Paddy QA";
 
 function normalizeInboundConversation(conversation: QaBusConversation): QaBusConversation {
   const rawKind = (conversation as { kind?: unknown }).kind;

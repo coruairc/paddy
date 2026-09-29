@@ -2,6 +2,7 @@
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { normalizeStringEntries } from "@openclaw/normalization-core/string-normalization";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { normalizeChatChannelId } from "../channels/ids.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
@@ -101,7 +102,7 @@ export function noteCommandOwnerHealth(cfg: OpenClawConfig): void {
   note(
     [
       "No command owner is configured.",
-      "A command owner is your trusted human operator account, allowed to update OpenClaw with /update, restart the Gateway, change configuration, and approve commands. Chat allowlists do not grant this authority.",
+      `A command owner is your trusted human operator account, allowed to update ${PRODUCT_NAME} with /update, restart the Gateway, change configuration, and approve commands. Chat allowlists do not grant this authority.`,
       `Run ${formatCliCommand("openclaw channels add")} and complete a channel's setup to choose your operator account, including servers and groups without DM pairing.`,
       "CLI pairing approval records the first command owner. Control UI pairing approval has a separate owner checkbox.",
       `Fix: set commands.ownerAllowFrom to your channel user id, for example ${formatCliCommand("openclaw config set commands.ownerAllowFrom '[\"telegram:123456789\"]'")}`,

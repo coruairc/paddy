@@ -46,6 +46,7 @@ import { hasCommandProcessCleanupError } from "../../process/exec-result.js";
 import { defaultRuntime } from "../../runtime.js";
 import { isVerifiedUpdateRollback, type UpdateRecoveryStep } from "../../shared/update-outcome.js";
 import type { OpenClawSchemaVersions } from "../../state/openclaw-schema-versions.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import {
   formatDaemonServiceInstallCommand,
@@ -153,7 +154,7 @@ export function recordServiceReconciliationWarnings(
   assertCurrent();
   const step = {
     name: "managed-service-reconciliation",
-    command: "openclaw gateway install --force",
+    command: `${CLI_NAME} gateway install --force`,
     cwd: result.root ?? "",
     durationMs: 0,
     exitCode: 0,
@@ -183,7 +184,7 @@ export function prepareUpdateServiceResult(
   if (verdict?.kind === "unavailable") {
     params.result.steps.push({
       name: "managed-service",
-      command: formatCliCommand("openclaw gateway status --deep", serviceEnv),
+      command: formatCliCommand(`${CLI_NAME} gateway status --deep`, serviceEnv),
       cwd: params.root,
       durationMs: 0,
       exitCode: 0,
@@ -263,7 +264,7 @@ export function createUpdateCommandFailureResult(
   const failedStep: UpdateStepResult = stepResult?.failedStep ?? {
     name:
       preMutationFailure || pkgOwnershipFailure || admissionFailure ? reason : (phase ?? "update"),
-    command: "openclaw update",
+    command: `${CLI_NAME} update`,
     cwd: result.root ?? process.cwd(),
     durationMs: result.durationMs,
     exitCode: 1,
@@ -370,7 +371,7 @@ export async function withUpdateAdmissionReporting<T>(
     const message =
       error instanceof FreeBsdPkgOwnershipError
         ? error.message
-        : `${error.message} Run \`openclaw gateway status --deep\` from the service's owning account before retrying.`;
+        : `${error.message} Run \`${CLI_NAME} gateway status --deep\` from the service's owning account before retrying.`;
     if (opts.json) {
       defaultRuntime.error(message);
     }

@@ -1,4 +1,5 @@
 // Sub-CLI descriptor catalog used for root help placeholders and lazy registration.
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { isCronMachineOutput } from "../cron-cli/output-mode.js";
 import { isDevicesMachineOutput } from "../devices-output-mode.js";
 import { isGatewayMachineOutput } from "../gateway-cli/output-mode.js";
@@ -82,7 +83,7 @@ const subCliCommandDescriptors = [
   {
     name: "devices",
     description:
-      "Device pairing and auth tokens (for mobile app setup codes, use `openclaw qr` instead)",
+      `Device pairing and auth tokens (for mobile app setup codes, use \`${CLI_NAME} qr\` instead)`,
     hasSubcommands: true,
     machineOutput: ({ argv }) => isDevicesMachineOutput(argv),
     parentDefaultHelp: true,
@@ -100,7 +101,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "connect",
-    description: "Connect this machine to an OpenClaw Gateway as a node",
+    description: `Connect this machine to a ${PRODUCT_NAME} Gateway as a node`,
     hasSubcommands: false,
   },
   {
@@ -170,7 +171,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "docs",
-    description: "Search the live OpenClaw docs",
+    description: `Search the live ${PRODUCT_NAME} docs`,
     hasSubcommands: false,
   },
   {
@@ -180,7 +181,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "proxy",
-    description: "Run the OpenClaw debug proxy and inspect captured traffic",
+    description: `Run the ${PRODUCT_NAME} debug proxy and inspect captured traffic`,
     hasSubcommands: true,
     machineOutput: ({ argv }) => isProxyMachineOutput(argv),
   },
@@ -211,7 +212,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "plugins",
-    description: "Manage OpenClaw plugins and extensions",
+    description: `Manage ${PRODUCT_NAME} plugins and extensions`,
     hasSubcommands: true,
     parentDefaultHelp: true,
   },
@@ -244,7 +245,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "update",
-    description: "Update OpenClaw and inspect update channel status",
+    description: `Update ${PRODUCT_NAME} and inspect update channel status`,
     hasSubcommands: true,
   },
   {

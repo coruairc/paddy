@@ -18,6 +18,7 @@ import {
 } from "../../plugins/package-compat.js";
 import { hasCommandProcessCleanupError } from "../../process/exec-result.js";
 import { withCommandProcessScope } from "../../process/exec-spawn.js";
+import { PRODUCT_NAME } from "../cli-name.js";
 import type { PluginUpdateWarning } from "./update-command-plugins-internals.js";
 import { withOwnedManagedUpdateEnv } from "./update-command-service-env.js";
 
@@ -36,7 +37,9 @@ function incompatibleRequirement(
     minHostVersion: install?.minHostVersion,
     allowLegacyBareSemver: installed,
   });
-  return !host.ok && host.kind === "incompatible" ? `OpenClaw ${host.requirement.raw}` : undefined;
+  return !host.ok && host.kind === "incompatible"
+    ? `${PRODUCT_NAME} ${host.requirement.raw}`
+    : undefined;
 }
 
 /** Report unavailable replacements without vetoing the core package update. */

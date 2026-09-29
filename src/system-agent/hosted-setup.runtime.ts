@@ -1,4 +1,5 @@
 import { stat } from "node:fs/promises";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { createPluginCache, withPluginCache } from "../plugins/plugin-cache.js";
 import { runOutsidePluginRuntimeGenerationScope } from "../plugins/runtime/generation-scope.js";
@@ -62,7 +63,7 @@ export async function runHostedSetup(params: {
       const snapshot = await readSetupConfigFileSnapshot();
       if (!snapshot.exists || !snapshot.valid || !snapshot.hash) {
         throw new Error(
-          `${params.label} requires a valid saved config snapshot. On the machine running OpenClaw, run \`openclaw doctor --fix\` and resolve any remaining validation errors; then retry.`,
+          `${params.label} requires a valid saved config snapshot. On the machine running ${PRODUCT_NAME}, run \`${CLI_NAME} doctor --fix\` and resolve any remaining validation errors; then retry.`,
         );
       }
       const baseConfig = snapshot.sourceConfig ?? snapshot.config;

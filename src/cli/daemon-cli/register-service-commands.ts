@@ -3,6 +3,7 @@ import { Option, type Command } from "commander";
 import { isGatewayServiceEnv } from "../../daemon/constants.js";
 import { isGatewayExternallySupervised } from "../../infra/gateway-supervision.js";
 import { createLazyImportLoader } from "../../shared/lazy-promise.js";
+import { PRODUCT_NAME } from "../cli-name.js";
 import { inheritOptionFromParent } from "../command-options.js";
 import { resolveGatewayRpcOptionsWithLocalPort } from "../gateway-rpc.js";
 import type { DaemonInstallOptions, DaemonLifecycleOptions } from "./types.js";
@@ -175,7 +176,7 @@ export function addGatewayServiceCommands(parent: Command, opts?: { statusDescri
     .option("--force", "Begin restart now; drain admitted work within the shutdown budget", false)
     .option(
       "--safe",
-      "Request an OpenClaw-aware restart after active work drains " +
+      `Request a ${PRODUCT_NAME}-aware restart after active work drains ` +
         "(bounded wait; may force after the timeout expires)",
       false,
     )

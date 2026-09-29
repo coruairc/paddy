@@ -500,7 +500,7 @@ describe("Codex plugin activation", () => {
       reason: "disabled",
       installAttempted: false,
     });
-    expect(result.diagnostics[0]?.message).toContain("installed and enabled outside OpenClaw");
+    expect(result.diagnostics[0]?.message).toContain("installed and enabled outside Paddy");
     expect(request).not.toHaveBeenCalled();
   });
 

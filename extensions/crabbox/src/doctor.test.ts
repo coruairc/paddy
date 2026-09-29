@@ -88,7 +88,7 @@ describe("Crabbox worker doctor", () => {
           severity: "warning",
           target: "worker",
           requirement: `Crabbox ${managedBinary.CRABBOX_MIN_VERSION} or newer`,
-          fixHint: expect.stringContaining("openclaw doctor --fix"),
+          fixHint: expect.stringContaining("paddy doctor --fix"),
         }),
       ]);
       expect(install).not.toHaveBeenCalled();
@@ -135,7 +135,7 @@ describe("Crabbox worker doctor", () => {
           expect.objectContaining({
             severity: "warning",
             requirement: `Crabbox ${managedBinary.CRABBOX_MIN_VERSION} or newer`,
-            fixHint: expect.stringContaining("openclaw doctor --fix"),
+            fixHint: expect.stringContaining("paddy doctor --fix"),
           }),
         ]);
         expect(command).not.toHaveBeenCalled();
@@ -278,7 +278,7 @@ describe("Crabbox warm-image doctor", () => {
                 message: expect.stringContaining(
                   "linux-development · aws · standard · linux · github.com/example/project",
                 ),
-                fixHint: expect.stringContaining("openclaw crabbox warm-images"),
+                fixHint: expect.stringContaining("paddy crabbox warm-images"),
               }),
             ]
           : [],

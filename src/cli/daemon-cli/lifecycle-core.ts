@@ -42,6 +42,7 @@ import {
 } from "./response.js";
 import { filterContainerGenericHints, resolveDaemonInstallBlockMessage } from "./shared.js";
 import type { DaemonLifecycleOptions } from "./types.js";
+import { CLI_NAME } from "../../brand.js";
 
 type ServiceLifecycleOptions = DaemonLifecycleOptions & {
   restartIntent?: GatewayRestartIntent;
@@ -228,7 +229,7 @@ export async function runServiceStart(params: {
   expectedPort?: number;
 }) {
   const json = Boolean(params.opts?.json);
-  const serviceCommand = formatCliCommand(`openclaw ${params.serviceNoun.toLowerCase()}`);
+  const serviceCommand = formatCliCommand(`${CLI_NAME} ${params.serviceNoun.toLowerCase()}`);
   const { stdout, warnings, emitMessage, fail } = createDaemonActionContext({
     action: "start",
     json,
@@ -559,7 +560,7 @@ export async function runServiceRestart(params: {
           clearPreparedRestartIntent();
           fail(
             `${params.serviceNoun} service needs repair before restart: ${formatGatewayServiceStartRepairIssues(issues)}`,
-            [formatCliCommand("openclaw gateway install --force")],
+            [formatCliCommand(`${CLI_NAME} gateway install --force`)],
           );
           return false;
         }
@@ -594,7 +595,7 @@ export async function runServiceRestart(params: {
       if (driftIssue) {
         const recovery =
           resolveDaemonInstallBlockMessage("gateway") ??
-          `Run \`${formatCliCommand("openclaw gateway install --force")}\` to refresh the service token source.`;
+          `Run \`${formatCliCommand(`${CLI_NAME} gateway install --force`)}\` to refresh the service token source.`;
         const warning = `${driftIssue.message} ${recovery}`;
         warnings.push(warning);
         if (!json) {

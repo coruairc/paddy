@@ -31,6 +31,7 @@ import {
   updateConfig,
   upsertCanonicalModelConfigEntry,
 } from "../models/shared.js";
+import { PRODUCT_NAME } from "../../brand.js";
 
 type PromosClaimOptions = {
   apiKey?: string;
@@ -157,7 +158,7 @@ function resolveAuthChoice(
   const entry = manifestEntry ?? catalogEntry;
   if (!entry) {
     throw new Error(
-      `Promotion "${promotion.slug}" requires auth choice "${authChoiceId}", which this OpenClaw version does not know. Update OpenClaw and retry.`,
+      `Promotion "${promotion.slug}" requires auth choice "${authChoiceId}", which this ${PRODUCT_NAME} version does not know. Update ${PRODUCT_NAME} and retry.`,
     );
   }
   if (entry.providerId !== provider) {

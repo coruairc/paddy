@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { createDedupeCache } from "../infra/dedupe.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { applyPrivateModeSync } from "../infra/private-mode.js";
@@ -43,7 +44,7 @@ export function ensureOpenClawStatePermissions(
   const isDefaultStateDatabase =
     path.resolve(pathname) === path.resolve(resolveOpenClawStateSqlitePath(env));
   if (isDefaultStateDatabase && dir !== defaultDir) {
-    throw new Error(`OpenClaw state database path resolved outside its state dir: ${pathname}`);
+    throw new Error(`${PRODUCT_NAME} state database path resolved outside its state dir: ${pathname}`);
   }
   const dirExisted = existsSync(dir);
   if (options.createDirectory) {

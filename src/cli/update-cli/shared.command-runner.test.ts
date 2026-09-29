@@ -172,7 +172,7 @@ describe("update CLI shared helpers", () => {
         name: "UpdatePreMutationError",
         reason: "unmanaged-package-install",
         message:
-          "This OpenClaw installation is managed by Homebrew. To update OpenClaw, run:\n\n  brew upgrade openclaw-cli\n\nThen restart the gateway:\n\n  openclaw gateway restart",
+          "This Paddy installation is managed by Homebrew. To update Paddy, run:\n\n  brew upgrade openclaw-cli\n\nThen restart the gateway:\n\n  paddy gateway restart",
       });
     },
   );

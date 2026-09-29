@@ -11,7 +11,7 @@ const PROVIDER_ID = "novita";
 export default defineSingleProviderPluginEntry({
   id: PROVIDER_ID,
   name: "NovitaAI Provider",
-  description: "Official OpenClaw NovitaAI provider plugin",
+  description: "Official Paddy NovitaAI provider plugin",
   manifest,
   provider: {
     label: "NovitaAI",

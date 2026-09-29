@@ -359,7 +359,7 @@ describe("Doctor invoked by the published 2026.6.33 updater", () => {
         });
         await expect(run).rejects.toThrow(formatCliCommand("openclaw gateway restart", state.env));
         await expect(run).rejects.toThrow(
-          formatCliCommand("openclaw gateway status --deep", state.env),
+          formatCliCommand("paddy gateway status --deep", state.env),
         );
         expect(service.stop).toHaveBeenCalledOnce();
         expect(mocks.config).not.toHaveBeenCalled();
@@ -483,7 +483,7 @@ describe("Doctor invoked by the published 2026.6.33 updater", () => {
           });
           await expect(run).rejects.toThrow(
             formatCliCommand(
-              external ? "openclaw doctor --fix" : "openclaw gateway status --deep",
+              external ? "openclaw doctor --fix" : "paddy gateway status --deep",
               state.env,
             ),
           );

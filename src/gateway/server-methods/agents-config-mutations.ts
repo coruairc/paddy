@@ -1,6 +1,7 @@
 import { hasAgentRosterProperty, tryResolveSoleAgentId } from "../../agents/agent-roster.js";
 import { resolveAgentDir, resolveAgentWorkspaceDir } from "../../agents/agent-scope.js";
 import { splitTrailingAuthProfile } from "../../agents/model-ref-profile.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   applyAgentConfig,
   findAgentEntryIndex,
@@ -57,7 +58,7 @@ export function validateAgentModelSelectionUpdate(
     return "Runtime selection requires a model-only update.";
   }
   if (splitTrailingAuthProfile(params.model).profile) {
-    return "Choose a model without an OpenClaw sign-in override for this runtime.";
+    return `Choose a model without a ${PRODUCT_NAME} sign-in override for this runtime.`;
   }
   return undefined;
 }

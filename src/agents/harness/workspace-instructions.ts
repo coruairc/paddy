@@ -1,4 +1,5 @@
 import path from "node:path";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { EmbeddedContextFile } from "../embedded-agent-helpers/context-file.js";
 
 /** Projects already-bounded agent instructions without changing bootstrap budgets. */
@@ -16,9 +17,9 @@ export function buildAgentWorkspaceInstructionSnapshot(
     return { files, instructions: "" };
   }
   const lines = [
-    "## OpenClaw Agent Workspace Instructions",
+    `## ${PRODUCT_NAME} Agent Workspace Instructions`,
     "",
-    "OpenClaw loaded this bounded snapshot from the configured agent workspace.",
+    `${PRODUCT_NAME} loaded this bounded snapshot from the configured agent workspace.`,
     "",
   ];
   for (const file of files) {

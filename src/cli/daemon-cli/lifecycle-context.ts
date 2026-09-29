@@ -8,6 +8,7 @@ import {
   type UpdateRequester,
 } from "../../infra/update-requester-authority.js";
 import { hasCommandProcessCleanupError } from "../../process/exec-result.js";
+import { CLI_NAME } from "../cli-name.js";
 import { waitForGatewayHealthyRestart } from "./restart-health.js";
 
 export async function resolveGatewayLifecycleContext(
@@ -24,7 +25,7 @@ export async function resolveGatewayLifecycleContext(
       });
   if (requireEffective && !command) {
     throw new Error(
-      "Updated gateway service could not be inspected; run `openclaw gateway status --deep`.",
+      `Updated gateway service could not be inspected; run \`${CLI_NAME} gateway status --deep\`.`,
     );
   }
   const env = mergeGatewayServiceEnv(process.env, command);

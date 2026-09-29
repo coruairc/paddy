@@ -184,11 +184,11 @@ describe("formatCliFailureLines", () => {
     });
 
     expect(lines).toEqual([
-      "[openclaw] Could not start the CLI.",
-      "[openclaw] Reason: config file is invalid",
-      "[openclaw] Debug: set OPENCLAW_DEBUG=1 to include the stack trace.",
-      "[openclaw] Try: openclaw doctor",
-      "[openclaw] Help: openclaw --help",
+      "[paddy] Could not start the CLI.",
+      "[paddy] Reason: config file is invalid",
+      "[paddy] Debug: set OPENCLAW_DEBUG=1 to include the stack trace.",
+      "[paddy] Try: paddy doctor",
+      "[paddy] Help: paddy --help",
     ]);
   });
 
@@ -258,8 +258,8 @@ describe("formatCliFailureLines", () => {
 
       expect(lines).toEqual(error.message.split("\n"));
       const output = lines.join("\n");
-      expect(output).not.toContain("[openclaw] The CLI command failed.");
-      expect(output).not.toContain("[openclaw] Reason:");
+      expect(output).not.toContain("[paddy] The CLI command failed.");
+      expect(output).not.toContain("[paddy] Reason:");
       expect(output).not.toContain("OPENCLAW_DEBUG");
       expect(output).not.toContain("Stack:");
       expect(output).not.toContain("openclaw doctor");
@@ -274,10 +274,10 @@ describe("formatCliFailureLines", () => {
     });
 
     expect(lines.slice(0, 4)).toEqual([
-      "[openclaw] The CLI command failed.",
-      "[openclaw] Reason: boom",
-      "[openclaw] Stack:",
-      "[openclaw] Error: boom",
+      "[paddy] The CLI command failed.",
+      "[paddy] Reason: boom",
+      "[paddy] Stack:",
+      "[paddy] Error: boom",
     ]);
     expect(lines.join("\n")).toContain("Error: boom");
   });
@@ -290,9 +290,9 @@ describe("formatCliFailureLines", () => {
       env: {},
     });
 
-    expect(lines).toContain("[openclaw] Reason: boom | transport detail");
-    expect(lines).toContain("[openclaw] Stack:");
-    expect(lines).toContain("[openclaw] Error: boom");
+    expect(lines).toContain("[paddy] Reason: boom | transport detail");
+    expect(lines).toContain("[paddy] Stack:");
+    expect(lines).toContain("[paddy] Error: boom");
   });
 
   it.each(["--debug", "--verbose"])(
@@ -305,8 +305,8 @@ describe("formatCliFailureLines", () => {
         env: {},
       });
 
-      expect(lines).not.toContain("[openclaw] Stack:");
-      expect(lines).toContain("[openclaw] Debug: set OPENCLAW_DEBUG=1 to include the stack trace.");
+      expect(lines).not.toContain("[paddy] Stack:");
+      expect(lines).toContain("[paddy] Debug: set OPENCLAW_DEBUG=1 to include the stack trace.");
     },
   );
 });

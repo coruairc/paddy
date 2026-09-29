@@ -33,11 +33,11 @@ export async function describeBrowserControlUnavailable(
     );
     if (record?.status === "error") {
       const phase = record.failurePhase ? ` during ${record.failurePhase}` : "";
-      return `browser control disabled: browser plugin failed${phase}: ${record.error ?? "no error detail recorded"}. Run \`openclaw doctor\` and check the Gateway logs.`;
+      return `browser control disabled: browser plugin failed${phase}: ${record.error ?? "no error detail recorded"}. Run \`paddy doctor\` and check the Gateway logs.`;
     }
     reason = record?.status === "disabled" ? (record.activationReason ?? record.error) : undefined;
   }
-  const enable = "Run `openclaw plugins enable browser`.";
+  const enable = "Run `paddy plugins enable browser`.";
   switch (reason) {
     case "not in allowlist":
       return `browser control disabled: "browser" is not in plugins.allow. Add "browser" to the existing plugins.allow list. ${enable}`;
@@ -48,6 +48,6 @@ export async function describeBrowserControlUnavailable(
     case "disabled in config":
       return `browser control disabled: plugins.entries.browser.enabled=false. ${enable}`;
     default:
-      return `browser control disabled: ${reason ?? "no availability reason was recorded"}. Run \`openclaw doctor\` and check the Gateway logs.`;
+      return `browser control disabled: ${reason ?? "no availability reason was recorded"}. Run \`paddy doctor\` and check the Gateway logs.`;
   }
 }

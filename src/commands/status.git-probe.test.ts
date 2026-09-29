@@ -184,7 +184,7 @@ describe("status optional Git probes", () => {
         expect(update.error).toMatchObject({ status: "unknown", timeoutMs: budgetMs });
       } else {
         expect(output).toContain("update status unknown");
-        expect(output.replace(/[│\s]+/gu, " ")).toContain("openclaw update status");
+        expect(output.replace(/[│\s]+/gu, " ")).toContain("paddy update status");
         expect(output).not.toContain("up to date");
       }
     },

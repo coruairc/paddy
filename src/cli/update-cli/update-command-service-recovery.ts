@@ -13,6 +13,7 @@ import {
 import type { UpdateRunResult } from "../../infra/update-runner-types.js";
 import { hasCommandProcessCleanupError } from "../../process/exec-result.js";
 import { defaultRuntime } from "../../runtime.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import {
   renderRestartDiagnostics,
@@ -143,9 +144,9 @@ export function formatPostUpdateGatewayRecoveryInstructions(
   result: UpdateRunResult,
   platform: NodeJS.Platform = process.platform,
 ): string[] {
-  const restartCommand = formatCliCommand("openclaw gateway restart");
-  const installCommand = formatCliCommand("openclaw gateway install --force");
-  const statusCommand = formatCliCommand("openclaw gateway status --deep");
+  const restartCommand = formatCliCommand(`${CLI_NAME} gateway restart`);
+  const installCommand = formatCliCommand(`${CLI_NAME} gateway install --force`);
+  const statusCommand = formatCliCommand(`${CLI_NAME} gateway status --deep`);
   const condition =
     platform === "darwin"
       ? "LaunchAgent is installed but not loaded"
@@ -161,7 +162,7 @@ export function formatPostUpdateGatewayRecoveryInstructions(
   const beforeVersion = normalizeOptionalString(result.before?.version);
   if (isPackageManagerUpdateMode(result.mode) && beforeVersion) {
     lines.push(
-      `Rollback: reinstall OpenClaw ${beforeVersion} with the same package manager, then rerun \`${formatCliCommand("openclaw gateway install --force")}\`.`,
+      `Rollback: reinstall ${PRODUCT_NAME} ${beforeVersion} with the same package manager, then rerun \`${formatCliCommand(`${CLI_NAME} gateway install --force`)}\`.`,
     );
   }
   return lines;
@@ -250,7 +251,7 @@ export async function maybeRestartServiceAfterFailedMutableUpdate(params: {
       : undefined;
   if (!original && !packageRecovery) {
     defaultRuntime.error(
-      "Managed gateway remains stopped: update safety is unverified. Run `openclaw doctor` and inspect the update failure before restarting.",
+      `Managed gateway remains stopped: update safety is unverified. Run \`${CLI_NAME} doctor\` and inspect the update failure before restarting.`,
     );
     return "failed";
   }
@@ -420,7 +421,7 @@ export async function maybeRestartServiceAfterFailedMutableUpdate(params: {
       throw err;
     }
     defaultRuntime.error(
-      `Failed to restart managed gateway service after failed update: ${String(err)}. Run \`openclaw gateway status --deep\` before restarting it manually.`,
+      `Failed to restart managed gateway service after failed update: ${String(err)}. Run \`${CLI_NAME} gateway status --deep\` before restarting it manually.`,
     );
     return "failed";
   }
@@ -488,7 +489,7 @@ export async function compensateOriginalManagedService(
         ...result.steps,
         {
           name: "original-managed-service-compensation",
-          command: "openclaw gateway restart --preserve-definition",
+          command: `${CLI_NAME} gateway restart --preserve-definition`,
           cwd: original.root,
           durationMs: 0,
           exitCode: healthy ? 0 : 1,

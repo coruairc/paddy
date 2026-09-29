@@ -30,7 +30,7 @@ type IdbDatabaseSnapshot = {
 const LEGACY_SNAPSHOT_DIAGNOSTIC = {
   code: "matrix-idb-snapshot-requires-doctor",
   message: "Matrix IndexedDB snapshot exists outside canonical SQLite state",
-  remediation: "openclaw doctor --fix",
+  remediation: "paddy doctor --fix",
 } as const;
 
 class MatrixIdbSnapshotMigrationRequiredError extends Error {

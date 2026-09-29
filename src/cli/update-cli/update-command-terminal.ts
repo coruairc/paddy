@@ -18,6 +18,7 @@ import type { UpdateStepResult } from "../../infra/update-step-result.js";
 import { hasCommandProcessCleanupError } from "../../process/exec-result.js";
 import { defaultRuntime } from "../../runtime.js";
 import { resolveOpenClawStateSqlitePath } from "../../state/openclaw-state-db.paths.js";
+import { CLI_NAME } from "../cli-name.js";
 import { exitCliAfterOutput } from "../one-shot-exit.js";
 import { printResult } from "./progress.js";
 import { parseUpdateTimeoutMs, type UpdateCommandOptions } from "./shared.js";
@@ -303,7 +304,7 @@ export async function resolveSettledUpdateCommandResult(
   const failedStep: UpdateStepResult | undefined = settlementFailed
     ? {
         name: "update-executor-settlement",
-        command: "openclaw update",
+        command: `${CLI_NAME} update`,
         cwd: pendingResult.root ?? params.root,
         durationMs: 0,
         exitCode: 1,
@@ -367,7 +368,7 @@ export async function recordUpdatePackageCompletion(
     const message = `Gateway readiness is pending; backup retirement deferred for ${transaction.backupRoot}. Verify readiness before cleanup.`;
     result.steps.push({
       name: "package-backup-retention",
-      command: "openclaw update",
+      command: `${CLI_NAME} update`,
       cwd: result.root ?? params.root,
       durationMs: 0,
       exitCode: 0,
@@ -388,7 +389,7 @@ export async function recordUpdatePackageCompletion(
       cleanupFailure = error;
       return {
         name: "package-backup-retention",
-        command: "openclaw update",
+        command: `${CLI_NAME} update`,
         cwd: result.root ?? params.root,
         durationMs: 0,
         exitCode: 1,
@@ -515,7 +516,7 @@ async function publishPreMutationUpdateOutcome(
       ? {
           // A skipped admission adds facts to its phase, not evidence of update work.
           name: outcome.status === "skipped" ? (active?.phase ?? "requested") : params.reason,
-          command: "openclaw update",
+          command: `${CLI_NAME} update`,
           cwd: params.root,
           durationMs: 0,
           exitCode: outcome.status === "error" ? 1 : 0,

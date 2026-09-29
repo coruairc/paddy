@@ -437,7 +437,7 @@ describe("CodexAppServerClient", () => {
     expect(warn).toHaveBeenCalledTimes(warnings);
     if (warnings > 0) {
       expect(warn).toHaveBeenCalledWith(
-        "codex app-server is newer than OpenClaw's managed runtime; continuing with normal startup validation",
+        "codex app-server is newer than Paddy's managed runtime; continuing with normal startup validation",
         {
           detectedVersion: version,
           validatedVersion: CODEX_APP_SERVER_VERSION,
@@ -457,7 +457,7 @@ describe("CodexAppServerClient", () => {
 
       await expect(initializing).rejects.toThrow(
         `Codex app-server ${MIN_SUPPORTED_CODEX_APP_SERVER_VERSION} or newer is required, but ${
-          version ? `detected ${version}` : "OpenClaw could not determine the running Codex version"
+          version ? `detected ${version}` : "Paddy could not determine the running Codex version"
         }`,
       );
       expect(harness.writes).toHaveLength(1);
@@ -687,7 +687,7 @@ describe("CodexAppServerClient", () => {
         contentItems: [
           {
             type: "inputText",
-            text: `OpenClaw dynamic tool call timed out after ${CODEX_DYNAMIC_TOOL_SERVER_REQUEST_TIMEOUT_MS}ms before sending a response to Codex.`,
+            text: `Paddy dynamic tool call timed out after ${CODEX_DYNAMIC_TOOL_SERVER_REQUEST_TIMEOUT_MS}ms before sending a response to Codex.`,
           },
         ],
       },
@@ -894,7 +894,7 @@ describe("CodexAppServerClient", () => {
       result: {
         action: "decline",
         content: null,
-        _meta: { message: "OpenClaw has no interactive handler for this elicitation." },
+        _meta: { message: "Paddy has no interactive handler for this elicitation." },
       },
     });
   });

@@ -466,7 +466,7 @@ describe("status commands", () => {
     expect(text).toContain("Config diagnostics:");
     expect(text).toContain("Config file is invalid: /tmp/openclaw.json");
     expect(text).toContain("gateway.port: invalid");
-    expect(text).toContain("openclaw --profile isolated doctor --fix");
+    expect(text).toContain("paddy --profile isolated doctor --fix");
     setScan({ configDiagnostics: null });
     expect(await runStatusOutput()).not.toContain("Config diagnostics:");
   });
@@ -546,7 +546,7 @@ describe("status commands", () => {
     });
     const text = await runStatusOutput();
     expect(text).toContain("node → gateway.example.com:19000 · no local gateway");
-    expect(text).toContain("openclaw --profile isolated node status");
+    expect(text).toContain("paddy --profile isolated node status");
     expect(text).not.toContain("Gateway: local · ws://127.0.0.1:18789");
     expect(text).not.toContain("Fix reachability first");
   });
@@ -607,7 +607,7 @@ describe("status commands", () => {
       expected: [
         "Gateway pairing approval required.",
         "Reason: device is not approved yet.",
-        "Recovery: openclaw --profile isolated devices approve req-close-456",
+        "Recovery: paddy --profile isolated devices approve req-close-456",
       ],
     },
     {
@@ -624,7 +624,7 @@ describe("status commands", () => {
         "Gateway scope upgrade approval required.",
         "Reason: device is asking for more scopes than currently approved.",
         "Hint: Review the requested scopes.",
-        "Recovery: openclaw --profile isolated devices approve req-structured-789",
+        "Recovery: paddy --profile isolated devices approve req-structured-789",
       ],
     },
     {
@@ -661,8 +661,8 @@ describe("status commands", () => {
       );
     expect(recovery).toEqual([
       ...expected,
-      "Fallback: openclaw --profile isolated devices approve --latest",
-      "Inspect: openclaw --profile isolated devices list",
+      "Fallback: paddy --profile isolated devices approve --latest",
+      "Inspect: paddy --profile isolated devices list",
     ]);
   });
 });

@@ -21,6 +21,7 @@ import { GatewayClientRequestError } from "../gateway/client.js";
 import { projectGatewayUrlForDiagnostics } from "../gateway/connection-details.js";
 import { normalizeAgentIdStrict, parseAgentSessionKey } from "../routing/session-key.js";
 import { parseSessionTargetInput, SessionTargetParseError } from "./session-ref.js";
+import { CLI_NAME } from "../brand.js";
 
 export type SessionTargetGateway = {
   config?: OpenClawConfig;
@@ -93,7 +94,7 @@ function formatAmbiguousCandidates(
 function sessionsListHint(gatewayUrl: string | undefined): string {
   return gatewayUrl
     ? `Choose a full session key from that gateway's Control UI (${controlUiBaseUrl(gatewayUrl)}).`
-    : "Run `openclaw sessions list` to choose a full session key.";
+    : `Run \`${CLI_NAME} sessions list\` to choose a full session key.`;
 }
 
 function controlUiBaseUrl(gatewayUrl: string): string {

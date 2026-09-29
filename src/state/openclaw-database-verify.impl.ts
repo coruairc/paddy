@@ -23,6 +23,7 @@ import {
   recordOpenClawStateDatabaseOpenFailure,
 } from "./openclaw-state-db.js";
 import { resolveOpenClawStateSqlitePath } from "./openclaw-state-db.paths.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const log = createSubsystemLogger("state/database-verify");
 const DATABASE_VERIFY_CHILD_ARG = "--openclaw-database-verify-child";
@@ -204,7 +205,7 @@ export function collectOpenClawDatabaseVerifyTargets(options: {
   const targets = new Map<string, OpenClawDatabaseVerifyTarget>();
   const statePath = path.resolve(resolveOpenClawStateSqlitePath(options.env));
   if (existsSync(statePath)) {
-    targets.set(statePath, { kind: "state", label: "OpenClaw state database", path: statePath });
+    targets.set(statePath, { kind: "state", label: `${PRODUCT_NAME} state database`, path: statePath });
   }
   let registeredDatabases: ReturnType<typeof listOpenClawRegisteredAgentDatabases> = [];
   try {
@@ -221,7 +222,7 @@ export function collectOpenClawDatabaseVerifyTargets(options: {
     }
     targets.set(agentPath, {
       kind: "agent",
-      label: `OpenClaw agent database ${registered.agentId}`,
+      label: `${PRODUCT_NAME} agent database ${registered.agentId}`,
       path: agentPath,
     });
   }

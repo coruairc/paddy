@@ -1,6 +1,7 @@
 // Commander registration for device pairing and auth-token commands.
 import { Option, type Command } from "commander";
 import { createLazyRuntimeMethodBinder, createLazyRuntimeModule } from "../shared/lazy-runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { isDevicesMachineOutput } from "./devices-output-mode.js";
 import { setCommandJsonMode } from "./program/json-mode.js";
 import { applyParentDefaultHelpAction } from "./program/parent-default-help.js";
@@ -23,7 +24,7 @@ export function registerDevicesCli(program: Command) {
   const devices = program
     .command("devices")
     .description(
-      "Device pairing and auth tokens (for mobile app setup codes, use `openclaw qr` instead)",
+      `Device pairing and auth tokens (for mobile app setup codes, use \`${CLI_NAME} qr\` instead)`,
     );
 
   devicesCallOpts(
@@ -37,7 +38,7 @@ export function registerDevicesCli(program: Command) {
     devices
       .command("join-code")
       .description(
-        "Mint a single-use node onboarding URL (not a mobile app setup code; use `openclaw qr` for that)",
+        `Mint a single-use node onboarding URL (not a mobile app setup code; use \`${CLI_NAME} qr\` for that)`,
       )
       .action(deviceAction((runtime) => runtime.runDevicesJoinCodeCommand)),
   );

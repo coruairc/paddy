@@ -27,10 +27,10 @@ type ProviderAuthMethodNonInteractiveValidationContext = Parameters<
 >[0];
 
 const ANTHROPIC_SETUP_TOKEN_NOTE_LINES = [
-  "Anthropic setup-token auth is supported in OpenClaw.",
-  "OpenClaw prefers the native Claude CLI runtime when it is available on the host.",
-  "Anthropic staff told us this OpenClaw path is allowed again.",
-  `If you want a direct API billing path instead, use ${formatCliCommand("openclaw models auth login --provider anthropic --method api-key --set-default")} or ${formatCliCommand("openclaw models auth login --provider anthropic --method cli --set-default")}.`,
+  "Anthropic setup-token auth is supported in Paddy.",
+  "Paddy prefers the native Claude CLI runtime when it is available on the host.",
+  "Anthropic staff told us this Paddy path is allowed again.",
+  `If you want a direct API billing path instead, use ${formatCliCommand("paddy models auth login --provider anthropic --method api-key --set-default")} or ${formatCliCommand("paddy models auth login --provider anthropic --method cli --set-default")}.`,
 ] as const;
 
 function normalizeAnthropicSetupTokenInput(value: string): string {
@@ -214,7 +214,7 @@ export function buildAnthropicAuthDoctorHint(params: {
     }`,
     `- auth store oauth profiles: ${storeOauthProfiles || "(none)"}`,
     `- suggested profile: ${suggested}`,
-    `Fix: run "${formatCliCommand("openclaw doctor --yes")}"`,
+    `Fix: run "${formatCliCommand("paddy doctor --yes")}"`,
   ].join("\n");
 }
 

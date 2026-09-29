@@ -2,6 +2,7 @@
 import type { Command } from "commander";
 import { docsSearchCommand } from "../commands/docs.js";
 import { defaultRuntime } from "../runtime.js";
+import { PRODUCT_NAME } from "./cli-name.js";
 import { runCommandWithRuntime } from "./cli-utils.js";
 import { formatDocsHelp } from "./help-format.js";
 import { parseStrictPositiveIntOption } from "./program/helpers.js";
@@ -9,7 +10,7 @@ import { parseStrictPositiveIntOption } from "./program/helpers.js";
 export function registerDocsCli(program: Command) {
   program
     .command("docs")
-    .description("Search the live OpenClaw docs")
+    .description(`Search the live ${PRODUCT_NAME} docs`)
     .argument("[query...]", "Search query")
     .option("--json", "Output JSON", false)
     .option("--limit <count>", "Maximum results to return", (value: string) =>

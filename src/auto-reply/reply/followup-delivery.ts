@@ -12,6 +12,7 @@ import {
   resolveReplyCompletion,
 } from "../../agents/reply-completion.js";
 import { buildAgentRuntimeDeliveryPlan } from "../../agents/runtime-plan/build.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { logVerbose } from "../../globals.js";
 import { defaultRuntime } from "../../runtime.js";
 import { sessionDeliveryChannel } from "../../utils/delivery-context.read.js";
@@ -482,7 +483,7 @@ async function sendFollowupPayloads(params: {
   ) {
     await dispatchPayload({
       text:
-        "Follow-up completed, but OpenClaw could not deliver it to the originating channel. " +
+        `Follow-up completed, but ${PRODUCT_NAME} could not deliver it to the originating channel. ` +
         "The reply content was not forwarded to this channel to avoid cross-channel misdelivery.",
       isError: true,
     });

@@ -33,6 +33,7 @@ import { addNodeCommandOptions } from "./node-cli/command-options.js";
 import { runNodeDaemonInstall } from "./node-cli/daemon.js";
 import { resolveNodePairGatewayPayload } from "./node-cli/gateway-options.js";
 import { quoteCliArg, quotePowerShellArg } from "./quote-cli-arg.js";
+import { CLI_NAME } from "../brand.js";
 
 type ConnectCommandOptions = {
   service?: boolean;
@@ -342,13 +343,13 @@ export function registerConnectCli(program: Command): void {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw connect oc-pair://<setup-code>", "Connect in the foreground."],
+          [`${CLI_NAME} connect oc-pair://<setup-code>`, "Connect in the foreground."],
           [
-            "openclaw connect https://gateway.example/j/<code> --service",
+            `${CLI_NAME} connect https://gateway.example/j/<code> --service`,
             "Install the node host service.",
           ],
           [
-            "openclaw connect https://gateway.example/j/<code> --service --session-host",
+            `${CLI_NAME} connect https://gateway.example/j/<code> --service --session-host`,
             "Install a worker-session host service.",
           ],
         ])}\n${formatDocsHelp("/cli/connect")}`,

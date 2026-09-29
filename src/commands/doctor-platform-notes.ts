@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { resolveIsNixMode } from "../config/paths.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
@@ -86,7 +87,7 @@ async function collectMacStaleOpenClawUpdateLaunchdJobsWarning(): Promise<string
   }
 
   return [
-    "- Stale OpenClaw updater launchd job(s) detected.",
+    `- Stale ${PRODUCT_NAME} updater launchd job(s) detected.`,
     ...jobs.map((job) => {
       const exitStatus =
         job.lastExitStatus !== undefined ? `, last exit ${job.lastExitStatus}` : "";

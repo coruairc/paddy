@@ -7,6 +7,7 @@ import {
   normalizeStringEntries,
   uniqueStrings,
 } from "@openclaw/normalization-core/string-normalization";
+import { PRODUCT_NAME } from "../brand.js";
 import { splitShellArgs } from "../utils/shell-argv.js";
 import { resolvePathViaExistingAncestorSync } from "./boundary-path.js";
 import { buildCommandPayloadArgvCandidates } from "./command-analysis/risks.js";
@@ -310,7 +311,7 @@ export async function rejectUnsafeExecControlShellCommand(command: string): Prom
   if (unsafeKind === "channel-login") {
     throw new Error(
       [
-        "exec cannot run interactive OpenClaw channel login commands.",
+        `exec cannot run interactive ${PRODUCT_NAME} channel login commands.`,
         "Run `openclaw channels login` in a terminal on the gateway host, or use the channel-specific login agent tool when available (for WhatsApp: `whatsapp_login`).",
       ].join(" "),
     );
@@ -328,8 +329,8 @@ export async function rejectUnsafeExecLiveStateSqliteShellCommand(
   }
   throw new Error(
     [
-      "external sqlite3 cannot open databases under the active OpenClaw state directory.",
-      "Use OpenClaw commands for live state, or inspect a private backup copy outside `OPENCLAW_STATE_DIR`.",
+      `external sqlite3 cannot open databases under the active ${PRODUCT_NAME} state directory.`,
+      `Use ${PRODUCT_NAME} commands for live state, or inspect a private backup copy outside \`OPENCLAW_STATE_DIR\`.`,
     ].join(" "),
   );
 }

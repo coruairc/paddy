@@ -485,7 +485,7 @@ describe("token efficiency report", () => {
 
     expect(report.pass).toBe(false);
     expect(report.failures).toEqual([
-      "missing-live-usage openclaw live usage totalTokens=0",
+      "missing-live-usage paddy live usage totalTokens=0",
       "missing-live-usage codex live usage totalTokens=0",
     ]);
   });

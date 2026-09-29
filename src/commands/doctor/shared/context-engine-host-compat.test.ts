@@ -243,7 +243,7 @@ describe("doctor context-engine host compatibility", () => {
       doctorFixCommand: "openclaw doctor --fix",
     });
 
-    expect(warnings.join("\n")).toContain("OpenClaw embedded runner");
+    expect(warnings.join("\n")).toContain("Paddy embedded runner");
     expect(warnings.join("\n")).toContain("Some configured runtimes support");
     expect(warnings.join("\n")).not.toContain("Codex app-server harness (");
   });

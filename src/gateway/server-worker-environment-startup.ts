@@ -1,5 +1,6 @@
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { uniqueStrings } from "@openclaw/normalization-core/string-normalization";
+import { PRODUCT_NAME } from "../brand.js";
 import { getRuntimeConfig } from "../config/config.js";
 import { racePromiseWithAbortSignal } from "../infra/abort-signal.js";
 import { loadOrCreateProcessDeviceIdentityAsync } from "../infra/device-identity-async.js";
@@ -330,7 +331,7 @@ export async function createGatewayWorkerEnvironmentRuntime(params: {
         const runningBuildId = resolveRuntimeServiceBuildId();
         if (!metadata || !packageRoot || !runningBuildId) {
           throw new Error(
-            "Cloud node bootstrap requires the running build and plugin inventory; build OpenClaw and restart the Gateway",
+            `Cloud node bootstrap requires the running build and plugin inventory; build ${PRODUCT_NAME} and restart the Gateway`,
           );
         }
         const producer = createNodeBootstrapArtifactProvider({

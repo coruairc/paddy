@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 import {
@@ -139,7 +140,7 @@ registerOpenClawStateDatabaseLifecycleListener((event) => {
   } else {
     snapshotsByPath.set(event.path, {
       kind: "state-error",
-      error: new Error("OpenClaw state database closed before consent provenance verification."),
+      error: new Error(`${PRODUCT_NAME} state database closed before consent provenance verification.`),
       knownAgentIds: knownAgentIds(previous),
       ownershipUnknown: isOwnershipUnknown(previous),
     });
@@ -265,7 +266,7 @@ function resolveSchemaVersionSnapshot(
   return previousAgentIds.size > 0 || (previous !== undefined && isOwnershipUnknown(previous))
     ? {
         kind: "state-error",
-        error: new Error("OpenClaw state database disappeared after Claw ownership was observed."),
+        error: new Error(`${PRODUCT_NAME} state database disappeared after Claw ownership was observed.`),
         knownAgentIds: previousAgentIds,
         ownershipUnknown: true,
       }
@@ -316,7 +317,7 @@ export async function prepareClawInstallSchemaVersions(
       }
       try {
         if (resolveSnapshotPath(options) !== path) {
-          throw new Error("OpenClaw state location changed before consent provenance publication.");
+          throw new Error(`${PRODUCT_NAME} state location changed before consent provenance publication.`);
         }
         assertCurrent?.();
       } catch (error) {

@@ -2,6 +2,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { HealthFinding, HealthRepairEffect } from "../flows/health-checks.js";
 import {
   ensureControlUiAssetsBuilt,
@@ -120,7 +121,7 @@ export function uiProtocolFreshnessIssueToHealthFinding(
       ? issue.kind === "missing-assets"
         ? "Run `openclaw doctor --fix` to build Control UI assets."
         : `Run \`openclaw doctor --fix --force\` to rebuild Control UI assets, or run \`${formatControlUiSourceCommand(issue.root, "build")}\`.`
-      : "Reinstall OpenClaw to restore bundled Control UI assets.",
+      : `Reinstall ${PRODUCT_NAME} to restore bundled Control UI assets.`,
   };
 }
 
@@ -153,7 +154,7 @@ function formatUiProtocolFreshnessIssue(issue: UiProtocolFreshnessIssue): string
     message,
     issue.canBuild
       ? `- Run: ${formatControlUiSourceCommand(issue.root, "build")}`
-      : "- Reinstall OpenClaw to restore bundled Control UI assets.",
+      : `- Reinstall ${PRODUCT_NAME} to restore bundled Control UI assets.`,
   ].join("\n");
 }
 

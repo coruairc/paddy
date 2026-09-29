@@ -7,6 +7,7 @@ import { isTailscaleRouteOwnershipConflictError } from "../../infra/tailscale-ro
 import { createSubsystemLogger } from "../../logging/subsystem.js";
 import { defaultRuntime } from "../../runtime.js";
 import { OpenClawDatabaseSchemaPreflightError } from "../../state/openclaw-database-preflight.messages.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 
 const gatewayLog = createSubsystemLogger("gateway");
@@ -47,11 +48,11 @@ export async function handleGatewayStartupMaintenance(error: unknown): Promise<b
       // Diagnostic inspection must not prevent parking and exit for the original refusal.
     }
   }
-  const stop = `Stop the service with ${formatCliCommand("openclaw gateway stop")} (or its service owner), then`;
+  const stop = `Stop the service with ${formatCliCommand(`${CLI_NAME} gateway stop`)} (or its service owner), then`;
   const guidance =
     reason === "a newer OpenClaw build"
-      ? `${stop} restore your pre-update backup created with ${formatCliCommand("openclaw backup create")}, then start it again with ${formatCliCommand("openclaw gateway start")}. See https://docs.openclaw.ai/install/updating#rollback.`
-      : `${stop} run ${formatCliCommand("openclaw doctor --fix")}, then start it again with ${formatCliCommand("openclaw gateway start")}.`;
+      ? `${stop} restore your pre-update backup created with ${formatCliCommand(`${CLI_NAME} backup create`)}, then start it again with ${formatCliCommand(`${CLI_NAME} gateway start`)}. See https://docs.openclaw.ai/install/updating#rollback.`
+      : `${stop} run ${formatCliCommand(`${CLI_NAME} doctor --fix`)}, then start it again with ${formatCliCommand(`${CLI_NAME} gateway start`)}.`;
   let parked = false;
   try {
     // launchd ignores exit 78 under KeepAlive. Park without opening the database,

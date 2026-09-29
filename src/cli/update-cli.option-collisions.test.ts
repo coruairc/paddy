@@ -132,7 +132,7 @@ describe("update cli option collisions", () => {
     expect(updateFinalizeCommand).not.toHaveBeenCalled();
     expect(updateCommand).not.toHaveBeenCalled();
     expect(defaultRuntime.error).toHaveBeenCalledWith(
-      "--dry-run is not supported for `openclaw update repair`. Run `openclaw update --dry-run` instead.",
+      "--dry-run is not supported for `paddy update repair`. Run `paddy update --dry-run` instead.",
     );
     expect(defaultRuntime.exit).toHaveBeenCalledWith(1);
   });

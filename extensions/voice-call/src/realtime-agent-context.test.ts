@@ -202,7 +202,7 @@ describe("published 2026.9.6 voice context", () => {
       agentId: "voice",
     });
     expect(instructions).toContain("Consult behavior:");
-    expect(instructions).toContain("OpenClaw agent voice context:");
+    expect(instructions).toContain("Paddy agent voice context:");
     expect(instructions).toContain("- Agent id: voice");
     expect(instructions).toContain("- Name: Claw Voice");
     expect(instructions).toContain("- Theme: bright");

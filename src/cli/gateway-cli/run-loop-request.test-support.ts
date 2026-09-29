@@ -535,7 +535,7 @@ export function registerGatewayRequestTests({
           );
           if (!supervised) {
             expect(gatewayLog.error).toHaveBeenCalledWith(
-              expect.stringContaining("openclaw gateway run"),
+              expect.stringContaining("paddy gateway run"),
             );
           }
           if (mode === "managed-update") {
