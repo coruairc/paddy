@@ -303,7 +303,7 @@ it("leaves a progressing Gateway running and warns after the readiness cap", asy
   await expect(maintenance!.finish({})).resolves.toBeUndefined();
 
   const warning = expect.stringMatching(
-    /still starting after 300s.*startup migration.*openclaw gateway status --deep/,
+    /still starting after 300s.*startup migration.*paddy gateway status --deep/,
   );
   expect(maintenance!.warnings).toContainEqual(warning);
   expect(boundary.log).toHaveBeenCalledWith(warning);

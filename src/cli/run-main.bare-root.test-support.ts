@@ -73,7 +73,7 @@ export function registerBareRootArgumentTests({
     });
 
     await expectNonInteractiveBareCliError(
-      "Onboarding needs an interactive TTY. Use `openclaw onboard --non-interactive --accept-risk ...` for automation.",
+      "Onboarding needs an interactive TTY. Use `paddy onboard --non-interactive --accept-risk ...` for automation.",
       () => {
         expect(setupWizardCommandMock).not.toHaveBeenCalled();
         expect(tryRouteCliMock).not.toHaveBeenCalled();

@@ -248,7 +248,7 @@ it.each([
       expect(advisory).toContain("automatic service restart was skipped");
       expect(advisory).toContain("Restart the Gateway you launched manually after the update");
       expect(advisory).toContain("recorded service definition was left unchanged");
-      expect(advisory).toContain("openclaw gateway status --deep");
+      expect(advisory).toContain("paddy gateway status --deep");
       expect(inspected.blockMessage).toBeUndefined();
       expect(inspected.serviceMutationAllowed).toBe(false);
       expect(inspected.stopped).toBe(false);

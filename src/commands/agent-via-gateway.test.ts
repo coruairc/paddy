@@ -836,7 +836,7 @@ describe("agentCliCommand", () => {
             localGatewayLockOptions: lockOptions,
           }),
         ).rejects.toThrow(
-          `A Gateway is running for this state directory (pid ${process.pid}, port 28789). Run without --local to use it, or stop the Gateway first (openclaw gateway stop).`,
+          `A Gateway is running for this state directory (pid ${process.pid}, port 28789). Run without --local to use it, or stop the Gateway first (paddy gateway stop).`,
         );
         expect(agentCommand).not.toHaveBeenCalled();
         expect(startOneShotDiagnosticsExporters).not.toHaveBeenCalled();

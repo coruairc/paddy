@@ -148,7 +148,7 @@ it.each([undefined, "stale-profile"])(
       });
       await expect(attempt).rejects.toThrow(/affected Gateway.*running/);
       await expect(attempt).rejects.toThrow(
-        `openclaw${profile ? ` --profile ${profile}` : ""} gateway stop`,
+        `paddy${profile ? ` --profile ${profile}` : ""} gateway stop`,
       );
       await expect(attempt).rejects.toThrow("retry the original command");
       expect(spawn).not.toHaveBeenCalled();
@@ -349,7 +349,7 @@ it.each([
         publish,
       ),
     ).rejects.toThrow(
-      /affected Gateway.*openclaw gateway status --deep.*openclaw gateway stop.*retry the original command/,
+      /affected Gateway.*paddy gateway status --deep.*paddy gateway stop.*retry the original command/,
     );
     expect(publish).not.toHaveBeenCalled();
   }),

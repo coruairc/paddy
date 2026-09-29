@@ -35,7 +35,7 @@ describe("failover user copy", () => {
   it("renders only the allowlisted selected-profile code", () => {
     expect(renderFailoverCodeUserCopy("selected_auth_profile_unavailable")).toBe(
       "The selected auth profile is unavailable in this agent's Paddy credential store. " +
-        "Import or migrate that credential into the agent, select another configured profile, or run `openclaw configure`, then retry.",
+        "Import or migrate that credential into the agent, select another configured profile, or run `paddy configure`, then retry.",
     );
     expect(renderFailoverCodeUserCopy("plugin_selected_profile_unavailable")).toBeUndefined();
     expect(

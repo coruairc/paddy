@@ -194,13 +194,13 @@ describe("update-cli", () => {
     if (yes) {
       expect(installCompletion).not.toHaveBeenCalled();
     } else {
-      expect(installCompletion).toHaveBeenCalledWith("zsh", false, "openclaw");
+      expect(installCompletion).toHaveBeenCalledWith("zsh", false, "paddy");
     }
   });
 
   it("renders update status as a table", async () => {
     await updateStatusCommand({ json: false });
-    expect(getLogOutput()).toContain("OpenClaw update status");
+    expect(getLogOutput()).toContain("Paddy update status");
     expect(checkUpdateStatus).toHaveBeenCalledWith(
       expect.objectContaining({ useDetachedDevUpstream: false }),
     );
@@ -762,11 +762,11 @@ describe("update-cli", () => {
     await expect(updateCommand({ channel: "dev" })).rejects.toEqual(new ExitError(1));
 
     const logs = getLogOutput();
-    expect(logs).toContain(`OpenClaw update ${status === "error" ? "failed" : "skipped"}: dirty.`);
+    expect(logs).toContain(`Paddy update ${status === "error" ? "failed" : "skipped"}: dirty.`);
     expect(logs).toContain(
       "Local changes prevented this update before installation. Your checkout was preserved.",
     );
-    expect(logs).toContain("Commit your changes and retry, or run `openclaw triage` for help.");
+    expect(logs).toContain("Commit your changes and retry, or run `paddy triage` for help.");
     expect(listUpdateRuns({ limit: 1 })[0]?.origin.nextAction).toContain(
       "Commit your changes and retry",
     );

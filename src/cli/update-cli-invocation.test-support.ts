@@ -55,7 +55,7 @@ export function expectPluginCapabilityRetryNotice(
         warnings: expect.arrayContaining([
           expect.objectContaining({
             pluginId,
-            message: expect.stringContaining(`openclaw plugins update ${pluginId}`),
+            message: expect.stringContaining(`paddy plugins update ${pluginId}`),
           }),
         ]),
         npm: {
@@ -71,7 +71,7 @@ export function expectPluginCapabilityRetryNotice(
           ? {
               sync: {
                 errors: [
-                  'Failed to update consent-fixture: Operator review token changed.\nBundled relocation did not install the replacement plugin payload; resolve the error above, then run "paddy update repair".',
+                  'Failed to update consent-fixture: Operator review token changed.\nBundled relocation did not install the replacement plugin payload; resolve the error above, then run "openclaw update repair".',
                 ],
               },
             }

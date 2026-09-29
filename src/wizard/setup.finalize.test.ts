@@ -989,10 +989,8 @@ describe("finalizeSetupWizard", () => {
 
         if (action === "skipped") {
           expect(waitForGatewayReachable).not.toHaveBeenCalled();
-          expectNoteContains(prompter, "openclaw gateway run", "Gateway");
-          expect(prompter.outro).toHaveBeenCalledWith(
-            expect.stringContaining("openclaw gateway run"),
-          );
+          expectNoteContains(prompter, "paddy gateway run", "Gateway");
+          expect(prompter.outro).toHaveBeenCalledWith(expect.stringContaining("paddy gateway run"));
           return;
         }
         const managedStartup = action !== "reused";
@@ -1060,8 +1058,8 @@ describe("finalizeSetupWizard", () => {
     expect(prompter.outro).toHaveBeenCalledWith(
       expect.stringContaining("managed Mock Platform Service setup failed"),
     );
-    expectNoteContains(prompter, "openclaw gateway status --deep", "Gateway");
-    expectNoteContains(prompter, "openclaw gateway install --force", "Gateway");
+    expectNoteContains(prompter, "paddy gateway status --deep", "Gateway");
+    expectNoteContains(prompter, "paddy gateway install --force", "Gateway");
     expectNoteNotContains(prompter, "openclaw gateway run");
     expectNoteNotContains(prompter, "openclaw gateway restart");
   });
@@ -1077,8 +1075,8 @@ describe("finalizeSetupWizard", () => {
     });
 
     expectNoteContains(prompter, "managed Mock Platform Service", "Gateway");
-    expectNoteContains(prompter, "openclaw gateway status --deep", "Gateway");
-    expectNoteContains(prompter, "openclaw gateway restart", "Gateway");
+    expectNoteContains(prompter, "paddy gateway status --deep", "Gateway");
+    expectNoteContains(prompter, "paddy gateway restart", "Gateway");
     expectNoteNotContains(prompter, "openclaw gateway run");
     expectNoteNotContains(prompter, "openclaw onboard --install-daemon");
     expectNoteNotContains(prompter, "openclaw gateway install --force");

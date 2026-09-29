@@ -829,7 +829,7 @@ describe("update-cli", () => {
       } else {
         expect(getLogOutput()).toContain("Gateway: restarted and verified.");
         expect(getLogOutput()).toContain('Plugin "telegram" could not be loaded.');
-        expect(getLogOutput()).toContain("openclaw doctor --fix");
+        expect(getLogOutput()).toContain("paddy doctor --fix");
         expect(getLogOutput()).not.toContain("failed to load plugin dependency: ENOSPC");
       }
     },
@@ -976,7 +976,7 @@ describe("update-cli", () => {
 
       const successIndex = vi
         .mocked(defaultRuntime.log)
-        .mock.calls.findIndex((call) => String(call[0]).includes("OpenClaw updated"));
+        .mock.calls.findIndex((call) => String(call[0]).includes("Paddy updated"));
       expect(successIndex).toBeGreaterThanOrEqual(0);
       expect(vi.mocked(defaultRuntime.log).mock.invocationCallOrder[successIndex]).toBeGreaterThan(
         restartOrder,

@@ -558,10 +558,10 @@ describe("package runtime compatibility guidance", () => {
         throw new Error("Expected an incompatible Node runtime to be refused");
       }
       expect(result.error, "Node compatibility guidance must describe the target range").toBe(
-        `paddy@${version} requires Node ${engine}; selected runtime is Node ${process.versions.node}.\n${
+        `openclaw@${version} requires Node ${engine}; selected runtime is Node ${process.versions.node}.\n${
           minimum
             ? expectedPlainRecovery(version, minimum)
-            : "No Node version satisfies both this range and this updater's supported range (>=24.16.0 <25 || >=26.1.0). This candidate version cannot be run by this updater with a supported Node release; install a supported Node and select a compatible OpenClaw target."
+            : "No Node version satisfies both this range and this updater's supported range (>=24.16.0 <25 || >=26.1.0). This candidate version cannot be run by this updater with a supported Node release; install a supported Node and select a compatible Paddy target."
         }`,
       );
     });

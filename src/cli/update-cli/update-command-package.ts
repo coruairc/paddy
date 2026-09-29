@@ -50,7 +50,6 @@ import type { UpdateStepResult } from "../../infra/update-step-result.js";
 import { hasCommandProcessCleanupError } from "../../process/exec-result.js";
 import { runCommandWithTimeout } from "../../process/exec.js";
 import { createDeferredCore } from "../../shared/deferred.js";
-import { CLI_NAME } from "../cli-name.js";
 import { createUpdateProgress } from "./progress.js";
 import {
   DEFAULT_PACKAGE_NAME,
@@ -171,7 +170,7 @@ export async function runPackageUpdateDoctor(params: PackageDoctorOptions) {
       : [entryPath, "doctor", "--non-interactive", ...(doctorPolicy.fix ? ["--fix"] : [])]),
   ];
   const doctorProgressInfo = {
-    name: `${CLI_NAME} doctor`,
+    name: "openclaw doctor",
     command: doctorArgv.join(" "),
     index: 0,
     total: 0,
@@ -347,7 +346,7 @@ export async function runPackageUpdateDoctor(params: PackageDoctorOptions) {
   const completedSteps: UpdateStepResult[] = [];
   const runDoctor = (runCommand?: Parameters<typeof runUpdateStep>[0]["runCommand"]) =>
     runUpdateStep({
-      name: `${CLI_NAME} doctor`,
+      name: "openclaw doctor",
       results: completedSteps,
       argv: doctorArgv,
       cwd: params.root,

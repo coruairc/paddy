@@ -210,7 +210,7 @@ describe("printDaemonStatus plugin version drift", () => {
     expectMockLineContains(runtime.log, "- brave: 2026.6.9 (npm)");
     expectMockLineContains(
       runtime.log,
-      "openclaw plugins update @openclaw/brave-plugin@2026.6.10-beta.1",
+      "paddy plugins update @openclaw/brave-plugin@2026.6.10-beta.1",
     );
     expectMockLineContains(runtime.log, "paddy gateway restart");
   });

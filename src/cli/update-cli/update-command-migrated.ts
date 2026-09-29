@@ -78,9 +78,9 @@ export async function inspectActivatedUpdateState(
       // Doctor can warn without failing. Require applied content so startup
       // cannot migrate late; deferred publication alone is already ready.
       result.status = "error";
-      result.reason = `${CLI_NAME} doctor`;
+      result.reason = "openclaw doctor";
       result.steps.push({
-        name: `${CLI_NAME} doctor`,
+        name: "openclaw doctor",
         command: `${CLI_NAME} doctor --fix`,
         cwd: result.root ?? root,
         durationMs: 0,

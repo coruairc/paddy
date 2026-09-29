@@ -3165,7 +3165,7 @@ describe("updateNpmInstalledPlugins", () => {
       expect(message).toContain(spec);
       expect(message).toContain("2026.9.4");
       expect(message).toContain(stderr.startsWith("E404") ? "Package not found" : "ECONNREFUSED");
-      expect(message).toContain("openclaw plugins update demo");
+      expect(message).toContain("paddy plugins update demo");
       expect(warn).toHaveBeenCalledWith(message);
       expect(result.config).toBe(config);
       expect(result.changed).toBe(false);

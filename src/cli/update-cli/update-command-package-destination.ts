@@ -17,7 +17,7 @@ import {
 } from "../../infra/update-npm-prefix.js";
 import { UPDATE_FOREIGN_DESTINATION_REASON } from "../../shared/update-outcome.js";
 import { PRODUCT_NAME } from "../cli-name.js";
-import { formatCliCommand } from "../command-format.js";
+import { formatCliCommandWithNodeLauncher } from "../command-format.js";
 import { quoteCliArg, quotePowerShellArg } from "../quote-cli-arg.js";
 import {
   gatewayServiceCommandUsesRoot,
@@ -40,9 +40,9 @@ export async function inspectNpmGlobalDestination(
     launcherTarget: null,
   };
   const quote = process.platform === "win32" ? quotePowerShellArg : quoteCliArg;
-  const retry = formatCliCommand("openclaw update").replace(
-    /^openclaw\b/,
-    () => `node ${quote(path.resolve(root, "openclaw.mjs"))}`,
+  const retry = formatCliCommandWithNodeLauncher(
+    "openclaw update",
+    path.resolve(root, "openclaw.mjs"),
   );
   const unknown = (prefix: string | null, cause: "permission" | "unreadable-layout") => ({
     kind: "unknown" as const,
@@ -113,9 +113,10 @@ export async function inspectNpmGlobalDestination(
     ].some((env) => env?.OPENCLAW_WRAPPER?.trim());
     const select =
       serviceInspection?.verdict.refreshDefinition && !wrapper && ownsLauncher && launcherTarget
-        ? formatCliCommand(
+        ? formatCliCommandWithNodeLauncher(
             `openclaw gateway install --force --runtime-path ${quote(process.execPath)}`,
-          ).replace(/^openclaw\b/, () => `node ${quote(launcherTarget)}`)
+            launcherTarget,
+          )
         : undefined;
     const message = [
       `Selected npm destination ${prefix} is occupied by another ${PRODUCT_NAME} installation: package ${packageRoot}; launcher ${launcher}${launcherTarget ? ` -> ${launcherTarget}` : " (target unresolved)"}.`,

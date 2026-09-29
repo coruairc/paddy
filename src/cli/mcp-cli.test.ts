@@ -875,7 +875,7 @@ describe("mcp cli", () => {
 
       await expect(runMcpCommand(["mcp", "probe", "docs"])).rejects.toThrow("__exit__:1");
       expect(lastErrorLine()).toBe(
-        `MCP server "docs" is disabled in ${configPath}. Run paddyp configure docs --enable before probing it.`,
+        `MCP server "docs" is disabled in ${configPath}. Run paddy mcp configure docs --enable before probing it.`,
       );
     });
   });
@@ -1007,7 +1007,7 @@ describe("mcp cli", () => {
 
       await expect(runMcpCommand(["mcp", "unset", "missing"])).rejects.toThrow("__exit__:1");
       expect(lastErrorLine()).toBe(
-        `No MCP server named "missing" in ${configPath}. Run paddyp list to see configured servers.`,
+        `No MCP server named "missing" in ${configPath}. Run paddy mcp list to see configured servers.`,
       );
     });
   });

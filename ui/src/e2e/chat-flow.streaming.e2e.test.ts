@@ -467,7 +467,7 @@ suite.define(() => {
         });
 
         const gatewayErrorText =
-          "Agent failed before reply: Session became active in another runner; wait for it to finish before continuing.\nTo view logs, run `openclaw logs --follow` in a terminal.";
+          "Agent failed before reply: Session became active in another runner; wait for it to finish before continuing.\nTo view logs, run `paddy logs --follow` in a terminal.";
         const errorText = `Error: ${gatewayErrorText}`;
         await gateway.emitGatewayEvent("chat", {
           errorMessage: gatewayErrorText,

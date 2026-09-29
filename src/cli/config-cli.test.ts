@@ -452,7 +452,7 @@ describe("config cli", () => {
       ).rejects.toThrow(ExitError);
 
       expect(mockWriteConfigFile).not.toHaveBeenCalled();
-      expectErrorIncludes("openclaw plugins install <spec>");
+      expectErrorIncludes("paddy plugins install <spec>");
       expectErrorIncludes("paddy plugins update <plugin-id>");
     });
 

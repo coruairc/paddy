@@ -335,7 +335,7 @@ describe("formatUpdateOneLiner", () => {
     });
 
     expect(formatUpdateAvailableHint(update)).toBe(
-      `Update available (${cached ? "git behind 2 (cached) · " : ""}npm ${latestVersion}). Run: openclaw update`,
+      `Update available (${cached ? "git behind 2 (cached) · " : ""}npm ${latestVersion}). Run: paddy update`,
     );
   });
 });

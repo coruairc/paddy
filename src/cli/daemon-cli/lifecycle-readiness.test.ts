@@ -227,14 +227,14 @@ describe("Gateway service readiness", () => {
             action: "restart",
             result,
             error: expect.stringMatching(
-              /still starting after 300s.*startup migration.*openclaw gateway status --deep/,
+              /still starting after 300s.*startup migration.*paddy gateway status --deep/,
             ),
           }),
         );
       } else {
         expect(error).toHaveBeenCalledWith(
           expect.stringMatching(
-            /still starting after 300s.*startup migration.*openclaw gateway status --deep/,
+            /still starting after 300s.*startup migration.*paddy gateway status --deep/,
           ),
         );
         expect(writeJson).not.toHaveBeenCalled();

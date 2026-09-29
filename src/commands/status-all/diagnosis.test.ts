@@ -482,7 +482,7 @@ describe("status-all diagnosis port checks", () => {
     expect(output).toContain(
       "Exporter diagnostics failed: Error: diagnostics probe timed out at wss://***:***@gateway.example/socket?token=***",
     );
-    expect(output).toContain("Retry: openclaw gateway stability --type telemetry.exporter");
+    expect(output).toContain("Retry: paddy gateway stability --type telemetry.exporter");
     expect(output).toContain("! Inbound delivery telemetry: unavailable");
     expect(output).toContain(
       "Delivery diagnostics failed: Error: diagnostics probe timed out at wss://***:***@gateway.example/socket?token=***",

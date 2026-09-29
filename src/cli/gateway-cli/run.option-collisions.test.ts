@@ -1118,7 +1118,7 @@ describe("gateway run option collisions", () => {
 
     expect(startGatewayServer).not.toHaveBeenCalled();
     expect(runtimeErrors.join("\n")).toContain("Could not free port 18789: boom");
-    expect(runtimeErrors.join("\n")).toContain("openclaw gateway status --deep");
+    expect(runtimeErrors.join("\n")).toContain("paddy gateway status --deep");
   });
 
   it("marks service-mode gateway descendants with the live gateway pid", async () => {

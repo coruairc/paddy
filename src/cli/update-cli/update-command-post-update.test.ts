@@ -385,7 +385,7 @@ describe("successful update finalization ordering", () => {
       vi.mocked(defaultRuntime.log).mock.invocationCallOrder[warningIndex] ??
         Number.POSITIVE_INFINITY,
     );
-    expect(logCalls[warningIndex]?.join(" ")).toContain("openclaw completion --write-state");
+    expect(logCalls[warningIndex]?.join(" ")).toContain("paddy completion --write-state");
   });
 
   it("restarts when shell completion cache generation returns false", async () => {

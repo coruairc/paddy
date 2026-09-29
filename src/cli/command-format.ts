@@ -1,6 +1,7 @@
 // Formats CLI command examples with active container/profile hints when they apply.
 import { CLI_NAME } from "./cli-name.js";
 import { normalizeProfileName } from "./profile-utils.js";
+import { quoteCliArg, quotePowerShellArg } from "./quote-cli-arg.js";
 
 // Matches both the current binary and the retained `openclaw` alias. Accepting
 // both keeps this working during the rebrand and for anyone still typing the
@@ -49,4 +50,26 @@ export function formatCliCommand(
     return branded;
   }
   return branded.replace(CLI_PREFIX_RE, (match) => `${match} ${additions.join(" ")}`);
+}
+
+/**
+ * Formats a CLI command, then swaps its branded prefix for an absolute Node
+ * launcher. Recovery text must run this install's own script under the selected
+ * runtime, not whatever `openclaw`/`paddy` happens to resolve to on PATH.
+ *
+ * Anchors on CLI_NAME because `brandCliPrefix` has already rewritten the prefix,
+ * so matching the stored `openclaw` literal would silently drop the launcher and
+ * leave a bare command that can re-enter the broken runtime. Container/profile
+ * hints added by `formatCliCommand` are preserved.
+ */
+export function formatCliCommandWithNodeLauncher(
+  command: string,
+  launcherScript: string,
+  env?: Record<string, string | undefined>,
+): string {
+  const quote = process.platform === "win32" ? quotePowerShellArg : quoteCliArg;
+  return formatCliCommand(command, env).replace(
+    new RegExp(`^${CLI_NAME}\\b`),
+    () => `node ${quote(launcherScript)}`,
+  );
 }

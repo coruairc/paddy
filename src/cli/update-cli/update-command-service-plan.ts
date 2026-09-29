@@ -66,8 +66,7 @@ import {
 } from "../../shared/update-outcome.js";
 import { resolveNodeVersionManager } from "../../shared/version-manager-path.js";
 import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
-import { formatCliCommand } from "../command-format.js";
-import { quoteCliArg, quotePowerShellArg } from "../quote-cli-arg.js";
+import { formatCliCommandWithNodeLauncher } from "../command-format.js";
 import { resolveNodeRunner } from "./shared.js";
 import { minimumSupportedNodeVersion } from "./update-command-node-engine.js";
 import type { PackageRuntimeRecovery } from "./update-command-node-runtime-resolution.js";
@@ -165,8 +164,7 @@ export function isGatewayServiceManagementAllowedForUpdate(
   return resolveGatewayServiceManagementBlockMessageForUpdate(env) === undefined;
 }
 
-export const GATEWAY_SERVICE_INSPECTION_WARNING =
-  `Gateway service inspection is unavailable; automatic service restart was skipped. Restart the Gateway you launched manually after the update. Any recorded service definition was left unchanged; inspect it with \`${CLI_NAME} gateway status --deep\`.`;
+export const GATEWAY_SERVICE_INSPECTION_WARNING = `Gateway service inspection is unavailable; automatic service restart was skipped. Restart the Gateway you launched manually after the update. Any recorded service definition was left unchanged; inspect it with \`${CLI_NAME} gateway status --deep\`.`;
 
 function serviceInspectionWarningMessage(state: GatewayServiceState): string {
   if (state.inspectionReason) {
@@ -522,11 +520,7 @@ export async function resolvePackageRuntimePreflight(params: {
     const retainedRoot = params.sourceRoot ?? params.root ?? params.installedRoot;
     const retainedEntry = retainedRoot ? path.resolve(retainedRoot, "openclaw.mjs") : undefined;
     const continuation = retainedEntry
-      ? formatCliCommand(recoveryTarget, env).replace(
-          /^openclaw\b/,
-          () =>
-            `node ${process.platform === "win32" ? quotePowerShellArg(retainedEntry) : quoteCliArg(retainedEntry)}`,
-        )
+      ? formatCliCommandWithNodeLauncher(recoveryTarget, retainedEntry, env)
       : undefined;
     const recoverySteps =
       recommendation && recoveryVersion

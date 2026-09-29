@@ -410,7 +410,7 @@ describe("checkGatewayHealth", () => {
     expect(note).toHaveBeenCalledWith(
       [
         "Channel status probe failed: channel probe timed out",
-        "Retry: openclaw channels status --probe",
+        "Retry: paddy channels status --probe",
       ].join("\n"),
       "Channel warnings",
     );
@@ -579,7 +579,7 @@ describe("checkGatewayHealth", () => {
     expect(message).not.toContain(token);
     expect(message).not.toContain("\u001B");
     expect(message.split("\n")).toHaveLength(2);
-    expect(message).toContain("Retry: openclaw channels status --probe");
+    expect(message).toContain("Retry: paddy channels status --probe");
     expect(sharedRuntime.error).not.toHaveBeenCalled();
   });
 

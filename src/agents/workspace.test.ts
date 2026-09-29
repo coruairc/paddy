@@ -196,7 +196,7 @@ describe("ensureAgentWorkspace", () => {
 
     await expect(
       ensureAgentWorkspace({ dir: tempDir, ensureBootstrapFiles: true }),
-    ).rejects.toThrow(/run openclaw doctor --fix/u);
+    ).rejects.toThrow(/run paddy doctor --fix/u);
     await expect(
       fs.access(path.join(tempDir, ...LEGACY_WORKSPACE_STATE_PATH_SEGMENTS)),
     ).resolves.toBeUndefined();
@@ -214,7 +214,7 @@ describe("ensureAgentWorkspace", () => {
 
     await expect(
       ensureAgentWorkspace({ dir: tempDir, ensureBootstrapFiles: true }),
-    ).rejects.toThrow(/run openclaw doctor --fix/u);
+    ).rejects.toThrow(/run paddy doctor --fix/u);
     await expect(
       fs.access(path.join(tempDir, ...LEGACY_WORKSPACE_STATE_PATH_SEGMENTS)),
     ).resolves.toBeUndefined();
@@ -513,7 +513,7 @@ describe("ensureAgentWorkspace", () => {
 
     await expect(
       ensureAgentWorkspace({ dir: tempDir, ensureBootstrapFiles: true }),
-    ).rejects.toThrow(/run openclaw doctor --fix/u);
+    ).rejects.toThrow(/run paddy doctor --fix/u);
 
     expect(await fs.readFile(attestationPath, "utf-8")).toBe(marker);
     expect((await readWorkspaceStateSnapshot(tempDir)).setupExists).toBe(false);
@@ -530,7 +530,7 @@ describe("ensureAgentWorkspace", () => {
 
     await expect(
       ensureAgentWorkspace({ dir: tempDir, ensureBootstrapFiles: true }),
-    ).rejects.toThrow(/run openclaw doctor --fix/u);
+    ).rejects.toThrow(/run paddy doctor --fix/u);
 
     expect(await fs.readFile(attestationPath, "utf-8")).toBe(marker);
     expect((await readWorkspaceStateSnapshot(tempDir)).setupExists).toBe(true);

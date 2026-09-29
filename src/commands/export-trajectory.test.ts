@@ -176,7 +176,7 @@ describe("exportTrajectoryCommand", () => {
     [
       "unknown",
       "nope-agent",
-      'Unknown agent id "nope-agent". Run openclaw agents list to see configured agents.',
+      'Unknown agent id "nope-agent". Run paddy agents list to see configured agents.',
     ],
     ["whitespace-only", "   ", "--agent must not be blank"],
   ])("rejects an %s explicit agent before reading a session", async (_label, agent, message) => {

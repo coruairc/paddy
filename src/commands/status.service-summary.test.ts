@@ -87,8 +87,8 @@ describe("readServiceStatusSummary", () => {
         expect(output).not.toContain("openclaw doctor --fix");
         expect(output).not.toContain("openclaw gateway install --force");
       } else {
-        expect(output).toContain("openclaw doctor --fix");
-        expect(output).toContain("openclaw gateway install --force");
+        expect(output).toContain("paddy doctor --fix");
+        expect(output).toContain("paddy gateway install --force");
       }
 
       const alias = path.join(root, "active-package");
