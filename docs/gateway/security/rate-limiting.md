@@ -41,7 +41,7 @@ The budget uses the client IP resolved before the upgrade:
 - **Direct connections:** the normalized socket peer IP. Clients behind the same
   NAT share the public source IP and therefore the same budget.
 - **Trusted reverse proxies:** when the socket peer matches
-  `gateway.trustedProxies`, OpenClaw walks `X-Forwarded-For` right to left,
+  `gateway.trustedProxies`, Paddy walks `X-Forwarded-For` right to left,
   skipping loopback and trusted proxy hops, and uses the first remaining IP.
   `X-Real-IP` is a fallback only when `gateway.allowRealIpFallback: true` and
   that walk finds no client IP. The proxy must overwrite or safely rebuild
@@ -51,7 +51,7 @@ The budget uses the client IP resolved before the upgrade:
   `cloudflared` socket source narrowly and ensure a safe `X-Forwarded-For`
   chain reaches the Gateway. `CF-Connecting-IP` is not used to select this
   budget. See [Cloudflare Tunnel and Access](/gateway/cloudflare-access).
-- **OpenClaw-managed Tailscale Serve:** the dedicated private listener uses the
+- **Paddy-managed Tailscale Serve:** the dedicated private listener uses the
   client IP from Tailscale's rewritten `X-Forwarded-For`, not the loopback
   socket address or the Tailscale user login. Externally managed Serve targeting
   the ordinary listener follows the trusted-proxy rules above.
@@ -141,7 +141,7 @@ stays the client IP. This is not configurable.
 ### Unconfigured same-host reverse proxies
 
 When a request arrives from a loopback socket with forwarding headers but the
-proxy is not configured in `gateway.trustedProxies`, OpenClaw cannot safely
+proxy is not configured in `gateway.trustedProxies`, Paddy cannot safely
 attribute the request to the claimed forwarded IP. Gateway-authenticated routes
 reject the request before credentials or fallback auth are checked. HTTP
 requests receive `403` with error type `proxy_attribution_required`; WebSocket
@@ -151,7 +151,7 @@ signature or credential policy, but they ignore forwarded client claims and use
 the non-exempt socket source for pre-auth limits.
 
 Configure the proxy address narrowly in `gateway.trustedProxies` and have the
-proxy overwrite or safely rebuild forwarding headers. OpenClaw then restores
+proxy overwrite or safely rebuild forwarding headers. Paddy then restores
 validated per-client attribution and rate-limit buckets. See [Trusted Proxy
 Auth](/gateway/trusted-proxy-auth) and the [Gateway security
 guide](/gateway/security/network-exposure#reverse-proxy-configuration).
@@ -162,7 +162,7 @@ hardening does not classify that transport as a proxy. Do not use a same-host
 TCP forwarder as a remote-access security boundary; use managed Tailscale, SSH,
 or an HTTP reverse proxy configured as described above.
 
-OpenClaw-managed Tailscale Serve and Funnel use a separate private loopback
+Paddy-managed Tailscale Serve and Funnel use a separate private loopback
 listener. Reaching that listener establishes the managed ingress path, and
 Tailscale's rewritten source address selects a normal non-exempt, resettable
 per-client bucket. Serve tokenless identity auth additionally requires a
@@ -171,11 +171,11 @@ matching WhoIs result; Funnel requires its marker and password authentication.
 An externally managed Serve or Funnel route targeting the ordinary Gateway
 listener can establish generic proxy attribution only when its immediate source
 is explicitly configured in `gateway.trustedProxies` and it supplies a valid
-non-loopback forwarded client address. OpenClaw then uses that client address
+non-loopback forwarded client address. Paddy then uses that client address
 for rate limits and applies normal gateway auth; Tailscale headers do not grant
 managed-ingress or tokenless-auth semantics. Without that trust configuration,
 Gateway-authenticated routes reject the unattributable ingress. Prefer
-`gateway.tailscale.mode: "serve"` or `"funnel"` when OpenClaw should own the
+`gateway.tailscale.mode: "serve"` or `"funnel"` when Paddy should own the
 route and its dedicated listener.
 
 ### Webhooks

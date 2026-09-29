@@ -1,17 +1,17 @@
 ---
-summary: "CLI reference for `openclaw policy` conformance checks"
+summary: "CLI reference for `paddy policy` conformance checks"
 read_when:
-  - You want to check OpenClaw settings against an authored policy.jsonc
+  - You want to check Paddy settings against an authored policy.jsonc
   - You want policy findings in doctor lint
   - You need a policy attestation hash for audit evidence
 title: "Policy"
 ---
 
-# `openclaw policy`
+# `paddy policy`
 
-`openclaw policy` is provided by the bundled Policy plugin. It is an enterprise
-conformance layer over existing OpenClaw settings, not a second configuration
-system. You author requirements in `policy.jsonc`; OpenClaw observes the active
+`paddy policy` is provided by the bundled Policy plugin. It is an enterprise
+conformance layer over existing Paddy settings, not a second configuration
+system. You author requirements in `policy.jsonc`; Paddy observes the active
 workspace as evidence; policy reports drift through `doctor --lint`. Policy
 does not enforce tool calls or rewrite runtime behavior at request time, and it
 does not attest per-agent credential stores such as `openclaw-agent.sqlite`.
@@ -26,7 +26,7 @@ not be enabled" or "governed tools must declare risk and owner metadata." If
 you only need local behavior with no attestation or drift detection, plain
 config is enough.
 
-Separately, [`openclaw agent exec`](/cli/agent#agent-exec) applies an isolated
+Separately, [`paddy agent exec`](/cli/agent#agent-exec) applies an isolated
 implicit policy config for each run: the agent sandbox is off, Gateway-host
 execution is fully allowed, and filesystem tools are restricted to `--cwd`.
 
@@ -37,7 +37,7 @@ execution is fully allowed, and filesystem tools are restricted to `--cwd`.
     Enable the plugin and write `policy.jsonc`, with an example covering every section.
   </Card>
   <Card title="Policy rule reference" href="/cli/policy/rules" icon="table-list">
-    Every rule namespace, the OpenClaw state it observes, and when to use it.
+    Every rule namespace, the Paddy state it observes, and when to use it.
   </Card>
   <Card title="Scoped overlays" href="/cli/policy/scopes" icon="layer-group">
     Hold named agents or channels to stricter rules than the baseline.

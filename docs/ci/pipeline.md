@@ -7,7 +7,7 @@ read_when:
   - You need to satisfy or configure security-sensitive pull request review
 ---
 
-OpenClaw CI runs on pushes to `main` that change a path outside `**/*.md` and
+Paddy CI runs on pushes to `main` that change a path outside `**/*.md` and
 `docs/**`, on every non-draft pull request, and on manual dispatch. Docs-only
 main pushes skip CI; mixed docs and code pushes still run it. Pull-request docs
 scoping is unchanged.
@@ -112,7 +112,7 @@ the job's uploaded artifacts.
 | `macos-swift`                    | Swift lint and build for the macOS app, plus tests for the app, shared OpenClawKit, and standalone Swabble package                                                                                                                                                                                       | macOS-relevant changes                                |
 | `ios-build`                      | Debug build and Swift lint smoke; hourly main runs native tests; full manual CI also adds a Release device phase                                                                                                                                                                                         | iOS/capture changes and full manual CI                |
 | `ios-screenshot-shard`           | Two device-family shards using the locked Ruby/Fastlane bundle: iPhone in one job, and 13-inch iPad plus Watch in the other; scenarios stay serial within each device                                                                                                                                    | Screenshot-input changes and full manual CI           |
-| `ios-screenshot-evidence`        | Hosted reducer that verifies exact artifact/family topology, digests, one successful OpenClaw-managed capture per screenshot, and run provenance before publishing the canonical release screenshot artifact; replacement attempts cannot turn failed captures into passing evidence                     | After both screenshot shards                          |
+| `ios-screenshot-evidence`        | Hosted reducer that verifies exact artifact/family topology, digests, one successful Paddy-managed capture per screenshot, and run provenance before publishing the canonical release screenshot artifact; replacement attempts cannot turn failed captures into passing evidence                        | After both screenshot shards                          |
 | `android`                        | Phone and Wear unit tests, debug builds, Android lint, and Kotlin lint                                                                                                                                                                                                                                   | Android-relevant changes                              |
 | `openclaw/ci-gate`               | Final aggregate: requires preflight and security; rejects selected skips and every downstream failure or cancellation                                                                                                                                                                                    | Every non-draft CI run                                |
 | `openclaw-performance`           | Separate workflow: daily/on-demand Kova runtime performance reports with mock-provider, deep-profile, and GPT 5.6 live lanes                                                                                                                                                                             | Scheduled and manual dispatch                         |
@@ -265,7 +265,7 @@ measure setup separately from the test body.
 
 Preflight's manifest bootstrap uses the exact `NODE_VERSION` pin in `ci.yml`
 (24.21.0). Unlike the repository helper, `actions/setup-node` can satisfy a
-`24.x` request from an older cached patch below OpenClaw's support floor.
+`24.x` request from an older cached patch below Paddy's support floor.
 
 CI's execution version does not define the supported user runtime matrix.
 `package.json` accepts Node 24.16+ and Node 26.1+. The full manual CI graph checks

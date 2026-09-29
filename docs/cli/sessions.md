@@ -6,33 +6,33 @@ read_when:
 title: "Sessions"
 ---
 
-# `openclaw sessions`
+# `paddy sessions`
 
 List stored conversation sessions.
 
 Session lists are not channel/provider liveness checks. They show persisted
 conversation rows from session stores. A quiet Discord, Slack, Telegram, or
 other channel can reconnect successfully without creating a new session row
-until a message is processed. Use `openclaw channels status --probe`,
-`openclaw status --deep`, or `openclaw health --verbose` when you need live
+until a message is processed. Use `paddy channels status --probe`,
+`paddy status --deep`, or `paddy health --verbose` when you need live
 channel connectivity.
 
 ```bash
-openclaw sessions
-openclaw sessions --agent work
-openclaw sessions --all-agents
-openclaw sessions --active 120
-openclaw sessions --limit 25
-openclaw sessions --store ./tmp/sessions.json
-openclaw sessions --json
+paddy sessions
+paddy sessions --agent work
+paddy sessions --all-agents
+paddy sessions --active 120
+paddy sessions --limit 25
+paddy sessions --store ./tmp/sessions.json
+paddy sessions --json
 ```
 
-`openclaw sessions list` is an explicit spelling of the default listing action and
+`paddy sessions list` is an explicit spelling of the default listing action and
 accepts the same flags.
 
 Human-readable lists and cleanup previews use terminal-width tables. Long model
 names and flags wrap without being truncated, and Unicode keys stay aligned.
-Long keys show their beginning and end; use `openclaw sessions --json` for complete
+Long keys show their beginning and end; use `paddy sessions --json` for complete
 session keys.
 
 Token counts below 1,000 appear as whole numbers; larger counts use compact `k`
@@ -51,7 +51,7 @@ Flags:
 | `--verbose`          | Verbose logging.                                                    |
 
 `--store` accepts the documented legacy selector form, including `sessions.json`
-and suffixless custom selectors. OpenClaw resolves that selector to its physical
+and suffixless custom selectors. Paddy resolves that selector to its physical
 SQLite target, verifies the target exists and is usable, and reports the physical
 path it actually read. Combine it with `--agent <id>` when you must select the
 configured agent that owns the store.
@@ -60,7 +60,7 @@ configured agent that owns the store.
 and use the standard [CLI JSON failure envelope](/cli#json-failures) when `--json`
 is set.
 
-`openclaw sessions` and the Gateway `sessions.list` RPC are bounded by default
+`paddy sessions` and the Gateway `sessions.list` RPC are bounded by default
 so large long-lived stores cannot monopolize the CLI process or Gateway event
 loop. The CLI returns the newest 100 sessions by default; pass `--limit <n>`
 for a smaller/larger window or `--limit all` when you intentionally need the
@@ -82,7 +82,7 @@ configured agent roots or a templated `session.store` root. Legacy selector
 paths must resolve inside the agent root; symlinks and out-of-root paths are
 skipped.
 
-`openclaw sessions --all-agents --json`:
+`paddy sessions --all-agents --json`:
 
 ```json
 {
@@ -109,11 +109,11 @@ skipped.
 Archive one or more sessions through the running Gateway:
 
 ```bash
-openclaw sessions archive "agent:main:scratch-1"
-openclaw sessions archive "agent:main:scratch-1" "agent:main:scratch-2"
-openclaw sessions archive "agent:work:scratch-1" --agent work
-openclaw sessions archive "agent:main:scratch-1" --dry-run
-openclaw sessions archive "agent:main:scratch-1" --json
+paddy sessions archive "agent:main:scratch-1"
+paddy sessions archive "agent:main:scratch-1" "agent:main:scratch-2"
+paddy sessions archive "agent:work:scratch-1" --agent work
+paddy sessions archive "agent:main:scratch-1" --dry-run
+paddy sessions archive "agent:main:scratch-1" --json
 ```
 
 Archive uses the same `sessions.patch` lifecycle operation as the Control UI.
@@ -138,11 +138,11 @@ after cheaper cleanup tiers are exhausted.
 Delete one or more sessions through the running Gateway:
 
 ```bash
-openclaw sessions delete "agent:main:scratch-1"
-openclaw sessions delete "agent:main:scratch-1" "agent:main:scratch-2" --yes
-openclaw sessions delete "agent:work:scratch-1" --agent work --yes
-openclaw sessions delete "agent:main:scratch-1" --dry-run
-openclaw sessions delete "agent:main:scratch-1" --yes --json
+paddy sessions delete "agent:main:scratch-1"
+paddy sessions delete "agent:main:scratch-1" "agent:main:scratch-2" --yes
+paddy sessions delete "agent:work:scratch-1" --agent work --yes
+paddy sessions delete "agent:main:scratch-1" --dry-run
+paddy sessions delete "agent:main:scratch-1" --yes --json
 ```
 
 Repeated keys are processed once, in first-occurrence order, after surrounding
@@ -161,7 +161,7 @@ other lifecycle artifacts. For ordinary sessions it retains the transcript as
 a verified `.jsonl.deleted.<timestamp>` archive; incognito transcripts are
 removed without an archive. Retained deleted-session archives can remain
 eligible for memory search. To remove indexed memories, run
-`openclaw memory forget --agent <agent-id> --session <id-or-key>` on the Gateway
+`paddy memory forget --agent <agent-id> --session <id-or-key>` on the Gateway
 host or container using that Gateway's state and configuration. Select the agent
 that owned the deleted session, including for `global` keys. Memory cleanup runs
 locally; deleting through `--url` or a configured remote Gateway does not forward
@@ -205,7 +205,7 @@ Example mixed-result JSON:
       "key": "agent:main:missing",
       "ok": false,
       "status": "not_found",
-      "error": "Session not found. Run openclaw sessions list --json to choose a valid key."
+      "error": "Session not found. Run paddy sessions list --json to choose a valid key."
     }
   ]
 }
@@ -214,14 +214,14 @@ Example mixed-result JSON:
 ## Tail trajectory progress
 
 ```bash
-openclaw sessions tail
-openclaw sessions tail --follow
-openclaw sessions tail --session-key "agent:main:telegram:direct:123" --tail 25
-openclaw sessions --agent work tail --follow
-openclaw sessions --all-agents tail --follow
+paddy sessions tail
+paddy sessions tail --follow
+paddy sessions tail --session-key "agent:main:telegram:direct:123" --tail 25
+paddy sessions --agent work tail --follow
+paddy sessions --all-agents tail --follow
 ```
 
-`openclaw sessions tail` renders recent runtime trajectory events as compact
+`paddy sessions tail` renders recent runtime trajectory events as compact
 progress lines. Without `--session-key`, it tails running sessions first, then
 the latest stored session. `--tail <count>` controls how many existing events
 print before follow mode; default `80`, and `0` starts at the current end.
@@ -249,8 +249,8 @@ show `done`.
 ## Export a trajectory bundle
 
 ```bash
-openclaw sessions export-trajectory --session-key "agent:main:telegram:direct:123" --workspace .
-openclaw sessions export-trajectory --session-key "agent:main:telegram:direct:123" --output bug-123 --json
+paddy sessions export-trajectory --session-key "agent:main:telegram:direct:123" --workspace .
+paddy sessions export-trajectory --session-key "agent:main:telegram:direct:123" --output bug-123 --json
 ```
 
 This is the command path used by the `/export-trajectory` slash command after
@@ -263,19 +263,19 @@ The file list in text and JSON output reports only artifacts written to the bund
 Run maintenance now instead of waiting for the next write cycle:
 
 ```bash
-openclaw sessions cleanup --dry-run
-openclaw sessions cleanup --agent work --dry-run
-openclaw sessions cleanup --all-agents --dry-run
-openclaw sessions cleanup --enforce
-openclaw sessions cleanup --enforce --active-key "agent:main:telegram:direct:123"
-openclaw sessions cleanup --dry-run --fix-dm-scope
-openclaw sessions cleanup --json
+paddy sessions cleanup --dry-run
+paddy sessions cleanup --agent work --dry-run
+paddy sessions cleanup --all-agents --dry-run
+paddy sessions cleanup --enforce
+paddy sessions cleanup --enforce --active-key "agent:main:telegram:direct:123"
+paddy sessions cleanup --dry-run --fix-dm-scope
+paddy sessions cleanup --json
 ```
 
-`openclaw sessions cleanup` uses `session.maintenance` settings from config
+`paddy sessions cleanup` uses `session.maintenance` settings from config
 ([Configuration reference](/gateway/config-agents/sessions#session)):
 
-- Scope note: `openclaw sessions cleanup` maintains session stores,
+- Scope note: `paddy sessions cleanup` maintains session stores,
   transcripts, trajectory rows, and legacy trajectory sidecars. It does not
   prune cron run history. Cron retains terminal run history for 7
   days (`lost` rows for 24 hours) and enforces the newest 2000 rows per job and
@@ -354,7 +354,7 @@ other eligible files. Canonical SQLite archive pruning stops after a deletion
 error to retain its database recovery copy. If usage stays above the target,
 check filesystem permissions and retry after resolving the deletion failure.
 
-`openclaw sessions cleanup --all-agents --dry-run --json`:
+`paddy sessions cleanup --all-agents --dry-run --json`:
 
 ```json
 {
@@ -407,7 +407,7 @@ agent ID to match your copy:
   export OPENCLAW_CONFIG_PATH="$OPENCLAW_STATE_DIR/openclaw.json"
   copied_db="$OPENCLAW_STATE_DIR/agents/main/agent/openclaw-agent.sqlite"
 
-  openclaw sessions cleanup --store "$copied_db" --dry-run --json
+  paddy sessions cleanup --store "$copied_db" --dry-run --json
 )
 ```
 
@@ -419,8 +419,8 @@ Review the preview, then apply cleanup and compact the copied database:
   export OPENCLAW_CONFIG_PATH="$OPENCLAW_STATE_DIR/openclaw.json"
   copied_db="$OPENCLAW_STATE_DIR/agents/main/agent/openclaw-agent.sqlite"
 
-  openclaw sessions cleanup --store "$copied_db" --enforce --json
-  openclaw doctor --session-sqlite compact --session-sqlite-agent main --session-sqlite-store "$copied_db" --json
+  paddy sessions cleanup --store "$copied_db" --enforce --json
+  paddy doctor --session-sqlite compact --session-sqlite-agent main --session-sqlite-store "$copied_db" --json
 )
 ```
 
@@ -441,14 +441,14 @@ for the archive ownership and protection rules.
 
 ## Compact a session
 
-Reclaim context budget for a wedged or oversized session. `openclaw sessions
+Reclaim context budget for a wedged or oversized session. `paddy sessions
 compact <key>` is the first-class wrapper around the `sessions.compact`
 Gateway RPC and requires a running Gateway.
 
 ```bash
-openclaw sessions compact "agent:main:main"
-openclaw sessions compact "agent:main:main" --max-lines 200
-openclaw sessions compact "agent:work:main" --agent work --json
+paddy sessions compact "agent:main:main"
+paddy sessions compact "agent:main:main" --max-lines 200
+paddy sessions compact "agent:work:main" --agent work --json
 ```
 
 - Without `--max-lines`, the Gateway LLM-summarizes the transcript. The CLI
@@ -465,7 +465,7 @@ The command exits non-zero when the Gateway reports a failed compaction or is
 unreachable, so crons and scripts never mistake a silent no-op for success.
 
 <Note>
-`openclaw agent --message '/compact ...'` is **not** a compaction path. Slash
+`paddy agent --message '/compact ...'` is **not** a compaction path. Slash
 commands from the CLI are rejected by the authorized-sender check; that
 invocation exits non-zero with guidance pointing here instead of silently
 no-opping.
@@ -473,7 +473,7 @@ no-opping.
 
 ### sessions.compact RPC
 
-`openclaw gateway call sessions.compact --params '<json>'` accepts:
+`paddy gateway call sessions.compact --params '<json>'` accepts:
 
 | Field      | Type        | Required | Description                                                |
 | ---------- | ----------- | -------- | ---------------------------------------------------------- |
@@ -509,5 +509,5 @@ Example truncate response (`--max-lines 200`):
 - [Session management](/concepts/session)
 - [Compaction](/concepts/compaction)
 - [CLI reference](/cli)
-- [`openclaw resume`](/cli/resume) — attach the TUI to a recent Gateway session
+- [`paddy resume`](/cli/resume) — attach the TUI to a recent Gateway session
 - [Cloud Workers](/gateway/cloud-workers) — sessions hosted on remote workers

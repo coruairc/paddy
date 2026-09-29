@@ -1,5 +1,5 @@
 ---
-summary: "Setup guide for developers working on the OpenClaw macOS app"
+summary: "Setup guide for developers working on the Paddy macOS app"
 read_when:
   - Setting up the macOS development environment
 title: "macOS dev setup"
@@ -7,7 +7,7 @@ title: "macOS dev setup"
 
 # macOS developer setup
 
-Build and run the OpenClaw macOS application from source.
+Build and run the Paddy macOS application from source.
 
 The packaged app requires macOS 15.0 or later. The build host must also meet
 the Xcode requirements below.
@@ -243,7 +243,7 @@ mlx-swift Metal compilation errors non-deterministically (a different `.metal`
 file each run, `Could not read serialized diagnostics file` then a nonzero
 `metal` exit), because the beta `metal` compiler and its separately downloaded
 Metal Toolchain are still unstable. This is an upstream toolchain issue, not an
-OpenClaw one.
+Paddy one.
 
 If you do not need on-device MLX voice, skip the helper:
 
@@ -275,8 +275,8 @@ If the app crashes when you try to allow **Speech Recognition** or
 Check whether a zombie process holds the port:
 
 ```bash
-openclaw gateway status
-openclaw gateway stop
+paddy gateway status
+paddy gateway stop
 
 # If you're not using a LaunchAgent (dev mode / manual runs), find the listener:
 lsof -nP -iTCP:18789 -sTCP:LISTEN

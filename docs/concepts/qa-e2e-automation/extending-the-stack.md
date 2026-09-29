@@ -17,7 +17,7 @@ Seed assets live in `qa/`:
 Identity-sensitive channel changes use the isolated
 `channel-participant-identity-inspection` QA Channel flow. It drives a real
 ephemeral Gateway and mock provider, then inspects admitted runs with the same
-`openclaw audit --run ... --explain` JSON and human surfaces operators use.
+`paddy audit --run ... --explain` JSON and human surfaces operators use.
 The flow includes lifecycle-owned restart and a row-count check for rejected
 pre-run ingress.
 
@@ -62,7 +62,7 @@ The baseline list should stay broad enough to cover:
 
 `qa suite` has two local provider mock lanes:
 
-- `mock-openai` is the scenario-aware OpenClaw mock. It remains the default
+- `mock-openai` is the scenario-aware Paddy mock. It remains the default
   deterministic mock lane for repo-backed QA and parity gates.
 - `aimock` starts an AIMock-backed provider server for experimental
   protocol, fixture, record/replay, and chaos coverage. It is additive and
@@ -72,7 +72,7 @@ The scenario-aware mock answers Activity recap requests separately from agent
 turns. Recaps quote conversation text as data, so they cannot trigger scenario
 tools or enter the scenario request evidence returned by `/debug/requests`.
 
-For an IPv6 loopback server, run `pnpm openclaw qa mock-openai --host ::1`.
+For an IPv6 loopback server, run `pnpm paddy qa mock-openai --host ::1`.
 The printed URL includes brackets, such as `http://[::1]:<port>`; use that URL
 when configuring a client. QA Lab also brackets IPv6 hosts in its listen and
 advertised URLs. Pass the bare address to `--host`.
@@ -87,7 +87,7 @@ provider names.
 
 `qa-lab` owns a generic transport seam for YAML QA scenarios. `qa-channel` is
 the synthetic default. `crabline` starts separate local provider servers and
-runs OpenClaw's normal channel plugins against their provider-shaped REST and
+runs Paddy's normal channel plugins against their provider-shaped REST and
 streaming boundaries; it does not use Crabline's fixture-level local mock
 providers. `live` is reserved for real provider credentials and external
 channels.
@@ -139,7 +139,7 @@ own the flow.
 
 `qa-lab` owns the shared host mechanics:
 
-- the `openclaw qa` command root
+- the `paddy qa` command root
 - suite startup and teardown
 - worker concurrency
 - artifact writing
@@ -149,7 +149,7 @@ own the flow.
 
 Runner plugins own the transport contract:
 
-- how `openclaw qa <runner>` is mounted beneath the shared `qa` root
+- how `paddy qa <runner>` is mounted beneath the shared `qa` root
 - how the gateway is configured for that transport
 - how readiness is checked
 - how inbound events are injected
@@ -165,7 +165,7 @@ The minimum adoption bar for a new channel:
 2. Implement the transport runner on the shared `qa-lab` host seam.
 3. Keep transport-specific mechanics inside the runner plugin or channel
    harness.
-4. Mount the runner as `openclaw qa <runner>` instead of registering a
+4. Mount the runner as `paddy qa <runner>` instead of registering a
    competing root command. Runner plugins should declare `qaRunners` in
    `openclaw.plugin.json` and export a matching `qaRunnerCliRegistrations`
    array from a lightweight `qa-runner-api.ts` surface. Installed plugins using

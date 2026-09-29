@@ -15,11 +15,11 @@ Dashboard workboard for agent-owned issues and sessions.
 ## Distribution
 
 - Package: `@openclaw/workboard`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 
-- CLI commands: `openclaw workboard`
+- CLI commands: `paddy workboard`
 - Contracts: `tools`
 - Dashboard data bindings: `workboard.cards.list`, `workboard.stats`, `workboard.boards.list`
 - Dashboard action verbs: `workboard.dispatch`

@@ -347,10 +347,10 @@ describe("buildExecApprovalPendingToolResult", () => {
     });
     const text = result.content.find((part) => part.type === "text")?.text ?? "";
     expect(text).toContain(
-      "Print the Control UI URL with `openclaw dashboard --no-open`, open it in a browser, then use the approval inbox.",
+      "Print the Control UI URL with `paddy dashboard --no-open`, open it in a browser, then use the approval inbox.",
     );
     expect(text).toContain(
-      "Inspect the node's effective exec policy with `openclaw approvals get --node node-mac-1`.",
+      "Inspect the node's effective exec policy with `paddy approvals get --node node-mac-1`.",
     );
   });
 });
@@ -386,7 +386,7 @@ describe("buildHeadlessExecApprovalDeniedMessage", () => {
       expect(text).toContain(`${label} runs cannot wait for interactive exec approval`);
       expect(text).toContain('tools.exec.mode="full"');
       expect(text).toContain('host approvals to security="full" and ask="off"');
-      expect(text).toContain(`openclaw approvals get ${target}`);
+      expect(text).toContain(`paddy approvals get ${target}`);
       expect(text).toContain(surface);
       expect(text).not.toContain("both files");
       expect(text).not.toContain("openclaw.sqlite");

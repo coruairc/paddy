@@ -104,7 +104,7 @@ export async function messageCommand(
   });
   const agentId = resolveAmbientOwnerAgentId(cfg, undefined, {
     surface: "message CLI",
-    hint: `Run ${formatCliCommand("openclaw config set agents.defaults.systemAgent.agentId <id>")} with a configured agent ID.`,
+    hint: `Run ${formatCliCommand("paddy config set agents.defaults.systemAgent.agentId <id>")} with a configured agent ID.`,
   });
   const action = CHANNEL_MESSAGE_ACTION_NAMES.find(
     (name) => normalizeLowercaseStringOrEmpty(name) === normalizedActionInput,
@@ -113,7 +113,7 @@ export async function messageCommand(
     throw new Error(
       `Unknown message action "${actionInput}". Use one of ${CHANNEL_MESSAGE_ACTION_NAMES.join(
         ", ",
-      )}. Example: ${formatCliCommand("openclaw message send --channel <channel> --target <id> --text <message>")}.`,
+      )}. Example: ${formatCliCommand("paddy message send --channel <channel> --target <id> --text <message>")}.`,
     );
   }
   const outboundDeps: OutboundSendDeps = createOutboundSendDeps(deps);

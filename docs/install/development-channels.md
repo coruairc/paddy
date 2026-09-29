@@ -8,7 +8,7 @@ title: "Release channels"
 sidebarTitle: "Release Channels"
 ---
 
-OpenClaw ships four update channels:
+Paddy ships four update channels:
 
 - **stable**: npm dist-tag `latest`. Recommended for most users.
 - **extended-stable**: npm dist-tag `extended-stable`. A net-new, trailing
@@ -29,10 +29,10 @@ directly to `latest`. Dist-tags are the source of truth for npm installs.
 ## Switching channels
 
 ```bash
-openclaw update --channel stable
-openclaw update --channel extended-stable
-openclaw update --channel beta
-openclaw update --channel dev
+paddy update --channel stable
+paddy update --channel extended-stable
+paddy update --channel beta
+paddy update --channel dev
 ```
 
 `--channel` drives the update and persists the choice to `update.channel` in
@@ -42,14 +42,14 @@ previous channel. The selected channel drives both install paths:
 | Channel           | npm/package installs                                                                                                                                                                   | git installs                                                                                       |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `stable`          | dist-tag `latest`                                                                                                                                                                      | switches to the npm package at `latest`                                                            |
-| `extended-stable` | resolves the public npm `extended-stable` selector, verifies the exact selected package, and installs that exact version. Fails closed with no fallback to `latest`, `beta`, or `dev`. | unsupported: OpenClaw leaves the checkout unchanged and asks you to use a package installation     |
+| `extended-stable` | resolves the public npm `extended-stable` selector, verifies the exact selected package, and installs that exact version. Fails closed with no fallback to `latest`, `beta`, or `dev`. | unsupported: Paddy leaves the checkout unchanged and asks you to use a package installation        |
 | `beta`            | dist-tag `beta`, falling back to `latest` when `beta` is missing or older                                                                                                              | switches to the npm package at `beta`, falling back to `latest` when beta is missing or older      |
 | `dev`             | switches to a Git checkout, builds it, and reinstalls the global CLI                                                                                                                   | fetches, rebases the checkout on the upstream `main` branch, builds, and reinstalls the global CLI |
 
 An explicit `--channel stable` or `--channel beta` switches a Git installation
-to a package installation. A bare `openclaw update` in a Git checkout with a
+to a package installation. A bare `paddy update` in a Git checkout with a
 previously stored stable or beta channel instead selects the corresponding Git tag.
-For these Git tag updates, OpenClaw refreshes branches without adding force to
+For these Git tag updates, Paddy refreshes branches without adding force to
 their configured refspecs, then force-refreshes tags only from the release remote.
 The retained `branch.main.remote` setting takes precedence, followed by `origin`
 or the only configured remote. With multiple remotes and neither choice, set
@@ -71,7 +71,7 @@ For `dev` git installs, the default checkout is `~/openclaw` (or
 Automatic update campaigns pin the upstream commit they announce, so the
 displayed list previews up to five commits from the exact target installed even
 if `main` advances during the countdown. A manual
-`openclaw update --channel dev` still targets the current upstream `main`.
+`paddy update --channel dev` still targets the current upstream `main`.
 
 <Tip>
 To keep stable and dev in parallel, use two separate checkouts and point each gateway at its own.
@@ -84,13 +84,13 @@ single update **without** changing the persisted channel:
 
 ```bash
 # Install a specific version
-openclaw update --tag 2026.4.1-beta.1
+paddy update --tag 2026.4.1-beta.1
 
 # Install from the beta dist-tag (one-off, does not persist)
-openclaw update --tag beta
+paddy update --tag beta
 
 # Switch to the moving GitHub main checkout (persistent)
-openclaw update --channel dev
+paddy update --channel dev
 
 # Install a specific npm package spec
 openclaw update --tag openclaw@2026.4.1-beta.1
@@ -100,18 +100,18 @@ openclaw update --tag openclaw@2026.4.1-beta.1
 Notes:
 
 - `--tag` applies to **package (npm) installs only**; git installs ignore it.
-- The tag is not persisted; the next `openclaw update` uses the configured
+- The tag is not persisted; the next `paddy update` uses the configured
   channel.
 - A package install with stored `update.channel: "dev"` still honors a one-off
   `--tag` without switching to Git. An explicit `--channel dev` takes precedence
   over `--tag` and selects the Git checkout flow.
 - The `--tag main` shorthand is rejected for package installs because the
   workspace checkout is not a self-contained package artifact. Use
-  `openclaw update --channel dev` (package installs switch to a git checkout)
+  `paddy update --channel dev` (package installs switch to a git checkout)
   or reinstall with the installer's git method:
   `curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method git --version main`.
 - Downgrade protection: if the target version is older than the current
-  version, OpenClaw prompts for confirmation (skip with `--yes`).
+  version, Paddy prompts for confirmation (skip with `--yes`).
 - Extended-stable always uses its verified exact package target. It is not a
   one-off alias for `--tag extended-stable`, and `--tag` cannot be combined
   with an effective extended-stable channel.
@@ -121,13 +121,13 @@ Notes:
 
 ## Dry run
 
-Preview what `openclaw update` would do without making changes:
+Preview what `paddy update` would do without making changes:
 
 ```bash
-openclaw update --dry-run
-openclaw update --channel beta --dry-run
-openclaw update --tag 2026.4.1-beta.1 --dry-run
-openclaw update --dry-run --json
+paddy update --dry-run
+paddy update --channel beta --dry-run
+paddy update --tag 2026.4.1-beta.1 --dry-run
+paddy update --dry-run --json
 ```
 
 The dry run reports the effective channel, target version, planned actions,
@@ -135,7 +135,7 @@ and whether a downgrade confirmation would be required.
 
 ## Plugins and channels
 
-Switching channels with `openclaw update` also syncs plugin sources:
+Switching channels with `paddy update` also syncs plugin sources:
 
 - `dev` switches installed plugins that have a bundled counterpart back to
   their bundled (git checkout) source.
@@ -155,21 +155,21 @@ Switching channels with `openclaw update` also syncs plugin sources:
 ## Checking current status
 
 ```bash
-openclaw update status
+paddy update status
 ```
 
 Shows the active channel (with the source that decided it: config, git tag,
 git branch, installed version, or default), install kind (git or package),
 current version, and update availability.
 It also shows the last recorded update run, including a failed fetch. Plain
-`openclaw status` uses cached Git refs without fetching. If the latest recorded
+`paddy status` uses cached Git refs without fetching. If the latest recorded
 update fetch in the current state directory failed, it shows
 `update check stale: last update fetch failed` with the failure's age and a short
 reason instead of `up to date`. Ahead/behind counts are labeled `cached`.
 A later update run with a completed fetch clears the warning, even if the rest
 of the update is skipped, fails, or rolls back. A manual `git fetch` does not
-clear the recorded warning. Use `openclaw update status` for a fresh availability
-check or run `openclaw update` again. `openclaw status --deep` also fetches for
+clear the recorded warning. Use `paddy update status` for a fresh availability
+check or run `paddy update` again. `paddy status --deep` also fetches for
 that check, without changing the ledger.
 
 ## Tagging best practices

@@ -170,7 +170,7 @@ export const LEGACY_CONFIG_MIGRATIONS_RUNTIME_TOOL_POLICY_CONFLICTS: LegacyConfi
     legacyRules: TOOL_POLICY_ROOTS.map((root) => ({
       path: [root],
       message:
-        'Tool policy sets both allow and alsoAllow in the same scope; run "openclaw doctor --fix" for a permission-preserving repair or manual guidance.',
+        'Tool policy sets both allow and alsoAllow in the same scope; run "paddy doctor --fix" for a permission-preserving repair or manual guidance.',
       match: (value) => findConflicts(value, [root]).length > 0,
     })),
     apply: (raw, changes) => {

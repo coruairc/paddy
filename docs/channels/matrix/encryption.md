@@ -14,13 +14,13 @@ Enable end-to-end encryption for a Matrix account, verify the gateway device, an
 
 In encrypted (E2EE) rooms, outbound image events use `thumbnail_file` so image previews are encrypted alongside the full attachment; unencrypted rooms use plain `thumbnail_url`. No configuration is needed - the plugin detects E2EE state automatically.
 
-All `openclaw matrix` commands accept `--verbose` (full diagnostics), `--json` (machine-readable output), and `--account <id>` (multi-account setups). Output is concise by default.
+All `paddy matrix` commands accept `--verbose` (full diagnostics), `--json` (machine-readable output), and `--account <id>` (multi-account setups). Output is concise by default.
 
 ### Enable encryption
 
 ```bash
-openclaw matrix encryption setup
-printf '%s\n' "$MATRIX_RECOVERY_KEY" | openclaw matrix encryption setup --recovery-key-stdin
+paddy matrix encryption setup
+printf '%s\n' "$MATRIX_RECOVERY_KEY" | paddy matrix encryption setup --recovery-key-stdin
 ```
 
 Bootstraps secret storage and cross-signing, creates a room-key backup if needed, then prints status and next steps. Useful flags:
@@ -31,7 +31,7 @@ Bootstraps secret storage and cross-signing, creates a room-key backup if needed
 For a new account, enable E2EE at creation time:
 
 ```bash
-openclaw matrix account add \
+paddy matrix account add \
   --homeserver https://matrix.example.org \
   --access-token syt_xxx \
   --enable-e2ee
@@ -60,8 +60,8 @@ Manual config equivalent:
 ### Status and trust signals
 
 ```bash
-openclaw matrix verify status
-openclaw matrix verify status --include-recovery-key --json
+paddy matrix verify status
+paddy matrix verify status --include-recovery-key --json
 ```
 
 With `--include-recovery-key`, text output confirms when a raw recovery key is available and directs you to add `--json`. Text output never prints the key itself; keep JSON output containing a recovery key private.
@@ -81,7 +81,7 @@ With `--include-recovery-key`, text output confirms when a raw recovery key is a
 Pipe the recovery key via stdin instead of passing it on the command line:
 
 ```bash
-printf '%s\n' "$MATRIX_RECOVERY_KEY" | openclaw matrix verify device --recovery-key-stdin
+printf '%s\n' "$MATRIX_RECOVERY_KEY" | paddy matrix verify device --recovery-key-stdin
 ```
 
 The command reports three states:
@@ -93,17 +93,17 @@ The command reports three states:
 It exits non-zero when full identity trust is incomplete, even if the recovery key unlocked backup material. In that case, finish self-verification from another Matrix client:
 
 ```bash
-openclaw matrix verify self
+paddy matrix verify self
 ```
 
 `verify self` waits for `Cross-signing verified: yes` before exiting successfully. Use `--timeout-ms <ms>` to tune the wait.
 
-The literal-key form `openclaw matrix verify device "<recovery-key>"` also works, but the key ends up in shell history.
+The literal-key form `paddy matrix verify device "<recovery-key>"` also works, but the key ends up in shell history.
 
 ### Bootstrap or repair cross-signing
 
 ```bash
-openclaw matrix verify bootstrap
+paddy matrix verify bootstrap
 ```
 
 The repair/setup command for encrypted accounts. In order, it:
@@ -113,7 +113,7 @@ The repair/setup command for encrypted accounts. In order, it:
 - marks and cross-signs the current device
 - creates a server-side room-key backup if one does not already exist
 
-If the homeserver requires UIA to upload cross-signing keys, OpenClaw tries no-auth first, then `m.login.dummy`, then `m.login.password` (requires `channels.matrix.password`).
+If the homeserver requires UIA to upload cross-signing keys, Paddy tries no-auth first, then `m.login.dummy`, then `m.login.password` (requires `channels.matrix.password`).
 
 Useful flags:
 
@@ -123,18 +123,18 @@ Useful flags:
 ### Room-key backup
 
 ```bash
-openclaw matrix verify backup status
-printf '%s\n' "$MATRIX_RECOVERY_KEY" | openclaw matrix verify backup restore --recovery-key-stdin
+paddy matrix verify backup status
+printf '%s\n' "$MATRIX_RECOVERY_KEY" | paddy matrix verify backup restore --recovery-key-stdin
 ```
 
 `backup status` shows whether a server-side backup exists and whether this device can decrypt it. `backup restore` imports backed-up room keys into the local crypto store; omit `--recovery-key-stdin` if the recovery key is already on disk.
 
-OpenClaw reads prior edits to notify only newly mentioned recipients. If an edit reports that its history is not fully decrypted, restore the missing room keys with `backup restore`, then retry the edit. If those keys are unavailable, send a new message.
+Paddy reads prior edits to notify only newly mentioned recipients. If an edit reports that its history is not fully decrypted, restore the missing room keys with `backup restore`, then retry the edit. If those keys are unavailable, send a new message.
 
 To replace a broken backup with a fresh baseline (accepts losing unrecoverable old history; can also recreate secret storage if the current backup secret is unloadable):
 
 ```bash
-openclaw matrix verify backup reset --yes
+paddy matrix verify backup reset --yes
 ```
 
 Add `--rotate-recovery-key` only when the previous recovery key should intentionally stop unlocking the fresh backup baseline.
@@ -142,28 +142,28 @@ Add `--rotate-recovery-key` only when the previous recovery key should intention
 ### Listing, requesting, and responding to verifications
 
 ```bash
-openclaw matrix verify list
+paddy matrix verify list
 ```
 
 Lists pending verification requests for the selected account.
 
 ```bash
-openclaw matrix verify request --own-user
-openclaw matrix verify request --user-id @ops:example.org --device-id ABCDEF
+paddy matrix verify request --own-user
+paddy matrix verify request --user-id @ops:example.org --device-id ABCDEF
 ```
 
 Sends a verification request from this account. `--own-user` requests self-verification (accept the prompt in another Matrix client of the same user); `--user-id`/`--device-id`/`--room-id` target someone else. `--own-user` cannot combine with the other targeting flags.
 
 For lower-level lifecycle handling - typically while shadowing inbound requests from another client - these commands act on a specific request `<id>` (printed by `verify list` and `verify request`):
 
-| Command                                    | Purpose                                                             |
-| ------------------------------------------ | ------------------------------------------------------------------- |
-| `openclaw matrix verify accept <id>`       | Accept an inbound request                                           |
-| `openclaw matrix verify start <id>`        | Start the SAS flow                                                  |
-| `openclaw matrix verify sas <id>`          | Print the SAS emoji or decimals                                     |
-| `openclaw matrix verify confirm-sas <id>`  | Confirm that the SAS matches what the other client shows            |
-| `openclaw matrix verify mismatch-sas <id>` | Reject the SAS when the emoji or decimals do not match              |
-| `openclaw matrix verify cancel <id>`       | Cancel; takes optional `--reason <text>` and `--code <matrix-code>` |
+| Command                                 | Purpose                                                             |
+| --------------------------------------- | ------------------------------------------------------------------- |
+| `paddy matrix verify accept <id>`       | Accept an inbound request                                           |
+| `paddy matrix verify start <id>`        | Start the SAS flow                                                  |
+| `paddy matrix verify sas <id>`          | Print the SAS emoji or decimals                                     |
+| `paddy matrix verify confirm-sas <id>`  | Confirm that the SAS matches what the other client shows            |
+| `paddy matrix verify mismatch-sas <id>` | Reject the SAS when the emoji or decimals do not match              |
+| `paddy matrix verify cancel <id>`       | Cancel; takes optional `--reason <text>` and `--code <matrix-code>` |
 
 `accept`, `start`, `sas`, `confirm-sas`, `mismatch-sas`, and `cancel` all accept `--user-id` and `--room-id` as DM follow-up hints when the verification is anchored to a specific direct-message room.
 
@@ -175,7 +175,7 @@ Without `--account <id>`, Matrix CLI commands use the implicit default account. 
   <Accordion title="Startup behavior">
     With `encryption: true`, `startupVerification` defaults to `"if-unverified"`. On startup an unverified device requests self-verification in another Matrix client, skipping duplicates and applying a cooldown (24 hours by default). Tune with `startupVerificationCooldownHours` or disable with `startupVerification: "off"`.
 
-    Startup also runs a conservative crypto bootstrap pass reusing the current secret storage and cross-signing identity. If bootstrap state is broken, OpenClaw attempts a guarded repair even without `channels.matrix.password`; if the homeserver requires password UIA, startup logs a warning and stays non-fatal. Already-owner-signed devices are preserved.
+    Startup also runs a conservative crypto bootstrap pass reusing the current secret storage and cross-signing identity. If bootstrap state is broken, Paddy attempts a guarded repair even without `channels.matrix.password`; if the homeserver requires password UIA, startup logs a warning and stays non-fatal. Already-owner-signed devices are preserved.
 
     See [Matrix migration](/channels/matrix-migration) for the full upgrade flow.
 
@@ -184,17 +184,17 @@ Without `--account <id>`, Matrix CLI commands use the implicit default account. 
   <Accordion title="Verification notices">
     Matrix posts verification lifecycle notices into the strict DM verification room as `m.notice` messages: request, ready (with "Verify by emoji" guidance), start/completion, and SAS (emoji/decimal) details when available.
 
-    Incoming requests from another Matrix client are tracked and auto-accepted. For self-verification, OpenClaw starts the SAS flow automatically and confirms its own side once emoji verification is available - you still need to compare and confirm "They match" in your Matrix client.
+    Incoming requests from another Matrix client are tracked and auto-accepted. For self-verification, Paddy starts the SAS flow automatically and confirms its own side once emoji verification is available - you still need to compare and confirm "They match" in your Matrix client.
 
     Verification system notices are not forwarded to the agent chat pipeline.
 
   </Accordion>
 
   <Accordion title="Deleted or invalid Matrix device">
-    If `verify status` says the current device is no longer listed on the homeserver, create a new OpenClaw Matrix device. For password login:
+    If `verify status` says the current device is no longer listed on the homeserver, create a new Paddy Matrix device. For password login:
 
 ```bash
-openclaw matrix account add \
+paddy matrix account add \
   --account assistant \
   --homeserver https://matrix.example.org \
   --user-id '@assistant:example.org' \
@@ -202,10 +202,10 @@ openclaw matrix account add \
   --device-name OpenClaw-Gateway
 ```
 
-    For token auth, create a fresh access token in your Matrix client or admin UI, then update OpenClaw:
+    For token auth, create a fresh access token in your Matrix client or admin UI, then update Paddy:
 
 ```bash
-openclaw matrix account add \
+paddy matrix account add \
   --account assistant \
   --homeserver https://matrix.example.org \
   --access-token '<token>'
@@ -216,11 +216,11 @@ openclaw matrix account add \
   </Accordion>
 
   <Accordion title="Device hygiene">
-    Old OpenClaw-managed devices can accumulate. List and prune:
+    Old Paddy-managed devices can accumulate. List and prune:
 
 ```bash
-openclaw matrix devices list
-openclaw matrix devices prune-stale
+paddy matrix devices list
+paddy matrix devices prune-stale
 ```
 
   </Accordion>
@@ -230,7 +230,7 @@ openclaw matrix devices prune-stale
 
     Encrypted runtime state lives under `~/.openclaw/matrix/accounts/<account>/<homeserver>__<user>/<token-hash>/` and includes the sync store, crypto store, recovery key, IDB snapshot, thread bindings, and startup verification state. When the token changes but the account identity stays the same, OpenClaw reuses the best existing root so prior state remains visible.
 
-    A single older token-hash root can be a normal token-rotation continuity path. If OpenClaw logs `matrix: multiple populated token-hash storage roots detected`, inspect the account directory and archive stale sibling roots only after confirming the selected active root is healthy. Prefer moving stale roots into an `_archive/` directory over deleting them immediately.
+    A single older token-hash root can be a normal token-rotation continuity path. If Paddy logs `matrix: multiple populated token-hash storage roots detected`, inspect the account directory and archive stale sibling roots only after confirming the selected active root is healthy. Prefer moving stale roots into an `_archive/` directory over deleting them immediately.
 
   </Accordion>
 </AccordionGroup>

@@ -2,7 +2,7 @@
 summary: "Fireworks setup (auth + model selection)"
 title: "Fireworks"
 read_when:
-  - You want to use Fireworks with OpenClaw
+  - You want to use Fireworks with Paddy
   - You need the Fireworks API key env var or default model id
   - You are debugging Kimi thinking-off behavior on Fireworks
 ---
@@ -33,11 +33,11 @@ read_when:
     <CodeGroup>
 
 ```bash Onboarding
-openclaw onboard --auth-choice fireworks-api-key
+paddy onboard --auth-choice fireworks-api-key
 ```
 
 ```bash Direct flag
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --auth-choice fireworks-api-key \
   --fireworks-api-key "$FIREWORKS_API_KEY"
 ```
@@ -53,10 +53,10 @@ export FIREWORKS_API_KEY=fw-...
   </Step>
   <Step title="Verify the model is available">
     ```bash
-    openclaw models list --provider fireworks
+    paddy models list --provider fireworks
     ```
 
-    The list should include `GLM 5.3 Fast`, `Kimi K2.6`, and `Kimi K2.6 Fast`. If `FIREWORKS_API_KEY` is unresolved, `openclaw models status --json` reports the missing credential under `auth.unusableProfiles`.
+    The list should include `GLM 5.3 Fast`, `Kimi K2.6`, and `Kimi K2.6 Fast`. If `FIREWORKS_API_KEY` is unresolved, `paddy models status --json` reports the missing credential under `auth.unusableProfiles`.
 
   </Step>
 </Steps>
@@ -66,7 +66,7 @@ export FIREWORKS_API_KEY=fw-...
 For scripted or CI installs, pass everything on the command line:
 
 ```bash
-openclaw onboard --non-interactive \
+paddy onboard --non-interactive \
   --mode local \
   --auth-choice fireworks-api-key \
   --fireworks-api-key "$FIREWORKS_API_KEY" \
@@ -90,18 +90,18 @@ Explicit `models.mode: "replace"` keeps catalog seeding enabled; custom model ro
 | `fireworks/accounts/fireworks/models/kimi-k2p6`        | Kimi K2.6      | text + image | 262,144 | 262,144    | Forced off   |
 | `fireworks/accounts/fireworks/routers/kimi-k2p6-turbo` | Kimi K2.6 Fast | text + image | 262,144 | 256,000    | Forced off   |
 
-OpenClaw keeps conservative 256,000-token context and output caps for GLM 5.3 Fast.
+Paddy keeps conservative 256,000-token context and output caps for GLM 5.3 Fast.
 Fireworks documents a larger [native context window](https://fireworks.ai/models/fireworks/glm-5p3);
 [Fast mode](https://docs.fireworks.ai/serverless/serverless-modes) serves the same model at higher speed.
 The catalog uses the [Fast pricing](https://docs.fireworks.ai/serverless/pricing), not the standard rate.
 
 <Note>
-  OpenClaw pins all Fireworks Kimi models to `thinking: off` because Kimi on Fireworks can leak chain-of-thought into the visible reply unless the request explicitly disables thinking. Routing the same model through [Moonshot](/providers/moonshot) directly preserves Kimi reasoning output. See [thinking modes](/tools/thinking) for switching between providers.
+  Paddy pins all Fireworks Kimi models to `thinking: off` because Kimi on Fireworks can leak chain-of-thought into the visible reply unless the request explicitly disables thinking. Routing the same model through [Moonshot](/providers/moonshot) directly preserves Kimi reasoning output. See [thinking modes](/tools/thinking) for switching between providers.
 </Note>
 
 ## Custom Fireworks model ids
 
-OpenClaw accepts any Fireworks model or router id at runtime. Use the exact id shown by Fireworks and prefix it with `fireworks/`. Dynamic resolution uses the Fire Pass template's OpenAI-compatible API and marks GLM ids as text-only; other dynamic ids advertise text + image input. Thinking is disabled automatically when the id matches the Kimi pattern. For a model with different capabilities, configure a custom model entry with its supported input types.
+Paddy accepts any Fireworks model or router id at runtime. Use the exact id shown by Fireworks and prefix it with `fireworks/`. Dynamic resolution uses the Fire Pass template's OpenAI-compatible API and marks GLM ids as text-only; other dynamic ids advertise text + image input. Thinking is disabled automatically when the id matches the Kimi pattern. For a model with different capabilities, configure a custom model entry with its supported input types.
 
 ```json5
 {
@@ -117,17 +117,17 @@ OpenClaw accepts any Fireworks model or router id at runtime. Use the exact id s
 
 <AccordionGroup>
   <Accordion title="How model id prefixing works">
-    Every Fireworks model ref in OpenClaw starts with `fireworks/` followed by the exact id or router path from the Fireworks platform. For example:
+    Every Fireworks model ref in Paddy starts with `fireworks/` followed by the exact id or router path from the Fireworks platform. For example:
 
     - Router model: `fireworks/accounts/fireworks/routers/kimi-k2p6-turbo`
     - Direct model: `fireworks/accounts/fireworks/models/<model-name>`
 
-    OpenClaw strips the `fireworks/` prefix when constructing the API request and sends the remaining path to the Fireworks endpoint as the OpenAI-compatible `model` field.
+    Paddy strips the `fireworks/` prefix when constructing the API request and sends the remaining path to the Fireworks endpoint as the OpenAI-compatible `model` field.
 
   </Accordion>
 
   <Accordion title="Why thinking is forced off for Kimi">
-    Fireworks serves Kimi without a separate reasoning channel, so chain-of-thought can surface in the visible `content` stream. On every Fireworks Kimi request OpenClaw sends `thinking: { type: "disabled" }` and strips `reasoning`, `reasoning_effort`, and `reasoningEffort` from the payload (`extensions/fireworks/stream.ts`). The provider policy (`extensions/fireworks/thinking-policy.ts`) advertises only the `off` thinking level for Kimi model ids, so manual `/think` switches and provider-policy surfaces stay aligned with the runtime contract.
+    Fireworks serves Kimi without a separate reasoning channel, so chain-of-thought can surface in the visible `content` stream. On every Fireworks Kimi request Paddy sends `thinking: { type: "disabled" }` and strips `reasoning`, `reasoning_effort`, and `reasoningEffort` from the payload (`extensions/fireworks/stream.ts`). The provider policy (`extensions/fireworks/thinking-policy.ts`) advertises only the `off` thinking level for Kimi model ids, so manual `/think` switches and provider-policy surfaces stay aligned with the runtime contract.
 
     To use Kimi reasoning end-to-end, configure the [Moonshot provider](/providers/moonshot) and route the same model through it.
 

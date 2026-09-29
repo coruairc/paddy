@@ -104,7 +104,7 @@ function formatLegacyLosslessCompactionWarning(params: {
     "- Legacy Lossless compaction config should use the Lossless context-engine slot for Codex.",
     ...configLines,
     params.canAutoFix
-      ? "- Run `openclaw doctor --fix`: it migrates legacy Lossless compaction config to the Lossless context-engine slot."
+      ? "- Run `paddy doctor --fix`: it migrates legacy Lossless compaction config to the Lossless context-engine slot."
       : "- Move the Lossless config manually; doctor will not overwrite an existing non-Lossless context-engine slot or collapse conflicting per-agent summary models.",
   ].join("\n");
 }
@@ -410,7 +410,7 @@ export function collectCodexRouteWarnings(params: {
               hit.runtime ? `; current runtime is "${hit.runtime}"` : ""
             }.`,
         ),
-        "- Run `openclaw doctor --fix`: it rewrites configured model refs and stale sessions to `openai/*`, moves Codex intent to provider/model runtime policy, and clears old whole-agent runtime pins.",
+        "- Run `paddy doctor --fix`: it rewrites configured model refs and stale sessions to `openai/*`, moves Codex intent to provider/model runtime policy, and clears old whole-agent runtime pins.",
       ].join("\n"),
     );
   }
@@ -461,8 +461,7 @@ export function collectCodexRouteWarnings(params: {
     warnings.push(
       formatUnsupportedCompactionWarning({
         hits: fixableHits,
-        fixHint:
-          "- Run `openclaw doctor --fix`: it removes unsupported Codex compaction overrides.",
+        fixHint: "- Run `paddy doctor --fix`: it removes unsupported Codex compaction overrides.",
       }),
     );
   }

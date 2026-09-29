@@ -1,20 +1,20 @@
 ---
-summary: "Run OpenClaw embedded agent turns through the external GitHub Copilot SDK harness"
+summary: "Run Paddy embedded agent turns through the external GitHub Copilot SDK harness"
 title: "Copilot SDK harness"
 read_when:
   - You want to use the GitHub Copilot SDK harness for an agent
   - You need configuration examples for the `copilot` runtime
-  - You are wiring an agent to subscription Copilot (github / openclaw / copilot) and want it to run through the Copilot CLI
+  - You are wiring an agent to subscription Copilot (github / paddy / copilot) and want it to run through the Copilot CLI
 ---
 
 The external `@openclaw/copilot` plugin runs embedded subscription Copilot
 agent turns through the GitHub Copilot CLI (`@github/copilot-sdk`) instead of
-OpenClaw's built-in harness. The Copilot CLI session owns the low-level
+Paddy's built-in harness. The Copilot CLI session owns the low-level
 agent loop: native tool execution, native compaction (`infiniteSessions`), and
-CLI-managed thread state under `copilotHome`. OpenClaw still owns chat
+CLI-managed thread state under `copilotHome`. Paddy still owns chat
 channels, session files, model selection, dynamic tools (bridged), approvals,
 media delivery, the visible chat transcript, `/btw` side questions (see
-[Side questions (`/btw`)](/plugins/copilot#side-questions-%2Fbtw)), and `openclaw doctor`.
+[Side questions (`/btw`)](/plugins/copilot#side-questions-%2Fbtw)), and `paddy doctor`.
 
 Direct bridged tools marked for sequential execution wait for earlier tool calls
 in the same attempt and delay later calls until they finish. Other tool calls
@@ -33,10 +33,10 @@ For the broader model/provider/runtime split, start with
 - A GitHub Copilot subscription that can drive the Copilot CLI, or a
   `gitHubToken` env var / auth-profile entry for headless or cron runs.
 - A writable `copilotHome` directory. Defaults to `<agentDir>/copilot` when
-  OpenClaw provides an agent directory, otherwise
+  Paddy provides an agent directory, otherwise
   `~/.openclaw/agents/<agentId>/copilot`.
 
-`openclaw doctor` runs the plugin's [doctor contract](#doctor) for
+`paddy doctor` runs the plugin's [doctor contract](#doctor) for
 session-state ownership and future config migrations. It does not probe the
 Copilot CLI environment.
 
@@ -55,7 +55,7 @@ openclaw plugins install @openclaw/copilot
 The setup wizard installs the plugin automatically the first time you select
 a `github-copilot/*` model **and** your config routes that model (or its
 provider) to the Copilot runtime via `agentRuntime: { id: "copilot" }`; see
-[Quickstart](#quickstart). Without that opt-in, OpenClaw uses its built-in
+[Quickstart](#quickstart). Without that opt-in, Paddy uses its built-in
 GitHub Copilot provider and never installs this plugin.
 
 The runtime resolves the SDK in this order:
@@ -112,13 +112,13 @@ through Copilot BYOK instead.
 
 Copilot BYOK endpoints must be public HTTPS URLs. The harness gives the
 Copilot SDK a per-attempt loopback proxy, then forwards provider traffic
-through OpenClaw's guarded fetch path so DNS pinning and SSRF policy stay
-owned by OpenClaw. Use the native OpenClaw runtime for local Ollama, LM
+through Paddy's guarded fetch path so DNS pinning and SSRF policy stay
+owned by Paddy. Use the native Paddy runtime for local Ollama, LM
 Studio, or LAN model servers.
 
 ## BYOK
 
-Copilot BYOK uses the SDK's session-level custom provider contract. OpenClaw
+Copilot BYOK uses the SDK's session-level custom provider contract. Paddy
 passes the resolved model endpoint, API key, bearer-token mode, headers, model
 id, and context/output limits; provider transport logic stays in the SDK, not
 core.
@@ -173,7 +173,7 @@ Precedence, applied per agent during `runCopilotAttempt`:
    Copilot harness. The `github-copilot` provider accepts only
    `COPILOT_GITHUB_TOKEN` as its automatic environment credential:
    1. `OPENCLAW_GITHUB_TOKEN` — harness-specific override; lets you pin a
-      token for the OpenClaw harness without disturbing system-wide `gh` /
+      token for the Paddy harness without disturbing system-wide `gh` /
       Copilot CLI config.
    2. `COPILOT_GITHUB_TOKEN` — standard Copilot SDK / CLI env var.
    3. `GH_TOKEN` — standard `gh` CLI env var.
@@ -208,20 +208,20 @@ plus a small set of env defaults inside `extensions/copilot/src/`:
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `copilotHome`            | Per-agent CLI state directory (defaults above).                                                                                                                                                                                                                                                 |
 | `model`                  | String or `{ provider, id, api?, baseUrl?, headers?, authHeader? }`. Omit to use the agent's normal model selection; the harness verifies the resolved provider is supported.                                                                                                                   |
-| `reasoningEffort`        | `"low" \| "medium" \| "high" \| "xhigh"`. Maps from OpenClaw's `ThinkLevel` / `ReasoningLevel` resolution in `auto-reply/thinking.ts`.                                                                                                                                                          |
+| `reasoningEffort`        | `"low" \| "medium" \| "high" \| "xhigh"`. Maps from Paddy's `ThinkLevel` / `ReasoningLevel` resolution in `auto-reply/thinking.ts`.                                                                                                                                                             |
 | `infiniteSessionConfig`  | Optional override for the SDK `infiniteSessions` block driven by `harness.compact`. Safe to leave as-is.                                                                                                                                                                                        |
-| `hooksConfig`            | Optional native Copilot SDK `SessionHooks` config for tool/MCP, user-prompt, session, and error callbacks. Separate from OpenClaw's portable lifecycle hooks.                                                                                                                                   |
+| `hooksConfig`            | Optional native Copilot SDK `SessionHooks` config for tool/MCP, user-prompt, session, and error callbacks. Separate from Paddy's portable lifecycle hooks.                                                                                                                                      |
 | `permissionPolicy`       | Optional override for the SDK's `onPermissionRequest` handler for built-in SDK tool kinds (`shell`, `write`, `read`, `url`, `mcp`, `memory`, `hook`). Defaults to `rejectAllPolicy` as a safety net; see [Permissions and ask_user](#permissions-and-ask_user) for why it never actually fires. |
 | `enableSessionTelemetry` | Optional SDK session telemetry flag.                                                                                                                                                                                                                                                            |
 
-OpenClaw plugin hooks need no Copilot-specific attempt configuration. The
+Paddy plugin hooks need no Copilot-specific attempt configuration. The
 harness runs `before_prompt_build`, `llm_input`, `llm_output`, and `agent_end` through the
 standard harness helpers. Successful SDK compactions also run
-`before_compaction` and `after_compaction`. Bridged OpenClaw tools run
+`before_compaction` and `after_compaction`. Bridged Paddy tools run
 `before_tool_call` and report `after_tool_call`; `hooksConfig` remains for
 native SDK-only callbacks with no portable equivalent.
 
-Nothing else in OpenClaw needs to know about these fields. Other plugins,
+Nothing else in Paddy needs to know about these fields. Other plugins,
 channels, and core code see only the standard `AgentHarnessAttemptParams` /
 `AgentHarnessAttemptResult` shape.
 
@@ -234,7 +234,7 @@ When `harness.compact` runs, the Copilot SDK harness:
 3. Returns the SDK compaction outcome without writing compatibility marker
    files under the workspace.
 
-The OpenClaw-side transcript journal (below) keeps receiving post-compaction
+The Paddy-side transcript journal (below) keeps receiving post-compaction
 messages, so user-facing chat history stays consistent.
 
 ## Transcript persistence
@@ -242,7 +242,7 @@ messages, so user-facing chat history stays consistent.
 `runCopilotAttempt` gives each attempt a transcript journal
 (`createAttemptTranscriptJournal` in
 `extensions/copilot/src/attempt-transcript-journal.ts`) that persists every
-turn's messages into the OpenClaw session transcript. Journal identity is
+turn's messages into the Paddy session transcript. Journal identity is
 turn-scoped, not content-scoped: the initial user turn is keyed
 `${runId}:user` and SDK-sourced events are keyed
 `copilot-sdk:${sdkSessionId}:${eventId}`, with claimed event ids plus an
@@ -266,7 +266,7 @@ best-effort and logged.
 `/btw` is **not** native on this harness. `createCopilotAgentHarness()`
 deliberately leaves `harness.runSideQuestion` undefined
 (asserted in `extensions/copilot/harness.test.ts`, `describe("runSideQuestion")`),
-so OpenClaw's `/btw` dispatcher (`src/agents/btw.ts`) falls through to the
+so Paddy's `/btw` dispatcher (`src/agents/btw.ts`) falls through to the
 same path it uses for every non-Codex runtime: the configured model provider
 is called directly with a short side-question prompt and streamed back via
 `streamSimple` (no CLI session, no extra pool slot).
@@ -295,13 +295,13 @@ doctor contract:
 - PI session state does not migrate when an agent switches to `copilot`.
   Selection is per attempt; existing PI sessions remain valid.
 - `ask_user` uses the provider-neutral gateway question runtime. The Control
-  UI shows the same question card as other OpenClaw questions, supported
+  UI shows the same question card as other Paddy questions, supported
   channels render choice buttons, and the next queued plain-text message
   resolves that gateway record before the SDK request returns.
 
 ## Permissions and ask_user
 
-Permission enforcement for bridged OpenClaw tools happens **inside the tool
+Permission enforcement for bridged Paddy tools happens **inside the tool
 wrapper**, not via the SDK's `onPermissionRequest` callback. The same
 `wrapToolWithBeforeToolCallHook` that PI uses
 (`src/agents/agent-tools.before-tool-call.ts`) is applied by
@@ -314,15 +314,15 @@ Each SDK tool returned by the Copilot tool bridge is marked with:
 
 - `overridesBuiltInTool: true` — replaces the Copilot CLI's built-in tool of
   the same name (edit, read, write, bash, ...) so every tool call routes back
-  to OpenClaw.
+  to Paddy.
 - `skipPermission: true` — tells the SDK not to fire
   `onPermissionRequest({kind: "custom-tool"})` before invoking the tool. The
-  wrapped `execute()` already performs the richer OpenClaw policy check; an
-  SDK-level prompt would either short-circuit OpenClaw's enforcement
+  wrapped `execute()` already performs the richer Paddy policy check; an
+  SDK-level prompt would either short-circuit Paddy's enforcement
   (allow-all) or block every tool call (reject-all) — neither matches PI
   parity.
 
-The in-tree Codex harness uses the same split: bridged OpenClaw tools are
+The in-tree Codex harness uses the same split: bridged Paddy tools are
 wrapped (`extensions/codex/src/app-server/dynamic-tools.ts`) and the
 codex-app-server's own native approval kinds
 (`item/commandExecution/requestApproval`, `item/fileChange/requestApproval`,
@@ -351,7 +351,7 @@ allowlist, and `toolConstructionPlan`.
 The bridge also uses the shared harness tool-surface helper from
 `openclaw/plugin-sdk/agent-harness-tool-runtime` for PI parity. When
 tool-search is enabled, the SDK sees compact control tools plus a hidden
-catalog executor instead of every OpenClaw tool schema. The shared Tool Search
+catalog executor instead of every Paddy tool schema. The shared Tool Search
 directory and mode-specific calling instructions enter the SDK developer prompt
 after `before_prompt_build` narrows the catalog. Denied entries are not advertised,
 and an empty catalog adds no discovery instructions. When code mode is enabled,
@@ -361,11 +361,11 @@ filtering, and catalog cleanup stay in the shared helper.
 
 For Copilot, `tools.toolSearch.mode: "directory"` uses structured `tools`
 semantics: discover with `tool_search` or `tool_describe`, then execute through
-`tool_call` with `id` and `args`. Hidden OpenClaw catalog names are not registered
+`tool_call` with `id` and `args`. Hidden Paddy catalog names are not registered
 as SDK tool handlers and cannot be called directly. The pinned Copilot SDK
 1.0.13 supports native deferral of registered tool declarations through
 `Tool.defer`; that is a separate SDK catalog, not a resolver for omitted
-OpenClaw tools. OpenClaw keeps its compact bridge rather than registering every
+Paddy tools. Paddy keeps its compact bridge rather than registering every
 hidden schema with the SDK. The agent configuration is not rewritten, and the
 embedded harness retains its direct directory-name hydration.
 
@@ -385,7 +385,7 @@ deriving identity from the logged-in identity.
 `ask_user` uses `SessionConfig.onUserInputRequest`. The bridge registers SDK
 choices or option-less free-text prompts as gateway questions, accepts choice
 indexes or labels for fixed-choice requests, and accepts free-form answers
-when the SDK request allows them. Aborting the OpenClaw attempt cancels the
+when the SDK request allows them. Aborting the Paddy attempt cancels the
 gateway record and returns an empty SDK answer.
 
 ## Related

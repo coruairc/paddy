@@ -27,7 +27,7 @@ read_when:
   </Accordion>
 
   <Accordion title="How do I stop/cancel a running task?">
-    Send any of these **as a standalone message** (no slash) to trigger an abort: `stop`, `stop action`, `stop current action`, `stop run`, `stop current run`, `stop agent`, `stop the agent`, `stop openclaw`, `openclaw stop`, `stop don't do anything`, `stop do not do anything`, `stop doing anything`, `do not do that`, `please stop`, `stop please`, `abort`, `esc`, `exit`, `interrupt`, `halt`. Common non-English triggers (French, German, Spanish, Chinese, Japanese, Hindi, Arabic, Russian) also work.
+    Send any of these **as a standalone message** (no slash) to trigger an abort: `stop`, `stop action`, `stop current action`, `stop run`, `stop current run`, `stop agent`, `stop the agent`, `stop paddy`, `paddy stop`, `stop don't do anything`, `stop do not do anything`, `stop doing anything`, `do not do that`, `please stop`, `stop please`, `abort`, `esc`, `exit`, `interrupt`, `halt`. Common non-English triggers (French, German, Spanish, Chinese, Japanese, Hindi, Arabic, Russian) also work.
 
     For background processes started by the exec tool, ask the agent to run:
 
@@ -40,7 +40,7 @@ read_when:
   </Accordion>
 
   <Accordion title='How do I send a Discord message from Telegram? ("Cross-context messaging denied")'>
-    OpenClaw allows **cross-provider** messaging by default. An agent in Telegram or WebChat can send to Discord when the destination is configured and its tool and channel policies permit it.
+    Paddy allows **cross-provider** messaging by default. An agent in Telegram or WebChat can send to Discord when the destination is configured and its tool and channel policies permit it.
 
     If you see "Cross-context messaging denied", check for `tools.message.crossContext.allowAcrossProviders: false` globally or in the agent's configuration. Remove that restriction or explicitly allow cross-provider messaging; this takes effect without a Gateway restart:
 

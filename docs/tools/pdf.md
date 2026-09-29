@@ -63,9 +63,9 @@ Notes:
 - Local file path (including `~` expansion)
 - `file://` URL
 - `http://` and `https://` URL
-- OpenClaw-managed inbound refs such as `media://inbound/<id>`
+- Paddy-managed inbound refs such as `media://inbound/<id>`
 
-Other URI schemes (for example `ftp://`) return `details.error = "unsupported_pdf_reference"`. Remote `http(s)` URLs are rejected when the tool runs sandboxed. With workspace-only file policy enabled, local paths outside allowed roots are rejected; managed inbound refs and replayed paths under OpenClaw's inbound media store are still allowed.
+Other URI schemes (for example `ftp://`) return `details.error = "unsupported_pdf_reference"`. Remote `http(s)` URLs are rejected when the tool runs sandboxed. With workspace-only file policy enabled, local paths outside allowed roots are rejected; managed inbound refs and replayed paths under Paddy's inbound media store are still allowed.
 
 `data:` URLs are unsupported. Files identified as other document types, such as
 plain text or JSON, are rejected before model dispatch.
@@ -98,9 +98,9 @@ Details:
 - Local extraction runs in a reusable worker so PDF text and image processing do not block the Gateway. Cancelling the agent run stops queued or active extraction.
 - Encrypted PDFs open with the top-level `password` parameter.
 - If the model has no image input and there is no extractable text, the tool errors.
-- If image rendering fails, OpenClaw drops the images and continues with the extracted text.
-- If the target model is text-only and extraction produced images, OpenClaw drops the images and sends text only.
-- If page, text, or image limits make extraction partial, OpenClaw includes a short partial-document notice in the analysis context and tool result.
+- If image rendering fails, Paddy drops the images and continues with the extracted text.
+- If the target model is text-only and extraction produced images, Paddy drops the images and sends text only.
+- If page, text, or image limits make extraction partial, Paddy includes a short partial-document notice in the analysis context and tool result.
 
 ## Config
 

@@ -93,7 +93,7 @@ export function createRetiredModelRefRepairResolver(params: {
         agentId,
       }).repairConfigPath.replace("*", agentId);
       warn(
-        `Retained model reference "${canonical}" for agent "${agentId}": "${replacement}" is not permitted. Allow "${replacement}" in ${policyPath} and rerun openclaw doctor --fix, or choose an allowed model override.`,
+        `Retained model reference "${canonical}" for agent "${agentId}": "${replacement}" is not permitted. Allow "${replacement}" in ${policyPath} and rerun paddy doctor --fix, or choose an allowed model override.`,
       );
       return { kind: "unchanged" };
     };
@@ -155,7 +155,7 @@ export function createRetiredModelRefRepairResolver(params: {
       const baseUrl = auth.selectedRoute?.baseUrl ?? configuredRoute?.baseUrl;
       if (!baseUrl) {
         warn(
-          `Retained ${canonical} for agent "${agentId}": its exact authentication route is unavailable. Restore that provider account and rerun openclaw doctor --fix, or choose a current model explicitly.`,
+          `Retained ${canonical} for agent "${agentId}": its exact authentication route is unavailable. Restore that provider account and rerun paddy doctor --fix, or choose a current model explicitly.`,
         );
         return validatePolicy(preserved);
       }
@@ -301,7 +301,7 @@ function createRetiredModelRefRewriter(params: ModelRefRewriteContext) {
       (path === `${params.path}.model` || path === `${params.path}.model.primary`)
     ) {
       params.warnings?.push(
-        `Retained retired ${path} "${modelRef}": no provider successor is declared and this global default has no agent default to inherit. Choose a supported default with openclaw models set.`,
+        `Retained retired ${path} "${modelRef}": no provider successor is declared and this global default has no agent default to inherit. Choose a supported default with paddy models set.`,
       );
       return undefined;
     }

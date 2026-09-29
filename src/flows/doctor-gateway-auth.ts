@@ -30,7 +30,7 @@ function buildGatewayTokenSecretRefUnavailableMessage(params: {
 
 function buildGatewayTokenSecretRefFixHint(ref: SecretRef): string {
   if (ref.source === "exec") {
-    return "Run `openclaw doctor --allow-exec` to verify exec SecretRefs during doctor, or `openclaw secrets audit --allow-exec` to audit all exec SecretRefs.";
+    return "Run `paddy doctor --allow-exec` to verify exec SecretRefs during doctor, or `paddy secrets audit --allow-exec` to audit all exec SecretRefs.";
   }
   return "Resolve or rotate the external secret source, then rerun doctor.";
 }
@@ -104,7 +104,7 @@ export async function detectGatewayAuthHealth(
         path: "gateway.auth.token",
         fixHint:
           redacted && gatewayTokenRef.source === "store"
-            ? `Run \`openclaw doctor --fix\` to regenerate secret store entry "${gatewayTokenRef.id}", then restart the Gateway and reconnect or re-pair devices with the new token.`
+            ? `Run \`paddy doctor --fix\` to regenerate secret store entry "${gatewayTokenRef.id}", then restart the Gateway and reconnect or re-pair devices with the new token.`
             : buildGatewayTokenSecretRefFixHint(gatewayTokenRef),
       },
     ];
@@ -124,7 +124,7 @@ export async function detectGatewayAuthHealth(
           : "Gateway auth is off or missing a token.",
       path: "gateway.auth.token",
       fixHint:
-        "Run `openclaw doctor --fix --generate-gateway-token` to generate a token, then restart the Gateway.",
+        "Run `paddy doctor --fix --generate-gateway-token` to generate a token, then restart the Gateway.",
     },
   ];
 }

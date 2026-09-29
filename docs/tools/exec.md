@@ -6,7 +6,7 @@ read_when:
 title: "Exec tool"
 ---
 
-Run shell commands in the workspace. `exec` is a mutating shell surface: commands can create, edit, or delete files wherever the selected host or sandbox filesystem permits. Disabling OpenClaw filesystem tools such as `write`, `edit`, or `apply_patch` does not make `exec` read-only.
+Run shell commands in the workspace. `exec` is a mutating shell surface: commands can create, edit, or delete files wherever the selected host or sandbox filesystem permits. Disabling Paddy filesystem tools such as `write`, `edit`, or `apply_patch` does not make `exec` read-only.
 
 Supports foreground and background execution via `process`. If `process` is disallowed, `exec` runs synchronously and ignores `yieldMs`/`background`. Background sessions are scoped per agent. `process` only sees sessions from the same agent.
 
@@ -81,11 +81,11 @@ Notes:
 - Exact `"cat"` or empty `GIT_PAGER` and `PAGER` overrides are normalized to empty values, including on node shell-wrapper execution. This disables Git paging without passing an executable pager name through `PATH`. Other programs may interpret an empty `PAGER` differently. Use their noninteractive flags when needed. Other pager commands, paths, whitespace variants, and `MANPAGER` overrides remain blocked.
 - OpenClaw sets `OPENCLAW_SHELL=exec` in the spawned command environment (including PTY and sandbox execution) so shell/profile rules can detect exec-tool context.
 - With the default-off [secret egress proxy](/gateway/secrets#secret-egress-proxy), Gateway-hosted exec receives shared-store `secret` entries only as process-local sentinels. The authenticated loopback proxy substitutes plaintext at outbound HTTPS request time. Each managed process has its own proxy grant, which survives the originating turn and is revoked on process exit, cancellation, timeout, or Gateway shutdown.
-- Shared-store `env` entries are intentionally plaintext and reach Gateway-hosted exec from the next agent run. They do not reach sandbox, remote `node`, ACP, or Codex-native shell execution. Under the Codex harness, use `gateway_exec` for this OpenClaw-managed environment path.
+- Shared-store `env` entries are intentionally plaintext and reach Gateway-hosted exec from the next agent run. They do not reach sandbox, remote `node`, ACP, or Codex-native shell execution. Under the Codex harness, use `gateway_exec` for this Paddy-managed environment path.
 - With a [managed GitHub identity](/gateway/config-tools#tools.github), Gateway-hosted exec validates the selected profile and binds its credential privately at each process launch. An unavailable profile blocks that local execution with reconnect guidance instead of falling back to native keyring credentials. Running shells retain their launch token. Later exec launches observe refreshes. Codex-native shell does not share this launch binding.
 - Secret egress sets `NODE_USE_ENV_PROXY=1` so supported Node.js global `fetch` clients honor the process-scoped proxy. It does not use `NODE_OPTIONS`.
 - For channel-origin runs, OpenClaw also exposes a narrow sender/chat identity JSON payload in `OPENCLAW_CHANNEL_CONTEXT` when the channel provided those ids.
-- `exec` cannot run `openclaw channels login` or `/approve` shell commands: `openclaw channels login` is an interactive channel-auth flow, and `/approve` needs to go through the approval command handler, not a shell. Run channel login in a terminal on the gateway host, or use a channel-specific login agent tool when one exists (for example `whatsapp_login`).
+- `exec` cannot run `paddy channels login` or `/approve` shell commands: `paddy channels login` is an interactive channel-auth flow, and `/approve` needs to go through the approval command handler, not a shell. Run channel login in a terminal on the gateway host, or use a channel-specific login agent tool when one exists (for example `whatsapp_login`).
 - Important: sandboxing is **off by default**. If sandboxing is off, implicit `host=auto` resolves to `gateway`. Explicit `host=sandbox` still fails closed instead of silently running on the gateway host. Enable sandboxing or use `host=gateway` with approvals.
 - Python script preflight checks for common shell-syntax mistakes only inspect files inside the effective `workdir` boundary. If a script path resolves outside `workdir`, the file check is skipped. JavaScript source is left to Node, which returns its normal diagnostics and exit code; statements before a runtime error may already have executed. Separate restrictions on ambiguous Python/Node interpreter commands still apply. Preflight skips entirely when `host=gateway` and the effective policy is `security=full` with `ask=off`.
 - For long-running work that starts now, start it once and rely on automatic completion wake when it is enabled and the command emits output or fails. Use `process` for logs, status, input, or intervention. Do not emulate scheduling with sleep loops, timeout loops, or repeated polling.
@@ -162,7 +162,7 @@ POSIX login or interactive shell wrappers in the requested command never receive
 
 Explicit `ask=always`, security-audit suppression changes, and commands above the review candidate limit go directly to human approval.
 
-Codex app-server command approvals that are not already decided by explicit runtime or native policy use the human approval route. OpenClaw does not run its configured exec reviewer for these requests because Codex does not expose an enforceable resolved executable that can bind the review decision to the command Codex runs.
+Codex app-server command approvals that are not already decided by explicit runtime or native policy use the human approval route. Paddy does not run its configured exec reviewer for these requests because Codex does not expose an enforceable resolved executable that can bind the review decision to the command Codex runs.
 
 ### Inline eval (`strictInlineEval`)
 
@@ -183,15 +183,15 @@ For ordinary configured full/off execution without prompts for these forms, leav
   - macOS: `/opt/homebrew/bin`, `/usr/local/bin`, `/usr/bin`, `/bin`
   - Linux: `/usr/local/bin`, `/usr/bin`, `/bin`
   - To prevent user shell configuration (like `~/.zshenv` or `/etc/zshenv`) from overriding priority paths during startup, `tools.exec.pathPrepend` entries are securely prepended to the final `PATH` inside the shell command right before execution.
-- `host=sandbox`: runs `sh -lc` (login shell) inside the container, so `/etc/profile` may reset `PATH`. OpenClaw prepends `env.PATH` after profile sourcing via an internal env var (no shell interpolation). `tools.exec.pathPrepend` applies here too.
-- Native Codex on an owned local stdio process receives a nonempty configured prefix and Gateway CLI shim ahead of an explicitly configured native shell `PATH`, or the Gateway process `PATH` when no native value is set. Request-level native PATH overrides take precedence over native config files; an explicit empty PATH keeps only the prefix. Per-agent `tools.exec.pathPrepend` overrides the global list, including an empty list. OpenClaw applies this environment to new and resumed native threads without changing native login-shell policy. Codex reapplies the environment after loading a shell snapshot, but shell startup files can still replace `PATH` when snapshots are unavailable or bypassed, or when the command shell starts. Codex's existing `allow_login_shell = false` setting opts out of login-profile startup; it does not suppress every shell startup file. Host PATH entries are not forwarded to sandbox, remote-workspace, or socket-backed Codex execution.
+- `host=sandbox`: runs `sh -lc` (login shell) inside the container, so `/etc/profile` may reset `PATH`. Paddy prepends `env.PATH` after profile sourcing via an internal env var (no shell interpolation). `tools.exec.pathPrepend` applies here too.
+- Native Codex on an owned local stdio process receives a nonempty configured prefix and Gateway CLI shim ahead of an explicitly configured native shell `PATH`, or the Gateway process `PATH` when no native value is set. Request-level native PATH overrides take precedence over native config files; an explicit empty PATH keeps only the prefix. Per-agent `tools.exec.pathPrepend` overrides the global list, including an empty list. Paddy applies this environment to new and resumed native threads without changing native login-shell policy. Codex reapplies the environment after loading a shell snapshot, but shell startup files can still replace `PATH` when snapshots are unavailable or bypassed, or when the command shell starts. Codex's existing `allow_login_shell = false` setting opts out of login-profile startup; it does not suppress every shell startup file. Host PATH entries are not forwarded to sandbox, remote-workspace, or socket-backed Codex execution.
 - `host=node`: only non-blocked env overrides you pass are sent to the node. `env.PATH` overrides are rejected for host execution and ignored by node hosts. If you need additional PATH entries on a node, configure the node host service environment (systemd/launchd) or install tools in standard locations.
 
 Per-agent node binding (use the keyed agent ID in config):
 
 ```bash
-openclaw config get agents.entries
-openclaw config set 'agents.entries.main.tools.exec.node' "node-id-or-name"
+paddy config get agents.entries
+paddy config set 'agents.entries.main.tools.exec.node' "node-id-or-name"
 ```
 
 Control UI: the **Devices** page includes a small "Exec node binding" panel for the same settings. A saved target can become unresolvable or stop advertising execution support. Its binding then stays selected and is marked **Unavailable**. You can clear it with **Any node** or **Use default**, even when no execution-capable nodes are available. Supported names, addresses, and ID prefixes resolve without rewriting the saved reference.
@@ -254,7 +254,7 @@ Use the two controls for different jobs:
 
 Do not treat `safeBins` as a generic allowlist, and do not add interpreter/runtime binaries (for example `python3`, `node`, `ruby`, `bash`). If you need those, use explicit allowlist entries and keep approval prompts enabled.
 
-`openclaw security audit` warns when interpreter/runtime `safeBins` entries are missing explicit profiles, and `openclaw doctor --fix` can scaffold missing custom `safeBinProfiles` entries. `openclaw security audit` and `openclaw doctor` also warn when you explicitly add broad-behavior bins such as `jq` back into `safeBins` (`jq` can read environment data and load jq code from modules or startup files, so prefer explicit allowlist entries or approval-gated runs instead). `jq` is denied as a safe bin even when it is explicitly listed. If you explicitly allowlist interpreters, enable `tools.exec.strictInlineEval` to require reviewer or explicit approval for recognized inline forms on the [ordinary approval path](#inline-eval-strictinlineeval).
+`paddy security audit` warns when interpreter/runtime `safeBins` entries are missing explicit profiles, and `paddy doctor --fix` can scaffold missing custom `safeBinProfiles` entries. `paddy security audit` and `paddy doctor` also warn when you explicitly add broad-behavior bins such as `jq` back into `safeBins` (`jq` can read environment data and load jq code from modules or startup files, so prefer explicit allowlist entries or approval-gated runs instead). `jq` is denied as a safe bin even when it is explicitly listed. If you explicitly allowlist interpreters, enable `tools.exec.strictInlineEval` to require reviewer or explicit approval for recognized inline forms on the [ordinary approval path](#inline-eval-strictinlineeval).
 
 For full policy details and examples, see [Exec approvals](/tools/exec-approvals-advanced#safe-bins-stdin-only) and [Safe bins versus allowlist](/tools/exec-approvals-advanced#safe-bins-versus-allowlist).
 

@@ -354,7 +354,7 @@ export function loadShellEnvFallback(opts: ShellEnvFallbackOptions): ShellEnvFal
     purpose: "environment-import",
   });
   if (!probe.ok) {
-    logger.warn(`[openclaw] shell env fallback failed: ${probe.error}`);
+    logger.warn(`[paddy] shell env fallback failed: ${probe.error}`);
     lastAppliedKeys = [];
     return { ok: false, error: probe.error, applied: [] };
   }

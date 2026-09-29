@@ -37,14 +37,14 @@ class AppTopbar extends OpenClawLightDomContentsElement {
             </button>
           </openclaw-tooltip>
           <div class="topnav-shell__content" @mousedown=${beginNativeWindowDrag}>
-            <div class="topbar-brand" aria-label="OpenClaw">
+            <div class="topbar-brand" aria-label="Paddy">
               <img
                 class="topbar-brand__logo"
                 src=${controlUiPublicAssetPath("apple-touch-icon.png", this.resourceBasePath)}
                 alt=""
                 aria-hidden="true"
               />
-              <span class="topbar-brand__title">OpenClaw</span>
+              <span class="topbar-brand__title">Paddy</span>
               ${
                 this.environment &&
                 html`<span class="control-ui-environment-pill">${this.environment.label}</span>`

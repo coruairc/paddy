@@ -89,8 +89,8 @@ it("prioritizes critical audit findings, caps warnings, and preserves remediatio
   expect(lines).toContain("… +1 more");
   expect(lines).not.toContain("  WARN Warn 5");
   expect(lines.slice(-2)).toEqual([
-    "Full report: openclaw security audit",
-    "Deep probe: openclaw security audit --deep",
+    "Full report: paddy security audit",
+    "Deep probe: paddy security audit --deep",
   ]);
 });
 
@@ -183,7 +183,7 @@ it("marks colon-bearing plugin failures as warnings", () => {
   expect(rows).toContainEqual({
     Item: "Plugin",
     Status: "WARN",
-    Detail: "failed - broken:ok: service scheduler: address already in use; run openclaw doctor",
+    Detail: "failed - broken:ok: service scheduler: address already in use; run paddy doctor",
   });
 });
 

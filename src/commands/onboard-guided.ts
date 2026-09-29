@@ -85,8 +85,8 @@ async function runGuidedOnboardingFlow(
     );
     await prompter.outro(
       t("wizard.guided.invalidConfigRepair", {
-        fixCommand: formatCliCommand("openclaw doctor --fix"),
-        inspectCommand: formatCliCommand("openclaw config validate"),
+        fixCommand: formatCliCommand("paddy doctor --fix"),
+        inspectCommand: formatCliCommand("paddy config validate"),
       }),
     );
     runtime.exit(1);
@@ -126,7 +126,7 @@ async function runGuidedOnboardingFlow(
   const hasAuthoredRoster = hasResolvedRosterBeforeMigrations(snapshot);
   if (opts.team && hasAuthoredRoster) {
     throw new Error(
-      "An agent roster already exists. Use `openclaw agents team create` to add a team.",
+      "An agent roster already exists. Use `paddy agents team create` to add a team.",
     );
   }
   const firstAgent =
@@ -236,7 +236,7 @@ async function runGuidedOnboardingFlow(
       !(await matchesLocalSetupWorkspace(existingConfig, workspace, localSetup.teamCoordinatorId))
     ) {
       throw new Error(
-        "The pending team no longer matches its approved roster and workspace. Inspect `openclaw agents list` and repair the team before retrying setup.",
+        "The pending team no longer matches its approved roster and workspace. Inspect `paddy agents list` and repair the team before retrying setup.",
       );
     }
     if (
@@ -481,7 +481,7 @@ async function runGuidedOnboardingFlow(
     if (workspaceConflict) {
       await prompter.note(
         t("wizard.guided.workspaceConflictClassic", {
-          command: formatCliCommand("openclaw onboard --classic"),
+          command: formatCliCommand("paddy onboard --classic"),
         }),
         t("wizard.setup.workspaceConflictTitle"),
       );
@@ -578,7 +578,7 @@ async function runGuidedOnboardingFlow(
       applyProgress.stop(failureTitle);
       if (teamCoordinatorId) {
         throw new Error(
-          `Onboarding did not complete: ${error instanceof Error ? error.message : String(error)} Run \`openclaw agents list\` to inspect the roster, then retry with the same --workspace after resolving the error.`,
+          `Onboarding did not complete: ${error instanceof Error ? error.message : String(error)} Run \`paddy agents list\` to inspect the roster, then retry with the same --workspace after resolving the error.`,
           { cause: error },
         );
       }
@@ -617,7 +617,7 @@ async function runGuidedOnboardingFlow(
     })?.modelTarget === "utility";
   if (setupOnly) {
     await prompter.note(
-      "Your setup and utility model is ready. It can help finish setup here. Choose a primary model in Model Setup or run openclaw onboard before regular agent chat.",
+      "Your setup and utility model is ready. It can help finish setup here. Choose a primary model in Model Setup or run paddy onboard before regular agent chat.",
       "Setup and utility inference",
     );
   }

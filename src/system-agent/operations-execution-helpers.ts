@@ -202,7 +202,7 @@ export function getRegularAgentSetupNotice(
   if (primaryModel || !utilityModel) {
     return undefined;
   }
-  return "Your setup and utility model is ready, but this agent needs a primary model. Choose one in Model Setup or run `openclaw onboard`; you can continue setup here in the meantime.";
+  return "Your setup and utility model is ready, but this agent needs a primary model. Choose one in Model Setup or run `paddy onboard`; you can continue setup here in the meantime.";
 }
 
 export type ExecuteOptions = {
@@ -259,7 +259,7 @@ export async function applyPersistentOperation(params: {
     runtime.log(message);
     return { applied: false, message };
   }
-  runtime.log(`[openclaw] running: ${auditOperation}`);
+  runtime.log(`[paddy] running: ${auditOperation}`);
   const { readConfigFileSnapshot } = await import("../config/config.js");
   const before = await readConfigFileSnapshot();
   const assertPersistentApply = opts.beforePersistentApply;
@@ -290,7 +290,7 @@ export async function applyPersistentOperation(params: {
       `${outcome.summary}, but ${PRODUCT_NAME} could not record its audit entry: ${formatErrorMessage(error)}`,
     );
   }
-  runtime.log(`[openclaw] done: ${auditOperation}`);
+  runtime.log(`[paddy] done: ${auditOperation}`);
   return {
     applied: true,
     ...(outcome.bootstrapPending === undefined

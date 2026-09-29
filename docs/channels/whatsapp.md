@@ -54,7 +54,7 @@ Use `npm:@openclaw/whatsapp` or `clawhub:@openclaw/whatsapp` to force a source; 
   <Step title="Link WhatsApp (QR)">
 
 ```bash
-openclaw channels login --channel whatsapp
+paddy channels login --channel whatsapp
 ```
 
     Login is QR-only. On remote or headless hosts, have a reliable path to deliver the live QR to the phone before starting login; terminal-rendered QRs, screenshots, or chat attachments can expire in transit.
@@ -62,14 +62,14 @@ openclaw channels login --channel whatsapp
     For a specific account:
 
 ```bash
-openclaw channels login --channel whatsapp --account work
+paddy channels login --channel whatsapp --account work
 ```
 
     To attach an existing/custom auth directory before login:
 
 ```bash
-openclaw channels add --channel whatsapp --account work --auth-dir /path/to/wa-auth
-openclaw channels login --channel whatsapp --account work
+paddy channels add --channel whatsapp --account work --auth-dir /path/to/wa-auth
+paddy channels login --channel whatsapp --account work
 ```
 
   </Step>
@@ -77,7 +77,7 @@ openclaw channels login --channel whatsapp --account work
   <Step title="Start the gateway">
 
 ```bash
-openclaw gateway
+paddy gateway
 ```
 
   </Step>
@@ -88,8 +88,8 @@ openclaw gateway
     and approve the sender. If you prefer the CLI:
 
 ```bash
-openclaw pairing list whatsapp
-openclaw pairing approve whatsapp <CODE>
+paddy pairing list whatsapp
+paddy pairing approve whatsapp <CODE>
 ```
 
     DM access requests expire after 1 hour; pending requests are capped at 3 per
@@ -107,7 +107,7 @@ A separate WhatsApp number is recommended (setup and metadata are optimized for 
 
 <AccordionGroup>
   <Accordion title="Dedicated number (recommended)">
-    - separate WhatsApp identity for OpenClaw
+    - separate WhatsApp identity for Paddy
     - clearer DM allowlists and routing boundaries
     - lower chance of self-chat confusion
 
@@ -132,7 +132,7 @@ A separate WhatsApp number is recommended (setup and metadata are optimized for 
 ## Runtime model
 
 - The gateway owns the WhatsApp socket and reconnect loop.
-- A watchdog tracks two signals independently: raw WhatsApp Web transport activity and application-message activity. A quiet-but-connected session is not restarted just because no message arrived recently; it forces reconnect only when transport frames stop arriving for a fixed internal window (not user-configurable) or application messages stay silent past 4x the normal message timeout. Right after a reconnect for a recently active session, that first window uses the shorter normal message timeout instead of the 4x window. OpenClaw can auto-reply to offline messages that Baileys delivers early in that reconnect, bounded by the inbound message-ID dedupe lifetime; initial startup keeps the short stale-history guard.
+- A watchdog tracks two signals independently: raw WhatsApp Web transport activity and application-message activity. A quiet-but-connected session is not restarted just because no message arrived recently; it forces reconnect only when transport frames stop arriving for a fixed internal window (not user-configurable) or application messages stay silent past 4x the normal message timeout. Right after a reconnect for a recently active session, that first window uses the shorter normal message timeout instead of the 4x window. Paddy can auto-reply to offline messages that Baileys delivers early in that reconnect, bounded by the inbound message-ID dedupe lifetime; initial startup keeps the short stale-history guard.
 - Outbound sends require an active WhatsApp listener for the target account; sends fail fast otherwise.
 - Group sends attach native mention metadata for `@+<digits>` and `@<digits>` tokens (in text and media captions) when the token matches current participant metadata, including LID-backed groups.
 - Status and broadcast chats (`@status`, `@broadcast`) are ignored.
@@ -144,10 +144,10 @@ A separate WhatsApp number is recommended (setup and metadata are optimized for 
 
 ## Call the current requester with MeowCaller (experimental)
 
-The plugin can expose `whatsapp_call` in WhatsApp-originated agent turns. It uses [MeowCaller](https://github.com/purpshell/meowcaller) to place a WhatsApp voice call to the current authorized requester and play an OpenClaw TTS message after they answer. The tool has no destination-number parameter, so a prompt cannot redirect the call. Disabled by default.
+The plugin can expose `whatsapp_call` in WhatsApp-originated agent turns. It uses [MeowCaller](https://github.com/purpshell/meowcaller) to place a WhatsApp voice call to the current authorized requester and play a Paddy TTS message after they answer. The tool has no destination-number parameter, so a prompt cannot redirect the call. Disabled by default.
 
 <Warning>
-MeowCaller is experimental, has no tagged release, and uses a separately paired whatsmeow linked-device session — it cannot reuse the plugin's Baileys credentials. Pairing adds another linked device to the same WhatsApp account; scan with the identity used by OpenClaw. Personal-number/self-chat mode cannot call itself; use a dedicated OpenClaw number to call your personal number.
+MeowCaller is experimental, has no tagged release, and uses a separately paired whatsmeow linked-device session — it cannot reuse the plugin's Baileys credentials. Pairing adds another linked device to the same WhatsApp account; scan with the identity used by Paddy. Personal-number/self-chat mode cannot call itself; use a dedicated Paddy number to call your personal number.
 </Warning>
 
 <Steps>
@@ -167,7 +167,7 @@ MeowCaller is experimental, has no tagged release, and uses a separately paired 
 }
 ```
 
-    When absent or `false`, OpenClaw does not expose the `whatsapp_call` tool.
+    When absent or `false`, Paddy does not expose the `whatsapp_call` tool.
 
   </Step>
 
@@ -204,12 +204,12 @@ meowcaller pair --store "$state_dir/wa-voip.db"
 
   <Step title="Configure TTS and call from WhatsApp">
 
-    Configure a telephony-capable [TTS provider](/tools/tts), then send a request such as `Call me and say the build finished.` The tool resolves the sender from trusted inbound context, synthesizes a temporary private WAV file, runs MeowCaller for a bounded call window, and deletes the audio file afterward. OpenClaw passes the account's store explicitly, waits for a zero exit status after answer/playback/hangup, and treats a timeout or nonzero exit as a failed tool call.
+    Configure a telephony-capable [TTS provider](/tools/tts), then send a request such as `Call me and say the build finished.` The tool resolves the sender from trusted inbound context, synthesizes a temporary private WAV file, runs MeowCaller for a bounded call window, and deletes the audio file afterward. Paddy passes the account's store explicitly, waits for a zero exit status after answer/playback/hangup, and treats a timeout or nonzero exit as a failed tool call.
 
   </Step>
 </Steps>
 
-Limits: one-to-one outbound audio calls only, no arbitrary destination numbers, no shared auth with the chat connection, no self-calls from personal-number/self-chat mode, synthesized audio capped at 60 seconds, no handset-side audibility receipt beyond MeowCaller's answer/playback/hangup completion, and OpenClaw stops the companion process after a bounded 115-175 second window (covering MeowCaller's connection, answer, playback, and shutdown phases).
+Limits: one-to-one outbound audio calls only, no arbitrary destination numbers, no shared auth with the chat connection, no self-calls from personal-number/self-chat mode, synthesized audio capped at 60 seconds, no handset-side audibility receipt beyond MeowCaller's answer/playback/hangup completion, and Paddy stops the companion process after a bounded 115-175 second window (covering MeowCaller's connection, answer, playback, and shutdown phases).
 
 ## Approval prompts
 
@@ -237,7 +237,7 @@ WhatsApp approval reactions require explicit approvers in `allowFrom` (or `"*"`)
 
 ## Question reactions
 
-For an `ask_user` prompt with one non-secret, single-select question and one to four options, WhatsApp shows `1️⃣` through `4️⃣` beside the option labels. React to the delivered prompt with the matching number to answer it. OpenClaw maps the number to the canonical option through the Gateway; stale or duplicate taps are ignored. Multi-question, multi-select, and free-text prompts remain text-reply-only. Normal WhatsApp DM/group admission rules authorize the reacting sender.
+For an `ask_user` prompt with one non-secret, single-select question and one to four options, WhatsApp shows `1️⃣` through `4️⃣` beside the option labels. React to the delivered prompt with the matching number to answer it. Paddy maps the number to the canonical option through the Gateway; stale or duplicate taps are ignored. Multi-question, multi-select, and free-text prompts remain text-reply-only. Normal WhatsApp DM/group admission rules authorize the reacting sender.
 
 ## Plugin hooks and privacy
 
@@ -281,7 +281,7 @@ Scope the opt-in to one account under `channels.whatsapp.accounts.<id>.pluginHoo
     - pairings persist in the channel allow-store and merge with configured `allowFrom`
     - scheduled automation and heartbeat recipient fallback use explicit delivery targets or configured `allowFrom`; DM pairing approvals are not implicit cron/heartbeat recipients
     - same-number self-DMs are allowed unless `selfChatMode: false` or `dmPolicy: "disabled"`; see [Self-chat behavior](/channels/whatsapp#personal-number-and-self-chat-behavior)
-    - OpenClaw never auto-pairs outbound `fromMe` DMs (messages you send yourself from the linked device)
+    - Paddy never auto-pairs outbound `fromMe` DMs (messages you send yourself from the linked device)
 
   </Tab>
 
@@ -349,7 +349,7 @@ WhatsApp supports persistent ACP bindings via top-level `bindings[]`:
 }
 ```
 
-Direct chats match E.164 numbers; groups match WhatsApp group JIDs. Group allowlists, sender policy, and mention/activation gating run before OpenClaw ensures the bound ACP session exists. A matched binding owns the route — broadcast groups do not fan that turn out to ordinary WhatsApp sessions.
+Direct chats match E.164 numbers; groups match WhatsApp group JIDs. Group allowlists, sender policy, and mention/activation gating run before Paddy ensures the bound ACP session exists. A matched binding owns the route — broadcast groups do not fan that turn out to ordinary WhatsApp sessions.
 
 ### Personal-number and self-chat behavior
 
@@ -360,7 +360,7 @@ Direct chats match E.164 numbers; groups match WhatsApp group JIDs. Group allowl
 
 The implicit self-number allowance applies only to DMs, not group allowlists.
 
-Self-chat safeguards are enabled by `true` and disabled by `false`. When the setting is unset, OpenClaw enables them if the linked self number appears in the configured `allowFrom`. These safeguards skip read receipts, suppress native self-mention triggers, and supply an identity reply prefix when no response prefix is configured.
+Self-chat safeguards are enabled by `true` and disabled by `false`. When the setting is unset, Paddy enables them if the linked self number appears in the configured `allowFrom`. These safeguards skip read receipts, suppress native self-mention triggers, and supply an identity reply prefix when no response prefix is configured.
 
 A liveness probe sent to your own number can therefore become agent input with `selfChatMode` unset or `true`. Set `selfChatMode: false` if you want to exclude those self-originated DMs.
 
@@ -378,7 +378,7 @@ A liveness probe sent to your own number can therefore become agent input with `
     [/Replying]
     ```
 
-    Reply metadata (`ReplyToId`, `ReplyToBody`, `ReplyToSender`, sender JID/E.164) is populated when available. If the quoted target is downloadable media, OpenClaw saves it through the normal inbound media store and exposes `MediaPath`/`MediaType` so the agent can inspect it directly instead of seeing only `<media:image>`.
+    Reply metadata (`ReplyToId`, `ReplyToBody`, `ReplyToSender`, sender JID/E.164) is populated when available. If the quoted target is downloadable media, Paddy saves it through the normal inbound media store and exposes `MediaPath`/`MediaType` so the agent can inspect it directly instead of seeing only `<media:image>`.
 
   </Accordion>
 
@@ -457,7 +457,7 @@ A liveness probe sent to your own number can therefore become agent input with `
 | `"all"`           | Quote every outbound reply chunk                               |
 | `"batched"`       | Quote queued batched replies; leave immediate replies unquoted |
 
-If the original message text and media details are no longer cached, OpenClaw sends the reply as a plain message. The reply body is preserved, but its visual link to the original message is lost.
+If the original message text and media details are no longer cached, Paddy sends the reply as a plain message. The reply body is preserved, but its visual link to the original message is lost.
 
 Per-account override: `channels.whatsapp.accounts.<id>.replyToMode`.
 
@@ -548,7 +548,7 @@ opt-in status surface described above.
   </Accordion>
 
   <Accordion title="Logout behavior">
-    `openclaw channels logout --channel whatsapp [--account <id>]` clears WhatsApp auth state for that account. When a gateway is reachable, logout stops the live listener for that account first, so the linked session stops receiving messages before the next restart. `openclaw channels remove --channel whatsapp` also stops the live listener before disabling or deleting account config.
+    `paddy channels logout --channel whatsapp [--account <id>]` clears WhatsApp auth state for that account. When a gateway is reachable, logout stops the live listener for that account first, so the linked session stops receiving messages before the next restart. `paddy channels remove --channel whatsapp` also stops the live listener before disabling or deleting account config.
 
     In legacy auth directories, `oauth.json` is preserved while Baileys auth files are removed.
 
@@ -568,8 +568,8 @@ opt-in status surface described above.
     Symptom: channel status reports not linked.
 
 ```bash
-openclaw channels login --channel whatsapp
-openclaw channels status
+paddy channels login --channel whatsapp
+paddy channels status
 ```
 
   </Accordion>
@@ -582,10 +582,10 @@ openclaw channels status
     Fix:
 
     ```bash
-    openclaw channels status --probe
-    openclaw doctor
-    openclaw logs --follow
-    openclaw gateway status
+    paddy channels status --probe
+    paddy doctor
+    paddy logs --follow
+    paddy gateway status
     ```
 
     If the loop persists after host connectivity and timing are fixed, back up the account auth directory and re-link:
@@ -593,8 +593,8 @@ openclaw channels status
     ```bash
     cp -a ~/.openclaw/credentials/whatsapp/<accountId> \
       ~/.openclaw/credentials/whatsapp/<accountId>.bak
-    openclaw channels logout --channel whatsapp --account <accountId>
-    openclaw channels login --channel whatsapp --account <accountId>
+    paddy channels logout --channel whatsapp --account <accountId>
+    paddy channels login --channel whatsapp --account <accountId>
     ```
 
     If `~/.openclaw/logs/whatsapp-health.log` says `Gateway inactive` but `openclaw gateway status` and `openclaw channels status --probe` both show healthy, run `openclaw doctor`. On Linux, doctor warns about legacy crontab entries invoking the retired `~/.openclaw/bin/ensure-whatsapp.sh` script; remove those entries with `crontab -e` — cron can lack the systemd user-bus environment and make that old script misreport gateway health.
@@ -602,7 +602,7 @@ openclaw channels status
   </Accordion>
 
   <Accordion title="QR login times out behind a proxy">
-    Symptom: `openclaw channels login --channel whatsapp` fails before showing a usable QR with `status=408 Request Time-out` or a TLS socket disconnect.
+    Symptom: `paddy channels login --channel whatsapp` fails before showing a usable QR with `status=408 Request Time-out` or a TLS socket disconnect.
 
     WhatsApp Web login uses the gateway host's standard proxy environment (`HTTPS_PROXY`, `HTTP_PROXY`, lowercase variants, `NO_PROXY`). Verify the gateway process inherits the proxy env and that `NO_PROXY` does not match `mmg.whatsapp.net`.
 
@@ -613,7 +613,7 @@ openclaw channels status
   </Accordion>
 
   <Accordion title="Reply appears in transcript but not in WhatsApp">
-    Transcript rows record what the agent generated; WhatsApp delivery is checked separately. OpenClaw only treats an auto-reply as sent after Baileys returns an outbound message id for at least one visible text or media send.
+    Transcript rows record what the agent generated; WhatsApp delivery is checked separately. Paddy only treats an auto-reply as sent after Baileys returns an outbound message id for at least one visible text or media send.
 
     Ack reactions are independent pre-reply receipts — a successful reaction does not prove the later text/media reply was accepted. Check gateway logs for `auto-reply delivery failed` or `auto-reply was not accepted by WhatsApp provider`.
 
@@ -622,7 +622,7 @@ openclaw channels status
   <Accordion title="Group messages unexpectedly ignored">
     Check in this order: `groupPolicy`, `groupAllowFrom`/`allowFrom`, `groups` allowlist entries, mention gating (`requireMention` + mention patterns), and duplicate keys in `openclaw.json` (JSON5 later entries override earlier ones — keep a single `groupPolicy` per scope).
 
-    If `channels.whatsapp.groups` is present, WhatsApp can still observe messages from other groups, but OpenClaw drops them before session routing. Add the group JID to `channels.whatsapp.groups`, or add `groups["*"]` to admit all groups while keeping sender authorization under `groupPolicy`/`groupAllowFrom`.
+    If `channels.whatsapp.groups` is present, WhatsApp can still observe messages from other groups, but Paddy drops them before session routing. Add the group JID to `channels.whatsapp.groups`, or add `groups["*"]` to admit all groups while keeping sender authorization under `groupPolicy`/`groupAllowFrom`.
 
   </Accordion>
 

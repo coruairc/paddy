@@ -565,7 +565,7 @@ export const en: TranslationMap & {
     stylesFailed: "Styles failed to load, so the page may look broken.",
   },
   communityInvite: {
-    cardLabel: "Join the OpenClaw community on Discord",
+    cardLabel: "Join the Paddy community on Discord",
     artAlt: "A lobster beside the Discord mark on a lit seafloor pedestal",
     title: "Come build with us",
     body: "Ask anything, show what you're making, and find out what everyone else is building.",
@@ -647,9 +647,9 @@ export const en: TranslationMap & {
     },
     dialog: {
       disconnected:
-        "The Gateway disconnected during the update. This page reconnects on its own. If it stays disconnected, run `openclaw triage` on the Gateway host to open a local coding agent for diagnosis and repair.",
+        "The Gateway disconnected during the update. This page reconnects on its own. If it stays disconnected, run `paddy triage` on the Gateway host to open a local coding agent for diagnosis and repair.",
       restarting:
-        "The Gateway is restarting. This page disconnects and reconnects on its own. If it stays disconnected, run `openclaw triage` on the Gateway host to open a local coding agent for diagnosis and repair.",
+        "The Gateway is restarting. This page disconnects and reconnects on its own. If it stays disconnected, run `paddy triage` on the Gateway host to open a local coding agent for diagnosis and repair.",
     },
     channel: {},
     installKind: {},
@@ -660,23 +660,21 @@ export const en: TranslationMap & {
     checkError: "Could not check for updates: {error}",
     status: "Update {status}: {reason}. {guidance}",
     verificationFailedWithIdentity:
-      "Update finished, but the running install does not match the expected revision. Expected {expected}, running {actual}. Run `openclaw triage` on the Gateway host before retrying.",
+      "Update finished, but the running install does not match the expected revision. Expected {expected}, running {actual}. Run `paddy triage` on the Gateway host before retrying.",
     handoffTimeout:
-      "Update completion was not confirmed. Run `openclaw triage` on the Gateway host and inspect the result before retrying.",
+      "Update completion was not confirmed. Run `paddy triage` on the Gateway host and inspect the result before retrying.",
     outcomeUnknown:
-      "The update outcome is unknown. Run `openclaw triage` on the Gateway host and inspect the result before retrying.",
+      "The update outcome is unknown. Run `paddy triage` on the Gateway host and inspect the result before retrying.",
     triage: {
       hostHint:
-        "If Ask OpenClaw is unavailable, run `openclaw triage` on the Gateway host to open a local coding agent for diagnosis and repair. Diagnose the cause before retrying.",
+        "If Ask Paddy is unavailable, run `paddy triage` on the Gateway host to open a local coding agent for diagnosis and repair. Diagnose the cause before retrying.",
     },
     report: {},
     failureReasons: {
       dirty: "Commit or stash changes, then retry.",
       noUpstream: "Set an upstream branch, then retry.",
-      notGitInstall:
-        "Not a git checkout. Run `openclaw update` from the CLI for a global reinstall.",
-      notOpenclawRoot:
-        "Run the update from an OpenClaw checkout or use the CLI global reinstall path.",
+      notGitInstall: "Not a git checkout. Run `paddy update` from the CLI for a global reinstall.",
+      notOpenclawRoot: "Run the update from a Paddy checkout or use the CLI global reinstall path.",
       depsInstallFailed: "Dependency install failed. Fix the install error and retry.",
       buildFailed: "Build failed. Fix the build error and retry.",
       buildDirty:
@@ -689,7 +687,7 @@ export const en: TranslationMap & {
       restartUnavailable:
         "This global install cannot be safely replaced while restarts are disabled and no supervisor is present.",
       externalSupervisorUpdateRequired:
-        "This Gateway is managed by an external supervisor. Use your server or deployment's update workflow to update OpenClaw and restart the Gateway. The Control UI and `openclaw update` cannot update this installation. No package changes or Gateway restart were attempted.",
+        "This Gateway is managed by an external supervisor. Use your server or deployment's update workflow to update Paddy and restart the Gateway. The Control UI and `paddy update` cannot update this installation. No package changes or Gateway restart were attempted.",
       restartUnhealthy:
         "The replacement process never became healthy. The previous process stayed up so you can recover.",
       restartRevisionMismatch:
@@ -700,14 +698,14 @@ export const en: TranslationMap & {
       managedServiceHandoffAlreadyRunning:
         "Another managed update is already running. Wait for it to complete, then refresh update status.",
       managedServiceHandoffUnavailable:
-        "Stop the foreground Gateway, run `openclaw update`, then launch it again. For automatic updates, install a managed Gateway service.",
-      doctorFailed: "Doctor repair failed. Run `openclaw doctor --non-interactive` and retry.",
+        "Stop the foreground Gateway, run `paddy update`, then launch it again. For automatic updates, install a managed Gateway service.",
+      doctorFailed: "Doctor repair failed. Run `paddy doctor --non-interactive` and retry.",
       managedServiceHandoffFailed:
-        "The update helper stopped before finishing. Run `openclaw update` in the terminal to see why.",
+        "The update helper stopped before finishing. Run `paddy update` in the terminal to see why.",
       managedServiceHandoffSpawnFailed:
-        "The Gateway could not start the update helper. Run `openclaw update` in the terminal instead.",
+        "The Gateway could not start the update helper. Run `paddy update` in the terminal instead.",
       managedServiceHandoffParentTimeout:
-        "The Gateway stayed up too long for the update helper. Start the update again, or run `openclaw update`.",
+        "The Gateway stayed up too long for the update helper. Start the update again, or run `paddy update`.",
       default: "See the gateway logs for the exact failure and retry once the cause is fixed.",
     },
     failedAtStep: "The update failed at {step}: {cause}.",
@@ -912,7 +910,7 @@ export const en: TranslationMap & {
     ownerSession: "Session",
     ownerWorkboard: "Workboard",
     title: "Managed Worktrees",
-    subtitle: "Isolated repository checkouts owned by OpenClaw.",
+    subtitle: "Isolated repository checkouts owned by Paddy.",
     cleanNow: "Clean up now",
     name: "Name",
     namePlaceholder: "auto",
@@ -973,7 +971,7 @@ export const en: TranslationMap & {
       "owner-mismatch": "owned elsewhere",
       busy: "live run or cleanup active",
       "foreign-lock": "foreign Git lock",
-      "snapshot-failed": "OpenClaw could not create a safety snapshot",
+      "snapshot-failed": "Paddy could not create a safety snapshot",
       "cleanup-failed": "cleanup failed",
     },
     draftCleanupFailed: "Session deleted; browser draft remains. Clear site data.",
@@ -1189,7 +1187,7 @@ export const en: TranslationMap & {
     moveSessionTitle: "Move session",
     moveSessionDescription: 'Choose where "{session}" should continue.',
     moveSessionNoReplayWarning:
-      "OpenClaw safely reconciles the current workspace before moving. Active work is never replayed.",
+      "Paddy safely reconciles the current workspace before moving. Active work is never replayed.",
     moveSessionActiveRunWarning:
       "The active turn will be interrupted. Partial output is not replayed; send the next turn again after the move.",
     moveSessionAction: "Move session",
@@ -1715,7 +1713,7 @@ export const en: TranslationMap & {
     },
   },
   approvalPage: {
-    brandName: "OpenClaw",
+    brandName: "Paddy",
     eyebrow: "Operator approval",
     loadingTitle: "Loading approval",
     loadingDescription: "Checking the current approval state with the Gateway.",
@@ -1724,7 +1722,7 @@ export const en: TranslationMap & {
       "This approval could not be found or this device is not authorized to review it.",
     connectionErrorTitle: "Connection interrupted",
     connectionErrorDescription:
-      "OpenClaw cannot confirm or record a decision while disconnected. Reconnect to check the current status.",
+      "Paddy cannot confirm or record a decision while disconnected. Reconnect to check the current status.",
     retry: "Retry",
     execTitle: "Command approval",
     pending: "Waiting for your decision",
@@ -1786,7 +1784,7 @@ export const en: TranslationMap & {
     back: "Back",
     forward: "Forward",
     settings: "Settings",
-    askOpenClaw: "Ask OpenClaw",
+    askOpenClaw: "Ask Paddy",
     settingsGroupDevice: "This Mac",
     settingsGroupThisComputer: "This computer",
     settingsGroupThisIPhone: "This iPhone",
@@ -1870,7 +1868,7 @@ export const en: TranslationMap & {
     moreActions: "More actions",
     copyUrl: "Copy URL",
     openNewTab: "Open in new tab",
-    openWithinOpenClaw: "Open in OpenClaw",
+    openWithinOpenClaw: "Open in Paddy",
     toggle: "Toggle browser panel",
     close: "Close browser panel",
     resize: "Resize browser panel",
@@ -1939,7 +1937,7 @@ export const en: TranslationMap & {
     cloudWorkers: "Cloud workers",
     chat: "Chat",
     dashboards: "Dashboards",
-    custodian: "OpenClaw",
+    custodian: "Paddy",
     profile: "Profile",
     communications: "Communications",
     appearance: "Appearance",
@@ -2027,7 +2025,7 @@ export const en: TranslationMap & {
     commandHint: "Try /models or /help.",
     heading: "Connect a verified AI model",
     intro:
-      "OpenClaw discovers AI access on this Gateway. Choose a provider to begin; nothing is selected, tested, installed, or saved automatically.",
+      "Paddy discovers AI access on this Gateway. Choose a provider to begin; nothing is selected, tested, installed, or saved automatically.",
     required: {
       title: "No AI provider configured",
       body: "Connect a provider and choose a model to send messages.",
@@ -2046,7 +2044,7 @@ export const en: TranslationMap & {
     verify: {},
     access: {
       adminRequired: "Model setup requires operator.admin access.",
-      gatewayTooOld: "The Gateway is running an older OpenClaw version",
+      gatewayTooOld: "The Gateway is running an older Paddy version",
     },
     candidates: {
       title: "Found on this Gateway",
@@ -2102,7 +2100,7 @@ export const en: TranslationMap & {
       accessValueFor: "{provider} API key or token",
       accessValuePlaceholder: "Paste an API key or token",
       connectAndVerify: "Connect & verify",
-      verifyHint: "OpenClaw verifies a real model reply before marking the connection ready.",
+      verifyHint: "Paddy verifies a real model reply before marking the connection ready.",
       required: "Choose a provider and enter an API key or token.",
     },
     success: {},
@@ -2169,7 +2167,7 @@ export const en: TranslationMap & {
   onboarding: {
     memoryImport: {
       title: "Bring your assistant memory with you",
-      body: "OpenClaw found memory from other coding assistants. Import it into your agent workspace?",
+      body: "Paddy found memory from other coding assistants. Import it into your agent workspace?",
       plannedCount: "{count} ready to import",
       alreadyImported: "Already imported: {count}",
       sourceUnavailable: "Source path unavailable",
@@ -2184,7 +2182,7 @@ export const en: TranslationMap & {
       connectionChanged: "Skipped: the Gateway connection changed during the import",
       unknownError: "Request failed",
       doneTitle: "Memory import finished",
-      doneBody: "Migrated {migrated}, skipped {skipped}. You can continue setting up OpenClaw.",
+      doneBody: "Migrated {migrated}, skipped {skipped}. You can continue setting up Paddy.",
     },
   },
   assistantPanel: {
@@ -2205,30 +2203,29 @@ export const en: TranslationMap & {
     removeSelection: "Remove selected text",
   },
   custodian: {
-    title: "OpenClaw",
+    title: "Paddy",
     subtitleCaretaker: "System setup and care.",
     exitSetup: "Exit setup",
     newAgent: "New agent",
     hatchDraft: "Wake up, my friend!",
-    placeholder: "Message OpenClaw…",
+    placeholder: "Message Paddy…",
     sensitivePlaceholder: "Enter sensitive value…",
     sensitiveReply: "Sensitive reply sent",
     cancel: "Cancel",
     send: "Send",
-    thinking: "OpenClaw is thinking",
+    thinking: "Paddy is thinking",
     earlier: "Earlier",
-    requestFailed: "OpenClaw could not reply. Try again.",
+    requestFailed: "Paddy could not reply. Try again.",
     connectionChanged: "The Gateway connection changed. Retry to continue this setup.",
-    sessionRestarted:
-      "{error} OpenClaw started a fresh session; earlier messages remain for context.",
-    unsupportedGateway: "Update the Gateway to continue setup with OpenClaw.",
+    sessionRestarted: "{error} Paddy started a fresh session; earlier messages remain for context.",
+    unsupportedGateway: "Update the Gateway to continue setup with Paddy.",
     panel: {
-      title: "OpenClaw",
-      toggle: "Toggle Ask OpenClaw",
-      close: "Close Ask OpenClaw",
-      resize: "Resize Ask OpenClaw",
-      dockBottom: "Dock Ask OpenClaw at bottom",
-      dockRight: "Dock Ask OpenClaw at right",
+      title: "Paddy",
+      toggle: "Toggle Ask Paddy",
+      close: "Close Ask Paddy",
+      resize: "Resize Ask Paddy",
+      dockBottom: "Dock Ask Paddy at bottom",
+      dockRight: "Dock Ask Paddy at right",
     },
     history: {
       button: "History",
@@ -2236,7 +2233,7 @@ export const en: TranslationMap & {
       description: "What changed on this system, newest first.",
       loading: "Loading recent changes…",
       empty: "No recorded changes yet.",
-      requestFailed: "OpenClaw could not load change history.",
+      requestFailed: "Paddy could not load change history.",
       loadMore: "Load more",
       loadingMore: "Loading more…",
       changedPaths: "Changed paths ({count})",
@@ -2259,9 +2256,9 @@ export const en: TranslationMap & {
       channelDegraded: "{channel} is degraded — ask me what happened",
       channelFallback: "A channel",
       dismiss: "Dismiss this update",
-      channelSetupTitle: "Reach OpenClaw outside this app",
+      channelSetupTitle: "Reach Paddy outside this app",
       channelSetupBody:
-        "The web app already works. Add a channel only if you want to message OpenClaw from another service.",
+        "The web app already works. Add a channel only if you want to message Paddy from another service.",
       channelSetupAction: "Set up a channel",
       channelSetupDismiss: "Keep using the web app",
       channelStatusErrorTitle: "Channel status is unavailable",
@@ -2352,7 +2349,7 @@ export const en: TranslationMap & {
     workerDesktop: {},
   },
   aboutPage: {
-    productName: "OpenClaw",
+    productName: "Paddy",
     tagline: "Your personal AI assistant, running on your own devices.",
     waveHello: "Wave hello to Clawd",
     linksLabel: "Community and resources",
@@ -2362,7 +2359,7 @@ export const en: TranslationMap & {
     linkDiscord: "Discord",
     linkX: "X (Twitter)",
     linkChangelog: "Changelog",
-    license: "© 2026 OpenClaw Foundation — MIT License.",
+    license: "© 2026 Paddy Foundation — MIT License.",
     artifactTitle: "Control UI",
     artifactSubtitle: "Identity embedded when this browser artifact was built.",
     artifactDetails: "Control UI build details",
@@ -3286,11 +3283,11 @@ export const en: TranslationMap & {
       remoteViewOnly: "This session is on a paired device and is view-only.",
       unsupportedViewOnly: "This external session source is view-only.",
       sessionMenu: "External session actions",
-      openInOpenClaw: "Open in OpenClaw",
+      openInOpenClaw: "Open in Paddy",
       openInTerminal: "Open in terminal",
       deleteSession: "Delete",
       deleteSessionConfirm:
-        "Delete this external session from OpenClaw? Make sure no other runner is using it. Beamed sessions are deleted permanently. Sessions kept by another tool, such as Codex, are archived there and may be restorable.",
+        "Delete this external session from Paddy? Make sure no other runner is using it. Beamed sessions are deleted permanently. Sessions kept by another tool, such as Codex, are archived there and may be restorable.",
       terminalUnavailable: "Terminal opening is unavailable for this session.",
     },
     taskSuggestions: {
@@ -3365,7 +3362,7 @@ export const en: TranslationMap & {
     followUpModeOverriding: "Overriding server default ({mode})",
     followUpModeReset: "Reset to server default",
     catalogOpenTarget: "Open external sessions in",
-    catalogOpenTargetViewer: "OpenClaw viewer",
+    catalogOpenTargetViewer: "Paddy viewer",
     catalogOpenTargetTerminal: "Terminal",
     catalogOutputTruncated: "[Output truncated]",
     onboardingDisabled: "Disabled during setup",
@@ -3399,7 +3396,7 @@ export const en: TranslationMap & {
       titleOne: "1 cloud workspace conflict",
       titleMany: "{count} cloud workspace conflicts",
       description:
-        "OpenClaw kept your local versions and applied the other cloud changes. Inspect the staged result or take its version for a conflicted path.",
+        "Paddy kept your local versions and applied the other cloud changes. Inspect the staged result or take its version for a conflicted path.",
       summary: "Local versions kept; inspect or take the cloud version.",
       showCommands: "Show commands",
       morePaths: "+{count} more paths",
@@ -3412,7 +3409,7 @@ export const en: TranslationMap & {
       commandHelp:
         "Run these in Bash or zsh (Git Bash on Windows). If inspect says the path does not exist, the cloud deleted it; verify and remove the local path manually. If checkout reports a file/directory conflict, move or remove the blocking local path, then retry. If the staged ref is missing, the notice is stale; do not change the local path.",
       commandsUnavailable:
-        "This filename contains terminal control characters, so OpenClaw will not build a copyable shell command for it. Inspect the staged ref directly and enter the path manually with care.",
+        "This filename contains terminal control characters, so Paddy will not build a copyable shell command for it. Inspect the staged ref directly and enter the path manually with care.",
       dismiss: "Dismiss workspace conflict notice",
       eventSender: "Cloud workspace",
       eventTitleOne: "Cloud result applied with 1 conflict",
@@ -4080,7 +4077,7 @@ export const en: TranslationMap & {
       video: "Video",
     },
     voice: {
-      asking: "Asking OpenClaw...",
+      asking: "Asking Paddy...",
       preparing: "Preparing voice session...",
       connecting: "Connecting voice input...",
       listening: "Listening...",
@@ -4386,7 +4383,7 @@ export const en: TranslationMap & {
     detail: {
       tabsLabel: "Automation details",
       newTitle: "New automation",
-      newSubtitle: "Describe what OpenClaw should do, then pick when it runs.",
+      newSubtitle: "Describe what Paddy should do, then pick when it runs.",
       back: "All automations",
       settingsTab: "Settings",
       historyTitle: "Run history",
@@ -4480,7 +4477,7 @@ export const en: TranslationMap & {
       descriptionPlaceholder: "Optional context for this task",
       agentPlaceholder: "main or ops",
       agentHelp: "Start typing to pick a known agent, or enter a custom one.",
-      promptPlaceholder: "Describe what OpenClaw should do...",
+      promptPlaceholder: "Describe what Paddy should do...",
       repeat: "Repeat",
       repeatInterval: "Interval",
       repeatOnce: "Once",

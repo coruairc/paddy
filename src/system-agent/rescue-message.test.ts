@@ -365,9 +365,7 @@ describe("OpenClaw rescue message", () => {
 
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
       expect(replies).toContain("No pending Paddy rescue change is waiting for approval.");
-      expect(replies.some((reply) => reply?.includes("[openclaw] done: gateway.restart"))).toBe(
-        true,
-      );
+      expect(replies.some((reply) => reply?.includes("[paddy] done: gateway.restart"))).toBe(true);
     });
   });
 
@@ -415,9 +413,9 @@ describe("OpenClaw rescue message", () => {
       await restartEntered;
       await runRescue("/openclaw start gateway", cfg, commandContext(), deps);
       releaseRestart?.();
-      await expect(approval).resolves.toContain("[openclaw] done: gateway.restart");
+      await expect(approval).resolves.toContain("[paddy] done: gateway.restart");
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-        "[openclaw] done: gateway.start",
+        "[paddy] done: gateway.start",
       );
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
       expect(deps.runGatewayStart).toHaveBeenCalledTimes(1);
@@ -437,7 +435,7 @@ describe("OpenClaw rescue message", () => {
       await expect(olderPlan).resolves.toContain("restart the Gateway");
       await expect(newerPlan).resolves.toContain("start the Gateway");
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-        "[openclaw] done: gateway.start",
+        "[paddy] done: gateway.start",
       );
       expect(deps.runGatewayRestart).not.toHaveBeenCalled();
       expect(deps.runGatewayStart).toHaveBeenCalledTimes(1);
@@ -453,7 +451,7 @@ describe("OpenClaw rescue message", () => {
       resetPluginStateStoreForTests();
 
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-        "[openclaw] done: gateway.restart",
+        "[paddy] done: gateway.restart",
       );
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
       await expect(fs.access(path.join(stateDir, "openclaw", "rescue-pending"))).rejects.toThrow(
@@ -479,7 +477,7 @@ describe("OpenClaw rescue message", () => {
         );
       }
       await expect(runRescue("/openclaw yes", cfg, original, deps)).resolves.toContain(
-        "[openclaw] done: gateway.restart",
+        "[paddy] done: gateway.restart",
       );
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
     });
@@ -501,7 +499,7 @@ describe("OpenClaw rescue message", () => {
         ),
       ).resolves.toBe("No pending Paddy rescue change is waiting for approval.");
       await expect(runRescue("/openclaw yes", cfg, original, deps)).resolves.toContain(
-        "[openclaw] done: gateway.restart",
+        "[paddy] done: gateway.restart",
       );
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
     });
@@ -602,7 +600,7 @@ describe("OpenClaw rescue message", () => {
         runRescue("/openclaw restart gateway", cfg, commandContext(), deps),
       ).resolves.toBe("Plan: restart the Gateway. Reply /openclaw yes to apply.");
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-        "[openclaw] done: gateway.restart",
+        "[paddy] done: gateway.restart",
       );
 
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
@@ -715,7 +713,7 @@ describe("OpenClaw rescue message", () => {
         );
         expect(deps.createAgent).not.toHaveBeenCalled();
         await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-          "[openclaw] done: agents.create",
+          "[paddy] done: agents.create",
         );
 
         expect(deps.createAgent).toHaveBeenCalledTimes(1);

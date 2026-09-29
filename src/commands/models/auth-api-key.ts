@@ -202,7 +202,7 @@ export async function saveModelProviderApiKey(params: {
     return {
       profileId,
       warning:
-        "API key saved, but the Gateway has not confirmed applying the provider settings. Run `openclaw gateway restart` to apply them.",
+        "API key saved, but the Gateway has not confirmed applying the provider settings. Run `paddy gateway restart` to apply them.",
     };
   }
   return { profileId };

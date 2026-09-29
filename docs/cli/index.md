@@ -1,5 +1,5 @@
 ---
-summary: "OpenClaw CLI index: command list, global flags, and links to per-command pages"
+summary: "Paddy CLI index: command list, global flags, and links to per-command pages"
 read_when:
   - Finding the right `openclaw` subcommand
   - Looking up global flags or output styling rules
@@ -12,10 +12,10 @@ the commands, global flags, and output styling rules that apply across the CLI.
 
 Setup commands by intent:
 
-- `openclaw setup` and `openclaw onboard` verify inference first, then start OpenClaw for Gateway, workspace, channels, skills, and health setup.
-- `openclaw setup --baseline` creates the baseline config and workspace without walking the guided onboarding flow.
-- `openclaw configure` changes targeted parts of an existing setup: model auth, gateway, channels, plugins, or skills.
-- `openclaw channels add` configures channel accounts after the baseline exists. A channel selection alone uses guided setup. Account, credential, or channel-config flags use the direct path for scripts.
+- `paddy setup` and `paddy onboard` verify inference first, then start Paddy for Gateway, workspace, channels, skills, and health setup.
+- `paddy setup --baseline` creates the baseline config and workspace without walking the guided onboarding flow.
+- `paddy configure` changes targeted parts of an existing setup: model auth, gateway, channels, plugins, or skills.
+- `paddy channels add` configures channel accounts after the baseline exists. A channel selection alone uses guided setup. Account, credential, or channel-config flags use the direct path for scripts.
 
 <a id="status" />
 
@@ -48,10 +48,10 @@ Setup commands by intent:
 | `--container <name>`    | Run the CLI inside a running Podman/Docker container named `<name>` (default: env `OPENCLAW_CONTAINER`) |
 | `--log-level <level>`   | Override the global log level for file + console output                                                 |
 | `--no-color`            | Disable ANSI colors (`NO_COLOR=1` is also respected)                                                    |
-| `--update`              | Shorthand for [`openclaw update`](/cli/update); works for both source checkouts and package installs    |
+| `--update`              | Shorthand for [`paddy update`](/cli/update); works for both source checkouts and package installs       |
 | `-V`, `--version`, `-v` | Print version and exit                                                                                  |
 
-Place command-specific options after their command name, for example `openclaw status --json`. Global options such as `--profile` can precede the command.
+Place command-specific options after their command name, for example `paddy status --json`. Global options such as `--profile` can precede the command.
 
 Unknown root options fail with an option error and a help hint instead of starting onboarding or the TUI.
 
@@ -60,7 +60,7 @@ another profile, including a running Gateway service. Explicitly customized
 state directories and config paths remain unchanged.
 
 Use `--` to stop option parsing. Command words still dispatch after it: for example,
-`openclaw -- config get gateway.port` reads the configured port. A token such as
+`paddy -- config get gateway.port` reads the configured port. A token such as
 `--help` after `--` is a positional argument.
 
 ## Output modes
@@ -101,7 +101,7 @@ check the exit status.
 
 ## Color palette
 
-OpenClaw uses a lobster palette for CLI output:
+Paddy uses a lobster palette for CLI output:
 
 | Token          | Hex       | Used for                             |
 | -------------- | --------- | ------------------------------------ |
@@ -125,8 +125,8 @@ subcommands (for example under `skills`, `plugins`, and `wiki`) evolve
 independently. Run `<command> --help` for the authoritative, current list.
 
 ```
-openclaw [--dev] [--profile <name>] <command>
-  openclaw
+paddy [--dev] [--profile <name>] <command>
+  paddy
   setup
   onboard
   configure
@@ -503,7 +503,7 @@ openclaw [--dev] [--profile <name>] <command>
 ```
 
 Plugins can add additional top-level commands, such as
-[`openclaw workboard`](/cli/workboard) or `openclaw voicecall`.
+[`paddy workboard`](/cli/workboard) or `paddy voicecall`.
 
 </Accordion>
 
@@ -520,7 +520,7 @@ Highlights:
 
 ## Usage tracking
 
-`openclaw status --usage` and the Control UI surface provider usage/quota when
+`paddy status --usage` and the Control UI surface provider usage/quota when
 OAuth/API credentials are available. Data comes directly from provider usage
 endpoints and is normalized to `X% left`. Providers with current usage
 windows: Anthropic, Gemini CLI, GitHub Copilot, MiniMax, OpenAI Codex,

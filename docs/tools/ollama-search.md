@@ -8,7 +8,7 @@ read_when:
 title: "Ollama web search"
 ---
 
-OpenClaw supports **Ollama Web Search** as a bundled `web_search` provider,
+Paddy supports **Ollama Web Search** as a bundled `web_search` provider,
 returning titles, URLs, and snippets from Ollama's web-search API.
 
 Local/self-hosted Ollama needs no API key by default; it requires a reachable
@@ -33,7 +33,7 @@ configured host.
   </Step>
   <Step title="Choose Ollama Web Search">
     ```bash
-    openclaw configure --section web
+    paddy configure --section web
     ```
 
     Select **Ollama Web Search** as the provider.
@@ -51,12 +51,12 @@ configured host.
    local daemon. To move web search alone, set
    `plugins.entries.ollama.config.webSearch.baseUrl` to `https://ollama.com`
    and leave `models.providers.ollama.baseUrl` pointing at your local host.
-3. Run `openclaw configure --section web` and select **Ollama Web Search**.
+3. Run `paddy configure --section web` and select **Ollama Web Search**.
 
 Hosted search does not require a local Ollama daemon or `ollama signin`.
 
 <Note>
-  OpenClaw never auto-selects Ollama Web Search over a higher-priority
+  Paddy never auto-selects Ollama Web Search over a higher-priority
   credentialed provider; you must choose it explicitly with
   `tools.web.search.provider: "ollama"`.
 </Note>
@@ -109,7 +109,7 @@ Or reuse the host already configured for the Ollama model provider:
 
 `models.providers.ollama.baseUrl` is the canonical key; the web-search
 provider also accepts `baseURL` there for compatibility with OpenAI SDK-style
-config examples. If nothing is set, OpenClaw defaults to
+config examples. If nothing is set, Paddy defaults to
 `http://127.0.0.1:11434`.
 
 Direct hosted Ollama Web Search (no local Ollama):
@@ -145,16 +145,16 @@ itself, not read from the environment.
   when the configured host is auth-protected.
 - Host resolution order: `plugins.entries.ollama.config.webSearch.baseUrl` →
   `models.providers.ollama.baseUrl` (or `baseURL`) → `http://127.0.0.1:11434`.
-- If the resolved host is `https://ollama.com`, OpenClaw calls
+- If the resolved host is `https://ollama.com`, Paddy calls
   `https://ollama.com/api/web_search` directly with the API key as bearer
   auth.
-- Otherwise OpenClaw calls the local proxy endpoint
+- Otherwise Paddy calls the local proxy endpoint
   `/api/experimental/web_search` first (which signs and forwards to Ollama
   Cloud), then falls back to `/api/web_search` on the same host. If both fail
   and `OLLAMA_API_KEY` is set, it retries once against
   `https://ollama.com/api/web_search` with that key — without sending it to
   the local host.
-- OpenClaw warns during setup if a local Ollama host is unreachable or not
+- Paddy warns during setup if a local Ollama host is unreachable or not
   signed in, or if hosted search has no API key. These warnings do not block
   selecting the provider.
 

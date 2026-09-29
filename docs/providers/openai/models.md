@@ -18,7 +18,7 @@ sidebarTitle: "Models"
 | GPT-6 Sol                                         | `openai/gpt-6-sol`                                                 | Select explicitly; account access can differ between auth routes.   |
 | Lower-cost GPT-6 Luna                             | `openai/gpt-6-luna`                                                | Select explicitly; check the account catalog for availability.      |
 | Choose an exact GPT-5.6 tier                      | `openai/gpt-5.6-sol`, `-terra`, or `-luna`                         | Check `models list` for the tiers available to this account.        |
-| Account without GPT-5.6 access                    | `openai/gpt-5.5`                                                   | Explicit recovery choice; OpenClaw does not silently downgrade.     |
+| Account without GPT-5.6 access                    | `openai/gpt-5.5`                                                   | Explicit recovery choice; Paddy does not silently downgrade.        |
 | Direct API-key billing, explicit OpenClaw runtime | `openai/gpt-5.6` plus provider/model `agentRuntime.id: "openclaw"` | Select a normal `openai` API-key profile.                           |
 | Latest ChatGPT Instant model alias                | `openai/chat-latest`                                               | Direct API-key only; moving alias, not the stable default.          |
 | Image generation or editing                       | `openai/gpt-image-2`                                               | Works with `OPENAI_API_KEY` or Codex OAuth.                         |
@@ -26,7 +26,7 @@ sidebarTitle: "Models"
 
 ### Retired subscription model references
 
-GPT-5.4 and GPT-5.4 Mini are retired from the ChatGPT-account Codex route. Run `openclaw doctor --fix` to replace persisted subscription references with their documented successors: `openai/gpt-5.6-terra` and `openai/gpt-5.6-luna`, respectively. This includes defaults, per-agent model selections, automation overrides, and unlocked session overrides whose selected route is known. The Platform API-key route is unaffected. Doctor retains pinned overrides when their successor is outside the agent's model policy, or when clearing an override would keep the same retired model and account. Doctor also retains the original reference and warns when its declared successor is retired or definitively unsupported on the selected account route; unknown availability and temporary cooldowns do not block migration. It reports the model or policy change needed, along with unresolved or conflicting account routes. Review the repair output, restart the Gateway, and re-enable any automation that was disabled after repeated failures.
+GPT-5.4 and GPT-5.4 Mini are retired from the ChatGPT-account Codex route. Run `paddy doctor --fix` to replace persisted subscription references with their documented successors: `openai/gpt-5.6-terra` and `openai/gpt-5.6-luna`, respectively. This includes defaults, per-agent model selections, automation overrides, and unlocked session overrides whose selected route is known. The Platform API-key route is unaffected. Doctor retains pinned overrides when their successor is outside the agent's model policy, or when clearing an override would keep the same retired model and account. Doctor also retains the original reference and warns when its declared successor is retired or definitively unsupported on the selected account route; unknown availability and temporary cooldowns do not block migration. It reports the model or policy change needed, along with unresolved or conflicting account routes. Review the repair output, restart the Gateway, and re-enable any automation that was disabled after repeated failures.
 
 ## GPT-6 Astra
 
@@ -38,14 +38,14 @@ If ChatGPT/Codex catalog discovery is unavailable, the offline fallback list
 omits Astra until account discovery succeeds.
 
 ```bash
-openclaw models set openai/gpt-6-astra
+paddy models set openai/gpt-6-astra
 ```
 
 Astra uses the Responses API for agent tool calls. It supports text and image
 input, a 1,050,000-token context window, and up to 128,000 output tokens.
-OpenClaw retains its ordinary 272,000-token active input budget by default.
+Paddy retains its ordinary 272,000-token active input budget by default.
 The supported reasoning efforts are `low`, `medium`, `high`, `xhigh`, and `max`.
-OpenClaw defaults Astra to `medium` on both the OpenClaw and Codex runtimes
+Paddy defaults Astra to `medium` on both the Paddy and Codex runtimes
 when the account supports that effort.
 The OpenAI provider owns this default, so model selection, Control UI, and
 Codex turn requests share it. Explicit agent, model, global, and session
@@ -58,8 +58,8 @@ These defaults also apply to configured Astra model entries without explicit
 reasoning or temperature compatibility metadata.
 Azure Responses deployments continue to use their configured capabilities.
 
-`/think ultra` is also available on the OpenClaw and Codex runtimes. Ultra enables
-proactive sub-agent orchestration; it is not a raw Responses API effort. OpenClaw
+`/think ultra` is also available on the Paddy and Codex runtimes. Ultra enables
+proactive sub-agent orchestration; it is not a raw Responses API effort. Paddy
 uses `max`, while native Codex selects Astra's model-defined effort (`xhigh`).
 
 Standard pricing per million tokens is $10 input, $1 cache reads, $12.50 cache
@@ -69,7 +69,7 @@ and [migration guide](https://developers.openai.com/api/docs/guides/latest-model
 
 ### Async tools, steering, and reasoning changes
 
-Use an OpenAI Platform API-key profile and the built-in OpenClaw runtime for
+Use an OpenAI Platform API-key profile and the built-in Paddy runtime for
 these Astra capabilities. They require the official `https://api.openai.com/v1`
 Responses endpoint. Configure the existing model settings:
 
@@ -91,8 +91,8 @@ Responses endpoint. Configure the existing model settings:
 }
 ```
 
-- **Async function calls:** Astra can continue reasoning while OpenClaw runs a
-  direct function tool. OpenClaw sends the completed result in the next model
+- **Async function calls:** Astra can continue reasoning while Paddy runs a
+  direct function tool. Paddy sends the completed result in the next model
   request after the active response finishes. This
   applies to direct tools; code-mode tools retain their existing execution flow.
 - **Mid-turn steering:** [Steering messages](/concepts/queue#queue-modes) can
@@ -103,7 +103,7 @@ Responses endpoint. Configure the existing model settings:
   that rewrite the active request's prefix keep ordinary queued delivery.
 - **Reasoning changes without rebuilding the cached prefix:** Change the
   [thinking level](/tools/thinking), for example with `/think high`, before
-  the next user turn. OpenClaw preserves the original request-level effort
+  the next user turn. Paddy preserves the original request-level effort
   and places a `configuration_update` at the new turn. This optimization
   works across matching session history over SSE or cached WebSockets.
   Automatic steering continuations keep their inherited settings. If steering
@@ -135,27 +135,27 @@ profile or a ChatGPT/Codex subscription that exposes the model. Check the
 selected account's catalog, then choose the model:
 
 ```bash
-openclaw models list --provider openai
-openclaw models set openai/gpt-6-sol
+paddy models list --provider openai
+paddy models set openai/gpt-6-sol
 ```
 
-Use `openclaw models set openai/gpt-6-luna` to select Luna. API organization
+Use `paddy models set openai/gpt-6-luna` to select Luna. API organization
 and Codex workspace access can differ. A successful account catalog is
-authoritative; OpenClaw does not add subscription access or silently substitute
+authoritative; Paddy does not add subscription access or silently substitute
 another model. When subscription discovery is unavailable, the offline fallback
 list omits both models. Existing model selections stay unchanged, and fresh
 OpenAI setup continues to use Astra.
 
 Both models use the Responses API for agent tool calls and support text and
 image input, a 1,050,000-token context window, and up to 128,000 output tokens.
-OpenClaw defaults to a 272,000-token active input budget. Native Codex follows
+Paddy defaults to a 272,000-token active input budget. Native Codex follows
 the selected account's advertised context limits.
 
 The API reasoning efforts are `none`, `low`, `medium`, `high`, `xhigh`, and
-`max`. OpenClaw defaults to `medium` when available; existing explicit thinking
+`max`. Paddy defaults to `medium` when available; existing explicit thinking
 settings still take precedence. `/think off` selects `none`, and `/think default`
 clears a session override. Native Codex uses the effort levels reported by the
-selected account. OpenClaw's `/think ultra` mode uses `max`; native Codex offers
+selected account. Paddy's `/think ultra` mode uses `max`; native Codex offers
 Ultra only when the account advertises it.
 
 Standard API pricing per million tokens:
@@ -171,7 +171,7 @@ for current capabilities and pricing.
 
 ## GPT-5.6 limited preview
 
-OpenClaw recognizes the exact `openai/gpt-5.6-sol`,
+Paddy recognizes the exact `openai/gpt-5.6-sol`,
 `openai/gpt-5.6-terra`, and `openai/gpt-5.6-luna` model ids. All three expose
 `xhigh` and `max` reasoning in the current catalog. OpenAI describes Sol as
 the flagship tier, Terra as the balanced tier, and Luna as the fast,
@@ -183,30 +183,30 @@ OpenAI's [GPT-5.6 Sol model page](https://developers.openai.com/api/docs/models/
 documents the bare `openai/gpt-5.6` id as a supported alias for Sol. Fresh
 API-key and ChatGPT/Codex OAuth setup use `openai/gpt-6-astra`. Existing
 GPT-5.6 selections retain their canonical Sol identity. Run
-`openclaw doctor --fix` to rewrite persisted bare OpenAI refs to that canonical
+`paddy doctor --fix` to rewrite persisted bare OpenAI refs to that canonical
 identity. The native Codex catalog can show the exact Sol, Terra, and Luna ids depending on
 workspace access. Check the current account with:
 
 ```bash
-openclaw models list --provider openai
+paddy models list --provider openai
 ```
 
 API organization and Codex workspace access can differ. If GPT-5.6 is not
 available, select GPT-5.5 explicitly:
 
 ```bash
-openclaw models set openai/gpt-5.5
+paddy models set openai/gpt-5.5
 ```
 
-OpenClaw surfaces the upstream access error and does not silently replace a
+Paddy surfaces the upstream access error and does not silently replace a
 GPT-5.6 selection with GPT-5.5.
 
 <Note>
 Eligible exact official HTTPS routes may select the bundled Codex app-server
 plugin when runtime policy is unset or `auto`; authored Completions routes,
-custom endpoints, and request-transport overrides remain on OpenClaw. Plaintext
+custom endpoints, and request-transport overrides remain on Paddy. Plaintext
 official HTTP endpoints are rejected. Explicit provider/model runtime config remains
-authoritative. Run `openclaw doctor --fix` to repair stale legacy Codex model
+authoritative. Run `paddy doctor --fix` to repair stale legacy Codex model
 refs, `codex-cli/*` refs, or old runtime session pins that were not set by
 explicit runtime config.
 </Note>

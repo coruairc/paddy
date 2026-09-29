@@ -77,8 +77,8 @@ const failureFamilies = {
   ],
 };
 
-const nextUpdate = "Next step: run `openclaw update status --json`, then retry `openclaw update`.";
-const nextRepair = "Next step: run `openclaw update status --json`, then `openclaw update repair`.";
+const nextUpdate = "Next step: run `paddy update status --json`, then retry `paddy update`.";
+const nextRepair = "Next step: run `paddy update status --json`, then `paddy update repair`.";
 
 function unresolved(message: string, stop = true, nextStep = nextUpdate): UpdateRepairValidation {
   // Triage bounds displayed diagnostics; retain the next action before long findings.

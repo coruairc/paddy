@@ -1,14 +1,14 @@
 ---
-summary: "CLI reference for `openclaw dns` (wide-area discovery helpers)"
+summary: "CLI reference for `paddy dns` (wide-area discovery helpers)"
 read_when:
   - You want wide-area discovery (DNS-SD) via Tailscale + CoreDNS
   - You're setting up split DNS for a custom discovery domain (example: openclaw.internal)
 title: "DNS"
 ---
 
-# `openclaw dns`
+# `paddy dns`
 
-DNS helpers for wide-area discovery (Tailscale + CoreDNS). `openclaw dns setup` prints its plan on any platform; applying that plan with `--apply` requires macOS with Homebrew CoreDNS.
+DNS helpers for wide-area discovery (Tailscale + CoreDNS). `paddy dns setup` prints its plan on any platform; applying that plan with `--apply` requires macOS with Homebrew CoreDNS.
 
 Related:
 
@@ -21,9 +21,9 @@ Related:
 Plan or apply CoreDNS setup for unicast DNS-SD discovery.
 
 ```bash
-openclaw dns setup
-openclaw dns setup --domain openclaw.internal
-openclaw dns setup --apply
+paddy dns setup
+paddy dns setup --domain paddy.internal
+paddy dns setup --apply
 ```
 
 | Option              | Effect                                                                              |
@@ -31,7 +31,7 @@ openclaw dns setup --apply
 | `--domain <domain>` | Wide-area discovery domain (for example `openclaw.internal`).                       |
 | `--apply`           | Install/update CoreDNS config and (re)start the service. Requires sudo, macOS only. |
 
-Without `--domain`, OpenClaw uses `discovery.wideArea.domain` from config. Setting that domain enables wide-area discovery.
+Without `--domain`, Paddy uses `discovery.wideArea.domain` from config. Setting that domain enables wide-area discovery.
 
 Without `--apply`, the command only prints:
 

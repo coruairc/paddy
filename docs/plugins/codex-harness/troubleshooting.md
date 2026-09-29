@@ -17,12 +17,12 @@ configs. Select an `openai/gpt-*` model, enable
 `plugins.entries.codex.enabled`, and check whether `plugins.allow` excludes
 `codex`.
 
-**OpenClaw uses the built-in harness instead of Codex:** confirm the effective
+**Paddy uses the built-in harness instead of Codex:** confirm the effective
 route is an exact official HTTPS Platform Responses or ChatGPT Responses route,
 has no authored provider request override, and that the Codex plugin is installed
 and enabled. Affirmative reasoning support and native reasoning-effort metadata
 do not count as request overrides. Headers, request parameters, timeouts, and
-payload compatibility switches still do: Codex declares an OpenClaw fallback
+payload compatibility switches still do: Codex declares a Paddy fallback
 that preserves the exact request, including for explicit runtime selections.
 Other unsupported routes/authentication and missing explicit harnesses fail
 closed. The `openai/gpt-*` prefix and `agentRuntime.id: "codex"` alone are not
@@ -32,7 +32,7 @@ execution proof; inspect the actual harness in the completed result. See
 **OpenAI Codex runtime falls back to the API-key path:** collect a redacted
 gateway excerpt that shows the model, runtime, selected provider, and
 failure. Ask affected collaborators to run this read-only command on their
-OpenClaw host:
+Paddy host:
 
 ```bash
 (
@@ -60,14 +60,14 @@ Useful excerpts usually include `openai/gpt-6-astra` or `openai/gpt-5.6-luna`,
 `No API key` result. A corrected run should show the OpenAI OAuth path
 instead of a plain OpenAI API-key failure.
 
-**Legacy Codex model refs config remains:** run `openclaw doctor --fix`.
+**Legacy Codex model refs config remains:** run `paddy doctor --fix`.
 Doctor rewrites legacy model refs to `openai/*`, removes stale session and
 whole-agent runtime pins, and preserves existing auth-profile overrides.
 
 **The app-server is rejected:** use Codex `0.149.0` or newer. Older, malformed,
 and unversioned servers are rejected. Newer semantic versions continue with a
 compatibility warning and normal runtime validation against the Codex version
-OpenClaw ships. Update or remove custom, remote, or desktop
+Paddy ships. Update or remove custom, remote, or desktop
 binary overrides that select another version.
 
 **`/codex status` cannot connect:** check that the `codex` plugin
@@ -84,24 +84,24 @@ failed executable. Disabling the
 plugin through config reload retires its catalog refresh loop.
 
 Managed passive catalogs use the plugin's installed Codex package and do not fall back
-to macOS desktop app bundles. OpenClaw runs
+to macOS desktop app bundles. Paddy runs
 its launcher with the Gateway's interpreter so Codex selects the platform
 package matching that interpreter's architecture without a `node` PATH lookup.
 At debug or trace log level, `Codex app-server spawn` records the executable,
 launcher, and resolved native binary paths without arguments or credentials.
 Use `file <path>` on macOS to inspect the failing executable's architecture.
 Check the managed native binary with
-`openclaw doctor --lint --only codex/managed-app-server --json`, including when
+`paddy doctor --lint --only codex/managed-app-server --json`, including when
 Codex is enabled only for its session catalog.
 
-Directories named `openclaw-model-catalog-*` contain OpenClaw plugin source
+Directories named `openclaw-model-catalog-*` contain Paddy plugin source
 captures, not native Codex sessions. Current captures are bounded by worker
 generations and retired with their workers. Doctor reports older captures
 outside managed custody with an offline cleanup command; it does not delete
 those legacy directories automatically.
 
 **The Codex app-server uses too much memory:** distinguish the two processes
-first. OpenClaw runs the local Codex app-server as a separate Rust child.
+first. Paddy runs the local Codex app-server as a separate Rust child.
 `NODE_OPTIONS=--max-old-space-size=...` changes only the Gateway's Node.js V8
 heap; it does not cap or enlarge Codex. Managed Gateway installs already choose
 an adaptive V8 heap, and raising it can leave less host memory for Codex. Use
@@ -109,7 +109,7 @@ an adaptive V8 heap, and raising it can leave less host memory for Codex. Use
 for Gateway pressure, and inspect host or container memory for the Codex child.
 
 Large catalog replies use a decoder worker in the Gateway. After a complete
-reply, OpenClaw releases that worker after one minute without further worker
+reply, Paddy releases that worker after one minute without further worker
 decoding. The native app-server connection and its warm conversation threads stay
 connected. A later large reply starts a new decoder, so its first response can
 take longer; small replies do not require a worker. Incomplete replies retain
@@ -120,7 +120,7 @@ inspection before model inference. For a deadline error, retry after host
 responsiveness recovers. For a permissions error, check access to `/proc` on
 Linux or `ps` on macOS.
 
-**A new turn fails during cleanup after a Gateway restart:** OpenClaw checks
+**A new turn fails during cleanup after a Gateway restart:** Paddy checks
 registered Codex processes before starting a replacement. Registrations for
 processes that have exited or whose PID has been reused are removed automatically,
 without scanning unrelated processes. Boot cleanup and new connections serialize
@@ -131,7 +131,7 @@ do not delete process registrations to bypass recovery.
 
 The bundled Codex has no heap or RSS limit and no configurable idle-unload
 delay. After the last client unsubscribes, an inactive thread can remain loaded
-for up to 30 minutes. OpenClaw independently keeps up to 64 idle conversation
+for up to 30 minutes. Paddy independently keeps up to 64 idle conversation
 threads subscribed on each Codex app-server for 30 minutes after their last
 activity. This preserves warm sessions and session-scoped approvals when several
 conversations alternate. Active turns and parents with unfinished native
@@ -172,9 +172,9 @@ is 10 seconds so Codex can finish its native refresh or fallback. A shorter
 override can interrupt that fallback and make native models unavailable.
 See [Codex harness reference](/plugins/codex-harness-reference#model-discovery).
 
-**Codex plugin state has reached its row limit:** run `openclaw doctor` to
-check for bindings left behind by deleted or expired OpenClaw sessions. Stop
-the Gateway, then run `openclaw doctor --fix` to remove proven orphaned session
+**Codex plugin state has reached its row limit:** run `paddy doctor` to
+check for bindings left behind by deleted or expired Paddy sessions. Stop
+the Gateway, then run `paddy doctor --fix` to remove proven orphaned session
 bindings after session repair. Doctor preserves supervised bindings, active
 leases, ambiguous ownership, and bindings whose session store cannot be read.
 This cleanup does not delete native Codex thread history or managed-thread
@@ -187,19 +187,19 @@ and unsupported; prefer managed stdio or the local Unix control socket.
 
 **Native shell or patch tools are blocked with `Native hook relay
 unavailable`:** the Codex thread is still trying to use a native hook relay
-id that OpenClaw no longer has registered. This is a native Codex hook
+id that Paddy no longer has registered. This is a native Codex hook
 transport problem, not an ACP backend, provider, GitHub, or shell-command
 failure. Start a fresh session in the affected chat with `/new` or `/reset`,
 then retry a harmless command. If that works once but the next native tool
 call fails again, treat `/new` as a temporary workaround only: copy the
 prompt into a fresh session after restarting the Codex app-server or
-OpenClaw Gateway so old threads are dropped and native hook registrations
+Paddy Gateway so old threads are dropped and native hook registrations
 are recreated.
 
 **Codex tool calls create too many short-lived hook processes:** set
 `plugins.entries.codex.config.appServer.loopDetectionPreToolUseRelay: false`
 and restart the gateway. This disables only the Codex `PreToolUse` subprocess
-used for OpenClaw loop detection and its no-policy marker. Required
+used for Paddy loop detection and its no-policy marker. Required
 `before_tool_call` and trusted-tool policy relays remain enabled.
 
 **A non-Codex model uses the built-in harness:** expected unless provider

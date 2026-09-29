@@ -1,12 +1,12 @@
 ---
-summary: "CLI reference for Gateway-backed `openclaw agent` turns and isolated `agent exec` runs"
+summary: "CLI reference for Gateway-backed `paddy agent` turns and isolated `agent exec` runs"
 read_when:
   - You want to run one agent turn from scripts (optionally deliver reply)
   - You want a strict, ephemeral one-shot agent run for CI
 title: "Agent"
 ---
 
-# `openclaw agent`
+# `paddy agent`
 
 Run one agent turn through the Gateway. The explicit `--local` flag and `agent exec` are the embedded execution paths.
 
@@ -25,34 +25,34 @@ Related: [Agent send tool](/tools/agent-send)
 
 ## `agent exec`
 
-`openclaw agent exec` runs one embedded agent turn without connecting to a Gateway. It is the recommended headless entry point for CI and coding automation because it owns setup, cleanup, output projection, and process status.
+`paddy agent exec` runs one embedded agent turn without connecting to a Gateway. It is the recommended headless entry point for CI and coding automation because it owns setup, cleanup, output projection, and process status.
 
 ```bash
-openclaw agent exec "Run the focused tests and fix failures"
-openclaw agent exec --message-file task.md --cwd ./repo
-cat task.md | openclaw agent exec --message-file - --json
+paddy agent exec "Run the focused tests and fix failures"
+paddy agent exec --message-file task.md --cwd ./repo
+cat task.md | paddy agent exec --message-file - --json
 ```
 
-By default, the command creates a temporary state directory and removes it after confirmed cleanup, including accepted database work and the run's database resources. It runs against your ordinary OpenClaw config, so configured providers, credentials, and `agentRuntime` harness selection apply exactly as they do elsewhere. `--cwd` defaults to the process working directory and is passed as both the agent workspace and tool working directory.
+By default, the command creates a temporary state directory and removes it after confirmed cleanup, including accepted database work and the run's database resources. It runs against your ordinary Paddy config, so configured providers, credentials, and `agentRuntime` harness selection apply exactly as they do elsewhere. `--cwd` defaults to the process working directory and is passed as both the agent workspace and tool working directory.
 
 Config is layered in three parts, entirely in memory: exec composes the run config and publishes it as this process's runtime config rather than writing a copy to disk. Exec defaults apply only where your config leaves a setting unset: workspace bootstrap files are skipped, the agent sandbox is off, the `coding` tool profile is selected, filesystem tools are restricted to `--cwd`, and exec runs under the full execution policy a headless turn needs. Anything your config sets wins over those defaults, so a configured sandbox, shell env, or tool profile is never downgraded, and exec host routing stays with the sandbox when your config enables one. The invocation itself always wins last: the run is scoped to `--cwd` and never bootstraps.
 
 When your tool policy enables `browser`, local browser control works without a Gateway. Explicit Gateway or node routing and sandbox restrictions still apply; see [Node browser proxy](/tools/browser/remote#node-browser-proxy-zero-config-default).
 
-Use `--state-dir <dir>` to retain sessions and other run state. The directory must already exist and is never created or deleted by the command. A retained state directory requires exclusive ownership: exec refuses to start while a Gateway or another embedded writer owns it, then holds the state lock for the complete run. Omit `--state-dir` for isolated temporary state, or stop the Gateway first with `openclaw gateway stop`.
+Use `--state-dir <dir>` to retain sessions and other run state. The directory must already exist and is never created or deleted by the command. A retained state directory requires exclusive ownership: exec refuses to start while a Gateway or another embedded writer owns it, then holds the state lock for the complete run. Omit `--state-dir` for isolated temporary state, or stop the Gateway first with `paddy gateway stop`.
 
 When exec uses the ambient or a pinned config, installed plugins continue to resolve from the operator's ordinary plugin roots while sessions and other run state use the ephemeral directory. In those modes, `--state-dir` controls run state only; it is not required for configured providers, channels, or harnesses supplied by installed plugins.
 
 For reproducible runs, pin the config instead of inheriting it. `--config <path>` runs against exactly that config file, read through the normal loader so JSON5 syntax and `$include` resolve relative to it; a missing or invalid file fails the run rather than falling back to defaults, as does an ambient config that exists but cannot be parsed. `--isolated` ignores the ambient config entirely and uses only the exec defaults above. Both are the right choice for CI, where inheriting operator state would make runs machine-dependent.
 
-Stored credentials are used by default, so a folder-scoped run reaches the same logins as the rest of the CLI. Pass `--auth-env-only` to restrict the run to provider keys already present in the process environment. That mode loads no config at all, and pairing it with `--config` is rejected rather than silently ignored, because a config supplies provider credentials through several surfaces at once: [inline keys and secret headers](/reference/secretref-credential-surface), an `env` block, and login-shell import. It also skips OpenClaw auth profiles and external Codex, Claude, or other CLI credential stores. Provider auth variables remain available to model authentication but are omitted from agent-launched host commands.
+Stored credentials are used by default, so a folder-scoped run reaches the same logins as the rest of the CLI. Pass `--auth-env-only` to restrict the run to provider keys already present in the process environment. That mode loads no config at all, and pairing it with `--config` is rejected rather than silently ignored, because a config supplies provider credentials through several surfaces at once: [inline keys and secret headers](/reference/secretref-credential-surface), an `env` block, and login-shell import. It also skips Paddy auth profiles and external Codex, Claude, or other CLI credential stores. Provider auth variables remain available to model authentication but are omitted from agent-launched host commands.
 
-On a clean installation without the Codex plugin, OpenAI API-key runs use the built-in OpenClaw runtime. The implicit Codex preference does not require installing a native harness before `--auth-env-only` can run. An explicitly configured Codex runtime or an existing Codex session pin still requires that harness.
+On a clean installation without the Codex plugin, OpenAI API-key runs use the built-in Paddy runtime. The implicit Codex preference does not require installing a native harness before `--auth-env-only` can run. An explicitly configured Codex runtime or an existing Codex session pin still requires that harness.
 
 Select a primary and ordered fallback chain with repeatable flags:
 
 ```bash
-openclaw agent exec "Implement the change" \
+paddy agent exec "Implement the change" \
   --model openai/gpt-6-astra \
   --fallback anthropic/claude-sonnet-4-6 \
   --fallback google/gemini-3.1-pro-preview
@@ -63,7 +63,7 @@ For this command only, explicit `--fallback` values remain active with explicit 
 Select the one-shot tool surface explicitly when comparing local or smaller models:
 
 ```bash
-openclaw agent exec "Inspect this repository" \
+paddy agent exec "Inspect this repository" \
   --model ollama/qwen3.5:9b \
   --code-mode code \
   --local-model-lean \
@@ -105,12 +105,12 @@ Plain output writes only the final assistant text to stdout. Diagnostics use std
 Run-stat fields are additive and may be absent:
 
 - `costUsd`: sum of recorded per-call USD costs, preserving request pricing tiers and retry-model prices, including cache reads/writes. When per-call costs are incomplete, only flat-price estimates are available; tiered estimates are omitted rather than pricing combined usage as one request. Omitted when cost is unavailable.
-- `codeModeEngaged`: `true` only when [code mode](/tools/code-mode) actually owned the model tool surface for the run. `tools.codeMode.enabled=true` alone does not guarantee engagement, and harnesses that own their native tool surface always read `false` because OpenClaw code mode never owns their tools.
+- `codeModeEngaged`: `true` only when [code mode](/tools/code-mode) actually owned the model tool surface for the run. `tools.codeMode.enabled=true` alone does not guarantee engagement, and harnesses that own their native tool surface always read `false` because Paddy code mode never owns their tools.
 - `assistantTurns`: completed assistant/provider round trips in the run; omitted when none completed.
 - `bridgeCalls`: inner tool-search/code-mode bridge call counts (`search`/`describe`/`call`). These are invisible to the provider; outer tool calls stay in `meta.toolSummary.calls` of the full run metadata.
 - `toolSummary`: outer model-visible tool-call count, tool names, failures, and total tool time from the embedded run.
 
-The agent run-stat fields appear on `meta.agentMeta` in the `openclaw agent --json` response; the outer tool summary remains at `meta.toolSummary`.
+The agent run-stat fields appear on `meta.agentMeta` in the `paddy agent --json` response; the outer tool summary remains at `meta.toolSummary`.
 
 ### Code Mode model matrix
 
@@ -120,7 +120,7 @@ From a source checkout, run the bounded evaluation matrix against any explicit m
 pnpm qa:code-mode-models -- --model ollama/qwen3.5:9b
 ```
 
-Repeat `--model` to compare models, or use `--mode`, `--task`, and `--repetitions` to narrow the selection. Basic and file-workflow tasks run through isolated `agent exec` invocations; Gateway tasks below use a disposable Gateway and explicitly select the OpenClaw agent runtime. Each cell records model/provider identity, timing, result status, failure class, tool activity, and task-specific correctness checks.
+Repeat `--model` to compare models, or use `--mode`, `--task`, and `--repetitions` to narrow the selection. Basic and file-workflow tasks run through isolated `agent exec` invocations; Gateway tasks below use a disposable Gateway and explicitly select the Paddy agent runtime. Each cell records model/provider identity, timing, result status, failure class, tool activity, and task-specific correctness checks.
 
 The default remains two tasks (`read` and `dependent-read-write`), three modes, and three repetitions: 18 cells per model. Extended tasks are opt-in, so the default model-call budget does not grow:
 
@@ -155,12 +155,12 @@ This is evaluation-only evidence, not a CI or release gate. Results do not chang
 
 #### Paired performance workloads
 
-These opt-in workloads compare Code Mode with normal OpenClaw tool exposure.
+These opt-in workloads compare Code Mode with normal Paddy tool exposure.
 `--mode direct` explicitly disables Code Mode and retains normal Tool Search;
 `--mode code` enables it. Both arms use the same prompt, seeded inputs, allowed
-tools, model, and thinking setting. They reject `--mode auto`, pin the OpenClaw
+tools, model, and thinking setting. They reject `--mode auto`, pin the Paddy
 runtime, disable fast mode, and skip follow-up interviews. OpenAI models use
-OpenClaw here, rather than their native agent harness.
+Paddy here, rather than their native agent harness.
 
 Performance selections require both treatment arms and cannot be mixed with
 code-only interview tasks. Built artifacts are rehashed after each wave; drift
@@ -337,7 +337,7 @@ These are observations, not statistical speed guarantees.
 - `--timeout <seconds>`: override this command's agent-turn deadline (default 600, or `agents.defaults.timeoutSeconds`); `0` disables the overall deadline. The 600-second fallback belongs to this CLI command, not ordinary Gateway turns, whose default is 48 hours.
 - `--json`: output JSON
 
-Gateway commands using OpenClaw's managed agent loop return their completed reply before optional memory
+Gateway commands using Paddy's managed agent loop return their completed reply before optional memory
 flushing and compaction. That work has its own session owner and uses the command's
 remaining time. A new turn in the same session cancels and settles it before
 starting inference. One-shot `--local` commands skip optional post-turn work;
@@ -349,30 +349,30 @@ restart, and session ownership changes continue to fence active writers.
 ## Examples
 
 ```bash
-openclaw agent --to +15555550123 --message "status update" --deliver
-openclaw agent --agent ops --message "Summarize logs"
-openclaw agent --agent ops --message-file ./task.md
-openclaw agent --agent ops --model openai/gpt-5.4 --message "Summarize logs"
-openclaw agent --session-key agent:ops:incident-42 --message "Summarize status"
-openclaw agent --agent ops --session-key incident-42 --message "Summarize status"
-openclaw agent --session-id 1234 --message "Summarize inbox" --thinking medium
-openclaw agent --to +15555550123 --message "Trace logs" --verbose on --json
-openclaw agent --agent ops --message "Generate report" --deliver --reply-channel slack --reply-to "#reports"
-openclaw agent --agent ops --message "Run locally" --local
+paddy agent --to +15555550123 --message "status update" --deliver
+paddy agent --agent ops --message "Summarize logs"
+paddy agent --agent ops --message-file ./task.md
+paddy agent --agent ops --model openai/gpt-5.4 --message "Summarize logs"
+paddy agent --session-key agent:ops:incident-42 --message "Summarize status"
+paddy agent --agent ops --session-key incident-42 --message "Summarize status"
+paddy agent --session-id 1234 --message "Summarize inbox" --thinking medium
+paddy agent --to +15555550123 --message "Trace logs" --verbose on --json
+paddy agent --agent ops --message "Generate report" --deliver --reply-channel slack --reply-to "#reports"
+paddy agent --agent ops --message "Run locally" --local
 ```
 
 ## Notes
 
 - Pass exactly one of `--message` or `--message-file`. `--message-file` strips a leading UTF-8 BOM and preserves multiline content; it rejects files that are not valid UTF-8. Files larger than 4 MiB are rejected before dispatch.
-- `--message` does not run the channel slash-command dispatcher. Recognized `$skill-name` references and leading `/skill-name [input]` are the scoped exception: OpenClaw expands them into model instructions to read the skill before acting. Other slash-prefixed messages keep normal agent-turn behavior; `/compact` is rejected with a pointer to `openclaw sessions compact <key>`.
+- `--message` does not run the channel slash-command dispatcher. Recognized `$skill-name` references and leading `/skill-name [input]` are the scoped exception: Paddy expands them into model instructions to read the skill before acting. Other slash-prefixed messages keep normal agent-turn behavior; `/compact` is rejected with a pointer to `paddy sessions compact <key>`.
 - `--local` runs are one-shot: bundled MCP loopback resources and warm Claude stdio sessions opened for the run are retired after the reply, so scripted invocations do not leave local child processes running. Gateway-backed runs keep Gateway-owned MCP loopback resources under the running Gateway process instead.
-- `--local` requires exclusive ownership of the configured state directory. It refuses to start while a Gateway or another `agent --local` run owns that directory, then holds the same state lock for the full embedded turn. Run without `--local` to use the active Gateway, or stop it first with `openclaw gateway stop`.
+- `--local` requires exclusive ownership of the configured state directory. It refuses to start while a Gateway or another `agent --local` run owns that directory, then holds the same state lock for the full embedded turn. Run without `--local` to use the active Gateway, or stop it first with `paddy gateway stop`.
 - Standalone embedded execution with `--local` refuses to reuse an existing main session while restart recovery is pending. Run the turn through a healthy Gateway, or reset it there with `/new` or `/reset`; an independent embedded process cannot safely coordinate that recovery owner with the Gateway scanner.
 - With `--agent`, `--channel` and `--to` together, session routing follows the channel's canonical recipient and `session.dmScope`. Channels with a stable outbound-only recipient identity use a provider-owned session isolated from the agent's main session. `--reply-channel` and `--reply-account` affect delivery only.
 - `--session-key` selects an explicit session key. Agent-prefixed keys must use `agent:<agent-id>:<session-key>`, and `--agent` must match the key's agent id when both are given. Bare non-sentinel keys scope to `--agent` when supplied, or to the configured default agent otherwise; for example `--agent ops --session-key incident-42` routes to `agent:ops:incident-42`. The literal keys `global` and `unknown` stay unscoped only when no `--agent` is supplied.
 - `--json` reserves stdout for the JSON response; Gateway, plugin, and `--local` diagnostics go to stderr so scripts can parse stdout directly.
-- After transient handshake retries are exhausted, a Gateway timeout or closed connection fails the command; the CLI never silently reruns the turn embedded. Transport loss is ambiguous — the Gateway may have accepted and may still finish the turn — so the stderr hint says to check `openclaw gateway status` and the session transcript before retrying or rerunning with `--local`, to avoid executing the turn twice. When the Gateway accepted the run before the transport error, the hint names the accepted run ID, and `--json` failures keep the canonical `ok: false` envelope with `runId` and `origin: "gateway"` fields alongside `error.type`/`error.message`.
-- `SIGTERM`/`SIGINT` interrupt a waiting Gateway-backed request; if the Gateway already accepted the run, the CLI also sends `chat.abort` for that run id before exiting. `--local` runs receive the same signal but do not send `chat.abort`. On Unix, startup wrappers preserve the runtime child's actual termination signal, including `SIGKILL` after shutdown escalation; shells report `SIGINT` and `SIGTERM` as statuses 130 and 143. Explicit numeric returns stay numeric, including a handled shutdown returning `0`. Windows retains its numeric termination behavior. If the internal run-dedup key already has an active run for this session, the response reports `status: "in_flight"` and the non-JSON CLI prints a stderr diagnostic instead of an empty reply. For external cron/systemd wrappers, keep a hard-kill backstop such as `timeout -k 60 600 openclaw agent ...` so the supervisor can reap the process if shutdown cannot drain.
+- After transient handshake retries are exhausted, a Gateway timeout or closed connection fails the command; the CLI never silently reruns the turn embedded. Transport loss is ambiguous — the Gateway may have accepted and may still finish the turn — so the stderr hint says to check `paddy gateway status` and the session transcript before retrying or rerunning with `--local`, to avoid executing the turn twice. When the Gateway accepted the run before the transport error, the hint names the accepted run ID, and `--json` failures keep the canonical `ok: false` envelope with `runId` and `origin: "gateway"` fields alongside `error.type`/`error.message`.
+- `SIGTERM`/`SIGINT` interrupt a waiting Gateway-backed request; if the Gateway already accepted the run, the CLI also sends `chat.abort` for that run id before exiting. `--local` runs receive the same signal but do not send `chat.abort`. On Unix, startup wrappers preserve the runtime child's actual termination signal, including `SIGKILL` after shutdown escalation; shells report `SIGINT` and `SIGTERM` as statuses 130 and 143. Explicit numeric returns stay numeric, including a handled shutdown returning `0`. Windows retains its numeric termination behavior. If the internal run-dedup key already has an active run for this session, the response reports `status: "in_flight"` and the non-JSON CLI prints a stderr diagnostic instead of an empty reply. For external cron/systemd wrappers, keep a hard-kill backstop such as `timeout -k 60 600 paddy agent ...` so the supervisor can reap the process if shutdown cannot drain.
 - When this command triggers `models.json` regeneration, SecretRef-managed provider credentials are persisted as non-secret markers (for example env var names, `secretref-env:ENV_VAR_NAME`, or `secretref-managed`), never resolved secret plaintext. Marker writes come from the active source config snapshot, not from resolved runtime secret values.
 
 ## JSON failures

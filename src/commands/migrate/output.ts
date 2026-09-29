@@ -227,7 +227,7 @@ function formatMigrationItem(item: MigrationItem, mode: FormatMode): string {
 export function assertConflictFreePlan(plan: MigrationPlan, providerId: string): void {
   if (plan.summary.conflicts > 0) {
     throw new Error(
-      `Migration has ${formatCount(plan.summary.conflicts, "conflict")}. Re-run with --overwrite after reviewing openclaw migrate plan ${providerId}.`,
+      `Migration has ${formatCount(plan.summary.conflicts, "conflict")}. Re-run with --overwrite after reviewing paddy migrate plan ${providerId}.`,
     );
   }
 }

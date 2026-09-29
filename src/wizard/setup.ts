@@ -117,7 +117,7 @@ async function runSetupWizardOnce(
       );
     }
     await prompter.outro(
-      `Config invalid. Run \`${formatCliCommand("openclaw doctor --fix")}\` to apply supported repairs, then re-run setup.`,
+      `Config invalid. Run \`${formatCliCommand("paddy doctor --fix")}\` to apply supported repairs, then re-run setup.`,
     );
     runtime.exit(1);
     return;
@@ -139,15 +139,15 @@ async function runSetupWizardOnce(
           ? [`- ... +${compatibilityNotices.length - 4} more`]
           : []),
         "",
-        `Review: ${formatCliCommand("openclaw doctor")}`,
-        `Inspect: ${formatCliCommand("openclaw plugins inspect --all")}`,
+        `Review: ${formatCliCommand("paddy doctor")}`,
+        `Inspect: ${formatCliCommand("paddy plugins inspect --all")}`,
       ].join("\n"),
       t("wizard.setup.pluginCompatibilityTitle"),
     );
   }
 
   const quickstartHint = t("wizard.setup.flowQuickstartHint", {
-    command: formatCliCommand("openclaw configure"),
+    command: formatCliCommand("paddy configure"),
   });
   const manualHint = t("wizard.setup.flowAdvancedHint");
   const hasExistingModelConfig =
@@ -166,7 +166,7 @@ async function runSetupWizardOnce(
     normalizedExplicitFlow !== "import"
   ) {
     runtime.error(
-      "Invalid --flow. Use quickstart, manual, advanced, or import. Example: openclaw onboard --flow quickstart",
+      "Invalid --flow. Use quickstart, manual, advanced, or import. Example: paddy onboard --flow quickstart",
     );
     runtime.exit(1);
     return;
@@ -245,7 +245,7 @@ async function runSetupWizardOnce(
           const latest = await readSetupConfigFileSnapshot();
           if (!latest.valid) {
             throw new Error(
-              "Migration target config became invalid. Run `openclaw doctor --fix` to apply supported repairs.",
+              "Migration target config became invalid. Run `paddy doctor --fix` to apply supported repairs.",
             );
           }
           const latestConfig = latest.exists ? (latest.sourceConfig ?? latest.config) : {};

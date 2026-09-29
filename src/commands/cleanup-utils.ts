@@ -13,6 +13,7 @@ import {
   deleteWorkspaceState,
   prepareWorkspaceStateDeletion,
 } from "../agents/workspace-state-store.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveGatewayLockDir } from "../config/paths.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { resolveIdentityPathViaExistingAncestorSync } from "../infra/boundary-path.js";
@@ -23,7 +24,6 @@ import type { RuntimeEnv } from "../runtime.js";
 import { prepareOpenClawStateDatabaseRemoval } from "../state/openclaw-state-db-cache.js";
 import { resolveOpenClawStateSqlitePath } from "../state/openclaw-state-db.paths.js";
 import { resolveHomeDir, shortenHomeInString, shortenHomePath } from "../utils.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 type RemovalResult = {
   ok: boolean;
@@ -320,7 +320,7 @@ type CleanupDirectoryIdentity = { path: string; dev: bigint; ino: bigint };
 
 function stateCleanupInterrupted(): Error {
   return new Error(
-    "OpenClaw state cleanup was interrupted by a new state operation. Stop other OpenClaw commands and retry.",
+    "Paddy state cleanup was interrupted by a new state operation. Stop other Paddy commands and retry.",
   );
 }
 
@@ -335,7 +335,7 @@ async function captureStateCleanupAncestors(
         const observed = await fs.lstat(current, { bigint: true });
         if (!observed.isDirectory()) {
           throw new Error(
-            `Cannot remove OpenClaw state because its active lock directory is redirected or not a real directory: ${shortenHomeInString(current)}. Restore a real lock directory and retry.`,
+            `Cannot remove Paddy state because its active lock directory is redirected or not a real directory: ${shortenHomeInString(current)}. Restore a real lock directory and retry.`,
           );
         }
         directories.set(current, { path: current, dev: observed.dev, ino: observed.ino });
@@ -475,7 +475,7 @@ export async function removeStateAndLinkedPaths(
     });
     if (resolveIdentityPathViaExistingAncestorSync(databasePath) !== databasePath) {
       throw new Error(
-        "Cannot remove OpenClaw state because its active database path is redirected. Select the actual state directory before retrying cleanup.",
+        "Cannot remove Paddy state because its active database path is redirected. Select the actual state directory before retrying cleanup.",
       );
     }
     // Deleting a lexical link would let startup select a different owner while
@@ -515,7 +515,9 @@ export async function removeStateAndLinkedPaths(
       { label: cleanup.stateDir },
     );
     if (!stateRemoval.ok) {
-      throw new Error(`Failed to remove non-preserved ${PRODUCT_NAME} state while ownership was held.`);
+      throw new Error(
+        `Failed to remove non-preserved ${PRODUCT_NAME} state while ownership was held.`,
+      );
     }
 
     removalAdmission.assertCurrent();

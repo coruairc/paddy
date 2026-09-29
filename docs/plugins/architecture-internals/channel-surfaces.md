@@ -137,8 +137,8 @@ Why:
 
 - `resolveAccount(...)` is the runtime path. It is allowed to assume credentials
   are fully materialized and can fail fast when required secrets are missing.
-- Read-only command paths such as `openclaw status`, `openclaw status --all`,
-  `openclaw channels status`, `openclaw channels resolve`, and doctor/config
+- Read-only command paths such as `paddy status`, `paddy status --all`,
+  `paddy channels status`, `paddy channels resolve`, and doctor/config
   repair flows should not need to materialize runtime credentials just to
   describe configuration.
 

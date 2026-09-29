@@ -1,8 +1,8 @@
 ---
-summary: "CLI reference for `openclaw config` (get/set/patch/unset/file/schema/validate)"
+summary: "CLI reference for `paddy config` (get/set/patch/unset/file/schema/validate)"
 read_when:
   - You want to read or edit config non-interactively
-  - You manage config externally and want OpenClaw to leave it unchanged
+  - You manage config externally and want Paddy to leave it unchanged
 title: "Config"
 sidebarTitle: "Config"
 ---
@@ -16,12 +16,12 @@ When `OPENCLAW_CONFIG_READONLY=1` or `OPENCLAW_NIX_MODE=1`, OpenClaw treats `ope
 ## Externally managed config
 
 Set `OPENCLAW_CONFIG_READONLY=1` in the environment of both the Gateway and any
-OpenClaw CLI processes when a deployment system manages your config:
+Paddy CLI processes when a deployment system manages your config:
 
 ```bash
 export OPENCLAW_CONFIG_READONLY=1
-openclaw config validate
-openclaw gateway run
+paddy config validate
+paddy gateway run
 ```
 
 For a service or container, set the variable in its service environment or
@@ -33,7 +33,7 @@ or change the host-selected read-only mode. Only the host value `1` enables
 this switch. Existing `OPENCLAW_NIX_MODE` behavior is unchanged.
 
 Config writes are blocked, including setup, onboarding, doctor repairs, plugin
-install/update/uninstall/enable/disable, and mutating `openclaw update` flows.
+install/update/uninstall/enable/disable, and mutating `paddy update` flows.
 Startup-derived defaults stay runtime-only. Change the config through your
 external deployment system, then let the Gateway reload it or restart the Gateway
 as needed. Runtime state still needs a writable `OPENCLAW_STATE_DIR`.
@@ -46,7 +46,7 @@ continues to imply immutable config, even if `OPENCLAW_CONFIG_READONLY` is unset
 ## Root options
 
 <ParamField path="--section <section>" type="string">
-  Repeatable guided-setup section filter when you run `openclaw config` without a subcommand.
+  Repeatable guided-setup section filter when you run `paddy config` without a subcommand.
 </ParamField>
 
 Guided sections: `workspace`, `model`, `web`, `gateway`, `daemon`, `channels`, `plugins`, `skills`, `health`.
@@ -54,26 +54,26 @@ Guided sections: `workspace`, `model`, `web`, `gateway`, `daemon`, `channels`, `
 ## Examples
 
 ```bash
-openclaw config file
-openclaw config file --json
-openclaw config --section model
-openclaw config --section gateway --section daemon
-openclaw config schema
-openclaw config schema --json
-openclaw config get browser.executablePath
-openclaw config set browser.executablePath "/usr/bin/google-chrome"
-openclaw config set browser.profiles.work '{"cdpPort":18801,"executablePath":"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"}' --strict-json --merge
-openclaw config set agents.defaults.heartbeat.every "2h"
-openclaw config set logging.audit.executionIdentity true
-openclaw config set 'agents.entries.main.tools.exec.node' "node-id-or-name"
-openclaw config set agents.defaults.models '{"openai/gpt-5.4":{}}' --strict-json --merge
-openclaw config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN
+paddy config file
+paddy config file --json
+paddy config --section model
+paddy config --section gateway --section daemon
+paddy config schema
+paddy config schema --json
+paddy config get browser.executablePath
+paddy config set browser.executablePath "/usr/bin/google-chrome"
+paddy config set browser.profiles.work '{"cdpPort":18801,"executablePath":"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"}' --strict-json --merge
+paddy config set agents.defaults.heartbeat.every "2h"
+paddy config set logging.audit.executionIdentity true
+paddy config set 'agents.entries.main.tools.exec.node' "node-id-or-name"
+paddy config set agents.defaults.models '{"openai/gpt-5.4":{}}' --strict-json --merge
+paddy config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN
 openclaw config set secrets.providers.vaultfile --provider-source file --provider-path /etc/openclaw/secrets.json --provider-mode json
-openclaw config patch --file ./openclaw.patch.json5 --dry-run
-openclaw config unset plugins.entries.brave.config.webSearch.apiKey
-openclaw config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN --dry-run
-openclaw config validate
-openclaw config validate --json
+paddy config patch --file ./paddy.patch.json5 --dry-run
+paddy config unset plugins.entries.brave.config.webSearch.apiKey
+paddy config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN --dry-run
+paddy config validate
+paddy config validate --json
 ```
 
 ### Paths
@@ -81,10 +81,10 @@ openclaw config validate --json
 Dot or bracket notation. Quote bracket paths in shell examples so zsh does not glob-expand `[0]`:
 
 ```bash
-openclaw config get agents.defaults.workspace
-openclaw config get agents.entries.main
-openclaw config get agents.entries
-openclaw config set 'agents.entries.work.tools.exec.node' "node-id-or-name"
+paddy config get agents.defaults.workspace
+paddy config get agents.entries.main
+paddy config get agents.entries
+paddy config set 'agents.entries.work.tools.exec.node' "node-id-or-name"
 ```
 
 Prefer `agents.entries.<id>` paths for agent edits. The legacy `agents.list[0]`
@@ -122,15 +122,15 @@ Pass exactly one config path. Extra arguments, including an empty quoted argumen
 are rejected; they do not suppress validation of later options.
 
 A schema-valid but unset path explains that the runtime default applies; an unknown path suggests
-`openclaw config schema`. With `--json`, both use the standard [CLI JSON failure envelope](/cli#json-failures)
+`paddy config schema`. With `--json`, both use the standard [CLI JSON failure envelope](/cli#json-failures)
 on stdout and exit with status 1. Without `--json`, diagnostics remain on stderr.
 
 Explicit `null`, `false`, `0`, and empty strings remain readable values in both modes;
 `--json` preserves their types. Optional fields with no runtime value are reported as unset.
 
 ```bash
-openclaw config get browser.executablePath
-openclaw config get agents.defaults.model --json
+paddy config get browser.executablePath
+paddy config get agents.defaults.model --json
 ```
 
 ### `config file`
@@ -159,9 +159,9 @@ Prints the generated JSON schema for `openclaw.json` to stdout.
 </AccordionGroup>
 
 ```bash
-openclaw config schema
-openclaw config schema --json
-openclaw config schema > openclaw.schema.json
+paddy config schema
+paddy config schema --json
+paddy config schema > paddy.schema.json
 ```
 
 The schema is JSON in both modes. `--json` is accepted as the explicit
@@ -169,7 +169,7 @@ machine-output spelling and keeps stdout reserved for the schema document.
 
 ### `config validate`
 
-Schema refusals from `config set`, `config patch`, and `config unset` explain the affected setting and confirm that no settings were saved. Correct the reported value or use `openclaw config schema` to inspect supported settings, then retry. These refusals still exit with status 1. Explicit validation reports settings that need correction without changing the file; `config validate --json` retains its `valid: false`, `error`, and `issues` fields for scripts.
+Schema refusals from `config set`, `config patch`, and `config unset` explain the affected setting and confirm that no settings were saved. Correct the reported value or use `paddy config schema` to inspect supported settings, then retry. These refusals still exit with status 1. Explicit validation reports settings that need correction without changing the file; `config validate --json` retains its `valid: false`, `error`, and `issues` fields for scripts.
 
 Human validation diagnostics quote literal record keys, such as `agents.defaults.models["provider/model.v1"].alias`, instead of displaying the dot inside a key as nested traversal. Numeric array positions use brackets, such as `agents.entries.main.skills[0]`. The `issues[].path` field in `config validate --json` keeps its existing dot-joined representation.
 
@@ -180,8 +180,8 @@ After schema validation, it checks every configured manual exec provider's comma
 Path validation does not execute providers or verify their output. Passing it does not guarantee successful secret resolution; exec dry runs require `--allow-exec` to test that separately.
 
 ```bash
-openclaw config validate
-openclaw config validate --json
+paddy config validate
+paddy config validate --json
 ```
 
 <Note>
@@ -192,12 +192,12 @@ after validation; startup checks them again before execution.
 </Note>
 
 <Note>
-If validation is already failing, start with `openclaw configure` or `openclaw doctor --fix`. `openclaw chat` does not bypass the invalid-config guard.
+If validation is already failing, start with `paddy configure` or `paddy doctor --fix`. `paddy chat` does not bypass the invalid-config guard.
 </Note>
 
 Provider and runtime `params` bags are intentionally typed as
 `Record<string, unknown>` because their owners define the supported keys and
-values. `openclaw config validate` can validate the container and overall
+values. `paddy config validate` can validate the container and overall
 config shape, but it cannot type-check provider-specific parameter names or
 values. Passing validation does not prove that a param is supported; consult
 the provider docs and verify behavior on the selected runtime and provider.
@@ -207,16 +207,16 @@ the provider docs and verify behavior on the selected runtime and provider.
 Values parse as JSON5 when possible; otherwise they are treated as raw strings. Use `--strict-json` to require standard JSON with no string fallback (JSON5-only syntax such as comments, trailing commas, or unquoted keys is then rejected). `--json` is a legacy alias for `--strict-json` on `config set`.
 
 ```bash
-openclaw config set agents.defaults.heartbeat.every "0m"
-openclaw config set gateway.port 19001 --strict-json
-openclaw config set channels.whatsapp.groups '{"*":{"requireMention":true}}' --strict-json
+paddy config set agents.defaults.heartbeat.every "0m"
+paddy config set gateway.port 19001 --strict-json
+paddy config set channels.whatsapp.groups '{"*":{"requireMention":true}}' --strict-json
 ```
 
 For structured values that are awkward to quote in your shell, put a config-shaped JSON5 object in a file and use [`config patch --file <path> --dry-run`](/cli/config#config-patch). The file contains config keys and their values, not a bare array.
 
 `config get <path> --json` prints the redacted value as JSON instead of terminal-formatted text.
 
-When a write changes `agents.defaults.model` or a per-agent `agents.entries.*.model`, OpenClaw resolves each changed primary or fallback through the configured catalogs and the selected provider's model resolver before writing. Provider-supported exact `provider/model` pins are accepted even when absent from the curated picker; validation does not replace the selected model. Unknown model references are rejected without changing the active config. Run `openclaw models list` to browse the picker, or check the provider's documentation for an exact model ID. Successful validation does not prove that your account can call the model. [`openclaw models set`](/cli/models#common-commands) is deliberately more permissive for the same setting: it saves a model the local catalog cannot confirm and prints a warning instead of rejecting the write.
+When a write changes `agents.defaults.model` or a per-agent `agents.entries.*.model`, Paddy resolves each changed primary or fallback through the configured catalogs and the selected provider's model resolver before writing. Provider-supported exact `provider/model` pins are accepted even when absent from the curated picker; validation does not replace the selected model. Unknown model references are rejected without changing the active config. Run `paddy models list` to browse the picker, or check the provider's documentation for an exact model ID. Successful validation does not prove that your account can call the model. [`paddy models set`](/cli/models#common-commands) is deliberately more permissive for the same setting: it saves a model the local catalog cannot confirm and prints a warning instead of rejecting the write.
 
 <Note>
 Object assignment replaces the target path by default. Protected paths that commonly hold user-added entries refuse replacements that would remove existing entries unless you pass `--replace`: `agents.defaults.models`, `agents.entries`, `models.providers`, `models.providers.<id>`, `models.providers.<id>.models`, `plugins.entries`, and `auth.profiles`.
@@ -225,8 +225,8 @@ Object assignment replaces the target path by default. Protected paths that comm
 Use `--merge` when adding entries to those maps:
 
 ```bash
-openclaw config set agents.defaults.models '{"openai/gpt-5.4":{}}' --strict-json --merge
-openclaw config set models.providers.ollama.models '[{"id":"llama3.2","name":"Llama 3.2"}]' --strict-json --merge
+paddy config set agents.defaults.models '{"openai/gpt-5.4":{}}' --strict-json --merge
+paddy config set models.providers.ollama.models '[{"id":"llama3.2","name":"Llama 3.2"}]' --strict-json --merge
 ```
 
 Use `--replace` only when the provided value should intentionally become the complete target value.
@@ -237,8 +237,8 @@ Use a conditional expectation when automation must update one authored path only
 changed since the caller last observed it:
 
 ```bash
-openclaw config set gateway.port 19001 --strict-json --expect-current-json 18789
-openclaw config set gateway.port 19001 --strict-json --expect-current-absent
+paddy config set gateway.port 19001 --strict-json --expect-current-json 18789
+paddy config set gateway.port 19001 --strict-json --expect-current-absent
 ```
 
 `--expect-current-json <json>` uses strict JSON and compares the value by JSON type and structure.
@@ -255,7 +255,7 @@ operation, require a direct non-redirected config path, and cannot be combined w
 `--dry-run`. If input or roster resolution would write a different path than the caller requested,
 such as a sibling `*Ref` path, the command exits with status 1 instead of retargeting the
 expectation. A mismatch exits with status 1, writes nothing, and does not print either the expected
-or current value. OpenClaw's config snapshot guard still rejects a later race between the
+or current value. Paddy's config snapshot guard still rejects a later race between the
 expectation check and the final file replacement.
 
 ## `config set` modes
@@ -263,12 +263,12 @@ expectation check and the final file replacement.
 <Tabs>
   <Tab title="Value mode">
     ```bash
-    openclaw config set <path> <value>
+    paddy config set <path> <value>
     ```
   </Tab>
   <Tab title="SecretRef builder mode">
     ```bash
-    openclaw config set channels.discord.token \
+    paddy config set channels.discord.token \
       --ref-provider default \
       --ref-source env \
       --ref-id DISCORD_BOT_TOKEN
@@ -278,7 +278,7 @@ expectation check and the final file replacement.
     Targets `secrets.providers.<alias>` paths only:
 
     ```bash
-    openclaw config set secrets.providers.vault \
+    paddy config set secrets.providers.vault \
       --provider-source exec \
       --provider-command /usr/local/bin/openclaw-vault \
       --provider-arg read \
@@ -289,7 +289,7 @@ expectation check and the final file replacement.
   </Tab>
   <Tab title="Batch mode">
     ```bash
-    openclaw config set --batch-json '[
+    paddy config set --batch-json '[
       {
         "path": "secrets.providers.default",
         "provider": { "source": "env" }
@@ -302,7 +302,7 @@ expectation check and the final file replacement.
     ```
 
     ```bash
-    openclaw config set --batch-file ./config-set.batch.json --dry-run
+    paddy config set --batch-file ./config-set.batch.json --dry-run
     ```
 
     Batch files are limited to 8 MiB.
@@ -325,11 +325,11 @@ Batch assignments apply in order, then validation checks the final config. A Sec
 JSON path/value mode also works for SecretRefs and providers directly:
 
 ```bash
-openclaw config set channels.discord.token \
+paddy config set channels.discord.token \
   '{"source":"env","provider":"default","id":"DISCORD_BOT_TOKEN"}' \
   --strict-json
 
-openclaw config set secrets.providers.vaultfile \
+paddy config set secrets.providers.vaultfile \
   '{"source":"file","path":"/etc/openclaw/secrets.json","mode":"json"}' \
   --strict-json
 ```
@@ -370,7 +370,7 @@ Provider builder targets must use `secrets.providers.<alias>` as the path.
 Hardened exec provider example:
 
 ```bash
-openclaw config set secrets.providers.vault \
+paddy config set secrets.providers.vault \
   --provider-source exec \
   --provider-command /usr/local/bin/openclaw-vault \
   --provider-arg read \
@@ -386,8 +386,8 @@ openclaw config set secrets.providers.vault \
 Paste or pipe a config-shaped JSON5 patch instead of running many path-based `config set` commands. Objects merge recursively; arrays and scalar values replace the target; `null` deletes the target path.
 
 ```bash
-openclaw config patch --file ./openclaw.patch.json5 --dry-run
-openclaw config patch --file ./openclaw.patch.json5
+paddy config patch --file ./paddy.patch.json5 --dry-run
+paddy config patch --file ./paddy.patch.json5
 ```
 
 Patch files are limited to 8 MiB. Piped `--stdin` patches are limited to 1 MiB.
@@ -395,8 +395,8 @@ Patch files are limited to 8 MiB. Piped `--stdin` patches are limited to 1 MiB.
 Pipe a patch over stdin for remote setup scripts:
 
 ```bash
-ssh user@gateway-host 'openclaw config patch --stdin --dry-run' < ./openclaw.patch.json5
-ssh user@gateway-host 'openclaw config patch --stdin' < ./openclaw.patch.json5
+ssh user@gateway-host 'paddy config patch --stdin --dry-run' < ./paddy.patch.json5
+ssh user@gateway-host 'paddy config patch --stdin' < ./paddy.patch.json5
 ```
 
 Example patch:
@@ -434,14 +434,14 @@ Example patch:
 }
 ```
 
-The runtime pin makes this an embedded OpenClaw recipe. A valid `fastMode`
-value is a portable typed runtime control and does not choose OpenClaw by
+The runtime pin makes this an embedded Paddy recipe. A valid `fastMode`
+value is a portable typed runtime control and does not choose Paddy by
 itself.
 
 Use `--replace-path <path>` when one object or array must become exactly the provided value instead of being recursively patched:
 
 ```bash
-openclaw config patch --file ./discord.patch.json5 --replace-path 'channels.discord.guilds["123"].channels'
+paddy config patch --file ./discord.patch.json5 --replace-path 'channels.discord.guilds["123"].channels'
 ```
 
 `--dry-run` runs schema and SecretRef resolvability checks without writing. Exec-backed SecretRefs are skipped by default during dry-run; add `--allow-exec` when you intentionally want dry-run to execute provider commands.
@@ -453,14 +453,14 @@ openclaw config patch --file ./discord.patch.json5 --replace-path 'channels.disc
 For `config patch` and `config unset`, `--json` requires `--dry-run`. Using `--json` without `--dry-run` returns the standard [CLI JSON failure envelope](/cli#json-failures) on stdout, keeps diagnostics on stderr, and exits with status 1.
 
 ```bash
-openclaw config set channels.discord.token \
+paddy config set channels.discord.token \
   --ref-provider default \
   --ref-source env \
   --ref-id DISCORD_BOT_TOKEN \
   --dry-run \
   --json
 
-openclaw config set channels.discord.token \
+paddy config set channels.discord.token \
   --ref-provider vault \
   --ref-source exec \
   --ref-id discord/token \
@@ -563,7 +563,7 @@ openclaw config set channels.discord.token \
     - `config schema validation failed`: your post-change config shape is invalid; fix the path/value or provider/ref object shape.
     - `Config policy validation failed: unsupported SecretRef usage`: move that credential back to plaintext/string input; keep SecretRefs on supported surfaces only.
     - `SecretRef assignment(s) could not be resolved`: the referenced provider/ref cannot currently resolve (missing env/store name, invalid file pointer, exec provider failure, or provider/source mismatch).
-    - `model reference validation failed`: a changed text-model primary or fallback is unknown; run `openclaw models list` and choose an available model.
+    - `model reference validation failed`: a changed text-model primary or fallback is unknown; run `paddy models list` and choose an available model.
     - `Dry run note: skipped <n> exec SecretRef resolvability check(s)`: rerun with `--allow-exec` if you need exec resolvability validation.
     - For batch mode, fix failing entries and rerun `--dry-run` before writing.
 
@@ -594,8 +594,8 @@ Successful `config set` or `config unset` operations that produce no effective c
 `openclaw config set` and other OpenClaw-owned config writers validate the full post-change config before committing it to disk. If the new payload fails schema validation or looks like a destructive clobber, the active config is left alone and the rejected payload is saved beside it as `openclaw.json.rejected.*`.
 
 If staging a config save fails, the existing root or include backup ring is left
-untouched. OpenClaw prepares backup contents without blocking unrelated Gateway
-requests. If a copy fallback removes the file before a conflict, OpenClaw restores
+untouched. Paddy prepares backup contents without blocking unrelated Gateway
+requests. If a copy fallback removes the file before a conflict, Paddy restores
 the original when it still owns the missing destination. Otherwise, the error
 reports partial publication and the backup location to inspect before another save.
 
@@ -604,7 +604,7 @@ and reports whether the write was rolled back. This can name an included file
 when that file owns the edited setting. If rollback did not happen or could not
 be confirmed, inspect the named file and the active config before retrying.
 
-OpenClaw-owned writes that change config reserialize JSON5 as standard JSON. When the source contains comments, the writer warns immediately before removing them; use a direct editor when preserving comments matters.
+Paddy-owned writes that change config reserialize JSON5 as standard JSON. When the source contains comments, the writer warns immediately before removing them; use a direct editor when preserving comments matters.
 
 <Warning>
 The active config path must be a regular file. Symlinked `openclaw.json` layouts are unsupported for writes; use `OPENCLAW_CONFIG_PATH` to point directly at the real file instead.
@@ -613,17 +613,17 @@ The active config path must be a regular file. Symlinked `openclaw.json` layouts
 Prefer CLI writes for small edits:
 
 ```bash
-openclaw config set gateway.reload.mode '"hybrid"' --strict-json --dry-run
-openclaw config set gateway.reload.mode '"hybrid"' --strict-json
-openclaw config validate
+paddy config set gateway.reload.mode '"hybrid"' --strict-json --dry-run
+paddy config set gateway.reload.mode '"hybrid"' --strict-json
+paddy config validate
 ```
 
 If a write is rejected, inspect the saved payload and fix the full config shape:
 
 ```bash
-CONFIG="$(openclaw config file)"
+CONFIG="$(paddy config file)"
 ls -lt "$CONFIG".rejected.* 2>/dev/null | head
-openclaw config validate
+paddy config validate
 ```
 
 Direct editor writes are still allowed, but the running Gateway treats them as untrusted until they validate. Startup validates config without rewriting legacy keys. Invalid direct edits stop startup; hot reload skips invalid edits without rewriting `openclaw.json`. Run `openclaw doctor --fix` for legacy-key repair, prefixed/clobbered config, or last-known-good recovery. See [Gateway troubleshooting](/gateway/troubleshooting#gateway-rejected-invalid-config).
@@ -632,19 +632,19 @@ Ordinary recovery can restore an eligible, valid current backup verbatim. Backup
 
 ## Repair loop
 
-After `openclaw config validate` passes, use the local TUI to have an embedded agent compare the active config against the docs while you validate each change from the same terminal:
+After `paddy config validate` passes, use the local TUI to have an embedded agent compare the active config against the docs while you validate each change from the same terminal:
 
 ```bash
-openclaw chat
+paddy chat
 ```
 
 Inside the TUI, a leading `!` runs a literal local shell command (after a one-time per-session confirmation prompt):
 
 ```text
-!openclaw config file
-!openclaw docs gateway auth token secretref
-!openclaw config validate
-!openclaw doctor
+!paddy config file
+!paddy docs gateway auth token secretref
+!paddy config validate
+!paddy doctor
 ```
 
 <Steps>
@@ -652,13 +652,13 @@ Inside the TUI, a leading `!` runs a literal local shell command (after a one-ti
     Ask the agent to compare your current config with the relevant docs page and suggest the smallest fix.
   </Step>
   <Step title="Apply targeted edits">
-    Apply targeted edits with `openclaw config set` or `openclaw configure`.
+    Apply targeted edits with `paddy config set` or `paddy configure`.
   </Step>
   <Step title="Re-validate">
-    Rerun `openclaw config validate` after each change.
+    Rerun `paddy config validate` after each change.
   </Step>
   <Step title="Doctor for runtime issues">
-    If validation passes but the runtime is still unhealthy, run `openclaw doctor` or `openclaw doctor --fix` for migration and repair help.
+    If validation passes but the runtime is still unhealthy, run `paddy doctor` or `paddy doctor --fix` for migration and repair help.
   </Step>
 </Steps>
 
@@ -666,4 +666,4 @@ Inside the TUI, a leading `!` runs a literal local shell command (after a one-ti
 
 - [CLI reference](/cli)
 - [Configuration](/gateway/configuration)
-- [`openclaw configure`](/cli/configure) — guided editor for the same settings
+- [`paddy configure`](/cli/configure) — guided editor for the same settings

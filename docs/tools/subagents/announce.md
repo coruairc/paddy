@@ -21,7 +21,7 @@ By default, delivery depends on requester depth:
 
 - Top-level requester sessions use a follow-up `agent` call with external delivery (`deliver=true`).
 - Nested requester subagent sessions receive an internal follow-up injection (`deliver=false`) so the orchestrator can synthesize child results in-session.
-- If a nested requester subagent session is gone, OpenClaw falls back to that session's requester when available.
+- If a nested requester subagent session is gone, Paddy falls back to that session's requester when available.
 
 For top-level requester sessions, completion-mode direct delivery first
 resolves any bound conversation/thread route and hook override, then fills
@@ -46,7 +46,7 @@ keyed input belongs to a closed turn, delivery records a permanent failure with
 the error. It does not retry other models or keep scheduling the same completion.
 
 If a chunk in a direct-message text fallback fails or is aborted after earlier
-chunks were sent, OpenClaw records an incomplete delivery. It stops automatic
+chunks were sent, Paddy records an incomplete delivery. It stops automatic
 retries to avoid duplicating chunks the recipient already received. A successful
 child's result remains available for recovery.
 
@@ -54,7 +54,7 @@ child's result remains available for recovery.
 
 Set `completionTarget: "parent"` on `sessions_spawn` to return the result in a
 private turn of the original requester session. The parent can inspect the result,
-start another child, or reply `NO_REPLY`. OpenClaw does not automatically send the
+start another child, or reply `NO_REPLY`. Paddy does not automatically send the
 child result, parent final, or generated media to a channel. The parent can still
 choose to send a message through its permitted tools.
 
@@ -92,7 +92,7 @@ Announce context is normalized to a stable internal event block:
 | Follow-up      | Instruction describing when to reply vs stay silent                                                      |
 
 The result is the child's complete visible final answer for the completed run.
-OpenClaw preserves prompt-data escaping and stable order when it delivers several
+Paddy preserves prompt-data escaping and stable order when it delivers several
 results together. It does not shorten an answer to fit the former announce
 projection limits. The bounded lifecycle snapshot remains separate from the
 complete answer sent to the parent.

@@ -5,7 +5,7 @@ read_when:
 title: "Telegram"
 ---
 
-This page connects a Telegram bot to OpenClaw and sets who is allowed to message it.
+This page connects a Telegram bot to Paddy and sets who is allowed to message it.
 
 Telegram is production-ready for bot DMs and groups via grammY. Long polling is the default transport. Webhook mode is optional.
 
@@ -90,7 +90,7 @@ Every section heading from the previous single-page version keeps its anchor her
 
 Primary reference: [Configuration reference - Telegram](/gateway/config-channels#telegram).
 
-`openclaw doctor --fix` removes retired tuning settings (`timeoutSeconds`, `mediaGroupFlushMs`, `pollingStallThresholdMs`, `retry`, and `errorCooldownMs`) from their former configuration scopes. Account names and sender-specific tool-policy keys are preserved, even when they match a retired setting name.
+`paddy doctor --fix` removes retired tuning settings (`timeoutSeconds`, `mediaGroupFlushMs`, `pollingStallThresholdMs`, `retry`, and `errorCooldownMs`) from their former configuration scopes. Account names and sender-specific tool-policy keys are preserved, even when they match a retired setting name.
 
 <Accordion title="High-signal Telegram fields">
 
@@ -114,7 +114,7 @@ Primary reference: [Configuration reference - Telegram](/gateway/config-channels
 </Accordion>
 
 <Note>
-Multi-account precedence: with two or more account IDs configured, set `channels.telegram.defaultAccount` (or include `channels.telegram.accounts.default`) to make default routing explicit. Otherwise OpenClaw falls back to the first normalized account ID and `openclaw doctor` warns. Omitted account `dmPolicy`, `groupPolicy`, `allowFrom`, and `groupAllowFrom` inherit the channel root, not `accounts.default.*`. Explicit account policies win; if neither scope sets them, DMs use `pairing` and groups use `allowlist`.
+Multi-account precedence: with two or more account IDs configured, set `channels.telegram.defaultAccount` (or include `channels.telegram.accounts.default`) to make default routing explicit. Otherwise Paddy falls back to the first normalized account ID and `paddy doctor` warns. Omitted account `dmPolicy`, `groupPolicy`, `allowFrom`, and `groupAllowFrom` inherit the channel root, not `accounts.default.*`. Explicit account policies win; if neither scope sets them, DMs use `pairing` and groups use `allowlist`.
 </Note>
 
 ## Multi-agent account ownership

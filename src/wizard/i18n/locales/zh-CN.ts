@@ -1,6 +1,6 @@
+import { CLI_NAME, PRODUCT_NAME } from "../../../brand.js";
 // Simplified Chinese wizard translations provide localized onboarding copy.
 import type { WizardTranslationMap } from "../types.js";
-import { CLI_NAME, PRODUCT_NAME } from "../../../brand.js";
 
 export const zh_CN = {
   common: {
@@ -90,8 +90,7 @@ export const zh_CN = {
       remoteTokenMode: "你想如何提供这个 Gateway 密钥？",
       tailscaleExposure: "Tailscale 暴露方式",
       tokenPrompt: "Gateway 令牌",
-      tokenStoreProvisioned:
-        `已生成 Gateway 令牌并以 {name} 存入 ${PRODUCT_NAME} 密钥存储。配置中只保留引用；可用 \`${CLI_NAME} secrets store list\` 查看。`,
+      tokenStoreProvisioned: `已生成 Gateway 令牌并以 {name} 存入 ${PRODUCT_NAME} 密钥存储。配置中只保留引用；可用 \`${CLI_NAME} secrets store list\` 查看。`,
       trustedProxyAllowLoopback: "允许回环可信代理身份验证？",
       trustedProxyLoopbackTitle: "回环代理安全警告",
       trustedProxyLoopbackWarning:
@@ -126,7 +125,7 @@ export const zh_CN = {
       apply: "现在应用这次迁移？",
       appliedTitle: "迁移已应用",
       cancelled: "迁移已取消",
-      complete: "迁移完成。下一步运行 `openclaw doctor`。",
+      complete: "迁移完成。下一步运行 `paddy doctor`。",
       continuing: "迁移完成。继续设置。",
       importFrom: "从 {source} 导入",
       importFromAnotherAgent: "从其他 agent 导入",
@@ -208,7 +207,7 @@ export const zh_CN = {
       arrayPromptSuffix: "（逗号分隔，留空则清除）",
       arrayPlaceholder: "value1, value2",
       sensitiveField:
-        '"{label}" 是敏感字段。请通过以下方式设置：\n  openclaw config set plugins.entries.{plugin}.config.{field} <value>\n或使用 Web UI 设置页。',
+        '"{label}" 是敏感字段。请通过以下方式设置：\n  paddy config set plugins.entries.{plugin}.config.{field} <value>\n或使用 Web UI 设置页。',
       sensitiveTitle: "敏感字段",
       skipConfigHint: "继续，不配置插件",
       useLocalPluginPath: "使用本地插件路径",
@@ -274,19 +273,18 @@ export const zh_CN = {
     },
     guided: {
       laneQuestion: "你想如何开始？",
-      laneSecurityLine:
-        `${PRODUCT_NAME} 运行的 AI 智能体拥有这台机器的实际访问权限。安全指南：https://docs.openclaw.ai/gateway/security`,
+      laneSecurityLine: `${PRODUCT_NAME} 运行的 AI 智能体拥有这台机器的实际访问权限。安全指南：https://docs.openclaw.ai/gateway/security`,
       laneQuickLabel: "快速开始（推荐）",
       laneQuickHint: "查找 AI 访问方式，由你选择要验证的连接，然后打开网页仪表板。",
       laneCustomLabel: "自定义设置",
       laneCustomHint: "逐项选择所有设置选项。",
       quickstartDashboard: "仪表板：{url}",
       quickstartForeground: "网关正在前台运行。按 Ctrl+C 停止。",
-      quickstartBackground: "如需以后让网关在后台持续运行，请运行：openclaw gateway install",
-      quickstartReopen: "运行 openclaw 打开 TUI，或运行 openclaw dashboard 重新打开网页仪表板。",
+      quickstartBackground: "如需以后让网关在后台持续运行，请运行：paddy gateway install",
+      quickstartReopen: "运行 paddy 打开 TUI，或运行 paddy dashboard 重新打开网页仪表板。",
       quickstartBrowserUnavailable: "浏览器交接未完成。网关仍在运行；准备好后请打开仪表板。",
       quickstartGatewayPending:
-        "网关尚不可达。请保持此终端打开，并运行 openclaw gateway status 检查启动状态。",
+        "网关尚不可达。请保持此终端打开，并运行 paddy gateway status 检查启动状态。",
       accessFullHint: "我会查找这台机器上的 AI 应用和密钥；由你选择要测试的连接。",
       accessFullLabel: "完全访问 — 自动发现一切",
       accessGuardedHint: "查找前我会先征求你的同意，你也可以手动配置。",
@@ -326,7 +324,7 @@ export const zh_CN = {
       detecting: "正在查找你已使用的 AI…",
       existingModelKept:
         "已配置的默认模型保持不变。请在下方选择如何继续——重试、连接其他提供商，或退出。此检查在工作区之外运行，因此工作区插件提供的模型可能在这里失败，但在 agent 中仍可正常工作。",
-      escapeHatches: "如需完整的分步向导，请运行 `openclaw onboard --classic`。",
+      escapeHatches: "如需完整的分步向导，请运行 `paddy onboard --classic`。",
       failureAuth: "认证失败。请重新登录或检查 key。",
       failureBilling: "此模型或账号尚未启用计费。",
       failureFormat: "模型没有返回可用的回复。",
@@ -346,7 +344,7 @@ export const zh_CN = {
       nextSteps:
         "工作区：{workspace}\n添加频道：`openclaw channels add`\n更喜欢聊天？运行 `openclaw setup`，然后说 `connect telegram`（或 `connect slack`）。\n打开 dashboard：`openclaw dashboard`\n稍后聊天：`openclaw`",
       nextStepsWithoutAi:
-        "工作区：{workspace}\n稍后添加 AI：重新运行 `openclaw onboard`\n连接 AI 后添加频道：`openclaw channels add`\n打开 dashboard：`openclaw dashboard`",
+        "工作区：{workspace}\n稍后添加 AI：重新运行 `paddy onboard`\n连接 AI 后添加频道：`paddy channels add`\n打开 dashboard：`paddy dashboard`",
       nextStepsTitle: "下一步",
       noInferenceOptions:
         "尚无可用的推理选项。请先登录 Claude Code 或 Codex，或配置 API 密钥提供商，然后重新运行引导。",
@@ -360,7 +358,7 @@ export const zh_CN = {
       unavailableCandidate: "{label} — {detail}。{reason}",
       tryCandidate: "尝试 {label}（{detail}）",
       ttyRequired:
-        "Onboarding 需要交互式 TTY。自动化请使用 `openclaw onboard --non-interactive --accept-risk ...`。",
+        "Onboarding 需要交互式 TTY。自动化请使用 `paddy onboard --non-interactive --accept-risk ...`。",
       welcomeTitle: "设置选项",
       workspaceConflictClassic:
         "本次验证保留了已配置的工作区。运行 `{command}` 以查看并明确批准迁移现有 agent fleet。",
@@ -439,8 +437,7 @@ export const zh_CN = {
     },
     security: {
       askForHelp: "启用工具或暴露到互联网之前，请找有经验的人协助。",
-      attribution:
-        `${PRODUCT_NAME} 是由 ${PRODUCT_NAME} 基金会（非营利组织）开发的开源助手，会与你一同学习成长。`,
+      attribution: `${PRODUCT_NAME} 是由 ${PRODUCT_NAME} 基金会（非营利组织）开发的开源助手，会与你一同学习成长。`,
       baselineDmSessions:
         "共享收件箱：隔离 DM 会话（session.dmScope: per-channel-peer），并尽量减少工具访问权限。",
       baselinePairing: "使用配对或允许列表；在群聊中要求 @ 提及。",
@@ -466,7 +463,7 @@ export const zh_CN = {
       accept: "是，分享功能使用统计",
       decline: "不用，谢谢",
       description:
-        "在每日更新检查中分享你使用的功能（频道、提供商、插件数量）。绝不包含消息或标识符。查看实际发送的内容：`openclaw telemetry show`。随时更改：`openclaw telemetry on|off`。",
+        "在每日更新检查中分享你使用的功能（频道、提供商、插件数量）。绝不包含消息或标识符。查看实际发送的内容：`paddy telemetry show`。随时更改：`paddy telemetry on|off`。",
       title: `帮助 ${PRODUCT_NAME} 变得更好？`,
     },
     skills: {
@@ -486,7 +483,7 @@ export const zh_CN = {
       installed: "已安装 {name}",
       installedWithWarnings: "已安装 {name}（有警告）",
       installing: "正在安装 {name}...",
-      manualPrereqsDoctorHint: "请先安装这些工具，然后运行 `openclaw doctor` 检查技能和要求。",
+      manualPrereqsDoctorHint: "请先安装这些工具，然后运行 `paddy doctor` 检查技能和要求。",
       manualPrereqsIntro: "已跳过需要先安装本地工具的可选技能安装：",
       manualPrereqsTitle: "手动技能先决条件",
       nodeManager: "技能安装首选 Node 管理器",
@@ -497,8 +494,7 @@ export const zh_CN = {
     },
     channels: {
       commandOwnerTitle: "通过聊天管理",
-      commandOwnerHelp:
-        `聊天访问权限允许用户与你的代理交谈。命令所有者还可以更新 ${PRODUCT_NAME}、重启 Gateway、更改配置并批准命令。请仅选择你自己信任的管理员账号。服务器和群组无需 DM 配对也可使用此功能；它不会授予聊天访问权限或更改频道访问规则。`,
+      commandOwnerHelp: `聊天访问权限允许用户与你的代理交谈。命令所有者还可以更新 ${PRODUCT_NAME}、重启 Gateway、更改配置并批准命令。请仅选择你自己信任的管理员账号。服务器和群组无需 DM 配对也可使用此功能；它不会授予聊天访问权限或更改频道访问规则。`,
       commandOwnerSetup: "设置通过你自己的聊天账号进行管理？",
       commandOwnerOwnAccount: "设置我的管理员账号",
       commandOwnerChannel: "你的管理员账号位于哪个频道？",
@@ -744,8 +740,7 @@ export const zh_CN = {
       connectionTitle: "ClickClack 连接",
       connected: "已连接为 @{handle} — 工作区 {workspace} 已解析。",
       envPrompt: "检测到 CLICKCLACK_BOT_TOKEN。使用环境变量？",
-      helpCreateToken:
-        `在 ClickClack 中：工作区设置 → Integrations → ${PRODUCT_NAME} → 创建 bot → 复制 token`,
+      helpCreateToken: `在 ClickClack 中：工作区设置 → Integrations → ${PRODUCT_NAME} → 创建 bot → 复制 token`,
       invalidToken: "ClickClack 拒绝了 bot token（401）。复制当前 token 后重新运行设置。",
       validationWarningTitle: "ClickClack 连接检查",
       workspaceHelp: "可使用 wsp_… ID、工作区 slug 或显示名称。",
@@ -767,8 +762,7 @@ export const zh_CN = {
       helpCopySecret: "3) 复制你在命令中使用的 shared secret",
       helpEnableRoom: "4) 在 Nextcloud Talk 房间设置中启用 bot",
       helpEnvTip: "提示：也可以在环境变量中设置 NEXTCLOUD_TALK_BOT_SECRET。",
-      helpInstallCommand:
-        `2) 运行：./occ talk:bot:install "${PRODUCT_NAME}" "<shared-secret>" "<webhook-url>" --feature webhook --feature response --feature reaction`,
+      helpInstallCommand: `2) 运行：./occ talk:bot:install "${PRODUCT_NAME}" "<shared-secret>" "<webhook-url>" --feature webhook --feature response --feature reaction`,
       helpSsh: "1) SSH 进入你的 Nextcloud 服务器",
       instanceUrlPrompt: "输入 Nextcloud 实例 URL（例如 https://cloud.example.com）",
       setupTitle: "Nextcloud Talk bot 设置",
@@ -875,7 +869,7 @@ export const zh_CN = {
       helpRecommendedTls: "推荐：TLS 使用 6697 端口。",
       multipleEntries: "多个条目请用逗号分隔。",
       nextRestartGateway: "下一步：重启 gateway 并验证状态。",
-      nextStatusCommand: "命令：openclaw channels status --probe",
+      nextStatusCommand: "命令：paddy channels status --probe",
       nextStepsTitle: "IRC 后续步骤",
       nickPrompt: "IRC nick",
       nickServConfigurePrompt: "配置 NickServ identify/register？",
@@ -1079,7 +1073,7 @@ export const zh_CN = {
       credentialRequired: "需要 {label}",
       chooseProvider: "选择一个提供方。有些提供方需要 API key，有些无需 key。",
       configured: "已配置",
-      configureLaterHint: "稍后可用 openclaw configure --section web 配置",
+      configureLaterHint: "稍后可用 paddy configure --section web 配置",
       docsLine: "文档：{url}",
       intro: "Web search 可以让 agent 在线查询资料。",
       keyFree: "无需 key",
@@ -1160,8 +1154,7 @@ export const zh_CN = {
       rerunInstallDaemon: "或重新运行：{command}",
       restart: "重启",
       containerRuntimeTitle: "容器运行环境",
-      containerSystemdUnavailable:
-        `此容器内没有 systemd 用户服务。${PRODUCT_NAME} 只会跳过后台服务安装；请以前台方式运行 Gateway，或使用你的容器 supervisor。`,
+      containerSystemdUnavailable: `此容器内没有 systemd 用户服务。${PRODUCT_NAME} 只会跳过后台服务安装；请以前台方式运行 Gateway，或使用你的容器 supervisor。`,
       securityReminder:
         "在你的电脑上运行 agent 存在风险，请加固设置：https://docs.openclaw.ai/security",
       secretRefAuthFailed: "无法解析用于设置认证的 {field} SecretRef。",

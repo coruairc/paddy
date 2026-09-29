@@ -1,17 +1,17 @@
 ---
 summary: "Migration hub: cross-system imports, machine-to-machine moves, and plugin upgrades"
 read_when:
-  - You are moving OpenClaw to a new laptop or server
+  - You are moving Paddy to a new laptop or server
   - You are coming from another agent system and want to keep state
   - You are upgrading an in-place plugin
 title: "Migration guide"
 ---
 
-OpenClaw supports three migration paths: importing from another agent system, moving an existing install to a new machine, and upgrading a plugin in place.
+Paddy supports three migration paths: importing from another agent system, moving an existing install to a new machine, and upgrading a plugin in place.
 
 ## Import from another agent system
 
-Bundled migration providers bring instructions, MCP servers, skills, model config, and (opt-in) API keys into OpenClaw. Plans are previewed before any change and secrets are redacted in reports. Standalone `openclaw migrate` is backed by a verified backup; fresh onboarding imports instead stage and verify local artifacts before publishing them with configuration committed before any irreversible external activation.
+Bundled migration providers bring instructions, MCP servers, skills, model config, and (opt-in) API keys into Paddy. Plans are previewed before any change and secrets are redacted in reports. Standalone `paddy migrate` is backed by a verified backup; fresh onboarding imports instead stage and verify local artifacts before publishing them with configuration committed before any irreversible external activation.
 
 <CardGroup cols={2}>
   <Card title="Migrating from Claude" href="/install/migrating-claude" icon="brain">
@@ -22,9 +22,9 @@ Bundled migration providers bring instructions, MCP servers, skills, model confi
   </Card>
 </CardGroup>
 
-The CLI entry point is [`openclaw migrate`](/cli/migrate). Onboarding can also offer migration when it detects a known source (`openclaw onboard --flow import`).
+The CLI entry point is [`paddy migrate`](/cli/migrate). Onboarding can also offer migration when it detects a known source (`paddy onboard --flow import`).
 
-## Move OpenClaw to a new machine
+## Move Paddy to a new machine
 
 Copy the **state directory** (`~/.openclaw/` by default) and your **workspace** to preserve:
 
@@ -46,9 +46,9 @@ Run `openclaw status` on the old machine to confirm your state directory path. C
     archive:
 
     ```bash
-    openclaw gateway stop
+    paddy gateway stop
     mkdir -p ~/Backups/openclaw
-    openclaw backup create --output ~/Backups/openclaw --verify
+    paddy backup create --output ~/Backups/paddy --verify
     ```
 
     Stop the Gateway before taking a machine-move snapshot. A raw copy of a
@@ -58,7 +58,7 @@ Run `openclaw status` on the old machine to confirm your state directory path. C
 
   </Step>
 
-  <Step title="Install OpenClaw on the new machine">
+  <Step title="Install Paddy on the new machine">
     [Install](/install) the CLI (and Node if needed) on the new machine. It is fine if onboarding creates a fresh `~/.openclaw/` — you overwrite it next.
   </Step>
 
@@ -68,7 +68,7 @@ Run `openclaw status` on the old machine to confirm your state directory path. C
     staging directory:
 
     ```bash
-    openclaw backup restore <archive.tar.gz> --target ~/openclaw-restored
+    paddy backup restore <archive.tar.gz> --target ~/paddy-restored
     ```
 
     Restore never activates in place. With the Gateway stopped, use the
@@ -94,9 +94,9 @@ Run `openclaw status` on the old machine to confirm your state directory path. C
     On the new machine, run [Doctor](/gateway/doctor) to apply config migrations and repair services:
 
     ```bash
-    openclaw doctor
-    openclaw gateway restart
-    openclaw status
+    paddy doctor
+    paddy gateway restart
+    paddy status
     ```
 
   </Step>
@@ -108,7 +108,7 @@ If Telegram or Discord uses the default env fallback (`TELEGRAM_BOT_TOKEN` or `D
 awk -F= '/^(TELEGRAM_BOT_TOKEN|DISCORD_BOT_TOKEN)=/ { print $1 "=present" }' ~/.openclaw/.env
 ```
 
-`openclaw doctor` also warns when an enabled default Telegram or Discord account has no configured token and the matching env variable is unavailable to the doctor process.
+`paddy doctor` also warns when an enabled default Telegram or Discord account has no configured token and the matching env variable is unavailable to the doctor process.
 
 ### Common pitfalls
 
@@ -138,7 +138,7 @@ awk -F= '/^(TELEGRAM_BOT_TOKEN|DISCORD_BOT_TOKEN)=/ { print $1 "=present" }' ~/.
 
 On the new machine, confirm:
 
-- [ ] `openclaw status` shows the gateway running.
+- [ ] `paddy status` shows the gateway running.
 - [ ] Channels are still connected (no re-pairing needed).
 - [ ] The dashboard opens and shows existing sessions.
 - [ ] Workspace files (memory, configs) are present.
@@ -151,9 +151,9 @@ In-place plugin upgrades preserve the same plugin id and config keys but may mov
 
 ## Related
 
-- [`openclaw migrate`](/cli/migrate): CLI reference for cross-system imports.
+- [`paddy migrate`](/cli/migrate): CLI reference for cross-system imports.
 - [Install overview](/install): all installation methods.
 - [Doctor](/gateway/doctor): post-migration health check.
 - [Updating](/install/updating): updating an existing install in place, plus rollback strategy.
-- [Uninstall](/install/uninstall): removing OpenClaw cleanly.
-- [`openclaw backup`](/cli/backup) — create the archive this migration restores
+- [Uninstall](/install/uninstall): removing Paddy cleanly.
+- [`paddy backup`](/cli/backup) — create the archive this migration restores

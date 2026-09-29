@@ -44,7 +44,7 @@ export function inspectDoctorSqliteNoCow(paths: readonly string[]): {
       if (!hasNoCow(pathname) || !hasNoCow(path.dirname(pathname))) {
         result.paths.push(pathname);
         result.notes.push(
-          `SQLite store on btrfs without NOCOW: ${pathname}. Run openclaw doctor --fix to rewrite it while the Gateway is stopped.`,
+          `SQLite store on btrfs without NOCOW: ${pathname}. Run paddy doctor --fix to rewrite it while the Gateway is stopped.`,
         );
       }
     } catch (error) {

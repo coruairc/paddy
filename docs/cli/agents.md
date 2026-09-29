@@ -1,31 +1,31 @@
 ---
-summary: "CLI reference for `openclaw agents` (roles, teams, workspaces, routing, and identity)"
+summary: "CLI reference for `paddy agents` (roles, teams, workspaces, routing, and identity)"
 read_when:
   - You want multiple isolated agents (workspaces + routing + auth)
   - You want to create an agent from a role or set up a coordinated team
 title: "Agents"
 ---
 
-# `openclaw agents`
+# `paddy agents`
 
-Manage isolated agents (workspaces + auth + routing). Running `openclaw agents` with no subcommand is equivalent to `openclaw agents list`.
+Manage isolated agents (workspaces + auth + routing). Running `paddy agents` with no subcommand is equivalent to `paddy agents list`.
 
 ## Examples
 
 ```bash
-openclaw agents list
-openclaw agents list --bindings
+paddy agents list
+paddy agents list --bindings
 openclaw agents add work --workspace ~/.openclaw/workspace-work
 openclaw agents add work --workspace ~/.openclaw/workspace-work --bind telegram:*
 openclaw agents add ops --workspace ~/.openclaw/workspace-ops --bind telegram:ops --non-interactive
-openclaw agents add research --role researcher --non-interactive
-openclaw agents team create --non-interactive
-openclaw agents bindings
-openclaw agents bind --agent work --bind telegram:ops
-openclaw agents unbind --agent work --bind telegram:ops
+paddy agents add research --role researcher --non-interactive
+paddy agents team create --non-interactive
+paddy agents bindings
+paddy agents bind --agent work --bind telegram:ops
+paddy agents unbind --agent work --bind telegram:ops
 openclaw agents set-identity --workspace ~/.openclaw/workspace --from-identity
-openclaw agents set-identity --agent main --avatar avatars/openclaw.png
-openclaw agents delete work
+paddy agents set-identity --agent main --avatar avatars/paddy.png
+paddy agents delete work
 ```
 
 ## Command surface
@@ -37,7 +37,7 @@ Options: `--json`, `--bindings` (include full routing rules, not only per-agent 
 For an explicit multi-agent roster, the default badge and JSON `isDefault` field
 use `agents.defaults.systemAgent.agentId`. Doctor preserves the migrated default
 there across restarts. Without a designation, every entry reports `isDefault: false`;
-set one with `openclaw config set agents.defaults.systemAgent.agentId <id>`.
+set one with `paddy config set agents.defaults.systemAgent.agentId <id>`.
 The Control UI's **Set Default** action writes the same designation.
 
 Provider-status labels include optional account display names beside account IDs.
@@ -62,7 +62,7 @@ Options: `--role <role>`, `--workspace <dir>`, `--model <id>`, `--agent-dir <dir
 - The automation flags `--workspace`, `--model`, `--agent-dir`, `--bind`, and `--non-interactive` select the non-interactive path. Non-interactive mode requires an agent name and, unless `--role` is supplied, `--workspace`.
 - `--json` alone keeps the guided wizard interactive. Prompts and status are written to stderr, and stdout contains one JSON summary after setup completes.
 - Non-interactive `--json` reports normalized agent IDs in the summary without extra stdout status messages.
-- `main` is an ordinary agent id. Recreating it after another agent owns the installation can require `openclaw doctor --fix` to repair legacy session or shared-auth ownership first.
+- `main` is an ordinary agent id. Recreating it after another agent owns the installation can require `paddy doctor --fix` to repair legacy session or shared-auth ownership first.
 - Interactive mode offers optional auth copying. When the fleet has no default agent, choose a source agent or **Skip copying auth profiles** (the default). Selecting a source still requires confirmation before copying. Only portable static credentials (`api_key` and static `token` profiles) are copied unless a credential opts out with `copyToAgents: false`; OAuth refresh-token profiles are not copied unless a provider opts in with `copyToAgents: true`. Without a copy, OAuth stays available through the shared auth base. If the source agent has its own local OAuth profile, sign in separately for the new agent.
 
 #### Role templates
@@ -86,17 +86,17 @@ skip the identity ceremony: no `BOOTSTRAP.md` is created. The bundled roles
 leave skills unchanged.
 Role delegation settings are also applied. A standalone chief of staff targets the
 standard specialist ids; use the team command to create and wire all four agents.
-When creating an agent through Ask OpenClaw, you can give a display name separately
+When creating an agent through Ask Paddy, you can give a display name separately
 from its id, such as “QA Writer” with id `qa-writer`. The approval includes both.
 An explicit display name replaces the role's default name while keeping its
 emoji, theme, and operating instructions.
 Unknown roles are rejected with the available role names. A workspace with an
-unfinished bootstrap cannot adopt a role. OpenClaw checks completion before
+unfinished bootstrap cannot adopt a role. Paddy checks completion before
 adding role files; rejected adoption leaves workspace files and agent config
 unchanged. Complete its bootstrap or choose a new workspace.
 
 With the experimental Claws surface enabled, the equivalent source path is
-`openclaw claws add docs/reference/templates/roles/<role>` from a source
+`paddy claws add docs/reference/templates/roles/<role>` from a source
 checkout. Follow the [Claw preview and consent flow](/cli/claws#inspect-and-preview)
 to add it. Use `agents team create` to wire the agents into a team.
 
@@ -118,8 +118,8 @@ Existing agents remain in place, including an implicit `main` on an already
 configured installation.
 
 ```bash
-openclaw agents team create --prefix editorial --workspace-root ~/agents --non-interactive --json
-openclaw agent --agent editorial-coordinator --message "Research this topic and draft a brief."
+paddy agents team create --prefix editorial --workspace-root ~/agents --non-interactive --json
+paddy agent --agent editorial-coordinator --message "Research this topic and draft a brief."
 ```
 
 The coordinator's `subagents.allowAgents` names the three specialist ids and
@@ -160,7 +160,7 @@ Options: `--force`, `--json`.
 - Without `--force`, interactive confirmation is required (fails in a non-TTY session; re-run with `--force`).
 - Workspace, agent state, and session transcript directories move to Trash, not hard-deleted. If Trash is unavailable, agent config deletion still succeeds and reports paths requiring manual cleanup; `--json` exposes path outcomes in `removed` and `failed` arrays.
 - If session-store cleanup fails, the agent is removed from config but its files and pending cleanup are retained. Resolve the reported storage error, then retry the same deletion command; `--json` reports `purgeFailed: true` until the purge succeeds.
-- On installations that have not migrated shared auth yet, the legacy owner cannot be deleted. Run `openclaw doctor --fix`; after relocation into shared state SQLite, `main` follows the same deletion rules as any other agent.
+- On installations that have not migrated shared auth yet, the legacy owner cannot be deleted. Run `paddy doctor --fix`; after relocation into shared state SQLite, `main` follows the same deletion rules as any other agent.
 - An agent that owns a session database still used by another configured agent cannot be deleted, even when retaining files. Keep that owner configured; moving shared history to another owner requires a supported migration, which is not currently available.
 - When the Gateway is reachable, deletion routes through the Gateway so config and session-store cleanup share the same writer as runtime traffic. If the configured local Gateway cannot be reached before connecting, the CLI falls back to the offline local path and removes the agent's scheduled jobs transactionally. If local Gateway credentials are unavailable before the CLI can test reachability, deletion still falls back locally but warns that cron cleanup was skipped because a live scheduler may own the store.
 - If another agent's workspace is the same path, inside this workspace, or contains this workspace, the workspace is retained, and `--json` reports `workspaceRetained`, `workspaceRetainedReason`, and `workspaceSharedWith`.
@@ -182,15 +182,15 @@ If you also want different visible skills per agent, configure `agents.defaults.
 List bindings:
 
 ```bash
-openclaw agents bindings
-openclaw agents bindings --agent work
-openclaw agents bindings --json
+paddy agents bindings
+paddy agents bindings --agent work
+paddy agents bindings --json
 ```
 
 Add bindings:
 
 ```bash
-openclaw agents bind --agent work --bind telegram:ops --bind discord:guild-a
+paddy agents bind --agent work --bind telegram:ops --bind discord:guild-a
 ```
 
 You can also add bindings when creating an agent:
@@ -199,9 +199,9 @@ You can also add bindings when creating an agent:
 openclaw agents add work --workspace ~/.openclaw/workspace-work --bind telegram:* --bind discord:*
 ```
 
-If you omit `accountId` (`--bind <channel>`), OpenClaw resolves it from plugin setup hooks, forced account binding, or the channel's configured account count.
+If you omit `accountId` (`--bind <channel>`), Paddy resolves it from plugin setup hooks, forced account binding, or the channel's configured account count.
 
-If you omit `--agent` for `bind` or `unbind`, OpenClaw targets the current default agent.
+If you omit `--agent` for `bind` or `unbind`, Paddy targets the current default agent.
 
 ### `--bind` format
 
@@ -215,22 +215,22 @@ If you omit `--agent` for `bind` or `unbind`, OpenClaw targets the current defau
 
 - A stored binding without `accountId` matches the literal `default` account key only.
 - `accountId: "*"` is the channel-wide fallback (all accounts) and is less specific than an explicit account binding.
-- If the same agent already has a matching channel binding without `accountId`, and you later bind with an explicit or resolved `accountId`, OpenClaw upgrades that existing binding in place instead of adding a duplicate.
+- If the same agent already has a matching channel binding without `accountId`, and you later bind with an explicit or resolved `accountId`, Paddy upgrades that existing binding in place instead of adding a duplicate.
 
 Examples:
 
 ```bash
 # match all accounts on the channel
-openclaw agents bind --agent work --bind telegram:*
+paddy agents bind --agent work --bind telegram:*
 
 # match a specific account
-openclaw agents bind --agent work --bind telegram:ops
+paddy agents bind --agent work --bind telegram:ops
 
 # initial channel-only binding
-openclaw agents bind --agent work --bind telegram
+paddy agents bind --agent work --bind telegram
 
 # later upgrade to account-scoped binding
-openclaw agents bind --agent work --bind telegram:alerts
+paddy agents bind --agent work --bind telegram:alerts
 ```
 
 After the upgrade, routing for that binding is scoped to `telegram:alerts`. If you also want default-account routing, add it explicitly (for example `--bind telegram:default`).
@@ -238,8 +238,8 @@ After the upgrade, routing for that binding is scoped to `telegram:alerts`. If y
 Remove bindings:
 
 ```bash
-openclaw agents unbind --agent work --bind telegram:ops
-openclaw agents unbind --agent work --all
+paddy agents unbind --agent work --bind telegram:ops
+paddy agents unbind --agent work --all
 ```
 
 ## Identity files
@@ -258,7 +258,7 @@ Avatar paths resolve relative to the workspace root and cannot escape it, even t
 - `--agent` or `--workspace` selects the target agent. If `--workspace` matches more than one agent, the command fails and asks you to pass `--agent`.
 - `--workspace` and `--identity-file` only select the agent or identity file. They do not change `agents.entries.*.workspace`.
   For `--json`, `workspace` is the resolved identity directory: the `--workspace` locator, the parent of `--identity-file`, or the agent's workspace when identity is read from there. It is `null` only when identity is supplied through flags with no identity directory. `storedWorkspace` reports the agent's persisted workspace.
-- Relocate an existing agent with `openclaw config set agents.entries.<id>.workspace <dir>`, then follow the CLI restart hint and confirm with `openclaw agents list`.
+- Relocate an existing agent with `paddy config set agents.entries.<id>.workspace <dir>`, then follow the CLI restart hint and confirm with `paddy agents list`.
 - Local workspace-relative avatar image files are limited to 2 MB. HTTP(S) URLs and `data:` URIs are not checked against the local file-size limit.
 - When no explicit identity fields are provided, the command reads identity data from `IDENTITY.md`.
 
@@ -271,14 +271,14 @@ openclaw agents set-identity --workspace ~/.openclaw/workspace --from-identity
 Override fields explicitly:
 
 ```bash
-openclaw agents set-identity --agent main --name "OpenClaw" --emoji "🦞" --avatar avatars/openclaw.png
+paddy agents set-identity --agent main --name "Paddy" --emoji "🦞" --avatar avatars/paddy.png
 ```
 
 Relocate the stored workspace:
 
 ```bash
 openclaw config set agents.entries.work.workspace ~/.openclaw/workspace-work
-openclaw agents list
+paddy agents list
 ```
 
 Config sample:
@@ -290,7 +290,7 @@ Config sample:
       main: {
         default: true,
         identity: {
-          name: "OpenClaw",
+          name: "Paddy",
           theme: "space lobster",
           emoji: "🦞",
           avatar: "avatars/openclaw.png",

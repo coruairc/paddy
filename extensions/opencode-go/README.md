@@ -1,8 +1,8 @@
-# OpenClaw OpenCode Go Provider
+# Paddy OpenCode Go Provider
 
-Official OpenClaw provider plugin for the OpenCode Go model catalog.
+Official Paddy provider plugin for the OpenCode Go model catalog.
 
-OpenCode Go is bundled with OpenClaw for this release; no separate plugin
+OpenCode Go is bundled with Paddy for this release; no separate plugin
 installation is required.
 
 Configure `OPENCODE_API_KEY` or `OPENCODE_ZEN_API_KEY`, then select an

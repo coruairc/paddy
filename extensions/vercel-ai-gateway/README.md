@@ -1,6 +1,6 @@
-# Vercel AI Gateway OpenClaw provider
+# Vercel AI Gateway Paddy provider
 
-Official OpenClaw provider plugin for Vercel AI Gateway.
+Official Paddy provider plugin for Vercel AI Gateway.
 
 ## Install
 

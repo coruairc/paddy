@@ -67,7 +67,7 @@ const ESCALATION_REASONS = [
   "other",
 ] as const;
 const COMPUTER_RESOURCE_HANDLE_PATTERN =
-  "^openclaw:computer-resource:v1:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$";
+  "^paddy:computer-resource:v1:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$";
 
 const optionalScreenFields = {
   screenIndex: Type.Optional(Type.Integer({ minimum: 0 })),

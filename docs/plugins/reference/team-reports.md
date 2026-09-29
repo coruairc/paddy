@@ -19,7 +19,7 @@ Daily, weekly, and monthly team activity reports from GitHub and Discord, with m
 
 ## Surface
 
-- CLI commands: `openclaw team-reports`
+- CLI commands: `paddy team-reports`
 - Contracts: `gatewayMethodDispatch`
 
 ## Related docs

@@ -1,15 +1,15 @@
 ---
-summary: "CLI reference and security model for the inference-backed OpenClaw setup and repair helper"
+summary: "CLI reference and security model for the inference-backed Paddy setup and repair helper"
 read_when:
-  - You finished inference setup and want OpenClaw to configure the rest
-  - You need to inspect or repair OpenClaw with the local setup agent
+  - You finished inference setup and want Paddy to configure the rest
+  - You need to inspect or repair Paddy with the local setup agent
   - You are designing or enabling message-channel rescue mode
-title: "OpenClaw setup agent"
+title: "Paddy setup agent"
 ---
 
-# `openclaw setup`
+# `paddy setup`
 
-OpenClaw ships with a built-in system agent — it speaks as "OpenClaw" — for
+Paddy ships with a built-in system agent — it speaks as "Paddy" — for
 local setup, repair, and configuration (formerly called Crestodian). It starts only after the effective default model completes a real turn.
 Fresh installs establish inference first; malformed config stays on the
 classic doctor path.
@@ -19,26 +19,26 @@ classic doctor path.
 Running `openclaw` with no subcommand routes based on config state:
 
 - Config missing, or exists with no authored settings (empty, or only `$schema`/`meta` keys): starts guided onboarding with live AI verification.
-- Config exists but fails validation: starts classic onboarding, which reports the issues and directs you to `openclaw doctor`.
+- Config exists but fails validation: starts classic onboarding, which reports the issues and directs you to `paddy doctor`.
 - Config exists and is valid: opens the normal agent TUI. A reachable
   configured Gateway whose default agent has a model goes directly to that UI
-  without onboarding or OpenClaw. Use `/openclaw` inside the TUI, or run
-  `openclaw setup` directly, to reach OpenClaw later.
+  without onboarding or Paddy. Use `/paddy` inside the TUI, or run
+  `paddy setup` directly, to reach Paddy later.
 
-Running `openclaw setup` first live-tests the configured default model. A passing turn starts OpenClaw. An interactive failure opens guided inference setup and hands off to OpenClaw after a candidate passes. One-shot, JSON, and other noninteractive requests fail with instructions to run [`openclaw onboard`](/cli/onboard) when inference is unavailable. `openclaw --help` and `openclaw --version` keep their normal fast paths.
+Running `paddy setup` first live-tests the configured default model. A passing turn starts Paddy. An interactive failure opens guided inference setup and hands off to Paddy after a candidate passes. One-shot, JSON, and other noninteractive requests fail with instructions to run [`paddy onboard`](/cli/onboard) when inference is unavailable. `paddy --help` and `paddy --version` keep their normal fast paths.
 
-If inference plugin loading or owner verification fails, the error includes the underlying cause after applying OpenClaw's error redaction. One-shot text and JSON output retain that detail alongside onboarding guidance.
+If inference plugin loading or owner verification fails, the error includes the underlying cause after applying Paddy's error redaction. One-shot text and JSON output retain that detail alongside onboarding guidance.
 
 Noninteractive bare `openclaw` (no TTY) exits with a short message instead of printing root help: it points to non-interactive onboarding on a fresh or invalid install, or to `openclaw agent --local ...` when config is valid.
 
-`openclaw onboard --modern` remains a compatibility alias for OpenClaw, but uses the same inference gate: working inference opens the chat, interactive failures start guided inference setup, and noninteractive failures exit with onboarding guidance. `openclaw onboard --classic` opens the full step-by-step wizard.
+`paddy onboard --modern` remains a compatibility alias for Paddy, but uses the same inference gate: working inference opens the chat, interactive failures start guided inference setup, and noninteractive failures exit with onboarding guidance. `paddy onboard --classic` opens the full step-by-step wizard.
 
-## What OpenClaw shows
+## What Paddy shows
 
-Interactive OpenClaw opens the same TUI shell as `openclaw tui`, with an OpenClaw chat backend. The startup greeting covers:
+Interactive Paddy opens the same TUI shell as `paddy tui`, with a Paddy chat backend. The startup greeting covers:
 
 - config validity and the default agent
-- the verified model OpenClaw is using
+- the verified model Paddy is using
 - Gateway reachability from the first startup probe
 - the next recommended debug action
 
@@ -51,17 +51,17 @@ OpenClaw uses the same reference discovery as regular agents: in a Git checkout 
 ## Examples
 
 ```bash
-openclaw
-openclaw setup
-openclaw setup --json
-openclaw setup --message "models"
-openclaw setup --message "validate config"
-openclaw setup --message "setup workspace ~/path/to/work" --yes
-openclaw setup --message "set default model openai/gpt-5.6" --yes
-openclaw onboard --modern
+paddy
+paddy setup
+paddy setup --json
+paddy setup --message "models"
+paddy setup --message "validate config"
+paddy setup --message "setup workspace ~/path/to/work" --yes
+paddy setup --message "set default model openai/gpt-5.6" --yes
+paddy onboard --modern
 ```
 
-Inside the OpenClaw TUI:
+Inside the Paddy TUI:
 
 ```text
 status
@@ -101,7 +101,7 @@ quit
 
 ## Operations and approval
 
-OpenClaw uses typed operations instead of editing config ad hoc.
+Paddy uses typed operations instead of editing config ad hoc.
 
 For `config get`, quote record keys that contain dots or brackets, such as
 `config get channels.modelByChannel.telegram["team.ops[west]"]`.
@@ -111,11 +111,11 @@ Read-only operations run immediately: show overview, list agents, list installed
 
 Starting a guided setup flow also runs immediately: channel setup (`connect telegram`), workspace skills setup (`configure skills`), web-search provider setup (`configure web search`), and local Gateway setup (`configure gateway`). Each config-backed hosted wizard collects explicit answers and owns the resulting writes; completions append audit entries and re-validate config. A web-search provider that needs a plugin install writes config only after the install succeeds — a failed or timed-out install stops setup and reports it instead of claiming the provider is configured.
 
-`configure gateway` guides you through the local Gateway's port, bind address, token or password auth, and Tailscale exposure. It saves config without applying it to the running Gateway, because changing the active address or credential could disconnect the setup chat. Say `restart gateway` after chat setup, or run `openclaw gateway restart` after a terminal-wizard handoff. Remote mode is guidance-only: use `openclaw onboard` for a fresh setup or `openclaw configure` to change the mode.
+`configure gateway` guides you through the local Gateway's port, bind address, token or password auth, and Tailscale exposure. It saves config without applying it to the running Gateway, because changing the active address or credential could disconnect the setup chat. Say `restart gateway` after chat setup, or run `paddy gateway restart` after a terminal-wizard handoff. Remote mode is guidance-only: use `paddy onboard` for a fresh setup or `paddy configure` to change the mode.
 
 `import memory` is copy-only rather than a config write. It detects supported local agent homes, lets you choose the available sources, and copies new memory files into the existing default agent workspace without importing config, credentials, or skills. It requires completed onboarding and reports confirmed imports, nothing-to-import results, provider failures, and failures where some files may already have been copied. No Gateway restart is needed. Use the Control UI's [Import Memory page](/web/control-ui/settings#import-assistant-memory) when you need to target another agent or replace an existing import.
 
-In direct OpenClaw chat, persistent operations require conversational approval (or `--yes` for a one-shot command): write config, `config set`, `config unset`, `config set-ref`, setup/onboarding bootstrap, change the default model, start/stop/restart the Gateway, create agents, and install plugins.
+In direct Paddy chat, persistent operations require conversational approval (or `--yes` for a one-shot command): write config, `config set`, `config unset`, `config set-ref`, setup/onboarding bootstrap, change the default model, start/stop/restart the Gateway, create agents, and install plugins.
 
 Changes delegated by a regular agent, including requests from messaging channels,
 follow the requesting run's effective [session permission policy](/gateway/permission-modes).
@@ -125,11 +125,11 @@ mode. Restricted runs from messaging channels ask for approval in the chat that
 made the request: channels with native approval cards show **Allow once** and
 **Deny** buttons, and other messaging chats receive the change summary with a
 `/approve <id> allow-once|deny` reply. Webchat and terminal runs decide in the
-Control UI or the OpenClaw apps, which can also decide any chat's approval.
+Control UI or the Paddy apps, which can also decide any chat's approval.
 Replying "yes" in the delegated chat cannot authorize a change; the button or
 `/approve` command does.
 Channels with their own approver settings decide who may approve; elsewhere only
-a current owner (`commands.ownerAllowFrom`) can approve an OpenClaw change.
+a current owner (`commands.ownerAllowFrom`) can approve a Paddy change.
 Independent filesystem and sandbox boundaries,
 tool policy, and the operation restrictions below still apply. The host also checks
 that the requesting run and verified inference route remain valid. Interactive
@@ -142,20 +142,20 @@ returns a non-applied outcome instead of leaving the agent reporting a pending
 change. Stopping the requesting run cancels its approval. A late approval cannot
 restart a closed run: request the change again from an active run if still needed.
 
-Configured agents can ask OpenClaw to create another agent through their
+Configured agents can ask Paddy to create another agent through their
 `openclaw` tool. The request enters the same typed create-agent operation and
 host authorization flow; any approval summary names the requesting agent.
-OpenClaw remains the executor, and authorized creation records that requesting
+Paddy remains the executor, and authorized creation records that requesting
 agent as the new agent's creator.
 
 Delegated creation remains tied to the requesting run. If that run ends or loses
-authority during preparation, OpenClaw stops before starting the next persistent
+authority during preparation, Paddy stops before starting the next persistent
 write. A write already in progress may finish, and workspace files created earlier
-are not automatically removed. Check `openclaw agents list` before retrying from
+are not automatically removed. Check `paddy agents list` before retrying from
 an active run; an agent whose creation already completed is not removed when its
 requesting run ends.
 
-Doctor repairs are unavailable inside OpenClaw because they can rewrite the provider, authentication, or default-agent inference route powering the session. Exit OpenClaw and run `openclaw doctor --fix` in a terminal. Read-only `doctor` remains available inside OpenClaw.
+Doctor repairs are unavailable inside Paddy because they can rewrite the provider, authentication, or default-agent inference route powering the session. Exit Paddy and run `paddy doctor --fix` in a terminal. Read-only `doctor` remains available inside Paddy.
 
 New agents inherit the live-verified default inference route. The agent ids `openclaw` and `crestodian` are reserved for the system agent and cannot be created as normal agents. The retired id remains blocked so an old config cannot claim it.
 
@@ -167,36 +167,36 @@ writes use the existing config validator and writer. Validation or write errors
 return to the assistant for one corrective proposal, which needs fresh approval.
 A failure after saving is reported as such. Config writes do not test whether a
 model route or API key works. Masked setup flows keep keys out of the model's
-context. If you paste an API key or token in chat anyway, OpenClaw saves it in the
+context. If you paste an API key or token in chat anyway, Paddy saves it in the
 [shared secret store](/gateway/secrets/secret-store-and-egress#shared-secret-store),
 points the config key at it with a `store` SecretRef, and does not echo it back.
 The pasted message itself already reached the model provider and the transcript;
-OpenClaw masks the value in later logs and output from that point on. Each save
+Paddy masks the value in later logs and output from that point on. Each save
 creates a new entry named after the config key plus a random suffix (for example
 `GATEWAY_REMOTE_TOKEN_3F9A0C1B7D2E4A68`), so it can never take over a name that
 another config key, an auth profile, or a stale reference to a removed entry
-still uses. OpenClaw never overwrites or deletes an existing entry: replacing a
+still uses. Paddy never overwrites or deletes an existing entry: replacing a
 key leaves its previous entry in the store. If the config write fails after the
 key was saved, the error names the saved entry and says whether the config key
 points at it. The entry is kept either way, since another config key or auth
 profile may already use it: fix the error and reuse that entry rather than
-pasting the key again, and remove an entry with `openclaw secrets store rm <NAME>`
+pasting the key again, and remove an entry with `paddy secrets store rm <NAME>`
 only once nothing uses it. For environment storage, use
 `config set-ref <path> env <ENV_VAR>`.
 `set default model <provider/model>` still live-tests the route before saving it.
 
 Plugin installation keeps its source restrictions. Plugin uninstall refuses a
-plugin that backs the active inference route; exit OpenClaw and run
-`openclaw plugins uninstall <id>` from a terminal.
+plugin that backs the active inference route; exit Paddy and run
+`paddy plugins uninstall <id>` from a terminal.
 
 Approval is given in your own words: unambiguous replies ("yes", "sure", "go ahead", "not now") resolve from a closed deterministic list. When the configured route supports a separate completion call, other replies can be classified from only your message and the pending proposal — never by the conversation model itself, which cannot self-approve. Unclassified or ambiguous replies keep the proposal pending and the conversation asks again.
 
 ### Change history
 
-The Ask OpenClaw page can show recent applied system-agent operations, Doctor
+The Ask Paddy page can show recent applied system-agent operations, Doctor
 migrations, Settings and CLI config writes, and manual edits to
 `openclaw.json`. The config journal detects external edits while the Gateway
-is watching, during an OpenClaw-owned write, or at the next startup after an
+is watching, during a Paddy-owned write, or at the next startup after an
 offline edit.
 
 History is stored in the `diagnostic_events` table of the shared
@@ -212,12 +212,12 @@ runtime snapshot refresh are suppressed. Existing unlabeled records are not
 backfilled.
 
 Channel, web-search, and local Gateway setup can run as hosted conversations
-until they reach a secret. The local OpenClaw TUI does not accept sensitive wizard answers
+until they reach a secret. The local Paddy TUI does not accept sensitive wizard answers
 because terminal chat input is visible. It offers `open channel wizard`
 (carrying the selected channel), `open search wizard`, or `open gateway wizard`
 immediately, handing off to the masked terminal wizard; you can also run
-`openclaw channels add --channel <channel>` or
-`openclaw configure --section web` or `openclaw configure --section gateway`
+`paddy channels add --channel <channel>` or
+`paddy configure --section web` or `paddy configure --section gateway`
 later.
 
 ### Switching to a masked terminal wizard
@@ -236,7 +236,7 @@ TUI closes. Use `channel info <channel>` first for the channel label, setup
 state, prerequisites summary, and docs link. `open search wizard` works the
 same way for web-search provider setup, opening the masked search wizard after
 the chat TUI closes. `open gateway wizard` opens masked local Gateway setup;
-when it finishes, run `openclaw gateway restart` to apply the saved settings.
+when it finishes, run `paddy gateway restart` to apply the saved settings.
 
 `configure model provider` directs you to **Settings → Models → Connect provider**
 without starting a wizard or changing config. Check the connected Gateway and
@@ -259,15 +259,15 @@ replace inference.
 
 Delegated setup remains tied to the requesting run through configuration,
 workspace, and session preparation. If that run ends or loses authority,
-OpenClaw stops before starting the next persistent effect. Earlier completed
+Paddy stops before starting the next persistent effect. Earlier completed
 effects remain, including an agent whose creation already finished; setup may
-still be incomplete. Check `openclaw agents list` and `status`, then request
+still be incomplete. Check `paddy agents list` and `status`, then request
 setup again from an active run and approve the new request, or finish directly
-with `openclaw setup` on the Gateway host. If cancellation deferred legacy
+with `paddy setup` on the Gateway host. If cancellation deferred legacy
 history migration for a newly named agent, the next Gateway startup retries it;
-use `openclaw doctor --fix` on the same state/config to finish it sooner.
+use `paddy doctor --fix` on the same state/config to finish it sooner.
 
-If inference is missing or its live check fails, leave OpenClaw and run `openclaw onboard`. Guided onboarding tries the configured model first, then authenticated subscription CLIs, API keys, and remaining supported CLIs; it asks each candidate for a real reply and persists only a passing route. OpenClaw starts immediately after that boundary and can then configure the workspace, Gateway, channels, agents, plugins, and other optional features.
+If inference is missing or its live check fails, leave Paddy and run `paddy onboard`. Guided onboarding tries the configured model first, then authenticated subscription CLIs, API keys, and remaining supported CLIs; it asks each candidate for a real reply and persists only a passing route. Paddy starts immediately after that boundary and can then configure the workspace, Gateway, channels, agents, plugins, and other optional features.
 
 The macOS app skips this ladder entirely when it reaches a configured Gateway
 whose default agent already has a configured model; it opens the normal agent
@@ -276,7 +276,7 @@ For a fresh or incomplete Gateway, the app drives the inference ladder through
 the `openclaw.setup.detect` and `openclaw.setup.activate` Gateway methods:
 detect lists every candidate backend it finds, activate live-tests one
 candidate (a real "reply with OK" completion), and only persists the model,
-credential, and provider/runtime state needed for that route after the test passes. Workspace and Gateway defaults remain for OpenClaw. A failing candidate
+credential, and provider/runtime state needed for that route after the test passes. Workspace and Gateway defaults remain for Paddy. A failing candidate
 never changes config; the app automatically walks down the ladder and finally
 offers a manual key/token step populated from the Gateway's active
 text-inference provider plugins. The selected provider owns its starter model
@@ -284,7 +284,7 @@ and config, and the credential is verified the same way before it is saved.
 
 Codex supervision and other optional plugin features stay outside this
 inference activation transaction. Configure them only after inference is
-working and OpenClaw has started; existing plugin policy and explicit
+working and Paddy has started; existing plugin policy and explicit
 supervision opt-outs remain untouched during inference setup.
 
 ## AI conversation
@@ -323,27 +323,27 @@ Message-channel rescue mode never uses the model-assisted planner. Remote rescue
 ### CLI harness trust model
 
 Embedded runtimes and the Codex app-server harness enforce the ring-zero
-restriction directly: the run carries an OpenClaw tool allow-list with only
+restriction directly: the run carries a Paddy tool allow-list with only
 the `openclaw` tool. For Codex, OpenClaw also disables environments, native
 execution, multi-agent, goal, app/plugin, skill/MCP, web-search,
 `request_user_input`, and its native planning utility for that run. CLI
-harnesses do not consume OpenClaw's allow-list,
-so OpenClaw admits only backends whose own tool-selection contract can prove
+harnesses do not consume Paddy's allow-list,
+so Paddy admits only backends whose own tool-selection contract can prove
 the same restriction:
 
 - Selectable backends, including Claude Code, launch with an empty native-tool
   selection and one MCP tool, `openclaw`. Claude's generated MCP config is
   applied with `--strict-mcp-config`, so no other MCP servers are loaded.
-- Backends that declare no native tools receive the same dedicated OpenClaw
+- Backends that declare no native tools receive the same dedicated Paddy
   MCP server.
 - Always-on or unknown native-tool backends fail closed before inference; they
-  cannot host an OpenClaw session.
+  cannot host a Paddy session.
 
-Only OpenClaw sessions get the openclaw MCP server; normal agent runs
+Only Paddy sessions get the openclaw MCP server; normal agent runs
 never see this tool. Selectable/no-native CLI backends and API-key models
 therefore enforce the literal single-tool loop. Codex app-server models enforce
-a single OpenClaw authority tool plus the inert native planning utility. In all
-three cases, setup writes remain confined to OpenClaw's audited approval
+a single Paddy authority tool plus the inert native planning utility. In all
+three cases, setup writes remain confined to Paddy's audited approval
 contract.
 
 Gemini CLI remains available as an explicitly configured runtime for normal
@@ -353,7 +353,7 @@ CLI runtime specifically requires an AI Studio API-key profile.
 
 ## Switching to an agent
 
-Use a natural-language selector to leave OpenClaw and open the normal TUI:
+Use a natural-language selector to leave Paddy and open the normal TUI:
 
 ```text
 talk to agent
@@ -361,37 +361,37 @@ talk to work agent
 switch to main agent
 ```
 
-`openclaw tui`, `openclaw chat`, and `openclaw terminal` open the normal agent TUI directly; they do not start OpenClaw. After switching into the normal TUI, `/openclaw` returns to OpenClaw, optionally with a follow-up request:
+`paddy tui`, `paddy chat`, and `paddy terminal` open the normal agent TUI directly; they do not start Paddy. After switching into the normal TUI, `/paddy` returns to Paddy, optionally with a follow-up request:
 
 ```text
-/openclaw
-/openclaw restart gateway
+/paddy
+/paddy restart gateway
 ```
 
 ## Message rescue mode
 
-Message rescue mode is the message-channel entrypoint for OpenClaw: use it when your normal agent is dead but a trusted channel (for example WhatsApp) still receives commands.
+Message rescue mode is the message-channel entrypoint for Paddy: use it when your normal agent is dead but a trusted channel (for example WhatsApp) still receives commands.
 
 This is a deterministic emergency command handler, not the conversational
-OpenClaw agent. It does not bootstrap a fresh setup or relax the inference
-gate for OpenClaw chat.
+Paddy agent. It does not bootstrap a fresh setup or relax the inference
+gate for Paddy chat.
 
-Supported command: `/openclaw <request>`. Rescue accepts the exact typed command grammar only — natural language is rejected with a hint, never guessed into an operation, and no model is ever consulted.
+Supported command: `/paddy <request>`. Rescue accepts the exact typed command grammar only — natural language is rejected with a hint, never guessed into an operation, and no model is ever consulted.
 
 ```text
-You, in a trusted owner DM: /openclaw status
-OpenClaw: OpenClaw rescue mode. Gateway reachable: no. Config valid: no.
-You: /openclaw restart gateway
-OpenClaw: Plan: restart the Gateway. Reply /openclaw yes to apply.
-You: /openclaw yes
-OpenClaw: Applied. Audit entry written.
+You, in a trusted owner DM: /paddy status
+Paddy: Paddy rescue mode. Gateway reachable: no. Config valid: no.
+You: /paddy restart gateway
+Paddy: Plan: restart the Gateway. Reply /paddy yes to apply.
+You: /paddy yes
+Paddy: Applied. Audit entry written.
 ```
 
 Agent creation can also be queued locally or via rescue:
 
 ```text
 create agent work workspace ~/path/to/work model openai/gpt-6-astra
-/openclaw create agent work workspace ~/path/to/work
+/paddy create agent work workspace ~/path/to/work
 ```
 
 Agent creation may name only the current live-verified default model. Omit the
@@ -406,13 +406,13 @@ Remote rescue is an admin surface and must be treated like remote config repair,
 
 Security contract for remote rescue:
 
-- Disabled when sandboxing is active for the agent/session; OpenClaw refuses remote rescue and points to local CLI repair.
+- Disabled when sandboxing is active for the agent/session; Paddy refuses remote rescue and points to local CLI repair.
 - Default effective state is `auto`: allow remote rescue only in trusted YOLO operation, where the runtime already has unsandboxed local authority (`tools.exec.security` resolves to `full` and `tools.exec.ask` resolves to `off`, with sandbox mode `off`).
 - Requires an explicit owner identity; no wildcard sender rules, open group policy, unauthenticated webhooks, or anonymous channels.
 - Rescue is limited to owner DMs.
-- Plugin search and list are read-only. Plugin install is always local-only (blocked in rescue, even when otherwise enabled) because it downloads executable code. Plugin uninstall is refused in both local OpenClaw and rescue; run `openclaw plugins uninstall <id>` from a terminal.
+- Plugin search and list are read-only. Plugin install is always local-only (blocked in rescue, even when otherwise enabled) because it downloads executable code. Plugin uninstall is refused in both local Paddy and rescue; run `paddy plugins uninstall <id>` from a terminal.
 - Remote rescue cannot open the local TUI or switch into an interactive agent session; use local `openclaw` for agent handoff.
-- `config unset` is unavailable in remote rescue because that path cannot revalidate owner policy at the final write. Ask your regular agent to remove the setting through the setup helper, or run `openclaw config unset <path>` locally.
+- `config unset` is unavailable in remote rescue because that path cannot revalidate owner policy at the final write. Ask your regular agent to remove the setting through the setup helper, or run `paddy config unset <path>` locally.
 - Persistent writes still require approval, even in rescue mode.
 - Pending approvals are one-use. Any newer rescue command for the same account, channel, and sender revokes the older plan; failed execution also consumes approval, so resend the command to retry.
 - Every applied rescue operation is audited. Message-channel rescue records channel, account, sender, and source-address metadata; config-mutating operations also record config hashes before and after.
@@ -421,7 +421,7 @@ Security contract for remote rescue:
 
 Rescue policy is built in: it is available only when the effective runtime is
 YOLO, sandboxing is off, and the request is an owner DM. Pending write approvals
-expire after 15 minutes. `openclaw doctor --fix` removes the retired
+expire after 15 minutes. `paddy doctor --fix` removes the retired
 `systemAgent` and `crestodian` config blocks.
 
 Remote rescue is covered by the Docker lane:
@@ -430,7 +430,7 @@ Remote rescue is covered by the Docker lane:
 pnpm test:docker:system-agent-rescue
 ```
 
-An opt-in live channel command-surface smoke checks `/openclaw status` plus a persistent approval roundtrip through the rescue handler:
+An opt-in live channel command-surface smoke checks `/paddy status` plus a persistent approval roundtrip through the rescue handler:
 
 ```bash
 pnpm test:live:system-agent-rescue-channel
@@ -442,18 +442,18 @@ Inference-gated packaged one-shot setup is covered by:
 pnpm test:docker:system-agent-first-run
 ```
 
-That packaged-CLI lane starts with an empty state dir and proves OpenClaw
+That packaged-CLI lane starts with an empty state dir and proves Paddy
 fails closed without inference. It then tests and activates fake Claude through
 the packaged activation module. Only afterward does a fuzzy request reach the
 planner and resolve to typed setup, followed by one-shot commands that create an
 additional agent, configure Discord through a plugin enablement plus token
 SecretRef, validate config, and check the audit log. This lane is supporting
 gate/operation evidence; it does not exercise interactive onboarding or the
-OpenClaw agent/tool/approval conversation. The QA Lab scenario below redirects
+Paddy agent/tool/approval conversation. The QA Lab scenario below redirects
 to the same Docker lane:
 
 ```bash
-pnpm openclaw qa suite --scenario system-agent-ring-zero-setup
+pnpm paddy qa suite --scenario system-agent-ring-zero-setup
 ```
 
 ## Related

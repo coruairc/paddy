@@ -324,7 +324,7 @@ export async function maybeRepairGatewayServiceConfig(
   const sourceCheckoutWarning = serviceLayout?.entrypointSourceCheckout
     ? [
         `Gateway service entrypoint resolves to a source checkout: ${serviceLayout.packageRootReal ?? serviceLayout.packageRoot ?? serviceLayout.entrypointReal ?? serviceLayout.entrypoint}.`,
-        "Run `openclaw gateway install --force` from the intended package install to replace the gateway service definition.",
+        "Run `paddy gateway install --force` from the intended package install to replace the gateway service definition.",
       ].join("\n")
     : null;
 
@@ -574,7 +574,7 @@ export async function maybeRepairGatewayServiceConfig(
   if (!repair) {
     if (sourceCheckoutWarningToShow === null) {
       note(
-        "Run `openclaw gateway install --force` when you want to replace the gateway service definition.",
+        "Run `paddy gateway install --force` when you want to replace the gateway service definition.",
         "Gateway service config",
       );
     }

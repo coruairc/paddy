@@ -1,9 +1,9 @@
 # @openclaw/onepassword
 
-Resolve OpenClaw SecretRefs from 1Password and give agents access to a curated
+Resolve Paddy SecretRefs from 1Password and give agents access to a curated
 set of secrets with approval policy and audit history.
 
-The plugin is also included in OpenClaw. It uses the official `op` CLI and a
+The plugin is also included in Paddy. It uses the official `op` CLI and a
 1Password service account on the Gateway host. Follow the
 [1Password plugin guide](https://docs.openclaw.ai/plugins/onepassword) to prepare
 the CLI, token file, SecretRefs, and optional agent registry.
@@ -20,6 +20,6 @@ plugin redacts its own persisted tool result but cannot prevent the model from
 copying a value into later output. Keep access reasons non-sensitive because
 they are recorded in the audit history.
 
-`openclaw onepassword status` reports local readiness without fetching a secret.
-`openclaw onepassword audit` shows recent access outcomes. Installation does
+`paddy onepassword status` reports local readiness without fetching a secret.
+`paddy onepassword audit` shows recent access outcomes. Installation does
 not create a service account or grant access to a vault.

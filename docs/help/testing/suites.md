@@ -16,7 +16,7 @@ Most days:
 - Direct file targeting routes plugin/channel paths too: `pnpm test extensions/discord/src/monitor/message-handler.preflight.test.ts`
 - Prefer targeted runs first when iterating on a single failure.
 - Docker-backed QA site: `pnpm qa:lab:up`
-- Linux VM-backed QA lane: `pnpm openclaw qa suite --runner multipass --scenario channel-chat-baseline`
+- Linux VM-backed QA lane: `pnpm paddy qa suite --runner multipass --scenario channel-chat-baseline`
 
 The last two lanes need tooling the other commands do not: `qa:lab:up` needs a
 running Docker daemon and a source checkout, because the npm tarball omits QA
@@ -69,7 +69,7 @@ Native dependency policy:
   `allowBuilds` so local tests and Testbox lanes do not compile the native
   addon.
 - Compare native opus performance in the `libopus-wasm` benchmark repo, not
-  in default OpenClaw install/test loops. Do not set `@discordjs/opus` to
+  in default Paddy install/test loops. Do not set `@discordjs/opus` to
   `true` in the default `allowBuilds`; that makes unrelated install/test
   loops compile native code.
 

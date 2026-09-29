@@ -64,8 +64,8 @@ export function createAgentDatabaseInspectionRefusal(params: {
     code: params.pending ? "agent-database-inspection-pending" : "agent-database-inspection-failed",
     reason: params.reason,
     repairHint: params.pending
-      ? 'Sessions remain unavailable until background inspection and preparation finish. If they cannot complete, stop the Gateway, run "openclaw doctor --fix", and restart.'
-      : 'Sessions remain unavailable. Stop the Gateway, run "openclaw doctor --fix" to inspect and repair this agent database, and restart.',
+      ? 'Sessions remain unavailable until background inspection and preparation finish. If they cannot complete, stop the Gateway, run "paddy doctor --fix", and restart.'
+      : 'Sessions remain unavailable. Stop the Gateway, run "paddy doctor --fix" to inspect and repair this agent database, and restart.',
   };
   refusalCauses.set(refusal, params.cause);
   return refusal;

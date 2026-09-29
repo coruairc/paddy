@@ -8,7 +8,7 @@ title: "Slack access control"
 sidebarTitle: "Access control"
 ---
 
-Who may reach OpenClaw through Slack, and which Slack actions it may take.
+Who may reach Paddy through Slack, and which Slack actions it may take.
 
 ## Linked requester identity
 
@@ -20,7 +20,7 @@ never establish identity, and sender IDs derived from app-controlled message
 metadata remain asserted.
 
 For ordinary messages and app mentions from a verified Slack sender linked to an
-active user profile, OpenClaw includes that profile's canonical ID and current
+active user profile, Paddy includes that profile's canonical ID and current
 display name in host-generated, per-turn conversation info. A linked profile with `operator.admin` authority can ask
 "Assign this session to me"; the agent uses that profile ID with the `sessions`
 tool's `assign_owner` action for sessions visible to that administrator, including
@@ -124,9 +124,9 @@ restart the Slack monitor. The Gateway remains running.
     - Named accounts inherit `channels.slack.allowFrom` when their own `allowFrom` is unset.
     - Named accounts do not inherit `channels.slack.accounts.default.allowFrom`.
 
-    Legacy `channels.slack.dm.policy` and `channels.slack.dm.allowFrom` still read for compatibility. `openclaw doctor --fix` migrates them to `dmPolicy` and `allowFrom` when it can do so without changing access.
+    Legacy `channels.slack.dm.policy` and `channels.slack.dm.allowFrom` still read for compatibility. `paddy doctor --fix` migrates them to `dmPolicy` and `allowFrom` when it can do so without changing access.
 
-    Pairing in DMs uses `openclaw pairing approve slack <code>`.
+    Pairing in DMs uses `paddy pairing approve slack <code>`.
 
   </Tab>
 
@@ -139,7 +139,7 @@ restart the Slack monitor. The Gateway remains running.
 
     Channel allowlist lives under `channels.slack.channels` and **must use stable Slack channel IDs** (for example `C12345678`) as config keys. Enterprise Grid org installs require `team:<team-id>:channel:<channel-id>` so policies cannot cross workspace boundaries.
 
-    When invited into an allowed channel, OpenClaw posts one short introduction grounded in the channel name, purpose or topic, and available recent messages. Set `channels.slack.joinIntro: false` to disable these introductions; `channels.slack.accounts.<accountId>.joinIntro` overrides the channel-wide setting. Introductions are enabled by default and do not require a mention, but they never bypass channel access policy or run in direct messages.
+    When invited into an allowed channel, Paddy posts one short introduction grounded in the channel name, purpose or topic, and available recent messages. Set `channels.slack.joinIntro: false` to disable these introductions; `channels.slack.accounts.<accountId>.joinIntro` overrides the channel-wide setting. Introductions are enabled by default and do not require a mention, but they never bypass channel access policy or run in direct messages.
 
     Without a `channels.slack` block, the Gateway does not auto-start Slack from `SLACK_*` environment variables. Once the block exists, those variables remain default-account credential fallbacks. Passing `--ambient-channels` opts into env-only auto-configuration; that path uses `groupPolicy="allowlist"` and logs a warning, even if `channels.defaults.groupPolicy` is set.
 
@@ -233,7 +233,7 @@ restart the Slack monitor. The Gateway remains running.
     }
     ```
 
-    The setting resolves from the channel entry, then the `"*"` entry, then the account, then `channels.slack.requireMentionInBotThreads`. Omit it to preserve existing behavior, including `implicitMentions.replyToBot` and `implicitMentions.threadParticipation`. Slack's native parent author identifies the root; when that field is absent, OpenClaw uses accessible thread history. Unknown ownership retains the normal mention policy. Channel and sender access, bot-message restrictions, and `ignoreOtherMentions` still apply.
+    The setting resolves from the channel entry, then the `"*"` entry, then the account, then `channels.slack.requireMentionInBotThreads`. Omit it to preserve existing behavior, including `implicitMentions.replyToBot` and `implicitMentions.threadParticipation`. Slack's native parent author identifies the root; when that field is absent, Paddy uses accessible thread history. Unknown ownership retains the normal mention policy. Channel and sender access, bot-message restrictions, and `ignoreOtherMentions` still apply.
 
     Invite the app to the channel and subscribe to `message.channels` for public channels or `message.groups` for private channels, with the matching history scope. Subscribing only to `app_mention` cannot deliver unmentioned follow-ups. Both setup manifests include these subscriptions; see [Manifest and scope checklist](/channels/slack/manifest-and-scopes#manifest-and-scope-checklist). To verify, have the bot post a new top-level message, then reply in that message's thread without mentioning it. Replies to a human-created root keep their existing implicit-mention policy even if the bot participates later.
 
@@ -241,7 +241,7 @@ restart the Slack monitor. The Gateway remains running.
 
     `allowBots` defaults to `true`. Bot-authored messages follow the same channel access and mention rules as other messages; messages from this bot are always ignored. Set `allowBots: false` to prevent other bots from triggering turns, or `allowBots: "mentions"` to require a mention even in rooms with `requireMention: false`. Room settings override account settings, which override `channels.slack.allowBots`. Existing explicit `false` values remain disabled after an update.
 
-    Bot-authored room messages also require either the sending bot to be explicitly listed in that room's `users` allowlist, or at least one explicit Slack owner ID from `channels.slack.allowFrom` to be a current room member. Wildcards and display-name owner entries do not satisfy owner presence. Owner presence uses Slack `conversations.members`; make sure the app has the matching read scope for the room type (`channels:read` for public channels, `groups:read` for private channels). If the member lookup fails, OpenClaw drops the bot-authored room message.
+    Bot-authored room messages also require either the sending bot to be explicitly listed in that room's `users` allowlist, or at least one explicit Slack owner ID from `channels.slack.allowFrom` to be a current room member. Wildcards and display-name owner entries do not satisfy owner presence. Owner presence uses Slack `conversations.members`; make sure the app has the matching read scope for the room type (`channels:read` for public channels, `groups:read` for private channels). If the member lookup fails, Paddy drops the bot-authored room message.
 
     `allowBots` controls incoming turns, not context visibility. A human request can still include accessible bot-authored room history and thread context when `allowBots: false`; the configured `contextVisibility` and sender allowlist rules still apply.
 
@@ -254,10 +254,10 @@ restart the Slack monitor. The Gateway remains running.
 
 Slack group DMs, also called multi-person direct messages or MPDMs, are not channels an app can join by being mentioned. Typing `@YourBot` in an existing group DM does not add the app or make the conversation visible to it.
 
-- If the app was included when the group DM was created, Slack delivers `message.mpim` events and OpenClaw can respond when DM policy allows it.
-- If the app is mentioned in an existing group DM where it is not a member, the bot token cannot see the conversation at all. Slack Web API calls such as `conversations.info`, `conversations.members`, and `conversations.history` fail with method- and context-dependent access or not-found errors, the MPDM does not appear in `conversations.list?types=mpim`, and no event is delivered to OpenClaw.
-- OpenClaw wakes in MPDMs through delivered `message.mpim` events. `app_mention` events do not add the app to DM or MPDM contexts.
-- `dm.groupEnabled` and `dm.groupChannels` only filter MPDMs Slack already delivers to the app. They cannot grant membership or visibility into a group DM the app was never part of. There is no OpenClaw config setting that makes the app see a group DM it never joined.
+- If the app was included when the group DM was created, Slack delivers `message.mpim` events and Paddy can respond when DM policy allows it.
+- If the app is mentioned in an existing group DM where it is not a member, the bot token cannot see the conversation at all. Slack Web API calls such as `conversations.info`, `conversations.members`, and `conversations.history` fail with method- and context-dependent access or not-found errors, the MPDM does not appear in `conversations.list?types=mpim`, and no event is delivered to Paddy.
+- Paddy wakes in MPDMs through delivered `message.mpim` events. `app_mention` events do not add the app to DM or MPDM contexts.
+- `dm.groupEnabled` and `dm.groupChannels` only filter MPDMs Slack already delivers to the app. They cannot grant membership or visibility into a group DM the app was never part of. There is no Paddy config setting that makes the app see a group DM it never joined.
 
 To bring the app into a group DM, use one of these Slack-supported paths:
 

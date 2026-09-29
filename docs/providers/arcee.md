@@ -2,11 +2,11 @@
 summary: "Arcee AI setup (auth + model selection)"
 title: "Arcee AI"
 read_when:
-  - You want to use Arcee AI with OpenClaw
+  - You want to use Arcee AI with Paddy
   - You need the API key env var or CLI auth choice
 ---
 
-[Arcee AI](https://arcee.ai) provides the Trinity family of mixture-of-experts models through an OpenAI-compatible API. All Trinity models are Apache 2.0 licensed. Arcee is an official OpenClaw plugin, not bundled with core, so it needs an install step before onboarding.
+[Arcee AI](https://arcee.ai) provides the Trinity family of mixture-of-experts models through an OpenAI-compatible API. All Trinity models are Apache 2.0 licensed. Arcee is an official Paddy plugin, not bundled with core, so it needs an install step before onboarding.
 
 Access Arcee models directly through the Arcee platform or through [OpenRouter](/providers/openrouter).
 
@@ -36,7 +36,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
       </Step>
       <Step title="Run onboarding">
         ```bash
-        openclaw onboard --auth-choice arceeai-api-key
+        paddy onboard --auth-choice arceeai-api-key
         ```
       </Step>
       <Step title="Set a default model">
@@ -60,7 +60,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
       </Step>
       <Step title="Run onboarding">
         ```bash
-        openclaw onboard --auth-choice arceeai-openrouter
+        paddy onboard --auth-choice arceeai-openrouter
         ```
       </Step>
       <Step title="Set a default model">
@@ -86,7 +86,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
 <Tabs>
   <Tab title="Direct (Arcee platform)">
     ```bash
-    openclaw onboard --non-interactive --accept-risk --skip-health \
+    paddy onboard --non-interactive --accept-risk --skip-health \
       --mode local \
       --auth-choice arceeai-api-key \
       --arceeai-api-key "$ARCEEAI_API_KEY"
@@ -95,7 +95,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
 
   <Tab title="Via OpenRouter">
     ```bash
-    openclaw onboard --non-interactive --accept-risk --skip-health \
+    paddy onboard --non-interactive --accept-risk --skip-health \
       --mode local \
       --auth-choice arceeai-openrouter \
       --openrouter-api-key "$OPENROUTER_API_KEY"
@@ -123,7 +123,7 @@ The onboarding preset sets `arcee/trinity-large-thinking` as the default model.
 
 ## OpenRouter catalog
 
-OpenRouter onboarding exposes `arcee/trinity-large-preview` and `arcee/trinity-large-thinking`. OpenClaw keeps those provider-qualified model refs in config and sends OpenRouter's canonical `arcee-ai/*` runtime ids. Trinity Mini is no longer served by OpenRouter; use the direct Arcee API for that model.
+OpenRouter onboarding exposes `arcee/trinity-large-preview` and `arcee/trinity-large-thinking`. Paddy keeps those provider-qualified model refs in config and sends OpenRouter's canonical `arcee-ai/*` runtime ids. Trinity Mini is no longer served by OpenRouter; use the direct Arcee API for that model.
 
 ## Supported features
 
@@ -142,8 +142,8 @@ OpenRouter onboarding exposes `arcee/trinity-large-preview` and `arcee/trinity-l
   </Accordion>
 
   <Accordion title="OpenRouter routing">
-    OpenRouter uses the same `arcee/trinity-large-thinking` OpenClaw model ref.
-    OpenClaw routes it with the canonical `arcee-ai/trinity-large-thinking`
+    OpenRouter uses the same `arcee/trinity-large-thinking` Paddy model ref.
+    Paddy routes it with the canonical `arcee-ai/trinity-large-thinking`
     OpenRouter runtime id. See the
     [OpenRouter provider docs](/providers/openrouter) for OpenRouter-specific
     configuration details.

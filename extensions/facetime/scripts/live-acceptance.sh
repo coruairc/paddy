@@ -229,8 +229,8 @@ printf '%s\n' "$status_json"
 require_yes "Did the agent stop speaking promptly when interrupted?"
 
 echo
-echo "The script can now hang up through OpenClaw."
-read -r -p "Hang up the active FaceTime call through OpenClaw? [Y/n] " hangup_answer
+echo "The script can now hang up through Paddy."
+read -r -p "Hang up the active FaceTime call through Paddy? [Y/n] " hangup_answer
 case "$hangup_answer" in
   ""|y|Y|yes|YES)
     echo

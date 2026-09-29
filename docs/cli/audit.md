@@ -8,7 +8,7 @@ read_when:
 title: "Audit records"
 ---
 
-# `openclaw audit`
+# `paddy audit`
 
 Query the Gateway's metadata-only activity ledger, discover executions that
 share a run correlation, or inspect immutable identity context for one exact
@@ -18,8 +18,8 @@ Run and tool activity records are on by default. Execution identity is
 separately off by default on fresh installs and upgrades. Enable it explicitly:
 
 ```bash
-openclaw config set logging.audit.executionIdentity true
-openclaw gateway restart
+paddy config set logging.audit.executionIdentity true
+paddy gateway restart
 ```
 
 Identity collection requires `logging.audit.enabled` to remain enabled.
@@ -28,7 +28,7 @@ Message records are also separately disabled by default; set
 record them. Existing records stay queryable until they expire (30 days).
 
 Direct local commands use the same bounded writer lifecycle as the Gateway.
-`openclaw agent exec` deletes its temporary state directory by default, so its
+`paddy agent exec` deletes its temporary state directory by default, so its
 audit evidence is intentionally discarded with the rest of that isolated run.
 Use `agent exec --state-dir <dir>` when the run state must remain available,
 and inspect it through a Gateway using that same state directory.
@@ -41,16 +41,16 @@ privacy semantics, storage/retention bounds, and coverage limits; this page
 covers the command surface.
 
 ```bash
-openclaw audit
-openclaw audit --agent main --status failed
-openclaw audit --session "agent:main:main" --after 2026-07-01T00:00:00Z
-openclaw audit --run 8c69f72e-8b11-4c54-98d5-1a3dd67450c3
-openclaw audit --run 8c69f72e-8b11-4c54-98d5-1a3dd67450c3 --explain
-openclaw audit --execution 5da4c4c3-e1c9-4c95-a17d-6e5c10fd45cf --explain
-openclaw audit --execution 5da4c4c3-e1c9-4c95-a17d-6e5c10fd45cf --explain --json
-openclaw audit --run 8c69f72e-8b11-4c54-98d5-1a3dd67450c3 --explain --json
-openclaw audit --kind tool_action --limit 50 --json
-openclaw audit --kind message --direction outbound --channel telegram --json
+paddy audit
+paddy audit --agent main --status failed
+paddy audit --session "agent:main:main" --after 2026-07-01T00:00:00Z
+paddy audit --run 8c69f72e-8b11-4c54-98d5-1a3dd67450c3
+paddy audit --run 8c69f72e-8b11-4c54-98d5-1a3dd67450c3 --explain
+paddy audit --execution 5da4c4c3-e1c9-4c95-a17d-6e5c10fd45cf --explain
+paddy audit --execution 5da4c4c3-e1c9-4c95-a17d-6e5c10fd45cf --explain --json
+paddy audit --run 8c69f72e-8b11-4c54-98d5-1a3dd67450c3 --explain --json
+paddy audit --kind tool_action --limit 50 --json
+paddy audit --kind message --direction outbound --channel telegram --json
 ```
 
 ## Filters
@@ -78,7 +78,7 @@ openclaw audit --kind message --direction outbound --channel telegram --json
 
 The CLI queries the versioned activity RPC so one command shows the complete
 configured ledger. Text output shows time, kind, direction, channel, status,
-agent, run, and action. Missing message provenance renders as `-`; OpenClaw
+agent, run, and action. Missing message provenance renders as `-`; Paddy
 does not invent agent or run ids. Tool actions also show the tool name. JSON
 output includes `nextCursor` when another page exists. Pass that value to
 `--cursor` to continue without reordering records that arrive during paging.
@@ -104,10 +104,10 @@ activity list. One match resolves directly. Multiple matches return
 `ambiguous`, list at most 50 candidates, and tell you to select one explicitly:
 
 ```bash
-openclaw audit --execution <execution-id> --explain
+paddy audit --execution <execution-id> --explain
 ```
 
-OpenClaw never silently selects the first or latest execution. The exact text
+Paddy never silently selects the first or latest execution. The exact text
 view renders these sections:
 
 1. **Identity**: trust domain, invoker, ingress, agent principal, agent
@@ -221,7 +221,7 @@ Plugin, node, and worker receipts use the same coverage vocabulary:
 - A plugin node policy that returns without its supplied node callback is
   `unknown` with `node.action_callback` missing.
 - An action performed wholly inside an ACP or other external native runtime
-  without an OpenClaw pre-action callback produces an ACP-owner `unsupported`
+  without a Paddy pre-action callback produces an ACP-owner `unsupported`
   receipt after admitted prompt submission, with `native.action_callback`
   missing. It does not claim a side effect. Add an authoritative native-action
   callback to the adapter to provide stronger evidence; transcript or task text
@@ -328,7 +328,7 @@ returns the named V1 activity event union, including run, tool, inbound-message,
 and terminal outbound-message records.
 
 ```bash
-openclaw gateway call audit.activity.list --params '{"channel":"telegram","limit":50}'
+paddy gateway call audit.activity.list --params '{"channel":"telegram","limit":50}'
 ```
 
 The result is `{ "events": AuditActivityEventV1[], "nextCursor"?: string }`.
@@ -337,10 +337,10 @@ Results are newest first and limited to 500 records per request.
 `audit.run.inspect` also requires `operator.read`:
 
 ```bash
-openclaw gateway call audit.run.inspect \
+paddy gateway call audit.run.inspect \
   --params '{"runId":"8c69f72e-8b11-4c54-98d5-1a3dd67450c3","decisionLimit":50}'
 
-openclaw gateway call audit.run.inspect \
+paddy gateway call audit.run.inspect \
   --params '{"executionId":"5da4c4c3-e1c9-4c95-a17d-6e5c10fd45cf","decisionLimit":50}'
 ```
 

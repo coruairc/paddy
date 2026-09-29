@@ -1,12 +1,12 @@
-# OpenClaw Groq Provider
+# Paddy Groq Provider
 
-Official OpenClaw provider plugin for Groq.
+Official Paddy provider plugin for Groq.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/groq-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/groq> for setup and configuration.

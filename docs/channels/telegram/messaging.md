@@ -17,10 +17,10 @@ How inbound and outbound Telegram messages are routed, previewed, acknowledged, 
 - Inbound messages normalize into the shared channel envelope with reply metadata, media placeholders, and persisted reply-chain context for replies the gateway has observed.
 - Group sessions are isolated by group ID. Forum topics append `:topic:<threadId>`.
 - When the bot joins an allowed group or supergroup, it posts one introduction grounded in available room metadata: the group title, description, and pinned message. The Telegram Bot API cannot read group messages from before the bot joined, so introductions never claim to use prior chat history. Introductions are enabled by default, never run in private chats, and can be disabled with `channels.telegram.joinIntro: false` or overridden per account with `channels.telegram.accounts.<accountId>.joinIntro`. See [group join introductions](/channels#group-join-introductions) for once-per-room behavior and untrusted-content handling.
-- DM messages can carry `message_thread_id`; OpenClaw preserves it for replies. DM topic sessions split only when Telegram `getMe` reports `has_topics_enabled: true` for the bot; otherwise DMs stay on the flat session.
+- DM messages can carry `message_thread_id`; Paddy preserves it for replies. DM topic sessions split only when Telegram `getMe` reports `has_topics_enabled: true` for the bot; otherwise DMs stay on the flat session.
 - Long polling runs in an isolated worker. Updates are saved to a durable queue and processed in order for each chat and topic.
 - Multi-account startup bounds concurrent `getMe` probes so large bot fleets do not fan out every account probe at once.
-- Each gateway process guards long polling so only one active poller can use a bot token at a time. Persistent `getUpdates` 409 conflicts point to another OpenClaw gateway, script, or external poller using the same token.
+- Each gateway process guards long polling so only one active poller can use a bot token at a time. Persistent `getUpdates` 409 conflicts point to another Paddy gateway, script, or external poller using the same token.
 - The polling watchdog restarts after 120 seconds without completed `getUpdates` liveness.
 - Telegram Bot API has no read-receipt support (`sendReadReceipts` does not apply).
 
@@ -34,7 +34,7 @@ How inbound and outbound Telegram messages are routed, previewed, acknowledged, 
 </Note>
 
 <Note>
-  `channels.telegram.dm.threadReplies` and `channels.telegram.direct.<chatId>.threadReplies` were removed. Run `openclaw doctor --fix` after upgrading if your config still has those keys. DM topic routing now follows Telegram `getMe.has_topics_enabled` (controlled by BotFather threaded mode): topics-enabled bots use thread-scoped DM sessions when Telegram sends `message_thread_id`; other DMs stay on the flat session.
+  `channels.telegram.dm.threadReplies` and `channels.telegram.direct.<chatId>.threadReplies` were removed. Run `paddy doctor --fix` after upgrading if your config still has those keys. DM topic routing now follows Telegram `getMe.has_topics_enabled` (controlled by BotFather threaded mode): topics-enabled bots use thread-scoped DM sessions when Telegram sends `message_thread_id`; other DMs stay on the flat session.
 </Note>
 
 Changes to `replyToMode`, `streaming`, and `textChunkLimit` apply to the next
@@ -57,7 +57,7 @@ Ordinary text batches are bounded to 12 messages and 50,000 characters. Their co
 
 <AccordionGroup>
   <Accordion title="Live stream preview (message edits)">
-    OpenClaw streams partial replies in real time in direct chats, groups, and topics: send a preview message, then `editMessageText` repeatedly, finalizing in place.
+    Paddy streams partial replies in real time in direct chats, groups, and topics: send a preview message, then `editMessageText` repeatedly, finalizing in place.
 
     - `channels.telegram.streaming` is `off | partial | block | progress` (default: `progress`); set `mode: "partial"` to stream answer text into the preview instead of a status draft
     - short initial answer previews are debounced, then materialized after a bounded delay if the run is still active
@@ -67,7 +67,7 @@ Ordinary text batches are bounded to 12 messages and 50,000 characters. Their co
     - completed assistant preambles update the status headline by default; a new preamble keeps the previous readable status until it finishes
     - `streaming.progress.commentary` (default: `false`) shows those preambles as interleaved commentary rows instead of a headline; commentary remains visible beside plan steps
     - successful background-process polls and internal waits stay out of the progress log; failures still follow the selected tool-progress policy, and `/verbose` retains diagnostic summaries
-    - legacy `channels.telegram.streamMode`, boolean `streaming` values, and retired native draft preview keys are detected; run `openclaw doctor --fix` to migrate them
+    - legacy `channels.telegram.streamMode`, boolean `streaming` values, and retired native draft preview keys are detected; run `paddy doctor --fix` to migrate them
 
     Tool-progress lines are the short status updates shown while tools run (command execution, file reads, planning updates, patch summaries, Codex preamble/commentary in app-server mode). `partial` and `block` previews show them by default; the `progress` draft shows them only with `streaming.progress.toolProgress: true`. Compaction status follows the same settings and appears as soon as compaction starts, including before the first model output.
 
@@ -122,10 +122,10 @@ Ordinary text batches are bounded to 12 messages and 50,000 characters. Their co
     `streaming.mode: "off"` disables preview edits and suppresses generic tool/progress chatter instead of sending it as standalone status messages; approval prompts, media, and errors still route through normal final delivery. `streaming.preview.toolProgress: false` keeps only answer-preview edits.
 
     <Note>
-      Selected quote replies are the exception. When `replyToMode` is `first`, `all`, or `batched` and the inbound message has selected quote text, OpenClaw sends the final answer through Telegram's native quote-reply path and skips draft previews for that turn. Current-message replies without selected quote text still stream. When reply threading is enabled, their previews carry automatic quote excerpts and retain them when finalized in place. Set `replyToMode: "off"` when tool-progress visibility matters more than native quote replies. To keep native quote replies and hide tool-progress lines, use `streaming.progress.toolProgress: false` in `progress` mode or `streaming.preview.toolProgress: false` in `partial` and `block` modes.
+      Selected quote replies are the exception. When `replyToMode` is `first`, `all`, or `batched` and the inbound message has selected quote text, Paddy sends the final answer through Telegram's native quote-reply path and skips draft previews for that turn. Current-message replies without selected quote text still stream. When reply threading is enabled, their previews carry automatic quote excerpts and retain them when finalized in place. Set `replyToMode: "off"` when tool-progress visibility matters more than native quote replies. To keep native quote replies and hide tool-progress lines, use `streaming.progress.toolProgress: false` in `progress` mode or `streaming.preview.toolProgress: false` in `partial` and `block` modes.
     </Note>
 
-    For text-only replies: short previews get the final edit in place; long finals that split into multiple messages reuse the preview as the first chunk, then send only the remainder; progress-mode finals clear the status draft and use normal final delivery; if the final edit fails before completion is confirmed, OpenClaw falls back to normal final delivery and cleans up the stale preview. For complex replies (media payloads), OpenClaw always falls back to normal final delivery and cleans up the preview.
+    For text-only replies: short previews get the final edit in place; long finals that split into multiple messages reuse the preview as the first chunk, then send only the remainder; progress-mode finals clear the status draft and use normal final delivery; if the final edit fails before completion is confirmed, Paddy falls back to normal final delivery and cleans up the stale preview. For complex replies (media payloads), Paddy always falls back to normal final delivery and cleans up the preview.
 
     Preview streaming and block streaming are mutually exclusive. An explicit non-`off` preview mode overrides inherited `agents.defaults.blockStreamingDefault: "on"`; explicit `streaming.block.enabled: true` overrides the preview. If a turn cannot use previews, inherited block delivery still applies.
 
@@ -160,8 +160,8 @@ Ordinary text batches are bounded to 12 messages and 50,000 characters. Their co
     Common setup failures:
 
     - `setMyCommands failed` with `BOT_COMMANDS_TOO_MUCH` after a trim retry means the menu still overflows; reduce plugin/skill/custom commands or disable `channels.telegram.commands.native`.
-    - `deleteWebhook`, `deleteMyCommands`, or `setMyCommands` failing with `404: Not Found` while direct Bot API curl commands work usually means `channels.telegram.apiRoot` was set to the full `/bot<TOKEN>` endpoint. `apiRoot` must be the Bot API root only; `openclaw doctor --fix` removes an accidental trailing `/bot<TOKEN>`.
-    - `getMe returned 401` means Telegram rejected the configured bot token. Update `botToken`, `tokenFile`, or `TELEGRAM_BOT_TOKEN` (default account) with the current BotFather token; OpenClaw stops before polling so this is not reported as a webhook cleanup failure.
+    - `deleteWebhook`, `deleteMyCommands`, or `setMyCommands` failing with `404: Not Found` while direct Bot API curl commands work usually means `channels.telegram.apiRoot` was set to the full `/bot<TOKEN>` endpoint. `apiRoot` must be the Bot API root only; `paddy doctor --fix` removes an accidental trailing `/bot<TOKEN>`.
+    - `getMe returned 401` means Telegram rejected the configured bot token. Update `botToken`, `tokenFile`, or `TELEGRAM_BOT_TOKEN` (default account) with the current BotFather token; Paddy stops before polling so this is not reported as a webhook cleanup failure.
     - `setMyCommands failed` with network/fetch errors usually means outbound DNS/HTTPS to `api.telegram.org` is blocked.
 
     ### Device pairing commands (`device-pair` plugin)
@@ -187,14 +187,14 @@ Ordinary text batches are bounded to 12 messages and 50,000 characters. Their co
 
     `channels.telegram.replyToMode`: `off` (default), `first`, `all`.
 
-    When reply threading is enabled and the original text/caption is available, OpenClaw adds a native quote excerpt automatically. Telegram caps native quote text at 1024 UTF-16 code units; longer messages are quoted from the start and fall back to a plain reply if Telegram rejects the quote.
+    When reply threading is enabled and the original text/caption is available, Paddy adds a native quote excerpt automatically. Telegram caps native quote text at 1024 UTF-16 code units; longer messages are quoted from the start and fall back to a plain reply if Telegram rejects the quote.
 
     `off` disables implicit reply threading only; explicit `[[reply_to_*]]` tags are still honored.
 
   </Accordion>
 
   <Accordion title="Ack reactions">
-    `ackReaction` sends an acknowledgement emoji while OpenClaw processes an inbound message. `messages.ackReactionScope` decides *when* it is sent.
+    `ackReaction` sends an acknowledgement emoji while Paddy processes an inbound message. `messages.ackReactionScope` decides *when* it is sent.
 
     **Emoji resolution order:**
 
@@ -227,12 +227,12 @@ Ordinary text batches are bounded to 12 messages and 50,000 characters. Their co
     - `/new` and `/reset` reset automatic session context, not the retained conversation. Explicit history reads can retrieve permitted earlier discussion.
     - The existing SQLite plugin-state table owns retained group messages. Successfully persisted records survive Gateway restarts and are not evicted by message count. Direct-message cache behavior remains bounded.
     - On first use, existing group-cache records move atomically into retained storage. Legacy records without history-admission provenance, including embedded reply ancestors, remain available as explicit reply context within the existing depth and visibility limits; they are not treated as a verified conversation archive.
-    - History contains only messages OpenClaw received and was permitted to record. It cannot recover messages evicted before this feature, messages Telegram did not deliver, or messages from before the bot joined. Media references do not guarantee that attachment bytes remain available indefinitely.
+    - History contains only messages Paddy received and was permitted to record. It cannot recover messages evicted before this feature, messages Telegram did not deliver, or messages from before the bot joined. Media references do not guarantee that attachment bytes remain available indefinitely.
 
     No separate observation setting is needed. Keep Telegram [group visibility](/channels/telegram/setup#privacy-mode-and-group-visibility) enabled so the bot receives ordinary messages. Enabling history does not change explicit `requireMention: false` activation.
 
     <Warning>
-    Older OpenClaw releases apply different cache and plugin-quota rules. Do not run them against expanded retained history. Downgrading requires a compatible pre-update backup; this feature does not add a database-version fence.
+    Older Paddy releases apply different cache and plugin-quota rules. Do not run them against expanded retained history. Downgrading requires a compatible pre-update backup; this feature does not add a database-version fence.
     </Warning>
 
   </Accordion>
@@ -242,7 +242,7 @@ Ordinary text batches are bounded to 12 messages and 50,000 characters. Their co
     - `channels.telegram.mediaMaxMb` (default 100) caps inbound and outbound media size.
     - When an inbound attachment cannot be downloaded and the message proceeds to the agent, its body includes a `[media unavailable: ...]` notice. Oversize notices include the effective size limit; partial albums include the failed and total attachment counts. This also applies to admitted channel posts, even when their separate chat warning is suppressed.
     - automatic group context uses `channels.telegram.historyLimit` or `messages.groupChat.historyLimit` (default 50); `0` disables the automatic window, not retained history.
-    - reply/quote/forward supplemental context normalizes into one selected conversation context window when the gateway has observed the parent messages; the observed-message cache lives in OpenClaw SQLite plugin state. To import pre-June cache sidecars, [upgrade through `2026.9.5`](/install/updating#upgrading-very-old-versions) and run its Doctor first. Telegram only includes one shallow `reply_to_message` per update, so chains older than the cache are limited to that payload.
+    - reply/quote/forward supplemental context normalizes into one selected conversation context window when the gateway has observed the parent messages; the observed-message cache lives in Paddy SQLite plugin state. To import pre-June cache sidecars, [upgrade through `2026.9.5`](/install/updating#upgrading-very-old-versions) and run its Doctor first. Telegram only includes one shallow `reply_to_message` per update, so chains older than the cache are limited to that payload.
     - Telegram allowlists primarily gate who can trigger the agent, not a full supplemental-context redaction boundary.
     - DM history: `channels.telegram.dmHistoryLimit`, `channels.telegram.dms["<user_id>"].historyLimit`. Automatic observed-DM context defaults to 10 messages and is capped at 200; `0` disables that extra context, and the JSON integer maximum selects the default.
     - These channel/account/DM fields also control embedded session transcript trimming in **user turns**, not observed messages. That separate limiter treats `0` as no trimming and keeps its existing eviction cushion. Doctor preserves valid saved limits, including the JSON integer maximum, so it does not silently change transcript context.
@@ -250,17 +250,17 @@ Ordinary text batches are bounded to 12 messages and 50,000 characters. Their co
     CLI and message-tool send targets accept a numeric chat ID, username, or forum topic target:
 
 ```bash
-openclaw message send --channel telegram --target 123456789 --message "hi"
-openclaw message send --channel telegram --target @name --message "hi"
-openclaw message send --channel telegram --target -1001234567890:topic:42 --message "hi topic"
+paddy message send --channel telegram --target 123456789 --message "hi"
+paddy message send --channel telegram --target @name --message "hi"
+paddy message send --channel telegram --target -1001234567890:topic:42 --message "hi topic"
 ```
 
-    Polls use `openclaw message poll` and support forum topics:
+    Polls use `paddy message poll` and support forum topics:
 
 ```bash
-openclaw message poll --channel telegram --target 123456789 \
+paddy message poll --channel telegram --target 123456789 \
   --poll-question "Ship it?" --poll-option "Yes" --poll-option "No"
-openclaw message poll --channel telegram --target -1001234567890:topic:42 \
+paddy message poll --channel telegram --target -1001234567890:topic:42 \
   --poll-question "Pick a time" --poll-option "10am" --poll-option "2pm" \
   --poll-duration-seconds 300 --poll-public
 ```

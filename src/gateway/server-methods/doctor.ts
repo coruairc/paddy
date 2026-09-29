@@ -552,7 +552,7 @@ function memoryActionHandler(
 const SKIPPED_MEMORY_EMBEDDING_PROBE = {
   ok: false,
   checked: false,
-  error: "memory embedding readiness not checked; run `openclaw memory status --deep` to probe",
+  error: "memory embedding readiness not checked; run `paddy memory status --deep` to probe",
 } as const;
 
 export const createDoctorHandlers = (

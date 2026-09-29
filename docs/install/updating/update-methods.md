@@ -3,7 +3,7 @@ summary: "Switching install types, the source-server script, re-running the inst
 read_when:
   - You want to switch an install between a package manager and a git checkout
   - You run a gateway directly from a git checkout on a server
-  - You need to update or recover OpenClaw with npm, pnpm, or bun directly
+  - You need to update or recover Paddy with npm, pnpm, or bun directly
 title: "Other update methods"
 sidebarTitle: "Update methods"
 ---
@@ -12,7 +12,7 @@ Install-type switching, the source-server reference script, the installer, and m
 
 ## Switch between npm and git installs
 
-Installer-driven switches verify the replacement before the working owner is retired. Source wrappers are published atomically; same-path npm shim transitions use an identity-checked backup that is restored on failure, so a failed candidate leaves the previous command runnable. Before retiring an old source wrapper, the updater rechecks its identity and contents and confirms that it still owns the update. The `openclaw update` command prints its final success result only after post-core convergence and requested restart health checks succeed.
+Installer-driven switches verify the replacement before the working owner is retired. Source wrappers are published atomically; same-path npm shim transitions use an identity-checked backup that is restored on failure, so a failed candidate leaves the previous command runnable. Before retiring an old source wrapper, the updater rechecks its identity and contents and confirms that it still owns the update. The `paddy update` command prints its final success result only after post-core convergence and requested restart health checks succeed.
 
 Candidate validation failures leave the old Gateway serving. After activation,
 package recovery can restore the retained previous package only when the shared
@@ -25,12 +25,12 @@ code cannot undo migrated state. Incomplete file rollback retains its backups
 for inspection. See [Automatic rollback](/install/updating#automatic-schema-neutral-rollback).
 If an older target does not support preserving the service definition, automatic
 recovery stops and reports the error without retrying with weaker options. Repair
-the reported failure, rerun `openclaw update`, and check `openclaw gateway status --deep`.
+the reported failure, rerun `paddy update`, and check `paddy gateway status --deep`.
 See [Failed update recovery](/gateway/restart-recovery#recovery-after-a-failed-update).
 
 On macOS, if Doctor reports an installed but unloaded and disabled Gateway
 LaunchAgent after an interrupted update, finish update verification or Doctor and
-triage first. Then use the printed `openclaw gateway start` command, preserving
+triage first. Then use the printed `paddy gateway start` command, preserving
 its profile and state/config or custom-label overrides. `doctor --fix` diagnoses
 the disabled label but leaves an already-stopped Gateway stopped.
 
@@ -40,23 +40,23 @@ code install the CLI and gateway use.
 
 ```bash
 # npm package install -> editable git checkout
-openclaw update --channel dev
+paddy update --channel dev
 
 # git checkout -> npm package install
-openclaw update --channel stable
+paddy update --channel stable
 ```
 
 Preview the install-mode switch first:
 
 ```bash
-openclaw update --channel dev --dry-run
-openclaw update --channel stable --dry-run
+paddy update --channel dev --dry-run
+paddy update --channel stable --dry-run
 ```
 
 `dev` ensures a git checkout, builds it, and installs the global CLI from that
 checkout. The `stable`, `extended-stable`, and `beta` channels use package
 installs. Extended-stable is rejected on a git checkout without mutating or
-converting it. If the gateway is already installed, `openclaw update` refreshes
+converting it. If the gateway is already installed, `paddy update` refreshes
 the service metadata and restarts it unless you pass `--no-restart`.
 
 Automatic package-to-Git conversion currently requires an npm-owned package
@@ -91,7 +91,7 @@ unavailable inspection does not prove that the installation has no consumers.
 Already-running older updaters retain their own activation and finalization behavior.
 
 For package installs with an owned managed Bun Gateway at a different root,
-`openclaw update` targets the Gateway's package root and leaves the invoking CLI
+`paddy update` targets the Gateway's package root and leaves the invoking CLI
 installation unchanged. It validates the service's actual Bun executable for
 Bun 1.4+ and WAL-safe `node:sqlite`, and retains its recorded runtime pin through
 service installation and restart. Bun's emulated Node version is never compared
@@ -117,9 +117,9 @@ reported service/profile stop commands, rebuild, then start those same services.
 For the default profile, run these commands from the source checkout:
 
 ```bash
-openclaw gateway stop &&
+paddy gateway stop &&
 pnpm build &&
-openclaw gateway start
+paddy gateway start
 ```
 
 Stop every listed sibling before building and start each one afterward. Preserve
@@ -134,7 +134,7 @@ native controls before rebuilding.
 By default, source-runner `gateway stop` and `gateway restart` use the existing
 built CLI so recovery does not rebuild first. To apply source changes, use the
 stop, build, and start sequence above.
-`openclaw update` can apply an available update, but `skipped` / `already-current`
+`paddy update` can apply an available update, but `skipped` / `already-current`
 does not rebuild stale `dist`; use the external stop, rebuild, and start sequence
 for that case.
 
@@ -165,7 +165,7 @@ service owners first; this script does not stop or restart them for you.
 The consumer check precedes the first source change; it does not lock out new
 service starts during source and runtime publication.
 
-Like `openclaw update`, the script builds runtime JavaScript, plugin assets, and
+Like `paddy update`, the script builds runtime JavaScript, plugin assets, and
 the Control UI without generating TypeScript declarations by default. Set
 `OPENCLAW_RUN_NODE_SKIP_DTS_BUILD=0` when invoking the script if this checkout
 also needs fresh declarations for plugin development.
@@ -250,7 +250,7 @@ building a source checkout.
 ssh you@server 'cd /path/to/openclaw && scripts/update-gateway.sh'
 ```
 
-The default stop command is `openclaw gateway stop --force`, so non-interactive
+The default stop command is `paddy gateway stop --force`, so non-interactive
 SSH updates can stop the service. Override both commands for custom service units:
 
 ```bash
@@ -269,7 +269,7 @@ The script performs no automatic stop, restart, or build-output rollback:
 OPENCLAW_UPDATE_RESTART_CMD='' scripts/update-gateway.sh
 ```
 
-For a plain single-user source install, prefer `openclaw update --channel dev`
+For a plain single-user source install, prefer `paddy update --channel dev`
 instead — it manages the checkout, build, and gateway restart for you.
 
 ## Alternative: re-run the installer
@@ -281,7 +281,7 @@ curl -fsSL https://openclaw.ai/install.sh | bash
 Add `--no-onboard` to skip onboarding. To force a specific install type, pass
 `--install-method git --no-onboard` or `--install-method npm --no-onboard`.
 
-If `openclaw triage` cannot start after a failed npm package replacement, re-run
+If `paddy triage` cannot start after a failed npm package replacement, re-run
 the installer. It runs the global package install directly and can recover a
 partially updated npm install. Keep an unverified Gateway stopped while repairing it.
 
@@ -301,18 +301,18 @@ For `brew install openclaw-cli`, update through Homebrew:
 
 ```bash
 brew upgrade openclaw-cli
-openclaw gateway restart
+paddy gateway restart
 ```
 
-`openclaw update` leaves the formula unchanged and prints these commands. Existing
-profiles retain that skipped outcome and guidance in `openclaw update status --json`
+`paddy update` leaves the formula unchanged and prints these commands. Existing
+profiles retain that skipped outcome and guidance in `paddy update status --json`
 and the update report. Stop a running Gateway before a manual upgrade to avoid
-loading files from a removed keg; back up first and run `openclaw doctor --fix`
+loading files from a removed keg; back up first and run `paddy doctor --fix`
 before restarting.
 
 New or refreshed service definitions use Homebrew's stable `opt/openclaw-cli`
 path. To repair a service still pointing at a versioned `Cellar` path, run
-`openclaw gateway install --force` from the upgraded CLI. Global npm packages
+`paddy gateway install --force` from the upgraded CLI. Global npm packages
 under the Homebrew prefix continue to use npm.
 
 ## Alternative: manual npm, pnpm, or bun
@@ -324,7 +324,7 @@ omit `--allow-scripts=openclaw`.
 npm i -g openclaw@latest --allow-scripts=openclaw
 ```
 
-Prefer `openclaw update` for supervised installs: it can coordinate the package
+Prefer `paddy update` for supervised installs: it can coordinate the package
 swap with the running Gateway service. If you update manually on a supervised
 install, stop the managed Gateway first. Package managers replace files in
 place, and a running Gateway can otherwise try to load core or plugin files
@@ -335,16 +335,16 @@ Gateways with installation-replacement detection also check the installed build
 on their maintenance tick. If the running and installed builds differ, the
 Gateway records the replacement, stops accepting new work, and gives active work
 its existing bounded shutdown window before handing over to its service manager.
-A foreground Gateway exits with instructions to run `openclaw gateway run` again.
+A foreground Gateway exits with instructions to run `paddy gateway run` again.
 Status and Doctor report the replacement while the Gateway drains. Afterward,
-`openclaw gateway status --deep`, `openclaw update status`, and Doctor show the
+`paddy gateway status --deep`, `paddy update status`, and Doctor show the
 recorded replacement as historical information until the next Gateway shutdown.
 This record does not by itself confirm that the new Gateway is healthy.
 If a reply's delivery module disappears before sending starts, the reply remains
 eligible for recovery instead of being treated as an uncertain send.
 This recovery cannot prevent every failure during a package manager's in-place
 swap, and older running Gateways do not gain it from files installed underneath
-them. `openclaw update` remains the supported path for coordinating replacement.
+them. `paddy update` remains the supported path for coordinating replacement.
 
 Release packages include generated compatibility files for lazy imports from
 updaters in the supported upgrade window, including the 2026.9.1 service restart path. These
@@ -352,7 +352,7 @@ files let the old updater finish after its installation is replaced. They do not
 preserve a running Gateway's old module state, cover arbitrary plugin imports,
 or make rollback into an older published package safe without restarting.
 
-For a root-owned Linux system-global install, if `openclaw update` fails with
+For a root-owned Linux system-global install, if `paddy update` fails with
 `EACCES`, recover with system npm while keeping the Gateway stopped for the
 manual replacement. Use the same profile flags/environment you normally use for
 that Gateway. Replace `/usr/bin/npm` with the system npm that owns the
@@ -362,25 +362,25 @@ The npm command below follows the same version contract: use the flag on npm 12
 or npm 11.16+, and omit it on npm 11.15 and earlier.
 
 ```bash
-openclaw gateway stop
+paddy gateway stop
 sudo /usr/bin/npm i -g openclaw@latest --allow-scripts=openclaw
-openclaw gateway install --force
-openclaw gateway restart
+paddy gateway install --force
+paddy gateway restart
 ```
 
 Then verify:
 
 ```bash
-openclaw --version
+paddy --version
 curl -fsS http://127.0.0.1:18789/readyz
-openclaw plugins list --json
-openclaw gateway status --deep --json
-openclaw doctor --lint --json
+paddy plugins list --json
+paddy gateway status --deep --json
+paddy doctor --lint --json
 ```
 
-When `openclaw update` manages a global npm install, it installs the target
+When `paddy update` manages a global npm install, it installs the target
 into a temporary npm prefix first. The candidate package validates the host
-Node version during `preinstall`; OpenClaw verifies the packaged `dist` inventory
+Node version during `preinstall`; Paddy verifies the packaged `dist` inventory
 before swapping the clean package tree into the real global prefix. Pending
 lifecycle work is recorded in `.openclaw-lifecycle-pending` at the package root,
 outside the `dist` inventory. `postinstall` removes that marker after completion.
@@ -388,10 +388,10 @@ If package scripts were skipped, the CLI completes the pending lifecycle before
 running any command, including `--version`; failure stops the command with
 reinstall guidance. The updater probes the owning npm before mutation. On npm
 11.15 and earlier it omits the unsupported lifecycle-policy flag. On npm 12 and
-npm 11.16+, it approves only the candidate OpenClaw lifecycle; transitive
+npm 11.16+, it approves only the candidate Paddy lifecycle; transitive
 dependency scripts remain unapproved.
 This avoids npm overlaying a new package onto stale files from the old one. If
-the install command fails, OpenClaw retries once with `--omit=optional`, which
+the install command fails, Paddy retries once with `--omit=optional`, which
 helps hosts where native optional dependencies cannot compile.
 The packaged lifecycle restores the matching precompiled fs-safe dependency
 when that retry omitted it. It uses the version declared by the installed
@@ -403,33 +403,33 @@ support also skips this repair.
 For local tarball targets on npm 12, the archive filename and every parent
 directory must be comma-free. See [Installer path requirements](/install/installer).
 
-OpenClaw-managed npm update and plugin-update commands also clear npm's
+Paddy-managed npm update and plugin-update commands also clear npm's
 `min-release-age` supply-chain quarantine (or the older `before` config key)
 for the child npm process. That policy exists for general protection, but an
-explicit OpenClaw update means "install the selected release now."
+explicit Paddy update means "install the selected release now."
 
 ```bash
 pnpm add -g --allow-build=openclaw openclaw@latest
 ```
 
-If pnpm 11 installed OpenClaw 2026.7.1, run that manual command once. That
+If pnpm 11 installed Paddy 2026.7.1, run that manual command once. That
 release predates pnpm 11's isolated global-package layout, so its updater can
 mistake another npm installation for the running CLI. Later releases retain
 pnpm ownership and follow the replacement package root during updates. They
 also use the owning manager's reported global bin directory and stop before
 mutation when the available pnpm command reports another global root,
-or when the invoking package is orphaned or not the only active OpenClaw
+or when the invoking package is orphaned or not the only active Paddy
 install there.
 
 pnpm 12 retains the `global/v11` layout; the layout number does not need to match
 the pnpm CLI major version.
-Staged pnpm updates isolate both the global project and its launchers. OpenClaw
+Staged pnpm updates isolate both the global project and its launchers. Paddy
 sets the staging bin through CLI configuration for pnpm 10/11 and child-process
 environment configuration for pnpm 12, then verifies both destinations before
 installation. A manager that still reports a live destination stops the update
 before activation.
 
-If OpenClaw shares a pnpm global install group with another package, the
+If Paddy shares a pnpm global install group with another package, the
 automatic updater stops before changing the group. Update the original
 comma-separated group manually so its sibling packages and build policy stay
 intact.
@@ -438,8 +438,8 @@ intact.
 bun add -g --trust openclaw@latest
 ```
 
-`--trust` allows OpenClaw's lifecycle scripts. The canonical `openclaw update`
-path applies the same OpenClaw-only Bun trust when it owns the install.
+`--trust` allows Paddy's lifecycle scripts. The canonical `paddy update`
+path applies the same Paddy-only Bun trust when it owns the install.
 For Bun-owned updates, package-manager probes and installs use the verified
 service Bun when updating a managed service root. Otherwise they use
 `process.execPath` when the updater runs under Bun, with bare `bun` from PATH
@@ -449,7 +449,7 @@ unchanged; locating an installation under `~/.openclaw` does not make it Bun-own
 On Windows, the staged updater rejects Bun installs before stopping the Gateway
 because it cannot relocate Bun's binary launchers. Run
 `bun add -g --trust openclaw@<resolved-target-version>` manually, then
-`openclaw gateway restart`; verify with `openclaw update status`.
+`paddy gateway restart`; verify with `paddy update status`.
 
 ### Package lifecycle and operator state
 
@@ -458,8 +458,8 @@ artifacts: the installed `dist` tree and lifecycle markers. Plugin-registry and
 operator-state migration belong to Doctor, not package installation. Doctor also
 removes genuinely dangling global plugin-runtime links, but preserves shared and
 versioned runtime caches and valid links to them: other installs or profiles may
-still use them. `openclaw update` still runs Doctor after installing the candidate;
-after a manual package replacement, run `openclaw doctor --fix` before restarting
+still use them. `paddy update` still runs Doctor after installing the candidate;
+after a manual package replacement, run `paddy doctor --fix` before restarting
 the Gateway.
 
 During a marked Windows 2026.9.4 update, package lifecycle also asks Doctor's
@@ -471,12 +471,12 @@ The fresh post-core continuation runs repairing Doctor before plugin convergence
 including when an older updater already ran Doctor without `--fix`. This completes
 pending legacy state even when the configuration itself needs no repair.
 
-Doctor also brings drifted active official npm plugins to the installed OpenClaw
+Doctor also brings drifted active official npm plugins to the installed Paddy
 release, honoring recorded non-default tags and pins newer than its plugin cohort.
-It uses the same plugin updater as `openclaw update` and leaves third-party plugins
+It uses the same plugin updater as `paddy update` and leaves third-party plugins
 unchanged. An unavailable plugin produces a warning with
 the reason; it does not prevent the other repairs from completing. Restore
-registry access or wait for the missing package, then rerun `openclaw doctor --fix`.
+registry access or wait for the missing package, then rerun `paddy doctor --fix`.
 
 `OPENCLAW_DISABLE_BUNDLED_PLUGIN_POSTINSTALL=1` skips package-local postinstall
 cleanup, but still completes the lifecycle marker. Doctor migrations remain
@@ -503,11 +503,11 @@ overrides. Stop the Gateway through its owning supervisor before replacing the
 package. For a managed npm install:
 
 ```bash
-openclaw gateway stop
+paddy gateway stop
 npm install -g openclaw@latest --allow-scripts=openclaw
-openclaw doctor --fix
-openclaw gateway restart
-openclaw gateway status --deep
+paddy doctor --fix
+paddy gateway restart
+paddy gateway status --deep
 ```
 
 Omit `--allow-scripts=openclaw` on npm 11.15 and earlier. For an external
@@ -516,7 +516,7 @@ Gateway stopped, so complete the restart after reviewing its repair results.
 
 Automatic official-plugin drift repair was added after 2026.9.5. If the installed
 release still prints **Fix each drifted plugin**, run its printed
-`openclaw plugins update` commands before restarting. Once installed, a build
+`paddy plugins update` commands before restarting. Once installed, a build
 with automatic drift repair performs those official-plugin updates during
 `doctor --fix`; any remaining readiness warning names the plugin that still
 needs attention.
@@ -525,13 +525,13 @@ needs attention.
 
 <AccordionGroup>
   <Accordion title="Read-only package tree">
-    After package lifecycle completion, OpenClaw treats packaged global installs as read-only at runtime, even when the global package directory is writable by the current user. Plugin package installs live in OpenClaw-owned npm/git roots under the user config directory, and Gateway startup does not mutate the OpenClaw package tree.
+    After package lifecycle completion, Paddy treats packaged global installs as read-only at runtime, even when the global package directory is writable by the current user. Plugin package installs live in Paddy-owned npm/git roots under the user config directory, and Gateway startup does not mutate the Paddy package tree.
 
-    Some Linux npm setups install global packages under root-owned directories such as `/usr/lib/node_modules/openclaw`. OpenClaw supports that layout because plugin install/update commands write outside that global package directory.
+    Some Linux npm setups install global packages under root-owned directories such as `/usr/lib/node_modules/openclaw`. Paddy supports that layout because plugin install/update commands write outside that global package directory.
 
   </Accordion>
   <Accordion title="Hardened systemd units">
-    Give OpenClaw write access to its config/state roots so explicit plugin installs, plugin updates, and doctor cleanup can persist their changes:
+    Give Paddy write access to its config/state roots so explicit plugin installs, plugin updates, and doctor cleanup can persist their changes:
 
     ```ini
     ReadWritePaths=/var/lib/openclaw /home/openclaw/.openclaw /tmp
@@ -539,11 +539,11 @@ needs attention.
 
   </Accordion>
   <Accordion title="Disk-space preflight">
-    Before package updates and explicit plugin installs, OpenClaw tries a best-effort disk-space check for the target volume. Low space produces a warning with the checked path, but does not block the update because filesystem quotas, snapshots, and network volumes can change after the check. The actual package-manager install and post-install verification remain authoritative.
+    Before package updates and explicit plugin installs, Paddy tries a best-effort disk-space check for the target volume. Low space produces a warning with the checked path, but does not block the update because filesystem quotas, snapshots, and network volumes can change after the check. The actual package-manager install and post-install verification remain authoritative.
 
     For package updates, the check runs before registry lookups and database-schema validation. Managed update runs retain the warning in update history so it also appears in the Control UI.
 
-    Before staging a replacement, a read-only snapshot check measures the known SQLite database families, including WAL, SHM, and journal files. Its non-warning diagnostic entries in `openclaw update status --json` record each family's size and the existing snapshot budget: twice the total family bytes, three times the largest family, and 64 MiB for metadata. Plugin copies and registered external databases remain unknown until the complete check after staging.
+    Before staging a replacement, a read-only snapshot check measures the known SQLite database families, including WAL, SHM, and journal files. Its non-warning diagnostic entries in `paddy update status --json` record each family's size and the existing snapshot budget: twice the total family bytes, three times the largest family, and 64 MiB for metadata. Plugin copies and registered external databases remain unknown until the complete check after staging.
 
     Snapshot space is checked at the existing destinations: `TMPDIR`, the capture directory beside the state directory, and the system temporary directory. An update refuses before staging only when every destination has known free space below the snapshot owner's requirement, because its private state copy cannot be taken. Database sizes are inventory for the temporary snapshot, not database-health or growth warnings. A successful check needs no database cleanup. If measurement fails, the updater warns that it will check again after staging. A usable alternative or unknown free-space reading does not itself stop the update. Package and Git targets that are already current need no candidate snapshot. The updater preserves a config copy, not a full-state backup.
 

@@ -7,7 +7,7 @@ read_when:
 title: "Geolocation plugin"
 ---
 
-The bundled `geolocation` plugin turns a connecting client's IP address into a coarse city. It ships with OpenClaw, downloads its database on first use, and answers entirely from that local copy, so a lookup never sends an address to a third party.
+The bundled `geolocation` plugin turns a connecting client's IP address into a coarse city. It ships with Paddy, downloads its database on first use, and answers entirely from that local copy, so a lookup never sends an address to a third party.
 
 It owns exactly one thing: address to place. It does not decide which addresses get looked up, does not store results, and is not an authorization input. The Control UI uses it to label the devices on a person's [Activity](/concepts/presence) card. The core `presence` tool uses the same lookup owner when the agent requests `include: ["location"]`.
 
@@ -126,7 +126,7 @@ Any MaxMind-format city database works, including a self-hosted mirror or a comm
 
 The default database is **DB-IP City Lite**, licensed **CC BY 4.0**. That license requires attribution, which is why the credit is part of every response and is rendered next to the value rather than buried in settings.
 
-OpenClaw downloads this database at runtime and never redistributes it, so the license attaches to your deployment's use of the data, not to OpenClaw itself. Plugin code and the `maxmind` reader it uses are MIT. No free city-level IP database is MIT-licensed; the obligation lives with the data.
+Paddy downloads this database at runtime and never redistributes it, so the license attaches to your deployment's use of the data, not to Paddy itself. Plugin code and the `maxmind` reader it uses are MIT. No free city-level IP database is MIT-licensed; the obligation lives with the data.
 
 Expect city-level accuracy in the 55-80% range, and worse for the mobile, VPN, and CGNAT cases above.
 

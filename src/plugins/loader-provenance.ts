@@ -1,5 +1,6 @@
 // Tracks plugin loader provenance for diagnostics and policy checks.
 import { normalizeTrimmedStringList } from "@openclaw/normalization-core/string-normalization";
+import { PRODUCT_NAME } from "../brand.js";
 import { quoteCliArg } from "../cli/quote-cli-arg.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
 import { resolveUserPath } from "../utils.js";
@@ -7,7 +8,6 @@ import { loadInstalledPluginIndexInstallRecordsSync } from "./installed-plugin-i
 import { isPathInside, safeRealpathSync, safeStatSync } from "./path-safety.js";
 import type { PluginRecord, PluginRegistry } from "./registry.js";
 import type { PluginLogger } from "./types.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 type PathMatcher = {
   exact: Set<string>;
@@ -67,7 +67,7 @@ function matchesPathMatcher(matcher: PathMatcher, sourcePath: string): boolean {
 }
 
 function formatPluginInspectCommand(pluginId: string): string {
-  return `openclaw plugins inspect ${quoteCliArg(pluginId)}`;
+  return `paddy plugins inspect ${quoteCliArg(pluginId)}`;
 }
 
 /** Builds provenance matchers from configured load paths and install records. */
@@ -175,7 +175,7 @@ export function warnWhenAllowlistIsOpen(params: {
         .map((entry) => JSON.stringify(entry.id))
         .join(
           ", ",
-        )}] }). Run 'openclaw plugins list --enabled --verbose' or ${inspectCommands} to confirm plugin ids.`;
+        )}] }). Run 'paddy plugins list --enabled --verbose' or ${inspectCommands} to confirm plugin ids.`;
   params.warningCache.recordOpenAllowlistWarning(params.warningCacheKey);
   if (!hasConfiguredAllowlist) {
     params.logger.warn(

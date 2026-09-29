@@ -1,13 +1,13 @@
-# OpenClaw Xiaomi Provider
+# Paddy Xiaomi Provider
 
-Official OpenClaw provider plugin for Xiaomi MiMo pay-as-you-go and Token Plan
+Official Paddy provider plugin for Xiaomi MiMo pay-as-you-go and Token Plan
 models, usage tracking, and text-to-speech.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/xiaomi-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 Configure `XIAOMI_API_KEY` for `xiaomi/*` models and speech, or

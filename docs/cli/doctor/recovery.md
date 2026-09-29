@@ -11,16 +11,16 @@ prerequisites, and the credentials it starts with.
 
 ## Gateway service recovery
 
-Run `openclaw gateway status --deep` to inspect the installed service and its
-runtime before choosing a recovery action. Use `openclaw gateway install` for a
-missing service, `openclaw gateway start` for an installed service that is not
-loaded, or `openclaw gateway install --force` from the intended installation to
+Run `paddy gateway status --deep` to inspect the installed service and its
+runtime before choosing a recovery action. Use `paddy gateway install` for a
+missing service, `paddy gateway start` for an installed service that is not
+loaded, or `paddy gateway install --force` from the intended installation to
 replace its service definition. Externally managed services still belong to
 their supervisor.
 
 Doctor also compares the service's package path and version with the active CLI,
 without requiring a Gateway connection. Update finalization and standalone
-`openclaw doctor --fix` reconcile eligible, previously running managed services
+`paddy doctor --fix` reconcile eligible, previously running managed services
 through the native installer; update-time Doctor reports drift and defers publication
 to finalization. Doctor can automatically refresh installation-only drift in a
 verified, writable packaged service. It also repairs recognized stale native
@@ -30,15 +30,15 @@ Gateway stopped for maintenance. Doctor reports changed keys and backup paths;
 supported custom settings survive the rewrite. Automatic native-policy repair
 preserves unknown operator edits and uncertain definitions for operator review.
 Other command or credential changes still require interactive confirmation.
-After successful standalone `openclaw doctor --fix`, an already stopped managed
+After successful standalone `paddy doctor --fix`, an already stopped managed
 Gateway starts and verifies readiness when its service targets the current
 installation and final inspection positively verifies its ownership and offline
 state. If that inspection fails, times out, or leaves ownership uncertain, Doctor
 records the reason and leaves the service stopped. Inspect it with
-`openclaw gateway status --deep` before starting it manually.
+`paddy gateway status --deep` before starting it manually.
 Update-time Doctor leaves activation with the updater. A stopped
 service targeting another installation keeps its definition and stop state; run
-the reported profile-aware `openclaw gateway install --force` command from the
+the reported profile-aware `paddy gateway install --force` command from the
 intended installation to reconcile it (installation may start the service).
 It preserves the service's profile and an explicit service port when no port is
 configured. Source checkouts, deployment-owned overrides, and unavailable native
@@ -67,7 +67,7 @@ If it must cancel before repair starts, it reverses its own stop while its nativ
 service custody remains valid. Normal post-repair restoration still requires
 current update admission.
 
-If Doctor's output pipe closes (for example, `openclaw doctor --fix | head -20`),
+If Doctor's output pipe closes (for example, `paddy doctor --fix | head -20`),
 or Doctor receives SIGINT, SIGTERM, or SIGPIPE during maintenance, it waits for
 admitted repair work and service restoration before exiting. An ordinary repair
 error also restores the managed service Doctor stopped, using the current saved
@@ -75,7 +75,7 @@ configuration. Pending approval prompts cancel without interrupting admitted
 writes. Concrete data risks, lost service authority, and unverified child
 cleanup still prevent unsafe activation and report the recovery action.
 
-For legacy services or conflicting systemd scopes, run `openclaw doctor`
+For legacy services or conflicting systemd scopes, run `paddy doctor`
 interactively to review the findings and confirm supported cleanup. Cleanup
 reports what it removed or skipped; it does not guarantee a replacement service
 will be installed. Explicit repair maintenance skips this separate cleanup flow.
@@ -96,7 +96,7 @@ the failed native probe:
 - **Linux inspection deadline expired:** the manager probe or its custody/admission
   guards exhausted the inspection budget. This does not mean the user session bus
   is missing. Check the reported restoration result and run
-  `openclaw gateway status --deep` after recovery.
+  `paddy gateway status --deep` after recovery.
 - **Linux user session bus unavailable:** check `XDG_RUNTIME_DIR` and
   `DBUS_SESSION_BUS_ADDRESS` for the service account. A working `systemctl --user`
   command alone is insufficient: effective service inspection also uses
@@ -116,7 +116,7 @@ the failed native probe:
   Keep the same `HOME`, `OPENCLAW_STATE_DIR`, and `OPENCLAW_CONFIG_PATH` selectors
   used by the service. See [Existing system LaunchDaemons](/gateway#existing-system-launchdaemons).
 
-OpenClaw does not manage custom system LaunchDaemons. Running Doctor as root
+Paddy does not manage custom system LaunchDaemons. Running Doctor as root
 with another account's `HOME` does not add that capability and can create
 root-owned state files.
 
@@ -170,7 +170,7 @@ packaged installation.
 
 Doctor flags active Gateway tokens that are blank or contain the literal string
 `undefined` or `null`. The Gateway rejects these values at startup. To replace an
-inline token, run `openclaw doctor --fix --generate-gateway-token`, then restart
+inline token, run `paddy doctor --fix --generate-gateway-token`, then restart
 the Gateway. For a SecretRef, rotate the external secret source instead; doctor
 preserves its reference and leaves password, `none`, and trusted-proxy auth modes
 unchanged. An absent token still uses the normal startup token generation flow.
@@ -178,8 +178,8 @@ unchanged. An absent token still uses the normal startup token generation flow.
 Known redaction placeholders, including `__OPENCLAW_REDACTED__`, are also invalid
 credentials. Doctor and `gateway status --deep` name the affected reference even
 if an older Gateway process still works with its previous in-memory token.
-For a store-backed Gateway token, run `openclaw doctor --fix` (or
-`openclaw doctor --generate-gateway-token`). Doctor verifies a database backup,
+For a store-backed Gateway token, run `paddy doctor --fix` (or
+`paddy doctor --generate-gateway-token`). Doctor verifies a database backup,
 regenerates the referenced value, preserves the SecretRef and the entry's current
 `secret`/`env` kind and allowed hosts, and prints the backup path. A credential
 changed during backup is preserved. Restart the Gateway,

@@ -159,7 +159,7 @@ with their FTS rows.
 
 Both schema version markers advance through the existing maintenance owner in
 the same transaction. Stop writers and take a verified WAL-aware backup before
-running the compatible build's `openclaw doctor --fix`. Older builds refuse
+running the compatible build's `paddy doctor --fix`. Older builds refuse
 schema 22 because their writes cannot maintain row ownership. Rollback requires
 the pre-migration backup and matching build; lowering version markers is unsafe.
 The existing [older-updater contract](/reference/database-schemas/versioning#schema-bumps-and-older-updaters)
@@ -271,7 +271,7 @@ downgrade.
 After an interrupted update, the agent database maintenance lease can remain
 valid for up to 60 seconds. If Doctor reports a maintenance lease timeout,
 keep writers stopped, allow that lease to expire, then run
-[`openclaw update repair`](/cli/update/repair-and-recovery#update-repair)
+[`paddy update repair`](/cli/update/repair-and-recovery#update-repair)
 from the compatible installation. The package may already have been replaced
 even when the schema transaction rolled back. Do not delete lease records or
 change schema markers to bypass recovery.
@@ -287,7 +287,7 @@ Agent schema **19** and shared-state schema **14** add a source discriminator to
 
 Historical human creators stamped directly by `operator` or `run` creation become `profile`; channel creation becomes `channel`. Origin-losing cron, inherited spawn or Talk, legacy `createdBy`, and missing-source history remain `unknown`. The migration preserves IDs, attribution, creation times, content, and existing sandbox restrictions. A UUID, profile lookup, participant, current route, or required sandbox never supplies missing creator authority. Recovery from incomplete physical projections also produces unknown human attribution.
 
-Before upgrading, stop the Gateway and all other writers, then [create and verify a WAL-aware backup](/cli/backup). Run `openclaw doctor --fix` with the new build. The agent migration retains the stopped-writer maintenance gate and runs after the schema-18 participant migration, without rebuilding already migrated participant rows. Canonical data and both schema markers commit in the owning database transaction. Shared-state and agent databases are separate transactions; if one fails, keep writers stopped and rerun Doctor before starting the Gateway.
+Before upgrading, stop the Gateway and all other writers, then [create and verify a WAL-aware backup](/cli/backup). Run `paddy doctor --fix` with the new build. The agent migration retains the stopped-writer maintenance gate and runs after the schema-18 participant migration, without rebuilding already migrated participant rows. Canonical data and both schema markers commit in the owning database transaction. Shared-state and agent databases are separate transactions; if one fails, keep writers stopped and rerun Doctor before starting the Gateway.
 
 Older builds refuse the new versions. For rollback, stop all writers and restore the verified pre-upgrade backups with their matching older build. Do not decrement either schema marker: an older writer cannot maintain the creator-source contract. Unknown historical provenance is irrecoverable from the stored ID alone. Administrators retain sharing management access; assigning responsibility does not restore an implicit creator grant.
 
@@ -297,7 +297,7 @@ Required sandbox resources keep their existing keys for proven profile creators.
 
 Agent schema 18 rebuilds `session_participants` with the unique key `(session_key, identity_namespace, actor_id)`. The raw actor ID remains separate from its namespace. This replaces the old `(session_key, actor_type, actor_id)` key; it is not a same-version additive change. Both schema markers advance together. No companion table or per-input ledger is added.
 
-Before upgrading existing data, take a verified, WAL-aware backup and stop the Gateway and other agent-database writers. Run `openclaw doctor --fix` with the new build. The migration uses the existing maintenance lease to reject active writers and fence new claims. Ordinary runtime opens refuse the old participant schema rather than migrating it behind active readers. Earlier structural and media migrations run in their historical order before participant convergence. Explicit Doctor repair exits nonzero if an existing configured, default-layout, or registered database still fails runtime schema readiness, including when a live writer or an unknown table dependency blocks this migration. Readiness uses the same target discovery as migration without registering, pruning, or creating stores. Archive migration warnings remain advisory when required database schemas are ready.
+Before upgrading existing data, take a verified, WAL-aware backup and stop the Gateway and other agent-database writers. Run `paddy doctor --fix` with the new build. The migration uses the existing maintenance lease to reject active writers and fence new claims. Ordinary runtime opens refuse the old participant schema rather than migrating it behind active readers. Earlier structural and media migrations run in their historical order before participant convergence. Explicit Doctor repair exits nonzero if an existing configured, default-layout, or registered database still fails runtime schema readiness, including when a live writer or an unknown table dependency blocks this migration. Readiness uses the same target discovery as migration without registering, pruning, or creating stores. Archive migration warnings remain advisory when required database schemas are ready.
 
 Membership and recorded contribution aggregates survive. Historical profile timestamps are unknown because earlier source promotion could contaminate them even when a contribution count was present. Supported agent and channel-only observation times remain; an unresolved historical channel domain stays unresolved. Migration does not invent missing channel rows or inspect transcripts to reconstruct identities. New observations do not turn an unknown first input time into a claimed first-ever time.
 

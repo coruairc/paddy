@@ -10,7 +10,7 @@ Use this page when a node is visible in status but node tools fail.
 
 ## Node goes offline after SSH logout (Linux)
 
-On Linux, `openclaw node install` creates a **user-level** systemd service. The
+On Linux, `paddy node install` creates a **user-level** systemd service. The
 `systemd --user` instance is torn down when your last login session ends, so the
 node service stops the moment you log out — even though it looked healthy
 (`enabled` + `running`) while you were connected.
@@ -30,12 +30,12 @@ sudo loginctl enable-linger "$USER"
 Then restart the node service and verify it survives logout:
 
 ```bash
-openclaw node restart
+paddy node restart
 # log out, then from another machine:
-openclaw nodes status
+paddy nodes status
 ```
 
-`openclaw node install` prints a warning with this recovery command when it
+`paddy node install` prints a warning with this recovery command when it
 detects lingering is disabled. Don't mix a user-level service with a
 system-level one for the same node. The duplicate-scope guard that prevents
 two managers from running the same unit name is enforced for gateway units
@@ -47,20 +47,20 @@ before switching.
 ## Command ladder
 
 ```bash
-openclaw status
-openclaw gateway status
-openclaw logs --follow
-openclaw doctor
-openclaw channels status --probe
+paddy status
+paddy gateway status
+paddy logs --follow
+paddy doctor
+paddy channels status --probe
 ```
 
 Then run node-specific checks:
 
 ```bash
-openclaw nodes pending
-openclaw nodes status
-openclaw nodes describe --node <idOrNameOrIp>
-openclaw approvals get --node <idOrNameOrIp>
+paddy nodes pending
+paddy nodes status
+paddy nodes describe --node <idOrNameOrIp>
+paddy approvals get --node <idOrNameOrIp>
 ```
 
 Healthy signals:
@@ -96,8 +96,8 @@ hosts use their container engine's removal confirmation.
 ## Node runtime version differs from the CLI
 
 A packaged headless node can run a newer private runtime than the globally
-installed CLI. Use `openclaw nodes status --json` to check the connected node's
-version; `openclaw --version` reports the CLI version. For delayed updates,
+installed CLI. Use `paddy nodes status --json` to check the connected node's
+version; `paddy --version` reports the CLI version. For delayed updates,
 opt-outs, fallback, and migration or repair deferrals, see
 [Headless node updates](/install/updating/automatic-updates#headless-node-updates).
 
@@ -113,8 +113,8 @@ finish its work before updating and restarting the node manually.
 Quick check and fix:
 
 ```bash
-openclaw nodes describe --node <idOrNameOrIp>
-openclaw logs --follow
+paddy nodes describe --node <idOrNameOrIp>
+paddy logs --follow
 ```
 
 If you see `NODE_BACKGROUND_UNAVAILABLE`, bring the node app to the foreground and retry.
@@ -134,7 +134,7 @@ If you see `NODE_BACKGROUND_UNAVAILABLE`, bring the node app to the foreground a
 Four separate approval and policy gates control whether a node command succeeds:
 
 1. **Device pairing**: can this node connect to the gateway?
-2. **Node command surface approval**: has the declared command been approved through `openclaw nodes pending` and `openclaw nodes approve <nodeRequestId>`?
+2. **Node command surface approval**: has the declared command been approved through `paddy nodes pending` and `paddy nodes approve <nodeRequestId>`?
 3. **Gateway node command policy**: is the RPC command ID allowed by `gateway.nodes.commands.allow` / `gateway.nodes.commands.deny` and platform defaults?
 4. **Exec approvals**: can this node run a specific shell command locally?
 
@@ -143,21 +143,21 @@ paired-device record. The two request IDs are distinct. An initial unapproved
 surface exposes no effective commands. A pending expansion retains only commands
 that were already approved, remain declared, and pass Gateway policy. For
 `system.run`, shell allowlist and ask policy live in the node's exec approvals
-(`openclaw approvals get --node ...`), not the pairing record. Platform permissions
+(`paddy approvals get --node ...`), not the pairing record. Platform permissions
 and foreground requirements still apply.
 
 Quick checks:
 
 ```bash
-openclaw devices list
-openclaw nodes pending
-openclaw nodes status
-openclaw approvals get --node <idOrNameOrIp>
-openclaw approvals allowlist add --node <idOrNameOrIp> "/usr/bin/uname"
+paddy devices list
+paddy nodes pending
+paddy nodes status
+paddy approvals get --node <idOrNameOrIp>
+paddy approvals allowlist add --node <idOrNameOrIp> "/usr/bin/uname"
 ```
 
-- Pairing missing: approve the current device request with `openclaw devices approve <deviceRequestId>`, then restart or rerun a node paused on `PAIRING_REQUIRED`. The reconnect creates the separate surface request.
-- Node paired and connected with an initial empty command list: inspect `openclaw nodes pending` and approve its distinct `<nodeRequestId>` with `openclaw nodes approve <nodeRequestId>`.
+- Pairing missing: approve the current device request with `paddy devices approve <deviceRequestId>`, then restart or rerun a node paused on `PAIRING_REQUIRED`. The reconnect creates the separate surface request.
+- Node paired and connected with an initial empty command list: inspect `paddy nodes pending` and approve its distinct `<nodeRequestId>` with `paddy nodes approve <nodeRequestId>`.
 - `nodes describe` missing a command: check the gateway node command policy and whether the node actually declared that command on connect.
 - Surface approved but `system.run` fails: check Gateway policy, then exec approvals/allowlist on that node.
 
@@ -178,23 +178,23 @@ For approval-backed `host=node` runs, the gateway also binds execution to the pr
 | `LOCATION_PERMISSION_REQUIRED`         | Requested location mode not granted.                                                                                                                                                    |
 | `LOCATION_BACKGROUND_UNAVAILABLE`      | App is backgrounded but only While Using permission exists.                                                                                                                             |
 | `COMPUTER_DISABLED`                    | Enable **Allow Computer Control** in the macOS app, then approve the pairing update.                                                                                                    |
-| `ACCESSIBILITY_REQUIRED`               | Grant Accessibility to the current OpenClaw app bundle in macOS System Settings.                                                                                                        |
+| `ACCESSIBILITY_REQUIRED`               | Grant Accessibility to the current Paddy app bundle in macOS System Settings.                                                                                                           |
 | `SYSTEM_RUN_DENIED: approval required` | Exec request needs explicit approval.                                                                                                                                                   |
 | `SYSTEM_RUN_DENIED: allowlist miss`    | Command blocked by allowlist mode. On Windows node hosts, shell-wrapper forms like `cmd.exe /c ...` are treated as allowlist misses in allowlist mode unless approved via the ask flow. |
 
 ## Fast recovery loop
 
 ```bash
-openclaw nodes status
-openclaw nodes describe --node <idOrNameOrIp>
-openclaw approvals get --node <idOrNameOrIp>
-openclaw logs --follow
+paddy nodes status
+paddy nodes describe --node <idOrNameOrIp>
+paddy approvals get --node <idOrNameOrIp>
+paddy logs --follow
 ```
 
 If still stuck:
 
 - Re-approve device pairing.
-- Restart or rerun a node paused for manual pairing, then approve its pending surface request with `openclaw nodes pending` / `openclaw nodes approve <nodeRequestId>`.
+- Restart or rerun a node paused for manual pairing, then approve its pending surface request with `paddy nodes pending` / `paddy nodes approve <nodeRequestId>`.
 - Re-open the node app (foreground).
 - Re-grant OS permissions.
 - Recreate/adjust the exec approval policy.

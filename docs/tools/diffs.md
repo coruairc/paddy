@@ -28,7 +28,7 @@ The [Control UI](/web/control-ui) already highlights inline tool diffs and sessi
     on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#apply-changes-and-inspect).
 
     `diffs` and its language pack ship as separate packages rather than with
-    OpenClaw, so the install needs a scoped locator. The `clawhub:` prefix
+    Paddy, so the install needs a scoped locator. The `clawhub:` prefix
     selects the ClawHub copy of `@openclaw/diffs`. Use
     `npm:@openclaw/diffs` to install from npm instead.
 
@@ -308,7 +308,7 @@ Supported `defaults` keys: `fontFamily`, `fontSize`, `lineSpacing`, `layout`, `s
 ## Artifact lifecycle and storage
 
 - Viewer HTML and metadata live in the shared `state/openclaw.sqlite` database under the Diffs plugin blob namespace. HTML is gzip-compressed. SQLite stores only a SHA-256 hash of the random URL token, not the token itself.
-- Rendered PNG/PDF files remain temporary materializations under `$TMPDIR/openclaw-diffs` because channel delivery requires a file path. SQLite owns their expiry metadata. OpenClaw writes no JSON sidecars.
+- Rendered PNG/PDF files remain temporary materializations under `$TMPDIR/openclaw-diffs` because channel delivery requires a file path. SQLite owns their expiry metadata. Paddy writes no JSON sidecars.
 - Default artifact TTL: 30 minutes. Maximum accepted TTL: 6 hours.
 - Cleanup runs opportunistically after each artifact create call. Expired SQLite rows are deleted first, followed by any corresponding PNG/PDF directory.
 - A fallback sweep removes rowless temporary folders older than 24 hours. Legacy `meta.json`, `file-meta.json`, and `viewer.html` caches are not imported or read.
@@ -359,7 +359,7 @@ Resolution order:
 
 <Steps>
   <Step title="Config">
-    `browser.executablePath` in OpenClaw config.
+    `browser.executablePath` in Paddy config.
   </Step>
   <Step title="Environment variables">
     - `OPENCLAW_BROWSER_EXECUTABLE_PATH`

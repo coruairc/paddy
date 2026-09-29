@@ -1,12 +1,12 @@
-# OpenClaw Baseten Provider
+# Paddy Baseten Provider
 
-Official OpenClaw provider plugin for Baseten Model APIs, including Thinking Machines Lab's Inkling.
+Official Paddy provider plugin for Baseten Model APIs, including Thinking Machines Lab's Inkling.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/baseten-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/baseten> for setup and configuration.

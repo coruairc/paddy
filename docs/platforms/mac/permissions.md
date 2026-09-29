@@ -21,7 +21,7 @@ background permission polling.
 
 Screen Recording and Accessibility show **Not granted** until access is confirmed;
 macOS's binary checks do not distinguish a first request from a denial. Click
-**Grant** to request access before looking for OpenClaw in System Settings.
+**Grant** to request access before looking for Paddy in System Settings.
 If access was denied or the prompt no longer appears, use the adjacent
 **Open System Settings** action. Permissions with a confirmed denial offer
 that action instead of **Grant**.
@@ -56,13 +56,13 @@ Ad-hoc signatures generate a new identity every build. macOS forgets previous gr
 
 If Quick Chat still shows **Needs additional permissions: Screen Recording**:
 
-1. Click **Grant** in OpenClaw.
-2. If macOS opens System Settings, enable the running OpenClaw app under **Privacy & Security -> Screen & System Audio Recording** (called **Screen Recording** on older macOS versions).
-3. Return to OpenClaw and retry the screenshot. **Dashboard → Settings → This Mac → Permissions** shows the refreshed access status.
+1. Click **Grant** in Paddy.
+2. If macOS opens System Settings, enable the running Paddy app under **Privacy & Security -> Screen & System Audio Recording** (called **Screen Recording** on older macOS versions).
+3. Return to Paddy and retry the screenshot. **Dashboard → Settings → This Mac → Permissions** shows the refreshed access status.
 
-After an explicit **Grant** request, OpenClaw checks ScreenCaptureKit as well as the macOS permission preflight. This lets it recognize access when the preflight still reports an old denial. Passive status checks do not initiate this probe before you request access.
+After an explicit **Grant** request, Paddy checks ScreenCaptureKit as well as the macOS permission preflight. This lets it recognize access when the preflight still reports an old denial. Passive status checks do not initiate this probe before you request access.
 
-If access still appears missing, quit and reopen OpenClaw from the same app path. Some macOS permission changes require an app restart before capture works. If both release and development builds are installed, grant access to the build you are actually running: approving `/Applications/OpenClaw.app` does not grant access to a development build with a different bundle identifier.
+If access still appears missing, quit and reopen Paddy from the same app path. Some macOS permission changes require an app restart before capture works. If both release and development builds are installed, grant access to the build you are actually running: approving `/Applications/Paddy.app` does not grant access to a development build with a different bundle identifier.
 
 ## Accessibility grants for Node and CLI runtimes
 
@@ -72,15 +72,15 @@ macOS TCC grants Accessibility to the code identity of the process it sees. If a
 
 Treat a `node` entry in System Settings as broad permission for that Node runtime, not as permission for one npm package. Avoid granting Accessibility to `node` unless you trust every script and package launched through that exact Node install.
 
-Basic presence comes from interaction with OpenClaw and needs no Accessibility grant. **Dashboard → Settings → This Mac → Permissions → System-wide presence detection** is a separate, off-by-default control that includes physical activity in other apps. Accessibility approval alone does not enable it. Turning it off clears the system-wide sample and falls back to app-local activity, without revoking Accessibility or disconnecting the node.
+Basic presence comes from interaction with Paddy and needs no Accessibility grant. **Dashboard → Settings → This Mac → Permissions → System-wide presence detection** is a separate, off-by-default control that includes physical activity in other apps. Accessibility approval alone does not enable it. Turning it off clears the system-wide sample and falls back to app-local activity, without revoking Accessibility or disconnecting the node.
 
 If you accidentally granted Accessibility to `node`, remove that entry from System Settings -> Privacy & Security -> Accessibility. Then grant the signed app or helper that should own UI automation.
 
 ## Separate Computer Control grants
 
-macOS keeps Accessibility, Event Posting, input listening, and Screen Recording in separate TCC buckets. One successful grant does not prove the others are usable. OpenClaw's Computer Control status checks Accessibility, Event Posting, and Screen Recording separately; this is why screenshots can succeed while clicks and typing fail.
+macOS keeps Accessibility, Event Posting, input listening, and Screen Recording in separate TCC buckets. One successful grant does not prove the others are usable. Paddy's Computer Control status checks Accessibility, Event Posting, and Screen Recording separately; this is why screenshots can succeed while clicks and typing fail.
 
-An Accessibility row can also remain visibly enabled while its code requirement is pinned to an older build. When OpenClaw reports **Accessibility grant may be stale**, select OpenClaw under **System Settings -> Privacy & Security -> Accessibility**, remove it with **-**, then re-add `/Applications/OpenClaw.app`. Quit and reopen OpenClaw afterward because Accessibility trust can remain cached in the running process.
+An Accessibility row can also remain visibly enabled while its code requirement is pinned to an older build. When Paddy reports **Accessibility grant may be stale**, select Paddy under **System Settings -> Privacy & Security -> Accessibility**, remove it with **-**, then re-add `/Applications/Paddy.app`. Quit and reopen Paddy afterward because Accessibility trust can remain cached in the running process.
 
 ## Desktop availability and keeping awake
 
@@ -90,11 +90,11 @@ state is separate from permission grants and the optional **Active computer
 presence** setting. A connected node or a successful Screen Sharing connection
 does not prove that the desktop is unlocked.
 
-During a Computer execution, OpenClaw uses temporary keep-awake assertions for
+During a Computer execution, Paddy uses temporary keep-awake assertions for
 up to one hour from that execution's first action. This includes background
 window and browser actions. Completion, cancellation, disconnect, provider
 replacement, or local Stop releases the execution's keep-awake request. The web
-Desktop viewer does not create an OpenClaw keep-awake execution.
+Desktop viewer does not create a Paddy keep-awake execution.
 
 To keep a dedicated Mac awake between jobs, enable **Keep computer awake**
 on the same settings page and accept the native confirmation. It is off by
@@ -102,10 +102,10 @@ default and takes effect only while this Mac is connected and actually hosting.
 It does not change macOS power or lock settings.
 
 Screen Sharing may request an immediate lock when its last viewer disconnects.
-OpenClaw honors that lock even when **Keep computer awake** is enabled.
+Paddy honors that lock even when **Keep computer awake** is enabled.
 
 Manual lock, logout, or an unknown desktop state releases keep-awake assertions
-and retires active Computer executions. OpenClaw does not unlock the Mac or
+and retires active Computer executions. Paddy does not unlock the Mac or
 resume those executions after sign-in. Use the normal macOS login screen through
 Screen Sharing or locally, then start a new Computer execution. The keep-awake
 option can become active again after a verified unlock while its hosting and

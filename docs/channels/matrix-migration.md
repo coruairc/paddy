@@ -1,5 +1,5 @@
 ---
-summary: "How OpenClaw upgrades the previous Matrix plugin in place, including encrypted-state recovery limits and manual recovery steps."
+summary: "How Paddy upgrades the previous Matrix plugin in place, including encrypted-state recovery limits and manual recovery steps."
 read_when:
   - Upgrading an existing Matrix installation
   - Migrating encrypted Matrix history and device state
@@ -18,14 +18,14 @@ For most users, the upgrade is in place:
 
 You do not need to rename config keys or reinstall the plugin under a new name.
 The root `openclaw` package no longer bundles Matrix runtime code or Matrix SDK
-dependencies. If `openclaw channels status` shows Matrix is configured but the
-plugin is not installed, run `openclaw doctor --fix` or
+dependencies. If `paddy channels status` shows Matrix is configured but the
+plugin is not installed, run `paddy doctor --fix` or
 `openclaw plugins install @openclaw/matrix`; do not install Matrix SDK packages
 into the root OpenClaw package.
 
 ## What the migration does automatically
 
-Matrix migration runs when you run [`openclaw doctor --fix`](/gateway/doctor). File-based sidecars next to the dedicated Matrix store retain their client-start fallback, but credential-file import is Doctor-only; runtime reads only canonical SQLite credential state.
+Matrix migration runs when you run [`paddy doctor --fix`](/gateway/doctor). File-based sidecars next to the dedicated Matrix store retain their client-start fallback, but credential-file import is Doctor-only; runtime reads only canonical SQLite credential state.
 
 Doctor migration covers:
 
@@ -34,7 +34,7 @@ Doctor migration covers:
 - importing file-based sidecar state (`bot-storage.json` sync cache, `recovery-key.json`, `legacy-crypto-migration.json`, IndexedDB snapshots) into Matrix SQLite state; migrated files are archived with a `.migrated` suffix
 - reusing the most complete existing token-hash storage root for the same Matrix account, homeserver, user, and device when the access token changes later
 
-## Upgrading from OpenClaw releases older than 2026.4
+## Upgrading from Paddy releases older than 2026.4
 
 Releases through the 2026.6 train also migrated the original flat single-store
 Matrix layout (`~/.openclaw/matrix/bot-storage.json` plus
@@ -42,7 +42,7 @@ Matrix layout (`~/.openclaw/matrix/bot-storage.json` plus
 old rust crypto store. Current releases no longer carry that migration.
 
 If you are upgrading an installation that still uses the flat layout, first
-upgrade to a 2026.6 release, run `openclaw doctor --fix`, and start the gateway
+upgrade to a 2026.6 release, run `paddy doctor --fix`, and start the gateway
 once so the flat store and any recoverable room keys are migrated. Then update
 to the latest release.
 
@@ -50,42 +50,42 @@ The previous public Matrix plugin did **not** automatically create Matrix room-k
 
 ## Recommended upgrade flow
 
-1. Update OpenClaw and the Matrix plugin normally.
+1. Update Paddy and the Matrix plugin normally.
 2. Run:
 
    ```bash
-   openclaw doctor --fix
+   paddy doctor --fix
    ```
 
 3. Start or restart the gateway.
 4. Check current verification and backup state:
 
    ```bash
-   openclaw matrix verify status
-   openclaw matrix verify backup status
+   paddy matrix verify status
+   paddy matrix verify backup status
    ```
 
 5. Put the recovery key for the Matrix account you are repairing in an account-specific environment variable. For a single default account, `MATRIX_RECOVERY_KEY` is fine. For multiple accounts, use one variable per account, for example `MATRIX_RECOVERY_KEY_ASSISTANT`, and add `--account assistant` to the command.
 
-6. If OpenClaw tells you a recovery key is needed, run the command for the matching account:
+6. If Paddy tells you a recovery key is needed, run the command for the matching account:
 
    ```bash
-   printf '%s\n' "$MATRIX_RECOVERY_KEY" | openclaw matrix verify backup restore --recovery-key-stdin
-   printf '%s\n' "$MATRIX_RECOVERY_KEY_ASSISTANT" | openclaw matrix verify backup restore --recovery-key-stdin --account assistant
+   printf '%s\n' "$MATRIX_RECOVERY_KEY" | paddy matrix verify backup restore --recovery-key-stdin
+   printf '%s\n' "$MATRIX_RECOVERY_KEY_ASSISTANT" | paddy matrix verify backup restore --recovery-key-stdin --account assistant
    ```
 
 7. If this device is still unverified, run the command for the matching account:
 
    ```bash
-   printf '%s\n' "$MATRIX_RECOVERY_KEY" | openclaw matrix verify device --recovery-key-stdin
-   printf '%s\n' "$MATRIX_RECOVERY_KEY_ASSISTANT" | openclaw matrix verify device --recovery-key-stdin --account assistant
+   printf '%s\n' "$MATRIX_RECOVERY_KEY" | paddy matrix verify device --recovery-key-stdin
+   printf '%s\n' "$MATRIX_RECOVERY_KEY_ASSISTANT" | paddy matrix verify device --recovery-key-stdin --account assistant
    ```
 
    If the recovery key is accepted and backup is usable, but `Cross-signing verified`
    is still `no`, complete self-verification from another Matrix client:
 
    ```bash
-   openclaw matrix verify self
+   paddy matrix verify self
    ```
 
    Accept the request in another Matrix client, compare the emoji or decimals,
@@ -95,7 +95,7 @@ The previous public Matrix plugin did **not** automatically create Matrix room-k
 8. If you are intentionally abandoning unrecoverable old history and want a fresh backup baseline for future messages, run:
 
    ```bash
-   openclaw matrix verify backup reset --yes
+   paddy matrix verify backup reset --yes
    ```
 
    Add `--rotate-recovery-key` only when the old recovery key should stop unlocking the fresh backup.
@@ -103,7 +103,7 @@ The previous public Matrix plugin did **not** automatically create Matrix room-k
 9. If no server-side key backup exists yet, create one for future recoveries:
 
    ```bash
-   openclaw matrix verify bootstrap
+   paddy matrix verify bootstrap
    ```
 
 ## Common messages and what they mean
@@ -125,24 +125,24 @@ The previous public Matrix plugin did **not** automatically create Matrix room-k
 
 ### Manual recovery messages
 
-`openclaw matrix verify status` and `openclaw matrix verify backup status` print a `Backup issue:` line plus `Next steps:` guidance when the room-key backup is not healthy on this device:
+`paddy matrix verify status` and `paddy matrix verify backup status` print a `Backup issue:` line plus `Next steps:` guidance when the room-key backup is not healthy on this device:
 
 | Backup issue                                                          | Meaning                                            | Fix                                                                                                                                       |
 | --------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `no room-key backup exists on the homeserver`                         | nothing to restore from                            | `openclaw matrix verify bootstrap` to create a room key backup                                                                            |
-| `backup decryption key is not loaded on this device`                  | key exists but is not active here                  | `openclaw matrix verify backup restore`; if it still cannot load the key, pipe the recovery key via `--recovery-key-stdin`                |
-| `backup decryption key could not be loaded from secret storage (...)` | secret storage load failed or is unsupported       | pipe the recovery key: `printf '%s\n' "$MATRIX_RECOVERY_KEY" \| openclaw matrix verify backup restore --recovery-key-stdin`               |
+| `no room-key backup exists on the homeserver`                         | nothing to restore from                            | `paddy matrix verify bootstrap` to create a room key backup                                                                               |
+| `backup decryption key is not loaded on this device`                  | key exists but is not active here                  | `paddy matrix verify backup restore`; if it still cannot load the key, pipe the recovery key via `--recovery-key-stdin`                   |
+| `backup decryption key could not be loaded from secret storage (...)` | secret storage load failed or is unsupported       | pipe the recovery key: `printf '%s\n' "$MATRIX_RECOVERY_KEY" \| paddy matrix verify backup restore --recovery-key-stdin`                  |
 | `backup key mismatch (...)`                                           | stored key does not match the active server backup | rerun `verify backup restore --recovery-key-stdin` with the active server backup key, or `verify backup reset --yes` for a fresh baseline |
 | `backup signature chain is not trusted by this device`                | device does not trust the cross-signing chain yet  | `verify device --recovery-key-stdin`, then `verify self` from another verified client if trust is still incomplete                        |
-| `backup exists but is not active on this device`                      | server backup present, local session inactive      | verify the device first, then recheck with `openclaw matrix verify backup status`                                                         |
-| `backup trust state could not be fully determined`                    | diagnostics were inconclusive                      | `openclaw matrix verify status --verbose`                                                                                                 |
+| `backup exists but is not active on this device`                      | server backup present, local session inactive      | verify the device first, then recheck with `paddy matrix verify backup status`                                                            |
+| `backup trust state could not be fully determined`                    | diagnostics were inconclusive                      | `paddy matrix verify status --verbose`                                                                                                    |
 
 Other recovery errors:
 
 `Matrix recovery key is required`
 
 - Meaning: you tried a recovery step without supplying a recovery key when one was required.
-- What to do: rerun the command with `--recovery-key-stdin`, for example `printf '%s\n' "$MATRIX_RECOVERY_KEY" | openclaw matrix verify device --recovery-key-stdin`.
+- What to do: rerun the command with `--recovery-key-stdin`, for example `printf '%s\n' "$MATRIX_RECOVERY_KEY" | paddy matrix verify device --recovery-key-stdin`.
 
 `Invalid Matrix recovery key: ...`
 
@@ -152,10 +152,10 @@ Other recovery errors:
 `Matrix recovery key was applied, but this device still lacks full Matrix identity trust.`
 
 - Meaning: the recovery key unlocked usable backup material, but Matrix has not established full cross-signing identity trust for this device. Check the command output for `Recovery key accepted`, `Backup usable`, `Cross-signing verified`, and `Device verified by owner`.
-- What to do: run `openclaw matrix verify self`, accept the request in another Matrix client, compare the SAS, and type `yes` only when it matches. Use `printf '%s\n' "$MATRIX_RECOVERY_KEY" | openclaw matrix verify bootstrap --recovery-key-stdin --force-reset-cross-signing` only when you intentionally want to replace the current cross-signing identity.
+- What to do: run `paddy matrix verify self`, accept the request in another Matrix client, compare the SAS, and type `yes` only when it matches. Use `printf '%s\n' "$MATRIX_RECOVERY_KEY" | paddy matrix verify bootstrap --recovery-key-stdin --force-reset-cross-signing` only when you intentionally want to replace the current cross-signing identity.
 
 If you accept losing unrecoverable old encrypted history, you can instead reset the
-current backup baseline with `openclaw matrix verify backup reset --yes`. When the
+current backup baseline with `paddy matrix verify backup reset --yes`. When the
 stored backup secret is broken, that reset also repairs secret storage so the
 new backup key can load correctly after restart.
 
@@ -164,9 +164,9 @@ new backup key can load correctly after restart.
 Run these checks in order:
 
 ```bash
-openclaw matrix verify status --verbose
-openclaw matrix verify backup status --verbose
-printf '%s\n' "$MATRIX_RECOVERY_KEY" | openclaw matrix verify backup restore --recovery-key-stdin --verbose
+paddy matrix verify status --verbose
+paddy matrix verify backup status --verbose
+printf '%s\n' "$MATRIX_RECOVERY_KEY" | paddy matrix verify backup restore --recovery-key-stdin --verbose
 ```
 
 If the backup restores successfully but some old rooms are still missing history, those missing keys were probably never backed up by the previous plugin.
@@ -176,9 +176,9 @@ If the backup restores successfully but some old rooms are still missing history
 If you accept losing unrecoverable old encrypted history and only want a clean backup baseline going forward, run these commands in order:
 
 ```bash
-openclaw matrix verify backup reset --yes
-openclaw matrix verify backup status --verbose
-openclaw matrix verify status
+paddy matrix verify backup reset --yes
+paddy matrix verify backup status --verbose
+paddy matrix verify status
 ```
 
 If the device is still unverified after that, finish verification from your Matrix client by comparing the SAS emoji or decimal codes and confirming that they match.

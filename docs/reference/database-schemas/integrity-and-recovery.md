@@ -3,7 +3,7 @@ doc-schema-version: 1
 summary: "Integrity checks, common database errors, and the supported downgrade recovery path"
 read_when:
   - "Diagnosing a quarantined database or a Gateway that refuses to start"
-  - "Recovering a database for an older OpenClaw release"
+  - "Recovering a database for an older Paddy release"
 title: "Integrity, troubleshooting, and recovery"
 ---
 
@@ -57,7 +57,7 @@ for the next admission to diagnose.
 | Doctor, backup verification, and compaction | Run the full scan before accepting or rewriting the database                                                                                    |
 
 The existing quarantine store keeps a reconstructible `agent_integrity_verifications`
-record: canonical database path, device, inode, OpenClaw version, verification time, and
+record: canonical database path, device, inode, Paddy version, verification time, and
 integer `clean_close`. It does not hash database contents. Agent lease admission
 durably clears cleanliness before opening; only the last graceful lease release
 can restore it after a successful WAL checkpoint and native close. Forced worker
@@ -110,12 +110,12 @@ publishes verification metadata. Confirmed corruption uses the existing quaranti
 path and prevents the next open. Ordinary writes do not invalidate the file identity. Same-inode damage
 introduced after a clean close can therefore be detected after readiness by the
 quick check, SQLite operations, the daily full verifier, or explicit Doctor.
-`openclaw doctor` retains full checks and `doctor --fix` clears verification
+`paddy doctor` retains full checks and `doctor --fix` clears verification
 metadata with quarantine. A failed durable dirty-marker write refuses that open
 rather than leaving stale clean proof reusable after a crash.
 
 The table is additive in the quarantine store; agent and shared-state schema
-versions do not change. An update to a different OpenClaw version runs the admission
+versions do not change. An update to a different Paddy version runs the admission
 gate, and older builds ignore the new table and retain their full checks. Pending
 migrations, index repairs, shared-state readiness, and explicit copied-file
 preflight still perform their existing full checks. Snapshot-based agent
@@ -147,7 +147,7 @@ schema additions and preserve atomic upgrades from older schema versions. A
 newly added supported column receives its required content transformation in the
 same transaction. Opens do not rerun historical row backfills for columns already
 present when the application version changes. Run
-`openclaw doctor --fix` during update maintenance to repair historical accounting
+`paddy doctor --fix` during update maintenance to repair historical accounting
 or legacy payload fields. A current-schema database that still contains the
 retired `cron_run_logs` table requires Doctor before runtime can open it; Doctor
 imports its retained history into the `runtime = 'cron'` rows of `task_runs`
@@ -157,7 +157,7 @@ Shared-state integrity, schema, version, and ownership checks remain in place.
 
 Schema compatibility preflight can read agent schema headers without a full integrity scan. For ordinary rollback-mode agent databases and complete WAL families, a read-only child reads the schema version and optional writer build in one fresh SQLite transaction, including committed WAL changes, without copying unrelated database contents. Its native connection and physical identity remain owned through close; cancellation and timeout wait for child closure. Parent-side diagnostics do not open or close the live agent file, preserving the parent's SQLite locks. As with the previous online-backup reader, native SQLite may update SHM read marks or rebuild existing SHM after a quiescent family reopens; the database and WAL contents remain unchanged. The Gateway carries successful header facts from admission to its later compatibility preflight only while the database, WAL, and rollback-journal files are unchanged. Changed or uncertain files are inspected again. Full readiness and writable admission retain their existing validation and fresh authority checks.
 
-Private snapshots remain necessary for artifact-preserving inspection, incomplete WAL families whose inspection would create source sidecars, and rollback journals requiring private recovery. Those cases use the existing snapshot owner and deadline; ordinary inspection errors do not trigger a full-copy fallback. Live files use native SQLite reads, never an immutable-file shortcut. Immutable reads are limited to verified private or explicit consolidated copies. `openclaw database preflight` performs the release-local shape comparison for an explicit copied file. The background verifier also scans already-open databases about once daily.
+Private snapshots remain necessary for artifact-preserving inspection, incomplete WAL families whose inspection would create source sidecars, and rollback journals requiring private recovery. Those cases use the existing snapshot owner and deadline; ordinary inspection errors do not trigger a full-copy fallback. Live files use native SQLite reads, never an immutable-file shortcut. Immutable reads are limited to verified private or explicit consolidated copies. `paddy database preflight` performs the release-local shape comparison for an explicit copied file. The background verifier also scans already-open databases about once daily.
 
 Concurrent asynchronous requests for the same physical live database share one
 snapshot operation. When the canonical runtime already owns an open SQLite
@@ -353,9 +353,9 @@ preparation leaves the agent degraded with the recorded reason; it does not stop
 healthy agents. Shared-state database failures retain their existing startup
 checks.
 
-Inspect `openclaw gateway call agents.list --json` or Gateway logs for the affected
+Inspect `paddy gateway call agents.list --json` or Gateway logs for the affected
 agent and reason. If the check fails, follow that reason's repair guidance; stop the Gateway
-before running `openclaw doctor --fix` against the same state directory or
+before running `paddy doctor --fix` against the same state directory or
 restoring the affected database from a verified backup. Restart after repair.
 Gateway shutdown cancels and joins pending inspections and preparation before
 releasing their owners. A result arriving during shutdown cannot readmit an agent.
@@ -399,7 +399,7 @@ files inherit NOCOW. Missing tooling or unsupported permissions produce a warnin
 the database still opens. NOCOW trades btrfs data checksums and compression for
 in-place writes; SQLite's integrity checks still apply.
 
-Doctor reports existing btrfs stores without NOCOW. Explicit `openclaw doctor --fix`
+Doctor reports existing btrfs stores without NOCOW. Explicit `paddy doctor --fix`
 can rewrite them under its stopped-Gateway maintenance owner. The repair needs
 `lsattr`, `chattr`, `fuser`, `getfacl`, `setfacl`, GNU `mv` with `--exchange` and `--no-copy`, and
 free space of at least twice the uncompressed store directory size. It takes
@@ -423,14 +423,14 @@ canonical validation once instead of reusing the original identity receipt.
 
 ### The state database is busy
 
-Wait for the other OpenClaw process to finish its database work, then retry the
+Wait for the other Paddy process to finish its database work, then retry the
 command. `state-lifecycle` contention normally clears after startup, a write, or
 maintenance finishes. `gateway-lifecycle` protects a running Gateway's ownership,
 and `state-handles` protects open database connections; those can remain held
 while the Gateway runs.
 
-If contention persists, run `openclaw gateway status` with the same profile and
-state-directory settings, and check for other OpenClaw processes using that state
+If contention persists, run `paddy gateway status` with the same profile and
+state-directory settings, and check for other Paddy processes using that state
 directory. Stop the blocking Gateway through its service manager or original
 terminal before retrying an operation that needs exclusive access. Prefer plain
 status here: `--deep` adds database preflight. Doctor also needs state coordination,
@@ -438,7 +438,7 @@ so running it while the lock is held can fail with the same contention.
 
 ### Database paths cannot be compared
 
-`Cannot determine whether database paths alias` means OpenClaw could not safely
+`Cannot determine whether database paths alias` means Paddy could not safely
 compare paths that do not yet exist. Check permission to create and remove entries
 under the nearest existing parent directory, then retry. Comparisons use bounded
 filesystem probes: each missing suffix permits up to 8,192 UTF-16 code units, with
@@ -449,7 +449,7 @@ path-identity result.
 ### A mount probe times out while opening a local database
 
 On macOS, native filesystem inspection can confirm APFS after mount enumeration
-times out. For a canonical database directory, OpenClaw then keeps WAL enabled
+times out. For a canonical database directory, Paddy then keeps WAL enabled
 instead of attempting a rollback-mode transition that conflicts with other open
 connections. Unknown filesystems, failed native inspection, and aliased paths
 retain the conservative rollback policy. The existing rules for network and
@@ -457,11 +457,11 @@ cross-VM filesystems, including the refusal to write through SSHFS, still apply.
 
 ### A legacy Workshop index prevents shared-state reads
 
-The `legacy-workshop-review-index` error requires `openclaw doctor --fix`.
+The `legacy-workshop-review-index` error requires `paddy doctor --fix`.
 Ordinary Gateway reads and automatic migration do not enter the legacy catalog
 repair path. Healthy reads retain their prepared SQLite queries.
 
-With OpenClaw 2026.9.4, run Doctor before retrying `openclaw update`: the installed
+With Paddy 2026.9.4, run Doctor before retrying `paddy update`: the installed
 updater checks database integrity before it can launch the target version.
 
 Doctor checks database versions and active owners before repairing the exact
@@ -473,7 +473,7 @@ unrecognized damage and newer databases remain refused.
 ### The shared-state WAL keeps growing
 
 The running Gateway records the result of its existing WAL maintenance pass,
-normally every 30 minutes. `openclaw status --deep` and Doctor show a **SQLite
+normally every 30 minutes. `paddy status --deep` and Doctor show a **SQLite
 WAL** warning after two consecutive blocked checkpoints, or after one blocked
 checkpoint when the WAL exceeds both twice the database size and the existing
 64 MiB journal-size limit. Checkpoint errors warn immediately. A later complete
@@ -492,7 +492,7 @@ require no state migration.
 The warning includes observed WAL and database sizes, checkpointed and total WAL
 frames, the last observed complete checkpoint, the consecutive blocked count,
 the observation time, and up to eight process-local active reader owners when
-the blocking connection uses OpenClaw's tracked query helpers. Reader diagnostics
+the blocking connection uses Paddy's tracked query helpers. Reader diagnostics
 contain only the bounded operation label, main/worker owner kind, optional worker
 actor id, age, and idle time; they never include SQL, bindings, or row contents.
 SQLite can report `busy=0` for an incomplete PASSIVE checkpoint; fewer checkpointed
@@ -519,15 +519,15 @@ read the recorded observation through the existing status RPC; they do not run
 a checkpoint or open a diagnostic database. Before the first observation, or
 when an older Gateway supplies no observations, this warning is absent.
 
-If the warning persists, capture `openclaw status --deep` output and restart the
-Gateway gracefully with `openclaw gateway restart`. Report the captured output
+If the warning persists, capture `paddy status --deep` output and restart the
+Gateway gracefully with `paddy gateway restart`. Report the captured output
 if the warning returns. Do not delete the WAL: it can contain committed data
 that has not reached the main database file.
 
 ### Doctor reports orphan task delivery rows
 
 If `foreign_key_check` names `task_delivery_state` referencing `task_runs`,
-stop the Gateway and run `openclaw doctor --fix`. Doctor can recover this known
+stop the Gateway and run `paddy doctor --fix`. Doctor can recover this known
 relation when the database is structurally intact and has no unrelated
 foreign-key violations or unrecognized delivery-table schema or triggers.
 
@@ -554,7 +554,7 @@ copy. This recovery does not establish which writer created the orphan rows.
 
 ### Why you cannot go back after updating to 2026.7.2
 
-Every release through `v2026.7.1` used agent schema 1 and state schema 1. The 2026.7.2 release train (starting with `v2026.7.2-beta.1`) migrates your databases forward on first start. That migration is one-way: the data is rewritten into the newer schema, and installing an older OpenClaw afterwards does not undo it. The older build refuses to start with a `newer schema version` error that names the build that owns the database.
+Every release through `v2026.7.1` used agent schema 1 and state schema 1. The 2026.7.2 release train (starting with `v2026.7.2-beta.1`) migrates your databases forward on first start. That migration is one-way: the data is rewritten into the newer schema, and installing an older Paddy afterwards does not undo it. The older build refuses to start with a `newer schema version` error that names the build that owns the database.
 
 Some older packages omit schema metadata. The updater recognizes the schema-1
 contract for plain 2026 stable releases through `2026.7.1` and checks it before
@@ -568,7 +568,7 @@ replace a complete backup. See [Downgrade](/install/updating#downgrade).
 
 ### The Gateway refuses to start with a newer schema version error
 
-A newer OpenClaw build wrote your databases, and the running build is older. The error names the refusing install — release version, commit, and install root — plus the schema it supports and the schema it found.
+A newer Paddy build wrote your databases, and the running build is older. The error names the refusing install — release version, commit, and install root — plus the schema it supports and the schema it found.
 
 Act on the install root, not the version. One release version string spans many `main` commits, schema levels, and same-version schema shapes, so two installs can both call themselves `2026.7.2` and still disagree about a database. A prerelease version may not exist on the `latest` npm tag at all: check `npm view openclaw dist-tags` before reinstalling, because the tag carrying the schema you need may be `beta`, and reinstalling from `latest` can move you further away.
 
@@ -585,7 +585,7 @@ the underlying database error.
 
 ### A database is quarantined after integrity verification failed
 
-The background verifier proved the file is corrupt, and every open now fails fast instead of rescanning. Restore the database from a backup or repair it, then run `openclaw doctor --fix` to clear the quarantine record. Doctor reports an explicit error if the quarantine record itself cannot be cleared; rerun it until it reports clean.
+The background verifier proved the file is corrupt, and every open now fails fast instead of rescanning. Restore the database from a backup or repair it, then run `paddy doctor --fix` to clear the quarantine record. Doctor reports an explicit error if the quarantine record itself cannot be cleared; rerun it until it reports clean.
 
 Media migration uses the schema admission integrity check first. Healthy agent
 databases do not repeat that full-file scan inside an immediate repair transaction.
@@ -594,7 +594,7 @@ retrying admission. Startup diagnostics label schema admission, index repair, an
 quarantine cleanup separately; stored data, schema versions, and update recovery
 semantics are unchanged.
 
-For shared-state or per-agent index-only corruption, `openclaw doctor --fix` is
+For shared-state or per-agent index-only corruption, `paddy doctor --fix` is
 the supported repair. Doctor requires every `integrity_check` finding to name missing,
 non-unique, or incorrectly counted index entries, verifies the table data without
 using the damaged indexes, and preserves the damaged database in an

@@ -1,5 +1,6 @@
 /** Explicit doctor maintenance for the canonical shared state SQLite database. */
 import fs from "node:fs";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveSqliteDatabaseFilePaths } from "../infra/sqlite-files.js";
 import { clearOpenClawDatabaseQuarantine } from "../state/openclaw-quarantine-store.js";
 import {
@@ -15,7 +16,6 @@ import {
   type DoctorSqliteCompactSnapshot,
 } from "./doctor-sqlite-compact.js";
 import { withDoctorSqliteMaintenanceLock } from "./doctor-sqlite-maintenance-lock.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 type DoctorStateSqliteCompactReport =
   | {
@@ -60,7 +60,9 @@ export async function runDoctorStateSqliteCompact(
     };
   }
   if (!stat.isFile()) {
-    throw new Error(`Canonical ${PRODUCT_NAME} state database is not a regular file: ${sqlitePath}`);
+    throw new Error(
+      `Canonical ${PRODUCT_NAME} state database is not a regular file: ${sqlitePath}`,
+    );
   }
   const withMaintenanceLock = deps.withMaintenanceLock ?? withDoctorSqliteMaintenanceLock;
   return await withMaintenanceLock({
@@ -71,7 +73,7 @@ export async function runDoctorStateSqliteCompact(
       authority.assertCurrent();
       if (isOpenClawStateDatabaseOpen()) {
         throw new Error(
-          "The shared OpenClaw state database is already open in this process. Stop OpenClaw and retry.",
+          "The shared Paddy state database is already open in this process. Stop Paddy and retry.",
         );
       }
 
@@ -79,7 +81,7 @@ export async function runDoctorStateSqliteCompact(
         afterSuccess: () => {
           if (!clearOpenClawDatabaseQuarantine(sqlitePath, { env })) {
             throw new Error(
-              `OpenClaw state database ${sqlitePath} was compacted, but its persisted quarantine record could not be cleared. Rerun openclaw doctor --fix so the database is not refused again.`,
+              `Paddy state database ${sqlitePath} was compacted, but its persisted quarantine record could not be cleared. Rerun paddy doctor --fix so the database is not refused again.`,
             );
           }
           clearOpenClawStateDatabaseOpenFailure(sqlitePath);

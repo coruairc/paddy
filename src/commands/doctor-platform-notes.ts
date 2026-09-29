@@ -68,8 +68,8 @@ export async function noteMacDisabledGatewayLaunchAgent(env: NodeJS.ProcessEnv =
     [
       `Gateway LaunchAgent ${label} is installed but unloaded and disabled in launchd.`,
       "A terminated update helper can leave it disabled across logins. Doctor does not automatically re-enable it.",
-      `After verifying the installation is safe to run, use ${labelEnv}${formatCliCommand("openclaw gateway start", env)} to re-enable and start it. Keep the same state/config overrides.`,
-      `If an update was interrupted or installation safety is uncertain, run ${formatCliCommand("openclaw update", env)} or ${formatCliCommand("openclaw doctor", env)} and ${formatCliCommand("openclaw triage", env)} before starting it.`,
+      `After verifying the installation is safe to run, use ${labelEnv}${formatCliCommand("paddy gateway start", env)} to re-enable and start it. Keep the same state/config overrides.`,
+      `If an update was interrupted or installation safety is uncertain, run ${formatCliCommand("paddy update", env)} or ${formatCliCommand("paddy doctor", env)} and ${formatCliCommand("paddy triage", env)} before starting it.`,
     ].join("\n"),
     "Gateway (macOS)",
   );
@@ -96,7 +96,7 @@ async function collectMacStaleOpenClawUpdateLaunchdJobsWarning(): Promise<string
     }),
     "- Fix after confirming no update is running:",
     "  launchctl remove <label>",
-    `  ${formatCliCommand("openclaw gateway restart")}`,
+    `  ${formatCliCommand("paddy gateway restart")}`,
   ].join("\n");
 }
 
@@ -207,7 +207,7 @@ export async function collectGatewayPlatformWarnings(
           issue.detail ? `${issue.message} (${issue.detail})` : issue.message,
           // Structured Doctor keeps this second line in fixHint, so triage
           // message truncation cannot discard the supported repair command.
-          `Run ${formatCliCommand("openclaw gateway install --force")} only after verification; inspect drop-ins separately.`,
+          `Run ${formatCliCommand("paddy gateway install --force")} only after verification; inspect drop-ins separately.`,
         ].join("\n"),
       );
   }

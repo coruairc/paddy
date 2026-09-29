@@ -155,7 +155,7 @@ catalog consumers, retaining cancellation and any explicit request deadline.
   acquisition remains empty.
 - `provider: "<id>"` filters the published result through the captured provider
   aliases. Unknown provider IDs return `INVALID_REQUEST` with the rejected ID.
-  Omit the filter or run `openclaw models list --all` to list models and their
+  Omit the filter or run `paddy models list --all` to list models and their
   provider IDs.
 - `includeDetails: true` includes available input modalities, effective
   `contextTokens`, and a `local` endpoint classification. It does not expose
@@ -243,4 +243,4 @@ or restart, not a silent local fallback. The model CLI uses this contract for
 - Final `agent` results may include `result.deliveryStatus` when delivery was
   requested, using the same `sent`, `suppressed`, `partial_failed`, and
   `failed` statuses documented for
-  [`openclaw agent --json --deliver`](/cli/agent#json-delivery-status).
+  [`paddy agent --json --deliver`](/cli/agent#json-delivery-status).

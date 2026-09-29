@@ -15,10 +15,10 @@ Adds agent-callable tools.
 ## Distribution
 
 - Package: `@openclaw/memory-core`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 
-- CLI commands: `openclaw memory`
+- CLI commands: `paddy memory`
 - Slash commands: `/dreaming`
 - Contracts: `tools`

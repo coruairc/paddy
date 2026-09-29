@@ -3,6 +3,7 @@ import {
   normalizeLowercaseStringOrEmpty,
   normalizeOptionalLowercaseString,
 } from "@openclaw/normalization-core/string-coerce";
+import { CLI_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import {
   consumeRootOptionToken,
@@ -22,7 +23,6 @@ import {
 import { isReservedNonPluginCommandRoot } from "./command-registration-policy.js";
 import { getCoreCliParentDefaultHelpCommands } from "./program/core-command-descriptors.js";
 import { getSubCliParentDefaultHelpCommands } from "./program/subcli-descriptors.js";
-import { CLI_NAME } from "../brand.js";
 
 const ROOT_HELP_ALIASES = new Set(["tools"]);
 const SETUP_ONBOARD_CONFIGURE_HELP_COMMANDS = new Set(["setup", "onboard", "configure"]);
@@ -142,7 +142,7 @@ export function shouldStartProxyForCli(argv: string[]): boolean {
 
 function formatExcludedPluginCommand(command: string, owner: string): string {
   return owner === command
-    ? `The \`openclaw ${command}\` command is unavailable because ` +
+    ? `The \`paddy ${command}\` command is unavailable because ` +
         `\`plugins.allow\` excludes "${command}". Add "${command}" to ` +
         `\`plugins.allow\` if you want that bundled plugin CLI surface.`
     : `"${command}" is not a plugin; it is a command provided by the ` +

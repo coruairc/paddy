@@ -1,24 +1,24 @@
 ---
 doc-schema-version: 1
-summary: "CLI reference for `openclaw update` (updates, repair, and recovery cleanup)"
+summary: "CLI reference for `paddy update` (updates, repair, and recovery cleanup)"
 read_when:
   - You want to update a source checkout safely
-  - You are debugging `openclaw update` output or options
+  - You are debugging `paddy update` output or options
   - You want to inspect or retire migration recovery originals after an update
   - You need to understand `--update` shorthand behavior
 title: "Update"
 ---
 
-# `openclaw update`
+# `paddy update`
 
-Update OpenClaw and switch between stable/extended-stable/beta/dev channels.
+Update Paddy and switch between stable/extended-stable/beta/dev channels.
 
 If you installed via **npm/pnpm/bun** (global install, no git metadata),
 updates go through the package-manager flow described in
 [Updating](/install/updating).
 
 Custom npm prefixes such as `~/.npm-global` are recognized from npm's configured
-prefix and the installed OpenClaw launcher. A prefix configured in `~/.npmrc`
+prefix and the installed Paddy launcher. A prefix configured in `~/.npmrc`
 does not need a matching `NPM_CONFIG_PREFIX` environment variable. If no owner
 can be identified, the CLI includes the inspected package, prefix, and launcher
 paths and the package-manager probe results in its guidance.
@@ -28,7 +28,7 @@ root skips target preflight and gives commands to locate the owning installation
 
 An older updater that stops before staging cannot use this repair. For a known
 npm installation, supply its configured prefix explicitly for that update:
-`NPM_CONFIG_PREFIX="$(npm prefix -g)" openclaw update`.
+`NPM_CONFIG_PREFIX="$(npm prefix -g)" paddy update`.
 
 An installation without a detected package-manager owner records a **skipped**
 update, exits successfully, and leaves the Gateway running. For Docker/container
@@ -44,24 +44,24 @@ update failure report.
 ## Usage
 
 ```bash
-openclaw update
-openclaw update status
-openclaw update repair
-openclaw update cleanup --dry-run
-openclaw update wizard
-openclaw update --channel extended-stable
-openclaw update --channel beta
-openclaw update --channel dev
-openclaw update --tag beta
-openclaw update --dry-run
-openclaw update --no-restart
-openclaw update --yes
-openclaw update --accept-capabilities
-openclaw update --json
-openclaw --update
+paddy update
+paddy update status
+paddy update repair
+paddy update cleanup --dry-run
+paddy update wizard
+paddy update --channel extended-stable
+paddy update --channel beta
+paddy update --channel dev
+paddy update --tag beta
+paddy update --dry-run
+paddy update --no-restart
+paddy update --yes
+paddy update --accept-capabilities
+paddy update --json
+paddy --update
 ```
 
-`openclaw --update` rewrites to `openclaw update` (useful for shells and
+`paddy --update` rewrites to `paddy update` (useful for shells and
 launcher scripts).
 
 Invalid configuration reports `invalid-config` before database schema inspection.
@@ -70,7 +70,7 @@ reports `config-read-failed`, with a recognized filesystem error code when avail
 For supported package targets, the candidate makes that
 decision after private staging; see [Candidate-owned admission](#candidate-owned-admission).
 The local diagnostic identifies invalid fields and recommends
-`openclaw doctor --fix`, followed by correcting any remaining errors. A dry run
+`paddy doctor --fix`, followed by correcting any remaining errors. A dry run
 keeps this guidance in its JSON `notes` without changing the configuration.
 Public failure reports retain the rejected schema area, such as `gateway.*`,
 while hiding operator-defined keys and rejected values. Admission still runs
@@ -81,12 +81,12 @@ update and still verifies the installed runtime and Gateway readiness.
 
 The 2026.9.4 updater reports this condition as `database-schema-preflight` and
 can show `mode: unknown` even after resolving an npm target. Before another
-update or dry run replaces the latest history, run `openclaw update status --json`
+update or dry run replaces the latest history, run `paddy update status --json`
 and inspect `lastRun.origin.nextAction` and `lastRun.target` for the recorded
 reason and target. A candidate release cannot repair an installed updater that
 refuses before staging it; correct the configuration before retrying.
 
-Updaters without the admission fix first shipped in 2026.7.2-beta.5 (including 2026.6.34–2026.6.35 and the 2026.7.33–2026.7.35 extended-stable line) also refuse before staging with `plugins.load.paths: plugin path not found`; restore a missing custom plugin directory or remove its configured path before retrying. `openclaw doctor --fix` can repair recognized bundled-path aliases and preserves unrelated custom paths.
+Updaters without the admission fix first shipped in 2026.7.2-beta.5 (including 2026.6.34–2026.6.35 and the 2026.7.33–2026.7.35 extended-stable line) also refuse before staging with `plugins.load.paths: plugin path not found`; restore a missing custom plugin directory or remove its configured path before retrying. `paddy doctor --fix` can repair recognized bundled-path aliases and preserves unrelated custom paths.
 
 Update admission recognizes orphan `task_delivery_state` rows whose parent tasks
 are missing as repairable. When it can acquire Doctor's ownership fences, it runs
@@ -94,21 +94,21 @@ the same [preservation-first recovery](/reference/database-schemas/integrity-and
 before creating update history. Recovery and its ledger entry commit together;
 the entry records the row count and recovery directory. A live Gateway owner,
 read-only store, or failed preservation prevents repair and reports
-`openclaw doctor --fix` as the next action. Other foreign-key violations and
+`paddy doctor --fix` as the next action. Other foreign-key violations and
 structural damage still refuse admission.
 `--dry-run` reports the repairable condition without recovering rows or creating
 an update ledger entry for that refused preview.
 
 The installed 2026.9.4 updater cannot use this recovery before updating itself.
 If it refuses with a database integrity error, install the corrective release
-manually and run `openclaw doctor --fix`.
+manually and run `paddy doctor --fix`.
 
 Failed update and repair attempts enter [recovery triage](/cli/update#recover-a-failed-update)
 after service recovery and cleanup finish. Preflight and finalization join admitted
 command cleanup before handing off ownership or reporting completion. If cleanup
 cannot confirm that work stopped, the updater retains any acquired ownership and
 recovery artifacts and skips automatic service compensation and repair. Inspect
-`openclaw update status` and resolve the pending execution before retrying.
+`paddy update status` and resolve the pending execution before retrying.
 A verified rollback does not automatically start triage: the previous generation
 is running again, and the report keeps the failing check as the reason.
 An interactive update offers the diagnose/report menu with **Exit** selected by
@@ -126,11 +126,11 @@ not the installed updater, rollback, or the Dashboard RPC response.
 After a final interactive update failure, **Diagnose update failure** and
 **Report update failure** are separate choices. Reporting first shows the exact
 sanitized issue body and defaults confirmation to **No**. After confirmation,
-OpenClaw checks the GitHub CLI's active `github.com` account with a silent,
+Paddy checks the GitHub CLI's active `github.com` account with a silent,
 read-only request before issue creation. Fallback and pending outcomes retain the
 sanitized report locally; a confirmed issue keeps only its durable issue URL.
 If the CLI is missing, authentication is unavailable, or GitHub rejects the
-upload, OpenClaw keeps the sanitized report locally and returns to the previous
+upload, Paddy keeps the sanitized report locally and returns to the previous
 action menu. Fix the problem, then choose **Report update failure** and confirm
 again to retry the same report, or choose **Report in browser** to review and
 submit it with your browser's GitHub account. The browser choice is available
@@ -143,7 +143,7 @@ Successful submission, explicit exit, and cancellation retain their normal
 behavior; Diagnose runs only when selected explicitly.
 In the Control UI, an interrupted
 pre-create preparation becomes retryable after its local reservation expires.
-After an uncertain creation result, OpenClaw checks for an issue matching the
+After an uncertain creation result, Paddy checks for an issue matching the
 exact report. If neither a verified issue URL nor a definitive rejection is
 available, the report stays pending with no replay link because an issue may
 already exist.
@@ -178,7 +178,7 @@ its candidate package.
 
 ## Candidate-owned admission
 
-For package-manager updates, `openclaw update` privately stages the selected
+For package-manager updates, `paddy update` privately stages the selected
 package once, then lets that candidate decide whether the live installation can
 be updated. Registry targets and explicit artifacts such as `--tag ./openclaw.tgz`
 use the same flow. The stage is reused for verification, canary rehearsal, and
@@ -242,7 +242,7 @@ Use `--admission installed` to force the installed checks. The default option is
 uses installed checks and does not stage a package or invoke candidate admission.
 Git/source updates keep their existing flow.
 
-`openclaw update admit` is an internal command, hidden from help. The supervisor
+`paddy update admit` is an internal command, hidden from help. The supervisor
 passes `--context <absolute-path>` to a private mode-0600 context file; this command
 path and required argument select admission child mode. The command emits
 one JSON document with `protocol`, `verdict`, `reasons`, `warnings`, and `facts`
@@ -274,7 +274,7 @@ For an authorized update on another host, use the target installation's owning
 account and a non-interactive SSH command:
 
 ```bash
-ssh -T user@gateway-host 'openclaw update --yes' </dev/null
+ssh -T user@gateway-host 'paddy update --yes' </dev/null
 ```
 
 Ensure `openclaw` resolves to the intended installation in that account's SSH
@@ -307,7 +307,7 @@ target CLI or an older target without support is refused; the updater does not
 invoke the old runtime installer as a substitute. Authorized installation-root
 changes bind the destination CLI separately while retaining the original update owner. Update-owned commands also refuse unmanaged
 restart/stop and detached restart or Windows Startup-folder fallbacks that cannot
-retain this ownership. Ordinary user-invoked `openclaw gateway` commands keep their
+retain this ownership. Ordinary user-invoked `paddy gateway` commands keep their
 existing behavior.
 
 On Windows, capability probes stay alive until the updater finishes binding their
@@ -323,7 +323,7 @@ in-process service preparation before package mutation.
 
 ## Options
 
-Post-core repair Doctor and `openclaw update finalize` run without a separate
+Post-core repair Doctor and `paddy update finalize` run without a separate
 per-Doctor deadline unless the operator supplies `--timeout`. A fresh post-core
 process receives the operator choice separately from its internal step allowance.
 Older targets retain their existing allowance and deadline behavior.
@@ -350,7 +350,7 @@ activation budget is present, it uses the measured database sizes, observed cand
 count, and the caller's step allowance. Migrated finalization preserves explicit or
 inherited allowances. Aggregate expiry reports `update-activation-timeout` and
 retains ownership until writers settle; it does not authorize rollback or restart.
-Use `openclaw update status` and Doctor for recovery guidance.
+Use `paddy update status` and Doctor for recovery guidance.
 
 | Flag                                             | Description                                                                                                                                                                                                                                                                                                                                   |
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -366,7 +366,7 @@ Use `openclaw update status` and Doctor for recovery guidance.
 | `--accept-capabilities`                          | Accept each plugin's reviewed capability changes during post-update sync. This acknowledges the exact staged capability surface; it does not disable capability checks or establish future trust.                                                                                                                                             |
 
 There is no `--verbose` flag. Use `--dry-run` to preview planned actions,
-`--json` for machine-readable results, and `openclaw update status --json`
+`--json` for machine-readable results, and `paddy update status --json`
 for channel, availability, and the latest durable update report. Gateway console verbosity (`--verbose`) and
 file log level (`logging.level: "debug"`/`"trace"`) are independent knobs; see
 [Gateway logging](/gateway/logging).
@@ -385,7 +385,7 @@ are labeled explicitly. The final report includes the outcome, recorded phase du
 verification facts, and recovery guidance. `--json` keeps stdout machine-readable and does not
 print progress steps.
 
-When no update is active, `openclaw update status` labels the saved outcome
+When no update is active, `paddy update status` labels the saved outcome
 `Last recorded update` with the recorded start time, so historical results are
 distinct from current update activity.
 
@@ -402,10 +402,10 @@ the database. Existing databases retain their downgrade protections.
 
 If database schema preflight cannot inspect the configured paths because the
 config is invalid, its refusal lists the config file and invalid fields. Run
-`openclaw doctor --fix` to repair retired or unrecognized fields, correct any
+`paddy doctor --fix` to repair retired or unrecognized fields, correct any
 remaining errors, and retry the update. Preflight leaves the config unchanged.
 
-Explicit package specs on a fresh profile first stage with a temporary OpenClaw
+Explicit package specs on a fresh profile first stage with a temporary Paddy
 profile. The updater inspects the staged runtime's declared schema and Node
 requirements before admitting changes to the selected profile. Artifacts without
 declared schema support are refused without creating the profile's runtime database.
@@ -421,7 +421,7 @@ If package metadata cannot be resolved, retry with an exact published `--tag`;
 failed target selection does not initialize the profile with the updater's schema.
 Metadata failures retain the detected update mode and a specific failure fact for
 registry lookup, dist-tag resolution, version mismatch, schema declarations, or
-Git target inspection. The summary and `openclaw update status --json` include
+Git target inspection. The summary and `paddy update status --json` include
 the reason and next step; the bounded failure report includes the same public
 description without publishing local paths or registry response text. Existing
 updaters cannot gain these diagnostics until the candidate has been installed.
@@ -448,7 +448,7 @@ repeats, so target checks use that artifact's database schema and runtime requir
 
 For source checkouts, `--dry-run` previews the update flow without fetching Git
 refs or checking working-tree changes. The real update checks for uncommitted
-changes before modifying the checkout. Use `openclaw update status` to inspect
+changes before modifying the checkout. Use `paddy update status` to inspect
 the current branch, version, and update availability.
 
 <Note>
@@ -470,7 +470,7 @@ checkout offers to create one.
 
 The channel picker reads the local install identity without checking Git
 freshness or dependencies. Those checks run when you apply the update; use
-`openclaw update status` to inspect availability first.
+`paddy update status` to inspect availability first.
 
 | Flag                    | Default | Description                                                  |
 | ----------------------- | ------- | ------------------------------------------------------------ |
@@ -515,7 +515,7 @@ freshness or dependencies. Those checks run when you apply the update; use
 
 ## Related
 
-- `openclaw doctor` (offers to run update first on git checkouts)
+- `paddy doctor` (offers to run update first on git checkouts)
 - [Development channels](/install/development-channels)
 - [Updating](/install/updating)
 - [CLI reference](/cli)

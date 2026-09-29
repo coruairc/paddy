@@ -306,7 +306,7 @@ export async function noteSessionTranscriptLabelHealth(params: {
     note(
       [
         `- Found ${countLabel(foundSessions, "session")} with legacy inbound-context labels.`,
-        '- Run "openclaw doctor --fix" to rewrite them.',
+        '- Run "paddy doctor --fix" to rewrite them.',
       ].join("\n"),
       NOTE_TITLE,
     );

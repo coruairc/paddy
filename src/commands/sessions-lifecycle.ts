@@ -69,7 +69,7 @@ function resolveLifecycleAgentId(rawAgent: string | undefined): string | undefin
 
 function listHint(agent?: string): string {
   const agentFlag = agent ? ` --agent ${agent}` : "";
-  return formatCliCommand(`openclaw sessions list${agentFlag} --json`);
+  return formatCliCommand(`paddy sessions list${agentFlag} --json`);
 }
 
 function notFoundResult(key: string, agent?: string): SessionsLifecycleResult {
@@ -168,14 +168,14 @@ function outputLifecycleResults(
             runtime.log("Archived transcripts can remain eligible for memory search.");
             runtime.log(
               agentId
-                ? `To remove indexed memories for this session, run openclaw memory forget --agent ${quoteCliArg(agentId)} --session ${quoteCliArg(result.key)} on the Gateway host or container using its state and configuration.`
-                : "Run openclaw memory forget on the Gateway host or container using its state and configuration; select the owning agent with --agent and this session with --session.",
+                ? `To remove indexed memories for this session, run paddy memory forget --agent ${quoteCliArg(agentId)} --session ${quoteCliArg(result.key)} on the Gateway host or container using its state and configuration.`
+                : "Run paddy memory forget on the Gateway host or container using its state and configuration; select the owning agent with --agent and this session with --session.",
             );
           }
           if (result.worktreePreserved) {
             const preserved = result.worktreePreserved;
             runtime.error(
-              `Worktree ${preserved.branch} at ${preserved.path} needs attention: ${WORKTREE_PRESERVATION_REASON_COPY[preserved.reason]}. Inspect it with ${formatCliCommand("openclaw worktrees list")}.`,
+              `Worktree ${preserved.branch} at ${preserved.path} needs attention: ${WORKTREE_PRESERVATION_REASON_COPY[preserved.reason]}. Inspect it with ${formatCliCommand("paddy worktrees list")}.`,
             );
           }
           break;

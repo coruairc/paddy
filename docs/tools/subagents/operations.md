@@ -34,20 +34,20 @@ session (default `5`); increasing execution concurrency does not raise that
 limit. Collector admission instead uses Swarm's `maxChildrenPerGroup` (default
 `50`) and `maxTotalPerGroup` (default `200`); raising execution concurrency does
 not raise either group limit. [Codex-native subagents](/plugins/codex-harness) use Codex's own scheduler
-and limits independently of these OpenClaw queues.
+and limits independently of these Paddy queues.
 
 Suspended completion deliveries do not block new work. Native subagents, ACP
 sessions, and visible sessions retain their normal active-run limits and
 authorization checks independently of the delivery backlog.
 
-OpenClaw warns when the delivery backlog reaches 25. Within a Gateway process,
+Paddy warns when the delivery backlog reaches 25. Within a Gateway process,
 unchanged backlog counts do not repeat the warning every sweep. A count change
 at or above 25, or a return to that threshold after recovery, produces a new
 warning. The backlog size does not discard results or change their retention.
 
 ## Liveness and recovery
 
-OpenClaw does not treat `endedAt` absence as permanent proof that a
+Paddy does not treat `endedAt` absence as permanent proof that a
 sub-agent is still alive. When the reading process can verify a current
 execution owner or an exact queued collector reservation, an unended run keeps
 counting regardless of age. Persisted metadata alone does not establish that

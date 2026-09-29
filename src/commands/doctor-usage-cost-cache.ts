@@ -88,7 +88,7 @@ async function maybeRemoveLegacyUsageCostCacheFiles(params: {
   homedir?: () => string;
 }): Promise<void> {
   const files = await detectLegacyUsageCostCacheFiles(params).catch((error: unknown) => {
-    const command = params.shouldRepair ? "openclaw doctor --fix" : "openclaw doctor";
+    const command = params.shouldRepair ? "paddy doctor --fix" : "paddy doctor";
     const action = params.shouldRepair ? "scan and cleanup" : "scan";
     note(
       [
@@ -105,7 +105,7 @@ async function maybeRemoveLegacyUsageCostCacheFiles(params: {
   }
   if (!params.shouldRepair) {
     note(
-      `${files.length} rebuildable usage-cost cache ${files.length === 1 ? "file remains" : "files remain"}. Run \`openclaw doctor --fix\` to remove ${files.length === 1 ? "it" : "them"}.`,
+      `${files.length} rebuildable usage-cost cache ${files.length === 1 ? "file remains" : "files remain"}. Run \`paddy doctor --fix\` to remove ${files.length === 1 ? "it" : "them"}.`,
       "Usage cost cache",
     );
     return;
@@ -141,7 +141,7 @@ async function maybeRemoveLegacySkillUploadTree(params: {
   }
   if (!params.shouldRepair) {
     note(
-      "Legacy skill-upload staging remains. Run `openclaw doctor --fix` to discard it; active uploads now live in SQLite and must be retried.",
+      "Legacy skill-upload staging remains. Run `paddy doctor --fix` to discard it; active uploads now live in SQLite and must be retried.",
       "Skill uploads",
     );
     return;

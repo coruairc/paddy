@@ -351,7 +351,7 @@ async function inspectMemorySearchHealthForAgent(
         "",
         policyBlock.fix,
         "",
-        `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+        `Verify: ${formatCliCommand("paddy memory status --deep")}`,
       ].join("\n"),
     );
     return;
@@ -436,7 +436,7 @@ async function inspectMemorySearchHealthForAgent(
     const setupFix = setup?.fixHint?.trim();
     const updateFix =
       !ownerPolicyBlock && !inspectSetup
-        ? `Fix: Update the installed plugin: ${formatCliCommand(`openclaw plugins update ${installedOwner.id}`)}`
+        ? `Fix: Update the installed plugin: ${formatCliCommand(`paddy plugins update ${installedOwner.id}`)}`
         : null;
     const policyBlock = ownerPolicyBlock
       ? resolveLocalProviderPolicyBlockGuidance(ownerPolicyBlock, installedOwner.id)
@@ -475,7 +475,7 @@ async function inspectMemorySearchHealthForAgent(
                 ? "Fix: Repair the llama.cpp server problem reported by the Gateway."
                 : null),
         "",
-        `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+        `Verify: ${formatCliCommand("paddy memory status --deep")}`,
       ]
         .filter(Boolean)
         .join("\n"),
@@ -493,9 +493,9 @@ async function inspectMemorySearchHealthForAgent(
         "Set memory.search.remote.baseUrl to the /v1 endpoint for your embeddings server.",
         "",
         "Fix:",
-        `- ${formatCliCommand("openclaw config set memory.search.remote.baseUrl http://127.0.0.1:1234/v1")}`,
+        `- ${formatCliCommand("paddy config set memory.search.remote.baseUrl http://127.0.0.1:1234/v1")}`,
         "",
-        `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+        `Verify: ${formatCliCommand("paddy memory status --deep")}`,
       ].join("\n"),
       "memory.search.remote.baseUrl",
     );
@@ -509,9 +509,9 @@ async function inspectMemorySearchHealthForAgent(
         "Set memory.search.model to the embedding model id your server expects.",
         "",
         "Fix:",
-        `- ${formatCliCommand("openclaw config set memory.search.model text-embedding-bge-m3")}`,
+        `- ${formatCliCommand("paddy config set memory.search.model text-embedding-bge-m3")}`,
         "",
-        `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+        `Verify: ${formatCliCommand("paddy memory status --deep")}`,
       ].join("\n"),
       "memory.search.model",
     );
@@ -533,7 +533,7 @@ async function inspectMemorySearchHealthForAgent(
           ? `Memory search provider "${provider}" is configured, but the gateway reports embeddings are not ready.`
           : `Memory search provider "${provider}" is configured, but the gateway could not confirm embeddings are ready.`,
         gatewayProbeWarning,
-        `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+        `Verify: ${formatCliCommand("paddy memory status --deep")}`,
       ]
         .filter(Boolean)
         .join("\n"),
@@ -555,7 +555,7 @@ async function inspectMemorySearchHealthForAgent(
       [
         `Memory search provider is set to "${provider}" but the API key was not found in the CLI environment.`,
         "The running gateway reports memory embeddings are ready for the default agent.",
-        `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+        `Verify: ${formatCliCommand("paddy memory status --deep")}`,
       ].join("\n"),
     );
     return;
@@ -571,10 +571,10 @@ async function inspectMemorySearchHealthForAgent(
       "",
       "Fix (pick one):",
       `- Set ${envVar} in your environment`,
-      `- Configure credentials: ${formatCliCommand("openclaw configure --section model")}`,
-      `- To disable: ${formatCliCommand("openclaw config set memory.search.enabled false")}`,
+      `- Configure credentials: ${formatCliCommand("paddy configure --section model")}`,
+      `- To disable: ${formatCliCommand("paddy config set memory.search.enabled false")}`,
       "",
-      `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+      `Verify: ${formatCliCommand("paddy memory status --deep")}`,
     ].join("\n"),
   );
 }

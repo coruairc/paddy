@@ -1,6 +1,6 @@
+import { CLI_NAME, PRODUCT_NAME } from "../../../brand.js";
 // English wizard translations provide default onboarding copy.
 import type { WizardTranslationMap } from "../types.js";
-import { CLI_NAME, PRODUCT_NAME } from "../../../brand.js";
 
 export const en = {
   common: {
@@ -91,8 +91,7 @@ export const en = {
       remoteTokenMode: "How do you want to provide this Gateway secret?",
       tailscaleExposure: "Tailscale exposure",
       tokenPrompt: "Gateway token",
-      tokenStoreProvisioned:
-        `Generated a Gateway secret and stored it in the ${PRODUCT_NAME} secret store as {name}. Config keeps only a reference; inspect it with \`${CLI_NAME} secrets store list\`.`,
+      tokenStoreProvisioned: `Generated a Gateway secret and stored it in the ${PRODUCT_NAME} secret store as {name}. Config keeps only a reference; inspect it with \`${CLI_NAME} secrets store list\`.`,
       trustedProxyAllowLoopback: "Allow loopback trusted-proxy authentication?",
       trustedProxyLoopbackTitle: "Loopback proxy security warning",
       trustedProxyLoopbackWarning:
@@ -127,7 +126,7 @@ export const en = {
       apply: "Apply this migration now?",
       appliedTitle: "Migration applied",
       cancelled: "migration cancelled",
-      complete: "Migration complete. Run `openclaw doctor` next.",
+      complete: "Migration complete. Run `paddy doctor` next.",
       continuing: "Migration complete. Continuing setup.",
       importFrom: "Import from {source}",
       importFromAnotherAgent: "Import from another agent",
@@ -210,7 +209,7 @@ export const en = {
       arrayPromptSuffix: " (comma-separated, empty to clear)",
       arrayPlaceholder: "value1, value2",
       sensitiveField:
-        '"{label}" is sensitive. Set it via:\n  openclaw config set plugins.entries.{plugin}.config.{field} <value>\nor use the Web UI Settings page.',
+        '"{label}" is sensitive. Set it via:\n  paddy config set plugins.entries.{plugin}.config.{field} <value>\nor use the Web UI Settings page.',
       sensitiveTitle: "Sensitive field",
       skipConfigHint: "Continue without configuring plugins",
       useLocalPluginPath: "Use local plugin path",
@@ -277,8 +276,7 @@ export const en = {
     },
     guided: {
       laneQuestion: "How would you like to start?",
-      laneSecurityLine:
-        `${PRODUCT_NAME} runs an AI agent with real access to this machine. Security guide: https://docs.openclaw.ai/gateway/security`,
+      laneSecurityLine: `${PRODUCT_NAME} runs an AI agent with real access to this machine. Security guide: https://docs.openclaw.ai/gateway/security`,
       laneQuickLabel: "Quick start (recommended)",
       laneQuickHint: "Find AI access, choose a connection to verify, then open the web dashboard.",
       laneCustomLabel: "Custom setup",
@@ -286,13 +284,13 @@ export const en = {
       quickstartDashboard: "Dashboard: {url}",
       quickstartForeground: "Gateway is running in the foreground. Press Ctrl+C to stop.",
       quickstartBackground:
-        "To keep the Gateway running in the background later: openclaw gateway install",
+        "To keep the Gateway running in the background later: paddy gateway install",
       quickstartReopen:
-        "Run openclaw to open the TUI, or openclaw dashboard to reopen the web dashboard.",
+        "Run paddy to open the TUI, or paddy dashboard to reopen the web dashboard.",
       quickstartBrowserUnavailable:
         "The browser handoff did not finish. The Gateway is still running; open the dashboard when you are ready.",
       quickstartGatewayPending:
-        "The Gateway is not reachable yet. Keep this terminal open and run openclaw gateway status to check startup.",
+        "The Gateway is not reachable yet. Keep this terminal open and run paddy gateway status to check startup.",
       accessFullHint:
         "I find AI apps and keys on this machine; you choose which connection to test.",
       accessFullLabel: "Full access — find everything automatically",
@@ -336,7 +334,7 @@ export const en = {
       detecting: "Looking for AI you already use…",
       existingModelKept:
         "Your configured default model was kept unchanged. Choose how to continue below — retry it, connect another provider, or exit. The check runs outside your workspace, so a workspace-plugin model can fail here while still working in the agent.",
-      escapeHatches: "For the full step-by-step wizard, run `openclaw onboard --classic`.",
+      escapeHatches: "For the full step-by-step wizard, run `paddy onboard --classic`.",
       failureAuth: "Authentication failed. Sign in again or check the key.",
       failureBilling: "Billing is not active for this model or account.",
       failureFormat: "The model did not return a usable reply.",
@@ -356,7 +354,7 @@ export const en = {
       nextSteps:
         "Workspace: {workspace}\nAdd a channel: `openclaw channels add`\nPrefer chatting? Run `openclaw setup` and say `connect telegram` (or `connect slack`).\nOpen the dashboard: `openclaw dashboard`\nChat later: `openclaw`",
       nextStepsWithoutAi:
-        "Workspace: {workspace}\nAdd AI later: re-run `openclaw onboard`\nAfter AI connects, add a channel: `openclaw channels add`\nOpen the dashboard: `openclaw dashboard`",
+        "Workspace: {workspace}\nAdd AI later: re-run `paddy onboard`\nAfter AI connects, add a channel: `paddy channels add`\nOpen the dashboard: `paddy dashboard`",
       nextStepsTitle: "Next steps",
       noInferenceOptions:
         "No inference option is available yet. Sign in to Claude Code or Codex, or configure an API-key provider, then run onboarding again.",
@@ -370,7 +368,7 @@ export const en = {
       unavailableCandidate: "{label} — {detail}. {reason}",
       tryCandidate: "Try {label} ({detail})",
       ttyRequired:
-        "Onboarding needs an interactive TTY. Use `openclaw onboard --non-interactive --accept-risk ...` for automation.",
+        "Onboarding needs an interactive TTY. Use `paddy onboard --non-interactive --accept-risk ...` for automation.",
       welcomeTitle: "Setup choices",
       workspaceConflictClassic:
         "This verification run kept the configured workspace. Run `{command}` to review and explicitly approve moving the existing agent fleet.",
@@ -451,8 +449,7 @@ export const en = {
     security: {
       askForHelp:
         "Ask someone experienced to help before enabling tools or exposing it to the internet.",
-      attribution:
-        `${PRODUCT_NAME} is an open-source assistant that learns and grows with you, by the OpenClaw Foundation (a non-profit).`,
+      attribution: `${PRODUCT_NAME} is an open-source assistant that learns and grows with you, by the OpenClaw Foundation (a non-profit).`,
       baselineDmSessions:
         "Shared inboxes: isolate DM sessions (session.dmScope: per-channel-peer) and keep tool access minimal.",
       baselinePairing: "Use pairing or allowlists; require mentions in group chats.",
@@ -464,8 +461,7 @@ export const en = {
         "Use the strongest available model for bots with tools or shared/public inboxes.",
       confirm:
         "I understand this is personal-by-default and shared/multi-user use requires lock-down. Continue?",
-      hardeningRequired:
-        `If you're not comfortable managing access controls and security hardening, don't run ${PRODUCT_NAME} without help.`,
+      hardeningRequired: `If you're not comfortable managing access controls and security hardening, don't run ${PRODUCT_NAME} without help.`,
       learnMore: "Learn more at",
       notMultitenant: `${PRODUCT_NAME} is not designed to safely separate multiple users by default.`,
       personalAgent: `By default, ${PRODUCT_NAME} is a personal agent for one operator.`,
@@ -481,7 +477,7 @@ export const en = {
       accept: "Yes, share feature stats",
       decline: "No thanks",
       description:
-        "Share which features you use (channels, providers, plugin count) as part of the daily update check. Never messages, never identifiers. See exactly what is sent: `openclaw telemetry show`. Change anytime: `openclaw telemetry on|off`.",
+        "Share which features you use (channels, providers, plugin count) as part of the daily update check. Never messages, never identifiers. See exactly what is sent: `paddy telemetry show`. Change anytime: `paddy telemetry on|off`.",
       title: `Help make ${PRODUCT_NAME} better?`,
     },
     skills: {
@@ -503,7 +499,7 @@ export const en = {
       installedWithWarnings: "Installed {name} (with warnings)",
       installing: "Installing {name}...",
       manualPrereqsDoctorHint:
-        "Install those tools first, then run `openclaw doctor` to review skills + requirements.",
+        "Install those tools first, then run `paddy doctor` to review skills + requirements.",
       manualPrereqsIntro: "Skipped optional skill installs that need local tools first:",
       manualPrereqsTitle: "Manual skill prerequisites",
       nodeManager: "Preferred node manager for skill installs",
@@ -515,8 +511,7 @@ export const en = {
     channels: {
       account: "{label} account",
       commandOwnerTitle: "Administration from chat",
-      commandOwnerHelp:
-        `Chat access lets someone talk to your agent. A command owner can also update ${PRODUCT_NAME}, restart the Gateway, change configuration, and approve commands. Choose only your own trusted operator account. This works in servers and groups without DM pairing; it does not grant chat access or change channel access rules.`,
+      commandOwnerHelp: `Chat access lets someone talk to your agent. A command owner can also update ${PRODUCT_NAME}, restart the Gateway, change configuration, and approve commands. Choose only your own trusted operator account. This works in servers and groups without DM pairing; it does not grant chat access or change channel access rules.`,
       commandOwnerSetup: "Set up administration from your own chat account?",
       commandOwnerOwnAccount: "Set up my operator account",
       commandOwnerChannel: "Which channel has your operator account?",
@@ -770,8 +765,7 @@ export const en = {
       connectionTitle: "ClickClack connection",
       connected: "Connected as @{handle} — workspace {workspace} resolved.",
       envPrompt: "CLICKCLACK_BOT_TOKEN detected. Use env var?",
-      helpCreateToken:
-        `In ClickClack: Workspace settings → Integrations → ${PRODUCT_NAME} → create bot → copy token`,
+      helpCreateToken: `In ClickClack: Workspace settings → Integrations → ${PRODUCT_NAME} → create bot → copy token`,
       invalidToken:
         "ClickClack rejected the bot token (401). Copy a current token and rerun setup.",
       validationWarningTitle: "ClickClack connection check",
@@ -795,8 +789,7 @@ export const en = {
       helpCopySecret: "3) Copy the shared secret you used in the command",
       helpEnableRoom: "4) Enable the bot in your Nextcloud Talk room settings",
       helpEnvTip: "Tip: you can also set NEXTCLOUD_TALK_BOT_SECRET in your env.",
-      helpInstallCommand:
-        `2) Run: ./occ talk:bot:install "${PRODUCT_NAME}" "<shared-secret>" "<webhook-url>" --feature webhook --feature response --feature reaction`,
+      helpInstallCommand: `2) Run: ./occ talk:bot:install "${PRODUCT_NAME}" "<shared-secret>" "<webhook-url>" --feature webhook --feature response --feature reaction`,
       helpSsh: "1) SSH into your Nextcloud server",
       instanceUrlPrompt: "Enter Nextcloud instance URL (e.g., https://cloud.example.com)",
       setupTitle: "Nextcloud Talk bot setup",
@@ -906,7 +899,7 @@ export const en = {
       helpRecommendedTls: "Recommended: TLS on port 6697.",
       multipleEntries: "Multiple entries: comma-separated.",
       nextRestartGateway: "Next: restart gateway and verify status.",
-      nextStatusCommand: "Command: openclaw channels status --probe",
+      nextStatusCommand: "Command: paddy channels status --probe",
       nextStepsTitle: "IRC next steps",
       nickPrompt: "IRC nick",
       nickServConfigurePrompt: "Configure NickServ identify/register?",
@@ -970,8 +963,7 @@ export const en = {
         "Use the exact externally reachable HTTPS outgoing-webhook callback URL configured in Synology Chat.",
       publicWebhookUrlKeep: "Public attachment webhook URL already configured. Keep it?",
       publicWebhookUrlPrompt: "Public attachment webhook URL (optional)",
-      publicWebhookUrlScope:
-        `Expose only this webhook route; ${PRODUCT_NAME} uses it for short-lived attachment downloads.`,
+      publicWebhookUrlScope: `Expose only this webhook route; ${PRODUCT_NAME} uses it for short-lived attachment downloads.`,
       publicWebhookUrlTitle: "Synology Chat public attachment route",
       setupTitle: "Synology Chat webhook setup",
       tokenEnvPrompt: "SYNOLOGY_CHAT_TOKEN detected. Use env var?",
@@ -1119,7 +1111,7 @@ export const en = {
       credentialRequired: "{label} required",
       chooseProvider: "Choose a provider. Some providers need an API key, and some work key-free.",
       configured: "configured",
-      configureLaterHint: "Configure later with openclaw configure --section web",
+      configureLaterHint: "Configure later with paddy configure --section web",
       docsLine: "Docs: {url}",
       intro: "Web search lets your agent look things up online.",
       keyFree: "key-free",
@@ -1193,8 +1185,7 @@ export const en = {
       nodeMac: "macOS app (system + notifications)",
       optionalApps: "Optional apps",
       outroDashboardLink: `Onboarding complete. Use the dashboard link above to control ${PRODUCT_NAME}.`,
-      outroDashboardOpened:
-        `Onboarding complete. Dashboard opened; keep that tab to control ${PRODUCT_NAME}.`,
+      outroDashboardOpened: `Onboarding complete. Dashboard opened; keep that tab to control ${PRODUCT_NAME}.`,
       outroHealthCheckFailed:
         "Onboarding complete, but the gateway health check failed. Fix the issue above, then verify with {command}.",
       outroSeeded:
@@ -1205,8 +1196,7 @@ export const en = {
       rerunInstallDaemon: "Or rerun with: {command}",
       restart: "Restart",
       containerRuntimeTitle: "Container runtime",
-      containerSystemdUnavailable:
-        `Systemd user services are not available inside this container. ${PRODUCT_NAME} is skipping only the background service install; run the Gateway in the foreground or use your container supervisor.`,
+      containerSystemdUnavailable: `Systemd user services are not available inside this container. ${PRODUCT_NAME} is skipping only the background service install; run the Gateway in the foreground or use your container supervisor.`,
       securityReminder:
         "Running agents on your computer is risky — harden your setup: https://docs.openclaw.ai/security",
       secretRefAuthFailed: "Could not resolve {field} SecretRef for setup auth.",

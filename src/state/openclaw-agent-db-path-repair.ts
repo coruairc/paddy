@@ -22,7 +22,7 @@ export function repairOpenClawAgentDatabasePathAliases(
     return {
       repaired: 0,
       warnings: [
-        `Skipped agent database path repair while update ${active.runId} is in progress. Run openclaw doctor --fix after the update finishes.`,
+        `Skipped agent database path repair while update ${active.runId} is in progress. Run paddy doctor --fix after the update finishes.`,
       ],
     };
   }

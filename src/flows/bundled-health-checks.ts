@@ -237,12 +237,12 @@ function registerCodexHealthChecks(
         });
       } catch {
         return unavailable(
-          "The selected Codex plugin declares Doctor health checks but its health API could not be loaded. Run openclaw plugins inspect codex --runtime --json for details, or openclaw triage for repair help.",
+          "The selected Codex plugin declares Doctor health checks but its health API could not be loaded. Run paddy plugins inspect codex --runtime --json for details, or paddy triage for repair help.",
         );
       }
       if (typeof api.registerCodexManagedAppServerDoctorChecks !== "function") {
         return unavailable(
-          "The selected Codex plugin's Doctor health checks are incomplete. Run openclaw plugins inspect codex --runtime --json for details, or openclaw triage for repair help.",
+          "The selected Codex plugin's Doctor health checks are incomplete. Run paddy plugins inspect codex --runtime --json for details, or paddy triage for repair help.",
         );
       }
       api.registerCodexManagedAppServerDoctorChecks({

@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { assertStateDatabaseAccessAllowed } from "../infra/gateway-state-owner.js";
 import { isGatewayExternallySupervised } from "../infra/gateway-supervision.js";
 import {
@@ -29,7 +30,6 @@ import {
   STATE_SUPERVISION_KEY,
   type OpenClawExternalStateOwnership,
 } from "./openclaw-state-ownership.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 type OpenClawStateOwnershipOptions = Omit<OpenClawStateDatabaseOptions, "database" | "readOnly">;
 type OwnershipDatabase = Pick<OpenClawStateKyselyDatabase, "config_machine_state">;
@@ -113,7 +113,7 @@ function repairMalformedOwnershipClaim(
         busyTimeoutMs: OPENCLAW_SQLITE_BUSY_TIMEOUT_MS,
         checkpointIntervalMs: 0,
         checkpointMode: "TRUNCATE",
-        databaseLabel: "OpenClaw shared state ownership",
+        databaseLabel: "Paddy shared state ownership",
         databasePath,
       });
     const ownership = runSqliteImmediateTransactionSync(

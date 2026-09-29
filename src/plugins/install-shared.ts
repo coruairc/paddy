@@ -1,4 +1,5 @@
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   requestDeferredPackageDirInstall,
   resolvePackageDirInstallTransaction,
@@ -30,7 +31,6 @@ import {
   pluginAuditOutcomeForReason,
   type PluginSecuritySourceFamily,
 } from "./security-events.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 const pluginInstallRuntimeLoader = createLazyImportLoader(() => import("./install.runtime.js"));
 
@@ -96,7 +96,7 @@ export function validateOpenClawPackageInstallCompatibility(params: {
   if (pluginApiRange && !satisfiesPluginApiRange(currentHostVersion, pluginApiRange)) {
     return {
       ok: false,
-      error: `plugin "${params.pluginId}" requires plugin API ${pluginApiRange}, but this OpenClaw runtime exposes ${currentHostVersion}. Upgrade OpenClaw or install a compatible plugin version and retry.`,
+      error: `plugin "${params.pluginId}" requires plugin API ${pluginApiRange}, but this Paddy runtime exposes ${currentHostVersion}. Upgrade Paddy or install a compatible plugin version and retry.`,
       code: PLUGIN_INSTALL_ERROR_CODE.INCOMPATIBLE_PLUGIN_API,
     };
   }
@@ -331,7 +331,7 @@ export async function runInstallSourceScan(params: {
     });
     return {
       ok: false,
-      error: `${params.subject} installation blocked: code safety scan failed (${String(err)}). Run "openclaw security audit --deep" for details.`,
+      error: `${params.subject} installation blocked: code safety scan failed (${String(err)}). Run "paddy security audit --deep" for details.`,
       code: PLUGIN_INSTALL_ERROR_CODE.SECURITY_SCAN_FAILED,
     };
   }

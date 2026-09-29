@@ -1,12 +1,12 @@
-# OpenClaw Parallel Plugin
+# Paddy Parallel Plugin
 
-Official OpenClaw plugin for Parallel.
+Official Paddy plugin for Parallel.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/parallel-plugin
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/tools/parallel-search> for setup and configuration.

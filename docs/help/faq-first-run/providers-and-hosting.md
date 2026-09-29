@@ -25,48 +25,48 @@ first-run failures see
     model, or legacy `params.context1m: true` config), and your current credential is not
     eligible for long-context billing.
 
-    Set a **fallback model** so OpenClaw keeps replying while a provider is rate-limited.
+    Set a **fallback model** so Paddy keeps replying while a provider is rate-limited.
     See [Models](/cli/models), [OAuth](/concepts/oauth), and
     [Anthropic 429 extra usage required for long context](/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context).
 
   </Accordion>
 
   <Accordion title="Is AWS Bedrock supported?">
-    Yes. OpenClaw has a bundled **Amazon Bedrock (Converse)** provider. With AWS env
+    Yes. Paddy has a bundled **Amazon Bedrock (Converse)** provider. With AWS env
     markers present (`AWS_ACCESS_KEY_ID`, `AWS_PROFILE`, `AWS_BEARER_TOKEN_BEDROCK`),
-    OpenClaw auto-enables the implicit Bedrock provider for model discovery; otherwise
+    Paddy auto-enables the implicit Bedrock provider for model discovery; otherwise
     set `plugins.entries.amazon-bedrock.config.discovery.enabled: true` or add a manual
     provider entry. See [Amazon Bedrock](/providers/bedrock) and [Model providers](/providers/models).
     An OpenAI-compatible proxy in front of Bedrock is still a valid option if you prefer a managed key flow.
   </Accordion>
 
   <Accordion title="How does Codex auth work?">
-    OpenClaw supports **OpenAI Codex** via OAuth (ChatGPT sign-in). A fresh
+    Paddy supports **OpenAI Codex** via OAuth (ChatGPT sign-in). A fresh
     setup with no primary model uses exact `openai/gpt-6-astra` for
     ChatGPT/Codex subscription auth plus native Codex app-server execution.
     Reauthentication preserves an existing explicit model, including
     `openai/gpt-5.5`. If the Codex workspace does not expose GPT-5.6, select
-    `openai/gpt-5.5` explicitly; OpenClaw does not silently downgrade. Legacy
-    Codex-prefixed model refs are legacy config repaired by `openclaw doctor
+    `openai/gpt-5.5` explicitly; Paddy does not silently downgrade. Legacy
+    Codex-prefixed model refs are legacy config repaired by `paddy doctor
     --fix`. Direct OpenAI API-key access remains available for non-agent OpenAI
     API surfaces and, through an ordered `openai` API-key profile, for agent
     models too. See [Model providers](/concepts/model-providers) and
     [Onboarding (CLI)](/start/wizard).
   </Accordion>
 
-  <Accordion title="Why does OpenClaw still mention legacy OpenAI Codex prefix?">
+  <Accordion title="Why does Paddy still mention legacy OpenAI Codex prefix?">
     `openai` is the current provider and auth-profile id for both OpenAI API keys and
     ChatGPT/Codex OAuth - OpenAI Codex is folded into it. You may still see a legacy
     `openai-codex` prefix in older config and migration warnings:
 
     - `openai/gpt-6-astra` = fresh ChatGPT/Codex subscription setup with the native Codex runtime for agent turns.
     - `openai/gpt-5.5` = explicit supported selection for existing config or accounts without GPT-5.6 access.
-    - Legacy `openai-codex/*` model refs = legacy route repaired by `openclaw doctor --fix`.
+    - Legacy `openai-codex/*` model refs = legacy route repaired by `paddy doctor --fix`.
     - `openai/gpt-5.5` plus an ordered `openai` API-key profile = API-key auth for an OpenAI agent model.
-    - Legacy `openai-codex` auth profile ids = legacy ids migrated by `openclaw doctor --fix`.
+    - Legacy `openai-codex` auth profile ids = legacy ids migrated by `paddy doctor --fix`.
 
     Want direct OpenAI Platform billing? Set `OPENAI_API_KEY`. Want ChatGPT/Codex
-    subscription auth? Run `openclaw models auth login --provider openai`. Keep
+    subscription auth? Run `paddy models auth login --provider openai`. Keep
     model refs under the canonical `openai/*` provider. Fresh subscription
     setup uses exact `openai/gpt-6-astra`; doctor repairs legacy Codex-prefixed
     refs without upgrading an explicit `openai/gpt-5.5` selection.
@@ -77,7 +77,7 @@ first-run failures see
     Codex OAuth uses OpenAI-managed, plan-dependent quota windows that can differ from the
     ChatGPT website/app experience, even on the same account.
 
-    `openclaw models status` shows the currently visible provider usage/quota windows, but
+    `paddy models status` shows the currently visible provider usage/quota windows, but
     does not invent or normalize ChatGPT-web entitlements into direct API access. For the
     direct OpenAI Platform billing/limit path, use `openai/*` with an API key.
 
@@ -85,19 +85,19 @@ first-run failures see
 
   <Accordion title="Do you support OpenAI subscription auth (Codex OAuth)?">
     Yes, fully. OpenAI explicitly allows subscription OAuth usage in external
-    tools/workflows like OpenClaw. Onboarding can run the OAuth flow for you.
+    tools/workflows like Paddy. Onboarding can run the OAuth flow for you.
 
     See [OAuth](/concepts/oauth), [Model providers](/concepts/model-providers), and [Onboarding (CLI)](/start/wizard).
 
   </Accordion>
 
   <Accordion title="Can I use Gemini CLI or Antigravity OAuth?">
-    OpenClaw does not offer new Gemini CLI OAuth or Antigravity OAuth setup.
+    Paddy does not offer new Gemini CLI OAuth or Antigravity OAuth setup.
     Connect Google with an AI Studio API key or Vertex AI instead.
 
     The optional `google-gemini-cli` runtime remains available for advanced
     setups using a supported Google API-key profile. Existing valid legacy
-    Gemini CLI OAuth profiles remain executable for compatibility, but OpenClaw
+    Gemini CLI OAuth profiles remain executable for compatibility, but Paddy
     cannot create or repair them.
 
     Details: [Google](/providers/google), [Model providers](/concepts/model-providers).
@@ -105,7 +105,7 @@ first-run failures see
   </Accordion>
 
   <Accordion title="Is a local model OK for casual chats?">
-    Usually no. OpenClaw needs large context + strong safety; small cards truncate context
+    Usually no. Paddy needs large context + strong safety; small cards truncate context
     and skip provider-side safety filters. If you must, run the **largest** model build you
     can locally (LM Studio) - see [Local models](/gateway/local-models). Smaller/quantized
     models raise prompt-injection risk - see [Security](/gateway/security).
@@ -119,7 +119,7 @@ first-run failures see
   </Accordion>
 
   <Accordion title="Do I have to buy a Mac Mini to install this?">
-    No. OpenClaw runs on macOS or Linux (Windows via WSL2). A Mac mini is a popular
+    No. Paddy runs on macOS or Linux (Windows via WSL2). A Mac mini is a popular
     always-on host choice, but a small VPS, home server, or Raspberry Pi-class box works too.
 
     You only need a Mac **for macOS-only tools**. For iMessage, use [iMessage](/channels/imessage)
@@ -145,14 +145,14 @@ first-run failures see
 
   </Accordion>
 
-  <Accordion title="If I buy a Mac mini to run OpenClaw, can I connect it to my MacBook Pro?">
+  <Accordion title="If I buy a Mac mini to run Paddy, can I connect it to my MacBook Pro?">
     Yes. The **Mac mini can run the Gateway**, and your MacBook Pro connects as a **node**
     (companion device). Nodes do not run the Gateway - they add capabilities like
     screen/camera and `system.run` on that device. A Mac node can also present
     hosted widgets in its native panel.
 
     Common pattern: Gateway on the always-on Mac mini; MacBook Pro runs the macOS app or a
-    node host and pairs to the Gateway. Check with `openclaw nodes status` / `openclaw nodes list`.
+    node host and pairs to the Gateway. Check with `paddy nodes status` / `paddy nodes list`.
 
     Docs: [Nodes](/nodes), [Nodes CLI](/cli/nodes).
 
@@ -167,10 +167,10 @@ first-run failures see
 
   <Accordion title="Telegram: what goes in allowFrom?">
     `channels.telegram.allowFrom` is the **human sender's Telegram user ID** (numeric),
-    not the bot username. Setup asks for numeric user IDs only; `openclaw doctor --fix`
+    not the bot username. Setup asks for numeric user IDs only; `paddy doctor --fix`
     can try to resolve legacy `@username` entries.
 
-    Safer (no third-party bot): DM your bot, run `openclaw logs --follow`, read `from.id`.
+    Safer (no third-party bot): DM your bot, run `paddy logs --follow`, read `from.id`.
 
     Official Bot API: DM your bot, call `https://api.telegram.org/bot<bot_token>/getUpdates`, read `message.from.id`.
 
@@ -180,7 +180,7 @@ first-run failures see
 
   </Accordion>
 
-  <Accordion title="Can multiple people use one WhatsApp number with different OpenClaw instances?">
+  <Accordion title="Can multiple people use one WhatsApp number with different Paddy instances?">
     Yes, via **multi-agent routing**. Bind each sender's WhatsApp DM (`peer: { kind: "direct", id: "+15551234567" }`) to a different `agentId`, giving each person their own workspace and session store. Replies still come from the **same WhatsApp account**; DM access control (`channels.whatsapp.dmPolicy` / `channels.whatsapp.allowFrom`) is global per account. See [Multi-Agent Routing](/concepts/multi-agent) and [WhatsApp](/channels/whatsapp).
   </Accordion>
 
@@ -201,7 +201,7 @@ first-run failures see
     brew install <formula>
     ```
 
-    Running OpenClaw via systemd: make sure the service PATH includes
+    Running Paddy via systemd: make sure the service PATH includes
     `/home/linuxbrew/.linuxbrew/bin` (or your brew prefix) so `brew`-installed tools
     resolve in non-login shells. Recent builds also prepend common user bin dirs on Linux
     systemd services (for example `~/.local/bin`, `~/.npm-global/bin`,
@@ -219,20 +219,20 @@ first-run failures see
   </Accordion>
 
   <Accordion title="Can I switch between npm and git installs later?">
-    Yes, with `openclaw update --channel ...` on an existing install. This does **not
+    Yes, with `paddy update --channel ...` on an existing install. This does **not
     delete your data** - only the OpenClaw code install changes. State (`~/.openclaw`) and
     workspace (`~/.openclaw/workspace`) stay untouched.
 
     npm to git:
 
     ```bash
-    openclaw update --channel dev
+    paddy update --channel dev
     ```
 
     git to npm:
 
     ```bash
-    openclaw update --channel stable
+    paddy update --channel stable
     ```
 
     Add `--dry-run` to preview the planned mode switch first. The updater runs Doctor
@@ -273,7 +273,7 @@ first-run failures see
 
   </Accordion>
 
-  <Accordion title="How important is it to run OpenClaw on a dedicated machine?">
+  <Accordion title="How important is it to run Paddy on a dedicated machine?">
     Not required, but recommended for reliability and isolation.
 
     - **Dedicated host (VPS/Mac mini/Raspberry Pi):** always-on, fewer sleep/reboot interruptions, cleaner permissions, easier to keep running.
@@ -294,7 +294,7 @@ first-run failures see
 
   </Accordion>
 
-  <Accordion title="Can I run OpenClaw in a VM and what are the requirements?">
+  <Accordion title="Can I run Paddy in a VM and what are the requirements?">
     Yes. Treat a VM like a VPS: it needs to be always on, reachable, and have enough RAM
     for the Gateway and any channels you enable.
 

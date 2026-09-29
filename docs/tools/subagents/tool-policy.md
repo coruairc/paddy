@@ -9,7 +9,7 @@ read_when:
 ## Tool policy
 
 Sub-agents use the same profile and tool-policy pipeline as the parent or
-target agent first. After that, OpenClaw applies the sub-agent restriction
+target agent first. After that, Paddy applies the sub-agent restriction
 layer.
 
 When settled children resume a requester after `sessions_yield`, the continuation

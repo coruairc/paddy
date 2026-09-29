@@ -1,5 +1,5 @@
 ---
-summary: "Automated, hardened OpenClaw installation with Ansible, Tailscale VPN, and firewall isolation"
+summary: "Automated, hardened Paddy installation with Ansible, Tailscale VPN, and firewall isolation"
 read_when:
   - You want automated server deployment with security hardening
   - You need firewall-isolated setup with VPN access
@@ -41,8 +41,8 @@ curl -fsSL https://raw.githubusercontent.com/openclaw/openclaw-ansible/main/inst
 1. Tailscale (mesh VPN for secure remote access)
 2. UFW firewall (SSH + Tailscale ports only)
 3. Docker CE + Compose V2 (default agent sandbox backend)
-4. Node.js and pnpm (OpenClaw requires Node 24.16+ or 26.1+; Node 26 is recommended)
-5. OpenClaw, installed host-based, not containerized
+4. Node.js and pnpm (Paddy requires Node 24.16+ or 26.1+; Node 26 is recommended)
+5. Paddy, installed host-based, not containerized
 6. A systemd service with security hardening
 
 <Note>
@@ -60,17 +60,17 @@ backend. See [Sandboxing](/gateway/sandboxing) for other backends.
     ```
   </Step>
   <Step title="Run the onboarding wizard">
-    The post-install script guides you through configuring OpenClaw.
+    The post-install script guides you through configuring Paddy.
   </Step>
   <Step title="Connect messaging channels">
     Log in to WhatsApp, Telegram, Discord, or Signal:
     ```bash
-    openclaw channels login --channel <name>
+    paddy channels login --channel <name>
     ```
   </Step>
   <Step title="Verify the installation">
     ```bash
-    sudo systemctl status openclaw
+    sudo systemctl status paddy
     sudo journalctl -u openclaw -f
     ```
   </Step>
@@ -83,20 +83,20 @@ backend. See [Sandboxing](/gateway/sandboxing) for other backends.
 
 ```bash
 # Check service status
-sudo systemctl status openclaw
+sudo systemctl status paddy
 
 # View live logs
 sudo journalctl -u openclaw -f
 
 # Restart gateway (run as openclaw user)
-openclaw gateway restart
+paddy gateway restart
 
 # Channel login (run as openclaw user)
 sudo -i -u openclaw
-openclaw channels login --channel <name>
+paddy channels login --channel <name>
 ```
 
-`openclaw gateway restart` records managed restart intent. For a system-scope service, follow the exact `sudo systemctl restart <unit>` command it prints.
+`paddy gateway restart` records managed restart intent. For a system-scope service, follow the exact `sudo systemctl restart <unit>` command it prints.
 
 ## Security architecture
 
@@ -152,7 +152,7 @@ Docker is installed for agent sandboxes (isolated tool execution), not for runni
 
 ## Updating
 
-The Ansible installer sets up OpenClaw for manual updates; see [Updating](/install/updating) for the standard flow.
+The Ansible installer sets up Paddy for manual updates; see [Updating](/install/updating) for the standard flow.
 
 To re-run the playbook (for example, after configuration changes):
 
@@ -182,7 +182,7 @@ This is idempotent and safe to run multiple times.
     # Test manual start
     sudo -i -u openclaw
     cd ~/openclaw
-    openclaw gateway run
+    paddy gateway run
     ```
 
   </Accordion>
@@ -206,7 +206,7 @@ This is idempotent and safe to run multiple times.
     Make sure you are running as the `openclaw` user:
     ```bash
     sudo -i -u openclaw
-    openclaw channels login --channel <name>
+    paddy channels login --channel <name>
     ```
   </Accordion>
 </AccordionGroup>

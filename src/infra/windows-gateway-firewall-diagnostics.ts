@@ -570,7 +570,7 @@ function firewallInspectionFailed(message: string): WindowsGatewayFirewallDiagno
     code: "windows_firewall_inspection_failed",
     message,
     details: [
-      "Run `openclaw gateway status --deep` again, or verify the advertised LAN URL from another device.",
+      "Run `paddy gateway status --deep` again, or verify the advertised LAN URL from another device.",
     ],
   };
 }
@@ -638,6 +638,6 @@ export function formatWindowsGatewayFirewallGuidance(params: {
     return [];
   }
   return [
-    "Windows firewall: if another device cannot connect to the LAN URL, run `openclaw gateway status --deep` from this Windows host.",
+    "Windows firewall: if another device cannot connect to the LAN URL, run `paddy gateway status --deep` from this Windows host.",
   ];
 }

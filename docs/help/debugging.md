@@ -36,7 +36,7 @@ node scripts/watch-node.mjs gateway --force
 Before watching the configured/default port, the tmux wrapper stops the active profile's installed Gateway service. This hands the port to the source watcher without launchd, systemd, or Scheduled Task respawning and replacing it. The service stays installed. Restore it after the watch session with:
 
 ```bash
-pnpm openclaw gateway start
+pnpm paddy gateway start
 ```
 
 An explicit `--port` or `OPENCLAW_GATEWAY_PORT` can differ from the installed service's effective port. In that case the wrapper leaves the service running, so both Gateways can run side by side.
@@ -49,7 +49,7 @@ pnpm gateway:watch:raw
 OPENCLAW_GATEWAY_WATCH_TMUX=0 pnpm gateway:watch
 ```
 
-Raw mode does not manage the installed service. Run `pnpm openclaw gateway stop` first when it uses the same port.
+Raw mode does not manage the installed service. Run `pnpm paddy gateway stop` first when it uses the same port.
 
 Keep tmux management but disable auto-attach:
 
@@ -99,7 +99,7 @@ Add gateway CLI flags after `gateway:watch` and they pass through on each restar
 
 ## Dev profile + dev gateway (--dev)
 
-When you run `pnpm openclaw`, `pnpm dev`, or a Gateway development runner from
+When you run `pnpm paddy`, `pnpm dev`, or a Gateway development runner from
 a checkout, the runner selects that checkout's plugins ahead of tracked global
 copies with the same id. Built plugin output remains preferred when available,
 including for separately published checkout plugins, Doctor contracts, and Doctor's
@@ -117,7 +117,7 @@ The runners supply the existing `OPENCLAW_DEV_SOURCE_ROOT` selector unless you
 set it explicitly. When launching `node dist/entry.js` directly for debugging,
 set it to the running checkout root for the same duplicate-selection behavior.
 It does not add an unrelated checkout to trusted bundled discovery. Use
-`pnpm openclaw plugins inspect <id> --json` to check the selected source and origin.
+`pnpm paddy plugins inspect <id> --json` to check the selected source and origin.
 
 Two **separate** `--dev` flags:
 
@@ -131,7 +131,7 @@ pnpm gateway:dev
 OPENCLAW_PROFILE=dev openclaw tui
 ```
 
-Without a global install, run the CLI via `pnpm openclaw ...`.
+Without a global install, run the CLI via `pnpm paddy ...`.
 
 What this does:
 
@@ -171,14 +171,14 @@ OPENCLAW_PROFILE=dev openclaw gateway --dev --reset
 If a non-dev gateway is already running (launchd or systemd), stop it first:
 
 ```bash
-openclaw gateway stop
+paddy gateway stop
 ```
 
 </Tip>
 
 ## Raw stream logging
 
-OpenClaw can log the **raw assistant stream** before any filtering/formatting. This is the best way to see whether reasoning is arriving as plain text deltas (or as separate thinking blocks).
+Paddy can log the **raw assistant stream** before any filtering/formatting. This is the best way to see whether reasoning is arriving as plain text deltas (or as separate thinking blocks).
 
 Enable it via CLI:
 
@@ -248,7 +248,7 @@ OPENCLAW_PLUGIN_LIFECYCLE_TRACE=1 openclaw plugins install tokenjuice --force
 [plugins:lifecycle] phase="registry refresh" ms=51.56 status=ok command="install" reason="source-changed"
 ```
 
-Use this before reaching for a CPU profiler. From a source checkout, measure the built runtime with `node dist/entry.js ...` after `pnpm build`. The `pnpm openclaw ...` command also measures source-runner overhead.
+Use this before reaching for a CPU profiler. From a source checkout, measure the built runtime with `node dist/entry.js ...` after `pnpm build`. The `pnpm paddy ...` command also measures source-runner overhead.
 
 For synchronous module-load timings, use the shared diagnostics surface instead of a separate plugin-only environment switch:
 
@@ -263,7 +263,7 @@ If a source-run command fails with `TypeError: __name is not a function`, captur
 Check that Node is a [supported version](/install/node).
 
 From a trusted source checkout, run `pnpm build` before comparing the failure with
-the built runtime through `pnpm openclaw <command>`. The repository's typecheck
+the built runtime through `pnpm paddy <command>`. The repository's typecheck
 does not emit build output. Keep the failing command and version evidence in a
 bug report rather than applying a workaround from an old investigation.
 
@@ -303,7 +303,7 @@ Set breakpoints in `src/` TypeScript files. The debugger maps them to compiled J
 
 ```text
 /debug show
-/debug set channels.whatsapp.responsePrefix="[openclaw]"
+/debug set channels.whatsapp.responsePrefix="[paddy]"
 /debug unset channels.whatsapp.responsePrefix
 /debug reset
 ```

@@ -235,7 +235,7 @@ export function resolveGatewayStateOwnerPath(databasePath: string): string {
           os.homedir(),
           "AppData",
           "Local",
-          "OpenClaw",
+          "Paddy",
           "locks",
           uid === undefined ? "openclaw-state-owners" : `openclaw-state-owners-${uid}`,
         )
@@ -347,7 +347,7 @@ function leaseForFile(
         !verifyOwnerLock(owner, lock) ||
         (projection && !projection.verifyStillHeld())
       ) {
-        throw new Error("OpenClaw state ownership is no longer current");
+        throw new Error("Paddy state ownership is no longer current");
       }
     },
     assertDatabaseAccess(databasePath) {
@@ -358,7 +358,7 @@ function leaseForFile(
         !verifyOwnerLock(owner, lock) ||
         (projection && !projection.verifyStillHeld())
       ) {
-        throw new Error("OpenClaw state maintenance does not own this database");
+        throw new Error("Paddy state maintenance does not own this database");
       }
     },
     run(operation) {
@@ -434,7 +434,7 @@ export function acquireGatewayStateOwner(params: {
     path: pathname,
     assertCurrent() {
       if (!owner.accepting || owners.get(pathname) !== owner) {
-        throw new Error("OpenClaw state process owner is no longer current");
+        throw new Error("Paddy state process owner is no longer current");
       }
       lease.assertCurrent();
     },
@@ -622,7 +622,7 @@ export function assertStateDatabaseReadAllowed(databasePath: string): void {
     (owner.getProjection && !owner.getProjection()?.verifyStillHeld())
   ) {
     throw new Error(
-      `OpenClaw state ownership at ${databasePath} could not be verified; retry after maintenance finishes.`,
+      `Paddy state ownership at ${databasePath} could not be verified; retry after maintenance finishes.`,
     );
   }
   readOwnerPaths.set(key, { pathname, owner, expiresAt: now + READ_OWNERSHIP_MAX_AGE_MS });
@@ -645,14 +645,14 @@ export function assertStateDatabaseAccessAllowed(
     const scope = captured ? captured.maintenanceScope : getOpenClawDatabaseMaintenanceScope();
     if (!scope) {
       throw new Error(
-        `OpenClaw state at ${databasePath} is undergoing offline maintenance; retry when it finishes.`,
+        `Paddy state at ${databasePath} is undergoing offline maintenance; retry when it finishes.`,
       );
     }
     scope.assertDatabaseAccess(databasePath);
   };
   const pathname = resolveGatewayStateOwnerPath(databasePath);
   const local = owners.get(pathname);
-  const unavailable = `OpenClaw state ownership at ${databasePath} could not be verified; retry after maintenance finishes.`;
+  const unavailable = `Paddy state ownership at ${databasePath} could not be verified; retry after maintenance finishes.`;
   if (local) {
     if (!hasPhysicalOwnership(local)) {
       throw new Error(unavailable);
@@ -706,11 +706,11 @@ export function assertStateDatabaseAccessAllowed(
   if (owner.stateOwnerKind === "schema" && owner.role === "sqlite-maintenance") {
     throw new StateDatabaseAdmissionPendingError(
       databasePath,
-      `OpenClaw state at ${databasePath} is undergoing offline maintenance; retry when it finishes.`,
+      `Paddy state at ${databasePath} is undergoing offline maintenance; retry when it finishes.`,
     );
   }
   throw new Error(
-    `OpenClaw state at ${databasePath} is undergoing offline maintenance; retry when it finishes.`,
+    `Paddy state at ${databasePath} is undergoing offline maintenance; retry when it finishes.`,
   );
 }
 

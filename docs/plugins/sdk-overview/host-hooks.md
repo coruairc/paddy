@@ -210,7 +210,7 @@ browser-trusted loopback origin; plain HTTP on a LAN host shows the
 secure-context error instead of mounting a panel that cannot authenticate.
 Full third-party-cookie blocking also makes gateway-protected tabs unavailable.
 As with all native plugin surfaces, the frame remains inside the installed
-plugin trust boundary; OpenClaw does not treat installed plugins as mutually
+plugin trust boundary; Paddy does not treat installed plugins as mutually
 isolated browser security principals.
 Cookie grants use the browser's hostname boundary, not its port boundary. Do
 not cohost mutually untrusted services on the Gateway hostname, even on other
@@ -351,7 +351,7 @@ can select a subset of those declared runtimes.
 
 Installed plugins without that contract, or without explicit enablement, cannot
 register this middleware; keep
-normal OpenClaw plugin hooks for work that does not need pre-model tool-result
+normal Paddy plugin hooks for work that does not need pre-model tool-result
 timing. The old
 embedded-runner-only extension factory registration path has been removed.
 </Accordion>

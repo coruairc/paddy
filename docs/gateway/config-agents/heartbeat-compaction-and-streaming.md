@@ -39,7 +39,7 @@ Periodic heartbeat runs.
 
 - `every`: duration string (ms/s/m/h). Default: `30m` (API-key auth) or `1h` (OAuth auth). Set to `0m` to disable recurring cadence. Targeted event-driven wakes, including background exec completion follow-ups, can still run one agent turn.
 - `agentId`: explicit owner for ambient heartbeat runs when no `agents.entries.*.heartbeat` block exists. A shared heartbeat block without `agentId` keeps the existing all-agent enrollment behavior.
-- Cadence is written into a system-owned cron monitor row. Run `openclaw doctor --fix` to materialize a missing or stale row. If cron is disabled, scheduled heartbeats do not run and the gateway logs a startup warning.
+- Cadence is written into a system-owned cron monitor row. Run `paddy doctor --fix` to materialize a missing or stale row. If cron is disabled, scheduled heartbeats do not run and the gateway logs a startup warning.
 - The heartbeat object is strict. Its supported fields are `agentId`, `every`, `activeHours`, `model`, `session`, `target`, `directPolicy`, `to`, `accountId`, `prompt`, `timeoutSeconds`, `lightContext`, and `isolatedSession`.
 - `timeoutSeconds`: maximum time in seconds allowed for a heartbeat agent turn before it is aborted. Leave unset to use `agents.defaults.timeoutSeconds` when set, otherwise the heartbeat cadence capped at 600 seconds.
 - `directPolicy`: direct/DM delivery policy. `allow` (default) permits direct-target delivery. `block` suppresses direct-target delivery and emits `reason=dm-blocked`.
@@ -54,7 +54,7 @@ Periodic heartbeat runs.
 
 ## `agents.defaults.systemAgent`
 
-Selects the agent whose model and credentials own ambient OpenClaw system work: system-agent and Custodian consults, and the fallback owner whenever an ambient path omits `agentId`. That includes `models.list`, `models.authStatus`, `skills.status`, and `doctor.memory.status`, the default agent directory and workspace behind auth, model-catalog, and doctor resolution, outbound channel bootstrap and queued-delivery recovery, unscoped main-session routing, Talk relay ownership, and first-run onboarding:
+Selects the agent whose model and credentials own ambient Paddy system work: system-agent and Custodian consults, and the fallback owner whenever an ambient path omits `agentId`. That includes `models.list`, `models.authStatus`, `skills.status`, and `doctor.memory.status`, the default agent directory and workspace behind auth, model-catalog, and doctor resolution, outbound channel bootstrap and queued-delivery recovery, unscoped main-session routing, Talk relay ownership, and first-run onboarding:
 
 ```json5
 {
@@ -70,15 +70,15 @@ An explicit request `agentId` always wins, followed by `systemAgent.agentId`, a 
 
 With `agents.ownership: "explicit"`, this setting also supplies the recorded default
 for operations that support default-agent selection, including the agent-list
-badge, unbound channel routing, unscoped Gateway reads, `openclaw sessions`,
-`openclaw hooks` status, and TUI startup. Doctor records the migrated default here
+badge, unbound channel routing, unscoped Gateway reads, `paddy sessions`,
+`paddy hooks` status, and TUI startup. Doctor records the migrated default here
 so these operations keep the same owner after restart. Explicit bindings, requests,
 and session-store owners take precedence. Use `--agent <id>` to select a different
-agent or `openclaw sessions --all-agents` to inspect the whole fleet. Operations
-that require explicit selection, such as `openclaw models`, keep that requirement.
+agent or `paddy sessions --all-agents` to inspect the whole fleet. Operations
+that require explicit selection, such as `paddy models`, keep that requirement.
 
 An ownerless multi-agent fleet has no default badge. Set a configured id with
-`openclaw config set agents.defaults.systemAgent.agentId <id>`. A sole configured
+`paddy config set agents.defaults.systemAgent.agentId <id>`. A sole configured
 agent can still own unqualified Gateway session requests without a saved default
 designation. Ambient work
 without an owner fails with an actionable error, except queued-delivery recovery,
@@ -122,20 +122,20 @@ inherited credentials and `agents.defaults.sessionStore.agentId` for retired
 }
 ```
 
-- `enabled`: when `false`, disables threshold-driven auto-compaction inside the embedded agent runtime. OpenClaw's preflight and overflow-recovery compaction paths and manual `/compact` remain available. Default: `true`.
+- `enabled`: when `false`, disables threshold-driven auto-compaction inside the embedded agent runtime. Paddy's preflight and overflow-recovery compaction paths and manual `/compact` remain available. Default: `true`.
 - `mode`: `default` or `safeguard` (chunked summarization for long histories). See [Compaction](/concepts/compaction).
 - `provider`: id of a registered compaction provider plugin. When set, the provider's `summarize()` is called instead of built-in LLM summarization. Falls back to built-in on failure. Setting a provider forces `mode: "safeguard"`. See [Compaction](/concepts/compaction).
-- `thinkingLevel`: thinking level used only for embedded OpenClaw compaction summaries (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `adaptive`, `max`, `ultra`, or `inherit`). When omitted, the provider can supply a compaction preference; otherwise it defaults to `low`. Native local Ollama prefers `off` so summarization does not spend its request budget on thinking. Set `inherit` to reuse the session's current thinking level, or choose an explicit level to override the provider default. The selected level is clamped to the compaction model/runtime. Native Codex app-server compaction ignores this setting because the native compact request has no per-operation thinking override; OpenClaw logs a warning when configured.
+- `thinkingLevel`: thinking level used only for embedded Paddy compaction summaries (`off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `adaptive`, `max`, `ultra`, or `inherit`). When omitted, the provider can supply a compaction preference; otherwise it defaults to `low`. Native local Ollama prefers `off` so summarization does not spend its request budget on thinking. Set `inherit` to reuse the session's current thinking level, or choose an explicit level to override the provider default. The selected level is clamped to the compaction model/runtime. Native Codex app-server compaction ignores this setting because the native compact request has no per-operation thinking override; Paddy logs a warning when configured.
 - `timeoutSeconds`: safety window for each model request in built-in compaction. Multi-stage compaction refreshes the window when its next serial model request starts, so a complete compaction can exceed this value while an unresponsive request is still aborted. Plugin-owned compaction receives one window for the complete operation. Default: `180`.
 - `keepRecentTokens`: agent cut-point budget for keeping the most recent transcript tail verbatim. Default: `20000`.
 - `recentTurnsPreserve`: number of most recent user/assistant turns kept verbatim outside safeguard summarization. Default: `3`.
 - `identifierPolicy`: `strict` (default) or `off`. `strict` prepends built-in opaque identifier retention guidance during compaction summarization.
-- `qualityGuard`: bounded validation for built-in safeguard summaries. Enabled by default in safeguard mode. After final budgeting, required headings must remain in the retained generated body, while pending asks and exact identifiers must remain in the exact artifact to be stored. When no attempt passes, OpenClaw preserves the original history and returns a compaction failure instead of storing known-invalid context. Set `enabled: false` to skip the audit. Configured compaction-provider output keeps its existing provider-owned validation behavior.
-- `midTurnPrecheck`: optional tool-loop pressure check. When `enabled: true`, OpenClaw checks context pressure after tool results are appended and before the next model call. If the context no longer fits, it aborts the current attempt before submitting the prompt and reuses the existing precheck recovery path to truncate tool results or compact and retry. Works with both `default` and `safeguard` compaction modes. Default: disabled.
+- `qualityGuard`: bounded validation for built-in safeguard summaries. Enabled by default in safeguard mode. After final budgeting, required headings must remain in the retained generated body, while pending asks and exact identifiers must remain in the exact artifact to be stored. When no attempt passes, Paddy preserves the original history and returns a compaction failure instead of storing known-invalid context. Set `enabled: false` to skip the audit. Configured compaction-provider output keeps its existing provider-owned validation behavior.
+- `midTurnPrecheck`: optional tool-loop pressure check. When `enabled: true`, Paddy checks context pressure after tool results are appended and before the next model call. If the context no longer fits, it aborts the current attempt before submitting the prompt and reuses the existing precheck recovery path to truncate tool results or compact and retry. Works with both `default` and `safeguard` compaction modes. Default: disabled.
 - `postIndexSync`: post-compaction session-memory reindex mode. Default: `"async"`. Use `"await"` for strongest freshness, `"async"` for lower compaction latency, or `"off"` only when session-memory sync is handled elsewhere.
 - `postCompactionSections`: optional AGENTS.md H2/H3 section names to re-inject after compaction. Leave unset or use `[]` to disable.
 - `model`: optional `provider/model-id` or bare alias from `agents.defaults.models` for compaction summarization only. Bare aliases resolve before dispatch; configured literal model IDs retain precedence on collisions. Use this when the main session should keep one model but compaction summaries should run on another; when unset, compaction uses the session's primary model.
-- `maxActiveTranscriptBytes`: byte threshold (`number` or strings like `"20mb"`) that opts in to normal local compaction before a run when the transcript window the model sees (everything since the latest compaction or reset, plus its kept tail) reaches the threshold. For Codex app-server sessions, the same threshold caps native rollout transcripts and oversized native threads restart fresh. Disabled when unset or `0`. When a context engine returns an explicit compacted successor identity, OpenClaw adopts it; the built-in SQLite compactor keeps the current identity.
+- `maxActiveTranscriptBytes`: byte threshold (`number` or strings like `"20mb"`) that opts in to normal local compaction before a run when the transcript window the model sees (everything since the latest compaction or reset, plus its kept tail) reaches the threshold. For Codex app-server sessions, the same threshold caps native rollout transcripts and oversized native threads restart fresh. Disabled when unset or `0`. When a context engine returns an explicit compacted successor identity, Paddy adopts it; the built-in SQLite compactor keeps the current identity.
 - `notifyUser`: when `true`, sends brief context-maintenance notices to the user: when compaction starts and completes (for example, "Compacting context..." and "Compaction complete"), and when a pre-compaction memory flush is exhausted so the reply continues in a degraded state (for example, "Memory maintenance temporarily failed; continuing your reply."). Disabled by default to keep these notices silent.
 - `memoryFlush`: silent agentic turn before auto-compaction to store durable memories. Set `model` to an exact provider/model such as `ollama/qwen3:8b` when this housekeeping turn should stay on a local model; the override does not inherit the active session fallback chain. `forceFlushTranscriptBytes` forces the flush when the model-visible transcript window reaches the threshold even if token counters are stale; after compaction, that window includes the retained tail and subsequent turns rather than discarded history. Skipped when workspace is read-only.
 

@@ -1,20 +1,20 @@
 ---
-summary: "CLI reference for `openclaw doctor` (health checks + guided repairs)"
+summary: "CLI reference for `paddy doctor` (health checks + guided repairs)"
 read_when:
   - You have connectivity/auth issues and want guided fixes
   - You updated and want a sanity check
 title: "Doctor CLI"
 ---
 
-# `openclaw doctor`
+# `paddy doctor`
 
 Health checks and quick fixes for the gateway, channels, plugins, skills, model routing, local state, and config migrations. Use it whenever something is not behaving as expected and you want one command to explain what is wrong.
 
-When run for a managed Gateway, Doctor compares active official plugins with the OpenClaw package referenced by the installed service. This check still works when the Gateway is stopped or unreachable. When an older Gateway is still running, Doctor reports its version separately from the post-restart version. If the service package cannot be identified, Doctor reports restart readiness as unknown instead of treating the plugin set as compatible.
+When run for a managed Gateway, Doctor compares active official plugins with the Paddy package referenced by the installed service. This check still works when the Gateway is stopped or unreachable. When an older Gateway is still running, Doctor reports its version separately from the post-restart version. If the service package cannot be identified, Doctor reports restart readiness as unknown instead of treating the plugin set as compatible.
 
-When Gateway status reports degraded SecretRef owners, doctor prints a **Secret runtime degradation** warning with every cold or stale owner, affected config path, redacted reason, and the `openclaw secrets reload` retry command.
+When Gateway status reports degraded SecretRef owners, doctor prints a **Secret runtime degradation** warning with every cold or stale owner, affected config path, redacted reason, and the `paddy secrets reload` retry command.
 
-When channel ingress events are dead-lettered, doctor names each affected channel account and points to [`openclaw channels dead-letters list`](/cli/channels#inbound-dead-letters) for inspection and recovery.
+When channel ingress events are dead-lettered, doctor names each affected channel account and points to [`paddy channels dead-letters list`](/cli/channels#inbound-dead-letters) for inspection and recovery.
 
 Doctor warns when a registry-owned project clone is partial or shallow. It names
 the clone, shallow state, and partial-clone config keys, including URL-keyed
@@ -39,7 +39,7 @@ Related:
 
 ## Doctor pages
 
-This page is an index. `openclaw doctor` is documented on seven pages, one per
+This page is an index. `paddy doctor` is documented on seven pages, one per
 reader job. Open the page that matches your task.
 
 | Page                                                                       | Read it when                                                                            |
@@ -81,5 +81,5 @@ Each entry points at the page that now holds the content.
 
 - [CLI reference](/cli)
 - [Gateway doctor](/gateway/doctor)
-- [`openclaw policy`](/cli/policy) — the policy rules `doctor --lint` reports on
-- [`openclaw status`](/cli/status) — channel and session diagnostics, probes, and usage snapshots
+- [`paddy policy`](/cli/policy) — the policy rules `doctor --lint` reports on
+- [`paddy status`](/cli/status) — channel and session diagnostics, probes, and usage snapshots

@@ -73,7 +73,7 @@ function ownershipError(pluginId: string, detail: string): InstalledPluginPackag
     ok: false,
     error:
       `Plugin "${pluginId}" ${detail}. ` +
-      "Package maintenance requires an unambiguous install record and its discovered package owner. Refresh the plugin registry and run openclaw plugins doctor to inspect the install record before retrying.",
+      "Package maintenance requires an unambiguous install record and its discovered package owner. Refresh the plugin registry and run paddy plugins doctor to inspect the install record before retrying.",
   };
 }
 

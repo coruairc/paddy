@@ -21,8 +21,8 @@ const BACKUP_RESTORE_WARNINGS = [
   "Restoring an archive is time travel: every restored state surface rolls back to the archive timestamp.",
   "Messaging-channel credentials with ratchet state, especially WhatsApp, may desynchronize after rollback and require relinking.",
   "Approvals and delivery/dedupe state also roll back; review pending approvals before resuming the Gateway.",
-  "Plugin node_modules are not archived; after activation, run `openclaw plugins update <id>` or reinstall with `openclaw plugins install <spec> --force`.",
-  "Generated plugin-skills links are not archived; after activation, run `openclaw skills list` or start an agent session to rebuild them.",
+  "Plugin node_modules are not archived; after activation, run `paddy plugins update <id>` or reinstall with `paddy plugins install <spec> --force`.",
+  "Generated plugin-skills links are not archived; after activation, run `paddy skills list` or start an agent session to rebuild them.",
 ] as const;
 
 type BackupRestoreOptions = {

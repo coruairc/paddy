@@ -1,17 +1,17 @@
 ---
-summary: "Set up FaceTime voice calls with your OpenClaw agent on a Mac"
+summary: "Set up FaceTime voice calls with your Paddy agent on a Mac"
 read_when:
-  - You want to configure FaceTime calls with your OpenClaw agent
+  - You want to configure FaceTime calls with your Paddy agent
   - You need to install the native helper and configure Mac audio
 title: "FaceTime plugin"
 sidebarTitle: "FaceTime (experimental)"
 doc-schema-version: 1
 ---
 
-Connect FaceTime to your OpenClaw agent for two-way voice conversations. The
+Connect FaceTime to your Paddy agent for two-way voice conversations. The
 plugin automatically answers calls from your configured handles and lets your
 agent call you with approval. A realtime voice provider handles speech, and your
-OpenClaw agent handles requests that need tools or memory.
+Paddy agent handles requests that need tools or memory.
 
 **Status: experimental, disabled by default.** Run the Gateway and native helper
 on the same Mac, in the same signed-in user session. Configure FaceTime under
@@ -20,14 +20,14 @@ on the same Mac, in the same signed-in user session. Configure FaceTime under
 <Warning>
 FaceTime integration uses private Apple APIs and injects a helper into Apple call
 applications. It requires reduced SIP debugging protections. Use a dedicated,
-up-to-date Mac that you physically control. OpenClaw does not change SIP,
+up-to-date Mac that you physically control. Paddy does not change SIP,
 developer-tools access, or macOS privacy permissions automatically.
 </Warning>
 
 ## Requirements
 
 - An Apple Silicon Mac running macOS 14.4 or later.
-- OpenClaw 2026.9.4 or later.
+- Paddy 2026.9.4 or later.
 - FaceTime signed in to your Apple Account on the Gateway Mac.
 - Full Xcode installed at `/Applications/Xcode.app`.
 - The FaceTime plugin and matching signed native companion.
@@ -61,7 +61,7 @@ Add your FaceTime email address or full international phone number to
 `ownerHandles`. Only listed handles can use the integration. Every listed handle
 has owner authority; there is no guest tier.
 
-Merge this into your OpenClaw configuration. Preserve existing plugin entries
+Merge this into your Paddy configuration. Preserve existing plugin entries
 and add `facetime` to your existing `plugins.allow` list if you use one.
 
 ```json5
@@ -162,8 +162,8 @@ provider automatically. OpenAI is an example here, not the plugin's default.
 After saving your configuration, restart the Gateway and run setup:
 
 ```bash
-openclaw gateway restart
-openclaw gateway call facetime.setup --json
+paddy gateway restart
+paddy gateway call facetime.setup --json
 ```
 
 Setup reports required actions and can start the native helper, open the call
@@ -216,8 +216,8 @@ or mirroring the display if setup reports that setting is blocking notifications
 Run the admin-only installer and complete its administrator prompt:
 
 ```bash
-openclaw gateway call facetime.installDriver --json
-openclaw gateway call facetime.driverStatus --json
+paddy gateway call facetime.installDriver --json
+paddy gateway call facetime.driverStatus --json
 ```
 
 The installer builds a pinned BlackHole-based driver locally using Xcode. It
@@ -241,9 +241,9 @@ Run setup again after completing the Mac and driver steps, then check audio
 readiness:
 
 ```bash
-openclaw gateway call facetime.setup --json
-openclaw gateway call facetime.preflight --json
-openclaw gateway call facetime.status --json
+paddy gateway call facetime.setup --json
+paddy gateway call facetime.preflight --json
+paddy gateway call facetime.status --json
 ```
 
 Resolve reported setup or preflight errors before making a call. These commands
@@ -271,7 +271,7 @@ handle.
 To dial directly as a Gateway operator:
 
 ```bash
-openclaw gateway call facetime.dial \
+paddy gateway call facetime.dial \
   --params '{"handle":"owner@example.com","mode":"audio"}' \
   --json
 ```
@@ -282,8 +282,8 @@ access and counts as an explicit operator action.
 To end a call and check its status:
 
 ```bash
-openclaw gateway call facetime.hangup --json
-openclaw gateway call facetime.status --json
+paddy gateway call facetime.hangup --json
+paddy gateway call facetime.status --json
 ```
 
 Wait until status shows no active or pending call before starting another.
@@ -293,7 +293,7 @@ already ended.
 A pending outbound dial reserves the call slot, so incoming calls are not
 automatically answered until it finishes or its cancellation is confirmed. If a
 helper disconnects or reports an uncertain dial outcome, the pending state stays
-visible while OpenClaw reconciles the call.
+visible while Paddy reconciles the call.
 
 ## Update the integration
 
@@ -301,10 +301,10 @@ After updating the plugin and native companion, check `facetime.driverStatus`.
 If the driver is outdated, update it from an interactive administrator session:
 
 ```bash
-openclaw gateway call facetime.updateDriver --json
+paddy gateway call facetime.updateDriver --json
 ```
 
-If upgrading a prototype configuration, run `openclaw doctor --fix`. Doctor
+If upgrading a prototype configuration, run `paddy doctor --fix`. Doctor
 migrates `whitelistHandles` to `ownerHandles` and removes the retired
 `helperHost`, `helperPort`, and `realtime.brain` settings.
 
@@ -313,8 +313,8 @@ migrates `whitelistHandles` to `ownerHandles` and removes the retired
 End any active call, then run:
 
 ```bash
-openclaw gateway call facetime.uninstall --json
-openclaw plugins disable facetime
+paddy gateway call facetime.uninstall --json
+paddy plugins disable facetime
 ```
 
 Follow [FaceTime recovery and removal](/plugins/facetime-recovery) to restart the

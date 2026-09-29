@@ -180,12 +180,12 @@ change granted access later in the iOS Settings app.
    Serve is the recommended remote path:
 
 ```bash
-openclaw gateway --port 18789 --tailscale serve
+paddy gateway --port 18789 --tailscale serve
 ```
 
 For a trusted same-LAN setup, use an authenticated `gateway.bind: "lan"`
 instead. The default loopback bind is not reachable from a phone. If the
-Gateway has not been configured yet, run `openclaw onboard` first so setup-code
+Gateway has not been configured yet, run `paddy onboard` first so setup-code
 creation has a token or password auth path.
 
 2. Open the [Control UI](/web/control-ui), select **Nodes**, and click
@@ -195,8 +195,8 @@ creation has a token or password auth path.
 
 3. In the iOS app, open **Settings** -> **Gateway**, scan the QR code (or paste
    the setup code), and connect. Use a mobile setup code from Control UI or
-   [`openclaw qr`](/cli/qr) — not a gateway join URL from
-   [`openclaw devices join-code`](/cli/devices#openclaw-devices-join-code).
+   [`paddy qr`](/cli/qr) — not a gateway join URL from
+   [`paddy devices join-code`](/cli/devices#paddy-devices-join-code).
 
    Paired Gateways remain in the **Gateways** list. The checkmark identifies
    the focused Gateway; use the bolt control on another row to keep its
@@ -212,7 +212,7 @@ creation has a token or password auth path.
    **Settings → Gateway** shows whether the saved operator connection has
    **Full** or **Limited** access. Plaintext LAN `ws://` setup is automatically
    limited for bearer-token safety. If it is limited, configure `wss://` or
-   Tailscale Serve, scan a new full-access code from Control UI or `openclaw qr`,
+   Tailscale Serve, scan a new full-access code from Control UI or `paddy qr`,
    then reconnect to enable settings and upgrades.
 
 The Control UI button requires an already paired session with `operator.admin`.
@@ -220,11 +220,11 @@ As a terminal fallback, pick a discovered Gateway in the iOS app (or enable
 Manual Host and enter host/port), then approve the request on the Gateway host:
 
 ```bash
-openclaw devices list
-openclaw devices approve <requestId>
+paddy devices list
+paddy devices approve <requestId>
 ```
 
-If the app retries pairing with changed auth details (role/scopes/public key), the previous pending request is superseded and a new `requestId` is created. Run `openclaw devices list` again before approval.
+If the app retries pairing with changed auth details (role/scopes/public key), the previous pending request is superseded and a new `requestId` is created. Run `paddy devices list` again before approval.
 
 Optional: if the iOS node always connects from a tightly controlled subnet, you can opt in to first-time node auto-approval with explicit CIDRs or exact IPs:
 
@@ -245,8 +245,8 @@ This is disabled by default. It applies only to fresh `role: node` pairing with 
 5. Verify connection:
 
 ```bash
-openclaw nodes status
-openclaw gateway call node.list --params "{}"
+paddy nodes status
+paddy gateway call node.list --params "{}"
 ```
 
 ## Health summaries
@@ -258,7 +258,7 @@ setup, invocation, payload fields, privacy behavior, and troubleshooting.
 
 ## Apple Watch voice and chat
 
-OpenClaw has two separate Watch voice paths:
+Paddy has two separate Watch voice paths:
 
 - **Talk to Claw** uses watchOS dictation, text relayed through the paired
   iPhone, and system-voice readback on the Watch, one turn at a time.
@@ -269,8 +269,8 @@ Neither path runs a full agent or the stock Codex runtime on the Watch. The
 Gateway owns agent execution and tool policy; the Watch provides input,
 playback, and call controls.
 
-Pair the Watch with the iPhone in Apple's Watch app, install OpenClaw from
-**Watch app -> My Watch -> Available Apps**, then open OpenClaw once on both
+Pair the Watch with the iPhone in Apple's Watch app, install Paddy from
+**Watch app -> My Watch -> Available Apps**, then open Paddy once on both
 devices.
 
 ### Talk to Claw with the iPhone
@@ -288,7 +288,7 @@ Watch call.
 
 The iPhone must remain available to relay messages. If its Gateway connection
 is asleep, Watch messages use the same bounded background reconnect as Watch
-quick replies, respecting the iPhone's auto-connect setting. Update OpenClaw on
+quick replies, respecting the iPhone's auto-connect setting. Update Paddy on
 both devices. A companion chat payload without ownership information cannot
 prove safe delivery, so the phone rejects it with an update-required error.
 A Watch app that predates that ownership check can still label a background
@@ -364,7 +364,7 @@ its separate direct connection, not the iPhone relay.
 
 These are [app-local SQLite journals](/reference/database-schemas#apple-companion-delivery-journals).
 They migrate when the apps open and do not require a Gateway database upgrade
-or `openclaw doctor` run.
+or `paddy doctor` run.
 
 ### Standalone voice
 
@@ -382,10 +382,10 @@ tailnet-only route is not enough when the Watch is away from the phone.
 2. On iPhone, open **Settings -> This iPhone -> Apple Watch -> Connect Apple Watch**.
    Voice access is included in normal Watch setup; there is no separate
    voice enable setting.
-3. Open OpenClaw on the Watch before the setup code expires. Open **Talk on
+3. Open Paddy on the Watch before the setup code expires. Open **Talk on
    Watch** and wait for **Ready to talk**.
 4. Tap **Start**, allow microphone access, and choose an agent if prompted.
-   Keep OpenClaw on screen until it shows **Connected**. Opening the voice
+   Keep Paddy on screen until it shows **Connected**. Opening the voice
    screen alone does not start the microphone.
 5. Speak, use **Mute** or **Unmute** as needed, and tap **End** to finish.
    The screen shows the latest user and assistant transcripts; the Gateway
@@ -422,13 +422,13 @@ chat, and the companion chat and approval features still use the iPhone relay.
 For OpenAI Gateway-controlled WebRTC calls, the Gateway schedules a 30-minute
 active-session lease during setup; audio activity does not renew it. When the
 Watch receives the session-ended event from lease expiry, it shows **Call unavailable**
-and does not retry automatically. Bring OpenClaw to the foreground and tap
+and does not retry automatically. Bring Paddy to the foreground and tap
 **Try Again** to start a new call. The lease is not a guarantee of 30 minutes of
 usable audio, and calls may end earlier.
 
 An established call uses background audio and is not intentionally ended merely
 because the display dims or the app backgrounds. Startup that backgrounds before
-connecting stops with a message asking you to keep OpenClaw on screen. Navigating
+connecting stops with a message asking you to keep Paddy on screen. Navigating
 back, tapping **End**, disabling, changing or forgetting the Watch's Gateway connection,
 an audio interruption, or an unrecoverable failure ends the call.
 
@@ -476,7 +476,7 @@ question expires or is cancelled.
 
 Direct mode gives the watch its own signed node identity and Gateway connection.
 Supported node commands continue to work over watch Wi-Fi or cellular while
-OpenClaw is active, even when the paired iPhone is unavailable.
+Paddy is active, even when the paired iPhone is unavailable.
 
 Requirements:
 
@@ -487,7 +487,7 @@ Requirements:
   pairing](/gateway/pairing) for endpoint configuration. Loopback, iPhone-only,
   and tailnet-only routes are not independently reachable by the watch.
 - Cellular use requires a cellular-capable Apple Watch with active service.
-- OpenClaw is active on the watch. The non-voice direct node uses short HTTPS
+- Paddy is active on the watch. The non-voice direct node uses short HTTPS
   polls and reconnects when the app returns to the foreground; it does not
   maintain a generic background connection. Standalone voice uses the separate
   active-audio networking path. See Apple's
@@ -497,8 +497,8 @@ Setup:
 
 1. On iPhone, open **Settings -> This iPhone -> Apple Watch** (or **Device -> Apple Watch** in the offline fallback).
 2. Tap **Connect Apple Watch**.
-3. Open OpenClaw on the watch before the short-lived setup code expires.
-4. Verify the separate Apple Watch row with `openclaw nodes status`.
+3. Open Paddy on the watch before the short-lived setup code expires.
+4. Verify the separate Apple Watch row with `paddy nodes status`.
 
 The setup code contains a short-lived bootstrap credential for the Watch's
 node and limited read/Talk roles; treat it like a password until it expires.
@@ -567,7 +567,7 @@ When iOS wakes the app for a silent push, background refresh, or significant-loc
 
 The app treats a background wake as successfully recorded only when the Gateway response includes `handled: true`. Older Gateways may acknowledge `node.event` with `{ "ok": true }`; that response is compatible but does not count as a durable last-seen update.
 
-Background refresh wakes are requested through the system BackgroundTasks scheduler whenever the app moves to the background, after a silent push that could not be applied, and again after each refresh run; iOS decides when they actually execute. They stop if Background App Refresh is turned off for OpenClaw in iOS Settings, leaving push and significant-location wakes.
+Background refresh wakes are requested through the system BackgroundTasks scheduler whenever the app moves to the background, after a silent push that could not be applied, and again after each refresh run; iOS decides when they actually execute. They stop if Background App Refresh is turned off for Paddy in iOS Settings, leaving push and significant-location wakes.
 
 Compatibility note:
 
@@ -639,9 +639,9 @@ The app keeps a registry of every Gateway it has paired with, so you can switch 
 
 ## Computer Use relationship
 
-The iOS app is a mobile node surface, not a Codex Computer Use backend. Codex Computer Use and `cua-driver mcp` control a local macOS desktop through MCP tools; the iOS app exposes iPhone capabilities through OpenClaw node commands such as `camera.*`, `screen.*`, `location.*`, and `talk.*`.
+The iOS app is a mobile node surface, not a Codex Computer Use backend. Codex Computer Use and `cua-driver mcp` control a local macOS desktop through MCP tools; the iOS app exposes iPhone capabilities through Paddy node commands such as `camera.*`, `screen.*`, `location.*`, and `talk.*`.
 
-Agents can still operate the iOS app through OpenClaw by invoking node commands, but those calls go through the Gateway node protocol and follow iOS foreground/background limits. Use [Codex Computer Use](/plugins/codex-computer-use) for local desktop control and this page for iOS node capabilities.
+Agents can still operate the iOS app through Paddy by invoking node commands, but those calls go through the Gateway node protocol and follow iOS foreground/background limits. Use [Codex Computer Use](/plugins/codex-computer-use) for local desktop control and this page for iOS node capabilities.
 
 ## Voice wake + talk mode
 
@@ -653,16 +653,16 @@ Agents can still operate the iOS app through OpenClaw by invoking node commands,
 
 ### Start live voice with Siri or Shortcuts
 
-The **Start Live Voice** App Shortcut opens OpenClaw to the current
+The **Start Live Voice** App Shortcut opens Paddy to the current
 chat and starts the same Talk path as the inline Talk control.
 
-1. Open OpenClaw and [pair and connect to your Gateway](/platforms/ios#quick-start-pair-+-connect)
+1. Open Paddy and [pair and connect to your Gateway](/platforms/ios#quick-start-pair-+-connect)
    first. Live voice uses your existing [Talk mode voice provider configuration](/nodes/talk);
    the shortcut does not configure a provider or bypass pairing.
 2. In **Shortcuts → Apps → OpenClaw**, choose **Start Live Voice**. You can also
    ask Siri: **"Start live voice with OpenClaw"**.
 3. Allow microphone access when iOS prompts. Unlock your iPhone if asked, and
-   keep OpenClaw in the foreground while Talk starts. The shortcut does not
+   keep Paddy in the foreground while Talk starts. The shortcut does not
    bypass iOS unlock or foreground restrictions.
 
 For quick access, save a shortcut containing **Start Live Voice**, then assign
@@ -673,13 +673,13 @@ same iOS limits as Talk started inside the app.
 ## Common errors
 
 - `NODE_BACKGROUND_UNAVAILABLE`: bring the iOS app to the foreground (camera/screen commands require it).
-- Pairing prompt never appears: run `openclaw devices list` and approve manually.
-- `Gateway setup incomplete`: the Gateway did not provide both node and operator credentials. Generate a new iPhone setup code from **Devices -> Pair device** in the Control UI or `openclaw qr`, then scan it in **Settings -> Gateway**. Automatic reconnect stays paused until you retry setup; this is not a device-storage error.
+- Pairing prompt never appears: run `paddy devices list` and approve manually.
+- `Gateway setup incomplete`: the Gateway did not provide both node and operator credentials. Generate a new iPhone setup code from **Devices -> Pair device** in the Control UI or `paddy qr`, then scan it in **Settings -> Gateway**. Automatic reconnect stays paused until you retry setup; this is not a device-storage error.
 - If setup cannot safely replace the Gateway's offline data, it stops before applying the replacement credentials. The setup code and manual endpoint stay available. Resolve the device-storage problem, then retry.
 - Watch shows no iPhone state: confirm the iPhone reports `watchPaired: true`
   and `watchAppInstalled: true` in `watch.status`. If pairing is false, pair the
   Watch in Apple's Watch app. If installation is false, install the companion
-  from **My Watch -> Available Apps**. After either change, open OpenClaw on the
+  from **My Watch -> Available Apps**. After either change, open Paddy on the
   Watch once; immediate reachability still requires both apps to be running,
   while queued updates can arrive later in the background.
 - Reconnect fails after reinstall: the Keychain pairing token was cleared; re-pair the node.

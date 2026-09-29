@@ -221,7 +221,7 @@ export function buildThreadStartParams(
       ? { baseInstructions: CODEX_RING_ZERO_BASE_INSTRUCTIONS }
       : {}),
     personality: CODEX_NATIVE_PERSONALITY_NONE,
-    serviceName: "OpenClaw",
+    serviceName: "Paddy",
     threadSource: "openclaw",
     ...resolveCodexThreadEnvironmentSelection(options),
     // Codex 0.146 accepts canonical typed function and namespace specs natively.

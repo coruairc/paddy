@@ -43,7 +43,7 @@ fallback-model metadata fill in through bounded read-only background transcript
 reads; they can be absent from an early response. Foreground requests take priority.
 These reads do not restore cold archives, parse oversized messages, call a model,
 or change stored metadata or session activity ordering. Missing historical titles
-and legacy ACP keys are repaired only by `openclaw doctor --fix`. Missing usage
+and legacy ACP keys are repaired only by `paddy doctor --fix`. Missing usage
 remains absent until the normal usage writer records it.
 
 Both methods accept `activeOnly: true` to select currently running or queued sessions before pagination. Activity comes from the live runtime owners, not a stored status flag. Ordinary listing behavior is unchanged when the option is omitted or false. Active-only results include each visible agent-owned `global` and `unknown` session with its raw key and captured `agentId`; callers identify rows by agent, key, and `sessionId` together. Literal `agent:<id>:global` and `agent:<id>:unknown` sessions remain different rows. Active-only raw sentinel rows omit the optional `childSessions` and `hasActiveSubagentRun` fields; use `hasActiveRun` for direct activity. Normal permissions, archive/inclusion filters, and page limits still apply. Sessionless/internal runs are outside the session index.

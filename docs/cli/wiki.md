@@ -1,18 +1,18 @@
 ---
-summary: "CLI reference for `openclaw wiki` (memory-wiki vault status, search, compile, lint, apply, bridge, ChatGPT import, and Obsidian helpers)"
+summary: "CLI reference for `paddy wiki` (memory-wiki vault status, search, compile, lint, apply, bridge, ChatGPT import, and Obsidian helpers)"
 read_when:
   - You want to use the memory-wiki CLI
-  - You are documenting or changing `openclaw wiki`
+  - You are documenting or changing `paddy wiki`
 title: "Wiki"
 ---
 
-# `openclaw wiki`
+# `paddy wiki`
 
 Inspect and maintain the `memory-wiki` vault. Provided by the bundled optional `memory-wiki` plugin. Enable it before first use:
 
 ```bash
-openclaw plugins enable memory-wiki
-openclaw gateway restart
+paddy plugins enable memory-wiki
+paddy gateway restart
 ```
 
 Related: [Memory Wiki plugin](/plugins/memory-wiki), [Memory Overview](/concepts/memory), [CLI: memory](/cli/memory)
@@ -20,36 +20,36 @@ Related: [Memory Wiki plugin](/plugins/memory-wiki), [Memory Overview](/concepts
 ## Common commands
 
 ```bash
-openclaw wiki status
-openclaw wiki doctor
-openclaw wiki init
-openclaw wiki ingest ./notes/alpha.md
-openclaw wiki okf import ./knowledge-catalog/okf/bundles/ga4
-openclaw wiki compile
-openclaw wiki lint
-openclaw wiki search "alpha"
-openclaw wiki search "who should I ask about Teams?" --mode route-question
-openclaw wiki get entity.alpha --from 1 --lines 80
+paddy wiki status
+paddy wiki doctor
+paddy wiki init
+paddy wiki ingest ./notes/alpha.md
+paddy wiki okf import ./knowledge-catalog/okf/bundles/ga4
+paddy wiki compile
+paddy wiki lint
+paddy wiki search "alpha"
+paddy wiki search "who should I ask about Teams?" --mode route-question
+paddy wiki get entity.alpha --from 1 --lines 80
 
-openclaw wiki apply synthesis "Alpha Summary" \
+paddy wiki apply synthesis "Alpha Summary" \
   --body "Short synthesis body" \
   --source-id source.alpha
 
-openclaw wiki apply metadata entity.alpha \
+paddy wiki apply metadata entity.alpha \
   --source-id source.alpha \
   --status review \
   --question "Still active?"
 
-openclaw wiki bridge import
-openclaw wiki unsafe-local import
-openclaw wiki chatgpt import --export ./chatgpt-export --dry-run
-openclaw wiki chatgpt rollback <run-id>
+paddy wiki bridge import
+paddy wiki unsafe-local import
+paddy wiki chatgpt import --export ./chatgpt-export --dry-run
+paddy wiki chatgpt rollback <run-id>
 
-openclaw wiki obsidian status
-openclaw wiki obsidian search "alpha"
-openclaw wiki obsidian open syntheses/alpha-summary.md
-openclaw wiki obsidian command workspace:quick-switcher
-openclaw wiki obsidian daily
+paddy wiki obsidian status
+paddy wiki obsidian search "alpha"
+paddy wiki obsidian open syntheses/alpha-summary.md
+paddy wiki obsidian command workspace:quick-switcher
+paddy wiki obsidian daily
 ```
 
 ## Agent selection
@@ -58,9 +58,9 @@ When `plugins.entries.memory-wiki.config.vault.scope` is `agent`, select the
 vault with the command's `--agent <id>` option:
 
 ```bash
-openclaw wiki status --agent support
-openclaw wiki search "refund policy" --agent support
-openclaw wiki ingest ./campaign-notes.md --agent marketing
+paddy wiki status --agent support
+paddy wiki search "refund policy" --agent support
+paddy wiki ingest ./campaign-notes.md --agent marketing
 ```
 
 When `--agent` is omitted, CLI operations use the configured default agent,
@@ -118,15 +118,15 @@ Imported pages are flattened under `concepts/` so existing wiki compile, search,
 Examples:
 
 ```bash
-openclaw wiki okf import ./bundles/ga4
-openclaw wiki okf import ./bundles/ga4 --json
-openclaw wiki search "BigQuery Table" --mode source-evidence --json
-openclaw wiki get <path-from-json-result>
+paddy wiki okf import ./bundles/ga4
+paddy wiki okf import ./bundles/ga4 --json
+paddy wiki search "BigQuery Table" --mode source-evidence --json
+paddy wiki get <path-from-json-result>
 ```
 
 ### `wiki compile`
 
-Rebuild indexes, related blocks, dashboards, and the compiled query/prompt snapshot. The snapshot is persisted in OpenClaw's shared SQLite plugin state and kept in memory for synchronous prompt projection; it does not create cache files in the vault.
+Rebuild indexes, related blocks, dashboards, and the compiled query/prompt snapshot. The snapshot is persisted in Paddy's shared SQLite plugin state and kept in memory for synchronous prompt projection; it does not create cache files in the vault.
 
 If `render.createDashboards` is enabled, compile also refreshes report pages.
 
@@ -151,7 +151,7 @@ Search wiki content. Behavior depends on config:
 - `search.corpus`: `wiki`, `memory`, or `all`
 - `--mode`: `auto`, `find-person`, `route-question`, `source-evidence`, or `raw-claim`
 
-Use `wiki search` for wiki-specific ranking and provenance. For one broad shared recall pass, prefer `openclaw memory search` when the active memory plugin exposes shared search.
+Use `wiki search` for wiki-specific ranking and provenance. For one broad shared recall pass, prefer `paddy memory search` when the active memory plugin exposes shared search.
 
 Search modes:
 
@@ -163,10 +163,10 @@ Search modes:
 Examples:
 
 ```bash
-openclaw wiki search "bgroux" --mode find-person
-openclaw wiki search "who knows Teams rollout?" --mode route-question
-openclaw wiki search "maintainer-whois" --mode source-evidence
-openclaw wiki search "strong route Teams" --mode raw-claim --json
+paddy wiki search "bgroux" --mode find-person
+paddy wiki search "who knows Teams rollout?" --mode route-question
+paddy wiki search "maintainer-whois" --mode source-evidence
+paddy wiki search "strong route Teams" --mode raw-claim --json
 ```
 
 Text output includes `Claim:` and `Evidence:` lines when a result matches a structured claim. JSON output additionally exposes `matchedClaimId`, `matchedClaimStatus`, `matchedClaimConfidence`, `evidenceKinds`, and `evidenceSourceIds` for agent-side drilldown.
@@ -184,8 +184,8 @@ Wiki-page reads support large files and hard links. Reads refuse paths that
 escape the vault or pass through a symbolic link inside it.
 
 ```bash
-openclaw wiki get entity.alpha
-openclaw wiki get syntheses/alpha-summary.md --from 1 --lines 80
+paddy wiki get entity.alpha
+paddy wiki get syntheses/alpha-summary.md --from 1 --lines 80
 ```
 
 ### `wiki apply`
@@ -212,8 +212,8 @@ Import from explicitly configured local paths (`unsafeLocal.paths`) in `unsafe-l
 Import a ChatGPT export into draft wiki source pages.
 
 ```bash
-openclaw wiki chatgpt import --export ./chatgpt-export
-openclaw wiki chatgpt import --export ./conversations.json --dry-run
+paddy wiki chatgpt import --export ./chatgpt-export
+paddy wiki chatgpt import --export ./conversations.json --dry-run
 ```
 
 | Flag              | Default    | Description                                                   |
@@ -247,7 +247,7 @@ available.
 
 ## Configuration tie-ins
 
-`openclaw wiki` behavior is shaped by:
+`paddy wiki` behavior is shaped by:
 
 - `plugins.entries.memory-wiki.config.vaultMode`
 - `plugins.entries.memory-wiki.config.vault.scope`

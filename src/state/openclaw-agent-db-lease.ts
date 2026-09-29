@@ -106,7 +106,7 @@ export function assertAgentDatabaseMaintenanceAuthority(
   const authority = maintenanceAuthority.getStore()?.authority;
   if (!authority || (expected && authority !== expected)) {
     throw new Error(
-      "Agent identity migration requires stopped-writer maintenance; stop active agents and run openclaw doctor --fix.",
+      "Agent identity migration requires stopped-writer maintenance; stop active agents and run paddy doctor --fix.",
     );
   }
   authority.assertOwned();
@@ -201,7 +201,7 @@ function claimAgentDatabaseLeaseInDatabase(
   const authority = maintenanceAuthority.getStore();
   if (maintenance || authority) {
     throw new Error(
-      "Agent database maintenance is in progress; retry after openclaw doctor --fix completes.",
+      "Agent database maintenance is in progress; retry after paddy doctor --fix completes.",
     );
   }
   assertAgentDeletionPathFence(database, deletionFence);
@@ -719,7 +719,7 @@ export function assertNoOpenClawAgentDatabaseLeases(
       }
     }, options);
     if (leaseStillExists && (!agentId || row.agent_id === agentId)) {
-      const remediation = agentId ? "." : "; stop that process and rerun openclaw doctor --fix.";
+      const remediation = agentId ? "." : "; stop that process and rerun paddy doctor --fix.";
       throw new OpenClawAgentDatabaseLeaseActiveError(
         `Agent ${row.agent_id} database is still open in another process${remediation}`,
       );

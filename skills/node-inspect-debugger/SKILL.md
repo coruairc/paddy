@@ -27,7 +27,7 @@ Debugger REPL
 - Current scope: `repl`, then evaluate locals directly; `Ctrl+C` exits repl mode.
 - Exit safely: `cont` before quitting if the process should continue; otherwise `kill`.
 
-OpenClaw tips
+Paddy tips
 
 - Prefer `127.0.0.1` inspector binds. Do not expose `--inspect=0.0.0.0` unless the network is isolated.
 - For Vitest, debug one file with one worker. Avoid worker pools while stepping.

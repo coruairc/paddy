@@ -561,7 +561,7 @@ export function describeSystemAgentPersistentOperation(operation: SystemAgentOpe
     case "model-setup":
       return "configure a model provider and default model";
     case "doctor-fix":
-      return `run openclaw doctor --fix on the machine running ${PRODUCT_NAME}, with ${PRODUCT_NAME} stopped`;
+      return `run paddy doctor --fix on the machine running ${PRODUCT_NAME}, with ${PRODUCT_NAME} stopped`;
     case "plugin-install":
       return `install plugin ${operation.spec}`;
     case "plugin-activate-artifact":
@@ -605,8 +605,7 @@ export function describeSystemAgentPersistentOperation(operation: SystemAgentOpe
 export const SYSTEM_AGENT_OPERATOR_APPROVAL_HANDOFF =
   "The host applies the requesting session's permission policy to this exact proposal and returns the final outcome. Do not request conversational approval or claim the change was applied before that outcome.";
 
-export const SYSTEM_AGENT_OPERATOR_NAVIGATION_HANDOFF =
-  `Channel, model, and setup flows need a human operator in the ${PRODUCT_NAME} app; they cannot run from a delegated agent request. Open \`${CLI_NAME} dashboard\` or run \`${CLI_NAME} setup\` on the Gateway host.`;
+export const SYSTEM_AGENT_OPERATOR_NAVIGATION_HANDOFF = `Channel, model, and setup flows need a human operator in the ${PRODUCT_NAME} app; they cannot run from a delegated agent request. Open \`${CLI_NAME} dashboard\` or run \`${CLI_NAME} setup\` on the Gateway host.`;
 
 export function formatSystemAgentPersistentPlan(
   operation: SystemAgentOperation,

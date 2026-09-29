@@ -117,7 +117,7 @@ function splitModelRef(ref: string | undefined): { provider?: string; model?: st
 }
 
 class SystemAgentTuiBackend implements TuiBackend {
-  readonly connection = { url: "openclaw local" };
+  readonly connection = { url: "paddy local" };
 
   onEvent?: (evt: TuiEvent) => void;
   onConnected?: () => void;
@@ -439,7 +439,7 @@ async function runSetupHandoff(
       await runHosted(createClackPrompter(), beforePersistentEffect, runtime);
     }
     if (handoff.target === "gateway") {
-      runtime.log("Done — gateway settings saved. Run `openclaw gateway restart` to apply them.");
+      runtime.log("Done — gateway settings saved. Run `paddy gateway restart` to apply them.");
     }
     return;
   }
@@ -497,7 +497,7 @@ export async function runSystemAgentTui(
         historyLimit: SYSTEM_AGENT_HISTORY_LIMIT,
         backend,
         config: {},
-        title: "openclaw setup",
+        title: "paddy setup",
         ...(initialMessage ? { message: initialMessage } : {}),
       });
     } finally {

@@ -29,7 +29,7 @@ import { resolveRuntimeServiceBuildId, VERSION } from "../version.js";
 import { isGatewayTransportError } from "./transport-error.js";
 
 export const GATEWAY_STALE_INSTALL_CLOSE_REASON =
-  "gateway install changed; run: openclaw gateway restart";
+  "gateway install changed; run: paddy gateway restart";
 
 export type GatewayStaleConnectionReason = "installation-replaced" | "legacy-handler-unavailable";
 

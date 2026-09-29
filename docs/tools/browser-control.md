@@ -1,14 +1,14 @@
 ---
-summary: "OpenClaw browser control API, CLI reference, and scripting actions"
+summary: "Paddy browser control API, CLI reference, and scripting actions"
 read_when:
   - Scripting or debugging the agent browser via the local control API
-  - Looking for the `openclaw browser` CLI reference
+  - Looking for the `paddy browser` CLI reference
   - Adding custom browser automation with snapshots and refs
 title: "Browser control API"
 ---
 
 For setup, configuration, and troubleshooting, see [Browser](/tools/browser).
-This page is the reference for the local control HTTP API, the `openclaw browser`
+This page is the reference for the local control HTTP API, the `paddy browser`
 CLI, and scripting patterns (snapshots, refs, waits, debug flows).
 
 ## Control API (optional)
@@ -40,7 +40,7 @@ Prefer the single-purpose tab routes above when scripting directly.
 All endpoints accept `?profile=<name>`. `POST /start?headless=true` requests a
 one-shot headless launch for local managed profiles without changing persisted
 browser config. Attach-only, remote CDP, and existing-session profiles reject
-that override because OpenClaw does not launch those browser processes.
+that override because Paddy does not launch those browser processes.
 
 For tab endpoints, `targetId` is the compatibility field name. Prefer passing
 `suggestedTargetId` from `GET /tabs` or `POST /tabs/open`. Labels and `tabId`
@@ -53,7 +53,7 @@ For profiles configured with `driver: "extension"`, `GET /tabs` and the browser
 tool can also return `webExtensionTabId`, the runtime-scoped numeric Chrome
 WebExtensions tab ID for the same tab. This field is omitted for other drivers
 or when extension metadata is unavailable. Use it only when calling a
-WebExtensions API; continue to use `suggestedTargetId` or `tabId` for OpenClaw
+WebExtensions API; continue to use `suggestedTargetId` or `tabId` for Paddy
 browser actions because a `webExtensionTabId` can change after the browser or
 extension reconnects.
 
@@ -71,7 +71,7 @@ When URL validation fails during tab listing, the tab keeps its identity and
 title but returns `url: ""` and `urlUnavailableReason`:
 
 - `navigation_blocked`: navigation rules rejected the address.
-- `navigation_check_failed`: OpenClaw could not validate the address, for example
+- `navigation_check_failed`: Paddy could not validate the address, for example
   because DNS lookup failed. Refresh to check again.
 
 An empty URL alone does not indicate a policy denial. Navigation-policy errors
@@ -203,7 +203,7 @@ not supported for element screenshots`.
 
 If you see `Playwright is not available in this gateway build`, the packaged
 Gateway is missing the core browser runtime dependency. Reinstall or update
-OpenClaw, then restart the gateway. For Docker, also install the Chromium
+Paddy, then restart the gateway. For Docker, also install the Chromium
 browser binaries as shown below.
 
 #### Docker Playwright install
@@ -234,23 +234,23 @@ All commands accept `--browser-profile <name>` to target a specific profile, and
 <Accordion title="Basics: status, tabs, open/focus/close">
 
 ```bash
-openclaw browser status
-openclaw browser doctor
-openclaw browser doctor --deep    # add a live snapshot probe
-openclaw browser start
-openclaw browser start --headless # one-shot local managed headless launch
-openclaw browser stop            # also clears emulation on attach-only/remote CDP
-openclaw browser reset-profile   # moves the profile's browser data to Trash
-openclaw browser tabs
-openclaw browser tab             # shortcut for current tab
-openclaw browser tab new
-openclaw browser tab new --label research
-openclaw browser tab label abcd1234 research
-openclaw browser tab select 2
-openclaw browser tab close 2
-openclaw browser open https://example.com
-openclaw browser focus abcd1234
-openclaw browser close abcd1234
+paddy browser status
+paddy browser doctor
+paddy browser doctor --deep    # add a live snapshot probe
+paddy browser start
+paddy browser start --headless # one-shot local managed headless launch
+paddy browser stop            # also clears emulation on attach-only/remote CDP
+paddy browser reset-profile   # moves the profile's browser data to Trash
+paddy browser tabs
+paddy browser tab             # shortcut for current tab
+paddy browser tab new
+paddy browser tab new --label research
+paddy browser tab label abcd1234 research
+paddy browser tab select 2
+paddy browser tab close 2
+paddy browser open https://example.com
+paddy browser focus abcd1234
+paddy browser close abcd1234
 ```
 
 </Accordion>
@@ -258,10 +258,10 @@ openclaw browser close abcd1234
 <Accordion title="Profiles: list, create, delete">
 
 ```bash
-openclaw browser profiles
-openclaw browser create-profile --name research --color "#0066CC"
-openclaw browser create-profile --name attach --driver existing-session --cdp-url http://127.0.0.1:9222
-openclaw browser delete-profile --name research
+paddy browser profiles
+paddy browser create-profile --name research --color "#0066CC"
+paddy browser create-profile --name attach --driver existing-session --cdp-url http://127.0.0.1:9222
+paddy browser delete-profile --name research
 ```
 
 </Accordion>
@@ -269,24 +269,24 @@ openclaw browser delete-profile --name research
 <Accordion title="Inspection: screenshot, snapshot, console, errors, requests">
 
 ```bash
-openclaw browser screenshot
-openclaw browser screenshot --full-page
-openclaw browser screenshot --ref 12        # or --ref e12
-openclaw browser screenshot --labels
-openclaw browser snapshot
-openclaw browser snapshot --format aria --limit 200
-openclaw browser snapshot --interactive --compact --depth 6
-openclaw browser snapshot --efficient
-openclaw browser snapshot --labels
-openclaw browser snapshot --urls
-openclaw browser snapshot --selector "#main" --interactive
-openclaw browser snapshot --frame "iframe#main" --interactive
-openclaw browser snapshot --out snapshot.txt
-openclaw browser console --level error
-openclaw browser errors --clear
-openclaw browser requests --filter api --clear
-openclaw browser pdf
-openclaw browser responsebody "**/api" --max-chars 5000
+paddy browser screenshot
+paddy browser screenshot --full-page
+paddy browser screenshot --ref 12        # or --ref e12
+paddy browser screenshot --labels
+paddy browser snapshot
+paddy browser snapshot --format aria --limit 200
+paddy browser snapshot --interactive --compact --depth 6
+paddy browser snapshot --efficient
+paddy browser snapshot --labels
+paddy browser snapshot --urls
+paddy browser snapshot --selector "#main" --interactive
+paddy browser snapshot --frame "iframe#main" --interactive
+paddy browser snapshot --out snapshot.txt
+paddy browser console --level error
+paddy browser errors --clear
+paddy browser requests --filter api --clear
+paddy browser pdf
+paddy browser responsebody "**/api" --max-chars 5000
 ```
 
 </Accordion>
@@ -294,32 +294,32 @@ openclaw browser responsebody "**/api" --max-chars 5000
 <Accordion title="Actions: navigate, click, type, drag, wait, evaluate">
 
 ```bash
-openclaw browser navigate https://example.com
-openclaw browser resize 1280 720
-openclaw browser click 12 --double           # or e12 for role refs
-openclaw browser click-coords 120 340        # viewport coordinates
-openclaw browser type 23 "hello" --submit
-openclaw browser press Enter
-openclaw browser hover 44
-openclaw browser scrollintoview e12
-openclaw browser drag 10 11
-openclaw browser select 9 OptionA OptionB
-openclaw browser download e12 report.pdf
-openclaw browser waitfordownload report.pdf
+paddy browser navigate https://example.com
+paddy browser resize 1280 720
+paddy browser click 12 --double           # or e12 for role refs
+paddy browser click-coords 120 340        # viewport coordinates
+paddy browser type 23 "hello" --submit
+paddy browser press Enter
+paddy browser hover 44
+paddy browser scrollintoview e12
+paddy browser drag 10 11
+paddy browser select 9 OptionA OptionB
+paddy browser download e12 report.pdf
+paddy browser waitfordownload report.pdf
 openclaw browser upload /tmp/openclaw/uploads/file.pdf
 openclaw browser upload /tmp/openclaw/uploads/file.pdf --ref e12
-openclaw browser upload media://inbound/file.pdf
-openclaw browser fill --fields '[{"ref":"1","type":"text","value":"Ada"}]'
-openclaw browser dialog --accept
-openclaw browser dialog --dismiss --dialog-id d1
-openclaw browser wait --text "Done"
-openclaw browser wait "#main" --url "**/dash" --load networkidle --fn "window.ready===true"
-openclaw browser evaluate --fn '(el) => el.textContent' --ref 7
-openclaw browser evaluate --fn 'const title = document.title; return title;'
-openclaw browser evaluate --timeout-ms 30000 --fn 'async () => { await window.ready; return true; }'
-openclaw browser highlight e12
-openclaw browser trace start
-openclaw browser trace stop
+paddy browser upload media://inbound/file.pdf
+paddy browser fill --fields '[{"ref":"1","type":"text","value":"Ada"}]'
+paddy browser dialog --accept
+paddy browser dialog --dismiss --dialog-id d1
+paddy browser wait --text "Done"
+paddy browser wait "#main" --url "**/dash" --load networkidle --fn "window.ready===true"
+paddy browser evaluate --fn '(el) => el.textContent' --ref 7
+paddy browser evaluate --fn 'const title = document.title; return title;'
+paddy browser evaluate --timeout-ms 30000 --fn 'async () => { await window.ready; return true; }'
+paddy browser highlight e12
+paddy browser trace start
+paddy browser trace stop
 ```
 
 </Accordion>
@@ -327,20 +327,20 @@ openclaw browser trace stop
 <Accordion title="State: cookies, storage, offline, headers, geo, device">
 
 ```bash
-openclaw browser cookies
-openclaw browser cookies set session abc123 --url "https://example.com"
-openclaw browser cookies clear
-openclaw browser storage local get
-openclaw browser storage local set theme dark
-openclaw browser storage session clear
-openclaw browser set offline on
-openclaw browser set headers --headers-json '{"X-Debug":"1"}'
-openclaw browser set credentials user pass            # --clear to remove
-openclaw browser set geo 37.7749 -122.4194 --origin "https://example.com"
-openclaw browser set media dark
-openclaw browser set timezone America/New_York
-openclaw browser set locale en-US
-openclaw browser set device "iPhone 14"
+paddy browser cookies
+paddy browser cookies set session abc123 --url "https://example.com"
+paddy browser cookies clear
+paddy browser storage local get
+paddy browser storage local set theme dark
+paddy browser storage session clear
+paddy browser set offline on
+paddy browser set headers --headers-json '{"X-Debug":"1"}'
+paddy browser set credentials user pass            # --clear to remove
+paddy browser set geo 37.7749 -122.4194 --origin "https://example.com"
+paddy browser set media dark
+paddy browser set timezone America/New_York
+paddy browser set locale en-US
+paddy browser set device "iPhone 14"
 ```
 
 </Accordion>
@@ -354,19 +354,19 @@ Notes:
   download URL, suggested filename, and guarded local path. Explicit download
   interception is available for managed Playwright profiles. Existing-session
   profiles return an unsupported-operation error.
-- Prefer atomic chooser uploads: pass the trigger `--ref` with the upload so OpenClaw arms and clicks in one request. Paths-only `upload` remains supported when a later trigger is intentional. Use `--input-ref` or `--element` to set a file input directly. `dialog` is an arming call. Run it before the click/press that triggers the dialog. If an action opens a modal, the action response includes `blockedByDialog` and `browserState.dialogs.pending`. Pass that `dialogId` to respond directly. Dialogs handled outside OpenClaw appear under `browserState.dialogs.recent`.
+- Prefer atomic chooser uploads: pass the trigger `--ref` with the upload so Paddy arms and clicks in one request. Paths-only `upload` remains supported when a later trigger is intentional. Use `--input-ref` or `--element` to set a file input directly. `dialog` is an arming call. Run it before the click/press that triggers the dialog. If an action opens a modal, the action response includes `blockedByDialog` and `browserState.dialogs.pending`. Pass that `dialogId` to respond directly. Dialogs handled outside Paddy appear under `browserState.dialogs.recent`.
 - Cancelling a pending locator click, typing, or upload operation leaves other tabs connected. Upload waiters belong to the selected tab. A new upload on that tab replaces its previous waiter.
 - `click`/`type`/etc require a `ref` from `snapshot` (for example, Playwright ref `f1e12`, role ref `e12`, or actionable ARIA ref `ax12`). Copy the returned ref unchanged, including any frame prefix. CSS selectors are intentionally not supported for actions. Use `click-coords` when the visible viewport position is the only reliable target.
 - Download and trace paths are constrained to OpenClaw temp roots: `/tmp/openclaw{,/downloads}` (fallback: `${os.tmpdir()}/openclaw/...`).
-- `upload` accepts files from the OpenClaw temp uploads root and
-  OpenClaw-managed inbound media. Managed inbound media can be referenced as
+- `upload` accepts files from the Paddy temp uploads root and
+  Paddy-managed inbound media. Managed inbound media can be referenced as
   `media://inbound/<id>`, sandbox-relative `media/inbound/<id>`, or a resolved
   path inside the managed inbound media directory. Nested media refs,
   traversal, symlinks, hardlinks, and arbitrary local paths are still rejected.
 - `upload` can also set file inputs directly via `--input-ref` or `--element`; these operations honor the upload timeout.
 - Dialog prompt text preserves whitespace and empty strings exactly. Reading all local or session storage preserves empty keys and keys such as `__proto__`.
 
-Stable tab ids and labels survive Chromium raw-target replacement when OpenClaw
+Stable tab ids and labels survive Chromium raw-target replacement when Paddy
 can prove the replacement tab, such as a unique old/new pair for the same URL or
 a single old tab becoming a single new tab after form submission. Ambiguous
 duplicate-URL replacements receive fresh handles. Raw target ids are still
@@ -375,12 +375,12 @@ volatile. Prefer `suggestedTargetId` from `tabs` in scripts.
 Snapshot flags at a glance:
 
 - `--format ai` (default with Playwright): AI snapshot with native Playwright refs, including frame-qualified refs such as `f1e12`.
-- `--format aria`: accessibility tree with `axN` refs. When Playwright is available, OpenClaw binds refs with backend DOM ids to the live page. Follow-up actions can then use them. Otherwise treat the output as inspection-only.
+- `--format aria`: accessibility tree with `axN` refs. When Playwright is available, Paddy binds refs with backend DOM ids to the live page. Follow-up actions can then use them. Otherwise treat the output as inspection-only.
 - `--efficient` (or `--mode efficient`): compact role snapshot preset. Set `browser.snapshotDefaults.mode: "efficient"` to make this the default (see [Gateway configuration](/gateway/config-browser-ui-desktop#browser)).
 - `--interactive`, `--compact`, `--depth`, `--selector` force a role snapshot with `ref=e12` refs. `--frame "<iframe>"` scopes role snapshots to an iframe.
 - Selector- and frame-scoped role refs bind to the captured DOM controls, including shadow DOM and external `aria-owns` members. Reordering controls does not retarget those refs. Removed controls or failed bindings require a new snapshot instead of matching another control by name.
 - In scoped role snapshots, ignored nodes and unnamed generic wrappers are transparent before depth filtering. Depth counts the remaining role nodes from the selected root; wrapper lines and ref numbers can differ from older snapshots. State attributes, URL appendices, and output limits still apply.
-- A selector-scoped snapshot is a point-in-time observation. If no element matches at request time, it returns an empty snapshot immediately. It does not wait for the snapshot timeout. Use `openclaw browser wait "<selector>"` when the page is expected to add the element later.
+- A selector-scoped snapshot is a point-in-time observation. If no element matches at request time, it returns an empty snapshot immediately. It does not wait for the snapshot timeout. Use `paddy browser wait "<selector>"` when the page is expected to add the element later.
 - `--selector` does not change the behavior of page-wide or frame-scoped transport failures. Those still use the configured snapshot timeout and diagnostics.
 - With Playwright, `--labels` adds a screenshot with overlayed ref labels
   (prints `MEDIA:<path>`) plus an `annotations` array with each ref's bounding
@@ -394,16 +394,16 @@ Snapshot flags at a glance:
 
 ## Snapshots and refs
 
-OpenClaw supports three "snapshot" styles:
+Paddy supports three "snapshot" styles:
 
-- **AI snapshot (native refs)**: `openclaw browser snapshot` (default, `--format ai`)
+- **AI snapshot (native refs)**: `paddy browser snapshot` (default, `--format ai`)
   - Output: a text snapshot with refs such as `f1e12` and matching `refs` metadata.
-  - Actions: `openclaw browser click f1e12`, `openclaw browser type f1e23 "hello"` (use your snapshot's refs).
+  - Actions: `paddy browser click f1e12`, `paddy browser type f1e23 "hello"` (use your snapshot's refs).
   - Internally, the ref is resolved via Playwright's `aria-ref`.
 
-- **Role snapshot (role refs like `e12`)**: `openclaw browser snapshot --interactive` (or `--compact`, `--depth`, `--selector`, `--frame`)
+- **Role snapshot (role refs like `e12`)**: `paddy browser snapshot --interactive` (or `--compact`, `--depth`, `--selector`, `--frame`)
   - Output: a role-based list/tree with `[ref=e12]` (and optional `[nth=1]`).
-  - Actions: `openclaw browser click e12`, `openclaw browser highlight e12`.
+  - Actions: `paddy browser click e12`, `paddy browser highlight e12`.
   - Internally, the ref is resolved via `getByRole(...)` (plus `nth()` for duplicates).
   - Names containing quotes, backslashes, or YAML punctuation remain actionable. Use the ref rather than reconstructing a locator from the displayed name.
   - A missing displayed name can mean an empty accessible name or one above Playwright's 900 UTF-16-unit limit. Keep using the returned ref.
@@ -414,9 +414,9 @@ OpenClaw supports three "snapshot" styles:
   - Add `--urls` when link text is ambiguous and the agent needs concrete
     navigation targets. With `--frame`, the URL appendix comes from that frame.
 
-- **ARIA snapshot (ARIA refs like `ax12`)**: `openclaw browser snapshot --format aria`
+- **ARIA snapshot (ARIA refs like `ax12`)**: `paddy browser snapshot --format aria`
   - Output: the accessibility tree as structured nodes.
-  - Actions: `openclaw browser click ax12` works when the snapshot path can bind
+  - Actions: `paddy browser click ax12` works when the snapshot path can bind
     the ref through Playwright and Chrome backend DOM ids.
 - If Playwright is unavailable, ARIA snapshots can still be useful for
   inspection, but refs may not be actionable. Re-snapshot with `--format ai`
@@ -449,19 +449,19 @@ Ref behavior:
 
 ## Browser batch CLI
 
-`openclaw browser batch` runs an array of nested `/act` actions in one `/act`
+`paddy browser batch` runs an array of nested `/act` actions in one `/act`
 call (the same `kind="batch"` runtime reached through the agent tool), so CLI
 users and scripts can combine actions like `wait`, `click`, `type`, and
 `evaluate` into a single replayable plan without per-action round trips. Each
 entry in `actions[]` is a `BrowserActRequest` — the closed union the `/act`
 route accepts (`click`, `clickCoords`, `type`, `press`, `hover`,
 `scrollIntoView`, `drag`, `select`, `fill`, `resize`, `wait`, `evaluate`,
-`close`, `batch`) — not arbitrary `openclaw browser` subcommands. `batch` is
+`close`, `batch`) — not arbitrary `paddy browser` subcommands. `batch` is
 not supported on `profile="user"` and other existing-session (chrome-mcp)
 profiles. Send actions individually there.
 
-- CLI: `openclaw browser batch --actions '<json>'`, `openclaw browser batch
---actions-file plan.json`, or `openclaw browser batch --actions-file -` to
+- CLI: `paddy browser batch --actions '<json>'`, `paddy browser batch
+--actions-file plan.json`, or `paddy browser batch --actions-file -` to
   read the JSON array from stdin. `--continue` sets `stopOnError=false`. The
   default is to stop on first error. `--target-id` scopes the whole batch to
   one tab. `--actions-file` and stdin input are capped at 1,000,000 bytes.
@@ -471,7 +471,7 @@ profiles. Send actions individually there.
   `click` that triggers navigation, or an `evaluate` that mutates the DOM — can
   invalidate earlier refs for the rest of the batch. Put state-changing actions
   first, or split into a follow-up batch after re-snapshotting. Navigation and
-  re-snapshotting happen outside the batch (`openclaw browser navigate` /
+  re-snapshotting happen outside the batch (`paddy browser navigate` /
   `snapshot`), since `open`, `navigate`, and `snapshot` are not `/act` kinds.
 - Target id conflicts: a nested action may omit `targetId` or repeat the
   request-level `targetId`. An explicit nested `targetId` that resolves to a
@@ -492,19 +492,19 @@ profiles. Send actions individually there.
 You can wait on more than just time/text:
 
 - Wait for URL (globs supported by Playwright):
-  - `openclaw browser wait --url "**/dash"`
+  - `paddy browser wait --url "**/dash"`
 - Wait for load state:
-  - `openclaw browser wait --load networkidle`
+  - `paddy browser wait --load networkidle`
   - Supported on managed `openclaw` and raw/remote CDP profiles. Profiles using the `existing-session` driver (including the default `user` profile) reject `networkidle`. Use `--url`, `--text`, a selector, or `--fn` waits there.
 - Wait for a JS predicate:
-  - `openclaw browser wait --fn "window.ready===true"`
+  - `paddy browser wait --fn "window.ready===true"`
 - Wait for a selector to become visible:
-  - `openclaw browser wait "#main"`
+  - `paddy browser wait "#main"`
 
 These can be combined:
 
 ```bash
-openclaw browser wait "#main" \
+paddy browser wait "#main" \
   --url "**/dash" \
   --load networkidle \
   --fn "window.ready===true" \
@@ -515,16 +515,16 @@ openclaw browser wait "#main" \
 
 When an action fails (e.g. "not visible", "strict mode violation", "covered"):
 
-1. `openclaw browser snapshot --interactive`
+1. `paddy browser snapshot --interactive`
 2. Use `click <ref>` / `type <ref>` (prefer role refs in interactive mode)
-3. If it still fails: `openclaw browser highlight <ref>` to see what Playwright is targeting
+3. If it still fails: `paddy browser highlight <ref>` to see what Playwright is targeting
 4. If the page behaves oddly:
-   - `openclaw browser errors --clear`
-   - `openclaw browser requests --filter api --clear`
+   - `paddy browser errors --clear`
+   - `paddy browser requests --filter api --clear`
 5. For deep debugging: record a trace:
-   - `openclaw browser trace start`
+   - `paddy browser trace start`
    - reproduce the issue
-   - `openclaw browser trace stop` (prints `TRACE:<path>`)
+   - `paddy browser trace stop` (prints `TRACE:<path>`)
 
 ## JSON output
 
@@ -533,10 +533,10 @@ When an action fails (e.g. "not visible", "strict mode violation", "covered"):
 Examples:
 
 ```bash
-openclaw browser --json status
-openclaw browser --json snapshot --interactive
-openclaw browser --json requests --filter api
-openclaw browser --json cookies
+paddy browser --json status
+paddy browser --json snapshot --interactive
+paddy browser --json requests --filter api
+paddy browser --json cookies
 ```
 
 Role snapshots in JSON include `refs` plus a small `stats` block (lines/chars/refs/interactive) so tools can reason about payload size and density.
@@ -560,10 +560,10 @@ These are useful for "make the site behave like X" workflows:
 ## Security and privacy
 
 - The openclaw browser profile may contain logged-in sessions. Treat it as sensitive.
-- `browser act kind=evaluate` / `openclaw browser evaluate` and `wait --fn`
+- `browser act kind=evaluate` / `paddy browser evaluate` and `wait --fn`
   execute arbitrary JavaScript in the page context. Prompt injection can steer
   this. Disable it with `browser.evaluateEnabled=false` if you do not need it.
-- `openclaw browser evaluate --fn` accepts a function source, an expression, or
+- `paddy browser evaluate --fn` accepts a function source, an expression, or
   a statement body. Statement bodies are wrapped as async functions, so use
   `return` for the value you want back. Use `--timeout-ms <ms>` when the
   page-side function may need longer than the default evaluate timeout.

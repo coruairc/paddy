@@ -1,5 +1,6 @@
 import type { DatabaseSync } from "node:sqlite";
 import { normalizeAgentId } from "@openclaw/normalization-core/agent-id";
+import { PRODUCT_NAME } from "../brand.js";
 import { getAdmittedSqliteSchemaFacts } from "../infra/sqlite-schema-facts.js";
 import { SqliteSchemaMismatchError } from "../infra/sqlite-schema-issues.js";
 import {
@@ -15,7 +16,6 @@ import {
   type ExistingAgentSchemaMeta,
 } from "./openclaw-agent-db-metadata.js";
 import { OpenClawAgentDatabaseMediaMigrationRequiredError } from "./openclaw-agent-db-migration-required.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 export { readExistingAgentSchemaMeta } from "./openclaw-agent-db-metadata.js";
 
@@ -48,7 +48,7 @@ export function assertCanonicalAgentPersistenceVersion(
   }
   if (userVersion < OPENCLAW_AGENT_SCHEMA_VERSION && !isNewUnownedDatabase) {
     throw new SqliteSchemaMismatchError(
-      `${PRODUCT_NAME} agent database ${pathname} uses schema version ${userVersion}; stop active agents and run openclaw doctor --fix to migrate session identities before using it.`,
+      `${PRODUCT_NAME} agent database ${pathname} uses schema version ${userVersion}; stop active agents and run paddy doctor --fix to migrate session identities before using it.`,
     );
   }
 }
@@ -64,12 +64,12 @@ export function assertExistingAgentSchemaOwner(
   // Agent DB files are not interchangeable; opening another role/id would corrupt ownership.
   if (existing.role !== "agent") {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw agent database ${pathname} has schema role ${existing.role ?? "unknown"}; expected agent. Run openclaw doctor --fix to inspect and repair its ownership.`,
+      `Paddy agent database ${pathname} has schema role ${existing.role ?? "unknown"}; expected agent. Run paddy doctor --fix to inspect and repair its ownership.`,
     );
   }
   if (!existing.agentId) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw agent database ${pathname} has no agent owner. Run openclaw doctor --fix to inspect and repair its ownership.`,
+      `Paddy agent database ${pathname} has no agent owner. Run paddy doctor --fix to inspect and repair its ownership.`,
     );
   }
   if (normalizeAgentId(existing.agentId) !== agentId) {

@@ -3,7 +3,7 @@ summary: "Permission modes for host exec, Codex Guardian approvals, and ACPX har
 read_when:
   - Choosing auto, ask, allowlist, full, or deny for command permissions
   - Configuring Codex Guardian-reviewed approvals through tools.exec.mode
-  - Comparing OpenClaw exec approvals with ACPX harness permissions
+  - Comparing Paddy exec approvals with ACPX harness permissions
 title: "Permission modes"
 ---
 
@@ -20,22 +20,22 @@ Permission modes decide how much authority an agent has before it runs host comm
 Use `auto` for coding agents that need useful host access without making every miss a human prompt:
 
 ```bash
-openclaw config set tools.exec.mode auto
-openclaw approvals get
-openclaw gateway restart
+paddy config set tools.exec.mode auto
+paddy approvals get
+paddy gateway restart
 ```
 
-`openclaw approvals get` prints the requested policy, the host policy sources
+`paddy approvals get` prints the requested policy, the host policy sources
 behind it, and the effective result. Use it to confirm the `tools.exec.mode`
 write landed in the source you expect before the restart applies it.
 
 Then verify the effective policy:
 
 ```bash
-openclaw exec-policy show
+paddy exec-policy show
 ```
 
-## OpenClaw host exec modes
+## Paddy host exec modes
 
 `tools.exec.mode` is the normalized policy surface for host `exec`. Each mode resolves to an underlying `security` (allowlist strictness) and `ask` (prompt-on-miss) pair:
 
@@ -86,11 +86,11 @@ uses separate harness-level settings under `plugins.entries.acpx.config`:
 | `nonInteractivePermissions` | `fail`          | Abort when a prompt would be required.      |
 | `nonInteractivePermissions` | `deny`          | Deny the prompt and continue when possible. |
 
-Set ACPX permissions separately from OpenClaw exec approvals:
+Set ACPX permissions separately from Paddy exec approvals:
 
 ```bash
-openclaw config set plugins.entries.acpx.config.permissionMode approve-all
-openclaw config set plugins.entries.acpx.config.nonInteractivePermissions fail
+paddy config set plugins.entries.acpx.config.permissionMode approve-all
+paddy config set plugins.entries.acpx.config.nonInteractivePermissions fail
 ```
 
 With the default hybrid reload mode, these changes automatically reload the ACPX
@@ -105,18 +105,18 @@ Use `approve-all` as the ACPX break-glass equivalent of a no-prompt harness sess
 | Block host commands completely                | `tools.exec.mode: "deny"`                                                              |
 | Let known-safe commands run only              | `tools.exec.mode: "allowlist"`                                                         |
 | Ask a human for every new command shape       | `tools.exec.mode: "ask"`                                                               |
-| Use Codex/OpenClaw auto-review before humans  | `tools.exec.mode: "auto"`                                                              |
+| Use Codex/Paddy auto-review before humans     | `tools.exec.mode: "auto"`                                                              |
 | Skip ordinary host exec approval prompts      | `tools.exec.mode: "full"` plus matching host approvals, with `strictInlineEval: false` |
 | Make non-interactive ACPX sessions write/exec | `plugins.entries.acpx.config.permissionMode: "approve-all"`                            |
 
 If a command still prompts or fails after changing mode, inspect both layers:
 
 ```bash
-openclaw approvals get
-openclaw exec-policy show
+paddy approvals get
+paddy exec-policy show
 ```
 
-Outside the full-permission Gateway session exception described above, host exec uses the stricter result of OpenClaw config and the host-local approvals file. ACPX harness permissions do not loosen host exec approvals, and host exec approvals do not loosen ACPX harness prompts.
+Outside the full-permission Gateway session exception described above, host exec uses the stricter result of Paddy config and the host-local approvals file. ACPX harness permissions do not loosen host exec approvals, and host exec approvals do not loosen ACPX harness prompts.
 
 ## Related
 

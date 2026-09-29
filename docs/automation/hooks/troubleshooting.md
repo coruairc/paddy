@@ -1,7 +1,7 @@
 ---
 summary: "Diagnose a hook that is not discovered, not eligible, or not executing"
 read_when:
-  - "`openclaw hooks list` does not show your hook"
+  - "`paddy hooks list` does not show your hook"
   - A hook reports as not eligible and you need the blocking reason
   - A hook is loaded but its side effect never appears
 title: "Hook troubleshooting"
@@ -14,7 +14,7 @@ Diagnosing a hook that is not discovered, not eligible, or not executing. Part o
 ### Hook not discovered
 
 Check the report's `workspaceDir` and `managedHooksDir` with
-`openclaw hooks list --json`. Confirm you are inspecting the intended host,
+`paddy hooks list --json`. Confirm you are inspecting the intended host,
 profile, and agent. Each hook needs `HOOK.md` and one supported handler file;
 a metadata file alone is insufficient. Collection locations inspect immediate
 children. An explicit extra path or linked root can itself be a hook or pack.
@@ -30,8 +30,8 @@ linked packs, verify the root layout described under
 ### Hook not eligible
 
 ```bash
-openclaw hooks info my-hook
-openclaw hooks list --verbose
+paddy hooks info my-hook
+paddy hooks list --verbose
 ```
 
 Check `blockedReason`, missing binaries on the Gateway's `PATH`, environment,
@@ -47,7 +47,7 @@ report does not override the master switch or name selection and does not mean
 another agent's workspace was loaded.
 
 ```bash
-openclaw logs --follow
+paddy logs --follow
 ```
 
 Look for import/export errors, boundary failures, unknown-event warnings, or

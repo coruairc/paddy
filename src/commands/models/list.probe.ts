@@ -956,7 +956,7 @@ async function runTargetsWithConcurrency(params: {
 }
 
 function formatActiveGatewayModelsProbeRefusal(identity: GatewayLockIdentity): string {
-  return `A Gateway is running for this state directory (pid ${identity.pid}, port ${identity.port}). Stop the Gateway first (${formatCliCommand("openclaw gateway stop")}), then rerun models status --probe.`;
+  return `A Gateway is running for this state directory (pid ${identity.pid}, port ${identity.port}). Stop the Gateway first (${formatCliCommand("paddy gateway stop")}), then rerun models status --probe.`;
 }
 
 type AuthProbeStateOwnership = {

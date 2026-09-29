@@ -64,7 +64,7 @@ export function meetStatusScript(params: {
     });
   const audioDeviceFamily = (value) => {
     const label = String(value || '');
-    if (/\\bOpenClaw Meeting Audio\\b/i.test(label)) return 'openclaw-meeting-audio';
+    if (/\\b(?:Paddy|OpenClaw) Meeting Audio\\b/i.test(label)) return 'openclaw-meeting-audio';
     if (/\\bBlackHole\\s+2ch\\b/i.test(label)) return 'blackhole-2ch';
     return undefined;
   };
@@ -359,7 +359,7 @@ export function meetStatusScript(params: {
   } else if (inCall && allowMicrophone && (audioInputRouted !== true || audioOutputRouted !== true)) {
     manualAction = manualActionFor(
       "meet-audio-choice-required",
-      "Select BlackHole 2ch or OpenClaw Meeting Audio as both the Meet microphone and speaker, then retry."
+      "Select BlackHole 2ch or Paddy Meeting Audio as both the Meet microphone and speaker, then retry."
     );
   } else if (!inCall && (allowMicrophone ? !microphoneChoice : !noMicrophoneChoice) && /do you want people to hear you in the meeting/i.test(pageText)) {
     manualAction = manualActionFor("meet-audio-choice-required", allowMicrophone ? "Meet is showing the microphone choice. Click Use microphone in the Paddy browser profile, then retry." : "Meet is showing the microphone choice. Choose the no-microphone option in the Paddy browser profile, then retry.");

@@ -16,7 +16,7 @@ Day-to-day operation of stored jobs: copy-ready CLI examples, the management com
 <Tabs>
   <Tab title="One-shot reminder">
     ```bash
-    openclaw automations add \
+    paddy automations add \
       --name "Calendar check" \
       --at "20m" \
       --session main \
@@ -26,7 +26,7 @@ Day-to-day operation of stored jobs: copy-ready CLI examples, the management com
   </Tab>
   <Tab title="Recurring isolated job">
     ```bash
-    openclaw automations create "0 7 * * *" \
+    paddy automations create "0 7 * * *" \
       "Summarize overnight updates." \
       --name "Morning brief" \
       --tz "America/Los_Angeles" \
@@ -38,7 +38,7 @@ Day-to-day operation of stored jobs: copy-ready CLI examples, the management com
   </Tab>
   <Tab title="Model and thinking override">
     ```bash
-    openclaw automations add \
+    paddy automations add \
       --name "Deep analysis" \
       --cron "0 6 * * 1" \
       --tz "America/Los_Angeles" \
@@ -51,7 +51,7 @@ Day-to-day operation of stored jobs: copy-ready CLI examples, the management com
   </Tab>
   <Tab title="Webhook output">
     ```bash
-    openclaw automations create "0 18 * * 1-5" \
+    paddy automations create "0 18 * * 1-5" \
       "Summarize today's deploys as JSON." \
       --name "Deploy digest" \
       --webhook "https://example.invalid/openclaw/cron"
@@ -59,7 +59,7 @@ Day-to-day operation of stored jobs: copy-ready CLI examples, the management com
   </Tab>
   <Tab title="Command output">
     ```bash
-    openclaw automations create "*/15 * * * *" \
+    paddy automations create "*/15 * * * *" \
       --name "Queue depth probe" \
       --command "scripts/check-queue.sh" \
       --command-cwd "/srv/app" \
@@ -88,7 +88,7 @@ Each admin management request records its method, run, operational instance, and
 
 ### CLI management
 
-For older automations missing creator account metadata, run `openclaw doctor --fix`.
+For older automations missing creator account metadata, run `paddy doctor --fix`.
 Doctor reconciles the account only when the stored creator identity proves it,
 and reports the repair. The matching creator session can then update an agent
 prompt without supplying a new tool cap. Existing tool permissions and creator
@@ -99,50 +99,50 @@ Doctor does not infer ownership from delivery settings or the current caller.
 
 ```bash
 # List enabled jobs
-openclaw automations list
+paddy automations list
 
 # Include disabled jobs
-openclaw automations list --all
+paddy automations list --all
 
 # Get one stored job as JSON
-openclaw automations get <jobId>
+paddy automations get <jobId>
 
 # Show one job, including resolved delivery route
-openclaw automations show <jobId>
+paddy automations show <jobId>
 
 # Enable/disable without deleting
-openclaw automations enable <jobId>
-openclaw automations disable <jobId>
+paddy automations enable <jobId>
+paddy automations disable <jobId>
 
 # Edit a job
-openclaw automations edit <jobId> --message "Updated prompt" --model "opus"
+paddy automations edit <jobId> --message "Updated prompt" --model "opus"
 
 # Force run a job now
-openclaw automations run <jobId>
+paddy automations run <jobId>
 
 # Force run a job now and wait for its terminal status
-openclaw automations run <jobId> --wait --wait-timeout 10m --poll-interval 2s
+paddy automations run <jobId> --wait --wait-timeout 10m --poll-interval 2s
 
 # Run only if due
-openclaw automations run <jobId> --due
+paddy automations run <jobId> --due
 
 # View run history
-openclaw automations runs <jobId> --limit 50
+paddy automations runs <jobId> --limit 50
 
 # View one exact run
-openclaw automations runs <jobId> --run-id <runId>
+paddy automations runs <jobId> --run-id <runId>
 
 # Delete a job
-openclaw automations remove <jobId>
+paddy automations remove <jobId>
 
 # Agent selection (multi-agent setups)
-openclaw automations create "0 6 * * *" "Check ops queue" --name "Ops sweep" --session isolated --agent ops
-openclaw automations edit <jobId> --clear-agent
+paddy automations create "0 6 * * *" "Check ops queue" --name "Ops sweep" --session isolated --agent ops
+paddy automations edit <jobId> --clear-agent
 ```
 
-Archiving a session (Control UI, or `sessions.patch { key, archived: true, expectedSessionId }` using the durable ID from `sessions.list`) disables every enabled automation job bound to that session: its isolated `cron:<jobId>` session, a `session:<key>` target, or a delivery/wake `sessionKey` lane. Restoring the session requires the same observed identity and does not re-enable those jobs; use `openclaw automations enable <jobId>`. Sessions with an enabled bound job show a clock badge in the Control UI sidebar.
+Archiving a session (Control UI, or `sessions.patch { key, archived: true, expectedSessionId }` using the durable ID from `sessions.list`) disables every enabled automation job bound to that session: its isolated `cron:<jobId>` session, a `session:<key>` target, or a delivery/wake `sessionKey` lane. Restoring the session requires the same observed identity and does not re-enable those jobs; use `paddy automations enable <jobId>`. Sessions with an enabled bound job show a clock badge in the Control UI sidebar.
 
-`openclaw automations run <jobId>` returns after enqueueing the manual run. Use `--wait` for shutdown hooks, maintenance scripts, or other automation that must block until the queued run finishes; it polls the returned `runId` (default timeout `10m`, poll interval `2s`) and exits `0` only for `completionStatus: "succeeded"`. Failed or unknown completion and wait timeouts exit non-zero.
+`paddy automations run <jobId>` returns after enqueueing the manual run. Use `--wait` for shutdown hooks, maintenance scripts, or other automation that must block until the queued run finishes; it polls the returned `runId` (default timeout `10m`, poll interval `2s`) and exits `0` only for `completionStatus: "succeeded"`. Failed or unknown completion and wait timeouts exit non-zero.
 
 Run-now delivery measures lateness from when the manual request was accepted. An old pending scheduled slot does not make its fresh output stale; automatic and `--due` runs keep the original scheduled time for that check. A manual run still preserves the job's recurring cadence or future one-shot occurrence.
 
@@ -164,7 +164,7 @@ Re-enabling an auto-disabled job or an exhausted stream resets its failure count
 
 The agent `automations` tool returns compact job summaries (`id`, `name`, `enabled`, `effectiveAgentId`, `nextRunAt`, `nextRunAtMs`, `scheduleKind`, `lastRunAt`, `lastRunStatus`) from `automations(action: "list")`. `effectiveAgentId` identifies the resolved execution owner, or is `null` when ownership is unresolved. Run dates are exact ISO timestamps, or `null` when absent; the millisecond fields remain available for programmatic callers. Time-based jobs also include their exact `schedule` (`at`, `every`, or `cron`), including disabled jobs with no next run. Event-driven schedules, payloads, and delivery definitions remain omitted; use `automations(action: "get", jobId: "...")` for one full job definition. Direct Gateway callers can pass `compact: true` to `cron.list`; omitting it preserves the full response with delivery previews. `cron.add` includes the same dry-run preview on the created job so create-time output names a resolved route or fail-closed outcome.
 
-`openclaw automations create` is an alias for `openclaw automations add`. New jobs can use a positional schedule (`"0 9 * * 1"`, `"every 1h"`, `"20m"`, or an ISO timestamp) followed by a positional agent prompt. Use `--webhook <url>` on `automations add|create` or `automations edit` to POST the finished run payload to an HTTP endpoint; webhook delivery cannot combine with chat delivery flags (`--announce`, `--channel`, `--to`, `--thread-id`, `--account`). On `automations edit`, `--clear-channel`, `--clear-to`, `--clear-thread-id`, and `--clear-account` unset those routing fields individually (each rejected alongside its matching set flag) — distinct from `--no-deliver`, which only disables runner fallback delivery.
+`paddy automations create` is an alias for `paddy automations add`. New jobs can use a positional schedule (`"0 9 * * 1"`, `"every 1h"`, `"20m"`, or an ISO timestamp) followed by a positional agent prompt. Use `--webhook <url>` on `automations add|create` or `automations edit` to POST the finished run payload to an HTTP endpoint; webhook delivery cannot combine with chat delivery flags (`--announce`, `--channel`, `--to`, `--thread-id`, `--account`). On `automations edit`, `--clear-channel`, `--clear-to`, `--clear-thread-id`, and `--clear-account` unset those routing fields individually (each rejected alongside its matching set flag) — distinct from `--no-deliver`, which only disables runner fallback delivery.
 
 The webhook URL remains subject to the [strict outbound policy](/automation/cron-jobs/delivery#delivery-and-output); configure `cron.webhookSsrfPolicy` for an intentional local or private receiver.
 
@@ -173,13 +173,13 @@ Clearing **Timeout (seconds)** in the Control UI and saving removes the saved ov
 <Note>
 Model override note:
 
-- `openclaw automations add|edit --model ...` changes the job's selected model.
+- `paddy automations add|edit --model ...` changes the job's selected model.
 - If the model is allowed, that exact provider/model reaches the isolated agent run.
 - If it is not allowed or cannot be resolved, the scheduler fails the run with an explicit validation error.
 - API `cron.update` payload patches can set `model: null` to clear a stored job model override.
-- `openclaw automations edit <job-id> --clear-model` clears that override from the CLI (same effect as the `model: null` patch) and cannot combine with `--model`.
+- `paddy automations edit <job-id> --clear-model` clears that override from the CLI (same effect as the `model: null` patch) and cannot combine with `--model`.
 - Configured fallback chains still apply because the automation `--model` is a job primary, not a session `/model` override.
-- `openclaw automations add|edit --fallbacks ...` sets payload `fallbacks`, replacing configured fallbacks for that job; `--fallbacks ""` disables fallback and makes the run strict. `openclaw automations edit <job-id> --clear-fallbacks` clears the per-job override.
+- `paddy automations add|edit --fallbacks ...` sets payload `fallbacks`, replacing configured fallbacks for that job; `--fallbacks ""` disables fallback and makes the run strict. `paddy automations edit <job-id> --clear-fallbacks` clears the per-job override.
 - A plain `--model` with no explicit or configured fallback list does not fall through to the agent primary as a silent extra retry target.
 
 </Note>

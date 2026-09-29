@@ -325,7 +325,7 @@ describe("Gateway state ownership", () => {
     const error = new GatewayStateOwnerContentionError(databasePath, cause);
     expect(error.databasePath).toBe(databasePath);
     expect(error.cause).toBe(cause);
-    expect(error.message).toContain(`OpenClaw state database is busy at ${databasePath}.`);
+    expect(error.message).toContain(`Paddy state database is busy at ${databasePath}.`);
     expect(error.message).toContain("Wait for the other OpenClaw process to finish, then retry.");
     expect(error.message).toContain(
       "If it persists, run `openclaw gateway status` and check for other OpenClaw processes using the same state directory.",

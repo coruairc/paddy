@@ -147,7 +147,7 @@ export async function removeFallbackCommand(
 
       if (filtered.length === existing.length) {
         throw new Error(
-          `${params.notFoundLabel} not found: ${targetKey}. Run ${formatCliCommand(`openclaw ${listCommandForFallbackKey(params.key)}`)} to see configured fallbacks.`,
+          `${params.notFoundLabel} not found: ${targetKey}. Run ${formatCliCommand(`paddy ${listCommandForFallbackKey(params.key)}`)} to see configured fallbacks.`,
         );
       }
 

@@ -9,7 +9,7 @@ read_when:
 
 ## Profiles (multi-browser)
 
-OpenClaw supports multiple named profiles (routing configs). Profiles can be:
+Paddy supports multiple named profiles (routing configs). Profiles can be:
 
 - **openclaw-managed**: a dedicated Chromium-based browser instance with its own user data directory + CDP port
 - **remote**: an explicit CDP URL (Chromium-based browser running elsewhere)
@@ -27,7 +27,7 @@ All control endpoints accept `?profile=<name>`; the CLI uses `--browser-profile`
 
 ## Existing session via Chrome DevTools MCP
 
-OpenClaw can also attach to a running Chromium-based browser profile through the
+Paddy can also attach to a running Chromium-based browser profile through the
 official Chrome DevTools MCP server. This reuses the tabs and login state
 already open in that browser profile.
 
@@ -62,7 +62,7 @@ Then in the matching browser:
 
 1. Open that browser's inspect page for remote debugging.
 2. Enable remote debugging.
-3. Keep the browser running and approve the connection prompt when OpenClaw attaches.
+3. Keep the browser running and approve the connection prompt when Paddy attaches.
 
 Common inspect pages:
 
@@ -73,10 +73,10 @@ Common inspect pages:
 Live attach smoke test:
 
 ```bash
-openclaw browser --browser-profile user start
-openclaw browser --browser-profile user status
-openclaw browser --browser-profile user tabs
-openclaw browser --browser-profile user snapshot --format ai
+paddy browser --browser-profile user start
+paddy browser --browser-profile user status
+paddy browser --browser-profile user tabs
+paddy browser --browser-profile user snapshot --format ai
 ```
 
 What success looks like:
@@ -95,7 +95,7 @@ What to check if attach does not work:
 - if Chrome was started with an explicit `--remote-debugging-port`, set
   `browser.profiles.<name>.cdpUrl` to that DevTools endpoint instead of relying
   on Chrome MCP auto-connect
-- `openclaw doctor` migrates old extension-based browser config and checks that
+- `paddy doctor` migrates old extension-based browser config and checks that
   Chrome is installed locally for default auto-connect profiles, but it cannot
   enable browser-side remote debugging for you
 
@@ -114,12 +114,12 @@ Notes:
 
 - This path is higher-risk than the isolated `openclaw` profile because it can
   act inside your signed-in browser session.
-- OpenClaw does not launch the browser for this driver; it only attaches.
+- Paddy does not launch the browser for this driver; it only attaches.
 - Stopping or failing an attach closes the owned MCP subprocess and its verified
   descendants, not the already-running browser. Replacement attaches wait for
-  cleanup; if cleanup cannot be verified, OpenClaw reports an error instead of
+  cleanup; if cleanup cannot be verified, Paddy reports an error instead of
   treating the session as closed.
-- OpenClaw uses the official Chrome DevTools MCP `--autoConnect` flow here. If
+- Paddy uses the official Chrome DevTools MCP `--autoConnect` flow here. If
   `userDataDir` is set, it is passed through to target that user data directory.
 - Existing-session can attach on the selected host or through a connected
   browser node. If Chrome lives elsewhere and no browser node is connected, use
@@ -144,11 +144,11 @@ Notes:
 
 ### Custom Chrome MCP launch
 
-OpenClaw includes an exact-pinned Chrome DevTools MCP 1.9.0 dependency with a
+Paddy includes an exact-pinned Chrome DevTools MCP 1.9.0 dependency with a
 temporary document-identity patch and starts its CLI directly with the runtime
-running OpenClaw, Node or Bun.
+running Paddy, Node or Bun.
 The npm package carries the patched dependency; source checkouts obtain it through
-`pnpm install`. This keeps the server used at runtime aligned with OpenClaw's
+`pnpm install`. This keeps the server used at runtime aligned with Paddy's
 browser contract tests. The patch is tracked in
 [the upstream repair](https://github.com/ChromeDevTools/chrome-devtools-mcp/pull/2788).
 
@@ -158,7 +158,7 @@ document-bound element identity.
 
 | Field        | What it does                                                                                                                    |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| `mcpCommand` | Custom server executable. Absolute paths are honored; omitted or explicit `npx` selects OpenClaw's packaged server.             |
+| `mcpCommand` | Custom server executable. Absolute paths are honored; omitted or explicit `npx` selects Paddy's packaged server.                |
 | `mcpArgs`    | Extra arguments passed unchanged to `mcpCommand`. Connection options override the generated endpoint or auto-connect arguments. |
 
 `mcpArgs` extends the selected server's arguments. Existing configurations that set
@@ -167,14 +167,14 @@ The default launcher enables `--experimentalVision` for native coordinate clicks
 A custom `mcpCommand` must expose the `click_at` tool to support `click-coords`;
 pass the server's corresponding feature flag in `mcpArgs` when required.
 
-When `mcpArgs` does not set a connection option, OpenClaw forwards a configured
+When `mcpArgs` does not set a connection option, Paddy forwards a configured
 `cdpUrl` to Chrome MCP instead of generating `--autoConnect`:
 
 - `http(s)://...` → `--browserUrl <url>` (DevTools HTTP discovery endpoint).
 - `ws(s)://...` → `--wsEndpoint <url>` (direct CDP WebSocket).
 
 Explicit endpoint arguments in `mcpArgs` override `cdpUrl`; adding
-`--autoConnect` alongside an endpoint does not hide it. OpenClaw uses the selected
+`--autoConnect` alongside an endpoint does not hide it. Paddy uses the selected
 endpoint for CDP control and checks Browser CDP policy before starting Chrome MCP.
 A matching `blockedHostnames` entry denies attachment even when private-network
 access is trusted. Unrelated blocklist entries do not prevent attachment, and
@@ -191,11 +191,11 @@ running browser behind that endpoint rather than opening a profile directory.
 
 Compared to the managed `openclaw` profile, existing-session drivers are more constrained:
 
-- **Ambiguous iframe refs** - The packaged server scopes element IDs to their frame and document. If a custom server returns the same ID for different documents, OpenClaw discards the snapshot and invalidates its refs. Ref-free page screenshots remain available; update the custom server or use a managed browser profile for ref-based work.
+- **Ambiguous iframe refs** - The packaged server scopes element IDs to their frame and document. If a custom server returns the same ID for different documents, Paddy discards the snapshot and invalidates its refs. Ref-free page screenshots remain available; update the custom server or use a managed browser profile for ref-based work.
 - **Screenshots** - page captures and `--ref` element captures work; CSS `--element` selectors do not. Playwright is not required for page or ref-based element screenshots. (`--full-page` cannot combine with `--ref` or `--element` on any profile, not just existing-session.)
 - **Actions** - `click`, `type`, `hover`, `scrollIntoView`, `drag`, and `select` require snapshot refs (no CSS selectors). `click-coords` sends native input at visible viewport coordinates without a snapshot ref, supporting left clicks and double clicks. Right/middle buttons and nonzero delays return an unsupported-operation error. `click` is left-button only (no button overrides or modifiers). `type` does not support `slowly=true`; use `fill` or `press`. `press` does not support `delayMs`. `type`, `hover`, `scrollIntoView`, `drag`, `select`, and `fill` do not support per-call `timeoutMs` overrides; `evaluate` does. `select` accepts one exact HTML option value, including empty or whitespace values; duplicate display labels do not change which value is selected. `batch` is not supported; send actions individually.
 - **Wait / upload / dialog** - `wait --url` supports exact, substring, and glob patterns (same as managed); `wait --load networkidle` is not supported on existing-session profiles (it works on managed and raw/remote CDP profiles). Upload hooks require `ref` or `inputRef` and do not support CSS `element`; pass multiple paths when the page's file input accepts multiple files. Dialog hooks do not support timeout overrides or `dialogId`.
-- **Dialog visibility** - Managed browser action responses include `blockedByDialog` and `browserState.dialogs.pending` when an action opens a modal dialog; snapshots also include pending dialog state. Respond with `browser dialog --accept/--dismiss --dialog-id <id>` while a dialog is pending. Dialogs handled outside OpenClaw appear under `browserState.dialogs.recent`.
+- **Dialog visibility** - Managed browser action responses include `blockedByDialog` and `browserState.dialogs.pending` when an action opens a modal dialog; snapshots also include pending dialog state. Respond with `browser dialog --accept/--dismiss --dialog-id <id>` while a dialog is pending. Dialogs handled outside Paddy appear under `browserState.dialogs.recent`.
 - **Playwright-only features** - PDF export, download interception, `responsebody`, and the agent actions `requests`, `errors`, `text`, and `emulate` require a Playwright-backed profile, such as the managed `openclaw` profile. Use `snapshot` to inspect an existing-session page.
 
 </Accordion>

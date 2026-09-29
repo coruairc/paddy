@@ -1,12 +1,12 @@
-# OpenClaw DuckDuckGo Plugin
+# Paddy DuckDuckGo Plugin
 
-Official OpenClaw plugin for DuckDuckGo web search.
+Official Paddy plugin for DuckDuckGo web search.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/duckduckgo-plugin
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/tools/duckduckgo-search> for setup and configuration.

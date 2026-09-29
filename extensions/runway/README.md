@@ -1,7 +1,7 @@
 # Runway
 
 Generate or transform videos with Runway's hosted models. The plugin supports
-text-to-video, image-to-video, and video-to-video through OpenClaw's shared video
+text-to-video, image-to-video, and video-to-video through Paddy's shared video
 generation feature.
 
 ## Get started
@@ -9,7 +9,7 @@ generation feature.
 Add a Runway API key:
 
 ```bash
-openclaw onboard --auth-choice runway-api-key
+paddy onboard --auth-choice runway-api-key
 ```
 
 The Gateway also accepts `RUNWAYML_API_SECRET` or `RUNWAY_API_KEY`. Select a

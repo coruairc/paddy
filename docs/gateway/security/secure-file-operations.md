@@ -1,5 +1,5 @@
 ---
-summary: "How OpenClaw handles local file access safely, including native Windows credential checks"
+summary: "How Paddy handles local file access safely, including native Windows credential checks"
 read_when:
   - Changing file access, archive extraction, workspace storage, or plugin filesystem helpers
 title: "Secure file operations"
@@ -7,13 +7,13 @@ title: "Secure file operations"
 
 OpenClaw uses [`@openclaw/fs-safe`](https://github.com/openclaw/fs-safe) for security-sensitive local file operations: root-bounded reads/writes, atomic replacement, archive extraction, temp workspaces, JSON state, and secret-file handling.
 
-It is a **library guardrail** for trusted OpenClaw code that receives untrusted path names, not a sandbox. Host filesystem permissions, OS users, containers, and the agent/tool policy still define the real blast radius.
+It is a **library guardrail** for trusted Paddy code that receives untrusted path names, not a sandbox. Host filesystem permissions, OS users, containers, and the agent/tool policy still define the real blast radius.
 
 <a id="default-javascript-fallback" />
 
 ## Platform defaults
 
-OpenClaw retains fs-safe's **auto** native mode on macOS, Linux, and Windows. Supported operations use the installed native helper; operations with documented JavaScript fallbacks can use those paths when native support is unavailable.
+Paddy retains fs-safe's **auto** native mode on macOS, Linux, and Windows. Supported operations use the installed native helper; operations with documented JavaScript fallbacks can use those paths when native support is unavailable.
 
 No-clobber `Root.move()` calls, including the default and `{ overwrite: false }`, require native support for an atomic no-replace rename. With native mode `off`, or a missing or unsupported helper, moving to an absent destination fails with `helper-unavailable` and leaves the source in place. A collision returns `already-exists`, preserving both the source and competing destination. A failed identity check after dispatch can still reject after the move has completed.
 
@@ -21,9 +21,9 @@ Doctor's legacy migration claims can use verified same-directory hardlink public
 
 On Windows, secure credential reads need the matching native helper to verify ownership and ACLs on the same open file descriptor that supplies the bytes.
 
-fs-safe publishes prebuilt native helpers as optional platform packages for Linux x64/arm64 (glibc and musl), macOS x64/arm64, and Windows x64. A normal package install selects the matching package without a compiler. OpenClaw loads it through fs-safe's own dependency scope, including nested pnpm installs. Windows secure reads fail with `permission-unverified` when the helper is missing, outdated, disabled, or unsupported; there is no pathname-based permission fallback. This includes installs that omit optional dependencies and native Windows ARM64 runtimes. File SecretRef providers and GitHub identity credentials require these secure reads.
+fs-safe publishes prebuilt native helpers as optional platform packages for Linux x64/arm64 (glibc and musl), macOS x64/arm64, and Windows x64. A normal package install selects the matching package without a compiler. Paddy loads it through fs-safe's own dependency scope, including nested pnpm installs. Windows secure reads fail with `permission-unverified` when the helper is missing, outdated, disabled, or unsupported; there is no pathname-based permission fallback. This includes installs that omit optional dependencies and native Windows ARM64 runtimes. File SecretRef providers and GitHub identity credentials require these secure reads.
 
-OpenClaw leaves fs-safe's explicit environment settings and programmatic `configureFsSafeNative()` precedence unchanged:
+Paddy leaves fs-safe's explicit environment settings and programmatic `configureFsSafeNative()` precedence unchanged:
 
 ```bash
 # Guarded JavaScript paths; no-clobber moves and Windows secure reads are unavailable.
@@ -62,7 +62,7 @@ justify skipping those checks or abandoning a snapshot that can be made safely.
 
 ## What stays protected without native acceleration
 
-With the helper off, OpenClaw still gets fs-safe's Node-only guardrails:
+With the helper off, Paddy still gets fs-safe's Node-only guardrails:
 
 - rejects relative-path escapes (`..`), absolute paths, and path separators where only bare names are allowed.
 - resolves operations through a trusted root handle instead of ad-hoc `path.resolve(...).startsWith(...)` checks.
@@ -72,7 +72,7 @@ With the helper off, OpenClaw still gets fs-safe's Node-only guardrails:
 - enforces byte limits for reads and archive extraction.
 - applies private file modes for secrets and state files where the API requires them.
 
-This covers OpenClaw's normal threat model: trusted gateway code handling untrusted model/plugin/channel path input inside a single trusted operator boundary.
+This covers Paddy's normal threat model: trusted gateway code handling untrusted model/plugin/channel path input inside a single trusted operator boundary.
 
 Ordinary reads return bytes from an admitted file handle without freezing the file
 against in-place writes. Writers should use atomic replacement when readers need
@@ -96,9 +96,9 @@ In `require` mode, an unavailable or unloadable helper normally causes `helper-u
 ## Plugin and core guidance
 
 - Plugin-facing file access should use `openclaw/plugin-sdk/*` helpers when a path comes from a message, model output, config, or plugin input. Plugins can use reviewed fs-safe primitives directly when they declare their own fs-safe dependency and retain the applicable path policy.
-- Core code should import fs-safe primitives from their focused package entry points. Keep OpenClaw adapters where they own behavior, including secret-directory mode repair, archive durability, producer isolation, and public SDK compatibility. Pure re-exports are unnecessary: fs-safe owns its process defaults.
+- Core code should import fs-safe primitives from their focused package entry points. Keep Paddy adapters where they own behavior, including secret-directory mode repair, archive durability, producer isolation, and public SDK compatibility. Pure re-exports are unnecessary: fs-safe owns its process defaults.
 - Archive extraction should use the fs-safe archive helpers with explicit size, entry-count, link, and destination limits.
-- Secrets should use OpenClaw secret helpers or fs-safe secret/private-state helpers. Do not hand-roll mode checks around `fs.writeFile`.
+- Secrets should use Paddy secret helpers or fs-safe secret/private-state helpers. Do not hand-roll mode checks around `fs.writeFile`.
 - For hostile local-user isolation, do not rely on fs-safe alone. Run separate gateways under separate OS users/hosts, or use sandboxing.
 
 Related: [Security](/gateway/security), [Sandboxing](/gateway/sandboxing), [Exec approvals](/tools/exec-approvals), [Secrets](/gateway/secrets).

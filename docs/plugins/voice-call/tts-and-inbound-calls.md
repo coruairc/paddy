@@ -39,7 +39,7 @@ fallback chain are tried instead.
 
 Behavior notes:
 
-- Legacy `tts.<provider>` keys inside plugin config (`openai`, `elevenlabs`, `microsoft`, `edge`) are repaired by `openclaw doctor --fix`; committed config should use `tts.providers.<provider>`.
+- Legacy `tts.<provider>` keys inside plugin config (`openai`, `elevenlabs`, `microsoft`, `edge`) are repaired by `paddy doctor --fix`; committed config should use `tts.providers.<provider>`.
 - Core TTS is used when Twilio media streaming is enabled; otherwise calls fall back to provider-native voices.
 - If a Twilio media stream is already active, Voice Call does not fall back to TwiML `<Say>`. If telephony TTS is unavailable in that state, the playback request fails instead of mixing two playback paths.
 - When telephony TTS falls back to a secondary provider, Voice Call logs a warning with the provider chain (`from`, `to`, `attempts`) for debugging.

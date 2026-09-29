@@ -73,7 +73,7 @@ function invalidStoredIdentityError(
   cause?: unknown,
 ): DeviceIdentityStorageError {
   return new DeviceIdentityStorageError(
-    `SQLite contains an invalid persisted device identity "${identityKey}". Run "openclaw doctor --fix" before starting the gateway or connecting this client.`,
+    `SQLite contains an invalid persisted device identity "${identityKey}". Run "paddy doctor --fix" before starting the gateway or connecting this client.`,
     cause === undefined ? undefined : { cause },
   );
 }
@@ -302,7 +302,7 @@ export function assertNoPendingLegacyIdentity(options: DeviceIdentityStoreOption
   ) {
     throw new StartupMaintenanceRequiredError(
       "state-migrations",
-      `Legacy device identity exists at ${legacyPath}. Run "openclaw doctor --fix" before starting the gateway or connecting this client.`,
+      `Legacy device identity exists at ${legacyPath}. Run "paddy doctor --fix" before starting the gateway or connecting this client.`,
     );
   }
 }

@@ -5,7 +5,7 @@ import { resolveRealpathOrAbsolute } from "../infra/boundary-path.js";
 export const PLUGIN_AVAILABILITY_POLICY = {
   state: "configured-unavailable",
   severity: "warning",
-  repairCommand: "openclaw doctor --fix",
+  repairCommand: "paddy doctor --fix",
 } as const;
 
 /** Availability findings share one disposition across startup and Doctor lint. */

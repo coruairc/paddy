@@ -336,12 +336,8 @@ function renderFormBody(params: { props: LoginGateProps; feedback: LoginFailureF
               <details class="login-gate__help">
                 <summary class="login-gate__help-title">${t("connection.help.title")}</summary>
                 <ol class="login-gate__steps">
-                  <li>
-                    ${t("connection.help.step1")}${renderConnectCommand("openclaw gateway run")}
-                  </li>
-                  <li>
-                    ${t("connection.help.step2")} ${renderConnectCommand("openclaw dashboard")}
-                  </li>
+                  <li>${t("connection.help.step1")}${renderConnectCommand("paddy gateway run")}</li>
+                  <li>${t("connection.help.step2")} ${renderConnectCommand("paddy dashboard")}</li>
                   <li>${t("connection.help.step3")}</li>
                 </ol>
                 <div class="login-gate__docs">
@@ -388,7 +384,7 @@ function renderLoginGate(props: LoginGateProps, refreshAction: RefreshAction) {
                 >`
               : html`<img class="login-gate__logo" src=${faviconSrc} alt="" />`
           }
-          <span class="login-gate__brand-name">OpenClaw</span>
+          <span class="login-gate__brand-name">Paddy</span>
         </header>
         ${body}
         ${

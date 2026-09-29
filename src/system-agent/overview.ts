@@ -286,7 +286,7 @@ export function formatSystemAgentOverview(overview: SystemAgentOverview): string
     `AI: ${
       overview.defaultModel || overview.setupModel
         ? `conversation runs on ${overview.defaultModel ?? overview.setupModel}`
-        : `inference unavailable; run openclaw onboard before starting ${PRODUCT_NAME}`
+        : `inference unavailable; run paddy onboard before starting ${PRODUCT_NAME}`
     }`,
     `Docs: ${overview.references.docsPath ?? overview.references.docsUrl}`,
     overview.references.sourcePath
@@ -303,15 +303,15 @@ export function formatSystemAgentOverview(overview: SystemAgentOverview): string
 
 function recommendSystemAgentNextStep(overview: SystemAgentOverview): string {
   if (!overview.config.exists) {
-    return 'run "openclaw onboard" to establish inference';
+    return 'run "paddy onboard" to establish inference';
   }
   if (!overview.config.valid) {
     return 'run "validate config" or "doctor" to inspect the config';
   }
   if (!overview.defaultModel) {
     return overview.setupModel
-      ? 'continue setup here; run "openclaw onboard" to choose your regular agent model'
-      : 'run "openclaw onboard" to establish inference';
+      ? 'continue setup here; run "paddy onboard" to choose your regular agent model'
+      : 'run "paddy onboard" to establish inference';
   }
   if (!overview.gateway.reachable) {
     return 'run "gateway status" or "restart gateway"';
@@ -338,10 +338,10 @@ function formatStartupAction(overview: SystemAgentOverview): string | undefined 
     return "Config needs attention. Run `doctor` to inspect it.";
   }
   if (!overview.defaultModel && !overview.setupModel) {
-    return "Inference is unavailable. Run `openclaw onboard` and complete a live model check.";
+    return "Inference is unavailable. Run `paddy onboard` and complete a live model check.";
   }
   if (!overview.defaultModel) {
-    return "Setup and utility inference are ready. Choose a regular agent model in Model Setup or run `openclaw onboard`.";
+    return "Setup and utility inference are ready. Choose a regular agent model in Model Setup or run `paddy onboard`.";
   }
   return undefined;
 }
@@ -361,7 +361,7 @@ export function formatSystemAgentOnboardingWelcome(overview: SystemAgentOverview
     "",
     overview.defaultModel
       ? "Say `talk to agent` to meet your agent right here, or `help` for everything I can do."
-      : "Your setup model stays available here. Choose a primary model in Model Setup or run `openclaw onboard` before opening regular agent chat.",
+      : "Your setup model stays available here. Choose a primary model in Model Setup or run `paddy onboard` before opening regular agent chat.",
   ].join("\n");
 }
 

@@ -504,7 +504,7 @@ async function enterTriageAfterUpdate(continuation) {
     params.serviceRecovery?.kind !== "systemd" ||
     typeof process.execve !== "function"
   ) {
-    appendLog("automatic triage continuation unavailable; run openclaw triage manually");
+    appendLog("automatic triage continuation unavailable; run paddy triage manually");
     return;
   }
   const primary = await inspectSystemdService(params.serviceRecovery.unit);
@@ -516,7 +516,7 @@ async function enterTriageAfterUpdate(continuation) {
     !ownsManagedUpdateLease()
   ) {
     appendLog(
-      "automatic triage could not verify the installed service after update restoration; run openclaw triage manually",
+      "automatic triage could not verify the installed service after update restoration; run paddy triage manually",
     );
     return;
   }
@@ -532,11 +532,11 @@ async function enterTriageAfterUpdate(continuation) {
   try {
     retargeted = leaseStore.retarget(managedUpdateLease, continuation.failure.installationRoot, action);
   } catch (error) {
-    appendLog("automatic triage destination admission failed: " + String(error) + "; run openclaw triage manually");
+    appendLog("automatic triage destination admission failed: " + String(error) + "; run paddy triage manually");
     return;
   }
   if (!retargeted) {
-    appendLog("automatic triage lost its completed update owner; run openclaw triage manually");
+    appendLog("automatic triage lost its completed update owner; run paddy triage manually");
     return;
   }
   if (retargeted.kind === "busy") {
@@ -1610,7 +1610,7 @@ async function spawnManagedServiceUpdateHandoff(
     ),
     // This hint becomes a model/channel notice; host paths remain in the helper log.
     triageHint:
-      "Update triage runs after service recovery; see the managed update helper log for the outcome and the installation-specific openclaw triage command.",
+      "Update triage runs after service recovery; see the managed update helper log for the outcome and the installation-specific paddy triage command.",
     commandLabel,
     handoffId: params.handoffId,
     nonFailureSkippedReasons: Object.keys(SKIPPED_UPDATE_OUTCOMES),
@@ -1838,7 +1838,7 @@ export async function startManagedServiceUpdateHandoff(
   params.requesterAuthority?.signal?.throwIfAborted();
   if (params.action && params.supervisor !== "systemd") {
     throw new Error(
-      "Automatic managed triage requires a Linux user-systemd scope; run openclaw triage manually.",
+      "Automatic managed triage requires a Linux user-systemd scope; run paddy triage manually.",
     );
   }
   if (
@@ -1853,7 +1853,7 @@ export async function startManagedServiceUpdateHandoff(
       : undefined;
   if (operatorRestartWarning && params.action) {
     throw new Error(
-      "Automatic managed triage requires a Linux user-systemd scope; run openclaw triage manually.",
+      "Automatic managed triage requires a Linux user-systemd scope; run paddy triage manually.",
     );
   }
   const root = resolveUpdateInstallRoot(params.root);

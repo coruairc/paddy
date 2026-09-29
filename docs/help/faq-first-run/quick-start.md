@@ -15,7 +15,7 @@ where to run the Gateway see
 ## Quick start and first-run setup
 
 <AccordionGroup>
-  <Accordion title="Recommended way to install and set up OpenClaw">
+  <Accordion title="Recommended way to install and set up Paddy">
     ```bash
     curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash
     ```
@@ -25,11 +25,11 @@ where to run the Gateway see
     stop the foreground Gateway and install the background service:
 
     ```bash
-    openclaw gateway install
+    paddy gateway install
     ```
 
     Prefer the classic step-by-step wizard and a service install in one
-    command? Run `openclaw onboard --install-daemon` instead of the two
+    command? Run `paddy onboard --install-daemon` instead of the two
     commands above. That flag selects the classic flow, so you do not see the
     guided **Quick start** and **Custom setup** choice.
 
@@ -41,10 +41,10 @@ where to run the Gateway see
     pnpm install
     pnpm build
     pnpm ui:build
-    openclaw onboard
+    paddy onboard
     ```
 
-    No global install yet? Run `pnpm openclaw onboard` instead. If Control UI assets are
+    No global install yet? Run `pnpm paddy onboard` instead. If Control UI assets are
     missing, onboarding tries to build them itself, falling back to `pnpm ui:build`.
 
   </Accordion>
@@ -73,13 +73,13 @@ where to run the Gateway see
 
     | Command | Shows |
     | --- | --- |
-    | `openclaw status` | Gateway/agent health + basic config snapshot |
-    | `openclaw status --all` | Full read-only diagnosis, pasteable |
-    | `openclaw models status` | Provider auth + model availability |
-    | `openclaw doctor` | Validates and repairs common config/state issues |
-    | `openclaw logs --follow` | Live log tail |
-    | `openclaw gateway status --deep` | Deep gateway/config/plugin health check |
-    | `openclaw health --verbose` | Detailed health report |
+    | `paddy status` | Gateway/agent health + basic config snapshot |
+    | `paddy status --all` | Full read-only diagnosis, pasteable |
+    | `paddy models status` | Provider auth + model availability |
+    | `paddy doctor` | Validates and repairs common config/state issues |
+    | `paddy logs --follow` | Live log tail |
+    | `paddy gateway status --deep` | Deep gateway/config/plugin health check |
+    | `paddy health --verbose` | Detailed health report |
 
     Found a real bug or fix? File an issue or send a PR:
     [Issues](https://github.com/openclaw/openclaw/issues) /
@@ -103,11 +103,11 @@ where to run the Gateway see
     - If it asks for shared-secret auth, paste the configured token or password into Control UI settings.
     - Token source: `gateway.auth.token` (or `OPENCLAW_GATEWAY_TOKEN`).
     - Password source: `gateway.auth.password` (or `OPENCLAW_GATEWAY_PASSWORD`).
-    - No shared secret configured yet? Run `openclaw doctor --generate-gateway-token` (or `openclaw doctor --fix --generate-gateway-token`).
+    - No shared secret configured yet? Run `paddy doctor --generate-gateway-token` (or `paddy doctor --fix --generate-gateway-token`).
 
     **Not on localhost:**
 
-    - **Tailscale Serve** (recommended): keep bind loopback, run `openclaw gateway --tailscale serve`, open `https://<magicdns>/`. With `gateway.auth.allowTailscale: true`, identity headers satisfy Control UI/WebSocket auth (no pasted shared secret, assumes a trusted gateway host); HTTP APIs still need shared-secret auth unless you deliberately use private-ingress `none` or trusted-proxy HTTP auth.
+    - **Tailscale Serve** (recommended): keep bind loopback, run `paddy gateway --tailscale serve`, open `https://<magicdns>/`. With `gateway.auth.allowTailscale: true`, identity headers satisfy Control UI/WebSocket auth (no pasted shared secret, assumes a trusted gateway host); HTTP APIs still need shared-secret auth unless you deliberately use private-ingress `none` or trusted-proxy HTTP auth.
       Concurrent bad-auth Serve attempts from the same client are serialized before the failed-auth limiter records them, so a second bad retry can already show `retry later`.
     - **Identity-aware reverse proxy**: keep the Gateway behind a trusted proxy, set `gateway.auth.mode: "trusted-proxy"`, open the proxy URL. Same-host loopback proxies need explicit `gateway.auth.trustedProxy.allowLoopback: true`.
     - **SSH tunnel**: `ssh -N -L 18789:127.0.0.1:18789 user@gateway-host`, then open `http://127.0.0.1:18789/`. Shared-secret auth still applies over the tunnel; paste the configured token or password if prompted.
@@ -123,7 +123,7 @@ where to run the Gateway see
     | `empty-heartbeat-file` | Heartbeat monitor scratch exists but only has blank, comment, header, fence, or empty-checklist scaffolding |
     | `alerts-disabled` | All heartbeat visibility is off (`showOk`, `showAlerts`, and `useIndicator` all disabled) |
 
-    Older heartbeat `tasks:` blocks migrate to independently scheduled cron jobs with `openclaw doctor --fix`.
+    Older heartbeat `tasks:` blocks migrate to independently scheduled cron jobs with `paddy doctor --fix`.
 
     Docs: [Heartbeat](/gateway/heartbeat), [Automation](/automation).
 
@@ -197,28 +197,28 @@ where to run the Gateway see
     That screen depends on the Gateway being reachable and authenticated. The TUI also sends
     "Wake up, my friend!" automatically on first hatch when a model provider is configured. If
     you skipped model/auth setup, onboarding shows a "Model auth missing" note and opens the
-    TUI without sending anything — add a provider by running `openclaw onboard` again.
+    TUI without sending anything — add a provider by running `paddy onboard` again.
     That is the one command for changing the model provider or its authentication.
     If you see the wake-up line with **no reply** and tokens stay at 0, the agent never ran.
 
     1. Restart the Gateway:
 
     ```bash
-    openclaw gateway restart
+    paddy gateway restart
     ```
 
     2. Check status + auth:
 
     ```bash
-    openclaw status
-    openclaw models status
-    openclaw logs --follow
+    paddy status
+    paddy models status
+    paddy logs --follow
     ```
 
     3. Still hanging? Run:
 
     ```bash
-    openclaw doctor
+    paddy doctor
     ```
 
     If the Gateway is remote, confirm the tunnel/Tailscale connection is up and the UI
@@ -229,10 +229,10 @@ where to run the Gateway see
   <Accordion title="Can I migrate my setup to a new machine without redoing onboarding?">
     Yes. Copy the **state directory** and **workspace**, then run Doctor once:
 
-    1. Install OpenClaw on the new machine.
+    1. Install Paddy on the new machine.
     2. Copy `$OPENCLAW_STATE_DIR` (default: `~/.openclaw`) from the old machine.
     3. Copy your workspace (default: `~/.openclaw/workspace`).
-    4. Run `openclaw doctor` and restart the Gateway service.
+    4. Run `paddy doctor` and restart the Gateway service.
 
     This preserves config, auth profiles, WhatsApp creds, sessions, and memory - it keeps
     your bot exactly the same, as long as you copy **both** locations. In remote mode, the
@@ -311,7 +311,7 @@ where to run the Gateway see
     1. **Dev channel (existing install):**
 
     ```bash
-    openclaw update --channel dev
+    paddy update --channel dev
     ```
 
     This switches to a git checkout of `main`, rebases on upstream, builds, and installs
@@ -344,7 +344,7 @@ where to run the Gateway see
     - **Advanced/full onboarding:** longer when provider sign-in, channel pairing, daemon install, network downloads, or skills need extra setup.
 
     The wizard shows this timeline up front. Skip optional steps and return later with
-    `openclaw configure`.
+    `paddy configure`.
 
     Hanging? See [I am stuck](#i-am-stuck) above.
 
@@ -364,7 +364,7 @@ where to run the Gateway see
 
   </Accordion>
 
-  <Accordion title="Windows install says git not found or openclaw not recognized">
+  <Accordion title="Windows install says git not found or paddy not recognized">
     Two common Windows issues:
 
     **1) npm error spawn git / git not found**
@@ -372,7 +372,7 @@ where to run the Gateway see
     - Install **Git for Windows**, make sure `git` is on PATH.
     - Close and reopen PowerShell, then re-run the installer.
 
-    **2) openclaw is not recognized after install**
+    **2) paddy is not recognized after install**
 
     - Your npm global bin folder is not on PATH.
     - Check it: `npm config get prefix`.
@@ -402,7 +402,7 @@ where to run the Gateway see
     Then restart the Gateway and retry:
 
     ```powershell
-    openclaw gateway restart
+    paddy gateway restart
     ```
 
     Still reproducing this on latest OpenClaw? Track/report it: [Issue #30640](https://github.com/openclaw/openclaw/issues/30640).
@@ -421,14 +421,14 @@ where to run the Gateway see
 
   </Accordion>
 
-  <Accordion title="How do I install OpenClaw on Linux?">
+  <Accordion title="How do I install Paddy on Linux?">
     - Linux quick path + service install: [Linux](/platforms/linux).
     - Full walkthrough: [Getting Started](/start/getting-started).
     - Installer + updates: [Install & updates](/install/updating).
 
   </Accordion>
 
-  <Accordion title="How do I install OpenClaw on a VPS?">
+  <Accordion title="How do I install Paddy on a VPS?">
     Any Linux VPS works. Install on the server, then reach the Gateway over SSH/Tailscale.
 
     Guides: [exe.dev](/install/exe-dev), [Hetzner](/install/hetzner), [Fly.io](/install/fly).
@@ -457,17 +457,17 @@ where to run the Gateway see
 
   </Accordion>
 
-  <Accordion title="Can I ask OpenClaw to update itself?">
+  <Accordion title="Can I ask Paddy to update itself?">
     Possible, not recommended. The update flow can restart the Gateway (dropping the
     active session), may need a clean git checkout, and can prompt for confirmation.
     Safer to run updates from a shell as the operator.
 
     ```bash
-    openclaw update
-    openclaw update status
-    openclaw update --channel beta
-    openclaw update --tag 2026.9.3
-    openclaw update --no-restart
+    paddy update
+    paddy update status
+    paddy update --channel beta
+    paddy update --tag 2026.9.3
+    paddy update --no-restart
     ```
 
     `--channel` accepts `stable`, `extended-stable`, `beta`, or `dev`. `--tag`
@@ -476,8 +476,8 @@ where to run the Gateway see
     Automating from an agent:
 
     ```bash
-    openclaw update --yes --no-restart
-    openclaw gateway restart
+    paddy update --yes --no-restart
+    paddy gateway restart
     ```
 
     Docs: [Update](/cli/update), [Updating](/install/updating).
@@ -485,7 +485,7 @@ where to run the Gateway see
   </Accordion>
 
   <Accordion title="What does onboarding actually do?">
-    `openclaw onboard` is the recommended setup path. On a fresh local install it
+    `paddy onboard` is the recommended setup path. On a fresh local install it
     offers two lanes after a one-line pointer to the [security guide](/gateway/security):
 
     - **Quick start** detects the AI access you already have, waits for you to
@@ -502,7 +502,7 @@ where to run the Gateway see
     provider installation, model selection, or credential write.
 
     The classic step-by-step wizard is still available. Run
-    `openclaw onboard --classic` for its Workspace, Model/Auth, Gateway,
+    `paddy onboard --classic` for its Workspace, Model/Auth, Gateway,
     Channels, Web search, Skills, Daemon, and Health check steps. The step list
     is in [Onboarding (CLI)](/start/wizard#what-classic-onboarding-configures).
 
@@ -513,7 +513,7 @@ where to run the Gateway see
   </Accordion>
 
   <Accordion title="Do I need a Claude or OpenAI subscription to run this?">
-    No. Run OpenClaw with **API keys** (Anthropic/OpenAI/others) or **local-only models**
+    No. Run Paddy with **API keys** (Anthropic/OpenAI/others) or **local-only models**
     so your data stays on your device. Subscriptions (Claude Pro/Max, ChatGPT/Codex) are
     optional ways to authenticate those providers.
 
@@ -525,7 +525,7 @@ where to run the Gateway see
     automation, an Anthropic API key is the more predictable choice.
 
     OpenAI Codex OAuth (ChatGPT/Codex subscription) is fully supported for agent models.
-    OpenClaw also supports hosted subscription-style options including **Qwen Cloud
+    Paddy also supports hosted subscription-style options including **Qwen Cloud
     Coding Plan**, **MiniMax Coding Plan**, and **Z.AI / GLM Coding Plan**.
 
     Docs: [Anthropic](/providers/anthropic), [OpenAI](/providers/openai),
@@ -535,8 +535,8 @@ where to run the Gateway see
   </Accordion>
 
   <Accordion title="Can I use Claude Max subscription without an API key?">
-    Yes. OpenClaw supports Claude CLI reuse for Pro/Max/Team/Enterprise plans. Anthropic
-    currently treats the `claude -p` path OpenClaw uses as subscription-plan usage subject
+    Yes. Paddy supports Claude CLI reuse for Pro/Max/Team/Enterprise plans. Anthropic
+    currently treats the `claude -p` path Paddy uses as subscription-plan usage subject
     to your plan's limits, not a separate free allowance - see
     [Anthropic](/providers/anthropic) for the current billing detail and links to
     Anthropic's own support articles. For the most predictable server-side setup, use an
@@ -549,7 +549,7 @@ where to run the Gateway see
     dated links to Anthropic's support articles before relying on specific billing
     behavior.
 
-    Anthropic setup-token auth is also still a supported token path, but OpenClaw prefers
+    Anthropic setup-token auth is also still a supported token path, but Paddy prefers
     Claude CLI reuse and `claude -p` when available. For production or multi-user
     workloads, an Anthropic API key remains the safer, more predictable choice. Other
     subscription-style hosted options: [OpenAI](/providers/openai), [Qwen Cloud](/providers/qwen),

@@ -48,7 +48,7 @@ describe("formatCliJsonFailure", () => {
         updaterVersion: "2026.9.2",
         message: expect.stringContaining("Deferral failed: content migration failed"),
         databases,
-        commands: expect.arrayContaining(["openclaw gateway stop", "openclaw doctor --fix"]),
+        commands: expect.arrayContaining(["paddy gateway stop", "paddy doctor --fix"]),
       },
     });
   });

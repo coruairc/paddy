@@ -67,7 +67,7 @@ function databasePath(params: Pick<Params, "stateDir">) {
 }
 
 const missingOwnerMessage =
-  "missing original requester session, lifecycle and connection facts (nativeHistory); inspect the original child in its native Codex account, or restore the pre-upgrade backup with its matching OpenClaw version to finish delivery";
+  "missing original requester session, lifecycle and connection facts (nativeHistory); inspect the original child in its native Codex account, or restore the pre-upgrade backup with its matching Paddy version to finish delivery";
 
 function taskIdentity(task: LegacyTask) {
   try {
@@ -196,7 +196,7 @@ function prepareAssignment(task: LegacyTask, stored: StoredCodexAppServerBinding
     stored.binding.pendingSupervisionBranch
   ) {
     throw new Error(
-      "current requester binding is unavailable; reconnect the original requester and run openclaw doctor --fix",
+      "current requester binding is unavailable; reconnect the original requester and run paddy doctor --fix",
     );
   }
   const session = getSessionEntry({
@@ -279,7 +279,7 @@ export const codexNativeTaskAssignmentMigration = {
         }
         if (!store.observe || !store.compareAndApply || !store.withCurrent) {
           throw new Error(
-            "current requester identity or atomic binding storage is unavailable; run openclaw doctor --fix with the current version",
+            "current requester identity or atomic binding storage is unavailable; run paddy doctor --fix with the current version",
           );
         }
         if (task.run_count !== 1) {
@@ -335,7 +335,7 @@ export const codexNativeTaskAssignmentMigration = {
           value: next,
         });
         if (result.status === "conflict") {
-          throw new Error("binding changed during import; run openclaw doctor --fix again");
+          throw new Error("binding changed during import; run paddy doctor --fix again");
         }
         imported += 1;
       } catch (error) {

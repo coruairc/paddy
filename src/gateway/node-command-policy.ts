@@ -479,10 +479,10 @@ function formatRequiredNodeCommandUnavailable(
     const enable = pluginId
       ? `${pluginId === "codex" ? "install the codex plugin on that node if missing (openclaw plugins install @openclaw/codex), then " : ""}enable the ${pluginId} plugin on that node (openclaw plugins enable ${pluginId})`
       : "enable the plugin or node capability that provides this command on that node";
-    return `${prefix} is not advertised by node ${nodeId}; ${enable}, then restart the node (openclaw node restart) and approve its updated command surface`;
+    return `${prefix} is not advertised by node ${nodeId}; ${enable}, then restart the node (paddy node restart) and approve its updated command surface`;
   }
   if (state === "pending-approval") {
-    return `${prefix} is awaiting pairing approval for node ${nodeId}; find its updated command surface request with openclaw nodes pending, then run openclaw nodes approve <requestId>`;
+    return `${prefix} is awaiting pairing approval for node ${nodeId}; find its updated command surface request with paddy nodes pending, then run paddy nodes approve <requestId>`;
   }
   return `${prefix} is blocked by Gateway policy for node ${nodeId}; allow it in gateway.nodes.commands.allow and remove any matching gateway.nodes.commands.deny entry`;
 }

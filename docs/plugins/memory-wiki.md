@@ -20,7 +20,7 @@ knowledge into a maintained wiki layer.
 Enable the plugin before using its CLI, tools, or runtime integration:
 
 ```bash
-openclaw plugins enable memory-wiki
+paddy plugins enable memory-wiki
 ```
 
 Enablement applies to a running Gateway automatically. If it is offline, start
@@ -42,7 +42,7 @@ A common local-first setup uses builtin memory for recall and `memory-wiki` in
 [Configuration](#configuration).
 
 If bridge mode reports zero exported artifacts, the active memory plugin is
-not currently exposing public bridge inputs. Run `openclaw wiki doctor` first,
+not currently exposing public bridge inputs. Run `paddy wiki doctor` first,
 then confirm the active memory plugin supports public artifacts.
 
 ## Vault modes
@@ -71,7 +71,7 @@ Bridge mode can index, per `bridge.*` config toggle:
 - memory event logs (`followMemoryEvents`)
 
 When bridge mode is active and `bridge.readMemoryArtifacts` is enabled,
-`openclaw wiki status`, `openclaw wiki doctor`, and `openclaw wiki bridge
+`paddy wiki status`, `paddy wiki doctor`, and `paddy wiki bridge
 import` route through the running Gateway so they see the same active memory
 plugin context as agent/runtime memory. If bridge is disabled or artifact
 reads are off, those commands keep local/offline behavior.
@@ -106,13 +106,13 @@ preserved across regeneration.
 ## Open Knowledge Format imports
 
 ```bash
-openclaw wiki okf import ./bundles/ga4
+paddy wiki okf import ./bundles/ga4
 ```
 
 Import an unpacked Open Knowledge Format bundle into wiki concept pages. Good
 fit when a data catalog, documentation crawler, or enrichment agent already
 produces OKF: keep OKF as the portable exchange artifact, let `memory-wiki`
-turn it into OpenClaw-native concept pages and compiled digests.
+turn it into Paddy-native concept pages and compiled digests.
 
 - non-reserved `.md` files are concept documents
 - each imported concept requires a non-empty `type` frontmatter field; missing `type` produces a `missing-type` warning and the file is skipped
@@ -207,7 +207,7 @@ claims:
 ## Compile pipeline
 
 Compile reads wiki pages, normalizes summaries, and persists a machine-facing
-snapshot in OpenClaw's shared SQLite plugin state. Runtime code uses the
+snapshot in Paddy's shared SQLite plugin state. Runtime code uses the
 lifecycle-owned owner snapshot to load SQLite during async prompt preparation;
 synchronous prompt assembly never scrapes Markdown or reads cache files.
 Compiled output also powers first-pass wiki indexing for search/get, claim-id
@@ -323,7 +323,7 @@ Dashboard requests never scan raw vault pages or wait for a full vault compile.
 During automatic recovery, the UI reports that the dashboards are rebuilding;
 reload the tab shortly. When
 `ingest.autoCompile` is `false`, a source change or older cache reports that a
-compile is required instead. Run `openclaw wiki compile`, then reload the tab.
+compile is required instead. Run `paddy wiki compile`, then reload the tab.
 
 ## Prompt and context behavior
 
@@ -354,7 +354,7 @@ Put config under `plugins.entries.memory-wiki.config`:
           obsidian: {
             enabled: true,
             useOfficialCli: true,
-            vaultName: "OpenClaw Wiki",
+            vaultName: "Paddy Wiki",
             openAfterWrites: false,
           },
           bridge: {
@@ -420,7 +420,7 @@ directory.
 ### Per-agent vaults
 
 Set `vault.scope` to `agent` to give every configured agent a separate wiki.
-In this scope, `vault.path` is a parent directory and OpenClaw appends the
+In this scope, `vault.path` is a parent directory and Paddy appends the
 normalized agent id:
 
 ```json5
@@ -526,17 +526,17 @@ intentionally enable compiled digest prompts.
 ## CLI
 
 ```bash
-openclaw wiki status
-openclaw wiki doctor
-openclaw wiki init
-openclaw wiki ingest ./notes/alpha.md
-openclaw wiki compile
-openclaw wiki lint
-openclaw wiki search "alpha"
-openclaw wiki get entity.alpha
-openclaw wiki apply synthesis "Alpha Summary" --body "..." --source-id source.alpha
-openclaw wiki bridge import
-openclaw wiki obsidian status
+paddy wiki status
+paddy wiki doctor
+paddy wiki init
+paddy wiki ingest ./notes/alpha.md
+paddy wiki compile
+paddy wiki lint
+paddy wiki search "alpha"
+paddy wiki get entity.alpha
+paddy wiki apply synthesis "Alpha Summary" --body "..." --source-id source.alpha
+paddy wiki bridge import
+paddy wiki obsidian status
 ```
 
 See [CLI: wiki](/cli/wiki) for the full command reference, including

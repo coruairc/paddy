@@ -15,11 +15,11 @@ Adds agent-callable tools.
 ## Distribution
 
 - Package: `@openclaw/browser-plugin`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 
-- CLI commands: `openclaw browser`
+- CLI commands: `paddy browser`
 - Contracts: `tools`
 - Skills
 

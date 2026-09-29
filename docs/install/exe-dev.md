@@ -1,12 +1,12 @@
 ---
-summary: "Run OpenClaw Gateway on exe.dev (VM + HTTPS proxy) for remote access"
+summary: "Run Paddy Gateway on exe.dev (VM + HTTPS proxy) for remote access"
 read_when:
   - You want a cheap always-on Linux host for the Gateway
   - You want remote Control UI access without running your own VPS
 title: "exe.dev"
 ---
 
-**Goal:** OpenClaw Gateway running on an [exe.dev](https://exe.dev) VM, reachable at `https://<vm-name>.exe.xyz`.
+**Goal:** Paddy Gateway running on an [exe.dev](https://exe.dev) VM, reachable at `https://<vm-name>.exe.xyz`.
 
 This guide assumes exe.dev's default **exeuntu** image. Map packages accordingly on other distros.
 
@@ -21,11 +21,11 @@ This guide assumes exe.dev's default **exeuntu** image. Map packages accordingly
 2. Fill in your auth key/token as needed
 3. Click "Agent" next to your VM and wait for Shelley to finish provisioning
 4. Open `https://<vm-name>.exe.xyz/` and authenticate with the configured shared secret (token auth by default; password auth also works if you switch `gateway.auth.mode`)
-5. Approve pending device pairing requests with `openclaw devices approve <requestId>`
+5. Approve pending device pairing requests with `paddy devices approve <requestId>`
 
 ## Automated install with Shelley
 
-Shelley, exe.dev's agent, can install OpenClaw from a prompt:
+Shelley, exe.dev's agent, can install Paddy from a prompt:
 
 ```text
 Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-interactive and accept-risk flags for openclaw onboarding. Add the supplied auth or token as needed. Configure nginx to forward from the default port 18789 to the root location on the default enabled site config, making sure to enable Websocket support. Set gateway.controlUi.allowedOrigins to the exact https://<vm-name>.exe.xyz origin, and set gateway.trustedProxies to ["127.0.0.1"] because nginx connects to the Gateway over loopback and overwrites X-Forwarded-For. Pairing is done by "openclaw devices list" and "openclaw devices approve <request id>". Make sure the dashboard shows that OpenClaw's health is OK. exe.dev handles forwarding from port 8000 to port 80/443 and HTTPS for us, so the final "reachable" should be <vm-name>.exe.xyz, without port specification.
@@ -60,7 +60,7 @@ Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-inter
     ```
   </Step>
 
-  <Step title="Install OpenClaw">
+  <Step title="Install Paddy">
     ```bash
     curl -fsSL https://openclaw.ai/install.sh | bash
     ```
@@ -99,7 +99,7 @@ Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-inter
     }
     ```
 
-    Overwrite forwarding headers instead of preserving client-supplied chains. OpenClaw trusts forwarded IP metadata only from explicitly configured proxies, and append-style `X-Forwarded-For` chains are treated as a hardening risk.
+    Overwrite forwarding headers instead of preserving client-supplied chains. Paddy trusts forwarded IP metadata only from explicitly configured proxies, and append-style `X-Forwarded-For` chains are treated as a hardening risk.
 
   </Step>
 
@@ -107,24 +107,24 @@ Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-inter
     Configure the exact public origin and trust only the loopback nginx hop:
 
     ```bash
-    openclaw config set gateway.controlUi.allowedOrigins '["https://<vm-name>.exe.xyz"]' --strict-json
-    openclaw config set gateway.trustedProxies '["127.0.0.1"]' --strict-json
-    openclaw gateway restart
+    paddy config set gateway.controlUi.allowedOrigins '["https://<vm-name>.exe.xyz"]' --strict-json
+    paddy config set gateway.trustedProxies '["127.0.0.1"]' --strict-json
+    paddy gateway restart
     ```
 
     The browser origin check is fail-closed for public hostnames. The proxy
-    allowlist lets OpenClaw use nginx's overwritten `X-Forwarded-For` value
+    allowlist lets Paddy use nginx's overwritten `X-Forwarded-For` value
     instead of treating every request as if it originated from the loopback
     proxy. Keep this list limited to proxies you control.
 
   </Step>
 
-  <Step title="Access OpenClaw and approve devices">
+  <Step title="Access Paddy and approve devices">
     Open `https://<vm-name>.exe.xyz/` (see the Control UI output from onboarding). If it prompts for auth, paste the configured shared secret from the VM.
 
     This guide uses token auth by default, so run `openclaw gateway auth-token --show` in an interactive terminal to retrieve the configured token. If no token is configured, generate one with `openclaw doctor --generate-gateway-token` and restart the Gateway. If you switched the gateway to password auth, use `gateway.auth.password` / `OPENCLAW_GATEWAY_PASSWORD` instead.
 
-    Approve devices with `openclaw devices list` and `openclaw devices approve <requestId>`. When in doubt, use Shelley from your browser.
+    Approve devices with `paddy devices list` and `paddy devices approve <requestId>`. When in doubt, use Shelley from your browser.
 
   </Step>
 </Steps>
@@ -183,15 +183,15 @@ From your local machine, create a patch file and pipe it to the VM:
 ```
 
 ```bash
-ssh <vm-name>.exe.xyz 'openclaw config patch --stdin --dry-run' < ./openclaw.remote.patch.json5
-ssh <vm-name>.exe.xyz 'openclaw config patch --stdin' < ./openclaw.remote.patch.json5
-ssh <vm-name>.exe.xyz 'openclaw gateway restart && openclaw health'
+ssh <vm-name>.exe.xyz 'paddy config patch --stdin --dry-run' < ./paddy.remote.patch.json5
+ssh <vm-name>.exe.xyz 'paddy config patch --stdin' < ./paddy.remote.patch.json5
+ssh <vm-name>.exe.xyz 'paddy gateway restart && paddy health'
 ```
 
 Use `--replace-path` when a nested allowlist should become exactly the patch value, for example replacing a Discord channel allowlist:
 
 ```bash
-ssh <vm-name>.exe.xyz 'openclaw config patch --stdin --replace-path "channels.discord.guilds[\"123\"].channels"' < ./discord.patch.json5
+ssh <vm-name>.exe.xyz 'paddy config patch --stdin --replace-path "channels.discord.guilds[\"123\"].channels"' < ./discord.patch.json5
 ```
 
 See [Discord](/channels/discord) and [Slack](/channels/slack) for full channel config reference.
@@ -203,7 +203,7 @@ exe.dev handles authentication for remote access. By default, HTTP traffic from 
 ## Updating
 
 ```bash
-openclaw update
+paddy update
 ```
 
 See [Updating](/install/updating) for channel switches and manual recovery.

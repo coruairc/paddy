@@ -1,9 +1,9 @@
 ---
-summary: "CLI reference for `openclaw status` (diagnostics, probes, usage snapshots)"
+summary: "CLI reference for `paddy status` (diagnostics, probes, usage snapshots)"
 read_when:
   - You want a quick diagnosis of channel health + recent session recipients
   - You want a pasteable "all" status for debugging
-title: "openclaw status"
+title: "paddy status"
 ---
 
 Diagnostics for channels + sessions.
@@ -16,12 +16,12 @@ These summaries are not a full physical database-integrity check. Full registry
 restoration and Doctor retain their integrity verification.
 
 ```bash
-openclaw status
-openclaw status --all
-openclaw status --deep
-openclaw status --usage
-openclaw status --all --usage
-openclaw status --usage --agent work
+paddy status
+paddy status --all
+paddy status --deep
+paddy status --usage
+paddy status --all --usage
+paddy status --usage --agent work
 ```
 
 | Flag                    | Description                                                                                                     |
@@ -53,18 +53,18 @@ probes remain `WARN`. A lifecycle `OK` does not mean a live probe ran.
 Gateway runtime is stale after Node upgrade: child workers are using <path>, which no longer exists. Restart the Gateway.
 ```
 
-The check does not restart the Gateway. Run `openclaw gateway restart` after the warning.
+The check does not restart the Gateway. Run `paddy gateway restart` after the warning.
 
 `--deep` and `--all` also show delivery queue warnings for dead-lettered messages
 and pressured inbound lanes. These warnings include pending, claimed, and blocked
 message counts even when a channel connection is healthy. See
 [Queue warnings](/gateway/health#queue-warnings).
 
-Plain `openclaw status` stays on the fast read-only path and marks memory as
+Plain `paddy status` stays on the fast read-only path and marks memory as
 `not checked` instead of unavailable when it skips memory inspection. Heavy
 security audit, plugin compatibility, and memory-vector probes are left to
-`openclaw status --all`, `openclaw status --deep`, `openclaw security audit`,
-and `openclaw memory status --deep`.
+`paddy status --all`, `paddy status --deep`, `paddy security audit`,
+and `paddy memory status --deep`.
 
 Local agent ownership checks read schema and owner metadata from one consistent
 SQLite snapshot, including committed WAL changes. They do not copy the entire
@@ -75,7 +75,7 @@ The CLI runs in a separate process and contacts the Gateway over WebSocket, even
 for a local loopback target. `--timeout` bounds probes, not the entire status
 command. Cold device-token worker initialization happens during request preparation,
 before the RPC timeout starts; connection token reads remain fresh. Compare
-`openclaw gateway call status --json` with `openclaw status --json`
+`paddy gateway call status --json` with `paddy status --json`
 to separate the Gateway response from local report collection. Gateway
 [Prometheus RPC timings](/gateway/prometheus) exclude CLI startup and connection
 setup; a slow CLI can finish without a slow Gateway handler.
@@ -95,14 +95,14 @@ why. Online status leaves workspace and bootstrap checks unknown, including
 `agents.bootstrapPendingCount: null`. It returns `channelSummary: []` without
 loading channel plugins and records `channelSummary` in `collection.notCollected`.
 An empty list there means the field was not collected, not that no channels are
-configured. Use `openclaw channels status` for the configured inventory, or
-`openclaw channels status --probe` for live account checks. Online status skips
+configured. Use `paddy channels status` for the configured inventory, or
+`paddy channels status --probe` for live account checks. Online status skips
 local config validation, channel and memory credential inspection, and the local
 plugin inspections normally requested by `--all` or `--deep`. Requested security
 audit and plugin compatibility sections report `collected: false`; memory remains
 `null`. Use
-`openclaw security audit`, `openclaw plugins inspect --all`, or
-`openclaw memory status --deep` for those local inspections. `--deep` still requests
+`paddy security audit`, `paddy plugins inspect --all`, or
+`paddy memory status --deep` for those local inspections. `--deep` still requests
 Gateway health, and `--usage --agent <id>` retains its credential scope.
 When the Gateway is unavailable, JSON status retains local diagnostics.
 
@@ -116,8 +116,8 @@ run records a completed fetch, the Update row shows
 cached comparison is unchanged. The history belongs to the current state
 directory. A later run that completes its fetch clears the warning even if the
 rest of that update is skipped, fails, or rolls back. A manual `git fetch` does
-not clear the recorded warning. Use `openclaw update status` for a fresh check
-and the last update run, or run `openclaw update` again. `openclaw status --deep`
+not clear the recorded warning. Use `paddy update status` for a fresh check
+and the last update run, or run `paddy update` again. `paddy status --deep`
 also fetches for that check; it does not change the ledger. See
 [Release channels](/install/development-channels#checking-current-status).
 
@@ -128,7 +128,7 @@ Use the existing diagnostic timeline to locate time spent outside Gateway RPCs:
 ```bash
 OPENCLAW_DIAGNOSTICS=timeline \
 OPENCLAW_DIAGNOSTICS_TIMELINE_PATH=/tmp/openclaw-status-timeline.jsonl \
-  openclaw status --json
+  paddy status --json
 ```
 
 The timeline includes configuration and secret resolution, agent admission,
@@ -139,17 +139,17 @@ waiting; parallel stages overlap and should not be added together.
 
 `status --all` reports eligible skills and skills with missing prerequisites for
 the workspace shown in the Skills row. Missing prerequisites use the same category as
-`openclaw skills check`: intentionally disabled skills and skills blocked by the
+`paddy skills check`: intentionally disabled skills and skills blocked by the
 bundled allowlist are excluded; agent allowlist exclusions remain independent.
 Unmet OS requirements are included in this count, although Doctor does not disable
 skills for OS incompatibility.
-Use `openclaw skills check --agent <id>` to inspect the missing requirements.
+Use `paddy skills check --agent <id>` to inspect the missing requirements.
 
 ## Session and model resolution
 
 - Session status output separates `Execution:` from `Runtime:`. `Execution`
   is the sandbox path (`direct`, `docker/*`), while `Runtime` tells you
-  whether the session is using `OpenClaw Default`, `OpenAI Codex`, a CLI
+  whether the session is using `Paddy Default`, `OpenAI Codex`, a CLI
   backend, or an ACP backend such as `codex (acp/acpx)`. See
   [Agent runtimes](/concepts/agent-runtimes) for the provider/model/runtime
   distinction.
@@ -193,10 +193,10 @@ Use `openclaw skills check --agent <id>` to inspect the missing requirements.
   from starting another request; completed provider snapshots remain available.
 - In an explicit multi-agent setup, `--usage` reads the auth profiles owned by
   `agents.defaults.systemAgent.agentId` by default. Pass `--agent <id>` to
-  inspect another agent; without either owner, OpenClaw does not guess one
+  inspect another agent; without either owner, Paddy does not guess one
   agent's credentials from an ambiguous roster.
 - MiniMax's raw `usage_percent` / `usagePercent` fields are remaining quota,
-  so OpenClaw inverts them before display; count-based fields win when
+  so Paddy inverts them before display; count-based fields win when
   present. `model_remains` responses prefer the chat-model entry, derive the
   window label from timestamps when needed, and include the model name in
   the plan label.
@@ -207,7 +207,7 @@ Use `openclaw skills check --agent <id>` to inspect the missing requirements.
 
 The Gateway service row compares its installed package with the active CLI.
 If they resolve to different installations, status names both package paths and
-versions. It recommends `openclaw doctor --fix` or `openclaw gateway install --force`
+versions. It recommends `paddy doctor --fix` or `paddy gateway install --force`
 when service installation is allowed, or reports the installation owner's refusal.
 This local diagnostic remains available when the Gateway connection fails,
 including a protocol mismatch. JSON exposes the comparison as
@@ -224,7 +224,7 @@ If local session state requires Doctor, status prints any installation drift to 
   manager is unavailable; its runtime status stays unknown.
 - Overview includes update channel + git SHA (for source checkouts).
 - Update info surfaces in the Overview; if an update is available, status
-  prints a hint to run `openclaw update` (see [Updating](/install/updating)).
+  prints a hint to run `paddy update` (see [Updating](/install/updating)).
 - `status` and `status --all` keep current availability in **Update** and show
   active or recent update history separately in **Update run**. A distinct
   **Update restart** report remains visible unless it names that same run ID.
@@ -261,4 +261,4 @@ their own files, chunks, vector, and FTS state.
 
 - [CLI reference](/cli)
 - [Doctor](/gateway/doctor)
-- [`openclaw health`](/cli/health) — Gateway health snapshot over RPC
+- [`paddy health`](/cli/health) — Gateway health snapshot over RPC

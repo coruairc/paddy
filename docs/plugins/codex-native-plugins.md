@@ -1,19 +1,19 @@
 ---
-summary: "Configure native Codex plugins for Codex-mode OpenClaw agents"
+summary: "Configure native Codex plugins for Codex-mode Paddy agents"
 title: "Native Codex plugins"
 read_when:
-  - You want Codex-mode OpenClaw agents to use native Codex plugins
+  - You want Codex-mode Paddy agents to use native Codex plugins
   - You are migrating source-installed openai-curated Codex plugins
   - You are discovering or installing a Codex marketplace plugin
   - You are troubleshooting codexPlugins, app inventory, destructive actions, or plugin app diagnostics
-  - You need the precedence of OpenClaw policy, native app defaults, and per-tool overrides
+  - You need the precedence of Paddy policy, native app defaults, and per-tool overrides
 ---
 
-Native Codex plugin support lets a Codex-mode OpenClaw agent use Codex
+Native Codex plugin support lets a Codex-mode Paddy agent use Codex
 app-server's own app and plugin capabilities inside the same Codex thread that
-handles the OpenClaw turn. Plugin calls stay in the native Codex transcript;
-Codex app-server owns app-backed MCP execution. OpenClaw does not translate
-Codex plugins into synthetic `codex_plugin_*` OpenClaw dynamic tools.
+handles the Paddy turn. Plugin calls stay in the native Codex transcript;
+Codex app-server owns app-backed MCP execution. Paddy does not translate
+Codex plugins into synthetic `codex_plugin_*` Paddy dynamic tools.
 
 Use this page after the base [Codex harness](/plugins/codex-harness) is
 working.
@@ -31,7 +31,7 @@ working.
 - Migration supports only `openai-curated` plugins that it observed as
   source-installed in the source Codex home. Codex serves the same catalog to
   API-key and Bedrock accounts under the `openai-api-curated` wire name;
-  OpenClaw treats both names as the one curated catalog, so configured
+  Paddy treats both names as the one curated catalog, so configured
   `openai-curated` plugins resolve from either.
 - Native runtime support also includes other marketplaces already available to
   Codex, such as `openai-bundled`, `openai-primary-runtime`,
@@ -39,7 +39,7 @@ working.
   Plugins remain unavailable until an owner or `operator.admin` explicitly
   installs or enables their marketplace-qualified identity.
 
-`codexPlugins` has no effect on OpenClaw-provider runs, ACP conversation
+`codexPlugins` has no effect on Paddy-provider runs, ACP conversation
 bindings, or other harnesses, because those paths never create Codex
 app-server threads with native `apps` config.
 
@@ -52,12 +52,12 @@ for the OpenAI account and admin model.
 
 The source Codex home is the Codex CLI state directory you are migrating from:
 `~/.codex` by default, or `CODEX_HOME` when that variable is set. See
-[`openclaw migrate`](/cli/migrate) to point at a different one with `--from`.
+[`paddy migrate`](/cli/migrate) to point at a different one with `--from`.
 
 Preview migration from the source Codex home:
 
 ```bash
-openclaw migrate codex --dry-run
+paddy migrate codex --dry-run
 ```
 
 Add `--verify-plugin-apps` to make migration read the source installed app
@@ -65,13 +65,13 @@ snapshot and app metadata, requiring every owned app to be present, enabled,
 and accessible before planning native activation:
 
 ```bash
-openclaw migrate codex --dry-run --verify-plugin-apps
+paddy migrate codex --dry-run --verify-plugin-apps
 ```
 
 Apply the migration when the plan looks right:
 
 ```bash
-openclaw migrate apply codex --yes
+paddy migrate apply codex --yes
 ```
 
 Migration writes explicit `codexPlugins` entries for eligible plugins and
@@ -115,12 +115,12 @@ exact marketplace-qualified identity:
 
 Codex discovers repository marketplaces from
 `.agents/plugins/marketplace.json` in the current conversation workspace. An
-owner does not need to add that marketplace to OpenClaw configuration before
+owner does not need to add that marketplace to Paddy configuration before
 listing or installing its plugins. Official bundled, primary-runtime, curated,
 workspace, shared, and personal marketplaces depend on the signed-in Codex
 account and upstream feature or administrator policies.
 When Codex requires marketplace sources to be explicitly configured or
-allowlisted, those requirements still apply; OpenClaw does not bypass them.
+allowlisted, those requirements still apply; Paddy does not bypass them.
 
 Installation writes an explicit configuration entry such as:
 
@@ -153,15 +153,15 @@ calls Codex `plugin/install`. Codex continues to enforce marketplace source,
 workspace administrator, account, and connector-authentication policies.
 Remote plugins that require a Codex installation interstitial, or do not
 report whether one is required, must be installed in Codex first; rerun the
-OpenClaw install command afterward to authorize the already-installed plugin.
-OpenClaw keeps apps hidden when the response omits the exact marketplace,
+Paddy install command afterward to authorize the already-installed plugin.
+Paddy keeps apps hidden when the response omits the exact marketplace,
 plugin identity, detail identity, or app-readiness evidence. If a connector
 requires additional sign-in, complete that authorization before expecting the
 plugin's tools to become available.
 
-Installing the plugin bundle and configuring OpenClaw app access do not confirm
+Installing the plugin bundle and configuring Paddy app access do not confirm
 hosted app connections. When installation returns apps that still need sign-in,
-OpenClaw provides **Open &lt;app&gt; in ChatGPT** links to the app pages returned by
+Paddy provides **Open &lt;app&gt; in ChatGPT** links to the app pages returned by
 Codex. Sign in with the same ChatGPT account and workspace used by the Codex
 harness. Opening a link does not verify the connection or make its tools callable
 in the current conversation. If the browser shows a directory instead of the app,
@@ -198,7 +198,7 @@ changes.
 
 ## Scheduled automations
 
-When an authenticated owner creates an automation from a Codex turn, OpenClaw
+When an authenticated owner creates an automation from a Codex turn, Paddy
 captures the app IDs and approval limits callable on that exact Codex thread.
 The stored authority is bound to the creator's prepared Codex profile and
 account. Scheduled runs intersect that cap with current Codex policy and app
@@ -213,7 +213,7 @@ runtime, revoked app, narrower policy, or unavailable inventory stops before
 app execution and reports how to restore access or reauthorize the automation.
 Model fallbacks cannot move this authority to another runtime or account.
 
-This path is stricter than an ordinary interactive turn. OpenClaw generates
+This path is stricter than an ordinary interactive turn. Paddy generates
 per-tool `enabled` and `approval_mode` values from current tool metadata and
 the captured authority. An explicit native `enabled: true` cannot override a
 captured or current destructive/open-world restriction on a scheduled run.
@@ -222,7 +222,7 @@ Approval intersections keep `"prompt"` if either side requires it;
 produces `"prompt"`, because their annotation-dependent rules are not totally
 ordered.
 
-Jobs created before app authority capture may keep their ordinary OpenClaw
+Jobs created before app authority capture may keep their ordinary Paddy
 tool cap and continue non-app work, but cannot recover Codex app access
 automatically. Recreate or reauthorize only a job that needs app access, from a
 fresh authenticated owner turn. See
@@ -268,7 +268,7 @@ Results show display titles, publishers, and descriptions when supplied by Codex
 with explicit placeholders for missing publishers or descriptions. They retain
 marketplace-qualified identities and availability restrictions; display titles
 and publisher names do not change installation identity.
-This searches Codex catalogs, not OpenClaw's plugin registry or every ChatGPT
+This searches Codex catalogs, not Paddy's plugin registry or every ChatGPT
 connection. The owner-scoped `codex_plugins` model tool uses the same search
 matching and is also read-only: it can recommend an exact install command but
 cannot install, enable, or add a marketplace.
@@ -278,15 +278,15 @@ requires an owner or `operator.admin`. The qualified identity is required;
 bare `status` or an unqualified name returns usage guidance pointing to `list`.
 
 Status shows bundle installation, marketplace restrictions, Codex enablement, and
-shared OpenClaw app access separately. Changes to OpenClaw app access take effect
+shared Paddy app access separately. Changes to Paddy app access take effect
 on the next message; they do not install or enable the Codex bundle.
 
 App results show at most five apps per page. A ChatGPT app-page link requires
 confirmed hosted-app runtime support, an available plugin under its catalog
 policy, and matching authorized metadata from `app/read`. A plugin's app
-declaration or setup URL alone does not establish that access. OpenClaw app
+declaration or setup URL alone does not establish that access. Paddy app
 access can be disabled while an eligible ChatGPT page remains available;
-opening that page does not enable OpenClaw app access. Plugins without hosted
+opening that page does not enable Paddy app access. Plugins without hosted
 apps receive no ChatGPT connection or setup guidance. Status does not assess
 their skills or native MCP server readiness.
 
@@ -299,13 +299,13 @@ Status uses `app/read` for app metadata and displays the `enabled` and `callable
 flags returned by `app/installed`. The runtime scope is the bound Codex thread
 when available, or the account otherwise. These flags reflect effective Codex
 configuration and the current runtime tool snapshot; they are separate from
-OpenClaw app access. Status does not infer a separate connection state. Missing
+Paddy app access. Status does not infer a separate connection state. Missing
 app records and failed reads are reported explicitly instead of becoming false
 flags.
 
 `/codex plugins refresh` requires owner or `operator.admin` authority and confirmed
 hosted-app support in the selected Codex account/runtime. It works without a
-configured plugin. It invalidates that runtime's OpenClaw app cache, calls
+configured plugin. It invalidates that runtime's Paddy app cache, calls
 Codex `app/installed` with `forceRefresh: true` and no `threadId`, and reads
 metadata for the returned apps. It does not refresh marketplace catalogs,
 reinstall plugin bundles, or reload native MCP servers.
@@ -319,18 +319,18 @@ A completed request does not prove that Codex replaced its snapshot or that a
 live tool call will succeed. Refresh never installs, enables, authenticates,
 or replaces a thread, and does not reload other conversations. After connecting,
 use `/new` or `/reset` and inspect status again. Browser setup does not change
-OpenClaw app access; local app-access changes take effect on the next message.
+Paddy app access; local app-access changes take effect on the next message.
 Unsupported methods, cancellation, and refresh failures provide a retry action
 without treating the previous inventory as confirmed.
 
 `install`, `enable`, and `disable` require the owner or a gateway client with
-the `operator.admin` scope. OpenClaw's reserved `/codex` command is dispatched
+the `operator.admin` scope. Paddy's reserved `/codex` command is dispatched
 before agent invocation, so a model-generated recommendation does not count as
 installation approval. For a plugin that Codex has not installed yet, `install`
 calls the Codex app-server and records the explicit plugin policy only after
 installation succeeds. If Codex confirms that the plugin is already installed
 and enabled, the same command records its authorization without installing it
-again. `enable` and `disable` change OpenClaw's persisted policy; qualified
+again. `enable` and `disable` change Paddy's persisted policy; qualified
 identities and existing configuration keys are both accepted.
 
 Installing or enabling a configured plugin also turns on the global
@@ -351,13 +351,13 @@ The integration tracks three states:
 | State      | Meaning                                                                                                                            |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | Installed  | Codex has the plugin bundle in the target app-server runtime.                                                                      |
-| Enabled    | Codex reports the plugin enabled, and OpenClaw config allows it for Codex harness turns.                                           |
+| Enabled    | Codex reports the plugin enabled, and Paddy config allows it for Codex harness turns.                                              |
 | Accessible | Codex app-server confirms the plugin's app entries are available for the active account and map to the configured plugin identity. |
 
 For `openai-curated` plugins, migration is the durable install/eligibility
 step:
 
-- During planning, OpenClaw reads source Codex `plugin/read` details and
+- During planning, Paddy reads source Codex `plugin/read` details and
   checks the source Codex app-server account. `codex_subscription_required`
   means `account/read` positively identified an API-key or other
   non-ChatGPT account; a missing account is not evidence that a subscription
@@ -374,7 +374,7 @@ step:
   configured bearer or header authentication. A positively identified
   non-ChatGPT account remains ineligible.
 
-For explicitly approved plugins from any discovered marketplace, OpenClaw uses
+For explicitly approved plugins from any discovered marketplace, Paddy uses
 its `plugin/installed` snapshot and `plugin/read` details to establish the
 exact marketplace-qualified identity and app ownership. The installed-only
 check during ordinary thread setup is read-only; apps from disabled or
@@ -412,13 +412,13 @@ reusing its app inventory and plugin metadata caches.
   plugin bundles, hooks, or Codex config files. Use `/codex plugins available`
   and an owner-issued `/codex plugins install <plugin>@<marketplace>` command
   to opt into an additional discovered plugin.
-- OpenClaw does not add new Git or local marketplace sources in this flow.
+- Paddy does not add new Git or local marketplace sources in this flow.
   Additional sources must already be configured in Codex or be discoverable
   from the bound repository.
 
 ## App inventory and ownership
 
-OpenClaw first reads and caches one `plugin/installed` snapshot scoped to the
+Paddy first reads and caches one `plugin/installed` snapshot scoped to the
 target Codex app-server and configured workspace. That snapshot covers plugins
 from the marketplaces visible in that scope, including disabled plugin
 identities; failed or incomplete snapshots are never cached. Conversations in
@@ -431,17 +431,17 @@ find repository marketplaces. Routine setup retains its existing curated
 recovery behavior; additional marketplace installation requires the explicit
 owner or administrator command.
 
-Codex owns skill, hook, and MCP refresh after plugin installation. OpenClaw
+Codex owns skill, hook, and MCP refresh after plugin installation. Paddy
 refreshes its plugin and app inventories without reloading unrelated threads.
 Use `/new` or `/reset` if an older custom Codex runtime does not make a newly
 installed plugin available in an existing conversation.
 
-OpenClaw reads installed app runtime state through `app/installed` and fetches
+Paddy reads installed app runtime state through `app/installed` and fetches
 canonical app metadata with `app/read` in batches of at most 100 app IDs. The
 first read force-refreshes a cold installed runtime snapshot. When multiple
-configured curated plugins are installed, OpenClaw combines their cache
+configured curated plugins are installed, Paddy combines their cache
 invalidations into a single app-inventory refresh. Ordinary cached reads do
-not force a connector refresh for every new thread. OpenClaw caches the
+not force a connector refresh for every new thread. Paddy caches the
 combined inventory in memory for one hour and refreshes stale or missing
 entries asynchronously. The cache is process-local; restarting the CLI or
 gateway drops it.
@@ -463,13 +463,13 @@ Migration and runtime use separate cache keys:
   `plugin/install`. Explicit marketplace installation refreshes the same
   target runtime state before subsequent conversations use the plugin.
 
-A plugin app is exposed only when OpenClaw can map it back to the configured
+A plugin app is exposed only when Paddy can map it back to the configured
 plugin through stable ownership: an exact app id from plugin detail, a known
 MCP server name, or unique stable metadata. Display-name-only or ambiguous
 ownership is excluded until the next inventory refresh proves ownership.
 
 Missing plugins and marketplaces remain in saved settings for future discovery,
-but are omitted from the effective runtime plugin policy. OpenClaw logs an error
+but are omitted from the effective runtime plugin policy. Paddy logs an error
 and continues with healthy plugins and connected account apps. A missing entry's
 permissions do not apply to other apps, even when their display names match.
 The entry is reconsidered on the next normal inventory refresh; no saved settings
@@ -502,13 +502,13 @@ account without requiring a matching plugin package:
 `allow_all_plugins: true` reads the installed app snapshot and authenticated
 metadata when a new native Codex thread is established. It admits only
 account-accessible apps. Codex must also confirm each admitted app is enabled
-and callable for that thread. OpenClaw does not install, authenticate, or enable
+and callable for that thread. Paddy does not install, authenticate, or enable
 apps globally. Existing threads keep their persisted app set; use `/new`,
 `/reset`, or restart the gateway to pick up newly connected or revoked apps.
 
 An explicitly disabled configured plugin found in the inventory overrides account-wide app
 access. Because Codex `app/read` omits a disabled workspace plugin's display
-names, OpenClaw uses its `plugin/installed` snapshot and reads only that exact
+names, Paddy uses its `plugin/installed` snapshot and reads only that exact
 configured plugin's details to reserve its owned app IDs. This narrow,
 read-only check does not discover unrelated marketplaces, activate the plugin,
 or grant its apps. If the disabled plugin's ownership cannot be established,
@@ -521,22 +521,22 @@ closed instead of falling back to an unrestricted default.
 
 ## Thread app config
 
-OpenClaw injects a restrictive `config.apps` patch for the Codex thread:
+Paddy injects a restrictive `config.apps` patch for the Codex thread:
 `_default` is disabled, and only apps owned by enabled configured plugins or
 accessible account apps admitted by `allow_all_plugins` are enabled.
 
 An app can be installed and authenticated but non-callable in the account-wide
-snapshot while `_default` is disabled. OpenClaw provisionally admits only
+snapshot while `_default` is disabled. Paddy provisionally admits only
 ownership-proven, policy-allowed apps, creates the restrictive thread, and then
 rereads `app/installed` once with the resulting thread ID and
 `forceRefresh: false`. If the snapshot reports an app missing, disabled, or
-non-callable, OpenClaw logs one warning listing the unavailable apps and
+non-callable, Paddy logs one warning listing the unavailable apps and
 continues with the remaining tools. Codex still enforces the thread's effective
 app, managed, workspace, and tool policies. An unavailable optional app does
 not block unrelated chat or heartbeat runs.
 
 If the snapshot request itself fails, the provisional thread is never bound
-or used. OpenClaw deletes a failed persistent provisional thread, unsubscribes
+or used. Paddy deletes a failed persistent provisional thread, unsubscribes
 a failed ephemeral thread, and retires the app-server connection if safe
 cleanup cannot be confirmed.
 
@@ -545,7 +545,7 @@ per-plugin `allow_destructive_actions` policy; `true`, `"auto"`, and `"ask"`
 all set `destructive_enabled: true`, and `false` sets it `false`. Codex still
 evaluates native tool enablement and annotations in the order below.
 `_default` is disabled with `open_world_enabled: false`; enabled plugin apps
-get `open_world_enabled: true`. OpenClaw does not expose a separate
+get `open_world_enabled: true`. Paddy does not expose a separate
 plugin-level open-world policy knob and does not maintain per-plugin
 destructive tool-name deny lists.
 
@@ -553,20 +553,20 @@ destructive tool-name deny lists.
 
 For an ordinary interactive Codex turn, follow these decisions in order:
 
-1. **Admission:** OpenClaw selects the plugin/app identities allowed on this
+1. **Admission:** Paddy selects the plugin/app identities allowed on this
    thread. Unavailable inventory or unproven ownership does not grant access.
-2. **Thread configuration:** OpenClaw overlays its app policy on the target
+2. **Thread configuration:** Paddy overlays its app policy on the target
    app-server's native configuration. Codex administrative requirements still
    apply.
 3. **Tool enablement:** Codex decides whether the particular tool is callable.
    A disabled tool cannot be made callable by approving a prompt.
 4. **Approval mode and reviewer:** Codex decides whether the call needs review
    and whether to use its automatic reviewer or send a user approval request.
-5. **OpenClaw response:** When a plugin approval request reaches OpenClaw, its
+5. **Paddy response:** When a plugin approval request reaches Paddy, its
    elicitation bridge applies the effective `allow_destructive_actions` value.
 
 These are separate decisions. `enabled: true` does not mean automatic approval,
-and `approval_mode: "approve"` does not enable a disabled tool. OpenClaw dynamic
+and `approval_mode: "approve"` does not enable a disabled tool. Paddy dynamic
 tools, ordinary MCP forms, and native shell permissions have their own flows;
 see [Native permissions and MCP elicitations](/plugins/codex-harness-runtime/permissions).
 
@@ -574,13 +574,13 @@ see [Native permissions and MCP elicitations](/plugins/codex-harness-runtime/per
 
 | Setting                                                                         | Owner and purpose                                                                                                                                                    |
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `plugins.entries.codex.config.codexPlugins`                                     | OpenClaw's admission and plugin elicitation policy.                                                                                                                  |
-| `codexPlugins.allow_destructive_actions`                                        | Shared OpenClaw default for configured plugins and admitted account apps.                                                                                            |
+| `plugins.entries.codex.config.codexPlugins`                                     | Paddy's admission and plugin elicitation policy.                                                                                                                     |
+| `codexPlugins.allow_destructive_actions`                                        | Shared Paddy default for configured plugins and admitted account apps.                                                                                               |
 | `codexPlugins.plugins.<key>.allow_destructive_actions`                          | Explicit override for that configured plugin.                                                                                                                        |
-| Native `apps._default`, `apps.<appId>`, and `apps.<appId>.tools`                | Codex app defaults and per-tool settings, after configuration layers and the OpenClaw thread patch are combined.                                                     |
+| Native `apps._default`, `apps.<appId>`, and `apps.<appId>.tools`                | Codex app defaults and per-tool settings, after configuration layers and the Paddy thread patch are combined.                                                        |
 | `plugins.entries.codex.config.appServer.approvalPolicy` and `approvalsReviewer` | General Codex approval posture and reviewer, distinct from app/tool policy. See [Approval and sandbox modes](/plugins/codex-harness-reference/approval-and-sandbox). |
 
-OpenClaw resolves the destructive-action setting as:
+Paddy resolves the destructive-action setting as:
 
 ```text
 per-plugin value ?? codexPlugins shared value ?? true
@@ -591,17 +591,17 @@ Omitting a per-plugin value inherits the shared value. Explicit `false`,
 per-plugin `"auto"` overrides a shared `false`; `"auto"` is a policy value,
 not an instruction to inherit.
 
-The shared default lives in the same OpenClaw configuration as the plugin
+The shared default lives in the same Paddy configuration as the plugin
 entries. It requires no separate host-wide configuration file. Native Codex
 settings belong to the app-server that runs the tools: the default managed
 local server uses an agent-scoped Codex home; a remote server uses its own
-configuration. Starting Codex from OpenClaw or a deployment manager
-does not remove this native configuration layer. OpenClaw's thread patches
+configuration. Starting Codex from Paddy or a deployment manager
+does not remove this native configuration layer. Paddy's thread patches
 do not rewrite saved native settings.
 
 ### Native tool enablement
 
-After OpenClaw's admission patch, Codex evaluates an app tool in this order:
+After Paddy's admission patch, Codex evaluates an app tool in this order:
 
 1. A disabled app blocks all its tools, including explicitly enabled tools.
    Managed app disablement remains authoritative.
@@ -636,8 +636,8 @@ For an enabled tool, Codex selects the first applicable approval mode:
 6. `"auto"`.
 
 The account link is the connected account used for this call, not the
-OpenClaw conversation. The following modes decide whether review is needed;
-they do not themselves promise an OpenClaw prompt:
+Paddy conversation. The following modes decide whether review is needed;
+they do not themselves promise a Paddy prompt:
 
 | Native mode | Approval requirement                                                                                                                                                                                  |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -653,18 +653,18 @@ requirements; otherwise it uses the thread reviewer. A model-specific
 requirement for automatic review takes precedence. Strict automatic review
 can also require review when a tool's mode would otherwise skip it.
 
-Unless OpenClaw policy is explicitly `"ask"`, admitted apps retain their
+Unless Paddy policy is explicitly `"ask"`, admitted apps retain their
 native approval mode and reviewer, including app defaults and saved account-link
 or tool overrides. This also applies when resuming a thread or asking a `/btw`
 side question. With no native approval setting, Codex falls back to `"auto"`.
 
-Use OpenClaw `allow_destructive_actions: "auto"` to route native human approval
-requests through OpenClaw consent. Native `"prompt"` with the `"auto_review"`
-reviewer stays in Codex's automatic review flow. OpenClaw `true` preserves the
+Use Paddy `allow_destructive_actions: "auto"` to route native human approval
+requests through Paddy consent. Native `"prompt"` with the `"auto_review"`
+reviewer stays in Codex's automatic review flow. Paddy `true` preserves the
 native mode too, but auto-accepts supported approval requests that reach the
 bridge, as described below.
 
-OpenClaw `"ask"` also overlays saved approval fields for current non-read-only
+Paddy `"ask"` also overlays saved approval fields for current non-read-only
 tool names/aliases and connected accounts, selecting native `"auto"` and a
 human app/account reviewer. It preserves tool enablement. If tool summaries
 are unavailable, it targets all saved tool approval entries. Thus `"ask"`
@@ -672,7 +672,7 @@ requires one-shot consent for the actions Codex sends for approval; it does
 not mean native `"prompt"` for every read. Other apps retain their reviewer.
 
 On ordinary native-plugin turns and `/btw` side questions with bound apps,
-OpenClaw enables MCP elicitation delegation even when the general
+Paddy enables MCP elicitation delegation even when the general
 `appServer.approvalPolicy` is `"never"`; this does not enable unrelated shell
 approval categories. The app mode, reviewer, and bridge response still
 determine the outcome. General approval policy is not a replacement for the
@@ -686,18 +686,18 @@ plugins, while unsafe schemas and ambiguous ownership fail closed:
 - Global `allow_destructive_actions` defaults to `true`.
 - Per-plugin `allow_destructive_actions` overrides the global policy for
   that plugin.
-- `false`: OpenClaw sets native `destructive_enabled: false`; tool eligibility
+- `false`: Paddy sets native `destructive_enabled: false`; tool eligibility
   follows the native defaults and explicit exceptions described above. Approval
-  requests for eligible hosted app tools still go through OpenClaw consent,
+  requests for eligible hosted app tools still go through Paddy consent,
   including permitted reads and `/btw` side questions. The bridge does not
   classify tools again or blanket-decline their requests. Plugin-provided MCP
   server approval requests still receive a deterministic decline.
-- `true`: OpenClaw auto-accepts only safe schemas it can map to an approval
+- `true`: Paddy auto-accepts only safe schemas it can map to an approval
   response, such as a boolean approve field.
-- `"auto"`: OpenClaw exposes destructive plugin actions to Codex, then
-  turns ownership-proven MCP approval elicitations into OpenClaw plugin
+- `"auto"`: Paddy exposes destructive plugin actions to Codex, then
+  turns ownership-proven MCP approval elicitations into Paddy plugin
   approvals before returning the Codex approval response.
-- `"ask"`: OpenClaw uses the same Codex write/destructive gating as
+- `"ask"`: Paddy uses the same Codex write/destructive gating as
   `"auto"`, applies the tool/account approval overlays described above, and
   offers only one-shot approval or denial. Saved native settings stay unchanged,
   and user-config reloads preserve the thread's approval policy. These checks
@@ -721,18 +721,18 @@ Assume an admitted, authenticated app, no conflicting managed requirement,
 and a human reviewer for calls that need approval. The read tools below declare
 `readOnlyHint: true` and `destructiveHint: false`:
 
-| Configuration                                                                                 | Observable result on an ordinary turn                                                                                                                               |
-| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| OpenClaw shared `false`, per-plugin `"auto"`                                                  | The plugin override wins. Destructive tools are eligible; approval elicitations that reach OpenClaw request consent.                                                |
-| OpenClaw `"auto"`, native app default `"prompt"`, no tool/link override, non-destructive read | Native `"prompt"` survives. The read requests consent; Allow once permits the call and Deny blocks it.                                                              |
-| OpenClaw `"auto"`, native read-tool `approval_mode: "prompt"`                                 | The per-tool mode survives. The read requests consent; Allow once permits the call and Deny blocks it.                                                              |
-| OpenClaw `false`, native app default `"prompt"`, no tool/link override, non-destructive read  | Native eligibility allows the read, and OpenClaw requests consent. Allow once permits the call and Deny blocks it.                                                  |
-| OpenClaw `false`, destructive tool explicitly `enabled: true` and `approval_mode: "approve"`  | The native tool exception bypasses the category default and requires no tool approval request. The bridge's decline path is not an execution-time category ceiling. |
-| OpenClaw `"ask"`, saved non-read-only tool approval `"approve"`                               | The thread overlay replaces that saved approval with native `"auto"`; calls needing approval use one-shot consent.                                                  |
+| Configuration                                                                              | Observable result on an ordinary turn                                                                                                                               |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Paddy shared `false`, per-plugin `"auto"`                                                  | The plugin override wins. Destructive tools are eligible; approval elicitations that reach Paddy request consent.                                                   |
+| Paddy `"auto"`, native app default `"prompt"`, no tool/link override, non-destructive read | Native `"prompt"` survives. The read requests consent; Allow once permits the call and Deny blocks it.                                                              |
+| Paddy `"auto"`, native read-tool `approval_mode: "prompt"`                                 | The per-tool mode survives. The read requests consent; Allow once permits the call and Deny blocks it.                                                              |
+| Paddy `false`, native app default `"prompt"`, no tool/link override, non-destructive read  | Native eligibility allows the read, and Paddy requests consent. Allow once permits the call and Deny blocks it.                                                     |
+| Paddy `false`, destructive tool explicitly `enabled: true` and `approval_mode: "approve"`  | The native tool exception bypasses the category default and requires no tool approval request. The bridge's decline path is not an execution-time category ceiling. |
+| Paddy `"ask"`, saved non-read-only tool approval `"approve"`                               | The thread overlay replaces that saved approval with native `"auto"`; calls needing approval use one-shot consent.                                                  |
 
 If the reviewer in the native `"prompt"` examples is `"auto_review"` instead
 of `"user"`, Codex performs automatic review rather than displaying an
-OpenClaw consent prompt. Neither reviewer choice enables a tool that failed
+Paddy consent prompt. Neither reviewer choice enables a tool that failed
 the eligibility check.
 
 Remembered approval and explicit enablement are different settings. Codex's
@@ -744,32 +744,32 @@ explaining why a tool ran or why no prompt appeared.
 
 | Code                                              | Meaning                                                                                                                              | Fix                                                                                                                    |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `auth_required`                                   | Migration installed the plugin, but one of its apps still needs authentication. The entry is written disabled until you reauthorize. | Reauthorize the app in Codex, then enable the plugin in OpenClaw.                                                      |
+| `auth_required`                                   | Migration installed the plugin, but one of its apps still needs authentication. The entry is written disabled until you reauthorize. | Reauthorize the app in Codex, then enable the plugin in Paddy.                                                         |
 | `app_inaccessible`, `app_disabled`, `app_missing` | With `--verify-plugin-apps`, the source Codex app inventory did not show all owned apps as present, enabled, and accessible.         | Reauthorize or enable the app in Codex, then rerun migration with `--verify-plugin-apps`.                              |
 | `app_inventory_unavailable`                       | Strict source app verification was requested but the source Codex app inventory refresh failed.                                      | Fix source Codex app-server access, or retry without `--verify-plugin-apps` to accept the faster account-gated plan.   |
 | `codex_subscription_required`                     | The source app-server positively identified an API-key or other non-ChatGPT account.                                                 | Log in to the Codex app with subscription auth, then rerun migration.                                                  |
 | `codex_account_unavailable`                       | The source account was missing or `account/read` failed without strict app verification.                                             | Restore source account access, or use `--verify-plugin-apps` when authenticated source app inventory can prove access. |
 | `marketplace_missing`, `plugin_missing`           | The exact marketplace or configured plugin is unavailable in the installed snapshot; plugin apps fail closed.                        | Verify the target app-server's `plugin/installed` response and exact configured plugin identity.                       |
-| `plugin_detail_unavailable`                       | OpenClaw could not read the exact configured plugin's ownership details.                                                             | Inspect the target app-server's `plugin/installed` and `plugin/read` responses.                                        |
+| `plugin_detail_unavailable`                       | Paddy could not read the exact configured plugin's ownership details.                                                                | Inspect the target app-server's `plugin/installed` and `plugin/read` responses.                                        |
 | `plugin_disabled`                                 | Codex reports the plugin installed but disabled.                                                                                     | Enable the plugin in Codex, or have the owner explicitly install and authorize it again.                               |
 | `plugin_activation_failed`                        | Plugin activation did not complete.                                                                                                  | Use the attached diagnostic to distinguish marketplace, auth, refresh, or workspace-readiness failures.                |
-| `app_inventory_missing`, `app_inventory_stale`    | App readiness came from an empty or stale cache.                                                                                     | OpenClaw schedules an async refresh automatically; plugin apps stay excluded until ownership and readiness are known.  |
+| `app_inventory_missing`, `app_inventory_stale`    | App readiness came from an empty or stale cache.                                                                                     | Paddy schedules an async refresh automatically; plugin apps stay excluded until ownership and readiness are known.     |
 | `app_ownership_ambiguous`                         | App inventory only matched by display name.                                                                                          | The app stays hidden from the Codex thread until a later refresh proves ownership.                                     |
 
 **Workspace plugin is installed but not visible:** confirm the workspace
 `plugin/installed` snapshot reports the exact configured ID as installed and
 enabled, then confirm `app/installed` returns every owned app for the same
 Codex account and `app/read` returns its metadata. An app disabled only by the
-account-wide default can become callable after OpenClaw starts and verifies
+account-wide default can become callable after Paddy starts and verifies
 its explicitly configured thread. Revoked auth, missing metadata, disabled
 workspace plugins, and Codex managed or workspace restrictions still block
 access. Reauthorize or repair those upstream conditions before starting a new
 thread. If you changed that state after the gateway cached app inventory, run
 `/codex plugins refresh`, then use `/new` or `/reset`.
-OpenClaw does not authenticate plugin apps on the owner's behalf.
+Paddy does not authenticate plugin apps on the owner's behalf.
 
 For `plugin_detail_unavailable`, verify that the exact installed marketplace
-and plugin identity select a matching `plugin/read` result. OpenClaw keeps
+and plugin identity select a matching `plugin/read` result. Paddy keeps
 owned apps hidden when that selector or ownership detail is unavailable. For
 `plugin_activation_failed`, inspect the marketplace, app authorization, and
 post-install refresh diagnostics. An explicitly approved plugin must be
@@ -777,7 +777,7 @@ installed, enabled, and authenticated before its apps can appear in a thread.
 
 **Config changed but the agent cannot see the plugin:** run `/codex plugins
 list` to confirm the configured state, then `/new` or `/reset`. Existing
-Codex thread bindings keep the app config they started with until OpenClaw
+Codex thread bindings keep the app config they started with until Paddy
 establishes a new harness session or replaces a stale binding.
 
 **Destructive action is declined:** check the global and per-plugin

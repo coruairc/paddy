@@ -1,5 +1,5 @@
 ---
-summary: "Install and use the OpenClaw macOS menu bar app"
+summary: "Install and use the Paddy macOS menu bar app"
 read_when:
   - Installing the macOS app
   - Deciding between local and remote Gateway mode on macOS
@@ -7,7 +7,7 @@ read_when:
 title: "macOS app"
 ---
 
-The macOS app is the OpenClaw **menu bar companion**: native tray UI, macOS
+The macOS app is the Paddy **menu bar companion**: native tray UI, macOS
 permission prompts, notifications, WebChat, voice input, a hosted-widget panel,
 and Mac-hosted node tools such as `system.run`.
 
@@ -66,7 +66,7 @@ has no macOS app asset, use the newest one that does, or build from source with
 4. Choose the AI connection you want. Detection only presents available
    connections; selecting one starts its live model check. An existing configured
    route appears as **Current model**.
-5. Finish. The app opens the dashboard, where OpenClaw guides the rest of the
+5. Finish. The app opens the dashboard, where Paddy guides the rest of the
    setup (memory import, channels, permissions) in one conversation. Grant
    macOS permissions any time from **Dashboard → Settings → This Mac → Permissions**.
 
@@ -138,7 +138,7 @@ If the primary Gateway connection rejects the app's protocol version, the app
 shows an update alert and keeps the explanation in its connection status.
 Remote setup and connection probes show the same guidance inline. The message names the app
 release and both protocol versions, and tells you which side needs updating:
-run `openclaw update` on an older Gateway host, or install a newer Mac app from
+run `paddy update` on an older Gateway host, or install a newer Mac app from
 the [download options](#download). A rejected handshake may not report the
 Gateway's release version; the app marks that information as unavailable.
 Different release numbers alone do not trigger this alert.
@@ -220,7 +220,7 @@ Drag the empty space beside the side-panel tabs to move the window. The full hei
 
 Mac tabs stay visible when a menu or hover card opens elsewhere in the dashboard. A tab's page temporarily hides only when the menu overlaps its Browser pane, or while a modal dialog or the command palette is open, and returns when the obstruction clears.
 
-Drag the empty header space or title in the docked OpenClaw chat panel to move the app window. Its dock-position and close buttons remain clickable.
+Drag the empty header space or title in the docked Paddy chat panel to move the app window. Its dock-position and close buttons remain clickable.
 
 Right-click an external link in the dashboard to choose **Open in Browser Panel**, **Open in Default Browser**, or **Copy Link**. Modified clicks still open the default browser. New-window links inside a Mac tab open another Mac tab; pointer-activated downloads hand off to the default browser. Responses WebKit cannot display hand off only for pointer-activated main-frame navigation; other non-displayable responses are cancelled silently. Regular browser-hosted Control UI pages keep their normal link and context-menu behavior unless you enable the Browser panel link preference.
 
@@ -238,7 +238,7 @@ Open **Dashboard → Settings → This Mac → Browser**. Cookie sync is **off b
 
 If a pending addition would restore a domain removed in another Dashboard window, it is discarded. Review the updated list and add the intended domains again.
 
-While enabled, the app supervises the [`openclaw browser cookie-sync --watch`](/cli/browser#cookie-sync-to-a-remote-gateway) command against the connected Gateway. Cookies are decrypted locally on this Mac (one macOS Keychain or Touch ID prompt per session) and pushed to the remote profile over the app's existing encrypted Gateway connection; only the domains on the allowlist are ever sent, and cookie values are never written to logs. An empty allowlist syncs nothing. As with import, some Google sessions use device-bound session credentials (DBSC) that stay tied to this Mac and may still require re-authentication after sync; for those sites, drive the browser on the Mac itself through the [browser node proxy](/cli/browser#remote-browser-control-node-host-proxy) instead.
+While enabled, the app supervises the [`paddy browser cookie-sync --watch`](/cli/browser#cookie-sync-to-a-remote-gateway) command against the connected Gateway. Cookies are decrypted locally on this Mac (one macOS Keychain or Touch ID prompt per session) and pushed to the remote profile over the app's existing encrypted Gateway connection; only the domains on the allowlist are ever sent, and cookie values are never written to logs. An empty allowlist syncs nothing. As with import, some Google sessions use device-bound session credentials (DBSC) that stay tied to this Mac and may still require re-authentication after sync; for those sites, drive the browser on the Mac itself through the [browser node proxy](/cli/browser#remote-browser-control-node-host-proxy) instead.
 
 ## Choose a Gateway mode
 

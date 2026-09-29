@@ -301,7 +301,7 @@ export function formatMemoryIndexRebuildGuidance(
   status: Partial<Pick<MemoryProviderStatus, "provider" | "requestedProvider">>,
   agentId?: string,
 ): string {
-  const command = `openclaw memory status --index${agentId?.trim() ? ` --agent ${agentId.trim()}` : ""}`;
+  const command = `paddy memory status --index${agentId?.trim() ? ` --agent ${agentId.trim()}` : ""}`;
   const configuredProvider = status.requestedProvider?.trim() || status.provider?.trim();
   const disclosure =
     configuredProvider === "none"
@@ -325,7 +325,7 @@ export function resolveMemoryIndexSearchDiagnostic(
   if (repairFailure && !newerIndex) {
     const guidance = {
       warning: `Memory index repair failed: ${repairFailure}. The existing index was left unchanged.`,
-      action: `Run: openclaw memory status --deep${agentId?.trim() ? ` --agent ${agentId.trim()}` : ""}. Resolve the reported sync failure before retrying the search.`,
+      action: `Run: paddy memory status --deep${agentId?.trim() ? ` --agent ${agentId.trim()}` : ""}. Resolve the reported sync failure before retrying the search.`,
     };
     return {
       error: repairFailure,
@@ -340,21 +340,19 @@ export function resolveMemoryIndexSearchDiagnostic(
         ? `the memory index metadata is missing (${diagnostic.reason}); no configuration change is needed`
         : newerIndex
           ? diagnostic.reason
-          : `this OpenClaw version changed the memory index format (${diagnostic.reason}); no configuration change is needed`;
+          : `this Paddy version changed the memory index format (${diagnostic.reason}); no configuration change is needed`;
   const guidance = formatMemoryIndexRebuildGuidance(status, agentId);
   const priorFailure = repairFailure ? ` Previous memory sync failed: ${repairFailure}.` : "";
   return {
     error: diagnostic.reason,
     warning: `Tell the user: memory search is paused because ${cause}.${priorFailure}`,
     action: newerIndex
-      ? `Tell the user to upgrade OpenClaw or reindex explicitly: ${guidance}`
+      ? `Tell the user to upgrade Paddy or reindex explicitly: ${guidance}`
       : `Tell the user to run: ${guidance}`,
     staleness: {
       stale: true as const,
       warning: `Memory index is stale: ${diagnostic.reason} (owner: ${diagnostic.owner}, code: ${diagnostic.code}). Search results may be incomplete.${priorFailure}`,
-      action: newerIndex
-        ? `Upgrade OpenClaw or reindex explicitly: ${guidance}`
-        : `Run: ${guidance}`,
+      action: newerIndex ? `Upgrade Paddy or reindex explicitly: ${guidance}` : `Run: ${guidance}`,
     },
   };
 }

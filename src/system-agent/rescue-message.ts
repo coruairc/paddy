@@ -200,13 +200,13 @@ function formatUnsupportedRemoteOperation(operation: SystemAgentOperation): stri
   if (operation.kind === "channel-setup") {
     return [
       `${PRODUCT_NAME} rescue cannot host the interactive channel setup from a message channel.`,
-      "Run `openclaw setup` locally and say `connect " + operation.channel + "` instead.",
+      "Run `paddy setup` locally and say `connect " + operation.channel + "` instead.",
     ].join(" ");
   }
   if (operation.kind === "config-unset") {
     return [
       `${PRODUCT_NAME} rescue cannot remove configuration settings.`,
-      "Ask your regular agent to remove the setting, or run `openclaw config unset <path>` locally.",
+      "Ask your regular agent to remove the setting, or run `paddy config unset <path>` locally.",
     ].join(" ");
   }
   if (operation.kind === "doctor-fix") {
@@ -218,7 +218,7 @@ function formatUnsupportedRemoteOperation(operation: SystemAgentOperation): stri
   if (operation.kind === "plugin-install") {
     return [
       `${PRODUCT_NAME} rescue cannot install plugins from a message channel by default because plugin install downloads executable code.`,
-      "Use local `openclaw setup` or `openclaw plugins install` instead.",
+      "Use local `paddy setup` or `paddy plugins install` instead.",
     ].join(" ");
   }
   return null;

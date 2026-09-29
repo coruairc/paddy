@@ -309,7 +309,7 @@ function validateLegacySessionRecord(
       code: "sqlite_transcript_count_mismatch",
       message: beforeArchive
         ? `SQLite transcript has ${sqliteEvents} events; verified import expects ${expectedEvents}.`
-        : `SQLite transcript has ${sqliteEvents} events; source has ${result.events}, but its events are not all present with matching content. Run openclaw doctor --session-sqlite recover to import a missing suffix or identify conflicting events.`,
+        : `SQLite transcript has ${sqliteEvents} events; source has ${result.events}, but its events are not all present with matching content. Run paddy doctor --session-sqlite recover to import a missing suffix or identify conflicting events.`,
       sessionKey: record.sessionKey,
     });
     return;

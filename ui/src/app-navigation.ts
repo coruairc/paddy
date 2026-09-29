@@ -472,9 +472,7 @@ export function formatDocumentTitle(options: {
   attentionCount?: number;
   gatewayDisconnected?: boolean;
 }): string {
-  const base = options.context.endsWith("OpenClaw")
-    ? options.context
-    : `${options.context} — OpenClaw`;
+  const base = options.context.endsWith("Paddy") ? options.context : `${options.context} — Paddy`;
   if (options.gatewayDisconnected) {
     return `(${t("connection.disconnectedTitle")}) ${base}`;
   }

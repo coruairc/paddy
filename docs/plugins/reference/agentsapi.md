@@ -15,7 +15,7 @@ OpenAI Agents API harness with hosted or self-hosted sessions.
 ## Distribution
 
 - Package: `@openclaw/agentsapi`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 

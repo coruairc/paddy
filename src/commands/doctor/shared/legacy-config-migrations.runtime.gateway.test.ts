@@ -17,7 +17,7 @@ it("removes even a false tool-title preference without changing other settings",
   expect(findLegacyConfigIssues(raw)).toContainEqual(
     expect.objectContaining({
       path: "gateway.controlUi.toolTitles",
-      message: expect.stringContaining("openclaw doctor --fix"),
+      message: expect.stringContaining("paddy doctor --fix"),
     }),
   );
   expect(validateConfigObject(raw).ok).toBe(false);

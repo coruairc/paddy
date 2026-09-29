@@ -1,12 +1,12 @@
 ---
 summary: "Zalo Personal plugin: QR login + messaging via native zca-js (plugin install + channel config + tool)"
 read_when:
-  - You want Zalo Personal (unofficial) support in OpenClaw
+  - You want Zalo Personal (unofficial) support in Paddy
   - You are configuring or developing the zalouser plugin
 title: "Zalo personal plugin"
 ---
 
-The zalouser plugin adds unofficial Zalo Personal support to OpenClaw. It uses
+The zalouser plugin adds unofficial Zalo Personal support to Paddy. It uses
 native `zca-js` to automate a normal Zalo user account. No external
 `zca`/`openzca` CLI binary is required.
 
@@ -43,10 +43,10 @@ application result; see [Apply changes and inspect](/plugins/manage-plugins#appl
 ```bash
 cd ./path/to/local/zalouser-plugin
 pnpm install
-openclaw plugins install --link .
+paddy plugins install --link .
 ```
 
-After subsequent source or manifest edits, run `openclaw plugins reload zalouser`.
+After subsequent source or manifest edits, run `paddy plugins reload zalouser`.
 
 ## Config
 
@@ -69,15 +69,15 @@ control, multi-account setup, environment variables, and troubleshooting.
 ## CLI
 
 ```bash
-openclaw channels login --channel zalouser
-openclaw channels login --channel zalouser --account <name>
-openclaw channels logout --channel zalouser
-openclaw channels status --probe
-openclaw message send --channel zalouser --target <threadId> --message "Hello from OpenClaw"
-openclaw directory self --channel zalouser
-openclaw directory peers list --channel zalouser --query "name"
-openclaw directory groups list --channel zalouser --query "name"
-openclaw directory groups members --channel zalouser --group-id <id>
+paddy channels login --channel zalouser
+paddy channels login --channel zalouser --account <name>
+paddy channels logout --channel zalouser
+paddy channels status --probe
+paddy message send --channel zalouser --target <threadId> --message "Hello from Paddy"
+paddy directory self --channel zalouser
+paddy directory peers list --channel zalouser --query "name"
+paddy directory groups list --channel zalouser --query "name"
+paddy directory groups members --channel zalouser --group-id <id>
 ```
 
 ## Agent tool

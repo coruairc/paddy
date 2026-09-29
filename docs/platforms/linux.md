@@ -10,17 +10,17 @@ title: "Linux app"
 
 The Gateway is fully supported on Linux. Node is the primary, default, and
 recommended runtime; Bun 1.4+ builds with WAL-reset-safe `node:sqlite` can run
-OpenClaw as an explicit opt-in. Use `pnpm` rather than Bun for dependency
+Paddy as an explicit opt-in. Use `pnpm` rather than Bun for dependency
 installation.
 
 ## Desktop companion
 
-The OpenClaw Linux companion is a Tauri desktop app for local and remote
+The Paddy Linux companion is a Tauri desktop app for local and remote
 Gateways. It:
 
 - walks new users through choosing a local Gateway, a discovered remote Gateway,
   a manually entered Gateway URL, or an SSH tunnel
-- installs the OpenClaw CLI and Node in a private managed runtime when local
+- installs the Paddy CLI and Node in a private managed runtime when local
   setup needs them, rather than requiring a global CLI install; release builds
   install the stable channel automatically, while development builds ask for
   the channel first
@@ -41,7 +41,7 @@ The window controls share the dashboard's top row. Drag empty header space or a
 session title to move the window, and double-click to maximize or restore it.
 The thin strip below the top resize edge also moves the window. Minimize,
 maximize/restore, and close sit at the top right; the window edges remain
-resizable. Closing the main window leaves OpenClaw available in the system tray.
+resizable. Closing the main window leaves Paddy available in the system tray.
 When connecting to an older Gateway whose dashboard does not support this layout,
 the companion keeps the system title bar. Update the Gateway to enable the unified
 window controls.
@@ -149,7 +149,7 @@ enabled; an existing `desktop.host.enabled: false` stays off until you explicitl
 enable it in the app. Your choice persists across app restarts and is independent
 of **Keep computer awake**.
 
-Sharing requires a local OpenClaw CLI, including when your Gateway is remote,
+Sharing requires a local Paddy CLI, including when your Gateway is remote,
 and an authenticated local VNC server. On macOS, enable **Screen Sharing** in
 System Settings. Approve the computer's desktop capability on the Primary Gateway
 when requested, then open its desktop from **Systems**. See
@@ -207,7 +207,7 @@ started can be retried immediately.
 Model Setup can resume an activation across a Gateway restart or app reopen
 while its temporary recovery record is valid. Recovery stays bound to the same
 Gateway, agent, and authentication. When the known activation target still
-matches the selected model, OpenClaw verifies that exact model before continuing
+matches the selected model, Paddy verifies that exact model before continuing
 guided onboarding rather than activating the provider again. For an unresolved
 result, use **Verify & use selected model** to explicitly verify and adopt a
 displayed model, or wait for the setup attempt's bounded window to end before
@@ -236,7 +236,7 @@ variables are not copied into the service.
 Choose **Keep computer awake** in the native tray menu to prevent idle sleep
 while the desktop companion is running, including when its windows are closed.
 The setting is off by default and remembers your choice across app restarts.
-Turning it off or quitting OpenClaw releases the keep-awake request. It does not
+Turning it off or quitting Paddy releases the keep-awake request. It does not
 change your permanent power settings or unlock the computer. If the operating
 system cannot honor a saved request, the menu marks the checked preference
 **inactive** and reports the error. You can still uncheck it to turn the saved
@@ -381,7 +381,7 @@ SSH tunnel when connecting without the Linux desktop companion:
 
 1. Install Node 26 (recommended), or another supported release: Node 24.16+ or Node 26.1+.
 2. On npm 12 or npm 11.16+, run `npm i -g openclaw@latest --allow-scripts=openclaw`. On npm 11.15 and earlier, omit `--allow-scripts=openclaw`.
-3. `openclaw onboard --install-daemon`
+3. `paddy onboard --install-daemon`
 4. From your laptop: `ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
 5. Open `http://127.0.0.1:18789/` and authenticate with the configured shared
    secret (token by default; password if `gateway.auth.mode` is `"password"`).
@@ -391,7 +391,7 @@ Full server guide: [Linux Server](/vps). Step-by-step VPS example:
 
 ## Node capabilities
 
-The bundled Linux Node plugin gives the CLI `openclaw node` service device capabilities without requiring the desktop app. Commands are advertised to the Gateway only when their capability is enabled and the required local tool exists.
+The bundled Linux Node plugin gives the CLI `paddy node` service device capabilities without requiring the desktop app. Commands are advertised to the Gateway only when their capability is enabled and the required local tool exists.
 
 | Capability                              | Default | Requirement                                                           |
 | --------------------------------------- | ------- | --------------------------------------------------------------------- |
@@ -422,8 +422,8 @@ Restart the node service after changing these settings. Availability is determin
 The Gateway approves the node's command and capability surface separately from device pairing. On first start, or after enabling more capabilities, approve the pending surface:
 
 ```bash
-openclaw nodes pending
-openclaw nodes approve <requestId>
+paddy nodes pending
+paddy nodes approve <requestId>
 ```
 
 A node can be connected and device-paired while its effective `caps` and `commands` remain empty until this approval completes.
@@ -449,7 +449,7 @@ Canvas bridge or its A2UI push commands.
 ## Gateway service (systemd)
 
 On Linux hosts without a supported service manager, run the Gateway in the
-foreground or through your own supervisor, such as rc.d. `openclaw gateway status
+foreground or through your own supervisor, such as rc.d. `paddy gateway status
 --deep` reports **no supported service manager detected** and identifies a
 remaining service unit as stale. That recorded unit does not select the status
 probe's configuration or port. Updates continue with a service warning; restart
@@ -459,18 +459,18 @@ on a systemd host remains a separate service-access diagnostic.
 Install with one of:
 
 ```bash
-openclaw onboard --install-daemon
-openclaw gateway install
-openclaw configure   # select "Gateway service" when prompted
+paddy onboard --install-daemon
+paddy gateway install
+paddy configure   # select "Gateway service" when prompted
 ```
 
 Repair or migrate an existing install:
 
 ```bash
-openclaw doctor
+paddy doctor
 ```
 
-`openclaw gateway install` renders a systemd **user** unit by default. Full
+`paddy gateway install` renders a systemd **user** unit by default. Full
 service guidance, including the **system**-level unit variant for shared or
 always-on hosts, lives in the [Gateway runbook](/gateway#supervision-and-service-lifecycle).
 
@@ -481,7 +481,7 @@ path; systemd ignores relative paths. Write `%%` for a literal percent sign.
 `EnvironmentFile=` also accepts glob patterns, so escape literal glob characters
 with a backslash. Managed working-directory paths must not end in spaces or
 tabs: systemd 255 loses that trailing whitespace when starting the process.
-OpenClaw rejects those paths rather than risk using a different directory;
+Paddy rejects those paths rather than risk using a different directory;
 choose a path without trailing whitespace.
 
 Write a unit by hand only for a custom setup. Minimal user-unit example
@@ -510,7 +510,7 @@ KillMode=mixed
 WantedBy=default.target
 ```
 
-Hand-written units do not inherit the adaptive heap sizing that `openclaw gateway install` writes for managed Gateway services. Prefer the managed installer, or set an explicit heap limit in the custom supervisor after accounting for native-memory headroom.
+Hand-written units do not inherit the adaptive heap sizing that `paddy gateway install` writes for managed Gateway services. Prefer the managed installer, or set an explicit heap limit in the custom supervisor after accounting for native-memory headroom.
 
 `TimeoutStopSec=330` covers the Gateway's five-minute cooperative drain plus teardown reserve. To inspect the current managed unit body, run `systemctl --user cat openclaw-gateway.service` (or `systemctl --user cat openclaw-gateway-<profile>.service` for a named profile).
 
@@ -524,10 +524,10 @@ systemctl --user enable --now openclaw-gateway[-<profile>].service
 
 On Linux, the kernel picks an OOM victim when a host, VM, or container cgroup
 runs out of memory. The Gateway is a poor victim because it owns long-lived
-sessions and channel connections, so OpenClaw biases transient child
+sessions and channel connections, so Paddy biases transient child
 processes to be killed first when possible.
 
-For eligible Linux child spawns, OpenClaw wraps the command in a short
+For eligible Linux child spawns, Paddy wraps the command in a short
 `/bin/sh` shim that attempts to raise the child's own `oom_score_adj` to
 `1000`, then `exec`s the real command. This is unprivileged: a process may
 always raise its own OOM score.
@@ -544,7 +544,7 @@ Covered child process surfaces:
 - PTY shell children
 - MCP stdio server children
 - Managed local model and embedding service children
-- OpenClaw-launched browser/Chrome processes (via the plugin SDK process runtime)
+- Paddy-launched browser/Chrome processes (via the plugin SDK process runtime)
 
 Sandbox backend transports keep their prepared environment and inherited OOM
 score instead of receiving this wrapper. Workload resource policy belongs to
@@ -561,7 +561,7 @@ Managed local model and embedding services fall back to direct spawn when their
 effective environment defines `SHELLOPTS`, `BASHOPTS`, a `BASH_FUNC_*` key, or
 a reserved `OC_INTERNAL_OOM_EXEC_{BASH_ENV,ENV,CDPATH,PS4}` carrier. Exact
 environment fidelity and shell startup safety take precedence in these cases,
-so OpenClaw does not attempt to change `oom_score_adj`; use the verification
+so Paddy does not attempt to change `oom_score_adj`; use the verification
 below to check the child's effective value.
 
 Verify a child process:

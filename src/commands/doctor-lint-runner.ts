@@ -184,7 +184,7 @@ async function prepareDoctorLintExecution(
                 runtime.log(
                   `[warning] ${finding.checkId} [${finding.errorCode}]: ${finding.message}`,
                 );
-                runtime.log(finding.fixHint ?? "Run `openclaw doctor` after activation.");
+                runtime.log(finding.fixHint ?? "Run `paddy doctor` after activation.");
               }
             }
           },
@@ -464,7 +464,7 @@ async function executeDoctorLint(
         requirement: "update-validation-scope",
         message:
           "Advisory inspection deferred until after update activation; required migration, config, plugin, and Gateway readiness checks remain enabled.",
-        fixHint: `Run \`openclaw doctor --lint --only ${check.id}\` after activation to complete this inspection.`,
+        fixHint: `Run \`paddy doctor --lint --only ${check.id}\` after activation to complete this inspection.`,
       })),
   ];
   const advisoryChecks = new Set(
@@ -655,7 +655,7 @@ function recordSnapshotCleanupWarning(warnings: HealthFinding[]): void {
     severity: "warning",
     requirement: "temporary-snapshot-cleanup",
     message: "Temporary doctor lint state snapshot cleanup did not complete.",
-    fixHint: "Rerun `openclaw doctor --lint` after the update to check snapshot cleanup.",
+    fixHint: "Rerun `paddy doctor --lint` after the update to check snapshot cleanup.",
   });
 }
 

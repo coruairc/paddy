@@ -7,9 +7,9 @@ read_when:
 title: "Claws"
 ---
 
-# `openclaw claws`
+# `paddy claws`
 
-A Claw is a versioned setup for one new OpenClaw agent. It can describe the
+A Claw is a versioned setup for one new Paddy agent. It can describe the
 agent's portable identity, workspace files, skills, plugins, MCP servers, and
 cron jobs. Harness-specific agent settings may be carried in a conventional
 package profile. A Claw does not replace or modify an existing agent.
@@ -21,7 +21,7 @@ Enable the command surface explicitly:
 export OPENCLAW_EXPERIMENTAL_CLAWS=1
 ```
 
-For human-readable `claws add`, OpenClaw prints the experimental warning before
+For human-readable `claws add`, Paddy prints the experimental warning before
 changing state. JSON mode keeps stdout machine-readable and identifies the
 contract with `"stability": "experimental"`.
 
@@ -34,7 +34,7 @@ separate registry track and are not part of this command surface yet.
 The bundled `coordinator`, `researcher`, `writer`, and `reviewer` roles are Claw
 sources at `docs/reference/templates/roles/<role>` in a source checkout, with no
 `package.json` requirement. Use [`agents add --role`](/cli/agents#role-templates)
-or `openclaw claws add docs/reference/templates/roles/<role>` through the
+or `paddy claws add docs/reference/templates/roles/<role>` through the
 [preview and consent flow](/cli/claws#inspect-and-preview).
 [`agents team create`](/cli/agents#agents-team-create) owns delegation wiring;
 the role Claws will carry those settings once separate Claw profile support lands.
@@ -54,7 +54,7 @@ profiles, bootstrap instructions, or portable assets used by that manifest:
 ```
 
 `CLAW.md` starts with YAML frontmatter. A non-empty Markdown body is the
-portable agent prompt. OpenClaw applies it as the Claw-managed `SOUL.md` for
+portable agent prompt. Paddy applies it as the Claw-managed `SOUL.md` for
 the new agent:
 
 ```md
@@ -76,7 +76,7 @@ You review incoming incidents, identify severity and ownership, and leave a
 concise handoff with evidence.
 ```
 
-OpenClaw automatically discovers the optional `profiles/openclaw.yml` file.
+Paddy automatically discovers the optional `profiles/openclaw.yml` file.
 No manifest pointer is required. Other harnesses may discover their own
 conventional profile, such as `profiles/codex.yml`, without changing the
 portable manifest.
@@ -110,9 +110,9 @@ agent:
       sources: [memory, sessions]
 ```
 
-This profile exists only inside the Claw package. OpenClaw validates and uses it
+This profile exists only inside the Claw package. Paddy validates and uses it
 while inspecting, adding, updating, and exporting that Claw; it is not copied
-to the user's normal OpenClaw configuration path. Other harnesses consume the
+to the user's normal Paddy configuration path. Other harnesses consume the
 portable manifest and interpret only their own conventional profile.
 
 `agent.model` selects a required `primary` reference and optional ordered
@@ -134,11 +134,11 @@ copying inherited defaults.
 
 The same strict version 1 schema continues to accept grouped JSON manifests.
 Grouped JSON discovers the same conventional profile rather than embedding a
-second copy of the OpenClaw settings. The remaining schema fragments on this
+second copy of the Paddy settings. The remaining schema fragments on this
 page use JSON, with equivalent keys available in `CLAW.md` frontmatter.
 
-The OpenClaw package profile may use an explicit `tools.allow` list or select
-any built-in tool profile registered by the running OpenClaw version. The
+The Paddy package profile may use an explicit `tools.allow` list or select
+any built-in tool profile registered by the running Paddy version. The
 `coding` and `messaging` profiles include the dynamic `bundle-mcp` selector, so
 a Claw that selects either profile must also provide a bounded `tools.allow`
 intersection. Name any MCP grants as concrete generated tool names such as
@@ -158,7 +158,7 @@ The conventional profile is limited to 256 KiB, must be JSON-compatible YAML, ma
 not use aliases, anchors, tags, or merge keys, and must be a regular,
 non-symlinked, non-hardlinked file inside the package.
 
-An OpenClaw profile may also declare harness-specific extension requirements:
+A Paddy profile may also declare harness-specific extension requirements:
 
 ```yaml
 schemaVersion: 1
@@ -174,15 +174,15 @@ extensions:
 
 `format` asserts the artifact format that OpenClaw must detect (`openclaw`,
 `claude`, `codex`, or `cursor`). The canonical plugin preflight resolves the
-exact artifact and reports which components the current OpenClaw adapter maps
+exact artifact and reports which components the current Paddy adapter maps
 and which remain unavailable. Missing identity, integrity, format detection, or
 adapter identity blocks apply. Extension-backed plugins use the existing
 plugin installer and ownership model; they are shared host requirements, not
 Claw-owned members or a second package system.
 
-OpenClaw ignores foreign harness profiles during apply. Package integrity still
+Paddy ignores foreign harness profiles during apply. Package integrity still
 covers every published package byte, while a development snapshot binds the
-portable manifest, bootstrap and workspace sources, and the selected OpenClaw
+portable manifest, bootstrap and workspace sources, and the selected Paddy
 profile. Status and doctor report adapter mapping drift or unavailable
 inspection. Export writes extension-backed plugins to `profiles/openclaw.yml`
 and does not duplicate them in the portable `packages` list.
@@ -221,7 +221,7 @@ reconciles unchanged managed assets, and remove preserves modified or
 user-owned files.
 
 An optional package-root `BOOTSTRAP.md` supplies conversational first-run
-instructions. OpenClaw seeds it into the new agent workspace and records
+instructions. Paddy seeds it into the new agent workspace and records
 progress through the native workspace bootstrap state. Once the agent consumes
 or removes it, Claw update does not recreate it. Root `BOOTSTRAP.md` therefore
 cannot also be declared through `workspace.files`. Claw removal deletes an
@@ -253,10 +253,10 @@ The dry run uses the existing skill and plugin preflight paths to resolve the
 exact artifact, integrity, and any ClawHub trust warning before consent. The
 warning remains visible in the integrity-bound plan. Each requirement is shown
 as satisfied, missing-installable, conflicting, or setup-required. The exact
-plan consent approves missing installs; OpenClaw completes those canonical
+plan consent approves missing installs; Paddy completes those canonical
 plugin actions before creating the agent or workspace. Apply reuses matching
 artifacts and records whether the Claw introduced or referenced each resource.
-Plugins remain process-wide OpenClaw capabilities rather than per-agent
+Plugins remain process-wide Paddy capabilities rather than per-agent
 installations.
 
 Cron jobs declare scheduled work for the new agent:
@@ -305,13 +305,13 @@ removal follow the same ownership policy as other Claw resources.
 ## Author locally
 
 Create a minimal project, validate its publishable inputs, preview its complete
-OpenClaw add plan offline, and build an immutable package artifact:
+Paddy add plan offline, and build an immutable package artifact:
 
 ```bash
-openclaw claws create ./incident-triage
-openclaw claws validate ./incident-triage
-openclaw claws dev ./incident-triage
-openclaw claws build ./incident-triage --out ./incident-triage-1.0.0.tgz
+paddy claws create ./incident-triage
+paddy claws validate ./incident-triage
+paddy claws dev ./incident-triage
+paddy claws build ./incident-triage --out ./incident-triage-1.0.0.tgz
 ```
 
 `create` writes only `package.json` and `CLAW.md` and refuses to merge into a
@@ -322,12 +322,12 @@ single unambiguous project root, and reports files excluded from the package.
 `dev` validates and builds the same artifact that would be published, then
 runs that artifact through the canonical add planner. It does not install
 packages, contact ClawHub, start an agent turn, enable schedules, deliver
-messages, or modify OpenClaw state. Dependencies that require online preflight
+messages, or modify Paddy state. Dependencies that require online preflight
 appear as blockers instead of weakening that boundary. Use `--agent-id` or
 `--workspace` to preview collision-free local destinations.
 
 `build` writes a deterministic npm-compatible `.tgz` with a `package/` root.
-Only package metadata, `CLAW.md`, optional `BOOTSTRAP.md`, the OpenClaw profile,
+Only package metadata, `CLAW.md`, optional `BOOTSTRAP.md`, the Paddy profile,
 and sources selected by the manifest are included. Tests, caches, ambient or
 unselected credentials, unselected files, prior artifacts, and source-control
 state remain outside the package. Selected source bytes are package content, so
@@ -337,18 +337,18 @@ canonical Claw reader before success.
 
 ## Inspect and preview
 
-Validate the source without planning local changes. For OpenClaw profile
+Validate the source without planning local changes. For Paddy profile
 extensions, inspect also performs the canonical read-only artifact probe and
 reports mapped and unavailable components:
 
 ```bash
-openclaw claws inspect ./incident-triage.claw.json
+paddy claws inspect ./incident-triage.claw.json
 ```
 
 Preview all proposed lifecycle actions:
 
 ```bash
-openclaw claws add ./incident-triage.claw.json --dry-run --json
+paddy claws add ./incident-triage.claw.json --dry-run --json
 ```
 
 The plan reports the derived agent and workspace, every proposed action,
@@ -357,12 +357,12 @@ digest. Capability records show the exact package, MCP, scheduled-work, sandbox,
 tool, or heartbeat effect. Review the plan before creating the agent:
 
 ```bash
-openclaw claws add ./incident-triage.claw.json \
+paddy claws add ./incident-triage.claw.json \
   --yes \
   --plan-integrity <SHA256_FROM_DRY_RUN>
 ```
 
-`--yes` alone is insufficient. OpenClaw rebuilds the plan and rejects consent
+`--yes` alone is insufficient. Paddy rebuilds the plan and rejects consent
 when the source, destination, or live configuration changed after preview. Use
 `--agent-id` or `--workspace` during both preview and apply when package
 defaults collide with local state. For disposable profiles and parallel validation,
@@ -393,15 +393,15 @@ installation retains the existing restart requirement.
 ## Inspect installed state
 
 ```bash
-openclaw claws status
-openclaw claws status incident-triage --json
-openclaw doctor
+paddy claws status
+paddy claws status incident-triage --json
+paddy doctor
 ```
 
 `status` compares the installed agent and its recorded workspace, package, MCP,
 and cron provenance with current state. It also reports whether native
 first-run bootstrap remains pending. It reports incomplete installs, missing
-resources, and drift without changing local state. `openclaw doctor` adds
+resources, and drift without changing local state. `paddy doctor` adds
 Claw-specific diagnostics for incomplete ownership records, unsafe managed
 files, and cron jobs that cannot be corroborated with live Gateway inventory.
 
@@ -422,8 +422,8 @@ By default, update uses the source recorded when the Claw was added. Use
 `--from` when that source moved or when testing another package directory:
 
 ```bash
-openclaw claws update incident-triage --dry-run --json
-openclaw claws update incident-triage \
+paddy claws update incident-triage --dry-run --json
+paddy claws update incident-triage \
   --from ./incident-triage-next \
   --dry-run --json
 ```
@@ -441,19 +441,19 @@ aggregate multi-agent review. Apply the exact reviewed plan with explicit
 consent:
 
 ```bash
-openclaw claws update incident-triage \
+paddy claws update incident-triage \
   --yes \
   --plan-integrity <SHA256_FROM_DRY_RUN>
 ```
 
-OpenClaw rebuilds the plan and compare-and-swaps owned state before each
+Paddy rebuilds the plan and compare-and-swaps owned state before each
 mutation. Removed package declarations release dependency edges without
 uninstalling artifacts. Cron changes reread the live scheduler definition and
 stop on operator drift. Package installers, source-config writers, and the Gateway scheduler
 are not one transaction. If compensation cannot be proven after an external
-mutation, OpenClaw reports error code `update_partial` with structured
+mutation, Paddy reports error code `update_partial` with structured
 `status: partial`, preserves uncertain provenance,
-and stops. Inspect `claws status`, the affected resource, and `openclaw doctor`;
+and stops. Inspect `claws status`, the affected resource, and `paddy doctor`;
 then preview again before retrying or removing anything.
 
 ## Remove an installed Claw
@@ -461,8 +461,8 @@ then preview again before retrying or removing anything.
 Preview removal before selecting cleanup:
 
 ```bash
-openclaw claws remove incident-triage --dry-run --json
-openclaw claws remove incident-triage \
+paddy claws remove incident-triage --dry-run --json
+paddy claws remove incident-triage \
   --yes \
   --plan-integrity <SHA256_FROM_DRY_RUN>
 ```
@@ -512,7 +512,7 @@ excluded from this generic cleanup mode. To select exact
 referenced resources instead, repeat `--remove-referenced`:
 
 ```bash
-openclaw claws remove incident-triage \
+paddy claws remove incident-triage \
   --dry-run \
   --remove-referenced 'plugin:@acme/audit-plugin@2.0.0'
 ```
@@ -543,7 +543,7 @@ Export creates a new package directory and fails if the destination exists or
 managed state has drifted:
 
 ```bash
-openclaw claws export incident-triage --out ./incident-triage-export --json
+paddy claws export incident-triage --out ./incident-triage-export --json
 ```
 
 Use `--bootstrap <path>` to attach an explicitly reviewed Markdown file as the
@@ -586,7 +586,7 @@ Use `--json` for experimental machine-readable output.
 Successful commands exit `0`. Validation errors, blocked plans, missing
 targets, and both `failed` and `partial` mutation results exit `1`. Inspect the
 JSON `status` and `error.code` fields to distinguish a failure that made no
-change from a partial result that requires `claws status`, `openclaw doctor`,
+change from a partial result that requires `claws status`, `paddy doctor`,
 and a new preview before retrying.
 
 ## See also

@@ -7,7 +7,7 @@ read_when:
   - Reviewing what diagnostics data is recorded or redacted
 ---
 
-OpenClaw can build a local diagnostics `.zip` for bug reports: sanitized Gateway
+Paddy can build a local diagnostics `.zip` for bug reports: sanitized Gateway
 status, health, logs, config shape, and recent payload-free stability events.
 
 Treat diagnostics bundles like secrets until reviewed. Payloads and credentials
@@ -17,19 +17,19 @@ host-level runtime state.
 ## Quick start
 
 ```bash
-openclaw gateway diagnostics export
+paddy gateway diagnostics export
 ```
 
 Prints the written zip path. Choose an output path:
 
 ```bash
-openclaw gateway diagnostics export --output openclaw-diagnostics.zip
+paddy gateway diagnostics export --output paddy-diagnostics.zip
 ```
 
 For automation:
 
 ```bash
-openclaw gateway diagnostics export --json
+paddy gateway diagnostics export --json
 ```
 
 ## Chat command
@@ -38,13 +38,13 @@ Owners can run `/diagnostics [note]` in any conversation to request a local
 Gateway export as one copy-pasteable support report:
 
 1. Send `/diagnostics`, optionally with a short note (`/diagnostics bad tool choice`).
-2. OpenClaw sends a preamble and asks for one explicit exec approval, which runs
-   `openclaw gateway diagnostics export --json`. Do not approve diagnostics via
+2. Paddy sends a preamble and asks for one explicit exec approval, which runs
+   `paddy gateway diagnostics export --json`. Do not approve diagnostics via
    an allow-all rule.
-3. After approval, OpenClaw replies with the local bundle path, manifest
+3. After approval, Paddy replies with the local bundle path, manifest
    summary, privacy notes, and relevant session ids.
 
-In group chats, an owner can still run `/diagnostics`, but OpenClaw sends the
+In group chats, an owner can still run `/diagnostics`, but Paddy sends the
 export result, approval prompts, and Codex session/thread breakdown to the
 owner privately. The group sees only a short status notice: approval pending,
 private delivery confirmed, delivery pending, or delivery suppressed. Pending
@@ -52,11 +52,11 @@ delivery does not trigger another private send. If no private owner route exists
 the command asks the owner to run it from a DM.
 
 When the active session uses the native OpenAI Codex harness, the same exec
-approval also covers an OpenAI feedback upload for the Codex threads OpenClaw
+approval also covers an OpenAI feedback upload for the Codex threads Paddy
 knows about. That upload is separate from the local Gateway zip and only
 happens for Codex harness sessions. The approval prompt states that approving
 also sends Codex feedback, without listing Codex session or thread ids. After
-approval, the reply lists channels, OpenClaw session ids, Codex thread ids, and
+approval, the reply lists channels, Paddy session ids, Codex thread ids, and
 local resume commands for the threads that were sent to OpenAI. Denying or
 ignoring the approval skips the export, the Codex feedback upload, and the
 Codex id list.
@@ -225,22 +225,22 @@ embedded run active.
 Inspect the live recorder:
 
 ```bash
-openclaw gateway stability
-openclaw gateway stability --type payload.large
-openclaw gateway stability --json
+paddy gateway stability
+paddy gateway stability --type payload.large
+paddy gateway stability --json
 ```
 
 Inspect the newest persisted bundle after a fatal exit, shutdown timeout, or
 restart startup failure:
 
 ```bash
-openclaw gateway stability --bundle latest
+paddy gateway stability --bundle latest
 ```
 
 Create a diagnostics zip from the newest persisted bundle:
 
 ```bash
-openclaw gateway stability --bundle latest --export
+paddy gateway stability --bundle latest --export
 ```
 
 Persisted bundles live under `~/.openclaw/logs/stability/` when events exist.
@@ -251,7 +251,7 @@ An operator with `operator.admin` can request one in-memory profile of the Gatew
 main JavaScript isolate:
 
 ```bash
-openclaw gateway call diagnostics.cpuProfile --params '{}' --timeout 30000 --json
+paddy gateway call diagnostics.cpuProfile --params '{}' --timeout 30000 --json
 ```
 
 This Node-only RPC requests five seconds of sampling at a 10 ms interval. It opens
@@ -263,7 +263,7 @@ The result contains `profile` in V8 CPU-profile format, `requestedDurationMs`,
 `actualDurationMs`, `startBlockedMs`, `samplingIntervalMicros`, `redactedNodeCount`, and
 `sampleLossCount: null` because V8 does not expose an explicit lost-sample count.
 The complete result is limited to 1 MiB; larger profiles fail without truncating
-nodes or samples. Code locations inside the OpenClaw package use `openclaw:` paths;
+nodes or samples. Code locations inside the Paddy package use `paddy:` paths;
 Node builtin locations use `node:` paths. External paths, eval labels, and other
 unrecognized names are redacted. Bounded code-symbol names at recognized locations
 are retained; their syntax does not prove that a computed name is public. Review
@@ -302,7 +302,7 @@ An operator with `operator.admin` can explicitly capture the Gateway's main V8
 isolate, including objects allocated before the request:
 
 ```bash
-openclaw gateway call diagnostics.heapSnapshot --params '{"reason":"retention baseline"}' --timeout 180000 --json
+paddy gateway call diagnostics.heapSnapshot --params '{"reason":"retention baseline"}' --timeout 180000 --json
 ```
 
 This Node-only RPC accepts only an optional `reason` (at most 256 characters),
@@ -351,9 +351,9 @@ An operator with `operator.admin` can sample allocations in the Gateway's main
 JavaScript isolate without taking a whole-heap snapshot:
 
 ```bash
-openclaw gateway call diagnostics.heapProfile --params '{}' --timeout 30000 --json
-openclaw gateway call diagnostics.heapProfile --params '{"durationMs":10000,"samplingIntervalBytes":32768}' --timeout 45000 --json
-openclaw gateway call diagnostics.heapProfile --params '{"includeObjectsCollectedByMajorGC":true,"includeObjectsCollectedByMinorGC":true}' --timeout 30000 --json
+paddy gateway call diagnostics.heapProfile --params '{}' --timeout 30000 --json
+paddy gateway call diagnostics.heapProfile --params '{"durationMs":10000,"samplingIntervalBytes":32768}' --timeout 45000 --json
+paddy gateway call diagnostics.heapProfile --params '{"includeObjectsCollectedByMajorGC":true,"includeObjectsCollectedByMinorGC":true}' --timeout 30000 --json
 ```
 
 The Node-only RPC defaults to five seconds and an average sampling interval of
@@ -408,7 +408,7 @@ V8's internal sampling memory. Review retained code-symbol names before sharing.
 ## Useful options
 
 ```bash
-openclaw gateway diagnostics export \
+paddy gateway diagnostics export \
   --output openclaw-diagnostics.zip \
   --log-lines 5000 \
   --log-bytes 1000000

@@ -797,7 +797,7 @@ export async function migrateLegacyDeliveryQueues(params: {
         // COMMIT recorded the non-replayable source identity; safely retained leftovers
         // need cleanup, not a failed upgrade or another attempt to send them.
         warnings.push(
-          `Retained ${queue.label} source or archive ${snapshot.sourcePath}; run openclaw doctor --fix to retry cleanup: ${String(error)}`,
+          `Retained ${queue.label} source or archive ${snapshot.sourcePath}; run paddy doctor --fix to retry cleanup: ${String(error)}`,
         );
       }
     }

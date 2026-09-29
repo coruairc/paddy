@@ -105,7 +105,7 @@ export async function validatePnpmIsolatedUpdate(params: {
     return {
       globalBinDir: null,
       failedStep: failedStep(
-        `OpenClaw shares a pnpm ${owner.layoutVersion} global install group with ${siblingPackages.join(", ")}. Automatic update stopped before mutation; update the group manually to preserve its sibling packages.`,
+        `Paddy shares a pnpm ${owner.layoutVersion} global install group with ${siblingPackages.join(", ")}. Automatic update stopped before mutation; update the group manually to preserve its sibling packages.`,
       ),
     };
   }
@@ -122,7 +122,7 @@ export async function validatePnpmIsolatedUpdate(params: {
     return {
       globalBinDir: null,
       failedStep: failedStep(
-        `Expected exactly one active pnpm ${owner.layoutVersion} OpenClaw install owned by the invoking project; found ${activePackageRoots.length} active installs and ${ownerMatchCount} owner matches. Automatic update stopped before mutation.`,
+        `Expected exactly one active pnpm ${owner.layoutVersion} Paddy install owned by the invoking project; found ${activePackageRoots.length} active installs and ${ownerMatchCount} owner matches. Automatic update stopped before mutation.`,
       ),
     };
   }
@@ -145,7 +145,7 @@ export async function validatePnpmIsolatedUpdate(params: {
     return {
       globalBinDir: null,
       failedStep: failedStep(
-        `The active pnpm command owns ${reportedGlobalRoot || "an unknown global root"}, not the invoking OpenClaw install at ${expectedGlobalRoot ?? "an unknown root"}. Automatic update stopped before mutation.`,
+        `The active pnpm command owns ${reportedGlobalRoot || "an unknown global root"}, not the invoking Paddy install at ${expectedGlobalRoot ?? "an unknown root"}. Automatic update stopped before mutation.`,
         `${params.installTarget.command} root -g`,
         expectedGlobalRoot ?? process.cwd(),
         rootProbe.result.stdout || null,
@@ -211,8 +211,8 @@ async function permissionFailure(
       : `owner UID ${stat.uid}${stat.uid === 0 ? " (root)" : ""}, GID ${stat.gid}`;
   const repair =
     process.platform !== "win32" && stat && stat.uid === process.getuid?.()
-      ? `Run \`chmod u+rwx ${quoteCliArg(directory)}\`, then rerun \`openclaw update\`.`
-      : "Run the package update as the directory's owning account, keeping the Gateway's existing state/configuration; or ask that account to grant you write access, then rerun `openclaw update`.";
+      ? `Run \`chmod u+rwx ${quoteCliArg(directory)}\`, then rerun \`paddy update\`.`
+      : "Run the package update as the directory's owning account, keeping the Gateway's existing state/configuration; or ask that account to grant you write access, then rerun `paddy update`.";
   const message = `Package update cannot write ${directory} (${code}; ${owner}). ${repair}`;
   return {
     ...step,

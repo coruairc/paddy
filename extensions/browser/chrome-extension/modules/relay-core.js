@@ -8,7 +8,7 @@ const ACCESS_MODE_KEY = "accessMode";
 const PAIRING_STATUS_KEY = "pairingStatus";
 const UNSUPPORTED_PROXY_PREFIX_STATUS = "proxy-prefix-unsupported";
 const UNSUPPORTED_PROXY_PREFIX_HINT =
-  "Stored proxy-prefixed browser relay pairing is no longer supported. Re-run `openclaw browser extension pair` with a Gateway URL that has no path prefix.";
+  "Stored proxy-prefixed browser relay pairing is no longer supported. Re-run `paddy browser extension pair` with a Gateway URL that has no path prefix.";
 
 function isLoopbackHost(hostname) {
   const normalized = hostname

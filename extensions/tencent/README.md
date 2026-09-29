@@ -1,6 +1,6 @@
-# Tencent Cloud OpenClaw provider
+# Tencent Cloud Paddy provider
 
-Official OpenClaw provider plugin for Tencent Cloud.
+Official Paddy provider plugin for Tencent Cloud.
 
 ## Install
 

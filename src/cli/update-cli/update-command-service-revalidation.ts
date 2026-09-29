@@ -1,5 +1,6 @@
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
+import { CLI_NAME } from "../../brand.js";
 import {
   normalizeWindowsTaskIdentity,
   resolveGatewayProfileSuffix,
@@ -30,7 +31,6 @@ import {
   inspectManagedGatewayServiceBeforeUpdate,
   observedSystemdManagerUid,
 } from "./update-command-service-plan.js";
-import { CLI_NAME } from "../../brand.js";
 
 function matchesStoppedService(
   before: Pick<PreManagedServiceStop, "serviceEnv" | "serviceUpdateVerdict" | "serviceManagerUid">,
@@ -90,7 +90,7 @@ export async function assertManagedGatewayArtifactPublication(params: {
   ) {
     throw new UpdatePreMutationError(
       "runtime-artifact-publication",
-      `Cannot replace Git runtime artifacts in ${servingVerdict.root}: its Gateway${serving.servicePid === undefined ? "" : ` (PID ${serving.servicePid})`} is still running and this update did not stop it. Stop that Gateway through its service manager, then rerun \`${formatCliCommand("openclaw update", serving.serviceEnv)}\` without \`--no-restart\`. The serving runtime was left unchanged.`,
+      `Cannot replace Git runtime artifacts in ${servingVerdict.root}: its Gateway${serving.servicePid === undefined ? "" : ` (PID ${serving.servicePid})`} is still running and this update did not stop it. Stop that Gateway through its service manager, then rerun \`${formatCliCommand("paddy update", serving.serviceEnv)}\` without \`--no-restart\`. The serving runtime was left unchanged.`,
     );
   }
   const bindings = await discoverManagedGatewayBindings(params.env).catch((error: unknown) => {

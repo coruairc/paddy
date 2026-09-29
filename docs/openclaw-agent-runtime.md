@@ -1,12 +1,12 @@
 ---
-summary: "Developer workflow for OpenClaw agent runtime: build, test, and live validation"
-title: "OpenClaw agent runtime workflow"
+summary: "Developer workflow for Paddy agent runtime: build, test, and live validation"
+title: "Paddy agent runtime workflow"
 read_when:
-  - Working on OpenClaw agent runtime code or tests
+  - Working on Paddy agent runtime code or tests
   - Running agent-runtime lint, typecheck, and live test flows
 ---
 
-Developer workflow for the agent runtime (`src/agents/`) in the OpenClaw repo.
+Developer workflow for the agent runtime (`src/agents/`) in the Paddy repo.
 
 ## Type checking and linting
 
@@ -38,7 +38,7 @@ pnpm test:live src/agents/embedded-agent-runner-extraparams.live.test.ts
 ## Manual testing
 
 - Run the Gateway in dev mode (skips channel connections via `OPENCLAW_SKIP_CHANNELS=1`): `pnpm gateway:dev`
-- Trigger one agent turn through the Gateway: `pnpm openclaw agent --message "Hello" --thinking low`
+- Trigger one agent turn through the Gateway: `pnpm paddy agent --message "Hello" --thinking low`
 - Use the TUI for interactive debugging: `pnpm tui`
 
 For tool call behavior, prompt for a `read` or `exec` action so you can watch
@@ -65,12 +65,12 @@ Delete those paths for a full reset. Narrower resets:
 - Keep auth: leave `agents/<agentId>/agent/openclaw-agent.sqlite` and `credentials/` in place.
 
 Legacy `auth-profiles.json` files are no longer read at runtime;
-`openclaw doctor --fix` imports them into the SQLite store.
+`paddy doctor --fix` imports them into the SQLite store.
 
 <a id="references" />
 
 ## Related
 
-- [OpenClaw agent runtime architecture](/agent-runtime-architecture)
+- [Paddy agent runtime architecture](/agent-runtime-architecture)
 - [Testing](/help/testing)
 - [Getting Started](/start/getting-started)

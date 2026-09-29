@@ -260,7 +260,7 @@ describe("GatewayChatClient", () => {
       expect(onConnectError).toHaveBeenCalledExactlyOnceWith(connectError);
       expect(connectError.message).toContain("Pairing request sent.");
       expect(connectError.message).toContain("Control UI (Settings -> Devices)");
-      expect(connectError.message).toContain("openclaw devices approve --latest");
+      expect(connectError.message).toContain("paddy devices approve --latest");
       expect(connectError.details).toEqual({ code: "PAIRING_REQUIRED", requestId: "pair-1" });
       expect(onDisconnected).not.toHaveBeenCalled();
 
@@ -338,7 +338,7 @@ describe("GatewayChatClient", () => {
 
       const message =
         "proxy: Gateway loopback control-plane connections are blocked by proxy.loopbackMode; " +
-        "run openclaw config set proxy.loopbackMode gateway-only to allow local runtime traffic.";
+        "run paddy config set proxy.loopbackMode gateway-only to allow local runtime traffic.";
       await expect(disconnected.promise).resolves.toBe(message);
       expect(onDisconnected).toHaveBeenCalledExactlyOnceWith(message);
     } finally {

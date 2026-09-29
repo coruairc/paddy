@@ -2,6 +2,7 @@ import { existsSync, realpathSync, statSync } from "node:fs";
 import nodePath from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { listAgentIds } from "../agents/agent-scope-config.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveStateDir } from "../config/paths.js";
 import { resolveConfiguredAgentDatabaseCandidatePaths } from "../config/sessions/targets.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
@@ -71,7 +72,6 @@ import {
 } from "./openclaw-state-ownership.js";
 import { inspectCurrentStateStartupSchema } from "./openclaw-state-schema-inspection.js";
 import { readStateSchemaPublicationBlocker } from "./openclaw-state-schema-publication.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 export type {
   DeferredStateSchemaPublication,
@@ -399,7 +399,7 @@ export async function preflightOpenClawDatabaseSchemas(
           );
           if (blockingIssues.length > 0) {
             throw new SqliteSchemaMismatchError(
-              `${PRODUCT_NAME} state database ${statePath} requires repair: ${blockingIssues.map((issue) => issue.message).join("; ")}; run openclaw doctor --fix.`,
+              `${PRODUCT_NAME} state database ${statePath} requires repair: ${blockingIssues.map((issue) => issue.message).join("; ")}; run paddy doctor --fix.`,
             );
           }
         } else {

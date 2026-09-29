@@ -143,7 +143,7 @@ export function createGatewayPluginRuntimeGeneration(params: {
                 phase: "failed",
                 pluginIds: [...failedIds].toSorted(),
                 reason:
-                  "Plugin activation or recovery failed. Retry openclaw plugins reload <id> after admitted work settles, or restart the Gateway. Inspect the Gateway log for the failure.",
+                  "Plugin activation or recovery failed. Retry paddy plugins reload <id> after admitted work settles, or restart the Gateway. Inspect the Gateway log for the failure.",
               }
             : undefined;
           if (outcome === "failed" && reloadStatus?.reason) {

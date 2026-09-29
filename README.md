@@ -20,14 +20,14 @@ Not affiliated with the OpenClaw Foundation, Nous Research, Guinness, or Paddy I
 OpenClaw's memory trusts the agent to curate — it promotes what it judges worth keeping.
 Paddy keeps the human in the loop.
 
-| | |
-| --- | --- |
-| **You approve** | The curator proposes; nothing becomes durable without `paddy memory approve` |
-| **Per-entry rollback** | Undo a single memory with its provenance intact, not the whole store |
-| **Scoped by default** | A memory written for one identity is never recalled for another |
+|                               |                                                                                |
+| ----------------------------- | ------------------------------------------------------------------------------ |
+| **You approve**               | The curator proposes; nothing becomes durable without `paddy memory approve`   |
+| **Per-entry rollback**        | Undo a single memory with its provenance intact, not the whole store           |
+| **Scoped by default**         | A memory written for one identity is never recalled for another                |
 | **Secrets screened on write** | A deterministic pattern filter runs before storage — not an LLM judgement call |
-| **Fail-open** | A memory fault warns and continues; it never breaks an otherwise-valid turn |
-| **Local by default** | Embedded SQLite under `~/.paddy`. No external database, no service to run |
+| **Fail-open**                 | A memory fault warns and continues; it never breaks an otherwise-valid turn    |
+| **Local by default**          | Embedded SQLite under `~/.paddy`. No external database, no service to run      |
 
 Everything else is OpenClaw as upstream ships it. Paddy's value is the combination.
 
@@ -72,8 +72,9 @@ cd paddy
 pnpm install --frozen-lockfile
 pnpm build
 pnpm ui:build
-pnpm openclaw onboard --install-daemon
+pnpm paddy onboard --install-daemon
 ```
+
 </details>
 
 ## Quick start
@@ -128,14 +129,14 @@ or exposing the Gateway remotely.
 
 Upstream OpenClaw docs apply to everything Paddy inherits, which is nearly all of it.
 
-| Goal                             | Start here                                                                                                                                                                                                                                                           |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Configure models and auth        | [Models](https://docs.openclaw.ai/concepts/models) · [Model providers](https://docs.openclaw.ai/concepts/model-providers)                                                                                                                                            |
-| Connect a messaging service      | [Channels](https://docs.openclaw.ai/channels)                                                                                                                                                                                                                        |
-| Add tools, skills, and plugins   | [Tools](https://docs.openclaw.ai/tools) · [Skills](https://docs.openclaw.ai/tools/skills) · [Plugins](https://docs.openclaw.ai/plugins)                                                                                                                              |
-| Run apps and device nodes        | [Platforms](https://docs.openclaw.ai/platforms) · [Nodes](https://docs.openclaw.ai/nodes)                                                                                                                                                                            |
-| Use the CLI and chat commands    | [CLI reference](https://docs.openclaw.ai/cli) · [Slash commands](https://docs.openclaw.ai/tools/slash-commands)                                                                                                                                                      |
-| Configure or operate the Gateway | [Configuration](https://docs.openclaw.ai/gateway/configuration) · [Architecture](https://docs.openclaw.ai/concepts/architecture)                                                                                                                                     |
+| Goal                             | Start here                                                                                                                              |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Configure models and auth        | [Models](https://docs.openclaw.ai/concepts/models) · [Model providers](https://docs.openclaw.ai/concepts/model-providers)               |
+| Connect a messaging service      | [Channels](https://docs.openclaw.ai/channels)                                                                                           |
+| Add tools, skills, and plugins   | [Tools](https://docs.openclaw.ai/tools) · [Skills](https://docs.openclaw.ai/tools/skills) · [Plugins](https://docs.openclaw.ai/plugins) |
+| Run apps and device nodes        | [Platforms](https://docs.openclaw.ai/platforms) · [Nodes](https://docs.openclaw.ai/nodes)                                               |
+| Use the CLI and chat commands    | [CLI reference](https://docs.openclaw.ai/cli) · [Slash commands](https://docs.openclaw.ai/tools/slash-commands)                         |
+| Configure or operate the Gateway | [Configuration](https://docs.openclaw.ai/gateway/configuration) · [Architecture](https://docs.openclaw.ai/concepts/architecture)        |
 
 ## Development
 

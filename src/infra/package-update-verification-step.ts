@@ -104,7 +104,7 @@ export function markPackagePostInstallDoctorAdvisory<
   ) {
     return step;
   }
-  const repairGuidance = "Run openclaw doctor --fix to finish deferred repairs.";
+  const repairGuidance = "Run paddy doctor --fix to finish deferred repairs.";
   const deferredWarnings =
     result.status === "advisory"
       ? normalizeUpdatePostInstallDoctorWarnings(result.advisory.details).map(

@@ -146,13 +146,13 @@ export async function reconcileInterruptedUpdateRuns(
         ? ` Deadline timed-out after ${observed.timeout.elapsedMs} ms during ${observed.timeout.phase}.`
         : "") +
       (observed.cleanup === "unknown"
-        ? " Command cleanup failed: could not confirm that owned work stopped; cleanup outcome unknown. Check openclaw update status before recovery."
+        ? " Command cleanup failed: could not confirm that owned work stopped; cleanup outcome unknown. Check paddy update status before recovery."
         : observed.cleanup === "pending"
           ? " Command cleanup is still pending; cleanup outcome unknown. Completion is not verified."
           : observed.verification
             ? " Installed and serving candidate verified."
             : managed
-              ? " Continuing without verified completion; will retry. Check openclaw update status."
+              ? " Continuing without verified completion; will retry. Check paddy update status."
               : " No completed managed-service restart was recorded; probing skipped.");
     const result = await persistInterruptedUpdateObservationAsync(
       context,
@@ -165,7 +165,7 @@ export async function reconcileInterruptedUpdateRuns(
       input.signal,
     );
     if (result?.accepted || observed.cleanup === "unknown") {
-      console.warn(`[openclaw] ${detail}`);
+      console.warn(`[paddy] ${detail}`);
     }
     return result;
   };
@@ -187,7 +187,7 @@ export async function reconcileInterruptedUpdateRuns(
       })
       .catch(() => {
         console.warn(
-          "[openclaw] Command cleanup outcome unknown; interrupted update cleanup could not be recorded. Check openclaw update status before recovery.",
+          "[paddy] Command cleanup outcome unknown; interrupted update cleanup could not be recorded. Check paddy update status before recovery.",
         );
       });
   }

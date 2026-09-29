@@ -124,7 +124,7 @@ export function formatUpdateRunRecovery(
     const packageOutcome = restored
       ? `package rollback verified (${version})`
       : "runtime files verified";
-    return `${packageOutcome}; Gateway health ${recovery.service === "failed" ? "failed" : "unverified"} (${reason}). Run \`openclaw gateway status --deep\` to check the serving version and readiness.`;
+    return `${packageOutcome}; Gateway health ${recovery.service === "failed" ? "failed" : "unverified"} (${reason}). Run \`paddy gateway status --deep\` to check the serving version and readiness.`;
   }
   const version =
     recovery?.serviceRestartSafe && recovery.service === "healthy"
@@ -184,7 +184,7 @@ function recoveryHints(run: ReportInput, nextAction?: string): string[] {
     return nextAction ? [] : run.origin.nextAction ? [run.origin.nextAction] : [];
   }
   if (run.status === "running") {
-    return ["Check progress with openclaw update status."];
+    return ["Check progress with paddy update status."];
   }
   if (run.status !== "failed") {
     return [];
@@ -221,7 +221,7 @@ function recoveryHints(run: ReportInput, nextAction?: string): string[] {
     );
   }
   if (!nextAction) {
-    hints.push("Run openclaw triage to diagnose and repair the failed update.");
+    hints.push("Run paddy triage to diagnose and repair the failed update.");
   }
   return hints;
 }
@@ -276,9 +276,9 @@ export function renderUpdateRunReport(
     case "skipped":
       headline =
         run.reason === "still-starting"
-          ? `ℹ️ OpenClaw${after ? ` ${after}` : ""} installed; Gateway still starting; readiness unverified; recovery backups retained.`
+          ? `ℹ️ Paddy${after ? ` ${after}` : ""} installed; Gateway still starting; readiness unverified; recovery backups retained.`
           : run.reason === "gateway-readiness-unverified"
-            ? `ℹ️ OpenClaw${after ? ` ${after}` : ""} installed; Gateway readiness unverified; recovery backups retained.`
+            ? `ℹ️ Paddy${after ? ` ${after}` : ""} installed; Gateway readiness unverified; recovery backups retained.`
             : `ℹ️ ${PRODUCT_NAME} update skipped: ${reason}.`;
       break;
     case "rolled-back":
@@ -440,11 +440,11 @@ export function renderUpdateRunReport(
     run.status === "failed" && repairStopReason === "requester-revoked"
       ? nextAction
         ? "Repair stopped because the chat requester is no longer a command owner. Further recovery requires a current command owner."
-        : "Repair stopped because the chat requester is no longer a command owner. A current command owner must start a new update, or the operator can run openclaw triage locally."
+        : "Repair stopped because the chat requester is no longer a command owner. A current command owner must start a new update, or the operator can run paddy triage locally."
       : run.status === "failed" && repairStopReason === "repair-requires-config-change"
         ? nextAction
           ? "Doctor could not promote config changes. Review the named keys and writer refusal before continuing recovery."
-          : "Doctor could not promote config changes. Review the named keys and writer refusal, then run openclaw doctor --fix under your own authority, or openclaw triage."
+          : "Doctor could not promote config changes. Review the named keys and writer refusal, then run paddy doctor --fix under your own authority, or paddy triage."
         : undefined;
   const hints = reconciled
     ? []

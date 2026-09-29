@@ -1,13 +1,13 @@
 ---
 summary: "WeChat channel setup through the external openclaw-weixin plugin"
 read_when:
-  - You want to connect OpenClaw to WeChat or Weixin
+  - You want to connect Paddy to WeChat or Weixin
   - You are installing or troubleshooting the openclaw-weixin channel plugin
   - You need to understand how external channel plugins run beside the Gateway
 title: "WeChat"
 ---
 
-OpenClaw connects to WeChat through Tencent's external
+Paddy connects to WeChat through Tencent's external
 `@tencent-weixin/openclaw-weixin` channel plugin.
 
 Status: external plugin, maintained by the Tencent Weixin team. Direct chats and
@@ -18,29 +18,29 @@ metadata (it declares direct chats only).
 
 - **WeChat** is the user-facing name in these docs.
 - **Weixin** is the name used by Tencent's package and by the plugin id.
-- `openclaw-weixin` is the OpenClaw channel id (`weixin` and `wechat` work as aliases).
+- `openclaw-weixin` is the Paddy channel id (`weixin` and `wechat` work as aliases).
 - `@tencent-weixin/openclaw-weixin` is the npm package.
 
 Use `openclaw-weixin` in CLI commands and config paths.
 
 ## How it works
 
-The WeChat code does not live in the OpenClaw core repo. OpenClaw provides the
+The WeChat code does not live in the Paddy core repo. Paddy provides the
 generic channel plugin contract, and the external plugin provides the
 WeChat-specific runtime:
 
-1. `openclaw plugins install` installs `@tencent-weixin/openclaw-weixin`.
+1. `paddy plugins install` installs `@tencent-weixin/paddy-weixin`.
 2. The Gateway discovers the plugin manifest and loads the plugin entrypoint.
 3. The plugin registers channel id `openclaw-weixin`.
-4. `openclaw channels login --channel openclaw-weixin` starts QR login.
-5. The plugin stores account credentials under the OpenClaw state directory
+4. `paddy channels login --channel paddy-weixin` starts QR login.
+5. The plugin stores account credentials under the Paddy state directory
    (`~/.openclaw` by default).
 6. When the Gateway starts, the plugin starts its Weixin monitor for each
    configured account.
 7. Inbound WeChat messages are normalized through the channel contract, routed to
-   the selected OpenClaw agent, and sent back through the plugin outbound path.
+   the selected Paddy agent, and sent back through the plugin outbound path.
 
-That separation matters: OpenClaw core stays channel-agnostic. WeChat login,
+That separation matters: Paddy core stays channel-agnostic. WeChat login,
 Tencent iLink API calls, media upload/download, context tokens, and account
 monitoring are owned by the external plugin.
 
@@ -55,8 +55,8 @@ npx -y @tencent-weixin/openclaw-weixin-cli install
 Manual install:
 
 ```bash
-openclaw plugins install "@tencent-weixin/openclaw-weixin"
-openclaw plugins enable openclaw-weixin
+paddy plugins install "@tencent-weixin/paddy-weixin"
+paddy plugins enable paddy-weixin
 ```
 
 The plugin commands apply changes to a running Gateway. Check the
@@ -68,7 +68,7 @@ Gateway if it is offline.
 Run QR login on the same machine that runs the Gateway:
 
 ```bash
-openclaw channels login --channel openclaw-weixin
+paddy channels login --channel paddy-weixin
 ```
 
 Scan the QR code with WeChat on your phone and confirm the login. The plugin saves
@@ -78,22 +78,22 @@ To add another WeChat account, run the same login command again. For multiple
 accounts, isolate direct-message sessions by account, channel, and sender:
 
 ```bash
-openclaw config set session.dmScope per-account-channel-peer
+paddy config set session.dmScope per-account-channel-peer
 ```
 
 ## Access control
 
-Version `2.4.8` does not register an OpenClaw pairing adapter or create pairing
+Version `2.4.8` does not register a Paddy pairing adapter or create pairing
 requests. The standard pairing list and approve commands cannot establish DM
 access for this version. QR login can still allow the user who scanned the code
 to chat with the bot.
 
-This version reads a legacy account allowlist JSON file instead of OpenClaw's
+This version reads a legacy account allowlist JSON file instead of Paddy's
 SQLite pairing store. When that list is empty, it falls back to the QR scanner's
 saved user ID. If neither provides a user ID, its sender check admits any sender
 whose message reaches the plugin.
 
-On current OpenClaw, `openclaw doctor --fix` imports legacy approvals into SQLite
+On current Paddy, `paddy doctor --fix` imports legacy approvals into SQLite
 and removes the source file. Previously approved secondary
 senders can therefore lose access in version `2.4.8`. Revoking an approval in
 SQLite does not revoke access granted by the plugin's legacy file or scanner
@@ -103,33 +103,33 @@ Do not rely on standard pairing to manage or revoke DM access with version
 `2.4.8`. If you need pairing enforcement, [temporarily disable the plugin](/channels/wechat#troubleshooting)
 until a version with repaired pairing support is available.
 
-For integrations that implement OpenClaw's pairing API, see [Pairing](/channels/pairing).
+For integrations that implement Paddy's pairing API, see [Pairing](/channels/pairing).
 
 ## Compatibility
 
-The package declares these OpenClaw requirements:
+The package declares these Paddy requirements:
 
-| Plugin version | Declared OpenClaw requirement | npm tag  |
-| -------------- | ----------------------------- | -------- |
-| `2.4.8`        | `>=2026.5.12`                 | `latest` |
-| `1.x`          | `>=2026.1.0 <2026.3.22`       | `legacy` |
+| Plugin version | Declared Paddy requirement | npm tag  |
+| -------------- | -------------------------- | -------- |
+| `2.4.8`        | `>=2026.5.12`              | `latest` |
+| `1.x`          | `>=2026.1.0 <2026.3.22`    | `legacy` |
 
 Version `2.4.8` declares `>=2026.5.12`, but its startup version guard still checks
 `>=2026.3.22`. Passing that guard alone does not satisfy the declared requirement.
 
-If the plugin reports that your OpenClaw version is too old, either update
-OpenClaw or install the legacy plugin line:
+If the plugin reports that your Paddy version is too old, either update
+Paddy or install the legacy plugin line:
 
 ```bash
-openclaw plugins install @tencent-weixin/openclaw-weixin@legacy
+paddy plugins install @tencent-weixin/paddy-weixin@legacy
 ```
 
 Plugin 2.4.6 imports the retired `openclaw/plugin-sdk/channel-runtime` path and
-cannot load on OpenClaw 2026.8.1. If startup reports that this subpath is not
+cannot load on Paddy 2026.8.1. If startup reports that this subpath is not
 exported, update to plugin 2.4.8, which uses the available SDK path:
 
 ```bash
-openclaw plugins update @tencent-weixin/openclaw-weixin@2.4.8
+paddy plugins update @tencent-weixin/paddy-weixin@2.4.8
 ```
 
 ## Sidecar process
@@ -139,7 +139,7 @@ Tencent iLink API. In [issue #68451](https://github.com/openclaw/openclaw/issues
 generic stale-Gateway cleanup: a child process could try to clean up the parent
 Gateway process, causing restart loops under process managers such as systemd.
 
-Current OpenClaw startup cleanup excludes the current process and its ancestors,
+Current Paddy startup cleanup excludes the current process and its ancestors,
 so a channel helper cannot kill the Gateway that launched it. This fix is
 generic; it is not a WeChat-specific path in core.
 
@@ -148,37 +148,37 @@ generic; it is not a WeChat-specific path in core.
 Check install and status:
 
 ```bash
-openclaw plugins list
-openclaw channels status --probe
-openclaw --version
+paddy plugins list
+paddy channels status --probe
+paddy --version
 ```
 
 If the channel shows as installed but does not connect, enable it and inspect the
 running plugin:
 
 ```bash
-openclaw plugins enable openclaw-weixin
-openclaw plugins inspect openclaw-weixin --runtime --json
+paddy plugins enable paddy-weixin
+paddy plugins inspect paddy-weixin --runtime --json
 ```
 
-If the Gateway restarts repeatedly after enabling WeChat, update both OpenClaw and
+If the Gateway restarts repeatedly after enabling WeChat, update both Paddy and
 the plugin:
 
 ```bash
 npm view @tencent-weixin/openclaw-weixin version
-openclaw plugins install "@tencent-weixin/openclaw-weixin" --force
-openclaw gateway restart
+paddy plugins install "@tencent-weixin/paddy-weixin" --force
+paddy gateway restart
 ```
 
 If startup reports that the installed plugin package `requires compiled runtime
 output for TypeScript entry`, the npm package was published without the compiled
-JavaScript runtime files OpenClaw needs. Update/reinstall after the plugin
+JavaScript runtime files Paddy needs. Update/reinstall after the plugin
 publisher ships a fixed package, or temporarily disable/uninstall the plugin.
 
 Temporary disable:
 
 ```bash
-openclaw plugins disable openclaw-weixin
+paddy plugins disable paddy-weixin
 ```
 
 ## Related docs

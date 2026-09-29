@@ -7,7 +7,7 @@ const enSidebarAttention = {
     scopeUpgrade: {
       limited: "This browser has limited access.",
       guidance:
-        "This browser has limited access. Manage it with openclaw devices on the Gateway or from Devices on an admin browser.",
+        "This browser has limited access. Manage it with paddy devices on the Gateway or from Devices on an admin browser.",
       status: "Limited access",
       inboxState: "Administrator access required",
       showDetails: "Show limited access details",

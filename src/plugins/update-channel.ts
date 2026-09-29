@@ -364,7 +364,7 @@ async function syncPluginsForUpdateChannelWithLease(
                 phase: "update",
                 result,
               });
-        const message = `${failure}\nBundled relocation did not install the replacement plugin payload; resolve the error above, then run "openclaw update repair".`;
+        const message = `${failure}\nBundled relocation did not install the replacement plugin payload; resolve the error above, then run "paddy update repair".`;
         summary.errors.push({ pluginId: targetPluginId, message, code: result.code });
         logger.error?.(message);
         continue;

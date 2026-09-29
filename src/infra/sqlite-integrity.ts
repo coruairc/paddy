@@ -186,7 +186,7 @@ export class SqliteRepairableForeignKeyError extends Error {
 
   constructor(databaseLabel: string, orphanCount: number) {
     super(
-      `SQLite foreign_key_check failed for ${databaseLabel}: repairable task_delivery_state.task_id references task_runs.task_id cascade-owned orphans (${orphanCount} rows). Run openclaw doctor --fix to migrate this legacy state before retrying.`,
+      `SQLite foreign_key_check failed for ${databaseLabel}: repairable task_delivery_state.task_id references task_runs.task_id cascade-owned orphans (${orphanCount} rows). Run paddy doctor --fix to migrate this legacy state before retrying.`,
     );
     this.name = "SqliteRepairableForeignKeyError";
     this.repair = {
@@ -363,7 +363,7 @@ function runSqliteCheck(
   }
   const details = results.map((result) => String(result)).join("; ") || "no result";
   throw createSqliteIntegrityError(
-    `SQLite ${pragma} failed for ${databaseLabel}: ${details}. Run openclaw doctor --fix for explicit repair; if repair is refused, preserve the database and WAL and restore a verified backup.`,
+    `SQLite ${pragma} failed for ${databaseLabel}: ${details}. Run paddy doctor --fix for explicit repair; if repair is refused, preserve the database and WAL and restore a verified backup.`,
   );
 }
 

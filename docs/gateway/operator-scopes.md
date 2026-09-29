@@ -46,7 +46,7 @@ Personal GitHub connection management is a narrowly self-scoped exception to
 read-only behavior: `users.github.*` requires `operator.read` plus the exact
 authenticated durable profile. That person can connect, poll, cancel,
 reconnect, or disconnect only their own account. These methods do not expose
-team secrets, mutate shared configuration, or grant OpenClaw write/admin scopes. System
+team secrets, mutate shared configuration, or grant Paddy write/admin scopes. System
 and per-agent GitHub changes remain `operator.admin`.
 
 With `operator.sessions.write`, a requester can publish ordinary changes from
@@ -242,7 +242,7 @@ New requests use the updated source choices. Direct model requests, title
 previews, and user-invoked model completion or decision tools apply the same
 policy. Interactive plugin runtime attempts must certify exact model-policy
 enforcement before they can execute restricted requests, regardless of who supplies
-their credentials. Currently the built-in OpenClaw runtime supports these attempts;
+their credentials. Currently the built-in Paddy runtime supports these attempts;
 uncertified plugin runtimes, including Codex, refuse them with a compatible-runtime error.
 Adding a policy also cancels uncertified work that started without one, including
 retained work after its foreground turn finishes. An outer selected model does
@@ -275,7 +275,7 @@ per agent or per session. Different guests using the same agent receive separate
 sandbox environments and workspaces. Multiple sessions created by the same guest
 reuse that guest's environment and workspace. This per-guest boundary applies
 regardless of the configured sandbox scope. If the agent configures
-`workspaceAccess: "rw"`, OpenClaw reduces access to `"ro"` for role-required
+`workspaceAccess: "rw"`, Paddy reduces access to `"ro"` for role-required
 sessions and logs an `agent/sandbox` warning, preventing the shared agent
 workspace from becoming a writable bridge between guests. Maintainer sessions
 and other sessions without a role-required sandbox keep their configured scope
@@ -293,7 +293,7 @@ Required creation provenance is immutable. Role changes, sharing, participation,
 `sessions.patch`, whole-entry replacement, legacy imports, and canonical-key
 repair cannot remove or replace an existing required stamp. Blocked persisted
 overwrites emit a `session-sqlite` warning. Inspect them with
-[`openclaw logs --follow`](/cli/logs). Existing unstamped sessions and new sessions
+[`paddy logs --follow`](/cli/logs). Existing unstamped sessions and new sessions
 whose creator does not require sandboxing retain their existing behavior.
 
 A person whose role requires sandboxing cannot start a run in an existing
@@ -375,11 +375,11 @@ Connection authority is resolved in this order:
    device enrollment or upgrade requests. Device authorization then establishes
    the persistent scopes. A device-less session contributes no self-declared
    scopes.
-2. OpenClaw unions a matching server-side identity grant with those scopes.
-3. OpenClaw applies `x-openclaw-scopes` to the final union as the session cap.
+2. Paddy unions a matching server-side identity grant with those scopes.
+3. Paddy applies `x-openclaw-scopes` to the final union as the session cap.
    An absent header means no cap. A present-but-empty header yields no scopes.
 4. If the authenticated profile has an effective named operator role,
-   OpenClaw intersects the result with that role's configured scope ceiling.
+   Paddy intersects the result with that role's configured scope ceiling.
 
 The result is used for both `hello.auth.scopes` and Gateway method
 authorization. Identity grants are session-only: they do not create or modify
@@ -510,7 +510,7 @@ blocks an out-of-role result. The Control UI shows the denial and administrator
 guidance without **Retry**. An administrator must change the role first.
 
 The explicit exception is the administrator-capable Control UI owner profile
-issued directly on the Gateway host by `openclaw dashboard` or graphical
+issued directly on the Gateway host by `paddy dashboard` or graphical
 onboarding. Its short-lived, single-use bootstrap can approve the exact closed
 scope set for a fresh browser or upgrade an existing limited credential only
 when it binds to that same signed browser keypair. Generic Control UI and

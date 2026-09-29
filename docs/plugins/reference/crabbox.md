@@ -15,11 +15,11 @@ Cloud worker provider and lease-backed sandbox backend for the Crabbox CLI.
 ## Distribution
 
 - Package: `@openclaw/crabbox-provider`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 
-- CLI commands: `openclaw crabbox`
+- CLI commands: `paddy crabbox`
 - Contracts: `tools`, `workerProviders`
 - Skills
 

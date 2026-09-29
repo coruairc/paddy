@@ -134,6 +134,6 @@ export function throwSqliteSchemaMismatches(
   // Drift is repairable by the doctor migration owner, so the throw must name it:
   // callers surface this straight to operators, and the gateway refuses to start.
   throw new SqliteSchemaMismatchError(
-    `SQLite schema is incomplete or noncanonical for ${databaseLabel}: ${shown.join("; ")}; run openclaw doctor --fix to repair it.`,
+    `SQLite schema is incomplete or noncanonical for ${databaseLabel}: ${shown.join("; ")}; run paddy doctor --fix to repair it.`,
   );
 }

@@ -1,7 +1,7 @@
 ---
-summary: "Run the OpenClaw Gateway on ChromeOS inside a Crostini Linux container"
+summary: "Run the Paddy Gateway on ChromeOS inside a Crostini Linux container"
 read_when:
-  - Installing OpenClaw on a Chromebook or ChromeOS device
+  - Installing Paddy on a Chromebook or ChromeOS device
   - Debugging missing provider keys or a Gateway that is gone after a reboot
 title: "ChromeOS"
 ---
@@ -38,13 +38,13 @@ Run every command below inside that Terminal.
 2. Onboard and install the service:
 
    ```bash
-   openclaw onboard --install-daemon
+   paddy onboard --install-daemon
    ```
 
 3. Confirm the Gateway is running:
 
    ```bash
-   openclaw gateway status
+   paddy gateway status
    ```
 
 Full server guidance lives in the [Linux guide](/platforms/linux) and the
@@ -65,13 +65,13 @@ filesystem directly, so a Docker image rebuild cannot wipe it.
 
 ## Node version
 
-The Node version available in a Crostini container may be below OpenClaw's
-minimum. OpenClaw requires Node 24.16+ or Node 26.1+; Node 26
+The Node version available in a Crostini container may be below Paddy's
+minimum. Paddy requires Node 24.16+ or Node 26.1+; Node 26
 is the recommended default. The installer script detects a missing or
 unsupported Node version and provisions a supported release automatically.
 
-If you installed Node yourself before OpenClaw, upgrade it **before** installing
-OpenClaw:
+If you installed Node yourself before Paddy, upgrade it **before** installing
+Paddy:
 
 ```bash
 node -v
@@ -93,7 +93,7 @@ DEEPSEEK_API_KEY=your-key-here
 Then restart so the service picks them up:
 
 ```bash
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See [Environment variables](/help/environment) for the full precedence and
@@ -107,7 +107,7 @@ Do not treat Crostini as an always-on host. After a ChromeOS reboot, open the
 Then verify the service:
 
 ```bash
-openclaw gateway status
+paddy gateway status
 ```
 
 ## Related

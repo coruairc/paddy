@@ -76,7 +76,7 @@ In webhook mode, both `channels.feishu.webhookPath` and
 beginning with `/`, such as `/feishu/events`. An optional query string is
 supported and must match exactly. Full URLs, relative paths, URL fragments, dot
 segments, and unencoded spaces or Unicode are rejected. If an existing
-configuration contains a noncanonical path, run `openclaw doctor --fix` to
+configuration contains a noncanonical path, run `paddy doctor --fix` to
 repair it before starting the gateway.
 
 ## Gateway webhook route
@@ -120,7 +120,7 @@ only one key was set. The normal config backup protects the original
 settings. Existing canonical `legacyWebhook` settings, including `false`, win.
 An install that omitted both old settings keeps receiving traffic on port `3000`.
 
-When updating from a 2026.9.6 host with these old keys, first update OpenClaw core
+When updating from a 2026.9.6 host with these old keys, first update Paddy core
 to a release containing the [plugin-update migration repair](https://github.com/openclaw/openclaw/pull/160682).
 Then explicitly update any pinned Feishu package to your chosen release. The core
 updater preserves explicit plugin version pins. The updated installer applies
@@ -130,7 +130,7 @@ plugin-only update leaves the previous installation and settings intact.
 
 The deprecated TypeScript `webhookPort` and `webhookHost` input fields remain
 source-compatible until the next Plugin SDK major. Runtime config uses
-`legacyWebhook`; run `openclaw doctor --fix` to migrate the old keys.
+`legacyWebhook`; run `paddy doctor --fix` to migrate the old keys.
 
 To use only the Gateway port, update the Feishu callback URL or reverse-proxy
 upstream to the Gateway port and `webhookPath`, verify delivery, then set
@@ -138,7 +138,7 @@ upstream to the Gateway port and `webhookPath`, verify delivery, then set
 endpoint. Startup and Doctor print the destination and disable instruction.
 Doctor presents healthy endpoint guidance as information and path conflicts as
 warnings; disabled accounts and WebSocket accounts receive no webhook notes.
-OpenClaw cannot update callback URLs stored in the Feishu console.
+Paddy cannot update callback URLs stored in the Feishu console.
 
 The exact Gateway probe paths (`/health`, `/healthz`, `/ready`, `/readyz`,
 `/startup`, and `/startupz`, including query strings) cannot receive Feishu

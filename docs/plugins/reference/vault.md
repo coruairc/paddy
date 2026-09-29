@@ -15,11 +15,11 @@ HashiCorp Vault SecretRef provider integration.
 ## Distribution
 
 - Package: `@openclaw/vault`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 
-- CLI commands: `openclaw vault`
+- CLI commands: `paddy vault`
 
 ## Related docs
 

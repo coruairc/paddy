@@ -69,7 +69,7 @@ export async function runGitActivationBranchCheckStep(stepOptions: RunStepOption
         return {
           ...exists,
           stdout: "",
-          stderr: `Could not inspect local branch ${branch} before activation. Resolve the Git branch error, then rerun openclaw update.`,
+          stderr: `Could not inspect local branch ${branch} before activation. Resolve the Git branch error, then rerun paddy update.`,
         };
       }
       // Resetting a branch to its current ref is a ref/reflog no-op, but Git still
@@ -81,7 +81,7 @@ export async function runGitActivationBranchCheckStep(stepOptions: RunStepOption
             ...sanitized,
             stderr:
               `Cannot activate this dev update because a Git worktree uses or reserves branch ${branch}. ` +
-              `Finish or abort its rebase or bisect, or move it off ${branch}, then rerun openclaw update.`,
+              `Finish or abort its rebase or bisect, or move it off ${branch}, then rerun paddy update.`,
           }
         : sanitized;
     },

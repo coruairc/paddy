@@ -1,19 +1,19 @@
-# OpenClaw Kimi Coding Provider
+# Paddy Kimi Coding Provider
 
-Official OpenClaw provider plugin for Kimi Coding.
+Official Paddy provider plugin for Kimi Coding.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/kimi-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/moonshot> for setup and configuration.
 
 ## Quota errors
 
-Kimi can return HTTP 403 when a weekly usage limit is exhausted. OpenClaw treats
+Kimi can return HTTP 403 when a weekly usage limit is exhausted. Paddy treats
 explicit weekly, seven-day, or quota-reset errors as rate limits. Wait for the
 provider's quota window to reset or use another configured provider; replacing a
 valid API key does not restore quota. Invalid keys and access restrictions keep

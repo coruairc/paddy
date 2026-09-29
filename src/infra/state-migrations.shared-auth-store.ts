@@ -341,7 +341,7 @@ function copyRowsToState(params: MigrationSnapshot): AuthRows {
       }
       if (conflicts.length > 0) {
         throw new Error(
-          `shared auth rows conflict with the relocation target: ${conflicts.join("; ")}. Back up source ${JSON.stringify(params.sourcePath)} and target ${JSON.stringify(targetDatabasePath)} with ${PRODUCT_NAME} stopped. Preserve target-only profiles, copy missing source profiles into the target, and reconcile differing entries/metadata/state locally; then rerun openclaw doctor --fix. No auth rows were changed.`,
+          `shared auth rows conflict with the relocation target: ${conflicts.join("; ")}. Back up source ${JSON.stringify(params.sourcePath)} and target ${JSON.stringify(targetDatabasePath)} with ${PRODUCT_NAME} stopped. Preserve target-only profiles, copy missing source profiles into the target, and reconcile differing entries/metadata/state locally; then rerun paddy doctor --fix. No auth rows were changed.`,
         );
       }
       if (params.sourceRows.store && !target.store) {
@@ -510,7 +510,7 @@ export async function migrateSharedAuthStore(params: {
     return {
       changes: [],
       warnings: [
-        `Shared auth migration skipped: store held for agent main at ${sanitizeForLog(params.detected.sourcePath)}; run openclaw doctor --fix after restoring the agent.`,
+        `Shared auth migration skipped: store held for agent main at ${sanitizeForLog(params.detected.sourcePath)}; run paddy doctor --fix after restoring the agent.`,
       ],
       outcome: "skipped",
       warningDisposition: "recoverable",

@@ -261,7 +261,7 @@ async function runOwnedUpdateCommand(phase, commandArgv, timeoutMs, cwd = params
       });
       if (params.action === "triage") {
         admissionDeadline = setTimeout(() => {
-          appendLog("The installed update did not start diagnostics. Run openclaw triage manually.");
+          appendLog("The installed update did not start diagnostics. Run paddy triage manually.");
           stopTriageScope();
         }, 30000);
         leaseWatch = setInterval(() => {
@@ -321,7 +321,7 @@ async function runOwnedUpdateCommand(phase, commandArgv, timeoutMs, cwd = params
     );
     if (params.action === "triage" && !triageAdmitted) {
       appendLog(
-        "The installed update does not support automatic diagnostics. Run openclaw triage manually.",
+        "The installed update does not support automatic diagnostics. Run paddy triage manually.",
       );
       process.exitCode = 1;
     }

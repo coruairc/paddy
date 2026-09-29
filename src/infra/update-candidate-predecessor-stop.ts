@@ -245,14 +245,14 @@ export async function adoptCandidateManagedServiceStop(params: {
         throw cause;
       }
       throw new UpdateCommandRecoveryPendingError(
-        "Inspection of the Gateway stopped by update Doctor failed; recovery remains pending. Run openclaw gateway status --deep before resuming service recovery.",
+        "Inspection of the Gateway stopped by update Doctor failed; recovery remains pending. Run paddy gateway status --deep before resuming service recovery.",
         { cause },
       );
     }
     params.assertCurrent();
     if (!inspected.inspected || !inspected.runtimeInspected) {
       throw new UpdateCommandRecoveryPendingError(
-        "The Gateway stopped by update Doctor could not be inspected; recovery remains pending. Run openclaw gateway status --deep before resuming service recovery.",
+        "The Gateway stopped by update Doctor could not be inspected; recovery remains pending. Run paddy gateway status --deep before resuming service recovery.",
       );
     }
     const current = serviceIdentity(inspected, doctorStop.stoppedAtMs);

@@ -288,7 +288,7 @@ async function runBoundedCodexAppServerTurnInWorkspace(
           cwd: workspace.cwd,
           approvalPolicy: "on-request",
           sandbox: "read-only",
-          serviceName: "OpenClaw",
+          serviceName: "Paddy",
           ...(params.requireNoExternalCapabilities ? { baseInstructions: "" } : {}),
           developerInstructions: params.developerInstructions,
           config: threadConfig,

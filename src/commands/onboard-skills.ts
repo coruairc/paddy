@@ -204,8 +204,8 @@ export async function setupSkills(
     await prompter.note(
       [
         "No missing skill dependencies to install.",
-        `To inspect available skills, run: ${formatCliCommand("openclaw skills list --verbose")}`,
-        `To check skill status, run: ${formatCliCommand("openclaw skills check")}`,
+        `To inspect available skills, run: ${formatCliCommand("paddy skills list --verbose")}`,
+        `To check skill status, run: ${formatCliCommand("paddy skills check")}`,
       ].join("\n"),
       t("wizard.skills.allReadyTitle") ?? "All skills ready",
     );
@@ -314,7 +314,7 @@ export async function setupSkills(
         runtime.log(result.stdout.trim());
       }
       runtime.log(
-        `Tip: run \`${formatCliCommand("openclaw doctor")}\` to review skills + requirements.`,
+        `Tip: run \`${formatCliCommand("paddy doctor")}\` to review skills + requirements.`,
       );
       runtime.log(t("wizard.skills.docsLine"));
     }

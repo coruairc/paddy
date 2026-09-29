@@ -15,7 +15,7 @@ Public GitHub link previews and document reader.
 ## Distribution
 
 - Package: `@openclaw/github`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 

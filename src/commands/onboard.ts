@@ -48,7 +48,7 @@ function validatePreflightOptions(opts: OnboardOptions, runtime: RuntimeEnv): bo
     return rejectOption(
       opts,
       runtime,
-      `Invalid --mode "${String(opts.mode)}". Use "local" or "remote", or run ${formatCliCommand("openclaw onboard")} for interactive setup.`,
+      `Invalid --mode "${String(opts.mode)}". Use "local" or "remote", or run ${formatCliCommand("paddy onboard")} for interactive setup.`,
     );
   }
   const remoteOnlyFlags = [
@@ -144,7 +144,7 @@ function validatePreflightOptions(opts: OnboardOptions, runtime: RuntimeEnv): bo
       return rejectOption(
         opts,
         runtime,
-        `Environment variable "${gatewayTokenRefEnv}" is missing or empty. Export it first, then rerun ${formatCliCommand("openclaw onboard")}.`,
+        `Environment variable "${gatewayTokenRefEnv}" is missing or empty. Export it first, then rerun ${formatCliCommand("paddy onboard")}.`,
       );
     }
   }
@@ -152,7 +152,7 @@ function validatePreflightOptions(opts: OnboardOptions, runtime: RuntimeEnv): bo
     return rejectOption(
       opts,
       runtime,
-      `Missing --remote-url for remote mode. Example: ${formatCliCommand("openclaw onboard --non-interactive --accept-risk --mode remote --remote-url ws://127.0.0.1:3000")}.`,
+      `Missing --remote-url for remote mode. Example: ${formatCliCommand("paddy onboard --non-interactive --accept-risk --mode remote --remote-url ws://127.0.0.1:3000")}.`,
     );
   }
   if (opts.nonInteractive && opts.mode === "remote" && opts.remoteUrl?.trim()) {
@@ -169,7 +169,7 @@ function validatePreflightOptions(opts: OnboardOptions, runtime: RuntimeEnv): bo
     return rejectOption(
       opts,
       runtime,
-      `--import-from is required for non-interactive migration import. Run ${formatCliCommand("openclaw migrate list")} to choose a provider.`,
+      `--import-from is required for non-interactive migration import. Run ${formatCliCommand("paddy migrate list")} to choose a provider.`,
     );
   }
   return true;
@@ -222,7 +222,7 @@ async function validateResetAuthChoice(params: {
     return rejectOption(
       params.opts,
       params.runtime,
-      `Auth choice "${authChoice}" was not matched to a provider setup flow. Run ${formatCliCommand("openclaw onboard")} to choose interactively.`,
+      `Auth choice "${authChoice}" was not matched to a provider setup flow. Run ${formatCliCommand("paddy onboard")} to choose interactively.`,
     );
   }
   const providerAuthChoices: Array<ProviderAuthChoiceMetadata & { providerAliases?: string[] }> = [
@@ -579,7 +579,7 @@ export async function setupWizardCommand(
     rejectOption(
       normalizedOpts,
       runtime,
-      `Invalid --secret-input-mode. Use "plaintext" or "ref", or run ${formatCliCommand("openclaw onboard")} for the interactive setup.`,
+      `Invalid --secret-input-mode. Use "plaintext" or "ref", or run ${formatCliCommand("paddy onboard")} for the interactive setup.`,
     );
     return;
   }
@@ -588,7 +588,7 @@ export async function setupWizardCommand(
     rejectOption(
       normalizedOpts,
       runtime,
-      `Invalid --reset-scope. Use "config", "config+creds+sessions", or "full". Run ${formatCliCommand("openclaw onboard --reset --reset-scope config")} for a config-only reset.`,
+      `Invalid --reset-scope. Use "config", "config+creds+sessions", or "full". Run ${formatCliCommand("paddy onboard --reset --reset-scope config")} for a config-only reset.`,
     );
     return;
   }
@@ -596,7 +596,7 @@ export async function setupWizardCommand(
     rejectOption(
       normalizedOpts,
       runtime,
-      `--reset-scope requires --reset. Re-run with ${formatCliCommand(`openclaw onboard --reset --reset-scope ${normalizedOpts.resetScope}`)}.`,
+      `--reset-scope requires --reset. Re-run with ${formatCliCommand(`paddy onboard --reset --reset-scope ${normalizedOpts.resetScope}`)}.`,
     );
     return;
   }
@@ -610,7 +610,7 @@ export async function setupWizardCommand(
       [
         "Non-interactive setup requires explicit risk acknowledgement.",
         "Read: https://docs.openclaw.ai/security",
-        `Re-run with: ${formatCliCommand("openclaw onboard --non-interactive --accept-risk ...")}`,
+        `Re-run with: ${formatCliCommand("paddy onboard --non-interactive --accept-risk ...")}`,
       ].join("\n"),
     );
     return;

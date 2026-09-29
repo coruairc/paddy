@@ -2,13 +2,13 @@
 summary: "Choose and configure Google Meet, Microsoft Teams, Slack huddles, or Zoom participation"
 doc-schema-version: 1
 read_when:
-  - You want an OpenClaw agent to join a video meeting
+  - You want a Paddy agent to join a video meeting
   - You are choosing between the Google Meet, Microsoft Teams meetings, Slack huddles, and Zoom meetings plugins
   - You need the shared Chrome, virtual-audio, or meeting-mode setup
 title: "Meeting plugins"
 ---
 
-OpenClaw has separate plugins for Google Meet, Microsoft Teams meetings, Slack huddles, and Zoom. All four can join through Chrome, use the same participation modes, and run Chrome either on the Gateway host or on a paired node. Their platform URLs, accounts, installation model, and extra capabilities differ.
+Paddy has separate plugins for Google Meet, Microsoft Teams meetings, Slack huddles, and Zoom. All four can join through Chrome, use the same participation modes, and run Chrome either on the Gateway host or on a paired node. Their platform URLs, accounts, installation model, and extra capabilities differ.
 
 These plugins participate in meetings. They are separate from messaging channels such as the [Microsoft Teams channel](/channels/msteams) and [Slack channel](/channels/slack), and from the [Voice call plugin](/plugins/voice-call).
 
@@ -24,7 +24,7 @@ These plugins participate in meetings. They are separate from messaging channels
 Choose Google Meet when you need meeting creation, Google API artifacts, or a Twilio phone path. Choose Teams or Zoom for direct browser guest participation on those platforms. The Teams and Zoom plugins do not create meetings, dial in, call the vendor API, or capture audio/video recordings.
 
 Choose Slack huddles to call the agent into an active huddle. It requires a
-dedicated Slack user signed into the OpenClaw Chrome profile with membership in
+dedicated Slack user signed into the Paddy Chrome profile with membership in
 the conversation. Slack app and bot tokens cannot join huddles or read their
 audio. The plugin does not start huddles or answer incoming rings.
 
@@ -34,11 +34,11 @@ The four plugins share the same modes:
 
 | Mode         | Behavior                                                                                              | Audio requirements                                           |
 | ------------ | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `agent`      | Realtime transcription goes to the configured OpenClaw agent; regular OpenClaw TTS speaks the reply.  | Chrome talk-back requires a supported virtual-audio backend. |
-| `bidi`       | A realtime voice model listens and replies directly, with OpenClaw agent delegation when supported.   | Chrome talk-back requires a supported virtual-audio backend. |
+| `agent`      | Realtime transcription goes to the configured Paddy agent; regular Paddy TTS speaks the reply.        | Chrome talk-back requires a supported virtual-audio backend. |
+| `bidi`       | A realtime voice model listens and replies directly, with Paddy agent delegation when supported.      | Chrome talk-back requires a supported virtual-audio backend. |
 | `transcribe` | Joins observe-only and exposes a bounded live-caption transcript when the platform provides captions. | No virtual-audio bridge.                                     |
 
-Use `transcribe` when the agent only needs meeting text. Use `agent` for normal OpenClaw reasoning and tools. Use `bidi` when low-latency direct voice is more important than routing each turn through the regular agent.
+Use `transcribe` when the agent only needs meeting text. Use `agent` for normal Paddy reasoning and tools. Use `bidi` when low-latency direct voice is more important than routing each turn through the regular agent.
 
 Google Meet, Teams, Slack huddles, and Zoom use one shared meeting audio engine. In `bidi`
 mode they support GPT-Live through the same provider selection, native agent
@@ -47,7 +47,7 @@ interruptions; participant audio stays open while the model speaks.
 
 In `bidi` mode, recoverable provider diagnostics are logged without stopping the audio bridge. Providers that support reconnecting own that recovery. Terminal provider closure, exhausted recovery, failed initial setup, and local audio-transport failures still stop the bridge; leaving the meeting also stops it.
 
-Stopping a meeting requests cancellation of any active agent consult. In `agent` mode, OpenClaw finishes active output and turn events before closing the session, then ignores late speech synthesis and audio delivery results.
+Stopping a meeting requests cancellation of any active agent consult. In `agent` mode, Paddy finishes active output and turn events before closing the session, then ignores late speech synthesis and audio delivery results.
 
 Leaving also waits for audio startup already admitted by that session and stops the resulting runtime before reporting completion. If a join fails after attaching a runtime and cleanup cannot finish, status keeps the ended session visible so `leave` can retry. A replacement for the same meeting waits for pending audio startup or stop work and can reject if audio cleanup still fails; other meetings remain independent. Browser leave results remain separate: a settled browser-only leave failure remains retryable without permanently blocking another join.
 
@@ -56,7 +56,7 @@ three modes, browser joins also persist completed caption rows and meeting notes
 to the shared state database. Notes update about every five minutes when new
 speech is saved, using the meeting agent's utility model with primary-model and
 heuristic fallbacks. Leaving the meeting finalizes visible captions and writes
-the final summary; use [`openclaw transcripts`](/cli/transcripts)
+the final summary; use [`paddy transcripts`](/cli/transcripts)
 to list, inspect, or export it. This durable notes path does not change the live
 agent-consult transcript or create an audio/video recording.
 
@@ -80,7 +80,7 @@ Chrome on a paired node:
       "teams-meetings": {
         config: {
           defaultMode: "agent",
-          chrome: { guestName: "OpenClaw Agent" },
+          chrome: { guestName: "Paddy Agent" },
           chromeNode: { node: "meeting-node" },
         },
       },
@@ -98,7 +98,7 @@ For Slack, use `"slack-huddles"`, enable the plugin explicitly, and follow its
 | -------------------------------- | --------------------------------------------------------------------------------- |
 | `defaultMode`                    | `agent` (default), `bidi`, or `transcribe`                                        |
 | `chrome.guestName`               | Guest display name entered on the platform prejoin page                           |
-| `chrome.browserProfile`          | OpenClaw browser profile used for the meeting                                     |
+| `chrome.browserProfile`          | Paddy browser profile used for the meeting                                        |
 | `chrome.audioBackend`            | `auto` (default), `blackhole-2ch`, or `pipewire-pulse`                            |
 | `chromeNode.node`                | Paired node id, name, or IP that owns Chrome and the native virtual-audio backend |
 | `realtime.transcriptionProvider` | Realtime transcription provider used by `agent` mode                              |
@@ -110,11 +110,11 @@ For Slack, use `"slack-huddles"`, enable the plugin explicitly, and follow its
 For GPT-Live with Cove, set `defaultMode: "bidi"`,
 `realtime.voiceProvider: "openai"`, `realtime.model: "gpt-live-1-codex"`, and
 `realtime.providers.openai.voice: "cove"`. Sign in with
-`openclaw models auth login --provider openai` on the Gateway host. The
+`paddy models auth login --provider openai` on the Gateway host. The
 [Google Meet configuration example](/plugins/google-meet/config#gpt-live-with-cove)
 uses the same fields; substitute `teams-meetings`, `slack-huddles`, or `zoom-meetings` for the
 plugin entry. Unpinned configurations keep their provider's default model.
-`agent` mode continues to use regular OpenClaw TTS.
+`agent` mode continues to use regular Paddy TTS.
 
 ## Prepare Chrome and audio
 
@@ -136,7 +136,7 @@ system_profiler SPAudioDataType | grep -i BlackHole
 command -v sox
 ```
 
-On a Linux desktop with PipeWire-Pulse, install the PulseAudio command-line tools. OpenClaw creates and reuses an `OpenClaw Meeting Audio` null sink and matching source in the desktop user's audio session:
+On a Linux desktop with PipeWire-Pulse, install the PulseAudio command-line tools. Paddy creates and reuses an `Paddy Meeting Audio` null sink and matching source in the desktop user's audio session:
 
 ```bash
 # Debian/Ubuntu
@@ -148,7 +148,7 @@ command -v pactl pacat parec
 
 Run the Gateway or paired node as the same desktop user that runs Chrome. A root service or headless service without that user's `XDG_RUNTIME_DIR` cannot access the PipeWire-Pulse socket and fails setup with an actionable error.
 
-The Gateway host still owns the OpenClaw agent and model credentials when Chrome runs on a paired node. Configure a realtime transcription provider and OpenClaw TTS for `agent` mode, or a realtime voice provider for `bidi` mode. The platform guides contain the provider and audio-command options.
+The Gateway host still owns the Paddy agent and model credentials when Chrome runs on a paired node. Configure a realtime transcription provider and Paddy TTS for `agent` mode, or a realtime voice provider for `bidi` mode. The platform guides contain the provider and audio-command options.
 
 Chrome sessions without an explicit `chrome.audioInputCommand` capture participant audio directly from browser
 playback and keep that playback off the virtual microphone. The native output
@@ -173,29 +173,29 @@ setting up its dedicated user account:
 openclaw plugins install @openclaw/google-meet
 openclaw plugins install @openclaw/teams-meetings
 openclaw plugins install @openclaw/slack-huddles
-openclaw plugins enable slack-huddles
+paddy plugins enable slack-huddles
 openclaw plugins install @openclaw/zoom-meetings
 ```
 
 Disable any meeting plugin you do not use:
 
 ```bash
-openclaw plugins disable google-meet
-openclaw plugins disable teams-meetings
-openclaw plugins disable slack-huddles
-openclaw plugins disable zoom-meetings
+paddy plugins disable google-meet
+paddy plugins disable teams-meetings
+paddy plugins disable slack-huddles
+paddy plugins disable zoom-meetings
 ```
 
 These changes apply to a running Gateway automatically. If it is offline, start it before joining. Check the application result, then run the platform setup check below; see [Apply changes and inspect](/plugins/manage-plugins#apply-changes-and-inspect).
 
 ## Verify and join
 
-| Platform        | Setup check                    | Join command                                                                  |
-| --------------- | ------------------------------ | ----------------------------------------------------------------------------- |
-| Google Meet     | `openclaw googlemeet setup`    | `openclaw googlemeet join 'https://meet.google.com/abc-defg-hij'`             |
-| Microsoft Teams | `openclaw teamsmeetings setup` | `openclaw teamsmeetings join 'https://teams.microsoft.com/l/meetup-join/...'` |
-| Slack huddles   | `openclaw slackhuddles setup`  | `openclaw slackhuddles join 'channel:C0123ABCD'`                              |
-| Zoom            | `openclaw zoommeetings setup`  | `openclaw zoommeetings join 'https://zoom.us/j/1234567890'`                   |
+| Platform        | Setup check                 | Join command                                                               |
+| --------------- | --------------------------- | -------------------------------------------------------------------------- |
+| Google Meet     | `paddy googlemeet setup`    | `paddy googlemeet join 'https://meet.google.com/abc-defg-hij'`             |
+| Microsoft Teams | `paddy teamsmeetings setup` | `paddy teamsmeetings join 'https://teams.microsoft.com/l/meetup-join/...'` |
+| Slack huddles   | `paddy slackhuddles setup`  | `paddy slackhuddles join 'channel:C0123ABCD'`                              |
+| Zoom            | `paddy zoommeetings setup`  | `paddy zoommeetings join 'https://zoom.us/j/1234567890'`                   |
 
 Treat any failed setup check as a blocker for that transport and mode. For an observe-only smoke test, select `transcribe` mode and confirm that status reports an in-call session before expecting caption text.
 
@@ -213,13 +213,13 @@ Browser automation handles the normal guest-name, prejoin camera and microphone,
 - Slack huddles requires a signed-in user and an active huddle; confirmation, another device, request-to-join, or browser permissions can require manual action. Enable the account's captions-on-join preference for caption transcripts.
 - Zoom may require authentication, email verification, a passcode, CAPTCHA completion, or host admission; an account can also disable browser join.
 
-When a join or status result includes `manualAction`, complete its reported step in the same OpenClaw Chrome profile before retrying. Repeatedly opening new tabs does not resolve an account, tenant, lobby, or CAPTCHA gate.
+When a join or status result includes `manualAction`, complete its reported step in the same Paddy Chrome profile before retrying. Repeatedly opening new tabs does not resolve an account, tenant, lobby, or CAPTCHA gate.
 
 Only join meetings where the operator is authorized to add an agent. Tell participants when local policy or consent rules require disclosure of automated participation, transcription, or synthesized speech.
 
 ## Discord voice chat
 
-[Discord voice channels](/channels/discord/voice-channels#voice-channels) provide native, audio-only realtime conversation without browser meeting automation. OpenClaw can join a voice channel, listen, route turns through an OpenClaw agent or realtime voice model, and speak replies. It does not send or receive camera video or screen sharing, even when people use video in the same Discord channel, so Discord voice is a related live-conversation surface rather than a browser meeting plugin.
+[Discord voice channels](/channels/discord/voice-channels#voice-channels) provide native, audio-only realtime conversation without browser meeting automation. Paddy can join a voice channel, listen, route turns through a Paddy agent or realtime voice model, and speak replies. It does not send or receive camera video or screen sharing, even when people use video in the same Discord channel, so Discord voice is a related live-conversation surface rather than a browser meeting plugin.
 
 ## Platform guides
 

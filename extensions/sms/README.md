@@ -1,6 +1,6 @@
-# SMS/MMS OpenClaw channel
+# SMS/MMS Paddy channel
 
-Official OpenClaw channel plugin for Twilio SMS and MMS.
+Official Paddy channel plugin for Twilio SMS and MMS.
 
 ## Install
 

@@ -1,6 +1,6 @@
 # @openclaw/voice-call
 
-Official Voice Call plugin for **OpenClaw**.
+Official Voice Call plugin for **Paddy**.
 
 Providers:
 
@@ -102,7 +102,7 @@ Notes:
 - Twilio defaults to US1. For a non-US Region, set `twilio.region` to `ie1` or `au1` and use credentials created in that Region; see [Twilio's regional REST API guide](https://www.twilio.com/docs/global-infrastructure/using-the-twilio-rest-api-in-a-non-us-region).
 - `mock` is a local dev provider (no network calls).
 - Telnyx requires `telnyx.publicKey` (or `TELNYX_PUBLIC_KEY`) unless `skipSignatureVerification` is true.
-- Runtime accepts canonical config only. If older configs still use `provider: "log"`, `twilio.from`, or legacy `streaming.*` OpenAI keys, run `openclaw doctor --fix` to rewrite them.
+- Runtime accepts canonical config only. If older configs still use `provider: "log"`, `twilio.from`, or legacy `streaming.*` OpenAI keys, run `paddy doctor --fix` to rewrite them.
 - advanced webhook, streaming, and tunnel notes: `https://docs.openclaw.ai/plugins/voice-call`
 - `responseModel` is optional. When unset, voice responses use the runtime default model.
 - `sessionScope` defaults to `per-phone`, preserving caller memory across calls. Use `per-call` for reception, booking, IVR, and bridge flows where each carrier call should start fresh. Use `main` to share the configured agent's main session (`agent:<agentId>:main`, or `global` when core `session.scope` is `"global"`). Custom core `session.mainKey` values are ignored.
@@ -123,14 +123,14 @@ streaming speech on calls. Override examples and provider caveats live here:
 ## CLI
 
 ```bash
-openclaw voicecall call --to "+15555550123" --message "Hello from OpenClaw"
-openclaw voicecall continue --call-id <id> --message "Any questions?"
-openclaw voicecall speak --call-id <id> --message "One moment"
-openclaw voicecall end --call-id <id>
-openclaw voicecall status --json
-openclaw voicecall status --call-id <id>
-openclaw voicecall tail
-openclaw voicecall expose --mode funnel
+paddy voicecall call --to "+15555550123" --message "Hello from Paddy"
+paddy voicecall continue --call-id <id> --message "Any questions?"
+paddy voicecall speak --call-id <id> --message "One moment"
+paddy voicecall end --call-id <id>
+paddy voicecall status --json
+paddy voicecall status --call-id <id>
+paddy voicecall tail
+paddy voicecall expose --mode funnel
 ```
 
 ## Tool

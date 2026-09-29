@@ -935,7 +935,7 @@ export function stateIntegrityIssueToHealthFinding(
         message:
           "State directory is missing. Sessions, credentials, logs, and config are stored there.",
         path: issue.path,
-        fixHint: "Run `openclaw doctor --fix` to create the state directory.",
+        fixHint: "Run `paddy doctor --fix` to create the state directory.",
       };
     case "state-dir-not-writable":
       return {
@@ -945,7 +945,7 @@ export function stateIntegrityIssueToHealthFinding(
           ? `State directory is not writable. ${issue.hint}`
           : "State directory is not writable.",
         path: issue.path,
-        fixHint: "Run `openclaw doctor --fix` to repair state directory permissions.",
+        fixHint: "Run `paddy doctor --fix` to repair state directory permissions.",
       };
     case "state-dir-too-open":
       return {
@@ -953,7 +953,7 @@ export function stateIntegrityIssueToHealthFinding(
         severity: "warning",
         message: "State directory permissions are too open. Recommend chmod 700.",
         path: issue.path,
-        fixHint: "Run `openclaw doctor --fix` to tighten state directory permissions.",
+        fixHint: "Run `paddy doctor --fix` to tighten state directory permissions.",
       };
     case "config-file-too-open":
       return {
@@ -961,7 +961,7 @@ export function stateIntegrityIssueToHealthFinding(
         severity: "warning",
         message: "Config file is group/world readable. Recommend chmod 600.",
         path: issue.path,
-        fixHint: "Run `openclaw doctor --fix` to tighten config file permissions.",
+        fixHint: "Run `paddy doctor --fix` to tighten config file permissions.",
       };
     case "missing-runtime-dir":
       return {
@@ -969,7 +969,7 @@ export function stateIntegrityIssueToHealthFinding(
         severity: "error",
         message: `${issue.label} is missing.`,
         path: issue.path,
-        fixHint: "Run `openclaw doctor --fix` to create missing runtime state directories.",
+        fixHint: "Run `paddy doctor --fix` to create missing runtime state directories.",
       };
     case "runtime-dir-not-writable":
       return {
@@ -979,7 +979,7 @@ export function stateIntegrityIssueToHealthFinding(
           ? `${issue.label} is not writable. ${issue.hint}`
           : `${issue.label} is not writable.`,
         path: issue.path,
-        fixHint: "Run `openclaw doctor --fix` to repair runtime state directory permissions.",
+        fixHint: "Run `paddy doctor --fix` to repair runtime state directory permissions.",
       };
   }
   return assertNeverStateIntegrityIssue(issue);
@@ -1382,12 +1382,12 @@ export async function noteStateIntegrity(
         warnings.push(
           [
             `- Found ${wedgedCount} with automatic restart recovery tombstoned.`,
-            "  OpenClaw will not auto-resume these child sessions on restart; use Doctor to repair stale native subagent recovery state.",
+            "  Paddy will not auto-resume these child sessions on restart; use Doctor to repair stale native subagent recovery state.",
             `  Examples: ${wedgedSubagentSessions
               .slice(0, 3)
               .map(({ key }) => key)
               .join(", ")}`,
-            `  Fix: ${formatCliCommand("openclaw doctor --fix")}`,
+            `  Fix: ${formatCliCommand("paddy doctor --fix")}`,
           ].join("\n"),
         );
         const repairWedged = await prompter.confirmRuntimeRepair({

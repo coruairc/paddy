@@ -191,7 +191,7 @@ function formatLoadFailureDetail(message: string): string {
   const reason = isLikelyDependencyTreeCorruption(message)
     ? "dependency tree corrupted"
     : "registration failed";
-  return `plugin load failed: ${reason}; run openclaw doctor --fix`;
+  return `plugin load failed: ${reason}; run paddy doctor --fix`;
 }
 
 /** Builds the `status --all` channel summary and per-account detail tables. */

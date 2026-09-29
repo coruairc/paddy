@@ -1,13 +1,13 @@
-# OpenClaw BytePlus Provider
+# Paddy BytePlus Provider
 
-Official OpenClaw provider plugin for BytePlus model inference and Seedance
+Official Paddy provider plugin for BytePlus model inference and Seedance
 video generation.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/byteplus-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 Set `BYTEPLUS_API_KEY`, then select a `byteplus/*` or `byteplus-plan/*` model.

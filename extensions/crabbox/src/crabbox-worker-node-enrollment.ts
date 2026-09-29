@@ -151,8 +151,9 @@ setPhase("preparation");
     if (manifest.name !== "openclaw" || manifest.version !== bootstrap.openclawVersion) throw new Error("Cloud worker bootstrap package identity does not match the Gateway");
     const probe = spawnSync(process.execPath, [path.join(packageRoot, "openclaw.mjs"), "--version"], { env: nodeEnv, encoding: "utf8", timeout: 60000 });
     const version = probe.stdout?.trim();
-    const expected = "OpenClaw " + bootstrap.openclawVersion;
-    if (probe.status !== 0 || (version !== expected && !version?.startsWith(expected + " "))) throw new Error("Cloud worker bootstrap CLI could not verify its Gateway version");
+    const expectedPrefixes = ["Paddy ", "Paddy "];
+    const matchesVersion = expectedPrefixes.some((prefix) => version === prefix + bootstrap.openclawVersion || version?.startsWith(prefix + bootstrap.openclawVersion + " "));
+    if (probe.status !== 0 || !matchesVersion) throw new Error("Cloud worker bootstrap CLI could not verify its Gateway version");
   };
   const verifyArchive = async (source, artifact) => {
     const hash = crypto.createHash("sha256");

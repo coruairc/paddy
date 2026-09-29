@@ -126,12 +126,12 @@ export function formatUpdateAvailableHint(update: UpdateCheckResult): string | n
     details.push(`npm ${availability.latestVersion}`);
   }
   const suffix = details.length > 0 ? ` (${details.join(" · ")})` : "";
-  return `Update available${suffix}. Run: ${formatCliCommand("openclaw update")}`;
+  return `Update available${suffix}. Run: ${formatCliCommand("paddy update")}`;
 }
 
 export function formatUpdateOneLiner(update: UpdateCheckResult): string {
   if (update.error) {
-    return `Update: update status ${update.error.status}: ${update.error.message}; run ${formatCliCommand("openclaw update status")}`;
+    return `Update: update status ${update.error.status}: ${update.error.message}; run ${formatCliCommand("paddy update status")}`;
   }
   const parts: string[] = [];
 

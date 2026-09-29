@@ -1,5 +1,5 @@
 ---
-summary: "CLI reference for `openclaw plugins` (init, build, validate, list, install, reload, marketplace, uninstall, enable/disable, doctor)"
+summary: "CLI reference for `paddy plugins` (init, build, validate, list, install, reload, marketplace, uninstall, enable/disable, doctor)"
 read_when:
   - You want to install or manage Gateway plugins or compatible bundles
   - You want to scaffold or validate a simple tool plugin
@@ -8,7 +8,7 @@ title: "Plugins CLI"
 sidebarTitle: "Plugins"
 ---
 
-# `openclaw plugins`
+# `paddy plugins`
 
 Manage Gateway plugins, hook packs, and compatible bundles.
 
@@ -33,26 +33,26 @@ Manage Gateway plugins, hook packs, and compatible bundles.
 ## Commands
 
 ```bash
-openclaw plugins list [--enabled] [--verbose] [--json]
-openclaw plugins search <query> [--limit <n>] [--json]
-openclaw plugins install <path-or-spec> [--link] [--force] [--pin] [--no-enable] [--accept-capabilities] [--acknowledge-install-policy-warning] [--marketplace <source>]
-openclaw plugins inspect <id> [--runtime] [--json]
-openclaw plugins inspect --all [--runtime] [--json]
-openclaw plugins info <id>                    # alias for inspect
-openclaw plugins enable <ids...> [--accept-capabilities]
-openclaw plugins disable <ids...>
-openclaw plugins reload <ids...> [--wait] [--accept-capabilities] [--json]
-openclaw plugins uninstall <ids...> [--dry-run] [--keep-files] [--force]
-openclaw plugins update <ids-or-npm-specs...> | --all [--dry-run]
-openclaw plugins registry [--refresh] [--json]
-openclaw plugins doctor [--json]
-openclaw plugins init <id> [--name <name>] [--type tool|provider|feature] [--directory <path>]
-openclaw plugins build [--root <path>] [--entry <path>] [--check]
-openclaw plugins validate [--root <path>] [--entry <path>] [--json]
-openclaw plugins pack [--root <path>] [--out <file.tgz>] [--json]
-openclaw plugins marketplace entries [--offline] [--feed-profile <name>] [--json]
-openclaw plugins marketplace list <source> [--json]
-openclaw plugins marketplace refresh [--feed-profile <name>] [--expected-sha256 <sha256>] [--json]
+paddy plugins list [--enabled] [--verbose] [--json]
+paddy plugins search <query> [--limit <n>] [--json]
+paddy plugins install <path-or-spec> [--link] [--force] [--pin] [--no-enable] [--accept-capabilities] [--acknowledge-install-policy-warning] [--marketplace <source>]
+paddy plugins inspect <id> [--runtime] [--json]
+paddy plugins inspect --all [--runtime] [--json]
+paddy plugins info <id>                    # alias for inspect
+paddy plugins enable <ids...> [--accept-capabilities]
+paddy plugins disable <ids...>
+paddy plugins reload <ids...> [--wait] [--accept-capabilities] [--json]
+paddy plugins uninstall <ids...> [--dry-run] [--keep-files] [--force]
+paddy plugins update <ids-or-npm-specs...> | --all [--dry-run]
+paddy plugins registry [--refresh] [--json]
+paddy plugins doctor [--json]
+paddy plugins init <id> [--name <name>] [--type tool|provider|feature] [--directory <path>]
+paddy plugins build [--root <path>] [--entry <path>] [--check]
+paddy plugins validate [--root <path>] [--entry <path>] [--json]
+paddy plugins pack [--root <path>] [--out <file.tgz>] [--json]
+paddy plugins marketplace entries [--offline] [--feed-profile <name>] [--json]
+paddy plugins marketplace list <source> [--json]
+paddy plugins marketplace refresh [--feed-profile <name>] [--expected-sha256 <sha256>] [--json]
 ```
 
 For slow install, inspect, uninstall, or registry-refresh investigation, run the
@@ -64,7 +64,7 @@ In Nix mode (`OPENCLAW_NIX_MODE=1`), `openclaw.json` is immutable. `install`, `u
 </Note>
 
 <Note>
-Bundled plugins ship with OpenClaw. A little over half are enabled by default — mostly model and speech providers, plus a few others such as the bundled browser plugin. Other bundled plugins need explicit enablement or relevant configuration. Enabled does not mean currently in use. Provider use depends on configuration and requests. Providers that require authentication need credentials; keyless providers such as Microsoft speech do not. An enabled entry in `plugins list` does not mean the plugin is doing work.
+Bundled plugins ship with Paddy. A little over half are enabled by default — mostly model and speech providers, plus a few others such as the bundled browser plugin. Other bundled plugins need explicit enablement or relevant configuration. Enabled does not mean currently in use. Provider use depends on configuration and requests. Providers that require authentication need credentials; keyless providers such as Microsoft speech do not. An enabled entry in `plugins list` does not mean the plugin is doing work.
 
 Native OpenClaw plugins ship `openclaw.plugin.json` with an inline JSON Schema (`configSchema`, even if empty). Compatible bundles use their own bundle manifests instead.
 
@@ -73,7 +73,7 @@ Native OpenClaw plugins ship `openclaw.plugin.json` with an inline JSON Schema (
 
 ## Plugins pages
 
-This page is an index. `openclaw plugins` is documented on six pages, one per
+This page is an index. `paddy plugins` is documented on six pages, one per
 reader job. Open the page that matches your task.
 
 | Page                                                              | Read it when                                                                     |

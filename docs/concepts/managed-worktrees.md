@@ -4,11 +4,11 @@ read_when:
   - You want an isolated branch and checkout for an agent task
   - You are configuring Workboard cards with worktree workspaces
   - You want to store managed worktrees on another disk or in a custom folder
-  - You need to restore or clean up an OpenClaw-managed worktree
+  - You need to restore or clean up a Paddy-managed worktree
 title: "Managed worktrees"
 ---
 
-Managed worktrees give an agent task its own git branch and checkout without placing temporary directories inside the source repository. OpenClaw records them in the shared state database and snapshots their tracked and non-ignored untracked contents before removal.
+Managed worktrees give an agent task its own git branch and checkout without placing temporary directories inside the source repository. Paddy records them in the shared state database and snapshots their tracked and non-ignored untracked contents before removal.
 
 ## Sandboxed sessions
 
@@ -37,9 +37,9 @@ By default, OpenClaw stores managed checkouts under `<openclaw-state-dir>/worktr
 
 Use an absolute path on the Gateway host, `~` for the Gateway user's home directory, or a path beginning with `~/` for a folder inside it. Relative paths are rejected. The Gateway user must be able to create and write to the directory.
 
-This setting applies to all managed worktrees, including session, manual, and Workboard worktrees; there is no per-agent override. It changes checkout storage only. The shared state database, snapshots of provisioned ignored files, allocation limits, and cleanup lifecycle remain associated with the same OpenClaw state directory.
+This setting applies to all managed worktrees, including session, manual, and Workboard worktrees; there is no per-agent override. It changes checkout storage only. The shared state database, snapshots of provisioned ignored files, allocation limits, and cleanup lifecycle remain associated with the same Paddy state directory.
 
-Changing `worktreeRoot` affects new allocations. Existing registered worktrees keep their recorded paths for reuse and cleanup, and removed worktrees restore to their original paths. OpenClaw does not move existing checkouts or snapshots when this setting changes. Keep their original storage available until those worktrees are no longer needed.
+Changing `worktreeRoot` affects new allocations. Existing registered worktrees keep their recorded paths for reuse and cleanup, and removed worktrees restore to their original paths. Paddy does not move existing checkouts or snapshots when this setting changes. Keep their original storage available until those worktrees are no longer needed.
 
 Outside the default state-owned worktree directory, cleanup acts only on registered worktrees and acceleration templates. It leaves unrelated, unregistered folders in your custom location alone.
 
@@ -47,7 +47,7 @@ See [Configuration reference](/gateway/config-runtime#worktreeroot) for the opti
 
 ## Filesystem acceleration
 
-OpenClaw automatically uses filesystem acceleration for new managed worktrees when supported. Linux uses native Btrfs snapshots without requiring the `btrfs` command. macOS uses a native APFS directory clone, preserving independent file contents, executable modes, and symbolic links. Windows uses ReFS block clones, including on Dev Drive volumes. OpenClaw keeps the template on the same writable filesystem as the new checkout; the source repository can be on another filesystem. Git configurations with checkout filters, sparse checkout, per-worktree configuration, or external attributes use normal Git checkout.
+Paddy automatically uses filesystem acceleration for new managed worktrees when supported. Linux uses native Btrfs snapshots without requiring the `btrfs` command. macOS uses a native APFS directory clone, preserving independent file contents, executable modes, and symbolic links. Windows uses ReFS block clones, including on Dev Drive volumes. Paddy keeps the template on the same writable filesystem as the new checkout; the source repository can be on another filesystem. Git configurations with checkout filters, sparse checkout, per-worktree configuration, or external attributes use normal Git checkout.
 
 To opt out, set:
 
@@ -61,21 +61,21 @@ Omitting the option or setting it to `true` enables automatic selection. Setting
 
 APFS and Btrfs operations use isolated native helpers without changing the Gateway process's filesystem configuration. The Gateway and these helpers retain fs-safe's `auto` native default. An explicit `FS_SAFE_NATIVE_MODE=off` or `OPENCLAW_FS_SAFE_NATIVE_MODE=off` also disables these helpers. Read-only metadata workers can stop on cancellation; recovery waits for a write helper to exit before touching its destination.
 
-On Windows, point `worktreeRoot` at a directory on a ReFS volume, such as `D:\worktrees`. ReFS provides file block cloning rather than a writable directory snapshot: OpenClaw creates the directory tree and clones each file's data. Full clusters can share storage; partial file tails and filesystem metadata still consume space. The Gateway needs ordinary file access, not administrator access, to clone worktrees on an existing volume.
+On Windows, point `worktreeRoot` at a directory on a ReFS volume, such as `D:\worktrees`. ReFS provides file block cloning rather than a writable directory snapshot: Paddy creates the directory tree and clones each file's data. Full clusters can share storage; partial file tails and filesystem metadata still consume space. The Gateway needs ordinary file access, not administrator access, to clone worktrees on an existing volume.
 
-OpenClaw maintains one reusable source-only template per repository and destination root. It rebuilds the template when the requested commit or checkout policy changes, and cleanup retires templates unused for seven days. Git continues to own worktree registration, indexes, and branches; the filesystem backend supplies the shared file contents.
+Paddy maintains one reusable source-only template per repository and destination root. It rebuilds the template when the requested commit or checkout policy changes, and cleanup retires templates unused for seven days. Git continues to own worktree registration, indexes, and branches; the filesystem backend supplies the shared file contents.
 
 New checkouts with no file data, including empty session workspaces, use normal Git checkout without preparing or cloning a template.
 
-If template cleanup cannot acquire its allocation lease or read its cache, OpenClaw logs a warning and continues ordinary worktree and snapshot cleanup. A later cleanup pass retries template retirement.
+If template cleanup cannot acquire its allocation lease or read its cache, Paddy logs a warning and continues ordinary worktree and snapshot cleanup. A later cleanup pass retries template retirement.
 
 Templates contain checked-out source only. `.worktreeinclude` provisioning and `.openclaw/worktree-setup.sh` still run separately for each new worktree, under their existing permissions. Dependencies and setup output are not shared through the template. Copy-on-write snapshots share source storage until files change; their actual savings depend on the repository and subsequent writes.
 
-The first accelerated worktree includes the cost of preparing a template through Git. Later APFS worktrees clone the whole directory in one native operation. OpenClaw reads shared data-stream identities in bounded native batches before updating Git's cached file metadata, avoiding a content reread for proven unchanged files. Git metadata preparation counts toward the timestamp-safety delay, so finishing it after the clone's timestamp boundary does not add another wait. Git still validates the resulting index and detects subsequent edits; unsupported index formats and unverified files receive ordinary Git validation.
+The first accelerated worktree includes the cost of preparing a template through Git. Later APFS worktrees clone the whole directory in one native operation. Paddy reads shared data-stream identities in bounded native batches before updating Git's cached file metadata, avoiding a content reread for proven unchanged files. Git metadata preparation counts toward the timestamp-safety delay, so finishing it after the clone's timestamp boundary does not add another wait. Git still validates the resulting index and detects subsequent edits; unsupported index formats and unverified files receive ordinary Git validation.
 
-Apple discourages general directory cloning through `clonefile` without publishing its complete rationale. One verified limitation is that directory clones do not apply the destination's inherited ACL permissions to descendants. OpenClaw uses normal Git checkout when the destination parent has inheritable ACL entries, when the template root carries ACLs, or when ACL inspection fails. It checks again around cloning to catch policy changes during preparation. Non-inheritable ACLs on the destination parent alone do not disable acceleration. Git owns permission inheritance; OpenClaw does not rewrite ACLs after cloning.
+Apple discourages general directory cloning through `clonefile` without publishing its complete rationale. One verified limitation is that directory clones do not apply the destination's inherited ACL permissions to descendants. Paddy uses normal Git checkout when the destination parent has inheritable ACL entries, when the template root carries ACLs, or when ACL inspection fails. It checks again around cloning to catch policy changes during preparation. Non-inheritable ACLs on the destination parent alone do not disable acceleration. Git owns permission inheritance; Paddy does not rewrite ACLs after cloning.
 
-The fast path is limited to OpenClaw's private source-only templates; do not customize ACLs inside the template cache. Cancellation waits for an already-started native clone to finish before recovery can touch its destination.
+The fast path is limited to Paddy's private source-only templates; do not customize ACLs inside the template cache. Cancellation waits for an already-started native clone to finish before recovery can touch its destination.
 
 ReFS cloning can take longer than native Git checkout for repositories with many small files because each file needs independent metadata and Git refreshes its index. Use `worktreeAcceleration: false` if checkout latency matters more than source storage savings.
 
@@ -85,8 +85,8 @@ Full source remains the default. To select a repository-owned sparse source
 profile when creating a **new** worktree:
 
 ```bash
-openclaw worktrees create /path/to/repo --name gateway-task --source-profile gateway
-openclaw worktrees create /path/to/repo --name combined-task --source-profile gateway --source-profile tooling
+paddy worktrees create /path/to/repo --name gateway-task --source-profile gateway
+paddy worktrees create /path/to/repo --name combined-task --source-profile gateway --source-profile tooling
 ```
 
 Track plain UTF-8 cone-directory lists in
@@ -94,7 +94,7 @@ Track plain UTF-8 cone-directory lists in
 hyphens (up to 64 characters, starting with a letter or digit). Each nonempty
 line names a tracked repository-relative directory; do not use comments, globs,
 absolute paths or parent traversal. Selected lists compose as a sorted union.
-Git cone mode also retains files at the root and ancestor directories. OpenClaw
+Git cone mode also retains files at the root and ancestor directories. Paddy
 includes the definition directory so the selection remains inspectable.
 
 Definitions are read from the immutable checkout commit, not uncommitted source
@@ -108,7 +108,7 @@ The existing `--profile` option still selects runtime state; `--source-profile`
 only selects repository source:
 
 ```bash
-openclaw --profile work worktrees create /path/to/repo --name task --source-profile gateway
+paddy --profile work worktrees create /path/to/repo --name task --source-profile gateway
 ```
 
 Expand intentionally before native work or whole-repository checks:
@@ -138,7 +138,7 @@ Each worktree lives at:
 <worktreeRoot>/<repo-fingerprint>/<name>
 ```
 
-The repository fingerprint is the first 16 hexadecimal characters of a SHA-256 hash over the canonical git common directory and origin URL. A supplied name must match `[a-z0-9][a-z0-9-]{0,63}`. Without a name, OpenClaw generates a readable crustacean-themed name such as `brisk-lobster`. Inferred names already occupied by any registered worktree (including the caller's own removed checkout), local branch, or unmanaged path get a numeric suffix such as `brisk-lobster-2`; only a supplied name reuses or restores the caller's existing record.
+The repository fingerprint is the first 16 hexadecimal characters of a SHA-256 hash over the canonical git common directory and origin URL. A supplied name must match `[a-z0-9][a-z0-9-]{0,63}`. Without a name, Paddy generates a readable crustacean-themed name such as `brisk-lobster`. Inferred names already occupied by any registered worktree (including the caller's own removed checkout), local branch, or unmanaged path get a numeric suffix such as `brisk-lobster-2`; only a supplied name reuses or restores the caller's existing record.
 
 OpenClaw creates branch `openclaw/<name>` at the requested base ref. Without a base ref, it fetches `origin`, uses the remote default branch when available, and falls back to local `HEAD` when the repository is offline or has no usable remote, including a stale `origin/HEAD` pointing to a deleted branch. An explicitly requested base must resolve to a commit; OpenClaw never substitutes another base for it. Git first registers the branch without materializing files, preserving its normal upstream-tracking rules. OpenClaw then captures that branch's commit and uses it for the size estimate, source template, and checkout. Later changes to the source ref cannot switch the files being written or reuse a smaller commit's allowance.
 
@@ -146,17 +146,17 @@ Git worktree registration and source materialization during creation or snapshot
 
 ## Capacity and disk space
 
-OpenClaw uses 100 live managed worktrees per state directory as a cleanup target, not an admission cap. Count alone never blocks creation or snapshot restore; available disk space still bounds new allocations. Creation never evicts another session to make room. Manual and protected worktrees can keep the total above the cleanup target.
+Paddy uses 100 live managed worktrees per state directory as a cleanup target, not an admission cap. Count alone never blocks creation or snapshot restore; available disk space still bounds new allocations. Creation never evicts another session to make room. Manual and protected worktrees can keep the total above the cleanup target.
 
-Before allocating a checkout, OpenClaw checks its destination, Git metadata, source checkout, and state volumes. It keeps a fixed 4 GiB operational reserve on each volume, plus twice the estimated Git checkout and provisioned-file size. A validated reusable source template replaces the full Git checkout allowance with an estimate for clone metadata and Git index writes. Btrfs snapshots share directory metadata; APFS and ReFS clones budget metadata per tracked entry, with the ReFS volume allocation size included. Cold templates and every native Git fallback require the full checkout allowance again immediately before allocation. Provisioned files retain their separate full-copy allowance. An executable setup script requires additional room equal to the larger of 4 GiB or the current source checkout footprint excluding Git metadata. Space is checked again before provisioning/setup and after setup. An unavailable capacity reading stops allocation with an actionable error.
+Before allocating a checkout, Paddy checks its destination, Git metadata, source checkout, and state volumes. It keeps a fixed 4 GiB operational reserve on each volume, plus twice the estimated Git checkout and provisioned-file size. A validated reusable source template replaces the full Git checkout allowance with an estimate for clone metadata and Git index writes. Btrfs snapshots share directory metadata; APFS and ReFS clones budget metadata per tracked entry, with the ReFS volume allocation size included. Cold templates and every native Git fallback require the full checkout allowance again immediately before allocation. Provisioned files retain their separate full-copy allowance. An executable setup script requires additional room equal to the larger of 4 GiB or the current source checkout footprint excluding Git metadata. Space is checked again before provisioning/setup and after setup. An unavailable capacity reading stops allocation with an actionable error.
 
-For partial clones, OpenClaw inventories missing objects before estimating checkout size and fetches them from the clone's promisor remote in one batch. The batch requests only the missing objects without treating shared commits as proof that their contents are available locally. The size inventory cannot trigger per-object lazy fetches. Partial clones are supported, but full clones are recommended for registry-owned projects to keep checkout and restore independent of missing remote objects. If objects are missing without a promisor remote, fetch or repair the clone before retrying. A Git timeout reports its budget and suggests checking remote reachability, repository locks, and partial-clone behavior.
+For partial clones, Paddy inventories missing objects before estimating checkout size and fetches them from the clone's promisor remote in one batch. The batch requests only the missing objects without treating shared commits as proof that their contents are available locally. The size inventory cannot trigger per-object lazy fetches. Partial clones are supported, but full clones are recommended for registry-owned projects to keep checkout and restore independent of missing remote objects. If objects are missing without a promisor remote, fetch or repair the clone before retrying. A Git timeout reports its budget and suggests checking remote reachability, repository locks, and partial-clone behavior.
 
 Transient fetch failures, including an incomplete object transfer, retry once after one second within the original fetch timeout. Cancellation and expired workspace authority stop recovery; a second failure surfaces the Git error. See [Retry policy](/concepts/retry#managed-git-operations).
 
 The Git worker reuses a bounded set of successful commit-size estimates while it remains active. Object availability and free disk space are checked on every allocation. Git replacement refs disable reuse of the affected size estimates, and worker shutdown discards them.
 
-Creation, restore, removal, orphan cleanup, and snapshot expiry share one allocation lease across repositories and processes using the same state directory. This prevents cleanup from deleting an unfinished checkout or a snapshot being restored. Requests wait up to 10 minutes for that lease, allowing slow checkout or cleanup work to finish before reporting contention. Caller cancellation and overall request limits can stop the wait earlier. The separate Git and setup timeouts described above still apply. Costs on the same volume are added together. These checks are conservative estimates, not a disk quota: other OpenClaw state directories, shell commands, deployment tools, and arbitrary setup/build output can still consume space. Reusing an existing valid checkout does not allocate another checkout. Worktrees created directly through Git are outside the managed cleanup lifecycle.
+Creation, restore, removal, orphan cleanup, and snapshot expiry share one allocation lease across repositories and processes using the same state directory. This prevents cleanup from deleting an unfinished checkout or a snapshot being restored. Requests wait up to 10 minutes for that lease, allowing slow checkout or cleanup work to finish before reporting contention. Caller cancellation and overall request limits can stop the wait earlier. The separate Git and setup timeouts described above still apply. Costs on the same volume are added together. These checks are conservative estimates, not a disk quota: other Paddy state directories, shell commands, deployment tools, and arbitrary setup/build output can still consume space. Reusing an existing valid checkout does not allocate another checkout. Worktrees created directly through Git are outside the managed cleanup lifecycle.
 
 Git inventories and directory-size calculations run on bounded background workers. Branch and checkout-context reads use a dedicated worker, separate from diff and snapshot processing. The Gateway keeps ownership of Git subprocesses, cancellation, allocation leases, and registry writes. Canceling an operation waits for its subprocesses and temporary-index cleanup to settle before releasing that ownership. A ref mutation still waiting behind another writer can cancel without waiting for that writer; mutations already running finish their cleanup before cancellation returns. Preparation is cancellable; once destructive checkout deletion starts, it finishes before cancellation returns so a partial checkout cannot replace the complete recovery snapshot on retry.
 
@@ -173,7 +173,7 @@ Add `.worktreeinclude` at the source repository root to copy selected ignored, u
 fixtures/generated/**
 ```
 
-Only files reported by git as both ignored and untracked are eligible. Tracked files are already present through git and are never copied by this step. OpenClaw does not overwrite or change destination files that already exist, does not follow symlinked directories, and preserves copied file modes. It records only paths it actually creates, so later manifest edits cannot make those files disappear from cleanup protection.
+Only files reported by git as both ignored and untracked are eligible. Tracked files are already present through git and are never copied by this step. Paddy does not overwrite or change destination files that already exist, does not follow symlinked directories, and preserves copied file modes. It records only paths it actually creates, so later manifest edits cannot make those files disappear from cleanup protection.
 
 ## Run repository setup
 
@@ -186,7 +186,7 @@ OPENCLAW_SOURCE_TREE_PATH=<source checkout>
 OPENCLAW_WORKTREE_PATH=<managed worktree>
 ```
 
-A nonzero exit aborts creation and removes the new worktree and branch. This is a repository-local contract; there is no OpenClaw config key for it.
+A nonzero exit aborts creation and removes the new worktree and branch. This is a repository-local contract; there is no Paddy config key for it.
 
 Setup failures report the exit code or termination signal, or an actual timeout after 120 seconds, with a bounded excerpt of recent output rather than the full setup log. If setup times out, inspect `.openclaw/worktree-setup.sh` and its dependencies for slow downloads, unavailable services, or commands waiting for interactive input.
 
@@ -194,11 +194,11 @@ Setup failures report the exit code or termination signal, or an actual timeout 
 
 For a fresh isolated session without a source repository, call `sessions.create` with `worktree: true` and `worktreeSource: "empty"`. This does not copy the agent workspace or any selected folder. It cannot be combined with `cwd`, project or repository selection, an external catalog, `execNode`, or `worktreeBaseRef`. The Control UI uses this mode for **New workspace** on paired devices and cloud destinations.
 
-Each fresh session has its own OpenClaw-owned backing repository under `<openclaw-state-dir>/worktree-sources/empty`, so Git remotes and history remain isolated between sessions. The existing managed-worktree registry owns allocation, snapshots, restore, and cleanup; no database migration is needed. The backing source remains available while a live worktree or retained snapshot references it and is removed after its final expired snapshot is collected. Git is still required internally. Existing installations adopt this mode only for new explicit empty-workspace requests; existing sessions and their snapshots keep their original source.
+Each fresh session has its own Paddy-owned backing repository under `<openclaw-state-dir>/worktree-sources/empty`, so Git remotes and history remain isolated between sessions. The existing managed-worktree registry owns allocation, snapshots, restore, and cleanup; no database migration is needed. The backing source remains available while a live worktree or retained snapshot references it and is removed after its final expired snapshot is collected. Git is still required internally. Existing installations adopt this mode only for new explicit empty-workspace requests; existing sessions and their snapshots keep their original source.
 
 If worktree preparation fails before the first model reply, the session records the failure reason. The Control UI shows it with the failed session and in the chat, and the transcript retains a failure notice. Command failures identify the command and its exit or timeout reason, so a Git setup timeout is distinguishable from a model-provider timeout.
 
-Start an isolated chat from a Git-backed folder with a worktree session: on the Control UI's New session page, use the **Place** picker to choose a Gateway source folder, then select **Worktree** (with an optional base branch and worktree name). Choosing a paired device or cloud profile with a Gateway folder selected uses this managed-worktree path; remote placement never browses or binds an arbitrary node working directory. When the name is omitted, OpenClaw derives it from the explicit session label or the concise title generated from the first message, then falls back to a crustacean-themed name. iOS exposes the same choice from Chat actions, and Android exposes it beside New Chat, when the active agent workspace is Git-backed.
+Start an isolated chat from a Git-backed folder with a worktree session: on the Control UI's New session page, use the **Place** picker to choose a Gateway source folder, then select **Worktree** (with an optional base branch and worktree name). Choosing a paired device or cloud profile with a Gateway folder selected uses this managed-worktree path; remote placement never browses or binds an arbitrary node working directory. When the name is omitted, Paddy derives it from the explicit session label or the concise title generated from the first message, then falls back to a crustacean-themed name. iOS exposes the same choice from Chat actions, and Android exposes it beside New Chat, when the active agent workspace is Git-backed.
 
 Remote sessions started from a Gateway folder retain a durable managed-worktree mirror for workspace reconciliation, recovery, and publication. The same disk-space checks apply to this mirror. To start without a Gateway checkout, select a GitHub repository and a remote destination instead: [repository cloud sessions](/gateway/cloud-workers#dispatching-a-session) fetch on the node and retain accepted checkpoints on the Gateway. Their checkpoints have a separate lifecycle from managed-worktree snapshots.
 
@@ -218,13 +218,13 @@ Closing a suggested-task card removes it immediately while the Control UI sends 
 
 The primary action and the Gateway-backed TUI send `taskSuggestions.accept` with `mode: "local"`. The Control UI menu sends explicit `worktree` or `session` modes for those choices. RPC clients also retain `cloud` mode. Omitted mode still means `worktree` for callers that used the original worktree action; the Control UI and TUI never omit it.
 
-OpenClaw exposes these tools only to operator sessions with an actionable Gateway UI. Channel sessions and local/embedded TUI sessions do not receive them, because those surfaces have no portable typed task-action contract.
+Paddy exposes these tools only to operator sessions with an actionable Gateway UI. Channel sessions and local/embedded TUI sessions do not receive them, because those surfaces have no portable typed task-action contract.
 
 The resulting managed worktree is owned by the session, and every agent run in that session uses its checkout. When the workspace is a repository subdirectory, the worktree is anchored at the repository root and the session runs from the matching subdirectory inside it. Session worktree creation uses the method's `operator.write` scope. Repository checkout/ref hooks and filesystem monitors are always disabled. The `.openclaw/worktree-setup.sh` step runs only for an `operator.admin` caller; retries evaluate the current caller's scope rather than retaining the original caller's permission. `.worktreeinclude` provisioning still applies to every caller. Deleting the session attempts to snapshot and remove its managed worktree, including dirty worktrees and branches with unpushed commits. Hourly cleanup also snapshots session worktrees after 7 idle days, treating recent session activity as worktree activity. Removed worktrees remain restorable from their snapshots as described below.
 
 Archiving a session commits its archive state, then snapshots and removes its managed checkout while preserving the conversation and worktree binding. A failed metadata write leaves the checkout untouched. If cleanup cannot finish safely, the session remains archived, its files stay preserved, and the error explains that cleanup is pending. Repeating archive retries cleanup; hourly garbage collection also retries any checkout that remains. Automatic session archival uses the same metadata-first ordering.
 
-Unarchiving, or an authorized human message that reopens the archived session, restores the original branch HEAD plus saved dirty and untracked files before admitting work. A restore failure leaves the session archived. If the original repository or its snapshot is missing, or the 30-day snapshot retention has expired, recover the original repository/snapshot or start a new task; OpenClaw does not substitute an empty checkout for the saved work.
+Unarchiving, or an authorized human message that reopens the archived session, restores the original branch HEAD plus saved dirty and untracked files before admitting work. A restore failure leaves the session archived. If the original repository or its snapshot is missing, or the 30-day snapshot retention has expired, recover the original repository/snapshot or start a new task; Paddy does not substitute an empty checkout for the saved work.
 
 `sessions.create` may include an absolute `cwd` to run directly in another Gateway folder or to choose the source checkout together with `worktree: true`. Connections with `operator.write` may use a Gateway `cwd` contained in any configured agent workspace; realpath containment prevents symlinks from escaping that boundary. Gateway paths outside those workspaces require `operator.admin`. Ordinary worktree chat creation remains `operator.write` and stays anchored to the configured workspace. For a Gateway source, New Session dispatches the completed worktree session to paired devices or cloud profiles instead of passing a paired-node working directory to creation. The separate `repository: { url, ref? }` create input starts a remote-owned repository session without a Gateway path or `worktree: true`.
 
@@ -246,35 +246,35 @@ If **New session** reports `git worktree add failed`, read the termination reaso
 
 Before another creation attempt, inspect `git -C <repo-root> worktree list` and `git -C <repo-root> branch --list 'openclaw/*'` for partial state. A failed creation does not guarantee that its checkout and branch were removed. Do not delete a checkout or branch without checking whether it contains work you need.
 
-If a checkout's `.git` link points to missing administrative files, OpenClaw preserves its files and refuses to reuse it. Restore the original repository metadata before using `git worktree repair` from that repository. A different clone with the same remote URL does not recover the missing index or unpushed history; do not replace the link or rebuild the index without verifying the original metadata.
+If a checkout's `.git` link points to missing administrative files, Paddy preserves its files and refuses to reuse it. Restore the original repository metadata before using `git worktree repair` from that repository. A different clone with the same remote URL does not recover the missing index or unpushed history; do not replace the link or rebuild the index without verifying the original metadata.
 
 ## Snapshots, cleanup, and restore
 
 Removal first creates a synthetic commit containing tracked and non-ignored untracked files, then pins it at `refs/openclaw/snapshots/<id>`. Host-provisioned ignored files do not enter the Git snapshot or repository object database. OpenClaw stores only the ignored files it actually provisioned in chunked shared-state database rows; the recorded path set remains authoritative even if `.worktreeinclude` later changes or disappears. Restore reads those bytes from the immutable snapshot and reapplies their complete modes. Automatic cleanup preserves a live worktree when a recorded path can no longer be snapshotted safely. If snapshot creation fails, removal stops unless `--force` explicitly permits snapshot loss.
 
-Sandbox-created ignored files (including symlinks) and empty directories already accepted by reconciliation remain in the existing projection owner’s custody. Before removal, OpenClaw retains their missing snapshot delta in its pending-result receipt and private recovery refs. Restore replays that receipt before another turn can synchronize the workspace. This does not force ignored paths into publication or import unrelated ignored host files. The receipt follows the same snapshot retention period, and unaccepted private edits defer cleanup. The legacy provisioned-file ledger remains regular-file-only. Older versions can restore that ledger and the Git snapshot, but do not apply the projection receipt; return to a supporting version to recover accepted guest data.
+Sandbox-created ignored files (including symlinks) and empty directories already accepted by reconciliation remain in the existing projection owner’s custody. Before removal, Paddy retains their missing snapshot delta in its pending-result receipt and private recovery refs. Restore replays that receipt before another turn can synchronize the workspace. This does not force ignored paths into publication or import unrelated ignored host files. The receipt follows the same snapshot retention period, and unaccepted private edits defer cleanup. The legacy provisioned-file ledger remains regular-file-only. Older versions can restore that ledger and the Git snapshot, but do not apply the projection receipt; return to a supporting version to recover accepted guest data.
 
-Ordinary removal is archival: after a successful snapshot it uses Git's forced checkout removal so dirty files can be restored later. The CLI's `--force` option permits snapshot loss; omitting it does **not** select non-force Git removal. Use `openclaw worktrees remove <id> --if-lossless` when deletion must be non-force. This uses the same owner as run-end cleanup, retains dirty or unpublished work, and never retries a Git refusal with force. It cannot be combined with `--force`.
+Ordinary removal is archival: after a successful snapshot it uses Git's forced checkout removal so dirty files can be restored later. The CLI's `--force` option permits snapshot loss; omitting it does **not** select non-force Git removal. Use `paddy worktrees remove <id> --if-lossless` when deletion must be non-force. This uses the same owner as run-end cleanup, retains dirty or unpublished work, and never retries a Git refusal with force. It cannot be combined with `--force`.
 
 Removal requires HEAD to remain on the recorded managed branch. Switching branches or detaching HEAD preserves the checkout and recorded branch. Branch deletion uses native `git branch -d` against the completed snapshot, so a tip advanced beyond that snapshot remains intact. Without a snapshot, the branch stays retained. Removal deletes only its own Git worktree registration and never runs repository-wide `git worktree prune`.
 
-Nested Git repositories and linked worktrees are separate ownership boundaries. Automatic cleanup preserves the outer worktree even when a nested linked worktree shares its Git common directory. A nested OpenClaw-managed worktree is cleaned only through its own managed-worktree record.
+Nested Git repositories and linked worktrees are separate ownership boundaries. Automatic cleanup preserves the outer worktree even when a nested linked worktree shares its Git common directory. A nested Paddy-managed worktree is cleaned only through its own managed-worktree record.
 
-OpenClaw applies these cleanup rules:
+Paddy applies these cleanup rules:
 
 - At run end, it removes a worktree without Git force only when `git status --porcelain` is empty and `git log HEAD --not --remotes --oneline` finds no unpushed commits. It also checks the captured contents for edits hidden by index flags. Otherwise it retains the checkout and records why.
-- Hourly cleanup snapshots and removes unlocked Workboard- and session-owned worktrees idle for more than 7 days, even when dirty. The first automatic pass runs one hour after Gateway startup, and a slow pass finishes before another starts. Session worktrees whose owner is archived or absent are eligible on the next pass without waiting 7 days. Failed owner lookups preserve the checkout. Run `openclaw worktrees gc` for immediate cleanup.
+- Hourly cleanup snapshots and removes unlocked Workboard- and session-owned worktrees idle for more than 7 days, even when dirty. The first automatic pass runs one hour after Gateway startup, and a slow pass finishes before another starts. Session worktrees whose owner is archived or absent are eligible on the next pass without waiting 7 days. Failed owner lookups preserve the checkout. Run `paddy worktrees gc` for immediate cleanup.
 - Cleanup also removes the least recently active eligible run-owned worktrees above the default target of 100. Manual worktrees are never automatically removed, and protected worktrees can keep the total above the target until they are released or explicitly cleaned up.
 - Snapshot records remain restorable for 30 days. Cleanup then deletes the snapshot ref and registry row.
-- A live OpenClaw process lock and any foreign or unrecognized git worktree lock protect a worktree from garbage collection.
+- A live Paddy process lock and any foreign or unrecognized git worktree lock protect a worktree from garbage collection.
 
 Each collection checks registry eligibility, remembered dispositions, owner activity, and run leases before requesting Git inventories. It classifies candidates serially and shares one preliminary lock and branch inventory per repository across idle and limit checks. Known provisioning ledgers use filesystem checks without Git setup. Removal rereads the current lock and HEAD and verifies that the worktree's activity has not changed under its allocation lease before changing the checkout; preliminary inventories never authorize removal or stale-lock recovery. If cleanup cannot acquire the lease, it preserves orphan candidates and expired snapshots for a later pass.
 
-Hourly cleanup remembers nested-repository, moved-branch, and unavailable-Git dispositions on the worktree record instead of repeating their Git inventories. It logs the preserved checkout path on the first deferral. Managed activity or a change to the recorded repository, owner, or snapshot invalidates the disposition. After repairing files or Git metadata externally, run `openclaw worktrees gc` to recheck deferred checkouts immediately; explicit removal and recovery also keep their normal checks. Deferred worktrees still count toward cleanup limits. The nullable derived-state column is added on database admission without a schema-version change; older builds ignore these dispositions and resume their previous inspection behavior. No checkout or snapshot retention period changes.
+Hourly cleanup remembers nested-repository, moved-branch, and unavailable-Git dispositions on the worktree record instead of repeating their Git inventories. It logs the preserved checkout path on the first deferral. Managed activity or a change to the recorded repository, owner, or snapshot invalidates the disposition. After repairing files or Git metadata externally, run `paddy worktrees gc` to recheck deferred checkouts immediately; explicit removal and recovery also keep their normal checks. Deferred worktrees still count toward cleanup limits. The nullable derived-state column is added on database admission without a schema-version change; older builds ignore these dispositions and resume their previous inspection behavior. No checkout or snapshot retention period changes.
 
 Listing and cleanup mark a missing checkout as removed only if its recorded path, activity, and repository identity still match the earlier check. A restore or repository repair that completes during that check preserves the newer live record.
 
-Cleanup retains a checkout whose HEAD has detached or switched away from its registered branch as `branch-moved`. If a linked checkout's Git metadata directory is gone but its source repository remains available, cleanup retires the orphan record while preserving checkout files and the normal snapshot retention period. These dispositions do not fail `openclaw worktrees gc`; genuine inspection or cleanup failures still return a nonzero exit status. The summary and JSON output include orphan retirement counts and totals for every protection reason, even when individual details are truncated.
+Cleanup retains a checkout whose HEAD has detached or switched away from its registered branch as `branch-moved`. If a linked checkout's Git metadata directory is gone but its source repository remains available, cleanup retires the orphan record while preserving checkout files and the normal snapshot retention period. These dispositions do not fail `paddy worktrees gc`; genuine inspection or cleanup failures still return a nonzero exit status. The summary and JSON output include orphan retirement counts and totals for every protection reason, even when individual details are truncated.
 
 Permission-denied inspections (`EACCES` or `EPERM`) retain the checkout as `unreadable`, with the offending path in its cleanup detail and one protection count in the summary instead of a warning for every sweep. If a registered path cannot be resolved, orphan deletion also waits. Repair access for the Gateway user; the next sweep rechecks permissions and resumes eligible cleanup.
 
@@ -282,14 +282,14 @@ A missing checkout or gitdir with a local workspace projection remains registere
 
 An orphan retired without a snapshot no longer appears in `worktrees list` and cannot use `worktrees restore`. GC verifies the recorded repository identity and reports every preserved checkout path for manual recovery in `retiredCheckoutPaths`, independently of the bounded issue details. These cases are deferred cleanup: the CLI exits 0, and the Gateway's existing deferred-cleanup response includes all recovery details without changing its success-response contract. The text summary preserves every recovery path too. Keep those files and the retained source branch; recover work into a separate checkout instead of deleting or overwriting the preserved files. Retirement does not reconstruct missing Git metadata or create a replacement snapshot.
 
-Run-end cleanup records its outcome on the worktree record: lossless removal, retention because the checkout is busy, dirty, unpushed, or has provisioned-file drift, or failure with an error reason. Inspect the recorded outcome with `openclaw worktrees list --json` or `worktrees.list`.
+Run-end cleanup records its outcome on the worktree record: lossless removal, retention because the checkout is busy, dirty, unpushed, or has provisioned-file drift, or failure with an error reason. Inspect the recorded outcome with `paddy worktrees list --json` or `worktrees.list`.
 
 If checkout deletion fails or is interrupted, OpenClaw preserves the completed capture at `refs/openclaw/removals/<id>`. A later removal refuses to replace that capture with files from a possibly partial checkout. Preserve the remaining files, recorded branch, snapshot refs, and shared-state database for recovery. Inspect the original removal error and Git worktree registration before attempting cleanup; do not repeatedly force removal or prune registrations. A normal completed removal, successful restore, or snapshot expiry clears this recovery ref. A failure after checkout removal can leave its branch retained and require operator reconciliation before restore can recreate that branch.
 
 For an interrupted **ordinary clean snapshot** removal, use the exact pending commit:
 
 ```bash
-openclaw worktrees recover-removal <id> --snapshot <pending-commit> --json
+paddy worktrees recover-removal <id> --snapshot <pending-commit> --json
 ```
 
 Recovery keeps the original capture, verifies the retained index and all remaining
@@ -314,18 +314,18 @@ deadline so that the timeout cannot interrupt deletion again.
 
 Restore recreates `openclaw/<name>` at the original pre-snapshot commit, reusing its clean source template when available. Git applies the saved differences as unstaged modifications and untracked files without replacing the template with snapshot contents. Without a reusable template, Git materializes the snapshot directly. Disk admission includes space for changed and added files alongside clone metadata, or the full snapshot for an ordinary checkout. If the snapshot changes `.gitattributes` or its diff exceeds the bounded inventory size, Git rematerializes all snapshot files with a full-copy space allowance. This applies the snapshot's line endings and filters even to unchanged blobs. The synthetic snapshot stays out of branch history; its ref remains recorded as provenance.
 
-A branch at a shallow history boundary can still be snapshotted and restored. If a later depth-limited fetch makes the snapshot commit itself shallow, Git may no longer resolve its parent. Restore then preserves the snapshot and reports the repository and snapshot commit with `git fetch --unshallow` guidance. OpenClaw does not deepen automatically: origin may not contain the local snapshot, so even a successful fetch cannot guarantee recovery. If the snapshot remains shallow after fetching, recover its parent from the original repository before retrying.
+A branch at a shallow history boundary can still be snapshotted and restored. If a later depth-limited fetch makes the snapshot commit itself shallow, Git may no longer resolve its parent. Restore then preserves the snapshot and reports the repository and snapshot commit with `git fetch --unshallow` guidance. Paddy does not deepen automatically: origin may not contain the local snapshot, so even a successful fetch cannot guarantee recovery. If the snapshot remains shallow after fetching, recover its parent from the original repository before retrying.
 
 ## Retire an already removed snapshot early
 
-Use `openclaw worktrees retire-snapshot` only when the removed snapshot is redundant
+Use `paddy worktrees retire-snapshot` only when the removed snapshot is redundant
 with a retained local branch or remote-tracking commit. This local CLI operation
 requires the exact worktree ID, snapshot ref and commit, recorded `removedAt`
 milliseconds, and retained source ref and commit. Read those identities from the
 removed record and repository before invoking it:
 
 ```bash
-openclaw worktrees retire-snapshot <id> \
+paddy worktrees retire-snapshot <id> \
   --expected-ref refs/openclaw/snapshots/<id> --expected-oid <snapshot-commit> \
   --removed-at <milliseconds> \
   --retained-ref refs/heads/<retained-branch> --retained-oid <source-commit> --json
@@ -356,8 +356,8 @@ HEAD. To retire a deliberately detached managed checkout without changing its
 recorded branch or staging state, use an explicit owner-fenced request:
 
 ```bash
-openclaw worktrees remove <id> --exact-state /path/to/retirement.json --json
-openclaw worktrees restore <id> --json
+paddy worktrees remove <id> --exact-state /path/to/retirement.json --json
+paddy worktrees restore <id> --json
 ```
 
 The request contains the current registry owner and lifecycle timestamps from
@@ -440,7 +440,7 @@ If the native archival move completes but registry finalization is interrupted,
 reconcile and restore with the original request:
 
 ```bash
-openclaw worktrees restore <id> --recover-exact-state /path/to/retirement.json --json
+paddy worktrees restore <id> --recover-exact-state /path/to/retirement.json --json
 ```
 
 Recovery requires the matching completed capture and unchanged owner and recorded
@@ -456,11 +456,11 @@ reset the index, reattach HEAD, or prune the registration.
 ## CLI
 
 ```bash
-openclaw worktrees list [--json]
-openclaw worktrees create <repo-root> [--name <name>] [--base-ref <ref>] [--source-profile <name>]... [--json]
-openclaw worktrees remove <id> [--force | --if-lossless | --exact-state <file>] [--json]
-openclaw worktrees restore <id> [--recover-exact-state <file>] [--json]
-openclaw worktrees gc [--json]
+paddy worktrees list [--json]
+paddy worktrees create <repo-root> [--name <name>] [--base-ref <ref>] [--source-profile <name>]... [--json]
+paddy worktrees remove <id> [--force | --if-lossless | --exact-state <file>] [--json]
+paddy worktrees restore <id> [--recover-exact-state <file>] [--json]
+paddy worktrees gc [--json]
 ```
 
 The Control UI **Worktrees** page under Settings provides the same actions plus creation with a base-branch picker, shows each worktree's owner (manual, Workboard, or the owning session with a link into its chat), and offers a force retry when a removal reports a failed snapshot.

@@ -8,11 +8,11 @@ export const LEGACY_CONFIG_MIGRATION_RUNTIME_TOOL_SEARCH = defineLegacyConfigMig
       path: ["tools", "toolSearch", "mode"],
       match: (value) => value === "code",
       message:
-        'Tool Search code mode (tool_search_code) is retired; use structured Tool Search. Run "openclaw doctor --fix".',
+        'Tool Search code mode (tool_search_code) is retired; use structured Tool Search. Run "paddy doctor --fix".',
     },
     {
       path: ["tools", "toolSearch", "codeTimeoutMs"],
-      message: 'tools.toolSearch.codeTimeoutMs is retired. Run "openclaw doctor --fix".',
+      message: 'tools.toolSearch.codeTimeoutMs is retired. Run "paddy doctor --fix".',
     },
   ],
   apply: (raw, changes) => {

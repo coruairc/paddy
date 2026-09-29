@@ -1,5 +1,5 @@
 ---
-summary: "How OpenClaw presence entries are produced, merged, and displayed"
+summary: "How Paddy presence entries are produced, merged, and displayed"
 read_when:
   - Debugging live status on the Control UI Devices page
   - Investigating duplicate or stale instance rows
@@ -7,7 +7,7 @@ read_when:
 title: "Presence"
 ---
 
-OpenClaw "presence" is a lightweight, best-effort view of:
+Paddy "presence" is a lightweight, best-effort view of:
 
 - the **Gateway** itself, and
 - **user-visible clients connected to the Gateway** (mac app, WebChat, nodes, etc.)
@@ -84,7 +84,7 @@ to a Gateway without the presence capability omit the tool.
 To query the same snapshot from the CLI:
 
 ```bash
-openclaw gateway call presence.query --params '{"action":"person","person":"me","include":["devices"]}' --json
+paddy gateway call presence.query --params '{"action":"person","person":"me","include":["devices"]}' --json
 ```
 
 ## Presence fields (what shows up)
@@ -222,17 +222,17 @@ A connected person is **Online**. Activity is a separate, recent-interaction hin
 
 The sidebar ages active people into idle without waiting for another Gateway
 update. The card keeps continuous online duration separate from **Last interaction**.
-The UI activity label uses the newest OpenClaw interaction across a person's
+The UI activity label uses the newest Paddy interaction across a person's
 live, identity-qualified connections. Heartbeats and native input recency do not
 determine this label. The agent's presence query also exposes native device
 activity with its source, so it can identify the most recently used connected
-machine without treating native input as interaction with OpenClaw.
+machine without treating native input as interaction with Paddy.
 
 The Control UI reports its initial foreground visit and throttled keyboard,
 pointer, and scrolling interactions. Automatic reconnects, background tabs,
 incoming messages, and background requests do not count as fresh interaction.
 Clients that do not report interaction can still be online. This describes
-recent use of OpenClaw, not physical presence or attention: someone reading
+recent use of Paddy, not physical presence or attention: someone reading
 without interacting may become idle. The separate native
 [active computer signal](/nodes/presence) does not identify a person.
 

@@ -1,6 +1,7 @@
 // Reconciles configured plugin installs after the core package update has completed.
 import path from "node:path";
 import { PLUGIN_CAPABILITY_CONSENT_REQUIRED } from "../../../../packages/gateway-protocol/src/capability-consent-error-details.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import type { PluginInstallRecord } from "../../../config/types.plugins.js";
 import {
@@ -30,7 +31,6 @@ import {
 } from "./installed-plugin-id-recovery.js";
 import { repairMissingConfiguredPluginInstalls } from "./missing-configured-plugin-install.js";
 import { resolvePostCoreConvergenceEnv } from "./update-phase.js";
-import { PRODUCT_NAME } from "../../../brand.js";
 
 type PostCoreConvergenceWarning = {
   kind?: "load" | "repair";
@@ -64,9 +64,9 @@ type PostCoreConvergenceResult = {
   installRecords: Record<string, PluginInstallRecord>;
 };
 
-const REPAIR_GUIDANCE = "Run `openclaw update repair` to retry plugin repair.";
+const REPAIR_GUIDANCE = "Run `paddy update repair` to retry plugin repair.";
 const inspectGuidance = (pluginId: string) =>
-  `Run \`openclaw plugins inspect ${pluginId} --runtime --json\` for details.`;
+  `Run \`paddy plugins inspect ${pluginId} --runtime --json\` for details.`;
 
 function smokeFailureGuidance(failure: PluginPayloadSmokeFailure): string[] {
   if (failure.reason !== "unreadable-package-json") {
@@ -145,7 +145,9 @@ async function repairInstalledOpenClawHostLinks(params: {
     return {
       changes: [
         ...(repaired > 0
-          ? [`Repaired ${PRODUCT_NAME} host peer link(s) for ${repaired} managed npm plugin package(s).`]
+          ? [
+              `Repaired ${PRODUCT_NAME} host peer link(s) for ${repaired} managed npm plugin package(s).`,
+            ]
           : []),
         ...(registeredRepair.repaired > 0
           ? [

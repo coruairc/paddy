@@ -1,5 +1,5 @@
 ---
-summary: "Install OpenClaw declaratively with Nix"
+summary: "Install Paddy declaratively with Nix"
 read_when:
   - You want reproducible, rollback-able installs
   - You're already using Nix/NixOS/Home Manager

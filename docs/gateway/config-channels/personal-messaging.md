@@ -56,7 +56,7 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
 
 - Outbound commands default to account `default` if present; otherwise the first configured account id (sorted).
 - Optional `channels.whatsapp.defaultAccount` overrides that fallback default account selection when it matches a configured account id.
-- Legacy single-account Baileys auth dir is migrated by `openclaw doctor` into `whatsapp/default`.
+- Legacy single-account Baileys auth dir is migrated by `paddy doctor` into `whatsapp/default`.
 - Per-account overrides: `channels.whatsapp.accounts.<id>.sendReadReceipts`, `channels.whatsapp.accounts.<id>.dmPolicy`, `channels.whatsapp.accounts.<id>.allowFrom`.
 
 </Accordion>
@@ -113,10 +113,10 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
 
 - Bot token: `channels.telegram.botToken` or `channels.telegram.tokenFile` (regular file only; symlinks rejected), with `TELEGRAM_BOT_TOKEN` as fallback for the default account.
 - `channels.telegram.joinIntro` defaults to `true`. When the bot joins an allowed group or supergroup, it posts one introduction using the group title, description, and available pinned message. The Telegram Bot API cannot read pre-join group history. Set this option to `false` to disable introductions, or use `channels.telegram.accounts.<accountId>.joinIntro` for an account-specific override. Introductions happen once per room; see [group join introductions](/channels#group-join-introductions). Introductions never run in private chats.
-- `apiRoot` is the Telegram Bot API root only. Use `https://api.telegram.org` or your self-hosted/proxy root, not `https://api.telegram.org/bot<TOKEN>`; `openclaw doctor --fix` removes an accidental trailing `/bot<TOKEN>` suffix.
-- For a self-hosted Bot API server in `--local` mode, `trustedLocalFileRoots` lists host paths OpenClaw may read. Mount the server data volume on the OpenClaw host and configure either its data root or per-token directory; container paths under `/var/lib/telegram-bot-api` are mapped into those roots. Other absolute paths remain rejected.
+- `apiRoot` is the Telegram Bot API root only. Use `https://api.telegram.org` or your self-hosted/proxy root, not `https://api.telegram.org/bot<TOKEN>`; `paddy doctor --fix` removes an accidental trailing `/bot<TOKEN>` suffix.
+- For a self-hosted Bot API server in `--local` mode, `trustedLocalFileRoots` lists host paths Paddy may read. Mount the server data volume on the Paddy host and configure either its data root or per-token directory; container paths under `/var/lib/telegram-bot-api` are mapped into those roots. Other absolute paths remain rejected.
 - Optional `channels.telegram.defaultAccount` overrides default account selection when it matches a configured account id.
-- In multi-account setups (2+ account ids), set an explicit default (`channels.telegram.defaultAccount` or `channels.telegram.accounts.default`) to avoid fallback routing; `openclaw doctor` warns when this is missing or invalid.
+- In multi-account setups (2+ account ids), set an explicit default (`channels.telegram.defaultAccount` or `channels.telegram.accounts.default`) to avoid fallback routing; `paddy doctor` warns when this is missing or invalid.
 - `configWrites: false` blocks Telegram-initiated config writes (supergroup ID migrations, `/config set|unset`).
 - `actions.reactions` controls both message reactions and `emoji-list`, which lists the standard and custom reactions allowed in the current chat.
 - Top-level `bindings[]` entries with `type: "acp"` configure persistent ACP bindings for forum topics (use canonical `chatId:topic:topicId` in `match.peer.id`). Field semantics are shared in [ACP Agents](/tools/acp-agents#persistent-channel-bindings).
@@ -151,11 +151,11 @@ WhatsApp runs through the gateway's web channel (Baileys Web). It starts automat
 
 ## iMessage
 
-OpenClaw spawns `imsg rpc` (JSON-RPC over stdio). No daemon or port required. This is the preferred path for new OpenClaw iMessage setups when the host can grant Messages database and Automation permissions.
+Paddy spawns `imsg rpc` (JSON-RPC over stdio). No daemon or port required. This is the preferred path for new Paddy iMessage setups when the host can grant Messages database and Automation permissions.
 
-BlueBubbles support was removed. `channels.bluebubbles` is not a supported runtime config surface on current OpenClaw. Migrate old configs to `channels.imessage`; use [BlueBubbles removal and the imsg iMessage path](/announcements/bluebubbles-imessage) for the short version and [Coming from BlueBubbles](/channels/imessage-from-bluebubbles) for the full translation table.
+BlueBubbles support was removed. `channels.bluebubbles` is not a supported runtime config surface on current Paddy. Migrate old configs to `channels.imessage`; use [BlueBubbles removal and the imsg iMessage path](/announcements/bluebubbles-imessage) for the short version and [Coming from BlueBubbles](/channels/imessage-from-bluebubbles) for the full translation table.
 
-If the Gateway is not running on the signed-in Messages Mac, keep `channels.imessage.enabled=true` and set `channels.imessage.cliPath` to the absolute path of a Gateway-local SSH wrapper that runs `imsg "$@"` on that Mac. Set `remoteHost` to the Messages Mac, not the Gateway host. OpenClaw auto-detects simple transparent SSH wrappers for compatibility, but complex wrappers require explicit `remoteHost`. The default local `imsg` path is macOS-only.
+If the Gateway is not running on the signed-in Messages Mac, keep `channels.imessage.enabled=true` and set `channels.imessage.cliPath` to the absolute path of a Gateway-local SSH wrapper that runs `imsg "$@"` on that Mac. Set `remoteHost` to the Messages Mac, not the Gateway host. Paddy auto-detects simple transparent SSH wrappers for compatibility, but complex wrappers require explicit `remoteHost`. The default local `imsg` path is macOS-only.
 
 Before relying on an SSH wrapper for production sends, verify an outbound `imsg send` through that exact wrapper. Some macOS TCC states assign Messages Automation to `/usr/libexec/sshd-keygen-wrapper`, which can make reads and probes work while sends fail with AppleEvents `-1743`; see the SSH wrapper troubleshooting section on [iMessage](/channels/imessage).
 
@@ -199,7 +199,7 @@ Before relying on an SSH wrapper for production sends, verify an outbound `imsg 
 - SCP uses strict host-key checking, so ensure the Messages Mac host key already exists in `~/.ssh/known_hosts`.
 - `channels.imessage.configWrites`: allow or deny iMessage-initiated config writes.
 - `channels.imessage.sendTransport`: preferred `imsg` RPC send transport for normal outbound replies. `auto` (default) uses the IMCore bridge for existing chats when it is running, then falls back to AppleScript; `bridge` requires private-API delivery; `applescript` forces the public Messages automation path.
-- `channels.imessage.actions.*`: enable private API actions that are also gated by `imsg status` / `openclaw channels status --probe`.
+- `channels.imessage.actions.*`: enable private API actions that are also gated by `imsg status` / `paddy channels status --probe`.
 - `channels.imessage.includeAttachments` is off by default; set it to `true` before expecting inbound media in agent turns.
 - Inbound recovery after a bridge/gateway restart is automatic (GUID dedupe plus a stale-backlog age fence). Existing `channels.imessage.catchup.enabled: true` configs are still honored as a deprecated compatibility profile; `catchup` is disabled by default.
 - `channels.imessage.groups`: group registry and per-group settings. With `groupPolicy: "allowlist"`, configure either explicit `chat_id` keys or a `"*"` wildcard entry so group messages can pass the registry gate.

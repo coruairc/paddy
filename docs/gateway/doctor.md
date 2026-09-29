@@ -8,7 +8,7 @@ title: "Doctor"
 sidebarTitle: "Doctor"
 ---
 
-`openclaw doctor` is the repair and migration tool for OpenClaw. It fixes stale config/state, checks health, and provides actionable repair steps.
+`paddy doctor` is the repair and migration tool for Paddy. It fixes stale config/state, checks health, and provides actionable repair steps.
 
 This page is an index. Doctor is documented on seven pages, one per reader job.
 Open the page that matches your task.
@@ -97,5 +97,5 @@ still resolves. Each entry points at the page that now holds the content.
 
 - [Gateway runbook](/gateway)
 - [Gateway troubleshooting](/gateway/troubleshooting)
-- [`openclaw status`](/cli/status) — local diagnosis and channel probes
+- [`paddy status`](/cli/status) — local diagnosis and channel probes
 - [Configuration reference](/gateway/configuration-reference) — core config keys, defaults, and links to subsystem references

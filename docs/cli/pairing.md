@@ -1,13 +1,13 @@
 ---
-summary: "CLI reference for `openclaw pairing` (approve/list pairing requests)"
+summary: "CLI reference for `paddy pairing` (approve/list pairing requests)"
 read_when:
   - You're using pairing-mode DMs and need to approve senders
 title: "Pairing CLI"
 ---
 
-# `openclaw pairing`
+# `paddy pairing`
 
-Approve or inspect DM pairing requests for channels that support pairing (chat DMs only - node/device pairing uses [`openclaw devices`](/cli/devices)).
+Approve or inspect DM pairing requests for channels that support pairing (chat DMs only - node/device pairing uses [`paddy devices`](/cli/devices)).
 
 Related: [Pairing flow](/channels/pairing)
 
@@ -19,13 +19,13 @@ not permanently block the sender.
 ## Commands
 
 ```bash
-openclaw pairing list telegram
-openclaw pairing list --channel telegram --account work
-openclaw pairing list telegram --json
+paddy pairing list telegram
+paddy pairing list --channel telegram --account work
+paddy pairing list telegram --json
 
-openclaw pairing approve <code>
-openclaw pairing approve telegram <code>
-openclaw pairing approve --channel telegram --account work <code> --notify
+paddy pairing approve <code>
+paddy pairing approve telegram <code>
+paddy pairing approve --channel telegram --account work <code> --notify
 ```
 
 Use `--account <accountId>` to restrict either command to one channel account.
@@ -53,9 +53,9 @@ Approve a pending pairing code and allow that sender.
 
 Usage:
 
-- `openclaw pairing approve <channel> <code>`
-- `openclaw pairing approve --channel <channel> <code>`
-- `openclaw pairing approve <code>` when exactly one pairing-capable channel is configured
+- `paddy pairing approve <channel> <code>`
+- `paddy pairing approve --channel <channel> <code>`
+- `paddy pairing approve <code>` when exactly one pairing-capable channel is configured
 
 Options: `--channel <channel>`, `--account <accountId>`, `--notify` (send a confirmation back to the requester on the same channel).
 
@@ -65,10 +65,10 @@ If `commands.ownerAllowFrom` is empty when you approve a pairing code, the CLI a
 
 The command owner is the human operator account allowed to run owner-only commands and approve dangerous actions. Those actions include `/diagnostics`, `/export-session`, `/export-trajectory`, `/config`, and exec approvals. Pairing only lets a sender talk to the agent. It does not by itself grant owner privileges beyond this one-time bootstrap.
 
-If you approved a sender before the first-owner bootstrap shipped in 2026.4.29, run [`openclaw doctor`](/cli/doctor). It warns when no command owner is configured. It also shows the exact `openclaw config set commands.ownerAllowFrom ...` command to fix it.
+If you approved a sender before the first-owner bootstrap shipped in 2026.4.29, run [`paddy doctor`](/cli/doctor). It warns when no command owner is configured. It also shows the exact `paddy config set commands.ownerAllowFrom ...` command to fix it.
 
 ## Related
 
 - [CLI reference](/cli)
 - [Channel pairing](/channels/pairing)
-- [`openclaw qr`](/cli/qr) — mobile/device bootstrap QR and setup code, not a channel DM pairing code
+- [`paddy qr`](/cli/qr) — mobile/device bootstrap QR and setup code, not a channel DM pairing code

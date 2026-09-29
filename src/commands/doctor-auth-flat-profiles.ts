@@ -814,7 +814,7 @@ export async function maybeMigrateAuthProfileJsonStoresToSqlite(params: {
         ]);
         return `- ${shortenHomePath(candidate.authPath)} / ${shortenHomePath(candidate.statePath)}${hasCredentials ? ` (affected providers: ${providers?.join(", ") ?? "unknown; provider scope unavailable"})` : ""}`;
       }),
-      `- ${formatCliCommand("openclaw doctor --fix")} imports legacy auth profile JSON into SQLite, verifies it, records a receipt, and archives the original bytes.`,
+      `- ${formatCliCommand("paddy doctor --fix")} imports legacy auth profile JSON into SQLite, verifies it, records a receipt, and archives the original bytes.`,
     ].join("\n"),
     "Auth profile SQLite migration",
   );

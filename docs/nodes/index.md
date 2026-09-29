@@ -2,7 +2,7 @@
 summary: "Nodes: pairing, capabilities, permissions, and CLI helpers for camera/screen/device/notifications/system and the macOS widget panel"
 read_when:
   - Pairing iOS/watchOS/Android nodes to a gateway
-  - Enabling isolated OpenClaw session hosting on a paired node
+  - Enabling isolated Paddy session hosting on a paired node
   - Using node camera or screen capture for agent context
   - Presenting a hosted widget on a Mac
   - Adding new node commands or CLI helpers
@@ -13,9 +13,9 @@ doc-schema-version: 1
 A **node** is a companion device (macOS/iOS/watchOS/Android/headless) that connects to the Gateway with `role: "node"` and exposes a command surface (e.g. `camera.*`, `device.*`, `notifications.*`, `system.*`) via `node.invoke`. Most nodes use the Gateway WebSocket on the operator port. The optional direct Apple Watch node uses signed HTTPS polling on that same port because watchOS blocks generic low-level networking for ordinary apps. Protocol details: [Gateway protocol](/gateway/protocol).
 
 macOS can also run in **node mode**: the menu bar app connects to the Gateway's
-WS server as one node (so `openclaw nodes …` works against this Mac). The app
+WS server as one node (so `paddy nodes …` works against this Mac). The app
 adds native widget-panel, camera, screen, notification, and computer-control commands
-to the same node-host command surface used by `openclaw node run`. Do not start a
+to the same node-host command surface used by `paddy node run`. Do not start a
 second CLI node on that Mac; the app runs the matching CLI node-host runtime as
 an internal worker and remains the sole Gateway connection and node identity.
 The app's **Instances** UI shows each device under a friendly hardware name; see
@@ -37,7 +37,7 @@ Give a node work:
 
 - [Run commands on a node](/nodes/node-exec) - Allowlist commands, point exec at a node, invoke raw RPC, and bind a target.
 - [Node-hosted MCP servers and skills](/nodes/mcp-and-skills) - Publish MCP tools, skills, and local model inference from the node machine.
-- [Host OpenClaw sessions on a node](/nodes/session-hosting) - Worker session hosting, device placement, capacity, and container isolation.
+- [Host Paddy sessions on a node](/nodes/session-hosting) - Worker session hosting, device placement, capacity, and container isolation.
 - [Node session catalogs](/nodes/session-catalogs) - Codex, Claude, OpenCode, and Pi sessions discovered on the Gateway and paired nodes.
 - [Node file transfers](/nodes/file-transfers) - Terminal uploads and the File Transfer plugin's directory listing, fetch, and write tools.
 
@@ -59,7 +59,7 @@ Node capabilities in depth:
 - [Image and media support](/nodes/images) - Image formats and attachment handling.
 - [Audio and voice notes](/nodes/audio) - Audio capture and voice-note handling.
 - [Node troubleshooting](/nodes/troubleshooting) - Pairing, foreground, permission, and tool failures.
-- [`openclaw nodes`](/cli/nodes) - CLI reference for listing, inspecting, and managing nodes.
+- [`paddy nodes`](/cli/nodes) - CLI reference for listing, inspecting, and managing nodes.
 
 ## Where each section moved
 
@@ -103,11 +103,11 @@ Every anchor this page used to publish still resolves here. Each entry below car
 - <a id="claude-sessions-and-transcripts" />[Claude sessions and transcripts](/nodes/session-catalogs#claude-sessions-and-transcripts)
 - <a id="opencode-and-pi-sessions" />[OpenCode and Pi sessions](/nodes/session-catalogs#opencode-and-pi-sessions)
 
-- <a id="openclaw-sessions-and-transcripts" />[OpenClaw sessions and transcripts](/nodes/session-catalogs#openclaw-sessions-and-transcripts)
+- <a id="openclaw-sessions-and-transcripts" />[Paddy sessions and transcripts](/nodes/session-catalogs#openclaw-sessions-and-transcripts)
 
-**[Host OpenClaw sessions on a node](/nodes/session-hosting)**
+**[Host Paddy sessions on a node](/nodes/session-hosting)**
 
-- <a id="host-openclaw-sessions" />[Host OpenClaw sessions](/nodes/session-hosting#host-openclaw-sessions)
+- <a id="host-openclaw-sessions" />[Host Paddy sessions](/nodes/session-hosting#host-openclaw-sessions)
 - <a id="isolate-hosted-worker-sessions-in-containers" />[Isolate hosted worker sessions in containers](/nodes/session-hosting#isolate-hosted-worker-sessions-in-containers)
 
 **[Node file transfers](/nodes/file-transfers)**

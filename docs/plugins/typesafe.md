@@ -9,12 +9,12 @@ read_when:
 
 # TypeSafe AI
 
-The official external `typesafe` plugin connects OpenClaw's optional decision
+The official external `typesafe` plugin connects Paddy's optional decision
 model role to TypeSafe AI's hosted Jev models or an explicitly configured local
 System One server such as [Kev](https://github.com/jaredpalmer/kev). Its models appear in the separate
 **Decision** picker, never in the conversational model picker.
 
-The adapter and decision model role were added after released OpenClaw
+The adapter and decision model role were added after released Paddy
 `2026.9.5`. Packaged installs require a host and plugin API of at least
 `2026.9.6`; the installer rejects older hosts before loading the plugin.
 
@@ -44,7 +44,7 @@ Until a supporting release is available, use a source checkout containing the
 decision-provider API and `extensions/typesafe`. Build it with
 `pnpm install --frozen-lockfile` and `pnpm build`, then apply the configuration
 below. Source-checkout plugins use the host's co-versioned development API;
-that does not make the packaged plugin compatible with OpenClaw `2026.9.5`.
+that does not make the packaged plugin compatible with Paddy `2026.9.5`.
 
 ## Enable and configure
 
@@ -126,7 +126,7 @@ KEV_DTYPE=bf16 uv run --extra serve python -m kev.serve \
 The newer default Kev-4B checkpoint uses Qwen3.5; its Mac performance differs
 from the Qwen3 checkpoint above. Follow the upstream model cards when choosing
 another checkpoint. Kev-0.6B uses less memory; Kev-8B trades more memory and
-latency for decision quality. All of them use the same OpenClaw model label
+latency for decision quality. All of them use the same Paddy model label
 for the server you configure below.
 
 From the same Kev checkout in a second terminal, verify the loaded checkpoint
@@ -138,7 +138,7 @@ KEV_BASE_URL=http://127.0.0.1:8009 \
   uv run --extra serve python -m pytest tests/test_api.py -q
 ```
 
-### Connect OpenClaw
+### Connect Paddy
 
 Start your System One server separately, then set `baseUrl` to its loopback
 origin and select `typesafe/kev-latest`:
@@ -179,7 +179,7 @@ requests; explicitly enabled managed proxy policy still applies.
 Kev runs one checkpoint per server process. Its request model label does not
 load or switch weights. Choose the checkpoint when starting the server and
 inspect `GET /v1/models` to verify it. See Kev's [serving instructions](https://github.com/jaredpalmer/kev#quick-start)
-for installation, model selection, and hardware requirements. OpenClaw does not
+for installation, model selection, and hardware requirements. Paddy does not
 download weights or start that process. An unavailable server produces an
 unavailable decision, without automatically switching to hosted Jev.
 
@@ -190,7 +190,7 @@ increase queueing time. Native decisions admit at most four concurrent requests
 per provider and return `overloaded` beyond that limit. The core evaluation tool
 uses the same admission limit.
 
-Cancellation closes OpenClaw's HTTP request, but the Kev server may finish
+Cancellation closes Paddy's HTTP request, but the Kev server may finish
 inference already in progress. Avoid immediately resubmitting canceled work;
 choose a deadline that allows for inference and queueing on your hardware.
 
@@ -208,11 +208,11 @@ Consumers call the provider-neutral
 The host supplies the model selected for the owning agent. The adapter translates
 the supported question types:
 
-| OpenClaw | TypeSafe | Result                                                       |
-| -------- | -------- | ------------------------------------------------------------ |
-| Choice   | Choice   | Reported label and probability estimates                     |
-| Score    | Score    | Reported fractional zero-based rubric position and estimates |
-| Boolean  | Noul     | Probability of true, preserved from 0 to 1                   |
+| Paddy   | TypeSafe | Result                                                       |
+| ------- | -------- | ------------------------------------------------------------ |
+| Choice  | Choice   | Reported label and probability estimates                     |
+| Score   | Score    | Reported fractional zero-based rubric position and estimates |
+| Boolean | Noul     | Probability of true, preserved from 0 to 1                   |
 
 Choice supports 2–255 alternatives; Score supports 2–10 rubric levels.
 Unsupported input is rejected before transmission; the adapter does not truncate
@@ -221,7 +221,7 @@ its labels, types, and rubric bounds.
 
 Reported probabilities can be rounded, so they may not sum exactly to one. A
 reported label or Score can also differ from a calculation over those estimates.
-OpenClaw preserves the returned values. Normalizing estimates or choosing their
+Paddy preserves the returned values. Normalizing estimates or choosing their
 largest value is an explicit consumer policy. Probabilities and confidence are
 not demonstrated accuracy guarantees or permission to act.
 

@@ -307,7 +307,7 @@ export async function runPluginsBuildCommand(opts: PluginsBuildOptions): Promise
       !jsonSchemaValuesEqual(currentManifest, manifest) ||
       !jsonSchemaValuesEqual(currentPackage, nextPackageManifest)
     ) {
-      defaultRuntime.error("Generated plugin metadata is out of date. Run openclaw plugins build.");
+      defaultRuntime.error("Generated plugin metadata is out of date. Run paddy plugins build.");
       return defaultRuntime.exit(1);
     }
     defaultRuntime.log("Plugin metadata is up to date.");

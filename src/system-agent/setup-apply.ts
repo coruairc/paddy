@@ -88,7 +88,7 @@ type SystemAgentSetupApplyHooks = {
 /** Prompter for quickstart-only flows: notes go to the log, prompts fail loud. */
 export function createQuickstartNotePrompter(runtime: RuntimeEnv): WizardPrompter {
   const unexpected = (kind: string) => {
-    throw new Error(`openclaw setup hit an interactive ${kind} prompt; quickstart must not ask`);
+    throw new Error(`paddy setup hit an interactive ${kind} prompt; quickstart must not ask`);
   };
   return {
     intro: async () => {},
@@ -169,7 +169,7 @@ export async function applySystemAgentSetup(
   const startedWithoutAuthoredRoster = !hasResolvedRosterBeforeMigrations(snapshot);
   if (params.firstAgent?.team && !startedWithoutAuthoredRoster) {
     throw new Error(
-      "The requested team was not created because an agent roster already exists. Use `openclaw agents team create` to add a team.",
+      "The requested team was not created because an agent roster already exists. Use `paddy agents team create` to add a team.",
     );
   }
   const onboardingSourceConfig =
@@ -204,7 +204,9 @@ export async function applySystemAgentSetup(
       : resolveSystemAgentOnboardingTarget(config);
 
   if (hasExpectedConfigHash && resolveConfigSnapshotHash(snapshot) !== expectedConfigHash) {
-    throw new Error(`${PRODUCT_NAME} config changed while AI access was being tested. Try setup again.`);
+    throw new Error(
+      `${PRODUCT_NAME} config changed while AI access was being tested. Try setup again.`,
+    );
   }
 
   let guardModules =
@@ -594,7 +596,7 @@ export async function applySystemAgentSetup(
           lines.push(`Gateway: ${formatExternalSupervisorActionRequired("start the gateway")}`);
         } else if (params.installDaemon === false) {
           lines.push(
-            "Gateway: service installation skipped. Run `openclaw gateway run` to start it in the foreground.",
+            "Gateway: service installation skipped. Run `paddy gateway run` to start it in the foreground.",
           );
         } else {
           lines.push(

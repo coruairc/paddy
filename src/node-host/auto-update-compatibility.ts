@@ -23,8 +23,7 @@ import {
 import { OPENCLAW_STATE_SCHEMA_VERSION } from "../state/openclaw-state-db-contract.js";
 import { resolveOpenClawStateSqlitePath } from "../state/openclaw-state-db.paths.js";
 
-const MANUAL_UPDATE_GUIDANCE =
-  `Update ${PRODUCT_NAME} manually with openclaw update, then restart the node.`;
+const MANUAL_UPDATE_GUIDANCE = `Update ${PRODUCT_NAME} manually with paddy update, then restart the node.`;
 
 export function assertNodeRuntimeSchemaVersions(
   schemaVersions: OpenClawSchemaVersions | undefined,

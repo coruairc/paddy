@@ -112,7 +112,7 @@ export async function collectGatewayHealthFindings(
         ...historyFindings,
         warning(
           "Authenticated Gateway health inspection was intentionally skipped because an active credential uses an exec SecretRef.",
-          "Rerun `openclaw doctor --lint --only core/doctor/gateway-health --allow-exec` to permit configured secret execution.",
+          "Rerun `paddy doctor --lint --only core/doctor/gateway-health --allow-exec` to permit configured secret execution.",
         ),
       ];
     }
@@ -139,14 +139,14 @@ export async function collectGatewayHealthFindings(
     const sqliteWalWarning = formatSqliteWalHealthWarning(status.sqliteWal);
     if (sqliteWalWarning) {
       findings.push(
-        warning(`SQLite WAL: ${sqliteWalWarning}`, "Inspect openclaw status --deep output."),
+        warning(`SQLite WAL: ${sqliteWalWarning}`, "Inspect paddy status --deep output."),
       );
     }
     if (status.installationReplacementWarning) {
       findings.push(
         warning(
           formatGatewayHealthDiagnostic(status.installationReplacementWarning),
-          "Wait for the service manager to restart the Gateway; for a foreground Gateway, run `openclaw gateway run` again after it exits.",
+          "Wait for the service manager to restart the Gateway; for a foreground Gateway, run `paddy gateway run` again after it exits.",
         ),
       );
     }
@@ -157,7 +157,7 @@ export async function collectGatewayHealthFindings(
         ...historyFindings,
         warning(
           `Gateway health inspection could not be prepared: ${formatGatewayHealthDiagnostic(error)}`,
-          "Fix Gateway connection configuration, then rerun `openclaw doctor --lint --only core/doctor/gateway-health`.",
+          "Fix Gateway connection configuration, then rerun `paddy doctor --lint --only core/doctor/gateway-health`.",
         ),
       ];
     }
@@ -178,7 +178,7 @@ export async function collectGatewayHealthFindings(
             fixHint:
               mode === "remote"
                 ? "Verify the remote Gateway URL, network path, TLS settings, and credentials."
-                : "Inspect the service with `openclaw gateway status --deep`, or run `openclaw doctor` for guided checks.",
+                : "Inspect the service with `paddy gateway status --deep`, or run `paddy doctor` for guided checks.",
           };
     return [...historyFindings, warning(diagnostic.message, diagnostic.fixHint)];
   }
@@ -227,8 +227,8 @@ function noteCliGatewayVersionSkew(status: StatusSummary | undefined): void {
   note(
     [
       `This command is ${PRODUCT_NAME} ${VERSION}; the running Gateway is ${PRODUCT_NAME} ${gatewayVersion}.`,
-      "Check `openclaw --version`, `which openclaw`, and `openclaw gateway status --deep`.",
-      `If this mismatch is unexpected, update PATH so \`openclaw\` points to the version you want, or reinstall the Gateway service from that same ${PRODUCT_NAME} install.`,
+      "Check `paddy --version`, `which paddy`, and `paddy gateway status --deep`.",
+      `If this mismatch is unexpected, update PATH so \`paddy\` points to the version you want, or reinstall the Gateway service from that same ${PRODUCT_NAME} install.`,
     ].join("\n"),
     `${PRODUCT_NAME} version mismatch`,
   );
@@ -408,7 +408,7 @@ export async function checkGatewayHealth(params: {
           isGatewayCallTimeout(formatErrorMessage(channelsResult.reason))
             ? slowDiagnosticNote("channel")
             : `Channel status probe failed: ${sanitizeTerminalText(formatErrorMessage(channelsResult.reason))}`,
-          `Retry: ${formatCliCommand("openclaw channels status --probe")}`,
+          `Retry: ${formatCliCommand("paddy channels status --probe")}`,
         ].join("\n"),
         "Channel warnings",
       );
@@ -425,7 +425,7 @@ export async function checkGatewayHealth(params: {
           isGatewayCallTimeout(formatErrorMessage(exporterResult.reason))
             ? slowDiagnosticNote("exporter")
             : `Exporter diagnostics failed: ${sanitizeTerminalText(formatErrorMessage(exporterResult.reason))}`,
-          `Retry: ${formatCliCommand("openclaw gateway stability --type telemetry.exporter")}`,
+          `Retry: ${formatCliCommand("paddy gateway stability --type telemetry.exporter")}`,
         ].join("\n"),
         "Telemetry exporters",
       );

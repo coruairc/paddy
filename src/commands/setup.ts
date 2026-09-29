@@ -53,12 +53,14 @@ export async function setupCommand(
         import("../config/issue-format.js"),
       ]);
       writeRuntimeJson(runtime, {
-        ...formatCliJsonFailure(`${PRODUCT_NAME} config is invalid: ${shortenHomePath(configPath)}`),
+        ...formatCliJsonFailure(
+          `${PRODUCT_NAME} config is invalid: ${shortenHomePath(configPath)}`,
+        ),
         issues: normalizeConfigIssues(snapshot.issues),
       });
     }
     runtime.error(
-      `Config invalid at ${(await loadConfigLoggingModule()).formatConfigFilePath(configPath)}. Run \`${formatCliCommand("openclaw doctor --fix")}\` to apply supported repairs, then re-run setup.`,
+      `Config invalid at ${(await loadConfigLoggingModule()).formatConfigFilePath(configPath)}. Run \`${formatCliCommand("paddy doctor --fix")}\` to apply supported repairs, then re-run setup.`,
     );
     runtime.exit(1);
     return;
@@ -285,9 +287,9 @@ export async function setupCommand(
   runtime.log(`Sessions OK: ${shortenHomePath(sessionsDir)}`);
   runtime.log("");
   runtime.log("Setup complete: config, workspace, and session directories are ready.");
-  runtime.log(`Next guided path: ${formatCliCommand("openclaw onboard")}.`);
+  runtime.log(`Next guided path: ${formatCliCommand("paddy onboard")}.`);
   runtime.log(
-    `Next targeted changes: ${formatCliCommand("openclaw configure")} for models, channels, Gateway, plugins, skills, and health checks.`,
+    `Next targeted changes: ${formatCliCommand("paddy configure")} for models, channels, Gateway, plugins, skills, and health checks.`,
   );
-  runtime.log(`Add a chat channel later: ${formatCliCommand("openclaw channels add")}.`);
+  runtime.log(`Add a chat channel later: ${formatCliCommand("paddy channels add")}.`);
 }

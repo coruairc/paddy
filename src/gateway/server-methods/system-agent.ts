@@ -232,7 +232,7 @@ export const systemAgentHandlers: GatewayRequestHandlers = {
                 const snapshot = await setupShared.readSetupConfigFileSnapshot();
                 if (!snapshot.valid) {
                   throw new Error(
-                    "Config is invalid. Run `openclaw doctor` before preparing a model.",
+                    "Config is invalid. Run `paddy doctor` before preparing a model.",
                   );
                 }
                 // Match the classic wizard: mutate the authored shape, not runtimeConfig,
@@ -262,7 +262,7 @@ export const systemAgentHandlers: GatewayRequestHandlers = {
                 );
                 if (!prepared || prepared.retrySelection) {
                   throw new Error(
-                    `Provider setup resolution failed for "${params.authChoice}". Run \`openclaw doctor --fix\`, restart the Gateway, and try again.`,
+                    `Provider setup resolution failed for "${params.authChoice}". Run \`paddy doctor --fix\`, restart the Gateway, and try again.`,
                   );
                 }
                 signal.throwIfAborted();
@@ -367,9 +367,13 @@ export const systemAgentHandlers: GatewayRequestHandlers = {
         respond(
           false,
           undefined,
-          errorShape(ErrorCodes.INVALID_REQUEST, `${PRODUCT_NAME} session belongs to another caller.`, {
-            details: buildSystemAgentSessionInvalidatedErrorDetails(),
-          }),
+          errorShape(
+            ErrorCodes.INVALID_REQUEST,
+            `${PRODUCT_NAME} session belongs to another caller.`,
+            {
+              details: buildSystemAgentSessionInvalidatedErrorDetails(),
+            },
+          ),
         );
         return undefined;
       }

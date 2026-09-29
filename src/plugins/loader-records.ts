@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { collectErrorGraphCandidates, extractErrorCode, readErrorCause } from "../infra/errors.js";
 import { parseBooleanValue } from "../utils/boolean.js";
 import { VERSION } from "../version.js";
@@ -24,7 +25,6 @@ import {
   type DegradedPlugin,
 } from "./runtime-degraded-state.js";
 import type { PluginLogger } from "./types.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 /** Builds the registry record shape shared by plugin loading, status, and diagnostics. */
 export function createPluginRecord(params: {
@@ -179,7 +179,7 @@ function resolvePluginImportHint(
   try {
     const text = String(node).replaceAll("\\", "/");
     const seam =
-      /(?:The requested module ['"]openclaw\/|Package subpath ['"]\.\/)(plugin-sdk\/[\w./-]{1,160})['"] (?:does not provide an export named|is not defined by ["']exports["'] in .*\/openclaw\/package\.json)/.exec(
+      /(?:The requested module ['"]paddy\/|Package subpath ['"]\.\/)(plugin-sdk\/[\w./-]{1,160})['"] (?:does not provide an export named|is not defined by ["']exports["'] in .*\/paddy\/package\.json)/.exec(
         text,
       )?.[1];
     if (seam) {
@@ -198,7 +198,7 @@ function resolvePluginImportHint(
       const repair = sdkCompatibility.nestedSdk
         ? `this plugin bundles an incompatible ${PRODUCT_NAME} SDK; update it or contact its author`
         : /^[a-z0-9_][a-z0-9_.-]*$/i.test(record.id)
-          ? `run \`openclaw plugins update ${record.id}\``
+          ? `run \`paddy plugins update ${record.id}\``
           : "update this plugin or contact its author";
       return {
         hint: `Plugin ${record.id} cannot import ${sdkCompatibility.seam} (built with ${PRODUCT_NAME} ${record.builtWithOpenClawVersion ?? "unknown"}; running core ${VERSION}); ${repair}`,
@@ -356,7 +356,7 @@ export function recordBundleDiagnostics(params: {
       !isBundleCapabilitySupported(params.record.bundleFormat, capability),
   );
   for (const capability of unsupportedCapabilities) {
-    warn(`bundle capability detected but not wired into OpenClaw yet: ${capability}`);
+    warn(`bundle capability detected but not wired into Paddy yet: ${capability}`);
   }
   if (
     params.record.enabled &&

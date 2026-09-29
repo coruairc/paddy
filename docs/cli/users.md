@@ -1,16 +1,16 @@
 ---
-summary: "CLI reference for `openclaw users` (profiles, email aliases, and duplicate merges)"
+summary: "CLI reference for `paddy users` (profiles, email aliases, and duplicate merges)"
 read_when:
   - You need to find a durable Gateway profile ID
   - You want to link an email alias or merge duplicate profiles
 title: "Users"
 ---
 
-# `openclaw users`
+# `paddy users`
 
 Manage durable Gateway profiles through the Gateway RPC API. These profiles
 identify people; they are separate from the CLI's `--profile` option, which
-selects an isolated OpenClaw configuration and state directory.
+selects an isolated Paddy configuration and state directory.
 
 ## Common options
 
@@ -24,8 +24,8 @@ Place these options after the subcommand.
 ## List profiles
 
 ```bash
-openclaw users list
-openclaw users list --json
+paddy users list
+paddy users list --json
 ```
 
 Requires `operator.read`. Human output lists each profile's ID, display name, and
@@ -34,7 +34,7 @@ email aliases. Use the durable IDs when linking or merging profiles.
 ## Link an email alias
 
 ```bash
-openclaw users link-email person@example.com --to <profile-id>
+paddy users link-email person@example.com --to <profile-id>
 ```
 
 Requires `operator.admin`. Calls `users.linkEmail` to move one email alias to the
@@ -44,8 +44,8 @@ target. Otherwise, it remains a separate profile with its other aliases.
 ## Merge duplicate profiles
 
 ```bash
-openclaw users merge <source-profile-id> --into <target-profile-id>
-openclaw users merge <source-profile-id> --into <target-profile-id> --json
+paddy users merge <source-profile-id> --into <target-profile-id>
+paddy users merge <source-profile-id> --into <target-profile-id> --json
 ```
 
 Requires `operator.admin`. Calls `users.merge` with `sourceProfileId` and

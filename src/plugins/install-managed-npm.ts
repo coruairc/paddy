@@ -189,7 +189,7 @@ export async function installPluginFromManagedNpmRoot(
         logger,
       });
       if (repairedOpenClawPeer) {
-        logger.info?.(`Repaired stale openclaw peer dependency in ${npmRoot}`);
+        logger.info?.(`Repaired stale paddy peer dependency in ${npmRoot}`);
       }
     }
     const managedOverrides = await readOpenClawManagedNpmRootOverrides();
@@ -452,7 +452,7 @@ export async function installPluginFromManagedNpmRoot(
     } catch (error) {
       return {
         ok: false,
-        error: `Failed to repair openclaw peer links after npm install: ${String(error)}`,
+        error: `Failed to repair paddy peer links after npm install: ${String(error)}`,
       };
     }
     if (await auditDeclaredOpenClawHostDependency({ packageDir: installRoot })) {

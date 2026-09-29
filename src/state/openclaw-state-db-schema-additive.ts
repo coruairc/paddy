@@ -2,6 +2,7 @@ import path from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { safeParseJsonRecord } from "@openclaw/normalization-core/json-coercion";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { assertSqliteSchemaContains } from "../infra/sqlite-schema-contract.js";
 import { extractSqliteTableSchema } from "../infra/sqlite-schema-sql.js";
 import {
@@ -21,7 +22,6 @@ import {
 } from "./openclaw-state-db-legacy-backfills.js";
 import { ensureColumn, tableExists, tableHasColumn } from "./openclaw-state-db-schema-helpers.js";
 import { OPENCLAW_STATE_SCHEMA_SQL } from "./openclaw-state-schema.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 const repositoryWorkspacePendingSchemas = new WeakSet<DatabaseSync>();
 
@@ -116,7 +116,7 @@ export function ensureConfigRevisionKeySchema(database: DatabaseSync): void {
 export function assertAgentDeletionJournalAvailable(database: DatabaseSync): void {
   if (!tableHasColumn(database, "agent_deletion_journal", "agent_id")) {
     throw new Error(
-      "Agent deletion journal missing; run openclaw doctor --fix to reconstruct it before restoring or deleting agents.",
+      "Agent deletion journal missing; run paddy doctor --fix to reconstruct it before restoring or deleting agents.",
     );
   }
 }

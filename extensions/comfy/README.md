@@ -1,13 +1,13 @@
 # @openclaw/comfy-provider
 
 Official ComfyUI image, video, and music generation provider plugin for
-OpenClaw.
+Paddy.
 
 ## Install
 
 ```bash
 openclaw plugins install @openclaw/comfy-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 ## Configure
@@ -23,4 +23,4 @@ Full workflow, model, and provider configuration:
 
 - Plugin id: `comfy`
 - Package: `@openclaw/comfy-provider`
-- Minimum OpenClaw host: `2026.7.2`
+- Minimum Paddy host: `2026.7.2`

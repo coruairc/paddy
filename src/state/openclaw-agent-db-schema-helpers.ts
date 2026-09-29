@@ -1,5 +1,6 @@
 import type { DatabaseSync } from "node:sqlite";
 import { hasLegacyMemoryRecallMetadataColumns } from "../../packages/memory-host-sdk/src/host/memory-schema.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { repairCanonicalSqliteIndexes } from "../infra/sqlite-index-schema.js";
 import {
   assertSqliteSchemaContains,
@@ -60,7 +61,6 @@ import {
 } from "./openclaw-agent-session-snapshots-schema.js";
 import { withLegacyAgentStorageSchema } from "./openclaw-agent-storage-schema.js";
 import { tableExists } from "./openclaw-state-db-schema-helpers.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 export {
   assertSupportedAgentSchemaVersion,
@@ -147,7 +147,7 @@ export function assertOpenClawAgentCurrentRuntimeSchema(
   const metadata = readExistingAgentSchemaMeta(database);
   if (!metadata) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw agent database ${options.pathname} has no schema ownership metadata. Run openclaw doctor --fix to inspect and repair its ownership.`,
+      `Paddy agent database ${options.pathname} has no schema ownership metadata. Run paddy doctor --fix to inspect and repair its ownership.`,
     );
   }
   assertExistingAgentSchemaOwner(metadata, agentId, options.pathname);
@@ -158,7 +158,7 @@ export function assertOpenClawAgentCurrentRuntimeSchema(
   }
   if (hasRetiredAgentStateLeaseSchema(database)) {
     throw new SqliteSchemaMismatchError(
-      `${PRODUCT_NAME} agent database ${options.pathname} retains retired state_leases storage; run openclaw doctor --fix before using it.`,
+      `${PRODUCT_NAME} agent database ${options.pathname} retains retired state_leases storage; run paddy doctor --fix before using it.`,
     );
   }
   assertOpenClawAgentSchemaContains(database, options.pathname, OPENCLAW_AGENT_SCHEMA_SQL);
@@ -214,7 +214,7 @@ export function repairAndAssertOpenClawAgentV14SchemaForMigration(
   const metadata = readExistingAgentSchemaMeta(database);
   if (!metadata) {
     throw new SqliteSchemaMismatchError(
-      `OpenClaw agent database ${options.pathname} has no schema ownership metadata. Run openclaw doctor --fix to inspect and repair its ownership.`,
+      `Paddy agent database ${options.pathname} has no schema ownership metadata. Run paddy doctor --fix to inspect and repair its ownership.`,
     );
   }
   assertExistingAgentSchemaOwner(metadata, agentId, options.pathname);

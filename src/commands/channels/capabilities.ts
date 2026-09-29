@@ -280,7 +280,7 @@ export async function channelsCapabilitiesCommand(
 
   if ((!rawChannel || rawChannel === "all") && (opts.account || rawTarget)) {
     const option = opts.account ? "--account" : "--target";
-    const message = `${option} requires a specific --channel. Run ${formatCliCommand("openclaw channels list")} to choose one.`;
+    const message = `${option} requires a specific --channel. Run ${formatCliCommand("paddy channels list")} to choose one.`;
     throw new ExpectedCliError({ message, humanOutput: danger(message), machineOutput: message });
   }
 
@@ -322,7 +322,7 @@ export async function channelsCapabilitiesCommand(
       runtime.log(
         theme.muted(
           `No configured channel capabilities found. Run ${formatCliCommand(
-            "openclaw channels list --all",
+            "paddy channels list --all",
           )} to see available channels.`,
         ),
       );

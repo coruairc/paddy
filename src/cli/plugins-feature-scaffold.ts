@@ -24,9 +24,9 @@ export function writeFeaturePluginScaffold(params: {
         type: "module",
         private: true,
         scripts: {
-          build: "tsc -p tsconfig.json && openclaw plugins build",
-          validate: "openclaw plugins validate --json",
-          pack: "openclaw plugins pack --json",
+          build: "tsc -p tsconfig.json && paddy plugins build",
+          validate: "paddy plugins validate --json",
+          pack: "paddy plugins pack --json",
         },
         files: ["dist", "openclaw.plugin.json", "README.md"],
         peerDependencies: { openclaw: `>=${VERSION}` },

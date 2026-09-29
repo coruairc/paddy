@@ -29,8 +29,7 @@ function* mcpServerEntries(value: unknown): Generator<[string, Record<string, un
 
 const MCP_SERVER_TYPE_RULE: LegacyConfigRule = {
   path: ["mcp", "servers"],
-  message:
-    `mcp.servers entries use ${PRODUCT_NAME} transport names; CLI-native type aliases are legacy here. Run "openclaw doctor --fix".`,
+  message: `mcp.servers entries use ${PRODUCT_NAME} transport names; CLI-native type aliases are legacy here. Run "paddy doctor --fix".`,
   match: (value) =>
     isRecord(value) &&
     Object.values(value).some((server) => isRecord(server) && isKnownCliMcpTypeAlias(server.type)),
@@ -43,7 +42,7 @@ const MCP_SERVER_DISABLED_RULES: LegacyConfigRule[] = [
   path,
   message:
     `${path.join(".")} entries use the unsupported "disabled" key; use "enabled" with the inverse boolean value. ` +
-    'Run "openclaw doctor --fix" to migrate it.',
+    'Run "paddy doctor --fix" to migrate it.',
   match: (value) =>
     isRecord(value) &&
     Object.values(value).some((server) => isRecord(server) && typeof server.disabled === "boolean"),
@@ -54,7 +53,7 @@ const MCP_SERVER_TIMEOUT_ALIASES_RULES: LegacyConfigRule[] = [
   ["nodeHost", "mcp", "servers"],
 ].map((path) => ({
   path,
-  message: `${path.join(".")} timeout aliases were retired; use connectionTimeoutMs and requestTimeoutMs. Run "openclaw doctor --fix".`,
+  message: `${path.join(".")} timeout aliases were retired; use connectionTimeoutMs and requestTimeoutMs. Run "paddy doctor --fix".`,
   match: (value) =>
     isRecord(value) &&
     Object.values(value).some(
@@ -79,7 +78,7 @@ const MCP_SERVER_ALIASES_RULES: LegacyConfigRule[] = [
   ["nodeHost", "mcp", "servers"],
 ].map((path) => ({
   path,
-  message: `${path.join(".")} legacy aliases were retired; use camelCase spellings and cwd. Run "openclaw doctor --fix".`,
+  message: `${path.join(".")} legacy aliases were retired; use camelCase spellings and cwd. Run "paddy doctor --fix".`,
   match: (value) =>
     isRecord(value) &&
     Object.values(value).some((server) => isRecord(server) && hasMcpServerLegacyAliases(server)),

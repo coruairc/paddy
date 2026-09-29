@@ -1,7 +1,7 @@
 ---
 summary: "Matrix support status, setup, and configuration examples"
 read_when:
-  - Setting up Matrix in OpenClaw
+  - Setting up Matrix in Paddy
   - Configuring Matrix E2EE and verification
 title: "Matrix"
 ---
@@ -141,7 +141,7 @@ Room allowlist keys (`groups`, legacy `rooms`) should be room IDs or aliases. Pl
 - `replyToMode`: `"off"` (default), `"first"`, `"all"`, or `"batched"`.
 - `threadReplies`: `"off"`, `"inbound"` (default), or `"always"`.
 - `threadBindings`: per-channel overrides for thread-bound session routing and lifecycle.
-- `streaming`: nested object `{ mode, chunkMode, block: { enabled, coalesce }, preview: { toolProgress }, progress: { label, labels, maxLines, maxLineChars, toolProgress } }`. `mode` is `"off"` (default), `"partial"`, `"quiet"`, or `"progress"`. Legacy scalar/boolean spellings migrate via `openclaw doctor --fix`.
+- `streaming`: nested object `{ mode, chunkMode, block: { enabled, coalesce }, preview: { toolProgress }, progress: { label, labels, maxLines, maxLineChars, toolProgress } }`. `mode` is `"off"` (default), `"partial"`, `"quiet"`, or `"progress"`. Legacy scalar/boolean spellings migrate via `paddy doctor --fix`.
 - `streaming.block.enabled`: when `true`, completed assistant blocks are kept as separate progress messages. Default: `false`.
 - `markdown`: optional Markdown rendering config for outbound text.
 - `responsePrefix`: optional string prepended to outbound replies.

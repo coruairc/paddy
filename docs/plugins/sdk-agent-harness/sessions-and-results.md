@@ -1,6 +1,6 @@
 ---
 doc-schema-version: 1
-summary: "Native session bindings, the OpenClaw transcript mirror, tool and media result delivery, terminal tool outcomes, and settled-turn finalization"
+summary: "Native session bindings, the Paddy transcript mirror, tool and media result delivery, terminal tool outcomes, and settled-turn finalization"
 read_when:
   - You are storing a native session, thread, or resume token
   - You are returning tool, media, or terminal-outcome results
@@ -9,20 +9,20 @@ title: "Agent harness sessions and results"
 sidebarTitle: "Sessions and results"
 ---
 
-How a native session binds to an OpenClaw session and mirrors into its transcript, and how tool, media, terminal-outcome, and settled-turn results come back through the attempt result. Part of the [Agent harness plugins](/plugins/sdk-agent-harness) reference.
+How a native session binds to a Paddy session and mirrors into its transcript, and how tool, media, terminal-outcome, and settled-turn results come back through the attempt result. Part of the [Agent harness plugins](/plugins/sdk-agent-harness) reference.
 
 ## Native sessions and transcript mirror
 
 A harness may keep a native session id, thread id, or daemon-side resume
-token. Keep that binding explicitly associated with the OpenClaw session, and
-keep mirroring user-visible assistant/tool output into the OpenClaw
+token. Keep that binding explicitly associated with the Paddy session, and
+keep mirroring user-visible assistant/tool output into the Paddy
 transcript.
 
-The OpenClaw transcript remains the compatibility layer for:
+The Paddy transcript remains the compatibility layer for:
 
 - channel-visible session history
 - transcript search and indexing
-- switching back to the built-in OpenClaw harness on a later turn
+- switching back to the built-in Paddy harness on a later turn
 - generic `/new`, `/reset`, and session deletion behavior
 
 For user-message mirrors, use
@@ -120,13 +120,13 @@ shallower siblings still contribute to the preview. The helper can return
 `undefined`. Keep the original arguments for validation and execution: display
 metadata is neither an argument replacement nor a general-purpose traversal limit.
 
-Core constructs the OpenClaw tool list and passes it into the prepared
+Core constructs the Paddy tool list and passes it into the prepared
 attempt. When a harness executes a dynamic tool call, return the tool result
 back through the harness result shape instead of sending channel media
 yourself.
 
 This keeps text, image, video, music, TTS, approval, and messaging-tool
-outputs on the same delivery path as OpenClaw-backed runs.
+outputs on the same delivery path as Paddy-backed runs.
 
 For messaging tools, read the original result's `details.messageDelivery` with
 `readEmbeddedMessageDeliveryFact` from `openclaw/plugin-sdk/agent-harness-runtime`.
@@ -168,14 +168,14 @@ or incomplete receipt and treats missing completion intent as `false`.
 Set `AgentHarnessAttemptResult.hostOwnedToolMediaUrls` only for native artifacts
 that the trusted harness runtime created and persisted itself. Every entry must
 also appear in `toolMediaUrls`. Never include model-selected dynamic-tool or
-OpenClaw-tool media. On `message_tool_only` routes, this narrow provenance lets
+Paddy-tool media. On `message_tool_only` routes, this narrow provenance lets
 native runtime artifacts survive source-reply suppression; normal send policy
 and ambient-room admission still apply.
 
 ## Terminal tool outcomes
 
 `AgentHarnessAttemptParams.observeToolTerminal` is the host-owned terminal
-outcome accumulator. A harness that executes OpenClaw dynamic tools or native
+outcome accumulator. A harness that executes Paddy dynamic tools or native
 tools must call it when each tool reaches one terminal outcome, before the
 attempt result is finalized. Harnesses that do not execute tools do not need to
 call it.
@@ -193,9 +193,9 @@ Report facts from the execution boundary:
 - Report `outcome: "success"` or `outcome: "failure"`. Include the structured
   failure fields available from the runtime instead of inferring failure from
   display text.
-- Use `nativeMutation` only for native tools that do not use an OpenClaw tool
+- Use `nativeMutation` only for native tools that do not use a Paddy tool
   definition. Supply protocol-owned mutation and replay facts there; do not
-  copy OpenClaw's mutation classifier into the harness.
+  copy Paddy's mutation classifier into the harness.
 
 The callback returns the canonical resolution for that call. Carry its
 `lastToolError` into `AgentHarnessAttemptResult` and use its execution,
@@ -205,12 +205,12 @@ successful tools and clears it only after the matching action succeeds.
 
 The callback remains optional for source compatibility with older experimental
 harnesses. Optional does not mean ignorable for a harness that executes tools:
-without terminal reports, OpenClaw cannot preserve mutating-tool failure truth
+without terminal reports, Paddy cannot preserve mutating-tool failure truth
 across later tool calls, including quiet heartbeat completion.
 
 ## Settled tool finalization
 
-OpenClaw may need one final visible answer after a harness has completed every
+Paddy may need one final visible answer after a harness has completed every
 tool call but its native turn ended without assistant text. A harness can opt
 into that recovery by implementing `finalizeSettledTurn({ attempt,
 settledAttempt })`.
@@ -225,7 +225,7 @@ The callback is a separate capability, not another ordinary attempt. It must:
 - fail closed if its selected transcript/isolation strategy cannot enforce
   those restrictions.
 
-OpenClaw invokes the callback once as a terminal sub-operation, outside the
+Paddy invokes the callback once as a terminal sub-operation, outside the
 ordinary attempt and retry loop. A failure ends the run with the
 side-effect-aware incomplete-turn warning; it cannot enter ordinary
 auth/profile rotation, model fallback, context recovery, compaction
@@ -280,9 +280,9 @@ projection field.
 
 Do not implement this callback by calling `runAttempt` with a best-effort
 `disableTools` hint. The harness owner must enforce the complete native
-capability boundary. OpenClaw does not provide a generic fallback because it
+capability boundary. Paddy does not provide a generic fallback because it
 cannot attest that an arbitrary native runtime honored those restrictions.
 
 The callback remains optional for experimental third-party harness
-compatibility. When the selected harness omits it, OpenClaw preserves the
+compatibility. When the selected harness omits it, Paddy preserves the
 existing incomplete-turn error instead of risking repeated side effects.

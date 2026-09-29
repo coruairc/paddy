@@ -1,5 +1,5 @@
 ---
-summary: "How OpenClaw picks an agent and session for each inbound message, and how replies route back"
+summary: "How Paddy picks an agent and session for each inbound message, and how replies route back"
 read_when:
   - Changing channel routing or inbox behavior
 title: "Channel routing"
@@ -7,7 +7,7 @@ title: "Channel routing"
 
 # Channels & routing
 
-OpenClaw routes replies **back to the channel where a message came from**. The
+Paddy routes replies **back to the channel where a message came from**. The
 model does not choose a channel; routing is deterministic and controlled by the
 host configuration. Under the default DM scope, direct messages from every
 channel converge on the agent's [main session](/concepts/main-session).
@@ -73,20 +73,20 @@ Examples:
 
 When `session.dmScope` is `main`, direct messages may share one main session.
 To prevent the session's `lastRoute` from being overwritten by non-owner DMs,
-OpenClaw infers a pinned owner from `allowFrom` when all of these are true:
+Paddy infers a pinned owner from `allowFrom` when all of these are true:
 
 - `allowFrom` has exactly one non-wildcard entry.
 - The entry can be normalized to a concrete sender ID for that channel.
 - The inbound DM sender does not match that pinned owner.
 
-In that mismatch case, OpenClaw still records inbound session metadata, but it
+In that mismatch case, Paddy still records inbound session metadata, but it
 skips updating the main session `lastRoute`.
 
 ## Guarded inbound recording
 
 Channel plugins can mark an inbound session record as `createIfMissing: false`
-when a guarded path must not create a new OpenClaw session. In that mode,
-OpenClaw may update metadata and `lastRoute` for an existing session, but it
+when a guarded path must not create a new Paddy session. In that mode,
+Paddy may update metadata and `lastRoute` for an existing session, but it
 does not create a route-only session entry just because a message was observed.
 
 ## Routing rules (how an agent is chosen)
@@ -183,10 +183,10 @@ the state directory (default `~/.openclaw`):
 
 Older installs may have legacy transcript JSONL files and a `sessions.json` row
 store under `~/.openclaw/agents/<agentId>/sessions/`. To import that history into
-SQLite, stop the Gateway, back up its state, and run `openclaw doctor --fix`
+SQLite, stop the Gateway, back up its state, and run `paddy doctor --fix`
 before restarting it. Gateway startup does not import legacy session files: if
 it finds a legacy store, it refuses readiness and prints the Doctor command for
-the active profile. Use `openclaw doctor --session-sqlite inspect
+the active profile. Use `paddy doctor --session-sqlite inspect
 --session-sqlite-all-agents` and the
 [Doctor](/cli/doctor#session-sqlite-migration) migration sequence for inspection
 and validation.

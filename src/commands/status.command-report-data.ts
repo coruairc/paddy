@@ -122,9 +122,9 @@ export async function buildStatusCommandReportData(params: {
       })
     : [
         theme.muted(
-          `Skipped in fast status. Full report: ${formatCliCommand("openclaw security audit")}`,
+          `Skipped in fast status. Full report: ${formatCliCommand("paddy security audit")}`,
         ),
-        theme.muted(`Deep probe: ${formatCliCommand("openclaw status --deep")}`),
+        theme.muted(`Deep probe: ${formatCliCommand("paddy status --deep")}`),
       ];
   return {
     heading: theme.heading,

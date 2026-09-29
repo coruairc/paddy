@@ -25,17 +25,17 @@ export class UpdateSchemaRefusalError extends Error {
   ) {
     const { targetVersion } = options;
     const commands = options.recovery?.commands ?? [
-      "openclaw gateway stop",
+      "paddy gateway stop",
       `npm install -g openclaw@${targetVersion} --allow-scripts=openclaw`,
-      "openclaw doctor --fix",
-      "openclaw gateway start",
+      "paddy doctor --fix",
+      "paddy gateway start",
     ];
     const reason =
       options.cause === undefined
         ? ""
         : ` Deferral failed: ${formatErrorMessage(options.cause).slice(0, 600)}.`;
     const summary =
-      `Doctor refused update-time schema repair driven by OpenClaw ${updaterVersion}: ` +
+      `Doctor refused update-time schema repair driven by Paddy ${updaterVersion}: ` +
       "this updater reopens the ledger with old code after migration, and version publication could not be deferred safely.";
     const details = databases
       .map(

@@ -199,7 +199,7 @@ export function createModelAccountConnectService(options: {
       );
       if (!provider) {
         throw new ModelAccountConnectInputError(
-          `unknown auth profile "${authProfileId}"; sign the account in first with "openclaw models auth login --provider <id> --profile-id ${authProfileId}", then link it`,
+          `unknown auth profile "${authProfileId}"; sign the account in first with "paddy models auth login --provider <id> --profile-id ${authProfileId}", then link it`,
         );
       }
       return setLink(action, provider, authProfileId);

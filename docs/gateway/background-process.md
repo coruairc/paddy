@@ -6,7 +6,7 @@ read_when:
 title: "Background exec and process tool"
 ---
 
-OpenClaw runs shell commands through the `exec` tool and keeps long-running tasks in memory. The `process` tool manages those background sessions.
+Paddy runs shell commands through the `exec` tool and keeps long-running tasks in memory. The `process` tool manages those background sessions.
 
 ## exec tool
 
@@ -67,14 +67,14 @@ Behavior:
 ### Disable automatic completion turns
 
 Background exec completion notifications are enabled by default. They can run a
-model turn marked `[OpenClaw exec completion]` even when
+model turn marked `[Paddy exec completion]` even when
 `agents.defaults.heartbeat.every` is `"0m"`: that setting disables recurring polls,
 not completion follow-ups.
 
 To keep background commands running without automatic completion turns, set:
 
 ```bash
-openclaw config set tools.exec.notifyOnExit false
+paddy config set tools.exec.notifyOnExit false
 ```
 
 An agent's `agents.entries.<id>.tools.exec.notifyOnExit` overrides the global
@@ -99,7 +99,7 @@ the environment, replacing its ownership, or stopping the node also stops its
 processes. Process handles do not survive a worker or node restart.
 
 If the node's pairing is revoked or its provider no longer recognizes the lease,
-the session placement fails. Physical cleanup can remain pending until OpenClaw
+the session placement fails. Physical cleanup can remain pending until Paddy
 confirms that the exact worker has stopped; an unconfirmed stop does not release
 its ownership record.
 
@@ -109,7 +109,7 @@ its proxy, not the development server: stop the server with `process kill`.
 
 ## Child process bridging
 
-After a host exec command finishes, OpenClaw releases its retained process
+After a host exec command finishes, Paddy releases its retained process
 scope before reporting completion. Children left behind by shell backgrounding
 (`&`) are stopped with that scope. To continue work across turns, start the
 long-running command with `background: true` and use `process` to collect its

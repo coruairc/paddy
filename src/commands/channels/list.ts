@@ -336,7 +336,7 @@ export async function channelsListCommand(
   runtime.log("");
   runtime.log(
     theme.muted(
-      "Model provider usage moved out of `channels list` — see `openclaw status` or `openclaw models list`.",
+      "Model provider usage moved out of `channels list` — see `paddy status` or `paddy models list`.",
     ),
   );
   runtime.log(`Docs: ${formatDocsLink("/gateway/configuration", "gateway/configuration")}`);

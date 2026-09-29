@@ -1,5 +1,5 @@
 ---
-summary: "Manage OpenClaw plugins from the Control UI or CLI"
+summary: "Manage Paddy plugins from the Control UI or CLI"
 read_when:
   - You want to browse, configure, enable, disable, or reload plugins in the Control UI
   - You want quick plugin list, install, update, inspect, or uninstall examples
@@ -14,7 +14,7 @@ The Control UI covers discovery, installation, schema-backed configuration,
 effective access, enablement, reload, and removal. The CLI adds update,
 advanced maintenance, and explicit install-source controls.
 For its full command contract, flags, source-selection rules, and edge cases, see
-[`openclaw plugins`](/cli/plugins).
+[`paddy plugins`](/cli/plugins).
 
 Typical workflow: find a package, install it, enable it, then verify the plugin's
 runtime registrations. Control UI actions apply to the running Gateway without
@@ -49,7 +49,7 @@ Open `/settings/plugins` for the searchable installed inventory. Its
 paths, and capability slots.
 
 Included plugins do not need a package install. Workboard, for example, is
-included with OpenClaw and disabled by default. Bundled plugins can be disabled
+included with Paddy and disabled by default. Bundled plugins can be disabled
 or reloaded but not removed.
 
 Inventory, configuration, and access inspection require `operator.read`.
@@ -65,7 +65,7 @@ connection. If application fails, the error distinguishes a rejected replacement
 from a change that was published before a later runtime failure.
 An install can remain saved even if its runtime fails to start. The page refreshes
 that installed entry and keeps the failure visible. Fix the reported problem, then
-choose **Reload** in its **Lifecycle** settings or run `openclaw plugins reload <plugin-id>`; repeating
+choose **Reload** in its **Lifecycle** settings or run `paddy plugins reload <plugin-id>`; repeating
 installation is unnecessary.
 
 **Reload** refreshes the backend plugin and its package entries while preserving
@@ -100,34 +100,34 @@ or update plugin packages. Use the CLI workflows below for those operations.
 ## List and search plugins
 
 ```bash
-openclaw plugins list
-openclaw plugins list --enabled
-openclaw plugins list --verbose
-openclaw plugins list --json
-openclaw plugins search "calendar"
+paddy plugins list
+paddy plugins list --enabled
+paddy plugins list --verbose
+paddy plugins list --json
+paddy plugins search "calendar"
 ```
 
 `--json` for scripts:
 
 ```bash
-openclaw plugins list --json \
+paddy plugins list --json \
   | jq '.plugins[] | {id, enabled, format, source, dependencyStatus}'
 ```
 
-`plugins list` is a cold inventory check: what OpenClaw can discover from
+`plugins list` is a cold inventory check: what Paddy can discover from
 config, manifests, and the persisted plugin registry. It does not prove an
 already-running Gateway imported the plugin runtime. JSON output includes
 registry diagnostics and each plugin's `dependencyStatus` (whether declared
 `dependencies`/`optionalDependencies` resolve on disk).
 
 `plugins search` queries ClawHub for installable plugin packages and prints
-an install hint (`openclaw plugins install clawhub:<package>`) per result.
+an install hint (`paddy plugins install clawhub:<package>`) per result.
 
 ## Enable and disable plugins
 
 ```bash
-openclaw plugins enable <plugin-id>
-openclaw plugins disable <plugin-id>
+paddy plugins enable <plugin-id>
+paddy plugins disable <plugin-id>
 ```
 
 Toggles a plugin's config entry without touching installed files. Some
@@ -136,16 +136,16 @@ are enabled by default; others require `enable` after install.
 
 ## Capability consent
 
-OpenClaw asks you to review a third-party plugin's declared capabilities before
+Paddy asks you to review a third-party plugin's declared capabilities before
 installing or enabling it. The consent screen identifies the plugin, its
 version and source, artifact integrity, and available trust information. It
 also lists declared channels, providers, tools, hooks, MCP servers, CLI
 commands and backends, skills, and dangerous configuration flags, along with
 the operator grants that apply to hooks, model access, and subagents.
 
-Bundled plugins and verified first-party plugins from OpenClaw's official
+Bundled plugins and verified first-party plugins from Paddy's official
 catalog do not require this capability review during setup, install, enable,
-update, or Doctor repair. For separately installed first-party plugins, OpenClaw checks
+update, or Doctor repair. For separately installed first-party plugins, Paddy checks
 the actual package identity against its catalog and verified npm source record
 or official-channel record from `https://clawhub.ai`. A matching plugin id or
 package name alone is insufficient: local copies, archives, git installs,
@@ -163,7 +163,7 @@ surfaces can refresh an existing valid acceptance. Updating a disabled
 plugin preserves disablement and defers any required consent until enablement.
 Reinstalling through `plugins install` also preserves an authored `enabled: false`,
 but requires consent before committing the install when no valid acceptance can
-be reused. Run `openclaw plugins enable <plugin-id>` to activate it afterward.
+be reused. Run `paddy plugins enable <plugin-id>` to activate it afterward.
 
 Already-enabled third-party legacy installations remain usable without an initial review;
 disabling and re-enabling them requires consent. Setup rechecks consent when
@@ -172,7 +172,7 @@ replacement with unaccepted capabilities.
 
 Declining an update's capability review leaves the previous plugin enabled
 and unchanged. Repairing a missing or damaged artifact requires a fresh review;
-OpenClaw cannot carry acceptance forward from an artifact it cannot verify.
+Paddy cannot carry acceptance forward from an artifact it cannot verify.
 
 Carrying an earlier acceptance forward requires the install record to pin
 artifact integrity, which registry and ClawHub installs provide. Sources
@@ -188,9 +188,9 @@ retry setup. Noninteractive plugin install, update, and enable commands also
 require the explicit flag when consent is needed:
 
 ```bash
-openclaw plugins install clawhub:<package> --accept-capabilities
-openclaw plugins update <plugin-id> --accept-capabilities
-openclaw plugins enable <plugin-id> --accept-capabilities
+paddy plugins install clawhub:<package> --accept-capabilities
+paddy plugins update <plugin-id> --accept-capabilities
+paddy plugins enable <plugin-id> --accept-capabilities
 ```
 
 Doctor uses the same source checks and review before installing or adopting a replacement plugin.
@@ -213,7 +213,7 @@ in a workspace or through `plugins.load.paths`, without a managed install
 record, cannot persist capability acceptance. Their details in the Control UI
 still show declared capabilities.
 
-`openclaw plugins install --link <path>` creates a managed install record and
+`paddy plugins install --link <path>` creates a managed install record and
 requires capability consent even though it loads the plugin from its source
 directory. It is not the same as adding a bare `plugins.load.paths` entry.
 
@@ -221,31 +221,31 @@ directory. It is not the same as adding a bare `plugins.load.paths` entry.
 
 ```bash
 # Search ClawHub for plugin packages.
-openclaw plugins search "calendar"
+paddy plugins search "calendar"
 
 # Install from ClawHub.
-openclaw plugins install clawhub:<package>
-openclaw plugins install clawhub:<package>@1.2.3
-openclaw plugins install clawhub:<package>@beta
+paddy plugins install clawhub:<package>
+paddy plugins install clawhub:<package>@1.2.3
+paddy plugins install clawhub:<package>@beta
 
 # Install from npm.
-openclaw plugins install npm:<package>
+paddy plugins install npm:<package>
 openclaw plugins install npm:@scope/openclaw-plugin@1.2.3
 openclaw plugins install npm:@openclaw/codex
 
 # Install from a local npm-pack artifact.
-openclaw plugins install npm-pack:<path.tgz>
+paddy plugins install npm-pack:<path.tgz>
 
 # Install from git or a local development checkout.
 openclaw plugins install git:github.com/acme/openclaw-plugin@v1.0.0
-openclaw plugins install ./my-plugin
-openclaw plugins install --link ./my-plugin
+paddy plugins install ./my-plugin
+paddy plugins install --link ./my-plugin
 ```
 
 Bare package specs install from npm, unless the name matches a bundled or
-official plugin id, in which case OpenClaw uses
+official plugin id, in which case Paddy uses
 that local/official copy instead. Use `clawhub:`, `npm:`, `git:`, or
-`npm-pack:` for deterministic source selection. OpenClaw's bundled and official
+`npm-pack:` for deterministic source selection. Paddy's bundled and official
 catalog packages are trusted alongside ClawHub packages. New arbitrary npm,
 git, local path/archive, `npm-pack:`, or marketplace sources require
 `--force` in noninteractive installs after you review
@@ -253,13 +253,13 @@ and trust the source.
 
 `--force` confirms a non-ClawHub source without prompting and overwrites an
 existing install target when needed. For routine upgrades of a tracked npm,
-ClawHub, or hook-pack install, use `openclaw plugins update` instead. With
+ClawHub, or hook-pack install, use `paddy plugins update` instead. With
 `--link`, `--force` only confirms the source; the linked directory is not
 copied or overwritten.
 
 If a newly installed plugin requires configuration that is not present yet,
-OpenClaw records the install but leaves the plugin disabled. Configure
-`plugins.entries.<id>.config`, then run `openclaw plugins enable <id>`. If an
+Paddy records the install but leaves the plugin disabled. Configure
+`plugins.entries.<id>.config`, then run `paddy plugins enable <id>`. If an
 existing config entry is present but invalid, install fails without rewriting it.
 
 A plugin package can expose multiple child entries. Installation tracks that
@@ -293,11 +293,11 @@ After an offline installation, start the Gateway to use the installed runtime
 surfaces. To inspect their registration:
 
 ```bash
-openclaw plugins inspect <plugin-id> --runtime --json
+paddy plugins inspect <plugin-id> --runtime --json
 ```
 
 The Gateway reuses its current plugin inventory until startup or an explicit
-owner update. Run `openclaw plugins reload <plugin-id>` after source or manifest
+owner update. Run `paddy plugins reload <plugin-id>` after source or manifest
 edits. For API clients, `plugins.reload` takes `plugins: [{ pluginId }]` to reload
 one installed plugin, or multiple targets in the same request, and
 `plugins.refresh` refreshes the inventory.
@@ -336,7 +336,7 @@ further model steps to wait for completion; completed actions and accepted steer
 remain in the transcript and are not replayed. Finish a running program before
 asking it to use changed tools.
 
-Managed Codex sessions continue in the same OpenClaw conversation after stopping
+Managed Codex sessions continue in the same Paddy conversation after stopping
 the current native turn and its background terminals, then creating a thread with
 updated tools. Completed tool results, accepted follow-up messages, and ordinary
 question answers carry into that thread as bounded conversation context. If native cleanup or thread release
@@ -355,10 +355,10 @@ inspect that result before retrying activation, rather than reinstalling it.
 ## Update plugins
 
 ```bash
-openclaw plugins update <plugin-id>
-openclaw plugins update <npm-package-or-spec>
-openclaw plugins update --all
-openclaw plugins update <plugin-id> --dry-run
+paddy plugins update <plugin-id>
+paddy plugins update <npm-package-or-spec>
+paddy plugins update --all
+paddy plugins update <plugin-id> --dry-run
 ```
 
 Passing a plugin id reuses its tracked install spec: stored dist-tags
@@ -369,17 +369,17 @@ have their stale entries, allow/deny policy, exact load paths, channel config,
 and memory/context slot selections reconciled before the new package/index
 state commits; retained/new children and unrelated plugins are preserved.
 
-If OpenClaw cannot prove exactly one package owner and a complete child list,
+If Paddy cannot prove exactly one package owner and a complete child list,
 update and uninstall fail closed without changing package files, config, or the
-installed index. Run `openclaw plugins registry --refresh`, inspect
-`openclaw plugins doctor`, and use `openclaw doctor --fix` for repairable legacy
+installed index. Run `paddy plugins registry --refresh`, inspect
+`paddy plugins doctor`, and use `paddy doctor --fix` for repairable legacy
 index state. If the ambiguity remains, reinstall the package before retrying.
 
-`openclaw plugins update --all` is the bulk maintenance path. It preserves
-exact version pins and explicit tags, including trusted official OpenClaw
+`paddy plugins update --all` is the bulk maintenance path. It preserves
+exact version pins and explicit tags, including trusted official Paddy
 plugin records, because older automatic pins cannot be distinguished from an
 operator's intentional pin. When a newer default-line release exists,
-OpenClaw reports it and prints the explicit command that replaces the pin.
+Paddy reports it and prints the explicit command that replaces the pin.
 Floating official records still follow the canonical channel resolver, which
 uses both `update.channel` and the installed core version.
 
@@ -387,7 +387,7 @@ For an exact-pinned ClawHub record, deliberately return to the default release
 line with the command printed by the updater:
 
 ```bash
-openclaw plugins install clawhub:<package> --force
+paddy plugins install clawhub:<package> --force
 ```
 
 For npm installs, pass an explicit package spec to switch the tracked
@@ -401,15 +401,15 @@ openclaw plugins update @scope/openclaw-plugin
 The second command moves a plugin back to the registry's default release
 line when it was previously pinned to an exact version or tag.
 
-See [`openclaw plugins`](/cli/plugins#update) for the exact fallback and
+See [`paddy plugins`](/cli/plugins#update) for the exact fallback and
 pinning rules.
 
 ## Uninstall plugins
 
 ```bash
-openclaw plugins uninstall <plugin-id> --dry-run
-openclaw plugins uninstall <plugin-id>
-openclaw plugins uninstall <plugin-id> --keep-files
+paddy plugins uninstall <plugin-id> --dry-run
+paddy plugins uninstall <plugin-id>
+paddy plugins uninstall <plugin-id> --keep-files
 ```
 
 Uninstall removes the package's persisted install record and every owned child's
@@ -426,7 +426,7 @@ stop before removing files and returns after the new inventory is applied.
 
 If an installed Claw references the plugin, preview and uninstall print the
 affected Claw package names. Ordinary plugin uninstall can still proceed and
-may break those Claws; use `openclaw claws status` to review ownership first.
+may break those Claws; use `paddy claws status` to review ownership first.
 Removing a Claw releases its plugin reference but retains the process-wide
 plugin by default.
 
@@ -436,14 +436,14 @@ for the install instead.
 
 ## Choose a source
 
-| Source      | Use when                                                                    | Example                                                        |
-| ----------- | --------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| ClawHub     | You want OpenClaw-native discovery, scan summaries, versions, and hints     | `openclaw plugins install clawhub:<package>`                   |
-| git         | You want a branch, tag, or commit from a repository                         | `openclaw plugins install git:github.com/<owner>/<repo>@<ref>` |
-| local path  | You are developing or testing a plugin on the same machine                  | `openclaw plugins install --link ./my-plugin`                  |
-| marketplace | You are installing a Claude-compatible marketplace plugin                   | `openclaw plugins install <plugin> --marketplace <source>`     |
-| npm pack    | You are proving a local package artifact through npm install semantics      | `openclaw plugins install npm-pack:<path.tgz>`                 |
-| npmjs.com   | You already ship JavaScript packages or need npm dist-tags/private registry | `openclaw plugins install npm:@acme/openclaw-plugin`           |
+| Source      | Use when                                                                    | Example                                                     |
+| ----------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| ClawHub     | You want Paddy-native discovery, scan summaries, versions, and hints        | `paddy plugins install clawhub:<package>`                   |
+| git         | You want a branch, tag, or commit from a repository                         | `paddy plugins install git:github.com/<owner>/<repo>@<ref>` |
+| local path  | You are developing or testing a plugin on the same machine                  | `paddy plugins install --link ./my-plugin`                  |
+| marketplace | You are installing a Claude-compatible marketplace plugin                   | `paddy plugins install <plugin> --marketplace <source>`     |
+| npm pack    | You are proving a local package artifact through npm install semantics      | `paddy plugins install npm-pack:<path.tgz>`                 |
+| npmjs.com   | You already ship JavaScript packages or need npm dist-tags/private registry | `openclaw plugins install npm:@acme/openclaw-plugin`        |
 
 Managed local path installs must be plugin directories or archives. Put
 standalone plugin files in `plugins.load.paths` instead of installing them
@@ -451,7 +451,7 @@ with `plugins install`.
 
 ## Publish plugins
 
-ClawHub is the primary public discovery surface for OpenClaw plugins. Publish
+ClawHub is the primary public discovery surface for Paddy plugins. Publish
 there when you want users to find plugin metadata, version history, registry
 scan results, and install hints before they install.
 
@@ -501,7 +501,7 @@ If the same package is available on both ClawHub and npm, use the explicit
 ## Related
 
 - [Plugins](/tools/plugin) - install, configure, reload, and troubleshoot
-- [`openclaw plugins`](/cli/plugins) - full CLI reference
+- [`paddy plugins`](/cli/plugins) - full CLI reference
 - [Community plugins](/plugins/community) - public discovery and ClawHub publishing
 - [ClawHub](/clawhub/cli) - registry CLI operations
 - [Building plugins](/plugins/building-plugins) - create a plugin package

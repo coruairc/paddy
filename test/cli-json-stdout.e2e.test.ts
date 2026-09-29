@@ -94,7 +94,7 @@ describe("cli json stdout contract", () => {
             ]);
           }
           if (tty && format === "text") {
-            expect(result.stdout).toContain("OpenClaw");
+            expect(result.stdout).toContain("Paddy");
             expect(result.stderr).toContain("\u001B[?25h");
             expect(result.stderr).not.toContain("TELEMETRY_NETWORK_FORBIDDEN");
           } else {

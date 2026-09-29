@@ -55,7 +55,7 @@ Activation contract:
 
 ## Degraded and recovered signals
 
-When reload-time activation fails after a healthy state, OpenClaw enters degraded secrets state, emitting one-shot system events and log codes:
+When reload-time activation fails after a healthy state, Paddy enters degraded secrets state, emitting one-shot system events and log codes:
 
 - `SECRETS_RELOADER_DEGRADED`
 - `SECRETS_RELOADER_RECOVERED`
@@ -66,9 +66,9 @@ Behavior:
 - Recovered: emitted once after the next successful activation. It confirms recovery, including cold owners that had no usable previous credential.
 - Repeated failures while already degraded log warnings but do not re-emit the event.
 - A strict startup failure never emits a degraded event, because runtime never became active. A successful startup with cold owners logs the owner degradation but does not emit a reloader event.
-- Ref-scoped startup and reload failures emit a structured `SECRETS_DEGRADED` warning for each affected owner. Provider-scoped outages emit one `SECRETS_PROVIDER_DEGRADED` warning with the provider and complete affected-owner list instead of repeating the provider failure per owner. Warnings include a redacted reason, `cold` or `stale` owner state, and the `openclaw secrets reload` retry hint. They never include resolved values or SecretRef ids.
-- `openclaw doctor` lists cold and stale owners with their affected config paths, redacted reason, and retry guidance.
-- Channel health and status keep cold accounts visible as configured but unavailable, alongside healthy accounts. Read-only inspection does not resolve inactive credentials or probe cold accounts. `/healthz` still reports Gateway liveness; `/readyz` may report the affected channel as failing until it recovers. Restore the secret, then run `openclaw secrets reload`.
+- Ref-scoped startup and reload failures emit a structured `SECRETS_DEGRADED` warning for each affected owner. Provider-scoped outages emit one `SECRETS_PROVIDER_DEGRADED` warning with the provider and complete affected-owner list instead of repeating the provider failure per owner. Warnings include a redacted reason, `cold` or `stale` owner state, and the `paddy secrets reload` retry hint. They never include resolved values or SecretRef ids.
+- `paddy doctor` lists cold and stale owners with their affected config paths, redacted reason, and retry guidance.
+- Channel health and status keep cold accounts visible as configured but unavailable, alongside healthy accounts. Read-only inspection does not resolve inactive credentials or probe cold accounts. `/healthz` still reports Gateway liveness; `/readyz` may report the affected channel as failing until it recovers. Restore the secret, then run `paddy secrets reload`.
 
 ## Command-path resolution
 
@@ -76,10 +76,10 @@ Command paths can opt into supported SecretRef resolution via a gateway snapshot
 
 <Tabs>
   <Tab title="Strict command paths">
-    For example `openclaw memory` remote-memory paths and `openclaw qr --remote` when it needs remote shared-secret refs. They read from the active snapshot and fail fast when a required SecretRef is unavailable.
+    For example `paddy memory` remote-memory paths and `paddy qr --remote` when it needs remote shared-secret refs. They read from the active snapshot and fail fast when a required SecretRef is unavailable.
   </Tab>
   <Tab title="Read-only command paths">
-    For example `openclaw status`, `openclaw status --all`, `openclaw channels status`, `openclaw channels resolve`, `openclaw security audit`, and read-only doctor/config repair flows. They also prefer the active snapshot, but degrade instead of aborting when a targeted SecretRef is unavailable.
+    For example `paddy status`, `paddy status --all`, `paddy channels status`, `paddy channels resolve`, `paddy security audit`, and read-only doctor/config repair flows. They also prefer the active snapshot, but degrade instead of aborting when a targeted SecretRef is unavailable.
 
     Read-only behavior:
 
@@ -97,7 +97,7 @@ Standalone agent commands without config-ref preparation and calls with a differ
 
 Other notes:
 
-- Snapshot refresh after backend secret rotation is handled by `openclaw secrets reload`.
+- Snapshot refresh after backend secret rotation is handled by `paddy secrets reload`.
 - Gateway RPC method used by these command paths: `secrets.resolve`.
 
 ## Audit and configure workflow
@@ -107,24 +107,24 @@ Default operator flow:
 <Steps>
   <Step title="Audit current state">
     ```bash
-    openclaw secrets audit --check
+    paddy secrets audit --check
     ```
   </Step>
   <Step title="Configure and apply SecretRefs">
     ```bash
-    openclaw secrets configure --apply
+    paddy secrets configure --apply
     ```
   </Step>
   <Step title="Re-audit">
     ```bash
-    openclaw secrets audit --check
+    paddy secrets audit --check
     ```
   </Step>
 </Steps>
 
 Do not treat the migration as complete until the re-audit is clean. If the audit still reports plaintext values at rest, the agent-access risk remains even when runtime APIs return redacted values.
 
-If you save a plan instead of applying during `configure`, apply that saved plan with `openclaw secrets apply --from <plan-path>` before the re-audit.
+If you save a plan instead of applying during `configure`, apply that saved plan with `paddy secrets apply --from <plan-path>` before the re-audit.
 
 <AccordionGroup>
   <Accordion title="secrets audit">
@@ -138,7 +138,7 @@ If you save a plan instead of applying during `configure`, apply that saved plan
 
     Initially missing generated `models.json` files are skipped. When reading an existing file, audit enforces a 5 MiB limit and reports leaf symlinks, non-regular files, and read or parse failures as `REF_UNRESOLVED`. Parse diagnostics identify the file without echoing its contents.
 
-    Exec note: by default, audit skips exec SecretRef resolvability checks to avoid command side effects. Use `openclaw secrets audit --allow-exec` to execute exec providers during audit.
+    Exec note: by default, audit skips exec SecretRef resolvability checks to avoid command side effects. Use `paddy secrets audit --allow-exec` to execute exec providers during audit.
 
     Header residue note: sensitive provider header detection is name-heuristic based (common auth/credential header names and fragments such as `authorization`, `x-api-key`, `token`, `secret`, `password`, and `credential`).
 
@@ -156,14 +156,14 @@ If you save a plan instead of applying during `configure`, apply that saved plan
 
     Helpful modes:
 
-    - `openclaw secrets configure --providers-only`
-    - `openclaw secrets configure --skip-provider-setup`
-    - `openclaw secrets configure --agent <id>`
+    - `paddy secrets configure --providers-only`
+    - `paddy secrets configure --skip-provider-setup`
+    - `paddy secrets configure --agent <id>`
 
     `configure` apply defaults:
 
     - Scrub matching static credentials from SQLite auth-profile rows for targeted providers.
-    - Leave retired `auth.json` untouched; run `openclaw doctor --fix` to migrate and archive it.
+    - Leave retired `auth.json` untouched; run `paddy doctor --fix` to migrate and archive it.
     - Scrub matching known secret lines from the effective state and active-config `.env` files (deduplicated when both paths match).
 
   </Accordion>
@@ -187,7 +187,7 @@ If you save a plan instead of applying during `configure`, apply that saved plan
 ## One-way safety policy
 
 <Warning>
-OpenClaw intentionally does not write rollback backups containing historical plaintext secret values.
+Paddy intentionally does not write rollback backups containing historical plaintext secret values.
 </Warning>
 
 Safety model:

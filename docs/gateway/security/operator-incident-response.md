@@ -12,7 +12,7 @@ sidebarTitle: "Incident response"
 
 ### Contain
 
-1. Stop it: stop the macOS app (if it supervises the Gateway) or terminate your `openclaw gateway` process.
+1. Stop it: stop the macOS app (if it supervises the Gateway) or terminate your `paddy gateway` process.
 2. Close exposure: set `gateway.bind: "loopback"` (or disable Tailscale Funnel/Serve) until you understand what happened.
 3. Freeze access: switch risky DMs/groups to `dmPolicy: "disabled"` / require mentions, and remove any `"*"` allow-all entries.
 
@@ -27,11 +27,11 @@ sidebarTitle: "Incident response"
 1. Check Gateway logs with `openclaw logs` (or `openclaw --profile <profile> logs` for a named profile). The default path is `/tmp/openclaw/openclaw-YYYY-MM-DD.log`; named profiles use `/tmp/openclaw/openclaw-<profile>-YYYY-MM-DD.log`, unless `logging.file` overrides it.
 2. Review the relevant transcript(s): `~/.openclaw/agents/<agentId>/sessions/*.jsonl`.
 3. Review recent config changes that could have widened access: `gateway.bind`, `gateway.auth`, DM/group policies, `tools.elevated`, plugin changes.
-4. Re-run `openclaw security audit --deep` and confirm critical findings are resolved.
+4. Re-run `paddy security audit --deep` and confirm critical findings are resolved.
 
 ### Collect for a report
 
-- Timestamp, gateway host OS + OpenClaw version.
+- Timestamp, gateway host OS + Paddy version.
 - The session transcript(s) + a short log tail (after redacting).
 - What the attacker sent and what the agent did.
 - Whether the Gateway was exposed beyond loopback (LAN/Tailscale Funnel/Serve).

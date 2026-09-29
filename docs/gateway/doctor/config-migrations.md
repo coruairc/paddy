@@ -18,7 +18,7 @@ update. Existing account bindings and narrower conversation routes remain unchan
 reports each added binding and saves it with the roster migration through the
 normal config backup and validation flow.
 
-Update-channel migration and manual `openclaw doctor --fix` use the original
+Update-channel migration and manual `paddy doctor --fix` use the original
 roster from the config snapshot. A narrower conversation route never establishes
 account-wide ownership. If the original roster is unavailable, Doctor reports
 `unresolved: original roster unavailable` with the exact binding to add and leaves
@@ -81,7 +81,7 @@ Teams keeps its Express body parser and SDK authentication on both listeners.
 For an agent with `runtime.type: "acp"`, `agents.entries.*.model` (string form) or
 `agents.entries.*.model.primary` (object form) selects the ACP harness model. This
 also applies to harness selections that look like `provider/model` references.
-OpenClaw resolves a separate native default, using `agents.defaults.model` when
+Paddy resolves a separate native default, using `agents.defaults.model` when
 configured. Explicit native session, utility, and subagent model selections retain
 their precedence.
 
@@ -94,7 +94,7 @@ selection.
 ## Missing plugins during migration
 
 A configured plugin that is missing or cannot finish installation does not block
-Doctor, updates, or Gateway startup. OpenClaw records a warning that names the
+Doctor, updates, or Gateway startup. Paddy records a warning that names the
 plugin, its pending migration, and the command to finish installation or repair.
 The Gateway continues serving the available plugins.
 
@@ -105,7 +105,7 @@ their inputs stay available for a later retry.
 Deferred migrations keep their state and legacy config inputs in place. Config
 repairs can still update unrelated settings, while the pending plugin's retired
 fields remain inactive. After installing or repairing the plugin, run
-`openclaw doctor --fix` to complete its migration and clear the pending warning.
+`paddy doctor --fix` to complete its migration and clear the pending warning.
 During an update driven by an older version, plugin installation can remain
 deferred until that updater finishes; its pending inputs receive the same
 protection.
@@ -120,7 +120,7 @@ remain writable. Complete the plugin migration before editing those inputs.
 
 The bundled TaskFlow Webhooks plugin has been removed. Existing
 `plugins.entries.webhooks` settings are ignored with a `plugin removed: webhooks`
-warning so the Gateway can start after an update. Run `openclaw doctor --fix` to
+warning so the Gateway can start after an update. Run `paddy doctor --fix` to
 remove its stale entry and `plugins.allow` or `plugins.deny` references through
 the normal config backup and repair flow. This retirement does not change the
 database schema or delete stored Tasks or TaskFlows.
@@ -139,17 +139,17 @@ re-enable plugins.
 
 If an active plugin's legacy ID aliases to a different owner, Doctor leaves the
 stale plugin settings unchanged and warns instead of granting that other owner
-access. Choose noncolliding allowed plugin IDs, then rerun `openclaw doctor --fix`
+access. Choose noncolliding allowed plugin IDs, then rerun `paddy doctor --fix`
 to finish cleanup. Other Doctor repairs continue.
 
 Use [Gateway HTTP hooks](/automation/cron-jobs/webhooks) to wake an agent or submit
 an agent turn from an external service. Their `hooks.*` settings, internal event
-hooks, and the `openclaw webhooks gmail` commands remain available. TaskFlow
+hooks, and the `paddy webhooks gmail` commands remain available. TaskFlow
 record actions from the retired plugin have no equivalent HTTP endpoint.
 
 ## Schema publication during a 2026.9.2 update
 
-When OpenClaw 2026.9.2 drives an update that needs a newer shared-state schema,
+When Paddy 2026.9.2 drives an update that needs a newer shared-state schema,
 Doctor applies the migration content and reports
 `schema content applied; version publication deferred until update run <id> finishes`.
 The old updater can finish its ledger access, while the new Gateway uses the
@@ -182,7 +182,7 @@ beyond the grace period.
 The Codex plugin's `codex-native-task-assignments` Doctor migration preserves
 recoverable native child work when upgrading from the Tasks runtime. It runs
 through the existing plugin state-migration lifecycle, including update-time
-Doctor. After a direct binary replacement, run `openclaw doctor --fix` before
+Doctor. After a direct binary replacement, run `paddy doctor --fix` before
 starting the new Gateway.
 
 During maintenance, Doctor reads a snapshot of
@@ -217,9 +217,9 @@ physical requester and connection history. Doctor also preserves ambiguous
 duplicate run IDs and records whose ownership no longer matches. It emits a
 recoverable warning identifying the Task and native run, without disabling the
 Gateway or unrelated sessions. Inspect the child in its original native Codex
-account, or restore the pre-update backup with its matching OpenClaw version to
+account, or restore the pre-update backup with its matching Paddy version to
 finish delivery. After resolving a repairable binding conflict, run
-`openclaw doctor --fix` again. The migration does not guess ownership from the
+`paddy doctor --fix` again. The migration does not guess ownership from the
 current parent alone.
 
 ## Replay a July 2026 config upgrade
@@ -231,11 +231,11 @@ node scripts/doctor-config-upgrade-replay.mjs
 ```
 
 The driver runs with plain Node and imports only Node built-ins. It requires
-the checkout's fixture and `pnpm openclaw` build wrapper; an installed npm
+the checkout's fixture and `pnpm paddy` build wrapper; an installed npm
 package alone cannot run this replay. No `tsx` invocation is needed for the driver.
 
 The replay uses the synthetic `test/fixtures/doctor-2026.7.1.json` config. It
-builds through `pnpm openclaw`, isolates the home, state, config, and logs under
+builds through `pnpm paddy`, isolates the home, state, config, and logs under
 `.local`, and selects free loopback ports. It captures validation before repair,
 two `doctor --fix --non-interactive` passes, validation after the first pass,
 and Gateway startup. It keeps the original config, both repaired copies, and
@@ -260,11 +260,11 @@ When managed setup is missing, Doctor and Gateway startup name the degraded
 semantic recall and the plugin's guided setup command:
 
 ```bash
-openclaw models --agent main auth login --provider llama-cpp --method local
+paddy models --agent main auth login --provider llama-cpp --method local
 ```
 
 Run that command interactively and choose the appropriate managed setup, then
-verify with `openclaw memory status --deep`. Setup can offer embeddings without
+verify with `paddy memory status --deep`. Setup can offer embeddings without
 changing the chat model. Downloads require setup consent. In the July provider,
 `memorySearch.model` did not select the local GGUF: `local.modelPath` did.
 Doctor therefore preserves both fields instead of silently turning an ignored
@@ -274,7 +274,7 @@ model value into a different embedding model. See [llama.cpp](/plugins/llama-cpp
 
 <AccordionGroup>
   <Accordion title="0. Optional update (git installs)">
-    If this is a git checkout and Doctor is running interactively, it offers to update before running its checks. Accepting uses the normal `openclaw update` lifecycle for that checkout, including validation, recovery, and Gateway restart. The source update keeps your saved update channel unchanged. Externally managed installs continue Doctor without offering self-update; update them through their deployment owner.
+    If this is a git checkout and Doctor is running interactively, it offers to update before running its checks. Accepting uses the normal `paddy update` lifecycle for that checkout, including validation, recovery, and Gateway restart. The source update keeps your saved update channel unchanged. Externally managed installs continue Doctor without offering self-update; update them through their deployment owner.
   </Accordion>
   <Accordion title="1. Config normalization">
     GitHub Copilot now requires explicit provider config, a saved Copilot auth profile, or `COPILOT_GITHUB_TOKEN`. Generic `GH_TOKEN` and `GITHUB_TOKEN` no longer activate it. Doctor reports this change once when only a generic GitHub token is present. The retired `plugins.entries.github-copilot.config.discovery.enabled` setting is ignored during config loading, including malformed values, and removed when Doctor saves the config.
@@ -291,7 +291,7 @@ model value into a different embedding model. See [llama.cpp](/plugins/llama-cpp
   <Accordion title="2. Legacy config key migrations">
     Ordinary Doctor, including `doctor --non-interactive`, automatically normalizes a legacy single-file config when the shared migration transforms produce a fully valid result. This also covers older npm updaters that invoke Doctor without `--fix`. The planner still requires complete plugin validation. Doctor preserves the original in the config backup ring and keeps state migration ordering intact. Includes, externally managed config, newer-written config, and remaining validation errors require the existing explicit repair or operator recovery path. Updaters that explicitly defer plugin repair or advertise a later writable config handoff keep automatic normalization deferred. This does not enable repair maintenance, service changes, or exec-approval migration without `--fix`.
 
-    Older Git updaters can keep an in-memory config snapshot and write it after Doctor exits. When that parent marks the update in progress without advertising support for Doctor config writes, Doctor preserves the config and defers importing retired plugin install records, including with `--fix`. A supported fresh update continuation runs Doctor before plugin convergence and rereads the repaired config. Existing canonical plugin install records keep precedence. Doctor imports missing records before rewriting config and completes required workspace-state migration in the same repair pass. An older Git updater without that continuation requires `openclaw doctor --fix` after the update; Gateway startup does not finish its legacy repair.
+    Older Git updaters can keep an in-memory config snapshot and write it after Doctor exits. When that parent marks the update in progress without advertising support for Doctor config writes, Doctor preserves the config and defers importing retired plugin install records, including with `--fix`. A supported fresh update continuation runs Doctor before plugin convergence and rereads the repaired config. Existing canonical plugin install records keep precedence. Doctor imports missing records before rewriting config and completes required workspace-state migration in the same repair pass. An older Git updater without that continuation requires `paddy doctor --fix` after the update; Gateway startup does not finish its legacy repair.
 
     Gateway and local CLI startup validate current config without rewriting legacy keys. Invalid legacy config remains unchanged and startup prints the `openclaw doctor --fix` hint. An interactive terminal can offer to run Doctor and retry once; headless services stop with the hint. Doctor preserves the original in the five-slot `openclaw.json.bak` / `.bak.1` through `.bak.4` backup ring before writing a validated repair. Includes, externally managed config, newer-written config, and unresolved validation errors retain their existing repair and recovery safeguards.
 
@@ -301,7 +301,7 @@ model value into a different embedding model. See [llama.cpp](/plugins/llama-cpp
 
     When model migrations change a configured consumer between subscription/OAuth and metered API-key billing, Doctor reports the consumer, model, and old and new routes after saving the config. The warning also appears in the diagnostic log and update run record. A later Doctor run does not repeat it when the resolved billing route is unchanged. Missing credentials are not treated as proof of a billing change.
 
-    During an update, Doctor records model-retirement repairs that must wait until plugin installation finishes. The updated OpenClaw completes those repairs after plugin convergence, even when no plugin version changed. `openclaw update status` records their completion so retired subscription models do not fall through to metered API credentials.
+    During an update, Doctor records model-retirement repairs that must wait until plugin installation finishes. The updated Paddy completes those repairs after plugin convergence, even when no plugin version changed. `paddy update status` records their completion so retired subscription models do not fall through to metered API credentials.
 
     Utility-model separation preserves an older config's implicit primary before recording `meta.migrations.utilityModelSeparation: true`. Doctor and normal config writes use the previous config to save that primary explicitly; existing primary selections, fallbacks, and credential bindings stay authoritative. This keeps regular chat available when the old implicit primary also served utility tasks. Fresh utility setup records the separation without choosing a primary, and a provider added during utility setup is not mistaken for the previous primary. See [agent model configuration](/gateway/config-agents/models#agentsdefaultsmodel).
 
@@ -403,7 +403,7 @@ model value into a different embedding model. See [llama.cpp](/plugins/llama-cpp
     | `plugins.entries.codex.config.codexDynamicToolsProfile`                                          | removed (Codex app-server always keeps Codex-native workspace tools native) |
     | `commands.modelsWrite`                                                                           | removed (`/models add` is deprecated)                                       |
     | `agents.defaults/list[].silentReplyRewrite`, `surfaces.*.silentReplyRewrite`                     | removed (exact `NO_REPLY` is no longer rewritten to visible fallback text)  |
-    | `agents.defaults/list[].systemPromptOverride`                                                    | removed (OpenClaw owns the generated system prompt)                        |
+    | `agents.defaults/list[].systemPromptOverride`                                                    | removed (Paddy owns the generated system prompt)                        |
     | top-level `memorySearch`, `agents.defaults.memorySearch`                                         | `memory.search`                                                             |
     | `agents.entries.*.memorySearch`                                                                     | `agents.entries.*.memory.search`                                               |
     | `memorySearch.provider: "auto"`                                                                  | `"openai"`                                                                    |
@@ -416,11 +416,11 @@ model value into a different embedding model. See [llama.cpp](/plugins/llama-cpp
 
     Code Mode's runtime migration preserves an explicit QuickJS choice in global config, keyed agent entries, and legacy agent rosters. Existing `executor` values win, and activation and limits remain unchanged. Selecting the bundled QuickJS runtime works even when generic plugins are disabled or allowlisted, without enabling other plugins; an explicit deny or disabled entry for `code-mode-quickjs` still blocks it. Configurations that never selected a runtime use the new `node` default. See [Code Mode executors](/tools/code-mode/executors) before enabling Node execution; `node:vm` is not a security boundary.
 
-    Doctor names the retired tuning paths it actually removes in one notice, including explicit `false` values: `Removed retired runtime tuning knobs: diagnostics.memoryPressureSnapshot; built-in defaults now apply.` Run `openclaw doctor --fix` before starting with these retired keys. Memory-pressure events remain available; use [diagnostics export or manual allocation profiling](/gateway/diagnostics) for current evidence.
+    Doctor names the retired tuning paths it actually removes in one notice, including explicit `false` values: `Removed retired runtime tuning knobs: diagnostics.memoryPressureSnapshot; built-in defaults now apply.` Run `paddy doctor --fix` before starting with these retired keys. Memory-pressure events remain available; use [diagnostics export or manual allocation profiling](/gateway/diagnostics) for current evidence.
 
     <Note>
       The Voice Call plugin supplies the migration for its legacy config keys.
-      `openclaw doctor --fix` invokes it and persists the canonical shape in
+      `paddy doctor --fix` invokes it and persists the canonical shape in
       `openclaw.json`; runtime config parsing accepts only current keys.
       Existing canonical settings win over legacy values, including streaming
       provider credentials, models, and timing. Doctor reports retained

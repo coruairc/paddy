@@ -14,16 +14,16 @@ checks.
 Safe media smoke:
 
 ```bash
-pnpm openclaw infer tts convert --local --json \
-  --text "OpenClaw live smoke." \
+pnpm paddy infer tts convert --local --json \
+  --text "Paddy live smoke." \
   --output /tmp/openclaw-live-smoke.mp3
 ```
 
 Safe voice-call readiness smoke:
 
 ```bash
-pnpm openclaw voicecall setup --json
-pnpm openclaw voicecall smoke --to "+15555550123"
+pnpm paddy voicecall setup --json
+pnpm paddy voicecall smoke --to "+15555550123"
 ```
 
 `voicecall smoke` is a dry run unless `--yes` is also present; use `--yes` only

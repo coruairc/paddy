@@ -15,12 +15,12 @@ For WSL2 Gateway + Windows Chrome split-host setups, see
 ## Inspection times out but screenshots work
 
 Snapshots and page-text reads use a browser automation connection that can become
-stale even while tab listing and screenshots still work. OpenClaw reconnects once
+stale even while tab listing and screenshots still work. Paddy reconnects once
 when that connection can no longer resolve the requested tab. Unresponsive sibling
 tabs share one target-inspection wait instead of adding a separate wait per tab.
 
 Retry the inspection once with the same profile and target ID. If it still fails,
-run `openclaw browser doctor` and inspect a screenshot before restarting the
+run `paddy browser doctor` and inspect a screenshot before restarting the
 Gateway. A browser-rendered HTTP error, such as `403 Forbidden`, is evidence that
 the website denied access; it does not establish whether a profile or resource
 exists.
@@ -37,7 +37,7 @@ supported.
 
 These are different failure classes and they point to different code paths.
 
-- **CDP startup or readiness failure** means OpenClaw cannot confirm that the browser control plane is healthy.
+- **CDP startup or readiness failure** means Paddy cannot confirm that the browser control plane is healthy.
 - **Navigation SSRF block** means the browser control plane is healthy, but a page navigation target is rejected by policy.
 
 Common examples:
@@ -53,9 +53,9 @@ Common examples:
 Use this minimal sequence to separate the two:
 
 ```bash
-openclaw browser --browser-profile openclaw start
-openclaw browser --browser-profile openclaw tabs
-openclaw browser --browser-profile openclaw open https://example.com
+paddy browser --browser-profile paddy start
+paddy browser --browser-profile paddy tabs
+paddy browser --browser-profile paddy open https://example.com
 ```
 
 How to read the results:
@@ -75,7 +75,7 @@ Important behavior details:
 
 Resetting or deleting a local managed profile stops a verified browser left by an
 earlier Gateway runtime before moving its data. If a live profile owner cannot be
-verified or stopped, OpenClaw preserves the profile data and reports the reason.
+verified or stopped, Paddy preserves the profile data and reports the reason.
 Close the browser using that profile and check its Chromium lock before retrying.
 Locks naming another hostname remain unverified, including after a machine rename;
 starting the browser also preserves that locked profile's preferences.

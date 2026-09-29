@@ -1,7 +1,7 @@
 ---
 summary: "Plugin internals: capability model, ownership, contracts, load pipeline, and runtime helpers"
 read_when:
-  - Building or debugging native OpenClaw plugins
+  - Building or debugging native Paddy plugins
   - Understanding the plugin capability model or ownership boundaries
   - Working on the plugin load pipeline or registry
   - Implementing provider runtime hooks or channel plugins
@@ -9,7 +9,7 @@ title: "Plugin internals"
 sidebarTitle: "Architecture"
 ---
 
-This is the **deep architecture reference** for the OpenClaw plugin system. For practical guides, start with one of the focused pages below.
+This is the **deep architecture reference** for the Paddy plugin system. For practical guides, start with one of the focused pages below.
 
 <CardGroup cols={2}>
   <Card title="Install and use plugins" icon="plug" href="/tools/plugin">
@@ -31,7 +31,7 @@ This is the **deep architecture reference** for the OpenClaw plugin system. For 
 
 ## Public capability model
 
-Capabilities are the public **native plugin** model inside OpenClaw. Native plugins can register one or more capability types:
+Capabilities are the public **native plugin** model inside Paddy. Native plugins can register one or more capability types:
 
 | Capability             | Registration method                              | Example plugins                                             |
 | ---------------------- | ------------------------------------------------ | ----------------------------------------------------------- |
@@ -70,7 +70,7 @@ Capability registration is the intended direction. Legacy hooks remain the safes
 
 ### Plugin shapes
 
-OpenClaw classifies every loaded plugin into a shape based on its actual registration behavior (not just static metadata):
+Paddy classifies every loaded plugin into a shape based on its actual registration behavior (not just static metadata):
 
 <AccordionGroup>
   <Accordion title="plain-capability">
@@ -87,11 +87,11 @@ OpenClaw classifies every loaded plugin into a shape based on its actual registr
   </Accordion>
 </AccordionGroup>
 
-Use `openclaw plugins inspect <id>` to see a plugin's shape and capability breakdown. See [CLI reference](/cli/plugins#inspect) for details.
+Use `paddy plugins inspect <id>` to see a plugin's shape and capability breakdown. See [CLI reference](/cli/plugins#inspect) for details.
 
 ### Compatibility signals
 
-`openclaw doctor`, `openclaw plugins inspect <id>`, `openclaw status --all`, and `openclaw plugins doctor` surface these compatibility notices:
+`paddy doctor`, `paddy plugins inspect <id>`, `paddy status --all`, and `paddy plugins doctor` surface these compatibility notices:
 
 | Signal                                     | Meaning                                                                                                       |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
@@ -100,11 +100,11 @@ Use `openclaw plugins inspect <id>` to see a plugin's shape and capability break
 | **deprecated memory-embedding API** (warn) | Non-bundled plugin uses the old memory-specific embedding provider API instead of `registerEmbeddingProvider` |
 | **hard error**                             | Config is invalid or plugin failed to load                                                                    |
 
-None of the advisory/warn signals break your plugin today. These signals also appear in `openclaw status --all` and `openclaw plugins doctor`.
+None of the advisory/warn signals break your plugin today. These signals also appear in `paddy status --all` and `paddy plugins doctor`.
 
 ## Architecture overview
 
-OpenClaw's plugin system has four layers:
+Paddy's plugin system has four layers:
 
 <Steps>
   <Step title="Manifest + discovery">
@@ -114,10 +114,10 @@ OpenClaw's plugin system has four layers:
     Core decides whether a discovered plugin is enabled, disabled, blocked, or selected for an exclusive slot such as memory.
   </Step>
   <Step title="Runtime loading">
-    Native OpenClaw plugins are loaded in-process and register capabilities into a central registry. Managed instances load JavaScript through Node and compile TypeScript source when needed. Compatible bundles are normalized into registry records without importing runtime code.
+    Native Paddy plugins are loaded in-process and register capabilities into a central registry. Managed instances load JavaScript through Node and compile TypeScript source when needed. Compatible bundles are normalized into registry records without importing runtime code.
   </Step>
   <Step title="Surface consumption">
-    The rest of OpenClaw reads the registry to expose tools, channels, provider setup, hooks, HTTP routes, CLI commands, and services.
+    The rest of Paddy reads the registry to expose tools, channels, provider setup, hooks, HTTP routes, CLI commands, and services.
   </Step>
 </Steps>
 
@@ -126,7 +126,7 @@ For plugin CLI specifically, root command discovery is split in two phases:
 - parse-time metadata comes from `registerCli(..., { descriptors: [...] })`
 - the real plugin CLI module can stay lazy and register on first invocation
 
-That keeps plugin-owned CLI code inside the plugin while still letting OpenClaw reserve root command names before parsing.
+That keeps plugin-owned CLI code inside the plugin while still letting Paddy reserve root command names before parsing.
 
 The important design boundary:
 
@@ -134,7 +134,7 @@ The important design boundary:
 - native capability discovery may load trusted plugin entry code to build a non-activating registry snapshot
 - native runtime behavior comes from the plugin module's `register(api)` path with `api.registrationMode === "full"`
 
-That split lets OpenClaw validate config, explain missing/disabled plugins, and build UI/schema hints before the full runtime is active.
+That split lets Paddy validate config, explain missing/disabled plugins, and build UI/schema hints before the full runtime is active.
 
 ### Plugin metadata snapshot and lookup table
 
@@ -170,9 +170,9 @@ Durable final channel replies can use the admitting Gateway's current registry a
 
 Replacement reserves the affected instance even when agent turns or unfinished cleanup retain it. The prepared-model replacement gate holds new runs while already admitted runs finish using their original callbacks. New top-level retained work cannot acquire the old instance; already admitted consumers can still derive work needed to finish their runs. Detailed readiness and logs report the retained-work count and drain deadline; the final RPC receipt reports application and any drain notices. Reload from the instance's own active callback still fails during preparation to avoid waiting on itself. Idle prepared publications do not block replacement.
 
-Retained work and in-flight calls share a 60-second pre-stop budget. Retained runs finish before their callbacks close; sidecars release their capability consumers before the remaining finite consumers drain. Replacement then pauses ordinary calls before stopping services and channels. Idle service and channel custody stops later with its owners. If work does not finish, the reload fails once, resumes admission, and clears the reload status; the previous plugin generation keeps serving. The deadline does not cancel agent runs or permit disposal of unfinished writes. Retry `openclaw plugins reload <id>` after that work finishes, or explicitly select `--wait` to wait until admitted work settles. The explicit wait belongs to its requesting connection: Ctrl+C or disconnect cancels the pre-publication wait and runs the same rollback. Cancellation never disposes admitted work, bypasses cleanup, or reverses a committed publication. Service shutdown and recovery retain their bounded deadlines. Successful publication logs the applied replacement and emits `plugins.changed`.
+Retained work and in-flight calls share a 60-second pre-stop budget. Retained runs finish before their callbacks close; sidecars release their capability consumers before the remaining finite consumers drain. Replacement then pauses ordinary calls before stopping services and channels. Idle service and channel custody stops later with its owners. If work does not finish, the reload fails once, resumes admission, and clears the reload status; the previous plugin generation keeps serving. The deadline does not cancel agent runs or permit disposal of unfinished writes. Retry `paddy plugins reload <id>` after that work finishes, or explicitly select `--wait` to wait until admitted work settles. The explicit wait belongs to its requesting connection: Ctrl+C or disconnect cancels the pre-publication wait and runs the same rollback. Cancellation never disposes admitted work, bypasses cleanup, or reverses a committed publication. Service shutdown and recovery retain their bounded deadlines. Successful publication logs the applied replacement and emits `plugins.changed`.
 
-A provider or harness plugin load failure remains recorded in its runtime generation. It makes that plugin unavailable without superseding the generation or blocking models that use healthy plugins. Inspect the failing owner with `openclaw plugins inspect <id> --runtime --json`. Use `openclaw doctor --fix` for supported installation repairs, or fix the reported problem in plugin code, then request `plugins.reload` through the admin Gateway API to load the repaired plugin.
+A provider or harness plugin load failure remains recorded in its runtime generation. It makes that plugin unavailable without superseding the generation or blocking models that use healthy plugins. Inspect the failing owner with `paddy plugins inspect <id> --runtime --json`. Use `paddy doctor --fix` for supported installation repairs, or fix the reported problem in plugin code, then request `plugins.reload` through the admin Gateway API to load the repaired plugin.
 
 Read-only model validation, effective tool inventory, and isolated model probes acquire their own registrations when they need executable provider or harness hooks. Concurrent callers share the prepared generation, and its lifecycle disposers run after the final borrower and any unfinished preparation or catalog work settle. Cancellation does not close a registration while its callback is still running. Process shutdown revokes these registry views before joining their remaining work and disposal. Catalog reads that need only metadata do not acquire these executable registrations. Effective tool inventory prepares only configured and session-selected model facts, including captured catalogs from enabled providers; it does not refresh the full model catalog. Session selections do not change the configured model picker.
 
@@ -180,7 +180,7 @@ Each plugin service startup attempt owns one cleanup operation, including failed
 
 A failed replacement automatically tries to restore the previous code and configuration. If its channels have already stopped, recovery observes pending service cleanup and admitted work once, for up to 60 seconds. Its observation has an independent Gateway-owned cancellation signal, so a disconnected reload requester cannot interrupt recovery. Only service-stop observer timeouts qualify for this wait; channel-stop failures, rejected service cleanup, and failed candidate cleanup still prevent recovery. The wait joins the original service stop promises, including services whose shared stop deadline was already exhausted. After cleanup and work settle successfully, recovery disposes the old registration, registers its captured code with fresh resource ownership, and restarts its channels. Manually stopped accounts stay stopped. A timeout never grants another registration ownership of an unfinished write's resources, and retries do not repeat service stop or resource disposal. Uncommitted failures also attempt to republish the prepared model runtime against the previous config, even when plugin recovery fails or cannot safely run, unless the Gateway is shutting down.
 
-When recovery cannot safely finish, the operation settles as failed and releases its channel reload pauses. Channel health reads retain captured account facts without invoking unavailable plugin code; healthy registrations can restart normally. Detailed readiness reports `failing: ["plugin-reload"]` with the affected plugin IDs and an actionable recovery reason, instead of leaving an indefinite "reloading" state. Retry `openclaw plugins reload <id>` after admitted work and pending cleanup settle, or restart the Gateway. Permanent cleanup failures still prevent another registration from acquiring those resources.
+When recovery cannot safely finish, the operation settles as failed and releases its channel reload pauses. Channel health reads retain captured account facts without invoking unavailable plugin code; healthy registrations can restart normally. Detailed readiness reports `failing: ["plugin-reload"]` with the affected plugin IDs and an actionable recovery reason, instead of leaving an indefinite "reloading" state. Retry `paddy plugins reload <id>` after admitted work and pending cleanup settle, or restart the Gateway. Permanent cleanup failures still prevent another registration from acquiring those resources.
 
 A later reload can retry after pending cleanup completes successfully, without capturing code from the disposed instance again. If draining fails after services or channels stop but before disposal starts, the quiesced registration retains its original loader for the next reload's recovery capture; ordinary plugin calls remain closed when recovery fails. Rejected replacements and failed recovery registrations retain the same cleanup barrier. Recovery preserves existing error records as diagnostics without executing their code. It never substitutes current package files for an already retired registration whose captured source has been released.
 
@@ -385,7 +385,7 @@ have no custody token. On macOS and Linux, cleanup rechecks that each legacy roo
 to the current UID immediately before its rename, preserving other users' captures even in
 privileged runs. Windows has no equivalent UID check, so privileged Windows cleanup keeps
 the age and rename-probe rules below.
-A complete process census that finds another OpenClaw
+A complete process census that finds another Paddy
 producer preserves legacy roots. When the census is unavailable, including on
 Windows, cleanup uses age and a rename probe instead; sharing violations leave
 locked roots for a later cycle. This is best-effort cleanup of reconstructible
@@ -401,8 +401,8 @@ directory aliases and reports each capture's path and regular-file size without
 following links inside captures. Catalog roots include all nested
 `openclaw-plugin-build-*` trees in their reported size and removal receipt.
 
-`openclaw doctor --fix` reclaims these legacy roots only while Doctor holds Gateway
-maintenance and a complete host process census finds no other OpenClaw producer.
+`paddy doctor --fix` reclaims these legacy roots only while Doctor holds Gateway
+maintenance and a complete host process census finds no other Paddy producer.
 The rule rechecks both conditions before each removal and prints a receipt listing
 the paths removed and their sizes. A live sibling, unavailable census, or missing
 maintenance authority leaves the captures in place with an explanatory message.
@@ -414,7 +414,7 @@ other live processes keep cleanup blocked with a reason.
 On hosts without a complete process census (including
 Windows and recognized container environments), Doctor reports legacy
 captures but skips their removal. For a container sharing the host's temporary
-directory, run maintenance on the host after stopping its OpenClaw containers.
+directory, run maintenance on the host after stopping its Paddy containers.
 Doctor's maintenance repair remains separate from runtime reclamation: its
 broader inventory includes old service temporary locations the current runtime
 does not use. Modern captures retain their custody-token cleanup.
@@ -567,7 +567,7 @@ Do not treat `activation` as a lifecycle hook or a replacement for `register(...
 
 ### Channel plugins and the shared message tool
 
-Channel plugins do not need to register a separate send/edit/react tool for normal chat actions. OpenClaw keeps one shared `message` tool in core, and channel plugins own the channel-specific discovery and execution behind it.
+Channel plugins do not need to register a separate send/edit/react tool for normal chat actions. Paddy keeps one shared `message` tool in core, and channel plugins own the channel-specific discovery and execution behind it.
 
 The current boundary is:
 
@@ -615,11 +615,11 @@ See [Plugin architecture internals](/plugins/architecture-internals) for the ful
 
 ## Capability ownership model
 
-OpenClaw treats a native plugin as the ownership boundary for a **company** or a **feature**, not as a grab bag of unrelated integrations.
+Paddy treats a native plugin as the ownership boundary for a **company** or a **feature**, not as a grab bag of unrelated integrations.
 
 That means:
 
-- a company plugin should usually own all of that company's OpenClaw-facing surfaces
+- a company plugin should usually own all of that company's Paddy-facing surfaces
 - a feature plugin should usually own the full feature surface it introduces
 - channels should consume shared core capabilities instead of re-implementing provider behavior ad hoc
 
@@ -637,7 +637,7 @@ That means:
 
 The intended end state is:
 
-- a vendor's OpenClaw-facing surface lives in one plugin even if it spans text models, speech, images, and video
+- a vendor's Paddy-facing surface lives in one plugin even if it spans text models, speech, images, and video
 - other vendors can do the same for their own surface area
 - channels do not care which vendor plugin owns the provider; they consume the shared capability contract exposed by core
 
@@ -646,7 +646,7 @@ This is the key distinction:
 - **plugin** = ownership boundary
 - **capability** = core contract that multiple plugins can implement or consume
 
-So if OpenClaw adds a new domain such as video, the first question is not "which provider should hardcode video handling?" The first question is "what is the core video capability contract?" Once that contract exists, vendor plugins can register against it and channel/feature plugins can consume it.
+So if Paddy adds a new domain such as video, the first question is not "which provider should hardcode video handling?" The first question is "what is the core video capability contract?" Once that contract exists, vendor plugins can register against it and channel/feature plugins can consume it.
 
 If the capability does not exist yet, the right move is usually:
 
@@ -693,7 +693,7 @@ That same pattern should be preferred for future capabilities.
 
 ### Multi-capability company plugin example
 
-A company plugin should feel cohesive from the outside. If OpenClaw has shared contracts for models, speech, realtime transcription, realtime voice, media understanding, image generation, video generation, web fetch, and web search, a vendor can own all of its surfaces in one place:
+A company plugin should feel cohesive from the outside. If Paddy has shared contracts for models, speech, realtime transcription, realtime voice, media understanding, image generation, video generation, web fetch, and web search, a vendor can own all of its surfaces in one place:
 
 ```ts
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
@@ -742,7 +742,7 @@ What matters is not the exact helper names. The shape matters:
 
 ### Capability example: video understanding
 
-OpenClaw already treats image/audio/video understanding as one shared capability. The same ownership model applies there:
+Paddy already treats image/audio/video understanding as one shared capability. The same ownership model applies there:
 
 <Steps>
   <Step title="Core defines the contract">
@@ -780,11 +780,11 @@ There are two layers of enforcement:
     The plugin registry validates registrations as plugins load. Examples: duplicate provider ids, duplicate speech provider ids, and malformed registrations produce plugin diagnostics instead of undefined behavior.
   </Accordion>
   <Accordion title="Contract tests">
-    Bundled plugins are captured in contract registries during test runs so OpenClaw can assert ownership explicitly. Today this is used for model providers, speech providers, web search providers, and bundled registration ownership.
+    Bundled plugins are captured in contract registries during test runs so Paddy can assert ownership explicitly. Today this is used for model providers, speech providers, web search providers, and bundled registration ownership.
   </Accordion>
 </AccordionGroup>
 
-The practical effect is that OpenClaw knows, up front, which plugin owns which surface. That lets core and channels compose seamlessly because ownership is declared, typed, and testable rather than implicit.
+The practical effect is that Paddy knows, up front, which plugin owns which surface. That lets core and channels compose seamlessly because ownership is declared, typed, and testable rather than implicit.
 
 ### What belongs in a contract
 
@@ -831,13 +831,13 @@ bodies are reused. Installed files edited in place become visible on reopening.
 
 ## Execution model
 
-Native OpenClaw plugins run **in-process** with the Gateway. They are not sandboxed. A loaded native plugin has the same process-level trust boundary as core code.
+Native Paddy plugins run **in-process** with the Gateway. They are not sandboxed. A loaded native plugin has the same process-level trust boundary as core code.
 
 <Warning>
-Native plugin implications: a plugin can register tools, network handlers, hooks, and services; a plugin bug can crash or destabilize the gateway; and a malicious native plugin is equivalent to arbitrary code execution inside the OpenClaw process.
+Native plugin implications: a plugin can register tools, network handlers, hooks, and services; a plugin bug can crash or destabilize the gateway; and a malicious native plugin is equivalent to arbitrary code execution inside the Paddy process.
 </Warning>
 
-Compatible bundles are safer by default because OpenClaw currently treats them as metadata/content packs. In current releases, that mostly means bundled skills.
+Compatible bundles are safer by default because Paddy currently treats them as metadata/content packs. In current releases, that mostly means bundled skills.
 
 Use allowlists and explicit install/load paths for non-bundled plugins. Treat workspace plugins as development-time code, not production defaults.
 
@@ -855,7 +855,7 @@ Bundled-plugin trust is resolved from the source snapshot — the manifest and c
 
 ## Export boundary
 
-OpenClaw exports capabilities, not implementation convenience.
+Paddy exports capabilities, not implementation convenience.
 
 Keep capability registration public. Trim non-contract helper exports:
 

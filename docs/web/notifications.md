@@ -8,7 +8,7 @@ read_when:
   - Enabling browser alerts when another person mentions you
 ---
 
-OpenClaw can ping you when something needs your attention, including an exec or plugin approval request. The ping arrives in the browser that runs the Control UI. It can also arrive through native macOS notifications when you use the OpenClaw macOS app. Your first chat send may request permission automatically. **Settings → Notifications** remains the place to enable or repair the current device. Use the same page to check its status and send yourself a test.
+Paddy can ping you when something needs your attention, including an exec or plugin approval request. The ping arrives in the browser that runs the Control UI. It can also arrive through native macOS notifications when you use the Paddy macOS app. Your first chat send may request permission automatically. **Settings → Notifications** remains the place to enable or repair the current device. Use the same page to check its status and send yourself a test.
 
 This page covers those two surfaces. It does not control channel reaction notifications, Android notification forwarding, or iOS background push. The mobile apps register for push through their own node paths. See [iOS](/platforms/ios) and [Nodes](/nodes).
 
@@ -81,7 +81,7 @@ The recommended self-hosted setup is one Control UI service-worker scope per Gat
 
 A single installed PWA can also switch among remote Gateways. Every Gateway behind that PWA must then use the same VAPID keypair. Each must also set `gateway.publicOrigin` to its browser-reachable HTTPS origin. Reconnect the PWA to each Gateway once so each one registers the shared browser subscription and current device/profile binding. Approval notification links stay inside the installed PWA's scope and carry the owning Gateway URL in their fragment. The Control UI removes the fragment before authentication and uses the normal remote-Gateway handoff.
 
-The browser Push API permits only one application-server key per service-worker registration. If a PWA subscription belongs to a different VAPID key, OpenClaw removes the unusable row from the current Gateway. OpenClaw also shows **Unavailable** and **Not subscribed**, with an error explaining the mismatch. To switch that PWA scope to the current Gateway, select **Unsubscribe**, then **Enable notifications** and **Send test**. Unsubscribing deactivates the shared browser subscription for every Gateway registered through that scope. After re-enabling, reconnect to each Gateway once.
+The browser Push API permits only one application-server key per service-worker registration. If a PWA subscription belongs to a different VAPID key, Paddy removes the unusable row from the current Gateway. Paddy also shows **Unavailable** and **Not subscribed**, with an error explaining the mismatch. To switch that PWA scope to the current Gateway, select **Unsubscribe**, then **Enable notifications** and **Send test**. Unsubscribing deactivates the shared browser subscription for every Gateway registered through that scope. After re-enabling, reconnect to each Gateway once.
 
 Sharing a private VAPID key and browser endpoint makes those Gateways one push-signing trust domain. Use that layout only for Gateways you trust equally. Configure VAPID values through each Gateway process's secure environment or secret manager. Do not place private keys in URLs or command arguments.
 
@@ -92,7 +92,7 @@ The macOS app also asks automatically on your first chat send, but only while pe
 1. Open **Settings → Notifications** in the OpenClaw macOS app.
 2. Select **Enable notifications** while the permission shows **Not requested**.
 3. Approve the macOS permission prompt.
-4. Select **Send test** to post a local OpenClaw notification.
+4. Select **Send test** to post a local Paddy notification.
 
 If the permission shows **Denied**, macOS will not re-prompt. Select **Open System Settings**. Allow notifications for OpenClaw there. Then switch back. The page rechecks permission when the app regains focus. This permission belongs to macOS, not to Gateway config.
 
@@ -124,7 +124,7 @@ The Control UI waits up to 10 seconds for its service worker. If that times out 
 
 ### Web Push asks for a Doctor migration
 
-Run `openclaw doctor --fix` with the Gateway stopped. Web Push refuses to use the retired JSON stores until Doctor imports them into SQLite.
+Run `paddy doctor --fix` with the Gateway stopped. Web Push refuses to use the retired JSON stores until Doctor imports them into SQLite.
 
 ### Tests arrive but approval requests do not
 

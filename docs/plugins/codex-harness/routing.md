@@ -13,7 +13,7 @@ Which effective routes select the Codex runtime, and the deployment shapes built
 ## Routing and model selection
 
 `openai/gpt-6-astra` defaults to `medium` reasoning effort through the shared
-OpenAI provider policy when the account supports it. For OpenClaw-managed turns,
+OpenAI provider policy when the account supports it. For Paddy-managed turns,
 the resolved effort is sent in Codex `turn/start` requests,
 including `collaborationMode.settings.reasoning_effort`, so the native thread
 uses the same default as Control UI. Explicit thinking settings still win;
@@ -28,12 +28,12 @@ Keep provider refs and runtime policy separate:
   or ChatGPT Responses route with no authored provider request override may
   select Codex implicitly. Valid model-scoped Fast-mode and cutoff controls do
   not count as authored request params.
-- Do not use legacy Codex GPT refs in config; run `openclaw doctor --fix` to
+- Do not use legacy Codex GPT refs in config; run `paddy doctor --fix` to
   repair legacy refs and stale session route pins.
 - `agentRuntime.id: "codex"` makes Codex a fail-closed requirement for a
   compatible route. It does not make an incompatible effective route compatible.
 - `agentRuntime.id: "openclaw"` opts a provider or model into the embedded
-  OpenClaw runtime when that is intentional.
+  Paddy runtime when that is intentional.
 - `/codex ...` controls native Codex app-server conversations from chat.
 - ACP/acpx is a separate external harness path. Use it only when the user
   asks for ACP/acpx or an external harness adapter.
@@ -62,7 +62,7 @@ Keep provider refs and runtime policy separate:
 | Eligible OpenAI route with native Codex runtime | Exact official HTTPS Responses/ChatGPT route with no authored provider request override, plus enabled `codex` plugin | `/status` shows `Runtime: OpenAI Codex` | Valid Fast runtime controls do not disqualify this path    |
 | Fail closed if Codex is unavailable             | Provider or model `agentRuntime.id: "codex"`                                                                         | Missing harness fails the turn          | Authored request overrides may still use declared fallback |
 | Direct OpenAI API-key traffic through OpenClaw  | Provider or model `agentRuntime.id: "openclaw"` and normal OpenAI auth                                               | `/status` shows OpenClaw runtime        | Use only when OpenClaw is intentional                      |
-| Legacy config                                   | legacy Codex GPT refs                                                                                                | `openclaw doctor --fix` rewrites it     | Do not write new config this way                           |
+| Legacy config                                   | legacy Codex GPT refs                                                                                                | `paddy doctor --fix` rewrites it        | Do not write new config this way                           |
 | ACP/acpx Codex adapter                          | ACP `sessions_spawn({ runtime: "acp" })`                                                                             | ACP task/session status                 | Separate from native Codex harness                         |
 
 `agents.defaults.imageModel` follows the same prefix split. Use `openai/gpt-*`
@@ -74,7 +74,7 @@ Codex GPT refs to `openai/gpt-*`.
 
 A role's [model policy](/gateway/operator-scopes#named-operator-roles) applies to
 each native inference request, including retries, child turns, ordinary reviews,
-native image and search requests, and compaction. OpenClaw checks the actual model against both the work's original
+native image and search requests, and compaction. Paddy checks the actual model against both the work's original
 permissions and current policy before forwarding it. Verified catalog-to-native
 model mappings remain valid. Removing a model cancels affected inference while
 permitted work continues.
@@ -88,7 +88,7 @@ Guardian reviews and configured memory processing keep their existing service
 authority, verified from native request provenance and their owning execution or
 configured service.
 
-Restricted runs require an OpenClaw-owned native inference route. Managed stdio
+Restricted runs require a Paddy-owned native inference route. Managed stdio
 connections can retain HTTP or WebSocket Responses providers over public HTTPS;
 already-owned native bindings can reuse that route.
 Provider projection shares the connection's eight-route limit; excess providers
@@ -98,7 +98,7 @@ Custom providers need an explicit native `base_url`; query fields use the native
 `query_params` table. Unowned attachments, native local-model providers,
 AWS-signed requests, system-proxy profiles, custom native
 certificate files, and proxy settings that cannot preserve both upstream routing
-and private loopback access cannot establish this guarantee. OpenClaw rejects a
+and private loopback access cannot establish this guarantee. Paddy rejects a
 restricted run on those paths before starting it. Roles without a model policy
 keep their existing native connection and optional-hook behavior. Introducing a
 model policy while an unqualified operator execution is active cancels directly owned and otherwise
@@ -110,7 +110,7 @@ combine queued input from several senders into a new turn without preserving
 unique sender attribution. Previously accepted unrestricted input that can no
 longer be attributed uniquely may continue under the receiving execution's valid
 authority after a contributing sender's authorization ends or becomes restricted.
-A matching native root alone does not prove unique attribution. OpenClaw does not
+A matching native root alone does not prove unique attribution. Paddy does not
 interrupt independently authorized receiver work to guess which input it consumed.
 
 This limitation does not exempt newly restricted work or revocation of a directly
@@ -208,9 +208,9 @@ fail-closed rule:
 }
 ```
 
-With Codex forced, OpenClaw fails early if the plugin is disabled, the app-server
+With Codex forced, Paddy fails early if the plugin is disabled, the app-server
 is too old or cannot start, or route/auth support is rejected without a declared
 fallback. Authored request overrides may instead use the
-[selection-time OpenClaw fallback](/concepts/agent-runtimes#runtime-selection)
+[selection-time Paddy fallback](/concepts/agent-runtimes#runtime-selection)
 that preserves the exact request. Once Codex starts, its failures are not replayed
-through OpenClaw.
+through Paddy.

@@ -55,7 +55,7 @@ type MeasurePreflightStep = <T>(name: string, run: () => T | Promise<T>) => Prom
 
 function throwPluginRegistryPersistenceFailed(
   reason: string,
-  repair = 'Run "openclaw doctor --fix" and retry.',
+  repair = 'Run "paddy doctor --fix" and retry.',
 ): never {
   throw new Error(
     `${PRODUCT_NAME} refreshed the plugin registry but could not verify the persisted replacement (${reason}); refusing to accept the plugin registry. ${repair}`,
@@ -224,7 +224,7 @@ export async function persistRefreshedPluginIndex(params: {
           `reread source was ${persistedPluginMetadataSnapshot?.registrySource ?? "missing"}${
             differences ? `; differences: ${differences}` : ""
           }${diagnosticCodes?.length ? `; diagnostics: ${diagnosticCodes.join(", ")}` : ""}`,
-          'Stop plugin package changes, run "openclaw plugins registry --refresh", then retry.',
+          'Stop plugin package changes, run "paddy plugins registry --refresh", then retry.',
         );
       }
       assertPreflightConfigUnchanged(params.snapshotRead.snapshot, persistedSnapshotRead.snapshot);

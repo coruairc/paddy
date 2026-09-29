@@ -6,7 +6,7 @@ read_when:
   - You need KIE_API_KEY setup or supported video models
 ---
 
-OpenClaw includes the bundled `kie` plugin, enabled by default, for
+Paddy includes the bundled `kie` plugin, enabled by default, for
 [Kie AI](https://kie.ai) video generation.
 
 | Property        | Value                         |
@@ -23,7 +23,7 @@ OpenClaw includes the bundled `kie` plugin, enabled by default, for
 Run onboarding or set the environment variable:
 
 ```bash
-openclaw onboard --auth-choice kie-api-key
+paddy onboard --auth-choice kie-api-key
 ```
 
 ```bash
@@ -65,7 +65,7 @@ Aspect-ratio controls are available for text-only Kling and Grok models,
 and both Seedance modes. Run `video_generate action=list` for the model's
 supported controls. Kling and Seedance default to no generated audio.
 
-Reference images can be remote HTTP(S) URLs or local files. OpenClaw
+Reference images can be remote HTTP(S) URLs or local files. Paddy
 uploads local images through Kie's base64 file upload API and passes the
 returned URL to generation. This initial plugin supports one image up to
 10 MB: JPEG or PNG for Kling; JPEG, PNG, or WebP for the other models.
@@ -87,7 +87,7 @@ Set the default video model:
 }
 ```
 
-Kie jobs can take several minutes. OpenClaw polls until completion and
+Kie jobs can take several minutes. Paddy polls until completion and
 waits up to ten minutes by default. Override this with
 `agents.defaults.mediaModels.video.timeoutMs` when needed. Provider error
 messages are surfaced even when Kie returns HTTP 200.

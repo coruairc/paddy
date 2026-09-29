@@ -303,7 +303,7 @@ export function maybeRepairStaleManagedNpmBundledPlugins(
           (plugin) =>
             `- ${plugin.pluginId}: ${plugin.packageName}${plugin.version ? `@${plugin.version}` : ""}`,
         ),
-        `Repair with ${formatCliCommand("openclaw doctor --fix")} to remove stale managed npm packages and rebuild the plugin registry.`,
+        `Repair with ${formatCliCommand("paddy doctor --fix")} to remove stale managed npm packages and rebuild the plugin registry.`,
       ].join("\n"),
       "Plugin registry",
     );
@@ -349,7 +349,7 @@ async function maybeRepairStaleLocalBundledPluginInstallRecords(
       [
         "Local bundled plugin install records shadow bundled plugins:",
         ...stale.map((record) => `- ${record.pluginId}: ${shortenHomePath(record.stalePath)}`),
-        `Repair with ${formatCliCommand("openclaw doctor --fix")} to remove stale local install records and rebuild the plugin registry.`,
+        `Repair with ${formatCliCommand("paddy doctor --fix")} to remove stale local install records and rebuild the plugin registry.`,
       ].join("\n"),
       "Plugin registry",
     );
@@ -426,7 +426,7 @@ export function pluginRegistryIssueToHealthFinding(
         severity: "warning",
         message: "Persisted plugin registry is missing or stale.",
         path: issue.path,
-        fixHint: "Run `openclaw doctor --fix` to rebuild the plugin registry from enabled plugins.",
+        fixHint: "Run `paddy doctor --fix` to rebuild the plugin registry from enabled plugins.",
       };
     case "stale-managed-npm-bundled-plugin":
       return {
@@ -438,7 +438,7 @@ export function pluginRegistryIssueToHealthFinding(
         path: issue.packageDir,
         target: issue.pluginId,
         fixHint:
-          "Run `openclaw doctor --fix` to remove stale managed npm packages and rebuild the plugin registry.",
+          "Run `paddy doctor --fix` to remove stale managed npm packages and rebuild the plugin registry.",
       };
     case "stale-local-bundled-plugin-install-record":
       return {
@@ -448,7 +448,7 @@ export function pluginRegistryIssueToHealthFinding(
         path: issue.stalePath,
         target: issue.pluginId,
         fixHint:
-          "Run `openclaw doctor --fix` to remove stale local install records and rebuild the plugin registry.",
+          "Run `paddy doctor --fix` to remove stale local install records and rebuild the plugin registry.",
       };
     case "managed-npm-openclaw-peer-link":
       return {
@@ -457,7 +457,7 @@ export function pluginRegistryIssueToHealthFinding(
         message: `Managed npm package ${issue.packageName} has a broken ${PRODUCT_NAME} peer link: ${issue.reason}.`,
         path: issue.packageDir,
         target: issue.packageName,
-        fixHint: "Run `openclaw doctor --fix` to relink managed npm plugin packages.",
+        fixHint: "Run `paddy doctor --fix` to relink managed npm plugin packages.",
       };
     case "registered-npm-openclaw-host-link":
       return {
@@ -466,7 +466,7 @@ export function pluginRegistryIssueToHealthFinding(
         message: `Registered plugin ${issue.packageName} has a broken ${PRODUCT_NAME} host link: ${issue.reason}.`,
         path: issue.packageDir,
         target: issue.packageName,
-        fixHint: "Run `openclaw doctor --fix` to relink the installed plugin package.",
+        fixHint: "Run `paddy doctor --fix` to relink the installed plugin package.",
       };
     case "managed-npm-package-unreadable":
       return {
@@ -474,7 +474,7 @@ export function pluginRegistryIssueToHealthFinding(
         severity: "warning",
         message: `Managed npm package could not be inspected: ${issue.reason}.`,
         path: issue.packageDir,
-        fixHint: "Restore access to the package files, then run `openclaw doctor` again.",
+        fixHint: "Restore access to the package files, then run `paddy doctor` again.",
       };
     case "registered-npm-package-unreadable":
       return {
@@ -482,7 +482,7 @@ export function pluginRegistryIssueToHealthFinding(
         severity: "warning",
         message: `Registered plugin package could not be inspected: ${issue.reason}.`,
         path: issue.packageDir,
-        fixHint: "Restore access to the package files, then run `openclaw doctor` again.",
+        fixHint: "Restore access to the package files, then run `paddy doctor` again.",
       };
     case "stale-managed-npm-install-generation":
       return staleManagedNpmInstallGenerationToHealthFinding(issue);
@@ -596,7 +596,7 @@ async function inspectOrRepairPluginRegistryState(
       note(
         [
           "Persisted plugin registry is missing or stale.",
-          `Repair with ${formatCliCommand("openclaw doctor --fix")} to rebuild ${shortenHomePath(preflight.filePath)} from enabled plugins.`,
+          `Repair with ${formatCliCommand("paddy doctor --fix")} to rebuild ${shortenHomePath(preflight.filePath)} from enabled plugins.`,
         ].join("\n"),
         "Plugin registry",
       );

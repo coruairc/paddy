@@ -13,7 +13,7 @@ The Canvas plugin owns this presentation path. It is not a standalone visual
 workspace or an A2UI push target.
 
 The recommended agent path is [`show_widget`](/tools/show-widget) with
-`presentation.target: "node_panel"`. OpenClaw stores the widget as a hosted
+`presentation.target: "node_panel"`. Paddy stores the widget as a hosted
 document, selects a connected macOS node, opens the panel, and navigates it to
 that document. If no eligible Mac is connected or presentation fails, the
 widget still appears inline in chat and the tool result explains how to retry.
@@ -46,7 +46,7 @@ Ask the agent to use `show_widget` and target the node panel. The tool exposes
 }
 ```
 
-The result identifies the selected Mac when presentation succeeds. OpenClaw
+The result identifies the selected Mac when presentation succeeds. Paddy
 currently selects only a connected macOS node that declares `canvas.present`.
 
 ## Node commands
@@ -54,9 +54,9 @@ currently selects only a connected macOS node that declares `canvas.present`.
 The paired-node command surface contains three commands:
 
 ```bash
-openclaw nodes canvas present --node <id>
-openclaw nodes canvas navigate --node <id> "/__openclaw__/canvas/documents/<document-id>/index.html"
-openclaw nodes canvas hide --node <id>
+paddy nodes canvas present --node <id>
+paddy nodes canvas navigate --node <id> "/__openclaw__/canvas/documents/<document-id>/index.html"
+paddy nodes canvas hide --node <id>
 ```
 
 - `canvas.present` shows the panel. It also accepts the existing optional
@@ -91,7 +91,7 @@ automatically navigate to an A2UI page.
 
 ## Migrating documents from a custom root
 
-Run `openclaw doctor --fix` to move documents from the retired
+Run `paddy doctor --fix` to move documents from the retired
 `plugins.entries.canvas.config.host.root` (or the older `canvasHost.root`) into
 the state directory's `canvas/documents` folder. An explicit plugin root takes
 precedence over the older setting. Doctor removes the root setting only after no

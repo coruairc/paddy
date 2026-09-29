@@ -1,5 +1,5 @@
 ---
-summary: "Optional Docker-based setup and onboarding for OpenClaw"
+summary: "Optional Docker-based setup and onboarding for Paddy"
 read_when:
   - You want a containerized Gateway instead of local installs
   - You are validating the Docker flow
@@ -154,7 +154,7 @@ The image supplies Chromium, not a replacement for your browser configuration:
 - Keep browser control enabled (`browser.enabled`). Use a local managed profile
   such as `openclaw` for the container's Chromium, not an extension, attach-only,
   or remote-CDP profile intended for another browser.
-- OpenClaw auto-detects the image's Playwright-managed Chromium on Linux. An
+- Paddy auto-detects the image's Playwright-managed Chromium on Linux. An
   explicit `browser.executablePath` or profile executable path must point to a
   binary inside the container; a path from your laptop will not work there.
 - A headless container needs headless browser operation. Check explicit
@@ -198,7 +198,7 @@ docker compose up -d openclaw-gateway
 
 The channel command fails before changing config if a plugin-declared environment variable is missing. Keep `TELEGRAM_BOT_TOKEN` in `.env` after bootstrap: `--use-env` leaves credential lookup to the environment without copying the token into `openclaw.json`, and the running Gateway needs the same variable. When channel config changes after startup, the Gateway's config watcher hot-reloads the affected channel automatically.
 
-See [`openclaw channels`](/cli/channels) for credential-flag alternatives and other channel plugins.
+See [`paddy channels`](/cli/channels) for credential-flag alternatives and other channel plugins.
 
 ### Manual flow
 
@@ -227,8 +227,8 @@ Run `docker compose` from the repo root. If you enabled `OPENCLAW_EXTRA_MOUNTS` 
 
 ### Upgrading container images
 
-When you replace the OpenClaw image but keep the same mounted state/config, the
-image entrypoint runs `openclaw doctor --fix --non-interactive` under exclusive
+When you replace the Paddy image but keep the same mounted state/config, the
+image entrypoint runs `paddy doctor --fix --non-interactive` under exclusive
 maintenance ownership before starting the Gateway. This covers the default image
 command and Compose's foreground Gateway command, including its selected profile.
 Routine image upgrades do not require a separate Doctor pass.
@@ -239,7 +239,7 @@ Current images use the guarded filesystem fallback; keep native filesystem
 checks enabled. Doctor reports the underlying lock failure and recovery action
 instead of treating every acquisition error as an active Gateway. Permission
 errors require a writable state mount for the container user. If the filesystem
-cannot provide exclusive file creation for state ownership, stop OpenClaw, back
+cannot provide exclusive file creation for state ownership, stop Paddy, back
 up its state, and move the state volume to a local filesystem that supports it.
 Ordinary database transactions use SQLite locking on that volume. Do not delete
 state or lock files to bypass ownership.
@@ -285,7 +285,7 @@ retrying (for example, an Unraid pool path instead of the `shfs` share).
 
 With a restart policy, Docker, Podman, or Kubernetes may show
 the Gateway container restarting. Keep the mounted state volume, then run the
-same image once with `openclaw doctor --fix` as the container command, using the
+same image once with `paddy doctor --fix` as the container command, using the
 same state/config mounts the Gateway uses:
 
 ```bash
@@ -324,7 +324,7 @@ runtime output are pruned.
 
 For example, these commands build separate, multi-architecture standalone
 FakeCo Gateway images for ClickClack, Slack, and Microsoft Teams. ClawRouter is
-already part of the root OpenClaw runtime, so the ClickClack image selects only
+already part of the root Paddy runtime, so the ClickClack image selects only
 `clickclack`. The explicit empty browser argument keeps the default image free
 of Chromium:
 
@@ -368,9 +368,9 @@ docker buildx imagetools inspect \
 
 These images are for standalone OCI-based Gateways and generic Docker users.
 Crabhelm-managed Gateways do not consume them: that delivery path builds a
-separate x86_64 appliance archive containing an OpenClaw npm tarball and pins
+separate x86_64 appliance archive containing a Paddy npm tarball and pins
 the Node, archive, and manifest digests. Build that appliance independently
-from the same landed OpenClaw source.
+from the same landed Paddy source.
 
 To test bundled plugin source against a packaged image, mount one plugin source directory over its packaged source path, e.g. `OPENCLAW_EXTRA_MOUNTS=/path/to/fork/extensions/synology-chat:/app/extensions/synology-chat:ro`. That overrides the matching compiled `/app/dist/extensions/synology-chat` bundle for the same plugin id. Restart the Gateway after adding or changing a mount; runtime loading and setup use the mounted source.
 
@@ -467,5 +467,5 @@ docker compose exec openclaw-gateway sh -lc 'node dist/index.js gateway health -
 - [Kubernetes](/install/kubernetes) — a minimal Kustomize starting point for running the Gateway on a cluster
 - [Ansible](/install/ansible) — automated server deployment with Tailscale VPN and firewall isolation
 - [Cloudflare Containers](/install/cloudflare) — experimental Worker plus container deployment with Litestream backups to R2
-- [Updating](/install/updating) — keeping OpenClaw up to date
+- [Updating](/install/updating) — keeping Paddy up to date
 - [Configuration](/gateway/configuration) — Gateway configuration after install

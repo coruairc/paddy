@@ -107,7 +107,7 @@ if /usr/bin/find "$canonical_xcode" ! -user root -print -quit | /usr/bin/grep -q
 fi
 if /usr/bin/find "$canonical_xcode" -perm -002 -print -quit | /usr/bin/grep -q . ||
    /usr/bin/find "$canonical_xcode" -perm -020 ! -group wheel -print -quit | /usr/bin/grep -q .; then
-  reject "Xcode contains group/world-writable content. Reinstall Xcode from Apple; OpenClaw will not repair unsafe ownership or modes."
+  reject "Xcode contains group/world-writable content. Reinstall Xcode from Apple; Paddy will not repair unsafe ownership or modes."
 fi
 if /usr/bin/find "$canonical_xcode" -acl -print -quit | /usr/bin/grep -q .; then
   reject "Xcode contains access-control lists that cannot be trusted for root compilation. Reinstall Xcode from Apple."

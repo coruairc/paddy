@@ -89,8 +89,8 @@ MiniMax M3 uses `minimax/MiniMax-M3` as its default provider/model reference.
 To see what you can test on your machine (and the exact `provider/model` ids), run:
 
 ```bash
-openclaw models list
-openclaw models list --json
+paddy models list
+paddy models list --json
 ```
 
 </Tip>

@@ -51,7 +51,7 @@ export async function runGatewayHealthCheck(params: {
             ? ["Continuing with the other configured remote credential."]
             : [
                 "Health check skipped to avoid falling back to ambient credentials.",
-                `Fix the SecretRef, then run \`${formatCliCommand("openclaw health")}\` again.`,
+                `Fix the SecretRef, then run \`${formatCliCommand("paddy health")}\` again.`,
               ]),
         ].join("\n"),
         "Gateway auth",
@@ -76,7 +76,7 @@ export async function runGatewayHealthCheck(params: {
           "Could not resolve local gateway SecretRef for health check.",
           localProbeAuth.warning,
           "Health check skipped to avoid falling back to ambient credentials.",
-          `Fix the SecretRef, then run \`${formatCliCommand("openclaw health")}\` again.`,
+          `Fix the SecretRef, then run \`${formatCliCommand("paddy health")}\` again.`,
         ].join("\n"),
         "Gateway auth",
       );

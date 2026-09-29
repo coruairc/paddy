@@ -328,7 +328,7 @@ export async function collectRuntimeToolSchemaFindings(
             findings.push({
               checkId: "core/doctor/runtime-tool-schemas",
               severity: "warning",
-              message: `MCP server "${sanitizeTerminalText(serverName)}" was not started for update validation. Run \`openclaw doctor --lint --only core/doctor/runtime-tool-schemas\` after the update to inspect its tools.`,
+              message: `MCP server "${sanitizeTerminalText(serverName)}" was not started for update validation. Run \`paddy doctor --lint --only core/doctor/runtime-tool-schemas\` after the update to inspect its tools.`,
               path: `mcp.servers.${serverName}`,
             });
           }
@@ -380,7 +380,7 @@ export async function collectRuntimeToolSchemaFindings(
               message: `Configured MCP server "${serverName}" was not probed during read-only inspection because OAuth may rotate external credentials.`,
               path: `mcp.servers.${serverName}`,
               fixHint:
-                "For configured servers, run `openclaw mcp probe <name>` against the serving configuration. Validate plugin-provided or agent-local MCP servers from an authenticated serving-agent turn so refreshed credentials persist with their owner.",
+                "For configured servers, run `paddy mcp probe <name>` against the serving configuration. Validate plugin-provided or agent-local MCP servers from an authenticated serving-agent turn so refreshed credentials persist with their owner.",
             });
             reportedBundleRuntimeDiagnostics.add(serverName);
           }

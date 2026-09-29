@@ -1,7 +1,7 @@
 ---
-summary: "Use Xiaomi MiMo pay-as-you-go and Token Plan models with OpenClaw"
+summary: "Use Xiaomi MiMo pay-as-you-go and Token Plan models with Paddy"
 read_when:
-  - You want Xiaomi MiMo models in OpenClaw
+  - You want Xiaomi MiMo models in Paddy
   - You need Xiaomi MiMo auth or Token Plan setup
 title: "Xiaomi MiMo"
 ---
@@ -45,27 +45,27 @@ Xiaomi MiMo is the API platform for **MiMo** models. The official external
     Pay-as-you-go:
 
     ```bash
-    openclaw onboard --auth-choice xiaomi-api-key
+    paddy onboard --auth-choice xiaomi-api-key
     ```
 
     Token Plan:
 
     ```bash
-    openclaw onboard --auth-choice xiaomi-token-plan-sgp
+    paddy onboard --auth-choice xiaomi-token-plan-sgp
     ```
 
     Or pass the keys directly:
 
     ```bash
-    openclaw onboard --auth-choice xiaomi-api-key --xiaomi-api-key "$XIAOMI_API_KEY"
-    openclaw onboard --auth-choice xiaomi-token-plan-sgp --xiaomi-token-plan-api-key "$XIAOMI_TOKEN_PLAN_API_KEY"
+    paddy onboard --auth-choice xiaomi-api-key --xiaomi-api-key "$XIAOMI_API_KEY"
+    paddy onboard --auth-choice xiaomi-token-plan-sgp --xiaomi-token-plan-api-key "$XIAOMI_TOKEN_PLAN_API_KEY"
     ```
 
   </Step>
   <Step title="Verify the model is available">
     ```bash
-    openclaw models list --provider xiaomi
-    openclaw models list --provider xiaomi-token-plan
+    paddy models list --provider xiaomi
+    paddy models list --provider xiaomi-token-plan
     ```
   </Step>
 </Steps>
@@ -112,7 +112,7 @@ provider is not offered without one of those.
 ## Reasoning models
 
 The MiMo V2.5 and V2.6 text models support
-OpenClaw's [`/think` directive](/tools/thinking) with levels `off`,
+Paddy's [`/think` directive](/tools/thinking) with levels `off`,
 `minimal`, `low`, `medium`, `high`, `xhigh`, and `max` (default `high`).
 
 ## Text-to-speech
@@ -150,11 +150,11 @@ message.
 
 Built-in voices: `mimo_default`, `default_zh`, `default_en`, `Mia`, `Chloe`,
 `Milo`, `Dean`. The preset-voice model `mimo-v2.5-tts` uses `audio.voice`, so
-OpenClaw sends `speakerVoice` for that model.
+Paddy sends `speakerVoice` for that model.
 
 The voicedesign model `mimo-v2.5-tts-voicedesign` generates the voice from a
 natural-language style prompt instead of a preset voice id. Set `style` to
-the desired voice description; OpenClaw sends it as the `user` message, sends
+the desired voice description; Paddy sends it as the `user` message, sends
 the spoken text as the `assistant` message, and omits `audio.voice` for this
 model.
 
@@ -174,7 +174,7 @@ model.
 ```
 
 For channels that request a voice-note synthesis target (Discord, Feishu,
-Matrix, Telegram, and WhatsApp), OpenClaw transcodes Xiaomi output to 48kHz
+Matrix, Telegram, and WhatsApp), Paddy transcodes Xiaomi output to 48kHz
 mono Opus with `ffmpeg` before delivery.
 
 ## Config example
@@ -297,7 +297,7 @@ USD pricing, so its catalog rows use zero USD cost and the config example omits
     `/think` directive syntax and level mapping.
   </Card>
   <Card title="Configuration reference" href="/gateway/configuration-reference" icon="gear">
-    Full OpenClaw configuration reference.
+    Full Paddy configuration reference.
   </Card>
   <Card title="Xiaomi MiMo console" href="https://platform.xiaomimimo.com" icon="arrow-up-right-from-square">
     Xiaomi MiMo dashboard and API key management.

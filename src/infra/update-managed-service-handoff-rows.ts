@@ -74,7 +74,7 @@ export function createManagedHandoffLeaseRows(
           payload.cancellation.updatedAt >= value.updated_at))
     ) {
       throw new Error(
-        "existing managed handoff lease is incompatible; retain diagnostics and run openclaw triage manually",
+        "existing managed handoff lease is incompatible; retain diagnostics and run paddy triage manually",
       );
     }
     return {

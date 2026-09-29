@@ -5,7 +5,7 @@ read_when:
 title: "Remote access"
 ---
 
-OpenClaw runs one Gateway (the master) on a host and connects every client to it. The Gateway owns sessions, auth profiles, channels, and state; everything else is a client.
+Paddy runs one Gateway (the master) on a host and connects every client to it. The Gateway owns sessions, auth profiles, channels, and state; everything else is a client.
 
 - **Operators** (you, or the macOS app): direct LAN/Tailnet WebSocket is simplest when the Gateway is reachable; SSH tunneling is the universal fallback.
 - **Nodes** (iOS/Android and other devices): connect to the Gateway **WebSocket** (LAN/tailnet or SSH tunnel).
@@ -19,11 +19,11 @@ The Gateway WebSocket binds to **loopback** by default, on port `18789` (`gatewa
 
 ## Topology options
 
-| Setup                             | Where the Gateway runs                                                                                    | Best for                                                                                                                                          |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Always-on Gateway in your tailnet | Persistent host (VPS or home server), reached via Tailscale or SSH                                        | Laptops that sleep often but need the agent always-on. See [exe.dev](/install/exe-dev) (easy VM) or [Hetzner](/install/hetzner) (production VPS). |
-| Home desktop                      | Desktop; laptop connects remotely via the macOS app's remote mode (Settings → Connection → OpenClaw runs) | Keeping the agent on hardware that stays powered on. Runbook: [macOS remote access](/platforms/mac/remote).                                       |
-| Laptop                            | Laptop, exposed safely via SSH tunnel or Tailscale Serve (keep `gateway.bind: "loopback"`)                | Single-machine setups. See [Tailscale](/gateway/tailscale) and [Web](/web).                                                                       |
+| Setup                             | Where the Gateway runs                                                                                 | Best for                                                                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Always-on Gateway in your tailnet | Persistent host (VPS or home server), reached via Tailscale or SSH                                     | Laptops that sleep often but need the agent always-on. See [exe.dev](/install/exe-dev) (easy VM) or [Hetzner](/install/hetzner) (production VPS). |
+| Home desktop                      | Desktop; laptop connects remotely via the macOS app's remote mode (Settings → Connection → Paddy runs) | Keeping the agent on hardware that stays powered on. Runbook: [macOS remote access](/platforms/mac/remote).                                       |
+| Laptop                            | Laptop, exposed safely via SSH tunnel or Tailscale Serve (keep `gateway.bind: "loopback"`)             | Single-machine setups. See [Tailscale](/gateway/tailscale) and [Web](/web).                                                                       |
 
 For the always-on and laptop setups, prefer keeping `gateway.bind: "loopback"` and using **Tailscale Serve** for the Control UI, or a trusted LAN/Tailnet bind with `gateway.remote.transport: "direct"`. SSH tunnel is the fallback that works from any machine.
 
@@ -49,7 +49,7 @@ Nodes do not run the Gateway service. Only one Gateway should run per host unles
 ssh -N -L 18789:127.0.0.1:18789 user@gateway-host
 ```
 
-With the tunnel up, `openclaw health` and `openclaw status --deep` reach the remote Gateway via `ws://127.0.0.1:18789`. `openclaw gateway status`, `openclaw gateway health`, `openclaw gateway probe`, and `openclaw gateway call` can also target a forwarded URL via `--url`.
+With the tunnel up, `paddy health` and `paddy status --deep` reach the remote Gateway via `ws://127.0.0.1:18789`. `paddy gateway status`, `paddy gateway health`, `paddy gateway probe`, and `paddy gateway call` can also target a forwarded URL via `--url`.
 
 To replace per-client SSH tunnels with one private `wss://` endpoint while keeping the Gateway on loopback, follow [Give your Gateway a stable HTTPS URL](/gateway/stable-https-url).
 
@@ -123,7 +123,7 @@ binding leaves both credential sets intact. If an older binary rejects an
 independently upgraded database schema, restore compatible pre-update state;
 retained token rows alone are not a database downgrade.
 
-Running `openclaw configure --section gateway` or interactive onboarding again
+Running `paddy configure --section gateway` or interactive onboarding again
 preserves the remote TLS fingerprint and transport settings when you keep the
 same URL (ignoring surrounding whitespace). Changing the URL clears those
 endpoint settings. A newly confirmed discovery fingerprint replaces the saved
@@ -240,7 +240,7 @@ SecretRefs:
 }
 ```
 
-OpenClaw's Gateway connection code never runs `cloudflared` itself and has no
+Paddy's Gateway connection code never runs `cloudflared` itself and has no
 Cloudflare dependency or login flow. Only the generic exec secret provider
 invokes the exact command an operator configures. Resolved edge-auth headers are
 sent only when the target matches the configured `gateway.remote.url` scope,
@@ -325,7 +325,7 @@ ssh-copy-id -i ~/.ssh/id_rsa <REMOTE_USER>@<REMOTE_IP>
 #### Step 3: configure the gateway token
 
 ```bash
-openclaw config set gateway.remote.token "<your-token>"
+paddy config set gateway.remote.token "<your-token>"
 ```
 
 The Gateway accepts its configured secret in either field: `gateway.remote.token` or `gateway.remote.password` both work, including for password-mode Gateways. The server's `gateway.auth.mode` selects which configured secret to use. `OPENCLAW_GATEWAY_TOKEN` is still valid as a shell-level override, but the durable remote-client setup is `gateway.remote.token` / `gateway.remote.password`.
@@ -396,4 +396,4 @@ launchctl bootout gui/$UID/ai.openclaw.ssh-tunnel
 - [Tailscale](/gateway/tailscale)
 - [Authentication](/gateway/authentication)
 - [Trusted proxy auth](/gateway/trusted-proxy-auth) — authenticating remote access through a reverse proxy
-- [Network](/network) — the hub for how OpenClaw connects, pairs, and secures devices across localhost, LAN, and tailnet
+- [Network](/network) — the hub for how Paddy connects, pairs, and secures devices across localhost, LAN, and tailnet

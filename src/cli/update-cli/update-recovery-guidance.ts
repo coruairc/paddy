@@ -65,7 +65,7 @@ export function resolveUpdateResultNextAction(params: {
       const refusal =
         result.rollbackOutcome?.reason ??
         result.steps.findLast((step) => step.name === "database rollback")?.stderrTail;
-      return `Rollback refused: ${refusal ?? "restoring the backup would discard later writes"}. The Gateway is running on the preserved migrated state. Keep the recovery snapshots and run \`${formatCliCommand("openclaw doctor", env)}\` to inspect the remaining repair.`;
+      return `Rollback refused: ${refusal ?? "restoring the backup would discard later writes"}. The Gateway is running on the preserved migrated state. Keep the recovery snapshots and run \`${formatCliCommand("paddy doctor", env)}\` to inspect the remaining repair.`;
     }
     if (
       result.reason === "update-failed" &&

@@ -33,14 +33,14 @@ read_when:
 
   </Step>
   <Step title="Try it in chat">
-    `/tts status` shows the current state. `/tts audio Hello from OpenClaw`
+    `/tts status` shows the current state. `/tts audio Hello from Paddy`
     sends a one-off audio reply.
   </Step>
 </Steps>
 
 <Note>
 Auto-TTS is **off** by default. When `tts.provider` is unset,
-OpenClaw picks the first configured provider in registry auto-select order.
+Paddy picks the first configured provider in registry auto-select order.
 The built-in `tts` agent tool is explicit-intent only: ordinary chat stays
 text unless the user asks for audio, uses `/tts`, or enables Auto-TTS/directive
 speech.
@@ -82,6 +82,6 @@ if you keep summaries enabled.
 The bundled **Microsoft** provider uses Microsoft Edge's online neural TTS
 service via `node-edge-tts`. It is a public web service without a published
 SLA or quota — treat it as best-effort. The legacy provider id `edge` is
-normalized to `microsoft` and `openclaw doctor --fix` rewrites persisted
+normalized to `microsoft` and `paddy doctor --fix` rewrites persisted
 config; new configs should always use `microsoft`.
 </Warning>

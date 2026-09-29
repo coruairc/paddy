@@ -140,7 +140,7 @@ requester through its accepted completion path; progress text is not proof that
 a child finished or that its result was delivered.
 
 When settlement resumes a top-level parent with automatic channel delivery,
-OpenClaw keeps the channel's typing indicator active while that continuation
+Paddy keeps the channel's typing indicator active while that continuation
 executes. The indicator starts after execution begins, not while admission is
 queued, and stops when the call settles, is cancelled, or loses its owner.
 It respects `typingMode: "never"`, uses the `agents.defaults.typingIntervalSeconds`

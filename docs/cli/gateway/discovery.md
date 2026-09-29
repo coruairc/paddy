@@ -1,12 +1,12 @@
 ---
-summary: "`openclaw gateway discover` and the Bonjour beacons and TXT hints it scans for"
+summary: "`paddy gateway discover` and the Bonjour beacons and TXT hints it scans for"
 read_when:
   - Discovering gateways via Bonjour (local + wide-area DNS-SD)
 title: "Discover gateways (Bonjour)"
 sidebarTitle: "Discovery"
 ---
 
-Scanning for Gateway beacons over mDNS and wide-area DNS-SD. Part of the [`openclaw gateway`](/cli/gateway) reference.
+Scanning for Gateway beacons over mDNS and wide-area DNS-SD. Part of the [`paddy gateway`](/cli/gateway) reference.
 
 ## Discover gateways (Bonjour)
 
@@ -22,7 +22,7 @@ TXT hints on every beacon: `role` (gateway role hint), `transport` (transport hi
 ### `gateway discover`
 
 ```bash
-openclaw gateway discover
+paddy gateway discover
 ```
 
 <ParamField path="--timeout <ms>" type="number" default="2000">
@@ -35,8 +35,8 @@ openclaw gateway discover
 Examples:
 
 ```bash
-openclaw gateway discover --timeout 4000
-openclaw gateway discover --json | jq '.beacons[].wsUrl'
+paddy gateway discover --timeout 4000
+paddy gateway discover --json | jq '.beacons[].wsUrl'
 ```
 
 <Note>

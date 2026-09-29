@@ -151,7 +151,7 @@ export function resolveWorkerToolAuthority(params: {
   const withheld = projected.filter((name) => !launchToolNames.has(name));
   if (withheld.length > 0) {
     logInfo(
-      `Worker tools withheld: the node's installed OpenClaw does not support ${withheld.join(", ")}. Update OpenClaw on the node and restart it to enable them.`,
+      `Worker tools withheld: the node's installed Paddy does not support ${withheld.join(", ")}. Update Paddy on the node and restart it to enable them.`,
     );
   }
   return {

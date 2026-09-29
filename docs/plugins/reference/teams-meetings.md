@@ -19,7 +19,7 @@ Join Microsoft Teams meetings as a Chrome browser guest.
 
 ## Surface
 
-- CLI commands: `openclaw teamsmeetings`
+- CLI commands: `paddy teamsmeetings`
 - Contracts: `tools`, `transcriptSourceProviders`
 
 ## Related docs

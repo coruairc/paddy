@@ -1,12 +1,12 @@
-# OpenClaw Perplexity Plugin
+# Paddy Perplexity Plugin
 
-Official OpenClaw plugin for Perplexity.
+Official Paddy plugin for Perplexity.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/perplexity-plugin
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/tools/perplexity-search> for setup and configuration.

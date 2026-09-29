@@ -31,7 +31,7 @@ export const gatewayServicesExtraCheck: HealthCheck = {
       target: service.label,
       fixHint:
         service.legacy === true
-          ? "Run `openclaw doctor` interactively to review legacy gateway services and confirm supported cleanup."
+          ? "Run `paddy doctor` interactively to review legacy gateway services and confirm supported cleanup."
           : "Run a single gateway per machine unless this extra gateway is intentional.",
     }));
     return findings.concat(
@@ -42,7 +42,7 @@ export const gatewayServicesExtraCheck: HealthCheck = {
         source: "doctor",
         target: error.source,
         fixHint:
-          "Restore access to the native service definition or service manager, then run `openclaw doctor --deep` again.",
+          "Restore access to the native service definition or service manager, then run `paddy doctor --deep` again.",
       })),
     );
   },

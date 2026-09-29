@@ -11,7 +11,7 @@ read_when:
 
 `USER.md` is the optional user-model artifact in an agent workspace. It stores stable preferences, communication style, relationships, and active-project context as directives that can guide future sessions.
 
-OpenClaw loads `USER.md` beside `MEMORY.md` at session start. It has a separate small bootstrap budget, and edits are picked up on later turns in a long-lived session. If the file is absent, startup continues without it.
+Paddy loads `USER.md` beside `MEMORY.md` at session start. It has a separate small bootstrap budget, and edits are picked up on later turns in a long-lived session. If the file is absent, startup continues without it.
 
 ## Personal USER files on a shared Gateway
 
@@ -64,7 +64,7 @@ ownership and creation records; no schema or configuration change is needed.
 Each session selects **one personal `USER.md`**: the assigned human owner's file
 first, otherwise the authenticated human creator's file. An agent or system
 assignment does not prevent that creator fallback. For eligible external chat
-turns, OpenClaw loads the shared file first and the selected personal file second.
+turns, Paddy loads the shared file first and the selected personal file second.
 The personal file supplements, rather than replaces, the shared file, overriding
 conflicting shared user preferences, not project rules or security policy. The
 workspace-root `USER.md` remains shared regardless of the workspace directory's name.
@@ -74,7 +74,7 @@ context on the next new turn, not the running turn. Another participant can stee
 under the normal permission and queue rules without switching personal context.
 Queued and collected messages from multiple people keep the session's selection;
 the current sender does not select a different file. Profile merges select the
-surviving canonical ID; move the preferences to that directory yourself. OpenClaw
+surviving canonical ID; move the preferences to that directory yourself. Paddy
 does not merge files or create a dossier.
 
 Missing files or missing qualifying human identity use shared defaults only. A
@@ -106,11 +106,11 @@ conversation history. Do not store secrets in these files.
 
 ## Gateway profile and GitHub credit
 
-Your authenticated Gateway profile is separate from `USER.md`. Open **Settings → Profile → Identity** to set the display name and avatar shown to other people on the Gateway. A custom OpenClaw avatar remains authoritative when a GitHub account is verified. The Profile header follows your live user identity, including names cleared from another browser, even when several agents are configured. Unidentified connections retain the default-agent preview.
+Your authenticated Gateway profile is separate from `USER.md`. Open **Settings → Profile → Identity** to set the display name and avatar shown to other people on the Gateway. A custom Paddy avatar remains authoritative when a GitHub account is verified. The Profile header follows your live user identity, including names cleared from another browser, even when several agents are configured. Unidentified connections retain the default-agent preview.
 
 Authenticated users can read their own profile with `operator.read`, `operator.sessions.read`, or their implied write/admin scopes, even when the shared People roster is unavailable. Refresh and reconnect read the current authenticated profile. Editing the name, avatar, or credit preference still requires `operator.write`; session access does not grant profile editing or access to other profiles. Profile image downloads retain their separate read permission and may display initials for session-only access.
 
-A single-user Gateway gives unidentified operator connections one durable local owner profile, shared across devices and tabs, including device-token reconnects. The Gateway host account's full name fills an unset display name. A saved name is never overwritten. If no full name is available, the sidebar and Profile header show **Owner** until you set a name. Login names are not used. The owner profile has no email and does not change permissions or identity scopes. It cannot be merged with a personal profile or assigned an operator role. Sign in with a personal identity for those operations. If a build older than v2026.9.2 merged the owner profile into a person, connections stay unidentified and log a repair hint. Run `openclaw doctor --fix`, then reconnect to restore the owner identity. The person keeps their emails, role, and GitHub identities.
+A single-user Gateway gives unidentified operator connections one durable local owner profile, shared across devices and tabs, including device-token reconnects. The Gateway host account's full name fills an unset display name. A saved name is never overwritten. If no full name is available, the sidebar and Profile header show **Owner** until you set a name. Login names are not used. The owner profile has no email and does not change permissions or identity scopes. It cannot be merged with a personal profile or assigned an operator role. Sign in with a personal identity for those operations. If a build older than v2026.9.2 merged the owner profile into a person, connections stay unidentified and log a repair hint. Run `paddy doctor --fix`, then reconnect to restore the owner identity. The person keeps their emails, role, and GitHub identities.
 
 When `gateway.roles` is configured, unidentified operators receive the owner profile only with token or password authentication. Other connections need a profile-backed sign-in for personal identity. Node, ephemeral, and synthetic connections do not receive an owner profile.
 
@@ -122,9 +122,9 @@ GitHub-backed sign-in is supported through Cloudflare Access and Tailscale Serve
 
 OIDC without a trusted GitHub claim keeps email-only sign-in and any existing linked identity. Trusted OIDC enrichment preserves an existing email profile's role and saved co-author preference; conflicting identities require explicit administrator linking rather than an automatic merge or email reassignment.
 
-For new profiles or an unset display name, OpenClaw prefers the public name from the verified GitHub account. When GitHub has none, it uses the sign-in provider's name. A saved name is upgraded only when it exactly matches the current canonical GitHub login, including case. All other saved names remain unchanged, including custom names and previously adopted full names. This takes effect on the next successful identity sync through sign-in, reconnect, or a Profile refresh that retries the lookup. Existing profiles are not renamed in a background migration.
+For new profiles or an unset display name, Paddy prefers the public name from the verified GitHub account. When GitHub has none, it uses the sign-in provider's name. A saved name is upgraded only when it exactly matches the current canonical GitHub login, including case. All other saved names remain unchanged, including custom names and previously adopted full names. This takes effect on the next successful identity sync through sign-in, reconnect, or a Profile refresh that retries the lookup. Existing profiles are not renamed in a background migration.
 
-The **GitHub account** row is read-only. Generic trusted proxies, token, password, and unauthenticated connections cannot claim a GitHub account, and agent or tool GitHub credentials are never used for this identity. Public GitHub account lookups use the Gateway's configured `gateway.controlUi.github.token`, or its process `GH_TOKEN` / `GITHUB_TOKEN` when no credential is configured, to avoid the smaller anonymous API quota. That credential authenticates the API request only. The sign-in provider still determines the person's identity. The forwarded Cloudflare Access assertion is connection-scoped: OpenClaw does not persist, export, log, or expose it to the UI or model.
+The **GitHub account** row is read-only. Generic trusted proxies, token, password, and unauthenticated connections cannot claim a GitHub account, and agent or tool GitHub credentials are never used for this identity. Public GitHub account lookups use the Gateway's configured `gateway.controlUi.github.token`, or its process `GH_TOKEN` / `GITHUB_TOKEN` when no credential is configured, to avoid the smaller anonymous API quota. That credential authenticates the API request only. The sign-in provider still determines the person's identity. The forwarded Cloudflare Access assertion is connection-scoped: Paddy does not persist, export, log, or expose it to the UI or model.
 
 Cloudflare Access account lookups automatically share a bounded, in-memory GitHub metadata cache for 15 minutes, keyed by immutable account ID and API credential. Concurrent lookups share one GitHub request. Expired entries use ETags for conditional refresh when available. An authenticated `304 Not Modified` response does not consume GitHub's primary quota. Each new connection or authenticated HTTP request still checks Cloudflare Access, and local profile permissions use the current operator role. The cache does not store Access assertions or role decisions. Tailscale username lookups stay fresh because usernames can be renamed or reassigned.
 
@@ -138,31 +138,31 @@ An administrator can explicitly link profiles belonging to the same person throu
 
 The primary account uses a nullable field in the existing profile table without advancing the database schema version. **Downgrade risk:** no schema-version bump blocks older builds from using this state. Their single-account writers can discard secondary account links or split the person again. Re-upgrading does not reconstruct discarded links; an administrator must explicitly relink the profiles. Keep a backup before downgrading.
 
-Public commit metadata is a separate choice. **Git co-author credit** defaults on for verified accounts. It adds the verified account's public GitHub noreply address to commits created from shared sessions. OpenClaw never requests or stores a private GitHub email for this feature. An unrelated, unlinked GitHub account uses its own profile and credit preference, so reusing a sign-in email or username does not inherit another person's choice. Signing in through a linked secondary account preserves the canonical profile's primary and credit preference.
+Public commit metadata is a separate choice. **Git co-author credit** defaults on for verified accounts. It adds the verified account's public GitHub noreply address to commits created from shared sessions. Paddy never requests or stores a private GitHub email for this feature. An unrelated, unlinked GitHub account uses its own profile and credit preference, so reusing a sign-in email or username does not inherit another person's choice. Signing in through a linked secondary account preserves the canonical profile's primary and credit preference.
 
 When your authenticated profile has prompted a session before an agent run, commits created from that run receive your exact `Co-authored-by` trailer. Commits and pull requests then visibly credit who worked on the session. Profile participants with verified GitHub identity and Git co-author credit enabled are eligible. Remote identities, agents, bots, and the configured primary Git author are excluded. Contributors appear by recorded contribution aggregate, highest first. Ties use the earliest known profile input, with unknown historical times after known times, then immutable GitHub account id. These best-effort aggregates are not exact lifetime prompt counts. Contributions from merged profiles remain attached to their surviving verified account. New participant admission and model-facing credit output are each capped at 32. Repair can retain larger histories.
 
-Delegated tasks retain a separate snapshot of the originating session's human contributor profile IDs before the child starts. Nested delegations carry that snapshot forward, up to 32 unique profiles, retaining inherited contributors before adding direct source participants. This does not create child participation, increase prompt counts, or grant access. People who join the source later are not added to an existing child's snapshot. At use time, OpenClaw combines inherited credit with direct child contributions and checks current verified GitHub identities and credit preferences. Each GitHub account is credited once; direct contributors retain their usual ordering, followed by inherited contributors in snapshot order. Ordinary sidebar parent links do not transfer credit.
+Delegated tasks retain a separate snapshot of the originating session's human contributor profile IDs before the child starts. Nested delegations carry that snapshot forward, up to 32 unique profiles, retaining inherited contributors before adding direct source participants. This does not create child participation, increase prompt counts, or grant access. People who join the source later are not added to an existing child's snapshot. At use time, Paddy combines inherited credit with direct child contributions and checks current verified GitHub identities and credit preferences. Each GitHub account is credited once; direct contributors retain their usual ordering, followed by inherited contributors in snapshot order. Ordinary sidebar parent links do not transfer credit.
 
 Credit follows session participation, including earlier work in the same source conversation. Use a separate source conversation when work needs a distinct contributor set. Verified channel-to-profile linking and attribution to individual tasks are separate capabilities.
 
 The snapshot survives session resets and disappears with the child session. Incognito sessions do not retain it or publish credit. Existing delegated sessions without a snapshot are not automatically backfilled. This uses optional session metadata without a database-schema migration; older versions do not use it and can discard it when resetting a session.
 
-When a session has someone to credit, its system prompt lists the exact trailers once. It tells the agent to add them to commits it makes from the session. The Codex runtime receives the same block in its developer instructions. Nothing is added when there is nobody to credit, and incognito sessions never carry credit. The Gateway publication broker applies the same credit directly in its generated commits and pull requests. When the Gateway exposes an external HTTPS session URL, pull requests end with a link to that exact team session. The trailers are not exported through the process or shell environment. Direct Git commands remain ordinary shell execution. OpenClaw does not replace `git` or install repository hooks. The agent following that system-prompt instruction is therefore the enforcement boundary.
+When a session has someone to credit, its system prompt lists the exact trailers once. It tells the agent to add them to commits it makes from the session. The Codex runtime receives the same block in its developer instructions. Nothing is added when there is nobody to credit, and incognito sessions never carry credit. The Gateway publication broker applies the same credit directly in its generated commits and pull requests. When the Gateway exposes an external HTTPS session URL, pull requests end with a link to that exact team session. The trailers are not exported through the process or shell environment. Direct Git commands remain ordinary shell execution. Paddy does not replace `git` or install repository hooks. The agent following that system-prompt instruction is therefore the enforcement boundary.
 
 Turning **Git co-author credit** off stops attribution for future runs. Gateway-managed publication also checks contributor identity and consent before each pending commit, push, or pull request write. If eligibility changes during publication, it stops before the next write and asks you to review recorded effects before requesting publication again. It does not rewrite commits that already contain the public trailer.
 
 ## Merging duplicate profiles
 
-Use [`openclaw users`](/cli/users) to list profile IDs and merge duplicate profiles
+Use [`paddy users`](/cli/users) to list profile IDs and merge duplicate profiles
 belonging to the same person. Both linking and merging require `operator.admin`.
 
 ```bash
-openclaw users list
-openclaw users merge <duplicate-profile-id> --into <surviving-profile-id>
+paddy users list
+paddy users merge <duplicate-profile-id> --into <surviving-profile-id>
 ```
 
-Use `openclaw users link-email <email> --to <profile-id>` when you want to move one
+Use `paddy users link-email <email> --to <profile-id>` when you want to move one
 email alias. It merges the previous profile only when that profile loses its last
 email. Use `users merge` when you want to merge the entire duplicate, including a
 profile with no email aliases. The Gateway method is `users.merge` with
@@ -255,7 +255,7 @@ profile. Unlinking takes effect on subsequent turns without a restart.
 
 ## GitHub connections
 
-Open **Settings → Profile → GitHub connections** to connect **My GitHub** without changing the shared **System GitHub** account. Both accounts and their connection status remain visible together. Viewing these connections does not require selecting an agent or configuring a default agent. Connecting a credential does not change your verified GitHub sign-in identity, display name, avatar, Git co-author credit preference, or OpenClaw permissions.
+Open **Settings → Profile → GitHub connections** to connect **My GitHub** without changing the shared **System GitHub** account. Both accounts and their connection status remain visible together. Viewing these connections does not require selecting an agent or configuring a default agent. Connecting a credential does not change your verified GitHub sign-in identity, display name, avatar, Git co-author credit preference, or Paddy permissions.
 
 My GitHub requires an authenticated, durable Gateway profile, including the local owner profile. An identified operator with `operator.read` can manage only their own connection, even without administrative or general write access. Shared-secret devices using the owner profile share that connection. Use per-person sign-in for a team. System and per-agent connection changes still require `operator.admin`.
 
@@ -285,7 +285,7 @@ Pending session deletion blocks publication actions without discarding the origi
 
 Publication requires `operator.write` and current access to change the session. Connecting your account alone does not grant either permission.
 
-Personal GitHub is a Gateway-brokered publication connection, not a session-wide shell identity. Ordinary agent `git`/`gh` commands, model-initiated publication, and repository previews and discovery keep their existing credential behavior. OpenClaw cloud workers use the shared execution identity, never your personal connection. For a repository-only session, finish the current turn and wait for its accepted Git-normalized checkpoint. Personal publication is available while the worker is idle or after Stop, without a Gateway checkout. Remote sessions sourced from a Gateway worktree still require **Stop cloud worker…** before personal publication. See [`tools.github`](/gateway/config-tools#tools-github) for shared agent execution.
+Personal GitHub is a Gateway-brokered publication connection, not a session-wide shell identity. Ordinary agent `git`/`gh` commands, model-initiated publication, and repository previews and discovery keep their existing credential behavior. Paddy cloud workers use the shared execution identity, never your personal connection. For a repository-only session, finish the current turn and wait for its accepted Git-normalized checkpoint. Personal publication is available while the worker is idle or after Stop, without a Gateway checkout. Remote sessions sourced from a Gateway worktree still require **Stop cloud worker…** before personal publication. See [`tools.github`](/gateway/config-tools#tools-github) for shared agent execution.
 
 The Gateway binds personal publication to your authenticated profile, the selected account, and the accepted worktree snapshot or repository checkpoint. Another participant's message cannot switch that account or authorize later work using your connection. If the account becomes unavailable or the workspace changes, publication stops with a recovery action instead of falling back to System or native credentials.
 
@@ -301,7 +301,7 @@ Personal connections share the Gateway's existing trusted-host boundary. They pr
 
 ## Profile appearance preferences
 
-When a Control UI connection is bound to an authenticated Gateway profile, OpenClaw stores its theme, theme mode, and accent color per profile. They live in the existing `user_preferences` table in the shared state database. Those choices follow that person across devices without changing appearance for other people on the same Gateway.
+When a Control UI connection is bound to an authenticated Gateway profile, Paddy stores its theme, theme mode, and accent color per profile. They live in the existing `user_preferences` table in the shared state database. Those choices follow that person across devices without changing appearance for other people on the same Gateway.
 
 Profile theme and theme mode preferences override their gateway-wide `ui.prefs` settings and otherwise fall back to the active theme's defaults. Plugin themes use namespaced IDs such as `space-pack/xenovessel`. Personal theme definitions created through the agent are stored in the same profile preference store and follow the profile across browsers. The `theme` tool and Appearance share one catalog and selection owner. Plugin hot reload updates that catalog and connected browsers without a Gateway restart. An unavailable plugin theme temporarily renders as Claw while its saved selection is retained. Legacy tweakcn imports are the exception: their palettes stay in the browser that imported them, and are never uploaded automatically. Selecting that local import never follows the profile. Accent precedence is the profile's `ui.accent` preference, gateway-wide `ui.prefs.accent`, `ui.seamColor`, and finally the active theme's default accent. Selecting a different theme in Appearance clears the profile font overrides and stores `ui.accent: "theme"`, explicitly selecting the theme palette without inheriting gateway accent colors. Restoring a default clears only the profile preference. Owner-profile preferences follow the owner across devices. Connections without a profile keep gateway-wide appearance behavior. Language, chat preferences, and sidebar entries continue using gateway configuration.
 
@@ -373,7 +373,7 @@ When `USER.md` approaches the cap:
 3. Move detailed observations and running project context into daily `memory/YYYY-MM-DD.md` files.
 4. Use [standing intents](/concepts/standing-intents) for event-conditioned future actions, so the trigger stays injected without the full detail.
 
-`MEMORY.md` is injected with the workspace bootstrap under the normal per-file budget in eligible private sessions — subagent, cron, group, and channel sessions omit root memory, and memory without trusted provenance is filtered out (see [Memory provenance](/concepts/memory-provenance)). Daily memory files are retrieved on demand, so detail moved to daily memory stays reachable without spending the always-injected `USER.md` budget. When the fixed cap limits `USER.md`, `openclaw doctor` names the cap and recommends compacting the file. If the shared total budget also limits injection, Doctor keeps the advice to reduce total bootstrap content or tune `bootstrapTotalMaxChars`.
+`MEMORY.md` is injected with the workspace bootstrap under the normal per-file budget in eligible private sessions — subagent, cron, group, and channel sessions omit root memory, and memory without trusted provenance is filtered out (see [Memory provenance](/concepts/memory-provenance)). Daily memory files are retrieved on demand, so detail moved to daily memory stays reachable without spending the always-injected `USER.md` budget. When the fixed cap limits `USER.md`, `paddy doctor` names the cap and recommends compacting the file. If the shared total budget also limits injection, Doctor keeps the advice to reduce total bootstrap content or tune `bootstrapTotalMaxChars`.
 
 ## Related
 

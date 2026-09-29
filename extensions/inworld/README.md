@@ -1,12 +1,12 @@
-# OpenClaw Inworld Plugin
+# Paddy Inworld Plugin
 
-Official OpenClaw plugin for Inworld.
+Official Paddy plugin for Inworld.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/inworld-speech
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/inworld> for setup and configuration.

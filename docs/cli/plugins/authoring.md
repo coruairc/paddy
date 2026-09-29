@@ -1,5 +1,5 @@
 ---
-summary: "Scaffold, build, validate, and pack an OpenClaw plugin with `openclaw plugins init`"
+summary: "Scaffold, build, validate, and pack a Paddy plugin with `paddy plugins init`"
 title: "Author plugins"
 read_when:
   - You want to scaffold a tool, feature, or provider plugin
@@ -13,17 +13,17 @@ scaffolds they generate.
 ## Author
 
 ```bash
-openclaw plugins init stock-quotes --name "Stock Quotes"
+paddy plugins init stock-quotes --name "Stock Quotes"
 cd stock-quotes
 npm run plugin:build
 npm run plugin:validate
 ```
 
 `plugins init` creates a minimal TypeScript tool plugin by default. The first
-argument is the plugin id; `--name` sets the display name. OpenClaw uses the
+argument is the plugin id; `--name` sets the display name. Paddy uses the
 id for the default output directory and package naming. Tool scaffolds use
 `defineToolPlugin` and generate `package.json` scripts `plugin:build` and
-`plugin:validate` that build then call `openclaw plugins build`/`validate`.
+`plugin:validate` that build then call `paddy plugins build`/`validate`.
 
 `plugins build` imports the built entry, reads its static tool metadata, writes
 `openclaw.plugin.json`, and keeps `package.json`'s `openclaw.extensions` aligned.
@@ -72,7 +72,7 @@ view lifecycle, and recovery.
 ### Provider scaffold
 
 ```bash
-openclaw plugins init acme-models --name "Acme Models" --type provider
+paddy plugins init acme-models --name "Acme Models" --type provider
 cd acme-models
 npm install
 npm run build
@@ -85,7 +85,7 @@ with API-key auth plumbing, a `npm run validate` script that runs
 `clawhub package validate`, ClawHub package metadata, and a manually
 dispatched GitHub Actions workflow for future trusted publishing via GitHub
 OIDC. Provider scaffolds do not generate skills and do not use
-`openclaw plugins build`/`validate`; those commands are for the tool
+`paddy plugins build`/`validate`; those commands are for the tool
 scaffold's generated-metadata path.
 
 Before publishing, replace the placeholder API base URL, model catalog, docs

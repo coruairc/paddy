@@ -2,7 +2,7 @@
 summary: "The session.maintenance keys, disk-budget cleanup tiers, cron run retention, and the SQLite downgrade path"
 read_when:
   - "Tuning the per-agent session disk budget or retention cutoffs"
-  - "Running openclaw sessions cleanup, or downgrading after the SQLite flip"
+  - "Running paddy sessions cleanup, or downgrading after the SQLite flip"
 title: "Store maintenance and retention"
 ---
 
@@ -60,8 +60,8 @@ retention on a large installation.
 Run maintenance on demand:
 
 ```bash
-openclaw sessions cleanup --dry-run
-openclaw sessions cleanup --enforce
+paddy sessions cleanup --dry-run
+paddy sessions cleanup --enforce
 ```
 
 `maxEntries` counts unarchived session rows; archived rows do not consume the cap. Cleanup archives the oldest eligible ordinary sessions until the unarchived total reaches `maxEntries` or no eligible victims remain. Pinned sessions, active or admitted work, model-locked sessions, and durable external conversation pointers such as group sessions and thread-scoped chat sessions remain protected, so protected rows can keep the unarchived total above the cap. Synthetic runtime entries (cron, hooks, heartbeat, ACP, sub-agents) remain disposable and can still be removed once they exceed the configured age, count, or disk budget. Isolated cron runs use a separate `cron.sessionRetention` control, independent of model-run probe retention.
@@ -70,7 +70,7 @@ Every new archive records a structured reason automatically. Explicit archive ac
 
 `--dry-run` previews the unarchived-row cap and identifies the unprotected rows that would satisfy it; `--enforce` applies that cleanup immediately but does not remove protection. To reduce protected history, unarchive, unpin, wait for active work to finish, or explicitly delete sessions you no longer want to retain.
 
-Normal Gateway writes flow through the session accessor, which serializes per-agent SQLite mutations through the runtime writer path. Runtime code should prefer the accessor helpers in `src/config/sessions/session-accessor.ts`; legacy `sessions.json` helpers are migration and offline-maintenance tools. When a Gateway is reachable, non-dry-run `openclaw sessions cleanup` and `openclaw agents delete` delegate store mutations to the Gateway so cleanup joins the same writer queue; `--store <path>` is the explicit offline repair path for a selected legacy store and always stays local (as does `--dry-run`). `maxEntries` cleanup is batched for production-sized stores, so the unarchived population may briefly exceed the configured cap before the next high-water cleanup rewrites it down. Reads never prune or cap entries during Gateway startup. Ordinary entry writes arm a coalesced background pass at the next age boundary, with a 30-minute periodic recheck while that database connection remains open, so retention can run without further traffic. Unchanged age/count facts let writes skip maintenance candidate scans. `openclaw sessions cleanup --enforce` applies the cap immediately and prunes old unreferenced legacy transcript, checkpoint, and trajectory artifacts even with no disk budget configured.
+Normal Gateway writes flow through the session accessor, which serializes per-agent SQLite mutations through the runtime writer path. Runtime code should prefer the accessor helpers in `src/config/sessions/session-accessor.ts`; legacy `sessions.json` helpers are migration and offline-maintenance tools. When a Gateway is reachable, non-dry-run `paddy sessions cleanup` and `paddy agents delete` delegate store mutations to the Gateway so cleanup joins the same writer queue; `--store <path>` is the explicit offline repair path for a selected legacy store and always stays local (as does `--dry-run`). `maxEntries` cleanup is batched for production-sized stores, so the unarchived population may briefly exceed the configured cap before the next high-water cleanup rewrites it down. Reads never prune or cap entries during Gateway startup. Ordinary entry writes arm a coalesced background pass at the next age boundary, with a 30-minute periodic recheck while that database connection remains open, so retention can run without further traffic. Unchanged age/count facts let writes skip maintenance candidate scans. `paddy sessions cleanup --enforce` applies the cap immediately and prunes old unreferenced legacy transcript, checkpoint, and trajectory artifacts even with no disk budget configured.
 
 Background plans prepare outside the writer transaction, then recheck selected rows,
 transcript versions, and session protection before committing. Unrelated writes do
@@ -78,12 +78,12 @@ not cancel the plan. Conflicting inputs receive at most three immediate planning
 attempts before maintenance pauses until a later write; settled refusals retain the
 worker connection. Retention policies and stored data formats are unchanged.
 
-OpenClaw no longer creates automatic `sessions.json.bak.*` rotation backups during Gateway writes. The current schema rejects the legacy `session.maintenance.rotateBytes` key, and `openclaw doctor --fix` removes it from older configs.
+Paddy no longer creates automatic `sessions.json.bak.*` rotation backups during Gateway writes. The current schema rejects the legacy `session.maintenance.rotateBytes` key, and `paddy doctor --fix` removes it from older configs.
 
 Migration recovery originals and exact pre-Doctor recovery files are separate
 from ordinary session retention: they are excluded from the live session disk
 budget and have no automatic expiration. After verifying the upgrade, use
-`openclaw update cleanup --dry-run` to inspect them online. Explicit offline
+`paddy update cleanup --dry-run` to inspect them online. Explicit offline
 [update cleanup](/cli/update#update-cleanup) can retire verified originals
 without removing current SQLite history; exclusion from the disk budget is not
 deletion authority.
@@ -163,7 +163,7 @@ database size therefore shrinks gradually; readers can delay reclamation.
 Use Doctor's offline `compact` operation when a full rewrite is needed.
 
 If an archive is missing or its recorded size or hash does not match, reading
-or restoring that transcript fails explicitly. OpenClaw does not substitute an
+or restoring that transcript fails explicitly. Paddy does not substitute an
 empty transcript. Restore the matching file from a backup, or restore a
 complete supported database backup; a checksum cannot reconstruct deleted
 bytes. Keep independent backups before enabling extraction.
@@ -189,12 +189,12 @@ table, so lowering the schema marker is not a downgrade procedure.
 
 ### Downgrading After The SQLite Flip
 
-Stop the Gateway and back up its state. Using the current SQLite-capable OpenClaw
+Stop the Gateway and back up its state. Using the current SQLite-capable Paddy
 version, restore archived legacy session stores and transcript artifacts before
 starting an older file-backed version:
 
 ```bash
-openclaw doctor --session-sqlite restore --session-sqlite-all-agents
+paddy doctor --session-sqlite restore --session-sqlite-all-agents
 ```
 
 The migration archives imported hot transcript JSONL files and verified, fully
@@ -207,7 +207,7 @@ Restore uses migration manifests, moves only recorded archived artifacts whose
 original paths are missing, reports conflicts rather than overwriting existing
 files, and leaves the SQLite database in place for forward recovery.
 
-Originals retired by `openclaw update cleanup` can no longer be restored from
+Originals retired by `paddy update cleanup` can no longer be restored from
 the migration archive. Restore reports intentional disposal or pending cleanup
 instead of treating either as an unexpectedly missing file. An independent
 backup containing the legacy artifacts is required if you need them after
@@ -216,7 +216,7 @@ disposal; see [Pre-update backups](/install/updating#before-updating-create-a-ve
 Restore does not export changes made only in SQLite after migration. Sessions
 created after the SQLite flip are SQLite-only and will not appear to an older
 file-backed runtime. If you re-upgrade after a downgrade, run the Doctor
-inspection and validation sequence again so OpenClaw can verify restored legacy
+inspection and validation sequence again so Paddy can verify restored legacy
 artifacts before importing.
 
 ## Cron sessions and run logs

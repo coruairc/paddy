@@ -2,7 +2,7 @@
 summary: "Google Gemini setup (AI Studio API key, Vertex AI, optional CLI runtime, and multimodal tools)"
 title: "Google (Gemini)"
 read_when:
-  - You want to use Google Gemini models with OpenClaw
+  - You want to use Google Gemini models with Paddy
   - You need Google AI Studio, Vertex AI, or Gemini CLI runtime guidance
 ---
 
@@ -29,13 +29,13 @@ the Gateway already runs inside a managed Google Cloud environment.
       </Step>
       <Step title="Run onboarding">
         ```bash
-        openclaw onboard --auth-choice gemini-api-key
+        paddy onboard --auth-choice gemini-api-key
         ```
 
         Or pass the key directly:
 
         ```bash
-        openclaw onboard --non-interactive --accept-risk --skip-health \
+        paddy onboard --non-interactive --accept-risk --skip-health \
           --mode local \
           --auth-choice gemini-api-key \
           --gemini-api-key "$GEMINI_API_KEY"
@@ -54,7 +54,7 @@ the Gateway already runs inside a managed Google Cloud environment.
       </Step>
       <Step title="Verify the model is available">
         ```bash
-        openclaw models list --provider google
+        paddy models list --provider google
         ```
       </Step>
     </Steps>
@@ -63,10 +63,10 @@ the Gateway already runs inside a managed Google Cloud environment.
     `GEMINI_API_KEY` and `GOOGLE_API_KEY` are both accepted. Use whichever you already have configured.
     </Tip>
 
-    With a configured API key, OpenClaw refreshes Google AI Studio's text-model
+    With a configured API key, Paddy refreshes Google AI Studio's text-model
     catalog from the Gemini `models.list` API. Newly released Gemini 3 Pro, Flash,
     and Flash-Lite variants therefore appear in
-    `openclaw models list --provider google` without waiting for an OpenClaw
+    `paddy models list --provider google` without waiting for a Paddy
     release. Failed refreshes report the failure and retain the last successful
     inventory, or bundled models before the first success. A successful empty
     response clears discovered models. Vertex uses its separate static catalog.
@@ -78,7 +78,7 @@ the Gateway already runs inside a managed Google Cloud environment.
     Gemini CLI while keeping authentication on the supported AI Studio API-key
     path.
 
-    OpenClaw does not offer new Gemini CLI OAuth or Antigravity OAuth setup.
+    Paddy does not offer new Gemini CLI OAuth or Antigravity OAuth setup.
     [Google ended consumer Gemini CLI Login with Google access on June 18, 2026](https://developers.google.com/gemini-code-assist/docs/deprecations/code-assist-individuals),
     and the [Antigravity terms](https://antigravity.google/terms) prohibit
     third-party tools from accessing the service through Antigravity OAuth. Use
@@ -86,7 +86,7 @@ the Gateway already runs inside a managed Google Cloud environment.
 
     <Steps>
       <Step title="Configure Google AI Studio">
-        Complete the API-key setup in the first tab. OpenClaw must have a usable
+        Complete the API-key setup in the first tab. Paddy must have a usable
         `google` API-key profile before the CLI runtime can be selected.
       </Step>
       <Step title="Install Gemini CLI">
@@ -100,7 +100,7 @@ the Gateway already runs inside a managed Google Cloud environment.
         npm install -g @google/gemini-cli
         ```
 
-        OpenClaw supports both Homebrew installs and global npm installs, including
+        Paddy supports both Homebrew installs and global npm installs, including
         common Windows/npm layouts.
       </Step>
       <Step title="Select the CLI runtime">
@@ -134,7 +134,7 @@ the Gateway already runs inside a managed Google Cloud environment.
     registered backend.
 
     Existing valid Gemini CLI OAuth profiles remain executable for compatibility,
-    but OpenClaw cannot create or repair them. If one breaks, replace it with a
+    but Paddy cannot create or repair them. If one breaks, replace it with a
     Google AI Studio API-key profile.
 
     `google-gemini-cli/*` refs remain legacy compatibility aliases. New configs
@@ -144,7 +144,7 @@ the Gateway already runs inside a managed Google Cloud environment.
 </Tabs>
 
 <Note>
-`google/gemini-3-pro-preview` was retired on 2026-03-09; use `google/gemini-3.1-pro-preview` instead. Re-running Gemini API key setup (`openclaw onboard --auth-choice gemini-api-key` or `openclaw models auth login --provider google`) rewrites a stale configured default to the current model.
+`google/gemini-3-pro-preview` was retired on 2026-03-09; use `google/gemini-3.1-pro-preview` instead. Re-running Gemini API key setup (`paddy onboard --auth-choice gemini-api-key` or `paddy models auth login --provider google`) rewrites a stale configured default to the current model.
 </Note>
 
 ## Capabilities
@@ -194,23 +194,23 @@ Gemini web search reuses `models.providers.google.baseUrl`. See
 [Gemini search](/tools/gemini-search) for the provider-specific tool behavior.
 
 <Tip>
-Gemini 3 models use `thinkingLevel` rather than `thinkingBudget`. OpenClaw maps
+Gemini 3 models use `thinkingLevel` rather than `thinkingBudget`. Paddy maps
 Gemini 3, Gemini 3.1, and `gemini-*-latest` alias reasoning controls to
 `thinkingLevel` so default/low-latency runs do not send disabled
 `thinkingBudget` values.
 
 `/think adaptive` keeps Google's dynamic thinking semantics instead of choosing
-a fixed OpenClaw level. Gemini 3 and Gemini 3.1 omit a fixed `thinkingLevel` so
+a fixed Paddy level. Gemini 3 and Gemini 3.1 omit a fixed `thinkingLevel` so
 Google can choose the level; Gemini 2.5 sends Google's dynamic sentinel
 `thinkingBudget: -1`.
 
-Gemma 4 models (for example `gemma-4-26b-a4b-it`) support thinking mode. OpenClaw
+Gemma 4 models (for example `gemma-4-26b-a4b-it`) support thinking mode. Paddy
 rewrites `thinkingBudget` to a supported Google `thinkingLevel` for Gemma 4.
 Setting thinking to `off` preserves thinking disabled instead of mapping to
 `MINIMAL`.
 
 Gemini 2.5 Pro only works in thinking mode and rejects an explicit
-`thinkingBudget: 0`; OpenClaw strips that value for Gemini 2.5 Pro requests
+`thinkingBudget: 0`; Paddy strips that value for Gemini 2.5 Pro requests
 instead of sending it.
 </Tip>
 
@@ -319,10 +319,10 @@ available.
 - Output: WAV for regular TTS attachments, Opus for voice-note targets, PCM for Talk/telephony
 - Voice-note output: Google PCM is wrapped as WAV and transcoded to 48 kHz Opus with `ffmpeg`
 
-OpenClaw sends Gemini 3.8 TTS through the Interactions API
+Paddy sends Gemini 3.8 TTS through the Interactions API
 (`POST /v1beta/interactions`) with `store: false`. Google also documents 3.8 on
-`generateContent`; Interactions is OpenClaw's routing choice, not a model
-requirement. OpenClaw asks for headerless 24 kHz PCM (`audio/l16`) and still
+`generateContent`; Interactions is Paddy's routing choice, not a model
+requirement. Paddy asks for headerless 24 kHz PCM (`audio/l16`) and still
 wraps that PCM locally. `audioProfile` and `personaPrompt` are sent as
 `speech_metadata.style`, `speakerName` as the structured `speaker` label, and
 none of them are spoken as part of the transcript. Momentary 3.8 vocal tags use
@@ -406,7 +406,7 @@ The bundled `google` plugin registers a realtime voice provider backed by the
 Gemini Live API for backend audio bridges such as Voice Call and Google Meet.
 
 Talk and Discord expose Google's prebuilt voices in their voice catalogs. During
-an active Talk or Discord call, use `talk_voice` to select a new voice. OpenClaw
+an active Talk or Discord call, use `talk_voice` to select a new voice. Paddy
 reconnects with that voice while preserving the conversation and unfinished agent
 work; saved voice defaults stay unchanged. See [Discord voice changes](/channels/discord/voice-follow).
 
@@ -455,9 +455,9 @@ Example Voice Call realtime config:
 
 <Note>
 Google Live API uses bidirectional audio and function calling over a WebSocket.
-OpenClaw adapts telephony/Meet bridge audio to Gemini's PCM Live API stream and
+Paddy adapts telephony/Meet bridge audio to Gemini's PCM Live API stream and
 keeps tool calls on the shared realtime voice contract. Leave `temperature`
-unset unless you need sampling changes; OpenClaw omits non-positive values
+unset unless you need sampling changes; Paddy omits non-positive values
 because Google Live can return transcripts without audio for `temperature: 0`.
 Gemini API transcription is enabled without `languageCodes`; the current Google
 SDK rejects language-code hints on this API path.
@@ -465,7 +465,7 @@ SDK rejects language-code hints on this API path.
 
 <Note>
 Gemini 3.1 Live accepts conversational text through realtime input and uses
-sequential function calling. OpenClaw omits the older `NON_BLOCKING`, function
+sequential function calling. Paddy omits the older `NON_BLOCKING`, function
 response scheduling, and affective-dialog fields for this model. Prefer
 `thinkingLevel`; configured positive `thinkingBudget` values are mapped to the
 nearest supported level, while `-1` leaves Google's default in place. See the
@@ -474,13 +474,13 @@ nearest supported level, while `-1` leaves Google's default in place. See the
 
 <Note>
 Gemini 3.8 Live (`gemini-3.8-live`) keeps the async function-calling contract and
-rejects any thinking config, so OpenClaw sends none for it. Gemini 3.8 Live Extended
+rejects any thinking config, so Paddy sends none for it. Gemini 3.8 Live Extended
 Thinking (`gemini-3.8-live-extended-thinking`) requires `NON_BLOCKING` tools, rejects
-function response scheduling, and abandons a call after an interim response, so OpenClaw
+function response scheduling, and abandons a call after an interim response, so Paddy
 sends one final result per agent consult without a "working" interim. Configure its
 reasoning depth with `thinkingLevel` (`low`, `medium`, or `high`; `minimal` maps to
 `low`), or a positive `thinkingBudget` mapped to the nearest level. Spoken filler has its
-own utterance boundary while the interaction remains in progress; OpenClaw finalizes that
+own utterance boundary while the interaction remains in progress; Paddy finalizes that
 transcript and audio but keeps the response active until Google reports the interaction
 as idle. On this model an explicit stop or barge-in interrupts generation through a short
 client-content turn that
@@ -547,7 +547,7 @@ roundtrip; pass `--openai-audio-cycles 3` for a short repeated lifecycle soak.
     }
     ```
 
-    This transport is stateless: OpenClaw sends `store: false`, does not retain a
+    This transport is stateless: Paddy sends `store: false`, does not retain a
     server-side interaction ID, and replays the needed conversation context on
     each request. Explicit Gemini `cachedContent` handles are not supported on
     this route; use `google-generative-ai` for that feature.
@@ -558,7 +558,7 @@ roundtrip; pass `--openai-audio-cycles 3` for a short repeated lifecycle soak.
   </Accordion>
 
   <Accordion title="Direct Gemini cache reuse">
-    For direct Gemini API runs (`api: "google-generative-ai"`), OpenClaw
+    For direct Gemini API runs (`api: "google-generative-ai"`), Paddy
     passes a configured `cachedContent` handle through to Gemini requests.
 
     - Configure per-model or global params with either
@@ -567,7 +567,7 @@ roundtrip; pass `--openai-audio-cycles 3` for a short repeated lifecycle soak.
       Within the same scope, if both keys are set, `cached_content` wins.
       Use only one key per scope to avoid surprises.
     - Example value: `cachedContents/prebuilt-context`
-    - Gemini cache-hit usage is normalized into OpenClaw `cacheRead` from
+    - Gemini cache-hit usage is normalized into Paddy `cacheRead` from
       upstream `cachedContentTokenCount`
 
     ```json5
@@ -596,8 +596,8 @@ roundtrip; pass `--openai-audio-cycles 3` for a short repeated lifecycle soak.
     - Streamed reply text comes from assistant `message` events.
     - For legacy JSON output, reply text comes from the CLI JSON `response` field.
     - Usage falls back to `stats` when the CLI leaves `usage` empty.
-    - `stats.cached` is normalized into OpenClaw `cacheRead`.
-    - If `stats.input` is missing, OpenClaw derives input tokens from
+    - `stats.cached` is normalized into Paddy `cacheRead`.
+    - If `stats.input` is missing, Paddy derives input tokens from
       `stats.input_tokens - stats.cached`.
 
   </Accordion>

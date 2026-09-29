@@ -331,7 +331,7 @@ export async function sessionsTailCommand(
   if (selected.length === 0) {
     if (requestedKey) {
       runtime.error(
-        `Session not found: ${requestedKey}. Run ${formatCliCommand("openclaw sessions list --all-agents --json")} to choose a valid key.`,
+        `Session not found: ${requestedKey}. Run ${formatCliCommand("paddy sessions list --all-agents --json")} to choose a valid key.`,
       );
       runtime.exit(1);
     } else {

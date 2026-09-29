@@ -1,24 +1,24 @@
 ---
-summary: "Connect a machine to an OpenClaw Gateway with one pasted command"
+summary: "Connect a machine to a Paddy Gateway with one pasted command"
 read_when:
   - Pairing a new headless node with a Gateway
   - Installing a node host from a join URL or setup code
 title: "Connect"
 ---
 
-# `openclaw connect`
+# `paddy connect`
 
-Connect the current machine to an OpenClaw Gateway as a headless node. The
+Connect the current machine to a Paddy Gateway as a headless node. The
 command redeems a short-lived bootstrap credential, saves the Gateway endpoint
 in the existing node-host state, and runs the same runtime as
-[`openclaw node run`](/cli/node).
+[`paddy node run`](/cli/node).
 
 ## Create a join command
 
 On the Gateway host, use admin credentials to mint a single-use join URL:
 
 ```bash
-openclaw devices join-code
+paddy devices join-code
 ```
 
 The command prints the URL and a pasteable command:
@@ -51,7 +51,7 @@ To expose only selected commands, pass a comma-separated list of exact command
 IDs. For a [Session Share](/plugins/session-share) node:
 
 ```bash
-openclaw connect <join-url> \
+paddy connect <join-url> \
   --commands openclaw.sessions.list.v1,openclaw.sessions.read.v1
 ```
 
@@ -62,9 +62,9 @@ and disables computer use, skills, plugin-tool publication, MCP servers, and
 worker hosting. Startup fails when no requested command is available. The
 Gateway pairing approval shows the resulting declared commands.
 
-To restore the full default surface, use `openclaw node run --all-commands`
-for a foreground node or `openclaw node install --force --all-commands` for
-an installed service. When enrolling again, use `openclaw connect <join-url>
+To restore the full default surface, use `paddy node run --all-commands`
+for a foreground node or `paddy node install --force --all-commands` for
+an installed service. When enrolling again, use `paddy connect <join-url>
 --all-commands` (add `--service` for a service). This forgets the saved allowlist;
 `--all-commands` cannot be combined with `--commands`.
 
@@ -81,27 +81,27 @@ Foreground consent applies only to that process. It does not change
 ## Reconnect a paired node
 
 Join URLs and setup codes are single-use, so rerunning the original
-`openclaw connect <join-url>` command after the node stops reports that the
+`paddy connect <join-url>` command after the node stops reports that the
 join code was not found or has expired. The node keeps its paired device token
 and Gateway endpoint in node-host state. Reconnect with
-[`openclaw node run`](/cli/node), repeating any process-scoped flags:
+[`paddy node run`](/cli/node), repeating any process-scoped flags:
 
 ```bash
-openclaw node run --session-host
+paddy node run --session-host
 ```
 
-Running `openclaw connect` without a target does not connect. When node-host
+Running `paddy connect` without a target does not connect. When node-host
 state has a saved Gateway endpoint and a node device token, it exits with an
-error that prints the matching `openclaw node run` command for the flags you
-passed, to use if that pairing is still current, and the `openclaw connect`
+error that prints the matching `paddy node run` command for the flags you
+passed, to use if that pairing is still current, and the `paddy connect`
 command to use with a new join URL otherwise. With `--service`, it prints
-`openclaw node install --force` instead, preceded by
-`openclaw config set nodeHost.workerRuns.enabled true` when you also passed
+`paddy node install --force` instead, preceded by
+`paddy config set nodeHost.workerRuns.enabled true` when you also passed
 `--session-host`. If the first enrollment never completed, it only points to
 a new join URL. The device token is not tied to one endpoint: after a failed
 enrollment with a different Gateway, the reconnect command can fail, so
 enroll again instead. To enroll the machine again, mint a new join URL with
-`openclaw devices join-code`.
+`paddy devices join-code`.
 
 ## Environment-managed cloud nodes
 
@@ -124,13 +124,13 @@ the platform user service:
 npx openclaw connect https://gateway.example/j/<shortcode> --service
 ```
 
-OpenClaw completes the first authenticated connection before installing the
+Paddy completes the first authenticated connection before installing the
 service. The short-lived bootstrap token is never stored in the service command
 or node-host configuration; later starts use the durable paired-device token.
 When restarting against that saved endpoint, config credentials for a co-located
 Gateway do not override the paired token. Explicit `OPENCLAW_GATEWAY_TOKEN` or
 `OPENCLAW_GATEWAY_PASSWORD` environment credentials still take precedence.
-Use [`openclaw node status`](/cli/node#service-background) to inspect the
+Use [`paddy node status`](/cli/node#service-background) to inspect the
 installed service.
 
 The service does not host worker sessions by default. To consent to full
@@ -142,7 +142,7 @@ npx openclaw connect https://gateway.example/j/<shortcode> --service --session-h
 
 The one-shot bootstrap connection authenticates and saves the durable device
 identity without advertising worker hosting. Only after that connection
-succeeds does OpenClaw persist `nodeHost.workerRuns.enabled=true`, preserving
+succeeds does Paddy persist `nodeHost.workerRuns.enabled=true`, preserving
 the rest of the config, and install the service. If the config write fails,
 service installation does not start. The installed service advertises worker
 hosting and exact capacity from this durable consent when it starts.
@@ -159,7 +159,7 @@ hosting and exact capacity from this durable consent when it starts.
 | `--ephemeral`           | Run a provider-managed disposable worker node.                                                                        |
 | `--target-file <path>`  | Read a join target from a file and consume the handoff after a successful read.                                       |
 
-`openclaw connect <target>` accepts:
+`paddy connect <target>` accepts:
 
 - an `https://<gateway>/j/<shortcode>` join URL;
 - an `oc-pair://<setup-code>` URL;
@@ -167,8 +167,8 @@ hosting and exact capacity from this durable consent when it starts.
 
 `--target-file <path>` accepts a regular file up to 64 KiB. It removes the path
 only after reading a non-empty target. If the file is empty, too large,
-unreadable, or not a regular file, OpenClaw leaves it in place. A symlink is
-allowed; OpenClaw reads its target, removes the symlink after a successful read,
+unreadable, or not a regular file, Paddy leaves it in place. A symlink is
+allowed; Paddy reads its target, removes the symlink after a successful read,
 and keeps the backing file. The dormant installer wrapper uses this handoff to
 keep the single-use target out of child-process arguments.
 
@@ -189,13 +189,13 @@ A join code and a paired device have separate lifecycles:
 - Burning or expiring a join code prevents another enrollment with that code.
 - It does not disconnect or remove a node that already redeemed it.
 - To revoke a normal enrolled machine, remove its paired device with
-  [`openclaw devices remove <deviceId>`](/cli/devices#openclaw-devices-remove-%3Cdeviceid%3E).
+  [`paddy devices remove <deviceId>`](/cli/devices#paddy-devices-remove-%3Cdeviceid%3E).
 - Environment-managed `--ephemeral` nodes are removed automatically when their owning cloud environment is destroyed.
 
 ## Troubleshooting
 
 If the join URL reports that it is missing or expired, mint a new one with
-`openclaw devices join-code`. A used code intentionally returns the same result
+`paddy devices join-code`. A used code intentionally returns the same result
 as an unknown code. If this machine already redeemed it, reconnect with the
 saved pairing instead; see [Reconnect a paired node](#reconnect-a-paired-node).
 

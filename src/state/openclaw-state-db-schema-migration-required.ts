@@ -17,7 +17,7 @@ export class OpenClawStateDatabaseSchemaMigrationRequiredError extends StartupMa
   ) {
     super(
       kind,
-      `${PRODUCT_NAME} state database schema migration required (${kind}) at ${pathname}; run openclaw doctor --fix to migrate it.`,
+      `${PRODUCT_NAME} state database schema migration required (${kind}) at ${pathname}; run paddy doctor --fix to migrate it.`,
     );
     this.name = "OpenClawStateDatabaseSchemaMigrationRequiredError";
   }

@@ -338,8 +338,8 @@ export async function runWriteConfigHealth(
           [
             "The config changed after Doctor prepared these repairs.",
             rosterWriteCommitted
-              ? 'The canonical roster was saved; the remaining fixes were not written. Rerun "openclaw doctor" to review the current config.'
-              : 'These config fixes were not written. Rerun "openclaw doctor" to review repairs for the current config.',
+              ? 'The canonical roster was saved; the remaining fixes were not written. Rerun "paddy doctor" to review the current config.'
+              : 'These config fixes were not written. Rerun "paddy doctor" to review repairs for the current config.',
           ].join("\n"),
           "Doctor warnings",
         );
@@ -369,7 +369,7 @@ export async function runWriteConfigHealth(
         note(
           [
             `Doctor could not apply config fixes: ${error.message}`,
-            `${unpersistedLine} Repair ${error.ownedConfigPath} in ${includedFile} by hand, then rerun "openclaw doctor --fix" for the remaining changes.`,
+            `${unpersistedLine} Repair ${error.ownedConfigPath} in ${includedFile} by hand, then rerun "paddy doctor --fix" for the remaining changes.`,
           ].join("\n"),
           "Doctor warnings",
         );
@@ -386,7 +386,7 @@ export async function runWriteConfigHealth(
           [
             "Doctor could not apply config fixes: the repaired config still fails validation.",
             ...issueLines,
-            `${unpersistedLine} Fix the value(s) above in ${shortenHomePath(ctx.configPath)} by hand, then rerun "openclaw doctor --fix".`,
+            `${unpersistedLine} Fix the value(s) above in ${shortenHomePath(ctx.configPath)} by hand, then rerun "paddy doctor --fix".`,
           ].join("\n"),
           "Doctor warnings",
         );
@@ -404,7 +404,7 @@ export async function runWriteConfigHealth(
           rosterWriteCommitted
             ? "The canonical roster was saved; the remaining config repairs were not written."
             : "Doctor left the config unchanged, preserving any retained legacy owner for a later repair.",
-          'Resolve the reported Gateway or cron-store condition, then rerun "openclaw doctor --fix".',
+          'Resolve the reported Gateway or cron-store condition, then rerun "paddy doctor --fix".',
         ].join("\n"),
         "Doctor warnings",
       );

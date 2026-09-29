@@ -61,8 +61,8 @@ test passes:
 
 ```bash
 OPENCLAW_LIVE_TEST=1 OPENCLAW_LIVE_INFER_CLI_TEST=1 pnpm test:live -- test/image-generation.infer-cli.live.test.ts
-openclaw infer image providers --json
-openclaw infer image generate \
+paddy infer image providers --json
+paddy infer image generate \
   --model google/gemini-3.1-flash-image \
   --prompt "Minimal flat test image: one blue square on a white background, no text." \
   --output ./openclaw-infer-image-smoke.png \

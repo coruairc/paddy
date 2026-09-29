@@ -421,7 +421,7 @@ describe("completion-runtime", () => {
 
         expect((await fs.lstat(profilePath)).isSymbolicLink()).toBe(true);
         expect(await fs.readlink(profilePath)).toBe(path.join("managed", "zshrc"));
-        await expect(fs.readFile(targetPath, "utf8")).resolves.toContain("# OpenClaw Completion");
+        await expect(fs.readFile(targetPath, "utf8")).resolves.toContain("# Paddy Completion");
       });
     },
   );
@@ -505,7 +505,7 @@ describe("completion-runtime", () => {
 
         const profile = await fs.readFile(profilePath, "utf-8");
         expect(profile).not.toContain(previousSource);
-        expect(profile.match(/^# OpenClaw Completion$/gm)).toHaveLength(1);
+        expect(profile.match(/^# Paddy Completion$/gm)).toHaveLength(1);
         await expect(isCompletionInstalled(shell, "openclaw")).resolves.toBe(true);
         await installCompletion(shell, true, "openclaw");
         await expect(fs.readFile(profilePath, "utf8")).resolves.toBe(profile);
@@ -592,7 +592,7 @@ describe("completion-runtime", () => {
       const profile = await fs.readFile(profilePath, "utf-8");
       expect(profile).toContain("export IMPORTANT=keep\n");
       expect(profile).toContain(`${refreshAlias}\n`);
-      expect(profile.match(/^# OpenClaw Completion$/gm)).toHaveLength(1);
+      expect(profile.match(/^# Paddy Completion$/gm)).toHaveLength(1);
       expect(profile).toContain(cachePath);
     });
   });
@@ -841,7 +841,7 @@ describe("completion-runtime", () => {
 
       const profilePath = resolveCompletionProfilePath("powershell");
       const profile = await fs.readFile(profilePath, "utf-8");
-      expect(profile).toBe(`# OpenClaw Completion\n. '${cachePath.replace(/'/g, "''")}'\n`);
+      expect(profile).toBe(`# Paddy Completion\n. '${cachePath.replace(/'/g, "''")}'\n`);
     }, "openclaw-completion-state-bob's-");
   });
 
@@ -988,7 +988,7 @@ describe("completion-runtime", () => {
 
           const profile = await fs.readFile(profilePath, "utf8");
           expect(profile).toContain(`${otherHook}\n`);
-          expect(profile).toContain("# OpenClaw Completion");
+          expect(profile).toContain("# Paddy Completion");
           expect(profile).toContain(cachePath);
           await expect(isCompletionInstalled("bash", "openclaw")).resolves.toBe(true);
         },
@@ -1065,7 +1065,7 @@ describe("completion-runtime", () => {
           await installCompletion("bash", true, "openclaw");
           const first = await fs.readFile(profilePath, "utf8");
           expect(first).toContain(`${brokenHook}\n`);
-          expect(first).toContain("# OpenClaw Completion");
+          expect(first).toContain("# Paddy Completion");
           expect(first).toContain(cachePath);
           await expect(isCompletionInstalled("bash", "openclaw")).resolves.toBe(true);
 

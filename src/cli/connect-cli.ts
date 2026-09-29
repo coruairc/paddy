@@ -9,6 +9,7 @@ import {
   type CloudflareAccessCredentials,
 } from "../../packages/gateway-client/src/cloudflare-access.js";
 import { theme } from "../../packages/terminal-core/src/theme.js";
+import { CLI_NAME } from "../brand.js";
 import { getRuntimeConfig, mutateConfigFileWithRetry } from "../config/config.js";
 import { isLoopbackHost } from "../gateway/net.js";
 import { cancelUnreadResponseBody, readResponseWithLimit } from "../infra/http-body.js";
@@ -33,7 +34,6 @@ import { addNodeCommandOptions } from "./node-cli/command-options.js";
 import { runNodeDaemonInstall } from "./node-cli/daemon.js";
 import { resolveNodePairGatewayPayload } from "./node-cli/gateway-options.js";
 import { quoteCliArg, quotePowerShellArg } from "./quote-cli-arg.js";
-import { CLI_NAME } from "../brand.js";
 
 type ConnectCommandOptions = {
   service?: boolean;
@@ -165,19 +165,17 @@ function formatMissingTargetError(
     ...(opts.commands ? ["--commands", quote(opts.commands.join(","))] : []),
     ...(opts.allCommands ? ["--all-commands"] : []),
   ];
-  const pair = `mint a join URL on the Gateway host with ${command("openclaw devices join-code")}, then run: ${command("openclaw connect <join-url>", ...(opts.service ? ["--service"] : []), ...sessionHostFlags, ...hostFlags)}`;
+  const pair = `mint a join URL on the Gateway host with ${command("paddy devices join-code")}, then run: ${command("paddy connect <join-url>", ...(opts.service ? ["--service"] : []), ...sessionHostFlags, ...hostFlags)}`;
   if (!savedGateway) {
     return `${missing} To pair this machine, ${pair}`;
   }
   // Mirror the post-pairing steps of `connect --service [--session-host]`.
   const reconnect = opts.service
     ? [
-        ...(opts.sessionHost
-          ? [command("openclaw config set nodeHost.workerRuns.enabled true")]
-          : []),
-        command("openclaw node install --force", ...hostFlags),
+        ...(opts.sessionHost ? [command("paddy config set nodeHost.workerRuns.enabled true")] : []),
+        command("paddy node install --force", ...hostFlags),
       ].join(", then ")
-    : command("openclaw node run", ...sessionHostFlags, ...hostFlags);
+    : command("paddy node run", ...sessionHostFlags, ...hostFlags);
   // Device tokens are not bound to an endpoint, so a failed switch to another Gateway can
   // leave the old token beside the new endpoint; the reconnect hint stays conditional.
   return [
@@ -327,7 +325,7 @@ async function runConnectCommand(
 
 export function registerConnectCli(program: Command): void {
   addNodeCommandOptions(
-    program.command("connect").description("Connect this machine to an OpenClaw Gateway as a node"),
+    program.command("connect").description("Connect this machine to a Paddy Gateway as a node"),
   )
     .argument("[target]", "oc-pair URL, setup code, or HTTPS Gateway join URL")
     .option("--service", "Install and run the node host as an OS service", false)

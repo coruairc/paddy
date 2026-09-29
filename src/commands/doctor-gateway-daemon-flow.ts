@@ -145,7 +145,7 @@ function renderBlockingSystemGatewayServices(services: ExtraGatewayService[]): s
     `System-level ${PRODUCT_NAME} gateway service detected while the user gateway service is not installed.`,
     ...services.map((svc) => `- ${svc.label} (${svc.detail})`),
     `${PRODUCT_NAME} will not install a second user-level gateway service automatically.`,
-    "Run `openclaw gateway status --deep` or `openclaw doctor --deep` to inspect duplicate services.",
+    "Run `paddy gateway status --deep` or `paddy doctor --deep` to inspect duplicate services.",
     `Set ${SERVICE_REPAIR_POLICY_ENV}=external if a system supervisor owns the gateway lifecycle.`,
   ].join("\n");
 }
@@ -209,7 +209,7 @@ async function noteGatewayServiceInspectionFailure(
   if (kind) {
     lines.push(...renderSystemdUnavailableHints({ wsl: await isWSL(), kind }));
   }
-  lines.push(`Run ${formatCliCommand("openclaw gateway status --deep")} and retry doctor.`);
+  lines.push(`Run ${formatCliCommand("paddy gateway status --deep")} and retry doctor.`);
   note(lines.join("\n"), "Gateway");
 }
 
@@ -371,7 +371,7 @@ export async function maybeRepairGatewayDaemon(params: {
     );
     if (!install) {
       note(
-        `Run ${formatCliCommand("openclaw gateway install")} when you want to install the gateway service.`,
+        `Run ${formatCliCommand("paddy gateway install")} when you want to install the gateway service.`,
         "Gateway",
       );
     }
@@ -469,7 +469,7 @@ export async function maybeRepairGatewayDaemon(params: {
   if (process.platform === "darwin") {
     const label = resolveGatewayLaunchAgentLabel(process.env.OPENCLAW_PROFILE);
     note(
-      `LaunchAgent loaded; stopping requires "${formatCliCommand("openclaw gateway stop")}" or launchctl bootout gui/$UID/${label}.`,
+      `LaunchAgent loaded; stopping requires "${formatCliCommand("paddy gateway stop")}" or launchctl bootout gui/$UID/${label}.`,
       "Gateway",
     );
   }

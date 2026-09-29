@@ -113,7 +113,7 @@ export function resolveConfiguredPluginRepairVersions(params: {
             resolveTrustedSourceLinkedOfficialNpmInstall({ pluginId, record })?.replacementPluginId
           ) {
             params.onWarning(
-              `Plugin "${pluginId}" needs a package-id migration. Run ${formatCliCommand(`openclaw plugins update ${cohortSpecs[pluginId]}`, env)}.`,
+              `Plugin "${pluginId}" needs a package-id migration. Run ${formatCliCommand(`paddy plugins update ${cohortSpecs[pluginId]}`, env)}.`,
               pluginId,
             );
             return [];

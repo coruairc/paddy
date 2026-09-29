@@ -169,7 +169,7 @@ export async function buildOnboardingWelcome(params: {
     "Heads up: your agent gets real access to this machine — https://docs.openclaw.ai/security",
     overview.defaultModel
       ? "Afterwards: `talk to agent` to meet your agent right here. Channels are optional: use `connect discord`, `connect slack`, `connect telegram`, `connect whatsapp` (or `channels` for the full list) if you want to chat from another service."
-      : "This model handles setup and utility tasks. Choose a primary model in Model Setup or run `openclaw onboard` before regular agent chat. You can continue setup here and connect channels when ready.",
+      : "This model handles setup and utility tasks. Choose a primary model in Model Setup or run `paddy onboard` before regular agent chat. You can continue setup here and connect channels when ready.",
   ].join("\n");
   params.engine.noteAssistantMessage(welcome);
   return { text: welcome, question: SETUP_WELCOME_QUESTION };

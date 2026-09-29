@@ -2,25 +2,25 @@
 summary: "Meta setup, authentication, and Muse Spark model selection"
 title: "Meta"
 read_when:
-  - You want to use Meta with OpenClaw
+  - You want to use Meta with Paddy
   - You need the MODEL_API_KEY env var or CLI auth choice
 ---
 
 The **Meta API** uses the OpenAI-compatible **Responses API** (`POST /v1/responses`)
-for the Muse Spark reasoning models. OpenClaw provides Meta as an official external
+for the Muse Spark reasoning models. Paddy provides Meta as an official external
 plugin.
 
-| Property                   | Value                              |
-| -------------------------- | ---------------------------------- |
-| Provider id                | `meta`                             |
-| Plugin                     | `@openclaw/meta-provider`          |
-| Auth env var               | `MODEL_API_KEY`                    |
-| Onboarding flag            | `--auth-choice meta-api-key`       |
-| Direct CLI flag            | `--meta-api-key <key>`             |
-| API                        | Responses API (`openai-responses`) |
-| Base URL                   | `https://api.meta.ai/v1`           |
-| Default model              | `meta/muse-spark-1.3`              |
-| OpenClaw reasoning default | `high` (`reasoning.effort`)        |
+| Property                | Value                              |
+| ----------------------- | ---------------------------------- |
+| Provider id             | `meta`                             |
+| Plugin                  | `@openclaw/meta-provider`          |
+| Auth env var            | `MODEL_API_KEY`                    |
+| Onboarding flag         | `--auth-choice meta-api-key`       |
+| Direct CLI flag         | `--meta-api-key <key>`             |
+| API                     | Responses API (`openai-responses`) |
+| Base URL                | `https://api.meta.ai/v1`           |
+| Default model           | `meta/muse-spark-1.3`              |
+| Paddy reasoning default | `high` (`reasoning.effort`)        |
 
 ## Getting started
 
@@ -38,11 +38,11 @@ plugin.
     <CodeGroup>
 
 ```bash Onboarding
-openclaw onboard --auth-choice meta-api-key
+paddy onboard --auth-choice meta-api-key
 ```
 
 ```bash Direct flag
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --auth-choice meta-api-key \
   --meta-api-key "$MODEL_API_KEY"
 ```
@@ -56,11 +56,11 @@ export MODEL_API_KEY=<key>
   </Step>
   <Step title="Verify models are available">
     ```bash
-    openclaw models list --provider meta
+    paddy models list --provider meta
     ```
 
     Lists the static Muse Spark catalog entries. If `MODEL_API_KEY` is unresolved,
-    `openclaw models status --json` reports the missing credential under
+    `paddy models status --json` reports the missing credential under
     `auth.unusableProfiles`.
 
   </Step>
@@ -69,7 +69,7 @@ export MODEL_API_KEY=<key>
 ## Non-interactive setup
 
 ```bash
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --mode local \
   --auth-choice meta-api-key \
   --meta-api-key "$MODEL_API_KEY"
@@ -88,13 +88,13 @@ documentation.
 Meta's [model catalog](https://dev.meta.ai/docs/models) identifies Muse Spark 1.3
 as the latest version and recommends it for new work.
 
-| Model ref                         | Name                       | OpenClaw input | Reasoning | Context window | Input / cached input / output per 1M tokens |
-| --------------------------------- | -------------------------- | -------------- | --------- | -------------- | ------------------------------------------- |
-| `meta/muse-spark-1.3`             | Muse Spark 1.3             | text, image    | yes       | 1,048,576      | $1.25 / $0.15 / $4.25                       |
-| `meta/muse-spark-1.3-contributor` | Muse Spark 1.3 Contributor | text, image    | yes       | 1,048,576      | $0.10 / $0.002 / $0.20                      |
-| `meta/muse-spark-1.2`             | Muse Spark 1.2             | text, image    | yes       | 1,048,576      | $1.25 / $0.15 / $4.25                       |
-| `meta/muse-spark-1.2-contributor` | Muse Spark 1.2 Contributor | text, image    | yes       | 1,048,576      | $0.10 / $0.002 / $0.20                      |
-| `meta/muse-spark-1.1`             | Muse Spark 1.1             | text, image    | yes       | 1,048,576      | $1.25 / $0.15 / $4.25                       |
+| Model ref                         | Name                       | Paddy input | Reasoning | Context window | Input / cached input / output per 1M tokens |
+| --------------------------------- | -------------------------- | ----------- | --------- | -------------- | ------------------------------------------- |
+| `meta/muse-spark-1.3`             | Muse Spark 1.3             | text, image | yes       | 1,048,576      | $1.25 / $0.15 / $4.25                       |
+| `meta/muse-spark-1.3-contributor` | Muse Spark 1.3 Contributor | text, image | yes       | 1,048,576      | $0.10 / $0.002 / $0.20                      |
+| `meta/muse-spark-1.2`             | Muse Spark 1.2             | text, image | yes       | 1,048,576      | $1.25 / $0.15 / $4.25                       |
+| `meta/muse-spark-1.2-contributor` | Muse Spark 1.2 Contributor | text, image | yes       | 1,048,576      | $0.10 / $0.002 / $0.20                      |
+| `meta/muse-spark-1.1`             | Muse Spark 1.1             | text, image | yes       | 1,048,576      | $1.25 / $0.15 / $4.25                       |
 
 <Warning>
 Meta's [pricing documentation](https://dev.meta.ai/docs/pricing-rate-limits/) and
@@ -117,23 +117,23 @@ Standard Services.
 
 Capabilities:
 
-- Text and image input through OpenClaw
+- Text and image input through Paddy
 - Tool calling and streaming
-- Reasoning effort: `minimal`, `low`, `medium`, `high`, `xhigh` (OpenClaw default: `high`)
+- Reasoning effort: `minimal`, `low`, `medium`, `high`, `xhigh` (Paddy default: `high`)
 - Stateless encrypted reasoning replay (`store: false`, `include: ["reasoning.encrypted_content"]`)
 
 Meta's [model catalog](https://dev.meta.ai/docs/models) lists text, image, video,
-audio, and PDF input for these models. OpenClaw's model catalog directly represents
+audio, and PDF input for these models. Paddy's model catalog directly represents
 text and image input only; the other upstream modalities are not model-manifest input
 values.
 
-OpenClaw explicitly selects `high` when no thinking level is configured. This is an
-OpenClaw default, not Meta's omitted-parameter behavior: Meta's
+Paddy explicitly selects `high` when no thinking level is configured. This is an
+Paddy default, not Meta's omitted-parameter behavior: Meta's
 [reasoning documentation](https://dev.meta.ai/docs/reasoning/) says that when
 `reasoning.effort` is omitted, the model reasons at a model-determined level.
 
 <Warning>
-Muse Spark does not accept `reasoning.effort: "none"`. OpenClaw maps
+Muse Spark does not accept `reasoning.effort: "none"`. Paddy maps
 `--thinking off` to `minimal` for this provider.
 </Warning>
 

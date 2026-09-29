@@ -1,8 +1,8 @@
 ---
-summary: "Alibaba Model Studio Wan video generation in OpenClaw"
+summary: "Alibaba Model Studio Wan video generation in Paddy"
 title: "Alibaba Model Studio"
 read_when:
-  - You want to use Alibaba Wan video generation in OpenClaw
+  - You want to use Alibaba Wan video generation in Paddy
   - You need Model Studio or DashScope API key setup for video generation
 ---
 
@@ -25,13 +25,13 @@ The bundled `alibaba` plugin registers a video-generation provider for Wan model
     Store the key against the `alibaba` provider through onboarding:
 
     ```bash
-    openclaw onboard --auth-choice alibaba-model-studio-api-key
+    paddy onboard --auth-choice alibaba-model-studio-api-key
     ```
 
     Or pass the key directly:
 
     ```bash
-    openclaw onboard --alibaba-model-studio-api-key <your-key>
+    paddy onboard --alibaba-model-studio-api-key <your-key>
     ```
 
     Or export one of the accepted env vars before starting the Gateway:
@@ -60,10 +60,10 @@ The bundled `alibaba` plugin registers a video-generation provider for Wan model
   </Step>
   <Step title="Verify the provider is configured">
     ```bash
-    openclaw models list --provider alibaba
+    paddy models list --provider alibaba
     ```
 
-    The list includes all five bundled Wan models. If `MODELSTUDIO_API_KEY` cannot be resolved, `openclaw models status --json` reports the missing credential under `auth.unusableProfiles`.
+    The list includes all five bundled Wan models. If `MODELSTUDIO_API_KEY` cannot be resolved, `paddy models status --json` reports the missing credential under `auth.unusableProfiles`.
 
   </Step>
 </Steps>
@@ -105,7 +105,7 @@ uses the input image's aspect ratio. Wan 2.7 reference-to-video sends the newer
 A request that omits `durationSeconds` gets DashScope's accepted default of **5 seconds**.
 
 Image-to-video and Wan 2.7 reference images accept local files or remote
-`http(s)` URLs. OpenClaw sends local images as base64 data URIs, with a maximum
+`http(s)` URLs. Paddy sends local images as base64 data URIs, with a maximum
 of 20 MB per image before encoding. See the Model Studio references for
 [image-to-video](https://www.alibabacloud.com/help/en/model-studio/image-to-video-api-reference)
 and [Wan 2.7 reference-to-video](https://www.alibabacloud.com/help/en/model-studio/wan-video-to-video-api-reference).
@@ -135,13 +135,13 @@ Reference videos and Wan 2.6 reference-to-video images still require remote
   </Accordion>
 
   <Accordion title="Auth env priority">
-    OpenClaw resolves the Alibaba API key from environment variables in this order, taking the first non-empty value:
+    Paddy resolves the Alibaba API key from environment variables in this order, taking the first non-empty value:
 
     1. `MODELSTUDIO_API_KEY`
     2. `DASHSCOPE_API_KEY`
     3. `QWEN_API_KEY`
 
-    Configured `auth.profiles` entries (set via `openclaw models auth login`) override env-var resolution. See [Auth profiles in the models FAQ](/help/faq-models#auth-profiles-what-they-are-and-how-to-manage-them) for profile rotation, cooldown, and override mechanics.
+    Configured `auth.profiles` entries (set via `paddy models auth login`) override env-var resolution. See [Auth profiles in the models FAQ](/help/faq-models#auth-profiles-what-they-are-and-how-to-manage-them) for profile rotation, cooldown, and override mechanics.
 
   </Accordion>
 

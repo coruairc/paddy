@@ -37,7 +37,7 @@ See [Per-person model accounts](/concepts/multi-user#per-person-model-accounts) 
 ## Apple companion delivery journals
 
 Companion Watch chat has separate app-local storage. It does not change the
-Gateway control-plane or per-agent database schema, and `openclaw doctor`
+Gateway control-plane or per-agent database schema, and `paddy doctor`
 does not migrate it. Open the updated iPhone and Watch apps to use the new
 delivery protocol. See [Watch voice and chat](/platforms/ios#apple-watch-voice-and-chat)
 for delivery statuses and recovery.

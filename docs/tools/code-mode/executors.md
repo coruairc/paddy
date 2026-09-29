@@ -37,7 +37,7 @@ host boundary.
 
 QuickJS provides a separate WASM guest with no ambient host access. It can
 still call powerful tools if your tool policy grants them. Calls made through
-the Code Mode tool bridge retain OpenClaw's normal policy, approvals, hooks,
+the Code Mode tool bridge retain Paddy's normal policy, approvals, hooks,
 and session ownership under either executor. These checks mediate tool calls;
 they cannot contain hostile code that escapes a Node VM context.
 
@@ -72,7 +72,7 @@ to the full plugin activation policy. Enable exactly one owner for that choice.
 The selectable executor IDs are `node` and `quickjs`; `node` is owned by core.
 
 The selected executor must be available. If it is missing, disabled, denied,
-or cannot load, the run fails with `runtime_unavailable`; OpenClaw never
+or cannot load, the run fails with `runtime_unavailable`; Paddy never
 silently switches to Node or broad direct tool exposure. Check plugin policy
 when a configured QuickJS executor is unavailable.
 
@@ -128,7 +128,7 @@ of `code-mode-quickjs` still prevents execution.
 Configurations that did not explicitly select a runtime use the new Node
 default. Set `executor: "quickjs"` explicitly to retain hardened guest
 isolation. The retired `runtime` field is not a runtime alias; use
-`openclaw doctor --fix` for an older configuration.
+`paddy doctor --fix` for an older configuration.
 
 ## Related
 

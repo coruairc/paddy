@@ -638,7 +638,7 @@ export async function checkUpdateStatus(params: {
   if (installKind === "unknown") {
     const failure = createUpdatePreflightFailure(
       "installation-unclassified",
-      `${await describeUpdateInstallRoot(root)} Service unit target: not inspected by update status installation checks; run openclaw gateway status --deep.`,
+      `${await describeUpdateInstallRoot(root)} Service unit target: not inspected by update status installation checks; run paddy gateway status --deep.`,
     );
     params.signal?.throwIfAborted();
     return {

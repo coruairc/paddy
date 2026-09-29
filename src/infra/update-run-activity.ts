@@ -78,7 +78,7 @@ export function formatUpdateRunOwnership(record: UpdateRunRecord): string {
   const unrecorded = hasUnrecordedUpdateRunDriver(record)
     ? "; unrecorded adopter: PID and host not recorded, liveness: not observed"
     : "";
-  return `Update ${record.runId} remains recorded as running (${record.phase}); ${owners}${unrecorded}; started ${new Date(record.createdAtMs).toISOString()} (age ${age(record.createdAtMs)}), last activity ${new Date(activity).toISOString()} (age ${age(activity)}). Repair could not verify that the recorded update work stopped; it did not assume the update resumed. Check each named host or supervisor: this host cannot safely determine liveness when a driver is shown as "not observed". If a driver is active, wait for it or stop it through its owning host or supervisor. If this is the same machine after a rename, restore its recorded hostname before retrying \`openclaw update repair\`; otherwise contact support.`;
+  return `Update ${record.runId} remains recorded as running (${record.phase}); ${owners}${unrecorded}; started ${new Date(record.createdAtMs).toISOString()} (age ${age(record.createdAtMs)}), last activity ${new Date(activity).toISOString()} (age ${age(activity)}). Repair could not verify that the recorded update work stopped; it did not assume the update resumed. Check each named host or supervisor: this host cannot safely determine liveness when a driver is shown as "not observed". If a driver is active, wait for it or stop it through its owning host or supervisor. If this is the same machine after a rename, restore its recorded hostname before retrying \`paddy update repair\`; otherwise contact support.`;
 }
 
 export type UpdateRepairDriverAdmission =
@@ -149,7 +149,7 @@ function inspectUpdateRunDriverAbandonment(
 /** Legacy activity cannot prove death; reporting must leave recovery to the operator. */
 export function staleUpdateRunGuidance(record: UpdateRunRecord): string | undefined {
   return isStaleIdentitylessUpdateRun(record)
-    ? `no activity since ${new Date(updateRunLastActivity(record)).toISOString()}; if no update is running, run \`openclaw update repair\` or start a new \`openclaw update\``
+    ? `no activity since ${new Date(updateRunLastActivity(record)).toISOString()}; if no update is running, run \`paddy update repair\` or start a new \`paddy update\``
     : undefined;
 }
 

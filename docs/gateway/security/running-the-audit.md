@@ -1,5 +1,5 @@
 ---
-summary: "What `openclaw security audit` inspects and the order to fix its findings in"
+summary: "What `paddy security audit` inspects and the order to fix its findings in"
 read_when:
   - You changed config and want to know whether you drifted from safe defaults
   - You are about to expose a network surface
@@ -8,15 +8,15 @@ title: "Running the security audit"
 sidebarTitle: "Running the audit"
 ---
 
-## `openclaw security audit`
+## `paddy security audit`
 
 Run this after any config change or before exposing network surfaces:
 
 ```bash
-openclaw security audit
-openclaw security audit --deep    # attempts a live Gateway probe
-openclaw security audit --fix     # apply safe remediations
-openclaw security audit --json
+paddy security audit
+paddy security audit --deep    # attempts a live Gateway probe
+paddy security audit --fix     # apply safe remediations
+paddy security audit --json
 ```
 
 `--fix` is intentionally narrow: it flips open group policies to allowlists, tightens state/config/include-file permissions (`600` files, `700` dirs), and on Windows uses ACL resets instead of POSIX `chmod`.

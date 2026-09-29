@@ -1,5 +1,5 @@
 ---
-summary: "Use Qianfan's unified API to access many models in OpenClaw"
+summary: "Use Qianfan's unified API to access many models in Paddy"
 read_when:
   - You want a single API key for many LLMs
   - You need Baidu Qianfan setup guidance
@@ -38,7 +38,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
   </Step>
   <Step title="Run onboarding">
     ```bash
-    openclaw onboard --auth-choice qianfan-api-key
+    paddy onboard --auth-choice qianfan-api-key
     ```
 
     Non-interactive runs read the key from `--qianfan-api-key <key>` or
@@ -49,7 +49,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
   </Step>
   <Step title="Verify the model is available">
     ```bash
-    openclaw models list --provider qianfan
+    paddy models list --provider qianfan
     ```
   </Step>
 </Steps>
@@ -139,7 +139,7 @@ Model refs use the `qianfan/` prefix (for example `qianfan/deepseek-v4-pro`).
     Choosing providers, model refs, and failover behavior.
   </Card>
   <Card title="Configuration reference" href="/gateway/configuration-reference" icon="gear">
-    Full OpenClaw configuration reference.
+    Full Paddy configuration reference.
   </Card>
   <Card title="Agent setup" href="/concepts/agent" icon="robot">
     Configuring agent defaults and model assignments.

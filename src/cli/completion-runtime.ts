@@ -156,8 +156,14 @@ export function formatCompletionReloadCommand(shell: CompletionShell, scriptPath
   return `source ${homePrefix}${quoteCompletionPath(shell, value)}`;
 }
 
+// Profiles written before the rebrand start with the upstream header, so both
+// are recognised: an existing block is then replaced in place instead of being
+// duplicated alongside a new one.
+const COMPLETION_PROFILE_HEADERS = ["# OpenClaw Completion", "# Paddy Completion"];
+
 function isCompletionProfileHeader(line: string): boolean {
-  return line.trim() === "# OpenClaw Completion";
+  const trimmed = line.trim();
+  return COMPLETION_PROFILE_HEADERS.some((header) => trimmed === header);
 }
 
 function isCompletionProfileLine(line: string, binName: string, cachePath: string): boolean {
@@ -405,7 +411,7 @@ function updateCompletionProfile(
     return { next, changed: next !== content, hadExisting };
   }
   const trimmed = filtered.join("\n").trimEnd();
-  const block = `# OpenClaw Completion\n${formatCompletionSourceLine(shell, cachePath)}`;
+  const block = `# Paddy Completion\n${formatCompletionSourceLine(shell, cachePath)}`;
   const next = trimmed ? `${trimmed}\n\n${block}\n` : `${block}\n`;
   return { next, changed: next !== content, hadExisting };
 }

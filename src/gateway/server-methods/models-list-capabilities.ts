@@ -82,7 +82,7 @@ export function createModelsListProviderFilter(params: {
     );
     if (!knownProviders.has(providerFilter)) {
       throw new UnknownModelCatalogProviderError(
-        `Unknown model catalog provider ${JSON.stringify(params.provider)}. Run openclaw models list --all to list models and their provider IDs.`,
+        `Unknown model catalog provider ${JSON.stringify(params.provider)}. Run paddy models list --all to list models and their provider IDs.`,
       );
     }
   }

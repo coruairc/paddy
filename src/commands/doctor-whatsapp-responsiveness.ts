@@ -109,7 +109,7 @@ export function collectWhatsappResponsivenessHealthFindings(params: {
       target: tuiProcesses.map((proc) => String(proc.pid)).join(", "),
       requirement: "local-tui-event-loop-pressure",
       fixHint: `Inspect Gateway diagnostics with ${formatCliCommand(
-        "openclaw gateway diagnostics export",
+        "paddy gateway diagnostics export",
       )} before deciding whether to close clients.`,
     },
   ];

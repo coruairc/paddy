@@ -1,12 +1,12 @@
 ---
-summary: "Step-by-step Fly.io deployment for OpenClaw with persistent storage and HTTPS"
+summary: "Step-by-step Fly.io deployment for Paddy with persistent storage and HTTPS"
 title: Fly.io
 read_when:
-  - Deploying OpenClaw on Fly.io
+  - Deploying Paddy on Fly.io
   - Setting up Fly volumes, secrets, and first-run config
 ---
 
-**Goal:** OpenClaw Gateway running on a [Fly.io](https://fly.io) machine with persistent storage, automatic HTTPS, and Discord/channel access.
+**Goal:** Paddy Gateway running on a [Fly.io](https://fly.io) machine with persistent storage, automatic HTTPS, and Discord/channel access.
 
 ## What you need
 
@@ -283,7 +283,7 @@ fly machine update <machine-id> --vm-memory 2048 -y
 Gateway refuses to start with "already running" errors after a container restart.
 
 With `OPENCLAW_STATE_DIR=/data`, the lock tree lives under
-`/data/tmp/openclaw-<uid>` and persists with the volume. OpenClaw normally
+`/data/tmp/openclaw-<uid>` and persists with the volume. Paddy normally
 reclaims stale owners automatically. If startup continues to report an owner,
 first use `fly status` and `fly logs` to verify that no other machine or Gateway
 process is using the volume. Do not delete the lock tree while an owner may
@@ -334,7 +334,7 @@ fly status
 fly logs
 ```
 
-`git pull` + `fly deploy` is the supervised path here: it rebuilds the image from the Dockerfile, so the CLI/gateway version, the base OS image, and any Dockerfile changes all update together. `openclaw update` inside the running container is not the same operation, since the image ships as a Docker-built `dist/` tree with no `.git` checkout and no npm-managed global install for it to detect; see [Updating](/install/updating) for that flow on VM-style installs.
+`git pull` + `fly deploy` is the supervised path here: it rebuilds the image from the Dockerfile, so the CLI/gateway version, the base OS image, and any Dockerfile changes all update together. `paddy update` inside the running container is not the same operation, since the image ships as a Docker-built `dist/` tree with no `.git` checkout and no npm-managed global install for it to detect; see [Updating](/install/updating) for that flow on VM-style installs.
 
 ### Updating the machine command
 
@@ -471,7 +471,7 @@ With the recommended config (`shared-cpu-2x`, 2GB RAM), expect roughly $10-15/mo
 
 - Set up messaging channels: [Channels](/channels)
 - Configure the Gateway: [Gateway configuration](/gateway/configuration)
-- Keep OpenClaw up to date: [Updating](/install/updating)
+- Keep Paddy up to date: [Updating](/install/updating)
 
 ## Related
 

@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { executeSqliteQuerySync, getNodeSqliteKysely } from "../infra/kysely-sync.js";
 import { OpenClawStateOwnershipError } from "../infra/sqlite-lifecycle-errors.js";
 import {
@@ -51,7 +52,6 @@ import {
 } from "./openclaw-state-schema-publication.js";
 import { OPENCLAW_STATE_SCHEMA_SQL } from "./openclaw-state-schema.js";
 import { UpdateSchemaRefusalError } from "./openclaw-update-schema-refusal.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 /**
  * Make the known malformed index parseable, then let SQLite drop and reclaim it
@@ -203,7 +203,7 @@ export function assertOpenClawStateDatabaseOwner(
   if (metadata?.role !== "global") {
     const role = typeof metadata?.role === "string" ? metadata.role : "missing";
     throw new SqliteSchemaMismatchError(
-      `OpenClaw state database ${options.pathname} has schema role ${role}; expected global. Run openclaw doctor --fix to inspect and repair its ownership.`,
+      `Paddy state database ${options.pathname} has schema role ${role}; expected global. Run paddy doctor --fix to inspect and repair its ownership.`,
     );
   }
   return metadata;
@@ -218,7 +218,7 @@ export function assertOpenClawStateDatabaseForMaintenance(
   const userVersion = assertSupportedStateSchemaVersion(database, options.pathname);
   if (readStateSchemaContentVersion(database) !== OPENCLAW_STATE_SCHEMA_VERSION) {
     throw new SqliteSchemaMismatchError(
-      `${PRODUCT_NAME} state database ${options.pathname} uses schema version ${userVersion}; run openclaw doctor --fix before compacting it.`,
+      `${PRODUCT_NAME} state database ${options.pathname} uses schema version ${userVersion}; run paddy doctor --fix before compacting it.`,
     );
   }
 
@@ -227,7 +227,7 @@ export function assertOpenClawStateDatabaseForMaintenance(
     const schemaVersion =
       typeof metadata?.schema_version === "number" ? metadata.schema_version : "invalid";
     throw new SqliteSchemaMismatchError(
-      `${PRODUCT_NAME} state database ${options.pathname} metadata schema version ${schemaVersion} does not match ${userVersion}; run openclaw doctor --fix before compacting it.`,
+      `${PRODUCT_NAME} state database ${options.pathname} metadata schema version ${schemaVersion} does not match ${userVersion}; run paddy doctor --fix before compacting it.`,
     );
   }
   assertSqliteSchemaContains(

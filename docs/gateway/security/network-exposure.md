@@ -87,7 +87,7 @@ Gateway auth is required by default - with no valid auth path configured, the Ga
 { gateway: { auth: { mode: "token", token: "your-token" } } }
 ```
 
-`openclaw doctor --generate-gateway-token` can generate one for you.
+`paddy doctor --generate-gateway-token` can generate one for you.
 
 <Note>
 `gateway.remote.token` and `gateway.remote.password` are client credential sources - they do not protect local WS access by themselves. Local call paths use `gateway.remote.*` only as fallback when `gateway.auth.*` is unset. If `gateway.auth.token` or `gateway.auth.password` is explicitly configured via SecretRef and unresolved, resolution fails closed (no remote-fallback masking).
@@ -103,13 +103,13 @@ Auth modes:
 - `"password"`: prefer setting via `OPENCLAW_GATEWAY_PASSWORD`.
 - `"trusted-proxy"`: trust an identity-aware reverse proxy to authenticate users and pass identity via headers. See [Trusted Proxy Auth](/gateway/trusted-proxy-auth).
 
-Gateway startup rejects blank tokens and passwords, the literal strings `undefined` and `null`, and published example placeholders. Generate a real secret (for example, `openssl rand -hex 32`) and update the selected credential or its external source. `openclaw security audit` flags blank/nullish values as critical and warns when the selected token or password has fewer than 24 characters.
+Gateway startup rejects blank tokens and passwords, the literal strings `undefined` and `null`, and published example placeholders. Generate a real secret (for example, `openssl rand -hex 32`) and update the selected credential or its external source. `paddy security audit` flags blank/nullish values as critical and warns when the selected token or password has fewer than 24 characters.
 
 Rotation checklist (token/password): generate/set a new secret (`gateway.auth.token` or `gateway.auth.password`); update remote clients (`gateway.remote.token`/`.password`); verify the old credentials no longer work. Configured token/password rotation hot-applies only when the effective auth mode stays the same; set `gateway.auth.mode` explicitly for SecretRef credentials. Auth-mode changes require a Gateway restart. Changes to process environment credentials such as `OPENCLAW_GATEWAY_PASSWORD` also require restarting the Gateway (or its supervising macOS app) with the updated environment. See [Config hot reload](/gateway/configuration#config-hot-reload).
 
 ### Tailscale Serve identity headers
 
-When `gateway.auth.allowTailscale` is `true` (default for Serve), OpenClaw accepts the Tailscale Serve identity header `tailscale-user-login` for Control UI/WebSocket authentication. It verifies identity by resolving the `x-forwarded-for` address through the local Tailscale daemon (`tailscale whois`) and matching it to the header. This only triggers on OpenClaw's dedicated managed-Tailscale listener and requires `x-forwarded-for`, `x-forwarded-proto`, and `x-forwarded-host`; headers on the ordinary Gateway listener do not establish Serve provenance or tokenless auth. For this async check, failed attempts for the same `{scope, ip}` are serialized before the limiter records the failure, so concurrent bad retries from one Serve client can lock out the second attempt immediately.
+When `gateway.auth.allowTailscale` is `true` (default for Serve), Paddy accepts the Tailscale Serve identity header `tailscale-user-login` for Control UI/WebSocket authentication. It verifies identity by resolving the `x-forwarded-for` address through the local Tailscale daemon (`tailscale whois`) and matching it to the header. This only triggers on Paddy's dedicated managed-Tailscale listener and requires `x-forwarded-for`, `x-forwarded-proto`, and `x-forwarded-host`; headers on the ordinary Gateway listener do not establish Serve provenance or tokenless auth. For this async check, failed attempts for the same `{scope, ip}` are serialized before the limiter records the failure, so concurrent bad retries from one Serve client can lock out the second attempt immediately.
 
 HTTP API endpoints (`/v1/*`, `/tools/invoke`, `/api/channels/*`) do not use Tailscale identity-header auth - they follow the gateway's configured HTTP auth mode.
 
@@ -117,7 +117,7 @@ Gateway HTTP bearer auth is effectively all-or-nothing operator access. Credenti
 
 Tokenless Serve auth assumes the gateway host itself is trusted - it is not protection against hostile same-host processes. If untrusted local code may run on the gateway host, disable `allowTailscale` and require explicit shared-secret auth (`token` or `password`).
 
-An externally managed Tailscale Serve or Funnel route may forward these headers to the ordinary listener only through an explicitly configured `gateway.trustedProxies` source with a valid non-loopback forwarded client address. OpenClaw treats that request as generic proxy ingress: the configured gateway auth applies, `allowTailscale` grants nothing, and no WhoIs lookup runs. Gateway-protected routes reject external Funnel ingress when auth mode is `none`; aggregate health, readiness, and startup probes keep their bounded unauthenticated responses. See [Tailscale](/gateway/tailscale#externally-managed-serve-and-funnel), [Health and readiness](/gateway/health), and [Trusted Proxy Auth](/gateway/trusted-proxy-auth).
+An externally managed Tailscale Serve or Funnel route may forward these headers to the ordinary listener only through an explicitly configured `gateway.trustedProxies` source with a valid non-loopback forwarded client address. Paddy treats that request as generic proxy ingress: the configured gateway auth applies, `allowTailscale` grants nothing, and no WhoIs lookup runs. Gateway-protected routes reject external Funnel ingress when auth mode is `none`; aggregate health, readiness, and startup probes keep their bounded unauthenticated responses. See [Tailscale](/gateway/tailscale#externally-managed-serve-and-funnel), [Health and readiness](/gateway/health), and [Trusted Proxy Auth](/gateway/trusted-proxy-auth).
 
 See [Tailscale](/gateway/tailscale) and [Web overview](/web).
 
@@ -126,7 +126,7 @@ See [Tailscale](/gateway/tailscale) and [Web overview](/web).
 Set `gateway.trustedProxies` for proper forwarded-client IP handling behind nginx/Caddy/Traefik/etc. When the Gateway detects proxy headers from an address **not** in `trustedProxies`, it will not treat the connection as local; if gateway auth is disabled, that connection is rejected. This prevents proxied connections from appearing to come from localhost and receiving automatic trust.
 
 With token or password auth, an unconfigured same-host loopback proxy is
-rejected on Gateway-authenticated routes because OpenClaw cannot attribute its
+rejected on Gateway-authenticated routes because Paddy cannot attribute its
 forwarded client headers. HTTP requests receive `403` with
 `proxy_attribution_required`; WebSocket auth fails with guidance to configure
 `gateway.trustedProxies`. Plugin-authenticated webhook routes retain their own
@@ -162,8 +162,8 @@ Trusted proxy headers do not make node device pairing automatically trusted - `g
 
 ### HSTS and origin notes
 
-- OpenClaw's gateway is local/loopback first. If you terminate TLS at a reverse proxy, set HSTS there.
-- If the gateway itself terminates HTTPS, `gateway.http.securityHeaders.strictTransportSecurity` emits the HSTS header from OpenClaw responses.
+- Paddy's gateway is local/loopback first. If you terminate TLS at a reverse proxy, set HSTS there.
+- If the gateway itself terminates HTTPS, `gateway.http.securityHeaders.strictTransportSecurity` emits the HSTS header from Paddy responses.
 - Non-loopback Control UI deployments need configured browser origins: omit `gateway.controlUi.allowedOrigins` to use `gateway.publicOrigin`, or set an explicit list. An explicit list replaces the default; `allowedOrigins: ["*"]` allows every browser origin and should be avoided outside tightly controlled local testing.
 - Failed authentication from loopback is never locked out, so a local CLI cannot be denied before its credentials are checked. Wrong credentials are still tracked and progressively delayed (bounded delay, one shared timer per key); successful authentication resets only the matching credential-class history. This raises the cost of repeated guessing from one loopback source; it is not a defense against an attacker who can already open many parallel loopback connections, because credentials are compared before the failure response is delayed. Loopback reachability is a trust boundary in its own right - see [Node pairing](/gateway/pairing#silent-local-pairing).
 - Browser-origin auth failures on loopback are still rate-limited even with the general loopback exemption enabled, but the lockout key is scoped per normalized `Origin` value instead of one shared localhost bucket.
@@ -176,12 +176,12 @@ Trusted proxy headers do not make node device pairing automatically trusted - `g
 The Control UI generates device identity with pure-JS Ed25519, so pairing works on any origin, including plain HTTP.
 
 - Token/password auth does not replace browser device identity: HTTP browsers still pair with a signed device key, which never crosses the wire. Prefer HTTPS (for example, Tailscale Serve) — plaintext transport still exposes the page and the shared secret to on-path attackers.
-- `gateway.controlUi.dangerouslyDisableDeviceAuth`: retired break-glass input, now fully inert. Control UI browsers pair through the normal device flow; `openclaw doctor --fix` removes the legacy key.
+- `gateway.controlUi.dangerouslyDisableDeviceAuth`: retired break-glass input, now fully inert. Control UI browsers pair through the normal device flow; `paddy doctor --fix` removes the legacy key.
 - Separately, successful `gateway.auth.mode: "trusted-proxy"` authentication can admit **operator** Control UI sessions without device identity when the browser cannot supply one. Browsers that can mint an identity (any origin, including plain HTTP) follow the normal pairing flow instead — automatic with `deviceAutoApprove`, otherwise a one-time approval. This does not extend to node-role Control UI sessions.
 
 ### Insecure/dangerous flags
 
-`openclaw security audit` raises `config.insecure_or_dangerous_flags` for each enabled known insecure/dangerous debug switch (one finding per flag). Keep these unset in production. If audit suppressions are configured, `security.audit.suppressions.active` stays in the active output even when matching findings move to `suppressedFindings`.
+`paddy security audit` raises `config.insecure_or_dangerous_flags` for each enabled known insecure/dangerous debug switch (one finding per flag). Keep these unset in production. If audit suppressions are configured, `security.audit.suppressions.active` stays in the active output even when matching findings move to `suppressedFindings`.
 
 <AccordionGroup>
   <Accordion title="Flags tracked by the audit today">

@@ -310,7 +310,7 @@ export function repairStateSchema(
       warnings: quarantineCleared
         ? []
         : [
-            `Persisted quarantine record for ${pathname} could not be cleared; rerun openclaw doctor --fix so the repaired database is not refused again.`,
+            `Persisted quarantine record for ${pathname} could not be cleared; rerun paddy doctor --fix so the repaired database is not refused again.`,
           ],
     };
   } catch (err) {

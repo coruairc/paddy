@@ -27,7 +27,7 @@ export async function maybeResolveDuelingSystemdGatewayScopes(
   }
   const installation = await findSystemdGatewayInstallation(process.env).catch(() => {
     note(
-      "Could not verify the effective Gateway service identities. Nothing was removed; inspect both units with openclaw gateway status --deep.",
+      "Could not verify the effective Gateway service identities. Nothing was removed; inspect both units with paddy gateway status --deep.",
       "Gateway cleanup needs an owner decision",
     );
     return null;
@@ -146,7 +146,7 @@ export async function maybeResolveDuelingSystemdGatewayScopes(
   const completed = `Cleanup of ${result.unitName} completed.`;
   if (remaining?.kind === "user" || remaining?.kind === "dueling") {
     runtime.log(
-      `${completed} Another user-scope unit remains at ${remaining.user.unitPath}. It was not removed. Run openclaw doctor again to inspect it before removal.`,
+      `${completed} Another user-scope unit remains at ${remaining.user.unitPath}. It was not removed. Run paddy doctor again to inspect it before removal.`,
     );
   } else if (
     remaining?.kind === "system" &&
@@ -156,7 +156,7 @@ export async function maybeResolveDuelingSystemdGatewayScopes(
     runtime.log(`${completed} No other matching installed user-scope unit was found.`);
   } else {
     runtime.log(
-      `${completed} Remaining service ownership could not be verified. Run openclaw gateway status --deep and openclaw doctor before any further cleanup.`,
+      `${completed} Remaining service ownership could not be verified. Run paddy gateway status --deep and paddy doctor before any further cleanup.`,
     );
   }
 }

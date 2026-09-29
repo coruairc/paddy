@@ -234,7 +234,7 @@ async function connectAccount(
       }
     } catch (cancelError) {
       throw new Error(
-        "Could not confirm sign-in cancellation. The connection is closing; run `openclaw models accounts list` to check whether an account was saved.",
+        "Could not confirm sign-in cancellation. The connection is closing; run `paddy models accounts list` to check whether an account was saved.",
         { cause: cancelError },
       );
     }
@@ -245,7 +245,7 @@ async function connectAccount(
     ) {
       return cancelled;
     }
-    throw new Error("Sign-in did not complete. Re-run `openclaw models accounts login`.", {
+    throw new Error("Sign-in did not complete. Re-run `paddy models accounts login`.", {
       cause: error,
     });
   } finally {
@@ -269,7 +269,7 @@ export async function modelsAccountsListCommand(
     }
     runtime.log("Personal model accounts:");
     if (result.accounts.length === 0) {
-      runtime.log("No saved accounts on this page. Use `openclaw models accounts login`.");
+      runtime.log("No saved accounts on this page. Use `paddy models accounts login`.");
     }
     for (const account of result.accounts) {
       runtime.log(
@@ -279,7 +279,7 @@ export async function modelsAccountsListCommand(
     runtime.log(SESSION_DEFAULT_NOTE);
     if (result.nextCursor) {
       runtime.log(
-        `Next page: openclaw models accounts list --cursor ${sanitizeTerminalText(result.nextCursor)}`,
+        `Next page: paddy models accounts list --cursor ${sanitizeTerminalText(result.nextCursor)}`,
       );
     }
   });

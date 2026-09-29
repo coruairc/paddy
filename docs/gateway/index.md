@@ -28,11 +28,11 @@ Use this page for day-1 startup and day-2 operations of the Gateway service.
   <Step title="Start the Gateway">
 
 ```bash
-openclaw gateway --port 18789
+paddy gateway --port 18789
 # debug/trace mirrored to stdio
-openclaw gateway --port 18789 --verbose
+paddy gateway --port 18789 --verbose
 # force-kill listener on selected port, then start
-openclaw gateway --force
+paddy gateway --force
 ```
 
   </Step>
@@ -40,19 +40,19 @@ openclaw gateway --force
   <Step title="Verify service health">
 
 ```bash
-openclaw gateway status
-openclaw status
-openclaw logs --follow
+paddy gateway status
+paddy status
+paddy logs --follow
 ```
 
-Healthy baseline: `Runtime: running`, `Connectivity probe: ok`, and a `Capability` line that matches what you expect. Use `openclaw gateway status --require-rpc` for read-scope RPC proof, not just reachability.
+Healthy baseline: `Runtime: running`, `Connectivity probe: ok`, and a `Capability` line that matches what you expect. Use `paddy gateway status --require-rpc` for read-scope RPC proof, not just reachability.
 
   </Step>
 
   <Step title="Validate channel readiness">
 
 ```bash
-openclaw channels status --probe
+paddy channels status --probe
 ```
 
 With a reachable gateway this runs live per-account channel probes and optional audits. If the gateway is unreachable, the CLI falls back to config-only channel summaries.
@@ -77,7 +77,7 @@ Gateway config reload watches the active config file path (resolved from profile
 
 ## OpenAI-compatible endpoints
 
-OpenClaw's highest-leverage compatibility surface:
+Paddy's highest-leverage compatibility surface:
 
 - `GET /v1/models`
 - `GET /v1/models/{id}`
@@ -104,7 +104,7 @@ Admin HTTP RPC (`POST /api/v1/admin/rpc`) is a separate, default-off plugin rout
 | Gateway port | `--port` → `OPENCLAW_GATEWAY_PORT` → `gateway.port` → `18789`        |
 | Bind mode    | CLI/override → `gateway.bind` → `loopback` (or `auto` in containers) |
 
-Installed gateway services record the resolved `--port` in supervisor metadata. After changing `gateway.port`, run `openclaw doctor --fix` or `openclaw gateway install --force` so launchd/systemd/schtasks starts the process on the new port.
+Installed gateway services record the resolved `--port` in supervisor metadata. After changing `gateway.port`, run `paddy doctor --fix` or `paddy gateway install --force` so launchd/systemd/schtasks starts the process on the new port.
 
 Gateway startup uses the same effective port and bind when it seeds local Control UI origins for non-loopback binds. For example, `--bind lan --port 3000` seeds `http://localhost:3000` and `http://127.0.0.1:3000` before runtime validation runs. Add any remote browser origins, such as HTTPS proxy URLs, to `gateway.controlUi.allowedOrigins` explicitly.
 
@@ -115,20 +115,20 @@ Gateway startup uses the same effective port and bind when it seeds local Contro
 | `off`                 | No config reload                           |
 | `hybrid` (default)    | Hot-apply when safe, restart when required |
 
-The earlier `hot` and `restart` modes were retired in `v2026.7.2-beta.4`, stable from `v2026.8.1`. [`openclaw doctor --fix`](/cli/doctor) maps both to `hybrid`.
+The earlier `hot` and `restart` modes were retired in `v2026.7.2-beta.4`, stable from `v2026.8.1`. [`paddy doctor --fix`](/cli/doctor) maps both to `hybrid`.
 
 ## Operator command set
 
 ```bash
-openclaw gateway status
-openclaw gateway status --deep   # adds a system-level service scan
-openclaw gateway status --json
-openclaw gateway install
-openclaw gateway restart
-openclaw gateway stop
-openclaw secrets reload
-openclaw logs --follow
-openclaw doctor
+paddy gateway status
+paddy gateway status --deep   # adds a system-level service scan
+paddy gateway status --json
+paddy gateway install
+paddy gateway restart
+paddy gateway stop
+paddy secrets reload
+paddy logs --follow
+paddy doctor
 ```
 
 `gateway status --deep` is for extra service discovery (LaunchDaemons/systemd system units/schtasks), not a deeper RPC health probe.
@@ -140,14 +140,14 @@ Most installs should run one gateway per machine. A single gateway can host mult
 Useful checks:
 
 ```bash
-openclaw gateway status --deep
-openclaw gateway probe
+paddy gateway status --deep
+paddy gateway probe
 ```
 
 What to expect:
 
 - `gateway status --deep` can report `Other gateway-like services detected (best effort)` and print cleanup hints when stale launchd/systemd/schtasks installs are still around.
-- `gateway probe` can warn about `multiple reachable gateway identities` when distinct gateways answer, or when OpenClaw cannot prove reachable targets are the same gateway. An SSH tunnel, proxy URL, or configured remote URL to the same gateway is one gateway with multiple transports, even when transport ports differ.
+- `gateway probe` can warn about `multiple reachable gateway identities` when distinct gateways answer, or when Paddy cannot prove reachable targets are the same gateway. An SSH tunnel, proxy URL, or configured remote URL to the same gateway is one gateway with multiple transports, even when transport ports differ.
 - If that is intentional, isolate ports, config/state, and workspace roots per gateway.
 
 Checklist per instance:
@@ -199,15 +199,15 @@ Use supervised runs for production-like reliability.
   <Tab title="macOS (launchd)">
 
 ```bash
-openclaw gateway install
-openclaw gateway status
-openclaw gateway restart
-openclaw gateway stop
+paddy gateway install
+paddy gateway status
+paddy gateway restart
+paddy gateway stop
 ```
 
-Use `openclaw gateway restart` for restarts. Do not chain `openclaw gateway stop` and `openclaw gateway start` as a restart substitute.
+Use `paddy gateway restart` for restarts. Do not chain `paddy gateway stop` and `paddy gateway start` as a restart substitute.
 
-On macOS, `gateway stop` uses `launchctl bootout` and verifies that the LaunchAgent is unloaded and its process has exited before reporting success. This removes the LaunchAgent from the current boot session without persisting a disable, so KeepAlive auto-recovery still works after unexpected crashes and `gateway start` re-enables cleanly. To also persistently suppress auto-respawn across reboots, pass `--disable`: `openclaw gateway stop --disable`.
+On macOS, `gateway stop` uses `launchctl bootout` and verifies that the LaunchAgent is unloaded and its process has exited before reporting success. This removes the LaunchAgent from the current boot session without persisting a disable, so KeepAlive auto-recovery still works after unexpected crashes and `gateway start` re-enables cleanly. To also persistently suppress auto-respawn across reboots, pass `--disable`: `paddy gateway stop --disable`.
 
 If shutdown cannot be verified, the command fails with the exact `launchctl bootout gui/<uid>/<label>` command to run from an external terminal in the service owner's logged-in macOS session. A free Gateway port alone does not prove that the service is stopped.
 
@@ -215,16 +215,16 @@ LaunchAgent labels are `ai.openclaw.gateway` (default) or `ai.openclaw.<profile>
 
 ### Existing system LaunchDaemons
 
-OpenClaw installs and manages a per-user LaunchAgent. It does not install or manage system LaunchDaemons. If a custom LaunchDaemon already uses the same gateway label, OpenClaw refuses to write, start, restart, or repair a user LaunchAgent because two `KeepAlive` managers can repeatedly restart the same gateway.
+Paddy installs and manages a per-user LaunchAgent. It does not install or manage system LaunchDaemons. If a custom LaunchDaemon already uses the same gateway label, Paddy refuses to write, start, restart, or repair a user LaunchAgent because two `KeepAlive` managers can repeatedly restart the same gateway.
 
-The ownership check reads `launchctl print system/<label>` and also checks installed plists under `/Library/LaunchDaemons`. It fails closed when system ownership cannot be verified, and `--force` does not bypass it. `openclaw gateway status` reports a loaded same-label system job; add `--deep` to scan installed system service files.
+The ownership check reads `launchctl print system/<label>` and also checks installed plists under `/Library/LaunchDaemons`. It fails closed when system ownership cannot be verified, and `--force` does not bypass it. `paddy gateway status` reports a loaded same-label system job; add `--deep` to scan installed system service files.
 
 The runtime and standalone updater parse captured plist bytes with the native parser. If endpoint protection denies pathname parsing during a detached restart, its ownership scan tries a bounded read and parses the captured bytes instead. Actual permission-denied reads are skipped, while malformed data and other read failures still block activation. Loaded same-label jobs remain blocked; an unloaded same-label plist hidden by read denial cannot be detected. The detached restart fallback uses macOS's `/usr/bin/perl`; if that reader is unavailable, the scan still refuses unverifiable activation. This does not change endpoint-protection policy or suppress its alerts.
 
 Choose one lifecycle owner before retrying:
 
 - To keep the custom system LaunchDaemon, remove any competing user LaunchAgent and set `OPENCLAW_SERVICE_REPAIR_POLICY=external` when running Doctor so it remains diagnostic-only for service lifecycle.
-- To return to the supported user LaunchAgent, unload the system job with `sudo launchctl bootout system/<label>`, remove or relocate its actual plist, sign in to the macOS desktop as the target user, then run `openclaw gateway install`.
+- To return to the supported user LaunchAgent, unload the system job with `sudo launchctl bootout system/<label>`, remove or relocate its actual plist, sign in to the macOS desktop as the target user, then run `paddy gateway install`.
 
 For the default profile, `<label>` is `ai.openclaw.gateway`. Named profiles use `ai.openclaw.<profile>`.
 
@@ -233,9 +233,9 @@ For the default profile, `<label>` is `ai.openclaw.gateway`. Named profiles use 
   <Tab title="Linux (systemd user)">
 
 ```bash
-openclaw gateway install
+paddy gateway install
 systemctl --user enable --now openclaw-gateway[-<profile>].service
-openclaw gateway status
+paddy gateway status
 ```
 
 For persistence after logout, enable lingering:
@@ -262,14 +262,14 @@ Manual user-unit example when you need a custom install path:
 
 ```ini
 [Unit]
-Description=OpenClaw Gateway
+Description=Paddy Gateway
 After=network-online.target
 Wants=network-online.target
 StartLimitBurst=10
 StartLimitIntervalSec=300
 
 [Service]
-ExecStart=/usr/local/bin/openclaw gateway --port 18789
+ExecStart=/usr/local/bin/paddy gateway --port 18789
 Restart=always
 RestartSec=5
 RestartPreventExitStatus=78
@@ -290,15 +290,15 @@ WantedBy=default.target
   <Tab title="Windows (native)">
 
 ```powershell
-openclaw gateway install
-openclaw gateway status --json
-openclaw gateway restart
-openclaw gateway stop
+paddy gateway install
+paddy gateway status --json
+paddy gateway restart
+paddy gateway stop
 ```
 
-Native Windows managed startup uses a Scheduled Task named `OpenClaw Gateway`
-(or `OpenClaw Gateway (<profile>)` for named profiles). If Scheduled Task
-creation is denied, OpenClaw falls back to a per-user Startup-folder launcher
+Native Windows managed startup uses a Scheduled Task named `Paddy Gateway`
+(or `Paddy Gateway (<profile>)` for named profiles). If Scheduled Task
+creation is denied, Paddy falls back to a per-user Startup-folder launcher
 that points at `gateway.cmd` inside the state directory.
 
   </Tab>
@@ -317,12 +317,12 @@ its `[Service]` section:
 User=<user>
 ```
 
-Replace `<user>` with the non-root account that owns the OpenClaw state and
+Replace `<user>` with the non-root account that owns the Paddy state and
 configuration. A system unit without `User=` runs as root. Running the Gateway
 and its agent commands as root is unsafe and unsupported for this setup.
 
 When `Group=` is omitted, systemd uses the selected account's primary group.
-By default, `User=` also supplies that account's `HOME`, which OpenClaw uses
+By default, `User=` also supplies that account's `HOME`, which Paddy uses
 for normal state and configuration lookup. For intentional custom locations,
 set `OPENCLAW_STATE_DIR` and `OPENCLAW_CONFIG_PATH` in the unit environment.
 Do not copy configuration into root's home as a workaround. On a single-user
@@ -331,10 +331,10 @@ to keep the Gateway running without a login session.
 
 Do not also let `openclaw doctor --fix` install a user-level gateway service for the same profile/port. Doctor refuses that automatic install when it finds a system-level OpenClaw gateway service; use `OPENCLAW_SERVICE_REPAIR_POLICY=external` when the system unit owns the lifecycle.
 
-`openclaw gateway status --deep` inspects the installed system unit and reports
+`paddy gateway status --deep` inspects the installed system unit and reports
 `systemd system`. Run Doctor from the non-root `User=` account with the same state
 and config paths. For offline repair, stop the unit through its system service
-owner first, run `openclaw doctor --fix`, then start the unit through that owner.
+owner first, run `paddy doctor --fix`, then start the unit through that owner.
 Doctor can verify a stopped system unit without rewriting its definition or
 creating a competing user service. An unavailable manager or an unverified
 service account still blocks maintenance.
@@ -354,9 +354,9 @@ Invalid configuration errors exit with code `78`. Linux systemd units use `Resta
 ## Dev profile quick path
 
 ```bash
-openclaw --dev setup
-openclaw --dev gateway --allow-unconfigured
-openclaw --dev status
+paddy --dev setup
+paddy --dev gateway --allow-unconfigured
+paddy --dev status
 ```
 
 Defaults include isolated state/config and base gateway port `19001`.
@@ -390,9 +390,9 @@ See full protocol docs: [Gateway Protocol](/gateway/protocol).
 ### Readiness
 
 ```bash
-openclaw gateway status
-openclaw channels status --probe
-openclaw health
+paddy gateway status
+paddy channels status --probe
+paddy health
 ```
 
 ### Gap recovery

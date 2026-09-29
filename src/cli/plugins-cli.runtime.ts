@@ -109,7 +109,7 @@ function collectConfiguredRuntimePluginWarnings(params: {
     }
     const installSpec = resolvePluginInstallSources(candidate)[0]?.spec ?? candidate.pluginId;
     return [
-      `${prefix}, but no enabled "${pluginId}" plugin was found. Run "openclaw doctor --fix" to install ${installSpec}, or install it manually with "openclaw plugins install ${installSpec}".`,
+      `${prefix}, but no enabled "${pluginId}" plugin was found. Run "paddy doctor --fix" to install ${installSpec}, or install it manually with "paddy plugins install ${installSpec}".`,
     ];
   });
 }
@@ -299,7 +299,7 @@ export async function runPluginsRegistryCommand(opts: PluginRegistryOptions): Pr
   if (inspection.refreshReasons.length > 0) {
     lines.push(`${theme.muted("Refresh reasons:")} ${inspection.refreshReasons.join(", ")}`);
     lines.push(...formatDifferences(inspection.differences).map((difference) => `- ${difference}`));
-    lines.push(`${theme.muted("Repair:")} ${theme.command("openclaw plugins registry --refresh")}`);
+    lines.push(`${theme.muted("Repair:")} ${theme.command("paddy plugins registry --refresh")}`);
   }
   defaultRuntime.log(lines.join("\n"));
 }
@@ -453,10 +453,10 @@ export async function runPluginsDoctorCommand(opts: PluginDoctorOptions = {}): P
           }
           details.push(
             "  repair:",
-            "    openclaw plugins inspect " + (diag.pluginId ?? "<plugin-id>"),
+            "    paddy plugins inspect " + (diag.pluginId ?? "<plugin-id>"),
             "    edit or remove the config-selected plugin source",
-            "    openclaw plugins registry --refresh",
-            "    openclaw plugins reload " + (diag.pluginId ?? "<plugin-id>"),
+            "    paddy plugins registry --refresh",
+            "    paddy plugins reload " + (diag.pluginId ?? "<plugin-id>"),
           );
           return details;
         }),

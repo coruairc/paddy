@@ -487,7 +487,7 @@ it.each([false, true])(
     });
 
     if (expires) {
-      await expect(begin()).rejects.toThrow("OpenClaw state database is busy at");
+      await expect(begin()).rejects.toThrow("Paddy state database is busy at");
       expect(elapsed).toBe(GATEWAY_SERVICE_STOP_TIMEOUT_MS);
       expect(boundary.log).toHaveBeenCalledWith(
         expect.stringMatching(/Warning:.*state ownership.*openclaw doctor --fix/),
@@ -662,7 +662,7 @@ it.each([false, true])(
     if (stopFailed) {
       expect(collectNestedErrorCandidates(refusal)).toContain(stopError);
     } else {
-      expect(String(refusal)).toContain("OpenClaw state database is busy at");
+      expect(String(refusal)).toContain("Paddy state database is busy at");
     }
     expect(elapsed).toBe(GATEWAY_SERVICE_STOP_TIMEOUT_MS);
     expect(boundary.ownerAssert).not.toHaveBeenCalled();

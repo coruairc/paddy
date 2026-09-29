@@ -10,7 +10,7 @@ sidebarTitle: "Recipes"
 ## Common recipes
 
 Replace model IDs with exact names from `ollama list` or
-`openclaw models list --provider ollama`.
+`paddy models list --provider ollama`.
 
 <AccordionGroup>
   <Accordion title="Local model with auto-discovery">
@@ -20,8 +20,8 @@ Replace model IDs with exact names from `ollama list` or
     ollama serve
     ollama pull gemma4
     export OLLAMA_API_KEY="ollama-local"
-    openclaw models list --provider ollama
-    openclaw models set ollama/gemma4
+    paddy models list --provider ollama
+    paddy models set ollama/gemma4
     ```
 
     Leave `models.providers.ollama` unset to use the default local endpoint, or
@@ -65,7 +65,7 @@ Replace model IDs with exact names from `ollama list` or
     }
     ```
 
-    `contextTokens` caps OpenClaw's active-input budget; `params.num_ctx` sets
+    `contextTokens` caps Paddy's active-input budget; `params.num_ctx` sets
     Ollama's request context. Keep them aligned when hardware cannot run the
     model's full advertised context.
 
@@ -186,7 +186,7 @@ Replace model IDs with exact names from `ollama list` or
     }
     ```
 
-    OpenClaw strips the active provider prefix (falling back to a bare
+    Paddy strips the active provider prefix (falling back to a bare
     `ollama/` prefix) before calling Ollama, so `ollama-large/qwen3.5:27b`
     reaches Ollama as `qwen3.5:27b`.
 
@@ -199,7 +199,7 @@ Replace model IDs with exact names from `ollama list` or
     App, interactive CLI, and non-interactive setup use a 32,768-token runtime
     context, or the model's native window if smaller. The advertised native window
     is retained separately; known cloud routes keep their hosted context.
-    Large file reads use OpenClaw's context-based paging. The native adapter
+    Large file reads use Paddy's context-based paging. The native adapter
     preserves those text pages and their continuation instructions; structured
     fallback data is bounded separately.
     Bound any explicit context override to what the host can support:
@@ -264,7 +264,7 @@ Replace model IDs with exact names from `ollama list` or
 ```
 
 Custom provider ids work the same way: for a ref using the active provider
-prefix, such as `ollama-spark/qwen3:32b`, OpenClaw strips that prefix before
+prefix, such as `ollama-spark/qwen3:32b`, Paddy strips that prefix before
 calling Ollama, sending `qwen3:32b`.
 
 For slow local models, prefer provider-scoped tuning before raising the whole
@@ -300,16 +300,16 @@ model when first-turn load time is the bottleneck.
 # Ollama daemon visible to this machine
 curl http://127.0.0.1:11434/api/tags
 
-# OpenClaw catalog and selected model
-openclaw models list --provider ollama
-openclaw models status
+# Paddy catalog and selected model
+paddy models list --provider ollama
+paddy models status
 
 # Direct model smoke
-openclaw infer model run \
+paddy infer model run \
   --model ollama/gemma4 \
   --prompt "Reply with exactly: ok"
 ```
 
 For remote hosts, replace `127.0.0.1` with the `baseUrl` host. If `curl`
-works but OpenClaw does not, check whether the Gateway runs on a different
+works but Paddy does not, check whether the Gateway runs on a different
 machine, container, or service account.

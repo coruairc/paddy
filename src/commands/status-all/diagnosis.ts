@@ -4,6 +4,7 @@
 import { redactSensitiveUrlLikeString } from "@openclaw/net-policy/redact-sensitive-url";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { sanitizeTerminalText } from "../../../packages/terminal-core/src/safe-text.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { ChannelStatusIssue } from "../../channels/plugins/types.core.js";
 import type { ProgressReporter } from "../../cli/progress.js";
 import { formatConfigIssueLine } from "../../config/issue-format.js";
@@ -43,7 +44,6 @@ import type { NodeOnlyGatewayInfo } from "../status.node-mode.js";
 import { formatTelemetryExporterSummary } from "../telemetry-exporter-summary.js";
 import { formatTimeAgo, redactStatusSecrets } from "./format.js";
 import { readFileTailLines, summarizeLogTail } from "./gateway.js";
-import { PRODUCT_NAME } from "../../brand.js";
 
 type ConfigIssueLike = { path: string; message: string };
 type ConfigSnapshotLike = {
@@ -329,7 +329,7 @@ export async function appendStatusAllDiagnosis(params: {
       emitUnavailableDiagnostics({
         label: "Telemetry exporters",
         detail: `Exporter diagnostics failed: ${params.exporterDiagnostics.error}`,
-        retry: "openclaw gateway stability --type telemetry.exporter",
+        retry: "paddy gateway stability --type telemetry.exporter",
       });
     }
   }
@@ -377,7 +377,7 @@ export async function appendStatusAllDiagnosis(params: {
       emitUnavailableDiagnostics({
         label: "Inbound delivery telemetry",
         detail: "Delivery diagnostics returned an invalid response.",
-        retry: "openclaw gateway stability",
+        retry: "paddy gateway stability",
       });
     }
   } else if (
@@ -388,7 +388,7 @@ export async function appendStatusAllDiagnosis(params: {
     emitUnavailableDiagnostics({
       label: "Inbound delivery telemetry",
       detail: `Delivery diagnostics failed: ${params.deliveryDiagnostics.error}`,
-      retry: "openclaw gateway stability",
+      retry: "paddy gateway stability",
     });
   }
 

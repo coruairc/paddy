@@ -1,6 +1,6 @@
 ---
 doc-schema-version: 1
-summary: "OpenClaw release channels, version numbers, validation, and published assets"
+summary: "Paddy release channels, version numbers, validation, and published assets"
 title: "Release policy"
 read_when:
   - Choosing a release channel
@@ -8,7 +8,7 @@ read_when:
   - Checking which packages and apps have been published
 ---
 
-OpenClaw offers stable releases for everyday use, beta releases for testing,
+Paddy offers stable releases for everyday use, beta releases for testing,
 and extended-stable releases for users who prefer an older Gateway maintenance
 line. This page explains those choices and what a release has been checked for.
 For switching channels, see [Release channels](/install/development-channels).
@@ -105,7 +105,7 @@ To consume a release lock:
    that publish in the same release. The report counts these entries in
    `packagesWithOmittedWorkspaceDependencies`.
 3. Verify that `dependency-evidence/dependency-evidence-manifest.json`'s
-   `releaseSha`, the report's `sourceSha`, and the OpenClaw commit you pin all
+   `releaseSha`, the report's `sourceSha`, and the Paddy commit you pin all
    match. The report also records the source `pnpm-lock.yaml` SHA-256.
 4. Serialize `entry.lock` as `package-lock.json` using two-space JSON indentation
    and a trailing newline, then verify its SHA-256 against `entry.lockSha256`.

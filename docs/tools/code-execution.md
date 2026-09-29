@@ -46,19 +46,19 @@ For local execution, use [`exec`](/tools/exec) instead.
     localhost callback):
 
     ```bash
-    openclaw models auth login --provider xai --method oauth
+    paddy models auth login --provider xai --method oauth
     ```
 
     During a fresh install, the same choice is available in onboarding:
 
     ```bash
-    openclaw onboard --install-daemon --auth-choice xai-oauth
+    paddy onboard --install-daemon --auth-choice xai-oauth
     ```
 
     Or an API key:
 
     ```bash
-    openclaw models auth login --provider xai --method api-key
+    paddy models auth login --provider xai --method api-key
     export XAI_API_KEY=xai-...
     ```
 
@@ -140,7 +140,7 @@ Use code_execution to calculate the 7-day moving average for these numbers: ...
 ```
 
 ```text
-Use x_search to find posts mentioning OpenClaw this week, then use code_execution to count them by day.
+Use x_search to find posts mentioning Paddy this week, then use code_execution to count them by day.
 ```
 
 ```text
@@ -155,7 +155,7 @@ exception), so the agent can self-correct:
 ```json
 {
   "error": "missing_xai_api_key",
-  "message": "code_execution needs xAI credentials. Run `openclaw onboard --auth-choice xai-oauth` to sign in with Grok, run `openclaw onboard --auth-choice xai-api-key`, set `XAI_API_KEY` in the Gateway environment, or configure `plugins.entries.xai.config.webSearch.apiKey`.",
+  "message": "code_execution needs xAI credentials. Run `paddy onboard --auth-choice xai-oauth` to sign in with Grok, run `paddy onboard --auth-choice xai-api-key`, set `XAI_API_KEY` in the Gateway environment, or configure `plugins.entries.xai.config.webSearch.apiKey`.",
   "docs": "https://docs.openclaw.ai/tools/code-execution"
 }
 ```
@@ -177,6 +177,6 @@ exception), so the agent can self-correct:
   </Card>
   <Card title="Code Mode" href="/tools/code-mode" icon="code">
     A separate surface: JavaScript orchestration of enabled tools in
-    OpenClaw's own worker, not this remote Python tool.
+    Paddy's own worker, not this remote Python tool.
   </Card>
 </CardGroup>

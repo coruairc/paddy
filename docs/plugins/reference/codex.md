@@ -20,7 +20,7 @@ Codex app-server harness and native session catalog.
 ## Surface
 
 - Providers: `codex`
-- CLI commands: `openclaw codex`
+- CLI commands: `paddy codex`
 - Slash commands: `/codex`
 - Contracts: `mediaUnderstandingProviders`, `migrationProviders`, `tools`, `webSearchProviders`
 

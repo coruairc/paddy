@@ -41,7 +41,7 @@ export function formatGatewayRepeatedSignalHint(
   count: number,
   observation: "received" | "stopped after" = "received",
 ): string {
-  return `${observation} ${signal} ${count} times in 5 min: another supervisor may be managing this Gateway — see \`openclaw gateway status --deep\``;
+  return `${observation} ${signal} ${count} times in 5 min: another supervisor may be managing this Gateway — see \`paddy gateway status --deep\``;
 }
 /**
  * The breaker only self-clears after the full window drains. Operator surfaces name the manual

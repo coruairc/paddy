@@ -15,7 +15,7 @@ Hardened JavaScript execution for Code Mode using QuickJS in WebAssembly.
 ## Distribution
 
 - Package: `@openclaw/code-mode-quickjs`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 

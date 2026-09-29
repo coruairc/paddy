@@ -126,14 +126,14 @@ See [Database schemas](/reference/database-schemas) for downgrade precautions.
 ## Graceful restarts drain first
 
 Startup migration warnings do not prevent the Gateway from starting. It logs the
-warnings once and starts degraded. `openclaw status` and `openclaw doctor` show the
+warnings once and starts degraded. `paddy status` and `paddy doctor` show the
 running Gateway's warning report. Read-only operators receive the repair hint.
 Warning details are restricted to administrators and startup logs.
-Run `openclaw doctor --fix` against the same
+Run `paddy doctor --fix` against the same
 state/config, then restart the Gateway. Unfinished migrations remain pending for
 a later startup. Errors that leave required state unsafe to read still stop startup.
 
-A requested restart (`openclaw gateway restart`, a config change that requires
+A requested restart (`paddy gateway restart`, a config change that requires
 a restart, or a gateway update) does not kill in-flight work immediately. The
 gateway stops accepting new work, then waits for active agent turns and
 background tasks to finish, up to a drain budget (5 minutes by default). Most
@@ -187,7 +187,7 @@ The spawn broker stays available while its Gateway connection is alive, even if
 it receives the stop signal too, so cleanup can still launch commands and observe
 child exits. This does not protect other child runtimes; `KillMode=mixed` remains
 required.
-Updates and `openclaw doctor --fix` refresh outdated OpenClaw-managed Linux unit
+Updates and `paddy doctor --fix` refresh outdated Paddy-managed Linux unit
 policy. Maintenance reads the resident shutdown budget from Gateway status.
 Older Gateways without that fact follow the short-budget path: fence admission
 and observe lifecycle drain until idle or the update step deadline. At the
@@ -260,7 +260,7 @@ status at zero; an unconfirmed process cleanup boundary still reports failure.
 
 The process's cgroup selects the system or user manager, independently of the
 account running the Gateway or its restart owner. This also covers hand-written
-system units with `User=openclaw` and externally managed deployments. Reading
+system units with `User=paddy` and externally managed deployments. Reading
 the system unit's timeout does not require sudo or notification support.
 
 If the unit cannot be inspected at startup, the Gateway warns with the manager,
@@ -336,7 +336,7 @@ domains, and accepts only a job whose PID is the Gateway or its launcher. Restar
 ownership can still be external: the supervisor that enforces the stop, not the
 owner of the next start, determines the deadline. A direct SIGTERM does not start
 launchd's stop clock, so it keeps the existing Gateway stop policy unless an
-OpenClaw launcher independently enforces its own child reap timer.
+Paddy launcher independently enforces its own child reap timer.
 
 The **stop budget** is time available until the supervisor can kill the process.
 The Gateway sets aside an exit margin (up to 5 seconds) and plans its shutdown
@@ -399,8 +399,8 @@ the gateway.
 
 ## Recovery after a failed update
 
-After a failed interactive update or repair, OpenClaw finishes cleanup and any
-service recovery, then opens [`openclaw triage`](/cli/triage). Triage immediately
+After a failed interactive update or repair, Paddy finishes cleanup and any
+service recovery, then opens [`paddy triage`](/cli/triage). Triage immediately
 starts the first directly launchable coding agent in this order: Claude Code,
 Codex, OpenCode, then Pi. It passes the captured failure before fresh Doctor
 checks or archive collection and asks the agent to diagnose, repair, and verify
@@ -408,16 +408,16 @@ the installation. The agent receives the captured installation paths and keeps
 its normal authentication, sandbox, and approval settings.
 
 For a failed Control UI or unattended update, use the installation-specific
-command printed on the Gateway host, or run triage there with the same OpenClaw
+command printed on the Gateway host, or run triage there with the same Paddy
 profile and state/config paths. Use `--agent` to select a particular coding agent:
 
 ```bash
-openclaw triage
-openclaw triage --agent codex
+paddy triage
+paddy triage --agent codex
 ```
 
 JSON, `--yes`, and non-interactive update invocations collect diagnostics without
-starting an external coding agent. `openclaw triage --non-interactive` also prepares
+starting an external coding agent. `paddy triage --non-interactive` also prepares
 diagnostics without launching an agent. `--update-result <path>` includes an
 updater's saved failure artifact. Printed handoff commands preserve installation
 selectors and use PowerShell on Windows or POSIX shells on macOS, Linux, and WSL.
@@ -497,14 +497,14 @@ Native task-control failures appear in the update report. Failed suspension
 never triggers automatic re-enablement of the rejected installation.
 
 On macOS, a terminated update helper can leave the selected Gateway LaunchAgent
-installed but unloaded and disabled across logins. `openclaw doctor` and
-`openclaw doctor --fix` diagnose this state. After successful standalone repair,
+installed but unloaded and disabled across logins. `paddy doctor` and
+`paddy doctor --fix` diagnose this state. After successful standalone repair,
 `--fix` starts and verifies an already-stopped managed Gateway whose service
 targets the current installation. Update-time Doctor leaves activation with the
 updater. If the update was interrupted or installation safety is uncertain,
-rerun `openclaw update` or use Doctor and triage before starting it manually.
-Once verified, run `openclaw gateway start` (or
-`openclaw --profile <profile> gateway start`) to re-enable and start that service.
+rerun `paddy update` or use Doctor and triage before starting it manually.
+Once verified, run `paddy gateway start` (or
+`paddy --profile <profile> gateway start`) to re-enable and start that service.
 Keep the same state/config and custom-label overrides. Doctor prints the selected
 label and recovery command. Interactive Doctor can offer bootstrap repair.
 
@@ -543,7 +543,7 @@ does not recreate them after the recovering Gateway consumes them. Check the
 final CLI result and the handoff log for the recovery outcome.
 
 Repair the failed Doctor or installation check before restarting. Triage can
-inspect `openclaw gateway status --deep` and the update diagnostics. Avoid blindly installing
+inspect `paddy gateway status --deep` and the update diagnostics. Avoid blindly installing
 older code after a newer release has migrated configuration or databases. See
 [Updating and recovery](/install/updating). Restart sentinels report the outcome.
 Copying one does not grant permission to restart a service.
@@ -583,7 +583,7 @@ Three complementary mechanisms mark sessions whose turn did not finish:
   files are cleaned up at the same time.
 
 A failed store scan leaves that store eligible for the scheduled retry while
-other stores continue recovery. `openclaw status` and `openclaw doctor` show
+other stores continue recovery. `paddy status` and `paddy doctor` show
 outstanding startup recovery failures from the running Gateway; the warning clears
 when the store scan succeeds.
 
@@ -623,7 +623,7 @@ establish a human sender for an internal claim. Legacy channel and Control UI
 turns retain their existing recovery checks. Child-completion follow-ups still use
 their existing recovery and delivery ownership checks.
 
-When a recovered turn starts with an eligible channel delivery route, OpenClaw
+When a recovered turn starts with an eligible channel delivery route, Paddy
 sends a resumption notice to that conversation, retaining its account and topic.
 The final reply uses the same delivery route. Transcript-only turns stay private,
 and a turn that has already finished does not receive a late resumption notice.
@@ -648,7 +648,7 @@ after asynchronous preparation. Recovery does not fall back to the unguarded
 Startup reconciliation retries transient failures up to three times with
 exponential backoff. Separately, each interrupted main-session cycle has a
 durable budget of three charged automatic dispatch attempts, retained across
-gateway restarts. OpenClaw charges an attempt before dispatch, refunds it when
+gateway restarts. Paddy charges an attempt before dispatch, refunds it when
 the gateway explicitly rejects the request before acceptance, and retains the
 charge when a post-dispatch result is uncertain to avoid replaying work.
 Foreground work that already owns the session keeps automatic recovery out
@@ -656,10 +656,10 @@ until that work settles.
 
 After the durable budget is exhausted, the session is tombstoned instead of
 looping forever. Inspect the failed session and use `/new` or `/reset` to start a
-replacement. `openclaw doctor --fix` can repair a stale aborted flag that
+replacement. `paddy doctor --fix` can repair a stale aborted flag that
 conflicts with a tombstone, but it does not re-enable that recovery cycle.
 
-If you message the failed session again in a channel, OpenClaw sends a short
+If you message the failed session again in a channel, Paddy sends a short
 recovery reminder through that channel and logs each rejected message at warn
 level with the session key, recovery reason, and recovery command. Repeated
 reminders are suppressed in a bounded memory cache. Resetting or deleting the
@@ -689,7 +689,7 @@ run keeps the original source-delivery mode and source correlation, including
 requester identity and any same-channel/thread restriction, so the same receipt
 remains authoritative even if another restart happens during recovery. A
 message-tool-only turn without reconstructable channel authority is tombstoned
-because OpenClaw cannot safely mint message-action authority without the
+because Paddy cannot safely mint message-action authority without the
 original channel-ingress claim. The terminal notice directs the user to start a
 replacement with `/new` or `/reset`.
 
@@ -713,7 +713,7 @@ success. Existing tool restrictions and current permissions still apply.
 Pending reply delivery, ambiguous reply-hook outcomes, and explicitly replay-safe
 Code Mode reconstruction retain their narrower recovery restrictions.
 
-OpenClaw can also reconstruct interrupted read-only [Code Mode](/tools/code-mode)
+Paddy can also reconstruct interrupted read-only [Code Mode](/tools/code-mode)
 work. Code Mode marks these runs as restart-safe and rejects side-effecting
 catalog or namespace tool calls before they execute. If a restart lands on
 the `wait` control, the new gateway reconstructs the turn from its transcript
@@ -805,7 +805,7 @@ reports the recorded terminal outcome without changing it. A still-running
 Gateway-owned row finishes as failed with `restart-unhealthy`; CLI-owned runs
 retain their updater's authority and outcome.
 The post-restart notice is rendered from that row using the same report as
-`openclaw update status`. Consuming the sentinel does not remove run history.
+`paddy update status`. Consuming the sentinel does not remove run history.
 Sentinels left by older releases retain their existing delivery route.
 
 Any update run with an existing internal origin session, including Control UI
@@ -843,15 +843,15 @@ For pre-June installations, use the [bridge upgrade procedure](/install/updating
   boots. Recovery preserves channels that an operator manually stopped and any
   separate development-mode suppression. Gateway logs look like:
   `channel autostart suppressed by crash-loop breaker; refusing automatic
-start for <channel>… Start a channel manually with: openclaw gateway call
+start for <channel>… Start a channel manually with: paddy gateway call
 channels.start --params '{"channel":"<id>"}'`
 
   Operator recovery SOP:
 
-  1. Confirm the gateway process is up (`openclaw gateway status` / LaunchAgent
+  1. Confirm the gateway process is up (`paddy gateway status` / LaunchAgent
      or systemd unit still running). A “channel disconnected” symptom often
      means suppressed autostart, not a dead gateway.
-  2. Inspect channel state: `openclaw channels status` (add `--probe` when
+  2. Inspect channel state: `paddy channels status` (add `--probe` when
      useful). Look for stopped / not connected accounts while the gateway
      itself is healthy.
   3. Fix the root cause of the unclean boots (bad config, plugin crash on
@@ -859,7 +859,7 @@ channels.start --params '{"channel":"<id>"}'`
   4. Manually start a channel while suppression is active:
 
      ```bash
-     openclaw gateway call channels.start --params '{"channel":"<id>"}'
+     paddy gateway call channels.start --params '{"channel":"<id>"}'
      # optional: {"channel":"<id>","accountId":"<account>"}
      ```
 
@@ -870,7 +870,7 @@ channels.start --params '{"channel":"<id>"}'`
      drains. The same process logs that the restart-loop breaker recovered and
      starts the deferred configured channels.
      If that message does not appear after the window plus one health-monitor
-     interval, inspect the gateway logs and run `openclaw doctor` before
+     interval, inspect the gateway logs and run `paddy doctor` before
      restarting.
 
   See also [Gateway](/gateway) (safe mode paragraph) for the same control-plane

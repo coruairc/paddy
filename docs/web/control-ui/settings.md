@@ -51,7 +51,7 @@ The environment adds a 2 px top stripe, an agent-avatar ring, label pills in the
 The sidebar shows a Discord community invitation by default. Its first appearance waits until sidebar interaction finishes, so it does not move session controls while you use them. Its close button dismisses it for the current browser origin. To hide the invitation for everyone using a Control UI deployment, run this on the Gateway serving that UI:
 
 ```bash
-openclaw config set gateway.controlUi.communityInvite false
+paddy config set gateway.controlUi.communityInvite false
 ```
 
 After the Gateway applies the change, reload the browser page or reconnect to pick it up. The setting belongs to the Gateway serving the UI, including when that UI connects to a different remote Gateway. Setting it to `false` hides the card even in new browser profiles. Re-enabling it with `true` preserves existing browser-local dismissals.
@@ -64,11 +64,11 @@ Profile photos load through authenticated Gateway routes in the online roster, p
 
 On a single-user Gateway, unidentified operators share one durable owner profile across devices, including device-token reconnects. Its unset display name is seeded from the Gateway host account's full name, never its login name; saved names are never overwritten. Without a full name, the sidebar shows **Owner**. With `gateway.roles` configured, only token/password connections receive this owner profile; other unidentified connections see an explanation in Identity instead of editing controls. The owner profile has no email and grants no additional permissions.
 
-On macOS, the owner's avatar defaults to the Gateway host account's user picture when no OpenClaw avatar is saved. This uses the Mac running the Gateway, including when you connect from another device. A saved avatar always takes priority. OpenClaw reads the picture locally and serves a resized copy through the authenticated avatar route; other people's profiles never inherit it. Restart the Gateway to pick up a changed macOS picture. If the picture cannot be read, initials remain visible.
+On macOS, the owner's avatar defaults to the Gateway host account's user picture when no Paddy avatar is saved. This uses the Mac running the Gateway, including when you connect from another device. A saved avatar always takes priority. Paddy reads the picture locally and serves a resized copy through the authenticated avatar route; other people's profiles never inherit it. Restart the Gateway to pick up a changed macOS picture. If the picture cannot be read, initials remain visible.
 
-**Settings → Profile → Connected accounts** shows the selected **Gateway**, saved **Person**, and **Scope: Personal**. Choose **Add account**, then a provider and sign-in method from the Gateway's catalog. Browser/device sign-in, protected credential inputs, progress, and cancellation use one guided flow. These are the same personal accounts managed by `openclaw models accounts login`, not the machine-local system/agent credentials managed by `models auth`. Account controls follow the Gateway-assigned profile, including the shared owner profile on a single-user Gateway. If the connection has no profile, the section explains the missing identity and offers **Connection settings** without showing provider credential inputs. Shared Gateway tokens and device pairing alone do not distinguish people on a multi-user Gateway. See [Per-person model accounts](/concepts/multi-user#per-person-model-accounts).
+**Settings → Profile → Connected accounts** shows the selected **Gateway**, saved **Person**, and **Scope: Personal**. Choose **Add account**, then a provider and sign-in method from the Gateway's catalog. Browser/device sign-in, protected credential inputs, progress, and cancellation use one guided flow. These are the same personal accounts managed by `paddy models accounts login`, not the machine-local system/agent credentials managed by `models auth`. Account controls follow the Gateway-assigned profile, including the shared owner profile on a single-user Gateway. If the connection has no profile, the section explains the missing identity and offers **Connection settings** without showing provider credential inputs. Shared Gateway tokens and device pairing alone do not distinguish people on a multi-user Gateway. See [Per-person model accounts](/concepts/multi-user#per-person-model-accounts).
 
-GitHub-backed sign-in through Cloudflare Access or Tailscale Serve fills the read-only **GitHub account** row with the verified public avatar and account link without replacing a custom OpenClaw avatar. **Git co-author credit** is a separate toggle, on by default for verified accounts, that controls future commits from shared sessions. See [User model](/concepts/user-model#gateway-profile-and-github-credit) for verification, retry, account-change, noreply privacy, and eligibility rules.
+GitHub-backed sign-in through Cloudflare Access or Tailscale Serve fills the read-only **GitHub account** row with the verified public avatar and account link without replacing a custom Paddy avatar. **Git co-author credit** is a separate toggle, on by default for verified accounts, that controls future commits from shared sessions. See [User model](/concepts/user-model#gateway-profile-and-github-credit) for verification, retry, account-change, noreply privacy, and eligibility rules.
 
 **Settings → Profile → GitHub connections** separately shows **My GitHub** and **System GitHub**. Identified people, including read-scoped operators, can connect and disconnect only their own account; administrators can also change the shared System account. Connecting defaults to **For me** for identified users and never changes their sign-in identity, co-author preference, or shared execution defaults. Personal credentials support explicit Gateway-brokered **Publish PR** actions, not ordinary agent shell commands. See [GitHub connections](/concepts/user-model#github-connections).
 
@@ -178,7 +178,7 @@ When your connection is bound to an authenticated Gateway profile, theme, theme 
 ## Opening links
 
 Under **Settings → Appearance → Chat**, enable **Open links outside OpenClaw**
-to open web links outside OpenClaw instead of in built-in readers or browser panels.
+to open web links outside Paddy instead of in built-in readers or browser panels.
 In a web browser, links use ordinary browser navigation; in a native app, they open
 in the system's default browser. The switch is off by default, preserving current
 behavior. Turning it off restores built-in readers and any existing **Open links
@@ -189,7 +189,7 @@ when it is disabled. Explicit context-menu choices still work.
 
 This preference is stored only in the current browser or app webview, separately
 for each Gateway. It does not change shared Gateway configuration or sync across
-devices. Clearing site data resets it. Internal OpenClaw navigation and downloads
+devices. Clearing site data resets it. Internal Paddy navigation and downloads
 are unchanged.
 
 ## Session sources
@@ -278,7 +278,7 @@ Workshop mode. Chat shows progress, results, and normal stop and follow-up contr
 
 Included plugins are already present on the Gateway and show **Enable** or
 **Disable** instead of **Install**. For example, Workboard is included with
-OpenClaw but disabled by default, so its action is **Enable**. Bundled plugins
+Paddy but disabled by default, so its action is **Enable**. Bundled plugins
 cannot be removed, only disabled.
 
 Reading the catalog and searching ClawHub require `operator.read`. Installing,
@@ -317,10 +317,10 @@ in the default hybrid reload mode. See
 [Apply changes and inspect](/plugins/manage-plugins#apply-changes-and-inspect)
 for application failures, cleanup warnings, and source-edit reloads.
 OAuth-backed MCP connectors need a one-time
-`openclaw mcp login <name>` from the CLI after they are added.
+`paddy mcp login <name>` from the CLI after they are added.
 
 The page intentionally focuses on inventory, discovery, install, enablement,
-and removal. Use [`openclaw plugins`](/cli/plugins) for arbitrary npm, git, or
+and removal. Use [`paddy plugins`](/cli/plugins) for arbitrary npm, git, or
 local-path sources, updates, and advanced plugin configuration.
 
 ## Updates
@@ -481,7 +481,7 @@ and is omitted in compact panes. Conversation has no shortcut.
 Command+Option chords accept Option symbols through the physical key; Ctrl+Alt chords require the matching ASCII letter to preserve non-ASCII AltGr text. Dead keys and composition are ignored.
 
 The new panel chords include Option/Alt to avoid browser actions such as developer
-tools, Read Aloud, and find previous, and OpenClaw's existing debug-overlay shortcut.
+tools, Read Aloud, and find previous, and Paddy's existing debug-overlay shortcut.
 The existing Terminal, Files, and Side chat bindings are unchanged.
 
 <a id="this-mac-macos-app" />
@@ -539,7 +539,7 @@ dashboard pairing and backend plugin operations remain available.
 ## Import assistant memory
 
 Open **Settings** → **Import Memory** to bring local Codex, Claude Code, or Hermes memory
-into an OpenClaw agent. The Gateway discovers supported local memory on its own
+into a Paddy agent. The Gateway discovers supported local memory on its own
 host, so a remote Control UI imports from the Gateway computer rather than the
 browser computer.
 
@@ -574,14 +574,14 @@ import. Retrying the same pending request reuses its recorded outcome while
 the Gateway retains it. A plugin cleanup warning does not undo completed copies.
 
 Planning and applying require `operator.admin`. Every apply creates a verified
-OpenClaw backup when state exists, writes a redacted migration report, and keeps
+Paddy backup when state exists, writes a redacted migration report, and keeps
 item-level backups before replacing existing destination files. See
 [Memory overview](/concepts/memory#import-from-coding-assistants) for paths and
 recall behavior.
 
 ## MCP page
 
-The dedicated MCP page is an operator view for OpenClaw-managed MCP servers under `mcp.servers`. It does not start MCP transports by itself; use it to inspect and edit saved config, then use `openclaw mcp doctor --probe` when you need live server proof.
+The dedicated MCP page is an operator view for Paddy-managed MCP servers under `mcp.servers`. It does not start MCP transports by itself; use it to inspect and edit saved config, then use `paddy mcp doctor --probe` when you need live server proof.
 
 Typical workflow:
 
@@ -591,7 +591,7 @@ Typical workflow:
 4. Add, enable, disable, or remove servers directly on the MCP page. Choose Streamable HTTP, SSE, or stdio explicitly; stdio command lines accept quoted arguments such as paths with spaces. Use the **Plugins** page for one-click connectors and discovery.
 5. Edit the scoped `mcp` config section for advanced server fields such as environment variables, working directories, headers, TLS/mTLS paths, OAuth metadata, tool filters, and Codex projection metadata.
 6. Use **Save** for a config write, or **Save & Publish** when the running Gateway should apply the changed config.
-7. Run `openclaw mcp status --verbose`, `openclaw mcp doctor --probe`, or `openclaw mcp reload` from a terminal for static diagnostics, live proof, or cached-runtime disposal.
+7. Run `paddy mcp status --verbose`, `paddy mcp doctor --probe`, or `paddy mcp reload` from a terminal for static diagnostics, live proof, or cached-runtime disposal.
 
 The page redacts credential-bearing URL-like values before rendering and quotes server names in command snippets so copied commands still work with spaces or shell metacharacters. Full CLI and config reference: [MCP](/cli/mcp).
 
@@ -746,7 +746,7 @@ capture, leaving the existing notes unchanged.
 Speech-to-text may use your configured provider and incur provider usage. The UI
 does not play raw audio, generate summaries on demand, or delete transcripts.
 
-Meetings reads the same shared SQLite records as `openclaw transcripts`.
+Meetings reads the same shared SQLite records as `paddy transcripts`.
 Discord voice and the Google Meet, Microsoft Teams, and Zoom meeting plugins
 populate this store. See the [Transcripts CLI](/cli/transcripts) for capture setup,
 agent reads, and exports.

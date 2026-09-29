@@ -32,7 +32,7 @@ export async function withLegacyMigrationStateLock(
   } catch (error) {
     const detail = options.formatAcquireError?.(error) ?? formatGatewayLockFailure(error);
     const guidance =
-      options.retryGuidance ?? "Resolve the lock failure, then run `openclaw doctor --fix` again.";
+      options.retryGuidance ?? "Resolve the lock failure, then run `paddy doctor --fix` again.";
     return {
       changes: [],
       warnings: [`Failed migrating ${options.label}: ${detail}. ${guidance}`],

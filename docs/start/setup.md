@@ -1,5 +1,5 @@
 ---
-summary: "Advanced setup and development workflows for OpenClaw"
+summary: "Advanced setup and development workflows for Paddy"
 read_when:
   - Setting up a new machine
   - You want "latest + greatest" without breaking your personal setup
@@ -22,7 +22,7 @@ Pick a setup workflow based on how often you want updates and whether you want t
 ## Prereqs (from source)
 
 - Node 24.16+ LTS or Node 26.1+ (recommended)
-- `pnpm` required for source checkouts. OpenClaw loads bundled plugins from the
+- `pnpm` required for source checkouts. Paddy loads bundled plugins from the
   `extensions/*` pnpm workspace packages in dev mode, so root `npm install` does
   not prepare the full source tree.
 - Docker (optional; only for containerized setup/e2e - see [Docker](/install/docker))
@@ -51,16 +51,16 @@ If you want "100% tailored to me" _and_ easy updates, keep your customization in
 Bootstrap the config/workspace folders once, without running the full onboarding wizard:
 
 ```bash
-openclaw setup --baseline
+paddy setup --baseline
 ```
 
 No global install yet? Run it from this repo instead:
 
 ```bash
-pnpm openclaw setup --baseline
+pnpm paddy setup --baseline
 ```
 
-(Bare `openclaw setup`, without `--baseline`, opens an interactive OpenClaw chat on a configured system and falls through to guided onboarding on a fresh one. See [Setup CLI](/cli/setup) for the full routing order.)
+(Bare `paddy setup`, without `--baseline`, opens an interactive Paddy chat on a configured system and falls through to guided onboarding on a fresh one. See [Setup CLI](/cli/setup) for the full routing order.)
 
 ## Run the Gateway from this repo
 
@@ -78,18 +78,18 @@ node openclaw.mjs gateway --port 18789 --verbose
 4. Link surfaces (example: WhatsApp):
 
 ```bash
-openclaw channels login
+paddy channels login
 ```
 
 5. Sanity check:
 
 ```bash
-openclaw health
+paddy health
 ```
 
 If onboarding is not available in your build:
 
-- Run `openclaw setup`, then `openclaw channels login`, then start the Gateway manually (`openclaw gateway`).
+- Run `paddy setup`, then `paddy channels login`, then start the Gateway manually (`paddy gateway`).
 
 ## Bleeding edge workflow (Gateway in a terminal)
 
@@ -107,8 +107,8 @@ If you also want the macOS app on the bleeding edge:
 
 ```bash
 pnpm install
-# First run only (or after resetting local OpenClaw config/workspace)
-pnpm openclaw setup
+# First run only (or after resetting local Paddy config/workspace)
+pnpm paddy setup
 pnpm gateway:watch
 ```
 
@@ -123,15 +123,15 @@ What `gateway:watch` does:
 - It stops the active profile's installed Gateway service before it takes over
   that service's configured or default port. This prevents the service
   supervisor from replacing the source process. The service stays installed.
-  Run `pnpm openclaw gateway start` when you finish watching.
+  Run `pnpm paddy gateway start` when you finish watching.
 - The tmux pane remains available after a startup failure, so another terminal
   or agent can attach to it or capture its logs.
 - It reloads on relevant source, config, and bundled-plugin metadata changes.
 - If the watched Gateway exits during startup, `gateway:watch` runs
-  `openclaw doctor --fix --non-interactive` once and retries. Set
+  `paddy doctor --fix --non-interactive` once and retries. Set
   `OPENCLAW_GATEWAY_WATCH_AUTO_DOCTOR=0` to disable that dev-only repair pass.
 
-TypeScript rebuilds triggered by `pnpm openclaw ...` or `pnpm gateway:watch` preserve existing `dist/control-ui` assets. When the Gateway starts, it rebuilds missing, incomplete, or stale bundled UI assets before serving them. Headless commands do not rebuild the UI. Run `pnpm ui:build` after `ui/` changes, or use `pnpm ui:dev` while developing the Control UI.
+TypeScript rebuilds triggered by `pnpm paddy ...` or `pnpm gateway:watch` preserve existing `dist/control-ui` assets. When the Gateway starts, it rebuilds missing, incomplete, or stale bundled UI assets before serving them. Headless commands do not rebuild the UI. Run `pnpm ui:build` after `ui/` changes, or use `pnpm ui:dev` while developing the Control UI.
 
 ### 2) Point the macOS app at your running Gateway
 
@@ -146,7 +146,7 @@ In **OpenClaw.app**:
 - Or via CLI:
 
 ```bash
-openclaw health
+paddy health
 ```
 
 ### Common footguns
@@ -157,7 +157,7 @@ openclaw health
   For developer workers, use the intended executable's absolute path for both
   `--version` and `exec`, and confirm the worker's startup version. A package
   manifest or a version check in another shell does not identify a running worker.
-  OpenClaw's [managed Codex app-server](/plugins/codex-harness-reference#app-server-transport)
+  Paddy's [managed Codex app-server](/plugins/codex-harness-reference#app-server-transport)
   has a separate pinned-version contract; do not change that pin or your model/auth
   settings to fix developer CLI selection. If the installed workspace package and
   native executable disagree with the lockfile, repair the install with `pnpm install`
@@ -208,5 +208,5 @@ user service (no lingering needed). See [Gateway runbook](/gateway) for the syst
 - [Gateway runbook](/gateway) (flags, supervision, ports)
 - [Gateway configuration](/gateway/configuration) (config schema + examples)
 - [Discord](/channels/discord) and [Telegram](/channels/telegram) (reply tags + replyToMode settings)
-- [OpenClaw assistant setup](/start/openclaw)
+- [Paddy assistant setup](/start/openclaw)
 - [macOS app](/platforms/macos) (gateway lifecycle)

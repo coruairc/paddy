@@ -80,7 +80,7 @@ function formatMissingOfficialExternalChannelsMessage(
   }
   const labels = hints.map((hint) => hint.label).join(", ");
   const installCommands = hints.map((hint) => hint.installCommand).join("; ");
-  return `Configured official external channels ${labels} are missing their plugins. Run: openclaw doctor --fix, or install individually: ${installCommands}.`;
+  return `Configured official external channels ${labels} are missing their plugins. Run: paddy doctor --fix, or install individually: ${installCommands}.`;
 }
 
 const CHANNEL_SELECTION_ERROR_DEDUPE_LIMIT = 1024;
@@ -263,8 +263,8 @@ export async function resolveMessageChannelSelection(params: {
     }
     throw new Error(
       "Channel is required (no configured channels detected). " +
-        "Run openclaw channels add to configure one, or pass --channel <channel> after enabling a channel. " +
-        "Use openclaw channels list --all to see available channel ids.",
+        "Run paddy channels add to configure one, or pass --channel <channel> after enabling a channel. " +
+        "Use paddy channels list --all to see available channel ids.",
     );
   }
   throw new Error(

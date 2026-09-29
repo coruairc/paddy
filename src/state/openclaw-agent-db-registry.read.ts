@@ -58,7 +58,7 @@ export function readRegisteredAgentDatabaseRows(
   );
   if (!artifactPreserving && schemaMigrations.length > 0) {
     throw new Error(
-      `${PRODUCT_NAME} state database ${pathname} has a legacy agent database registry schema; run openclaw doctor --fix to migrate it.`,
+      `${PRODUCT_NAME} state database ${pathname} has a legacy agent database registry schema; run paddy doctor --fix to migrate it.`,
     );
   }
   return readOpenClawAgentDatabaseRegistryRows(database, pathname).map((row) => ({

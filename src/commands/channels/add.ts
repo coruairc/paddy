@@ -140,8 +140,8 @@ async function configureChannelAccount(
     if (!isTerminalInteractive()) {
       runtime.error(
         channelOmitsEnvBackedSetupOption(opts.channel)
-          ? `Interactive channel setup requires a TTY. Run ${formatCliCommand(`openclaw channels add --channel ${opts.channel?.trim() || "<id>"} --help`)} to list the setup flags this channel accepts, then pass them for non-interactive setup.`
-          : "Interactive channel setup requires a TTY. Use `openclaw channels add --channel <id> --use-env` or pass the channel's credential flags for non-interactive setup.",
+          ? `Interactive channel setup requires a TTY. Run ${formatCliCommand(`paddy channels add --channel ${opts.channel?.trim() || "<id>"} --help`)} to list the setup flags this channel accepts, then pass them for non-interactive setup.`
+          : "Interactive channel setup requires a TTY. Use `paddy channels add --channel <id> --use-env` or pass the channel's credential flags for non-interactive setup.",
       );
       runtime.exit(1);
       return;
@@ -246,7 +246,7 @@ async function configureChannelAccount(
 
   if (!channel) {
     const hint = catalogEntry
-      ? `Plugin ${catalogEntry.meta.label} could not be loaded after install. Run openclaw doctor --fix, then retry openclaw channels add.`
+      ? `Plugin ${catalogEntry.meta.label} could not be loaded after install. Run paddy doctor --fix, then retry paddy channels add.`
       : formatUnknownChannelMessage({ channel: rawChannel });
     runtime.error(hint);
     runtime.exit(1);
@@ -263,7 +263,7 @@ async function configureChannelAccount(
           `${formatUnsupportedChannelActionMessage({
             channel: selectedChannel,
             action: "non-interactive add",
-          })} Run ${formatCliCommand("openclaw channels add")} with no flags for guided setup.`,
+          })} Run ${formatCliCommand("paddy channels add")} with no flags for guided setup.`,
         );
         runtime.exit(1);
         return;
@@ -285,7 +285,7 @@ async function configureChannelAccount(
             ? `${formatUnsupportedChannelActionMessage({
                 channel: selectedChannel,
                 action: "non-interactive add",
-              })} Run ${formatCliCommand("openclaw channels add")} with no flags for guided setup.`
+              })} Run ${formatCliCommand("paddy channels add")} with no flags for guided setup.`
             : prepared.error.message,
         );
         runtime.exit(1);

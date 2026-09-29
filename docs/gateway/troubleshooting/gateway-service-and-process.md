@@ -13,11 +13,11 @@ read_when:
 Use when the service is installed but the process does not stay up.
 
 ```bash
-openclaw gateway status
-openclaw status
-openclaw logs --follow
-openclaw doctor
-openclaw gateway status --deep   # also scan system-level services
+paddy gateway status
+paddy status
+paddy logs --follow
+paddy doctor
+paddy gateway status --deep   # also scan system-level services
 ```
 
 Look for:
@@ -35,7 +35,7 @@ Look for:
     - `another gateway instance is already listening` / `EADDRINUSE` → port conflict.
     - `Other gateway-like services detected (best effort)` → stale or parallel launchd/systemd/schtasks units exist. Most setups should keep one gateway per machine; if you do need more than one, isolate ports + config/state/workspace. See [/gateway#multiple-gateways-same-host](/gateway#multiple-gateways-same-host).
     - `System-level OpenClaw gateway service detected` from doctor → a systemd system unit exists while the user-level service is missing. Remove or disable the duplicate before allowing doctor to install a user service, or set `OPENCLAW_SERVICE_REPAIR_POLICY=external` if the system unit is the intended supervisor.
-    - `Gateway service port does not match current gateway config` → the installed supervisor still pins the old `--port`. Run `openclaw doctor --fix` or `openclaw gateway install --force`, then restart the gateway service.
+    - `Gateway service port does not match current gateway config` → the installed supervisor still pins the old `--port`. Run `paddy doctor --fix` or `paddy gateway install --force`, then restart the gateway service.
 
   </Accordion>
 </AccordionGroup>
@@ -48,11 +48,11 @@ Related:
 
 ## macOS gateway silently stops responding, then resumes when you touch the dashboard
 
-Use when channels (Telegram, WhatsApp, etc.) on a macOS host go quiet for minutes to hours at a time, and the gateway appears to come back the moment you open the Control UI, SSH in, or otherwise interact with the host. There is usually no obvious symptom in `openclaw status` because by the time you look the gateway is alive again.
+Use when channels (Telegram, WhatsApp, etc.) on a macOS host go quiet for minutes to hours at a time, and the gateway appears to come back the moment you open the Control UI, SSH in, or otherwise interact with the host. There is usually no obvious symptom in `paddy status` because by the time you look the gateway is alive again.
 
 ```bash
 ls ~/.openclaw/logs/stability/ | tail -5
-openclaw gateway stability --bundle latest
+paddy gateway stability --bundle latest
 pmset -g log | grep -iE "sleep|wake|maintenance" | tail -50
 launchctl print gui/$UID/ai.openclaw.gateway | grep -E "state|last exit|runs"
 ```
@@ -65,7 +65,7 @@ Look for:
 
 Common signatures:
 
-- A stability bundle whose `error.code` is `ENETDOWN` or a sibling code, with the call stack pointing into Node `net` `lookupAndConnect` / `Socket.connect`. OpenClaw `2026.5.26` and newer classify these as benign transient network errors so they no longer propagate to the top-level uncaught handler; if you are on an older release, upgrade first.
+- A stability bundle whose `error.code` is `ENETDOWN` or a sibling code, with the call stack pointing into Node `net` `lookupAndConnect` / `Socket.connect`. Paddy `2026.5.26` and newer classify these as benign transient network errors so they no longer propagate to the top-level uncaught handler; if you are on an older release, upgrade first.
 - Long quiet periods that end the instant you connect to the Control UI or SSH into the host: the user-visible activity is what re-arms launchd's respawn gate, not anything the dashboard does to the gateway.
 - `runs` count incrementing across the day with no corresponding `received SIG*; shutting down` line in `~/Library/Logs/openclaw/gateway.log`: clean shutdowns log a signal; transient crashes do not.
 
@@ -116,8 +116,8 @@ for i in 1 2 3 4; do
   sleep 10
 done
 
-openclaw gateway status --deep
-openclaw node status
+paddy gateway status --deep
+paddy node status
 launchctl print gui/$UID/ai.openclaw.gateway | grep -E 'state|last exit|runs'
 tail -n 80 ~/Library/Logs/openclaw/gateway.log
 ```
@@ -135,16 +135,16 @@ Look for:
 What to do:
 
 1. If this host should only run the Gateway service, remove the managed node
-   service through OpenClaw. **Skip this step** if you actively rely on the node
+   service through Paddy. **Skip this step** if you actively rely on the node
    service for remote node features; uninstalling it stops those features on
    this host:
 
    ```bash
-   openclaw node uninstall
+   paddy node uninstall
    ```
 
 2. Install a persistent Gateway wrapper that clears the inherited launchd
-   markers before starting OpenClaw. Use the supported `--wrapper` option; do
+   markers before starting Paddy. Use the supported `--wrapper` option; do
    not edit the generated file under `~/.openclaw/service-env/`, because service
    reinstall, update, and doctor repair regenerate that file:
 
@@ -154,11 +154,11 @@ What to do:
    #!/bin/sh
    set -eu
    unset OPENCLAW_LAUNCHD_LABEL LAUNCH_JOB_LABEL LAUNCH_JOB_NAME XPC_SERVICE_NAME || true
-   exec openclaw "$@"
+   exec paddy "$@"
    EOF
    chmod 700 ~/.local/bin/openclaw-launchd-workaround
 
-   openclaw gateway install \
+   paddy gateway install \
      --wrapper ~/.local/bin/openclaw-launchd-workaround \
      --force
    ```
@@ -169,7 +169,7 @@ What to do:
 3. Verify that the Gateway is stable and serving RPC, not merely listening:
 
    ```bash
-   openclaw gateway status --deep --require-rpc
+   paddy gateway status --deep --require-rpc
 
    for i in 1 2 3 4; do
      ps aux | grep 'openclaw.*index.js' | grep -v grep | awk '{print $2}'
@@ -206,7 +206,7 @@ Startup logs include `native runtime` (PID, platform, architecture, Node, V8,
 libuv, OpenSSL and SQLite versions) and `worker startup state` (tracked Worker
 count, starts/retirements by script, and shared compute admission counters).
 These are startup facts, not a snapshot of the moment of failure. Retain them
-with the crash timestamp, journal, exact OpenClaw build and Node executable.
+with the crash timestamp, journal, exact Paddy build and Node executable.
 
 For a systemd system service, substitute the installed unit name below. For a
 user service, use `systemctl --user` without `sudo`; its hard core limit cannot
@@ -269,10 +269,10 @@ keep them private and share only reviewed, redacted evidence.
 Use when the Gateway disappears under load, the supervisor reports an OOM-style restart, or logs show `memory pressure: level=critical`.
 
 ```bash
-openclaw gateway status --deep
-openclaw logs --follow
-openclaw gateway stability --bundle latest
-openclaw gateway diagnostics export
+paddy gateway status --deep
+paddy logs --follow
+paddy gateway stability --bundle latest
+paddy gateway diagnostics export
 ```
 
 Look for:
@@ -283,12 +283,12 @@ Look for:
 
 Common signatures:
 
-- `memory pressure: level=critical` appears in gateway logs → OpenClaw detected critical memory pressure and recorded the available in-process memory facts.
-- `reason=heap_threshold` → lower prompt/session pressure or reduce concurrent work first. For a managed service, compare the configured controls and install-time recommendation in `Gateway heap:` from `openclaw gateway status` with the runtime measurement. Reinstalling preserves existing stored heap settings; it does not automatically replace an older value with the current recommendation.
+- `memory pressure: level=critical` appears in gateway logs → Paddy detected critical memory pressure and recorded the available in-process memory facts.
+- `reason=heap_threshold` → lower prompt/session pressure or reduce concurrent work first. For a managed service, compare the configured controls and install-time recommendation in `Gateway heap:` from `paddy gateway status` with the runtime measurement. Reinstalling preserves existing stored heap settings; it does not automatically replace an older value with the current recommendation.
 - `reason=rss_growth` → the RSS floor kept rising across consecutive sampling windows. Check the latest logs for a large import, runaway tool output, repeated retries, or a batch of queued agent work.
-- Critical memory pressure appears in logs but no bundle exists → capture `openclaw gateway diagnostics export` after the event for the available operational evidence. Pressure events do not automatically write bundles.
+- Critical memory pressure appears in logs but no bundle exists → capture `paddy gateway diagnostics export` after the event for the available operational evidence. Pressure events do not automatically write bundles.
 
-On Node, an administrator can also [sample allocations](/gateway/diagnostics#sampling-heap-profile) with `openclaw gateway call diagnostics.heapProfile --timeout 30000`. This captures current allocation activity, not a past spike or all native memory. Older bundles remain readable with `openclaw gateway stability --bundle latest`.
+On Node, an administrator can also [sample allocations](/gateway/diagnostics#sampling-heap-profile) with `paddy gateway call diagnostics.heapProfile --timeout 30000`. This captures current allocation activity, not a past spike or all native memory. Older bundles remain readable with `paddy gateway stability --bundle latest`.
 
 Review the sanitized diagnostics export before attaching it to a bug report; avoid copying raw logs.
 
@@ -297,10 +297,10 @@ Node's automatic heap ceiling can be roughly 4 GiB on a large host. That is a de
 For a foreground Node Gateway, set a native heap flag before Node starts, for example on a host with sufficient capacity:
 
 ```bash
-NODE_OPTIONS="--max-old-space-size=16384" openclaw gateway run
+NODE_OPTIONS="--max-old-space-size=16384" paddy gateway run
 ```
 
-For a custom supervisor or Docker runtime command, place `--max-old-space-size=16384` immediately after `node`, before the OpenClaw entry script, or set `NODE_OPTIONS` in that process or container's launch environment. Docker image build-time heap options do not configure the runtime Gateway. An OpenClaw config or dotenv value loaded after Node starts cannot resize its heap. `NODE_OPTIONS` can also reach spawned Node children, so prefer a direct Node argument when only the Gateway should receive the budget.
+For a custom supervisor or Docker runtime command, place `--max-old-space-size=16384` immediately after `node`, before the Paddy entry script, or set `NODE_OPTIONS` in that process or container's launch environment. Docker image build-time heap options do not configure the runtime Gateway. A Paddy config or dotenv value loaded after Node starts cannot resize its heap. `NODE_OPTIONS` can also reach spawned Node children, so prefer a direct Node argument when only the Gateway should receive the budget.
 
 For managed Node services, use the [managed Gateway heap policy](/cli/gateway#manage-the-gateway-service) and inspect both managed launch arguments and operator-owned environment overrides before changing them. Native argv overrides the same option in `NODE_OPTIONS`; percentage old-space sizing takes precedence over absolute old-space sizing. Regeneration preserves stored argv but does not add an automatic heap flag when an operator override owns `NODE_OPTIONS`. Installer-shell `NODE_OPTIONS` does not become a service override. Runtime pressure diagnostics use the effective V8 heap ceiling and physical/reported constraint headroom; an oversized explicit heap setting does not raise the RSS alert threshold above physical capacity. Pressure warnings are diagnostic evidence, not heap limits or automatic restart triggers.
 

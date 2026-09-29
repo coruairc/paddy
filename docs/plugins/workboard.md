@@ -12,7 +12,7 @@ The Workboard plugin adds an optional Kanban-style board to the
 and a link back to the card's task, run, and Control UI session.
 
 Workboard is intentionally small: it tracks local operating work for one
-OpenClaw Gateway. It is not a replacement for GitHub Issues, Linear, Jira, or
+Paddy Gateway. It is not a replacement for GitHub Issues, Linear, Jira, or
 other team project management systems.
 
 ## Enable it
@@ -23,7 +23,7 @@ Workboard is bundled but disabled by default:
    configured Control UI base path. For example, a base path of `/openclaw`
    uses `/openclaw/plugins`.
 2. Open the **Workboard** plugin, select **Lifecycle**, and turn on the enabled
-   switch. Because Workboard is included with OpenClaw, it does not need an
+   switch. Because Workboard is included with Paddy, it does not need an
    **Install** action.
 3. Wait for the lifecycle action to finish, then open the Workboard tab.
 
@@ -36,8 +36,8 @@ data.
 The equivalent CLI workflow is:
 
 ```bash
-openclaw plugins enable workboard
-openclaw dashboard
+paddy plugins enable workboard
+paddy dashboard
 ```
 
 Enablement applies to a running Gateway automatically. If it is offline, start
@@ -62,7 +62,7 @@ plugin entry:
 ```
 
 ```bash
-openclaw plugins disable workboard
+paddy plugins disable workboard
 ```
 
 ## Board appearance
@@ -136,7 +136,7 @@ the board does not delete or otherwise mutate the
 operator-owned automation job.
 
 Cards are stored in the plugin's own Gateway state and move with the rest of
-that Gateway's OpenClaw state (see [Storage](#storage)).
+that Gateway's Paddy state (see [Storage](#storage)).
 
 ## Starting work from a card
 
@@ -208,7 +208,7 @@ require the token.
 ## Dispatch
 
 Dispatch is Gateway-local: it does not spawn arbitrary OS processes. Normal
-OpenClaw subagent sessions still own execution. One dispatch pass:
+Paddy subagent sessions still own execution. One dispatch pass:
 
 1. Promotes dependency-ready cards.
 2. Blocks expired claims or timed-out runs.
@@ -280,7 +280,7 @@ diagnostics.
 ### Entry points
 
 - Control UI dispatch action
-- `openclaw workboard dispatch`
+- `paddy workboard dispatch`
 - `/workboard dispatch` on a command-capable channel
 
 All three use the Gateway subagent runtime when the Gateway is available. The
@@ -295,18 +295,18 @@ as unavailable. They surface as command errors, and so does any Gateway
 failure when an explicit `--url`/`--token` target was given.
 
 Board metadata can set `autoDecompose`, `autoDecomposePerDispatch`,
-`defaultAssignee`, and `orchestratorProfile`. OpenClaw records this intent and
+`defaultAssignee`, and `orchestratorProfile`. Paddy records this intent and
 exposes it in worker context. Actual specification/decomposition still runs
 through the normal Workboard tools.
 
 ## CLI and slash command
 
 ```bash
-openclaw workboard list [--board <id>] [--status <status>] [--include-archived] [--json]
-openclaw workboard create "Fix stale card lifecycle" --priority high --labels bug,workboard
-openclaw workboard show <card-id> [--json]
-openclaw workboard move <card-id> --status <status> [--json]
-openclaw workboard dispatch [--board <id>] [--json]
+paddy workboard list [--board <id>] [--status <status>] [--include-archived] [--json]
+paddy workboard create "Fix stale card lifecycle" --priority high --labels bug,workboard
+paddy workboard show <card-id> [--json]
+paddy workboard move <card-id> --status <status> [--json]
+paddy workboard dispatch [--board <id>] [--json]
 ```
 
 `list` text output hides archived cards by default (`--include-archived`
@@ -468,7 +468,7 @@ widens accepted Workboard host paths. It does not change the methods available.
 ## Storage
 
 Workboard stores durable data in a plugin-owned relational SQLite database
-under the OpenClaw state directory: boards, cards, labels, lifecycle events,
+under the Paddy state directory: boards, cards, labels, lifecycle events,
 run attempts, comments, dependency links, proof, artifact references,
 attachment metadata and blobs, diagnostics, notifications, worker logs,
 protocol state, and subscriptions all live in Workboard tables (not
@@ -480,7 +480,7 @@ Disabling or reloading the plugin drains admitted storage work before closing
 its connections.
 
 Installations that used Workboard in the `.28` release can run
-`openclaw doctor --fix` to migrate the shipped legacy plugin-state namespaces
+`paddy doctor --fix` to migrate the shipped legacy plugin-state namespaces
 (`workboard.cards`, `workboard.boards`, `workboard.notify`, and, if present,
 `workboard.attachments`) into the relational database.
 
@@ -489,7 +489,7 @@ Installations that used Workboard in the `.28` release can run
 **The tab says Workboard is unavailable**
 
 ```bash
-openclaw plugins inspect workboard --runtime --json
+paddy plugins inspect workboard --runtime --json
 ```
 
 If `plugins.allow` is configured, add `workboard` to it. If `plugins.deny`
@@ -510,7 +510,7 @@ inspect the actual run state.
 Confirm there is at least one `ready` card without an active claim:
 
 ```bash
-openclaw workboard list --status ready
+paddy workboard list --status ready
 ```
 
 If the CLI reports data-only dispatch, start or restart the Gateway and

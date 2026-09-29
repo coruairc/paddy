@@ -15,11 +15,11 @@ openclaw-plugin-reference:manual-end comment markers. -->
 ## Distribution
 
 - Package: `@openclaw/onepassword`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 
-- CLI commands: `openclaw onepassword`
+- CLI commands: `paddy onepassword`
 - Contracts: `tools`
 
 ## Related docs

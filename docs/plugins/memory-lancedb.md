@@ -21,7 +21,7 @@ a memory store outside the default built-in memory backend.
 openclaw plugins install @openclaw/memory-lancedb
 ```
 
-The plugin is published to npm; it is not bundled into the OpenClaw runtime
+The plugin is published to npm; it is not bundled into the Paddy runtime
 image. Installing it writes the plugin entry, enables it, and switches
 `plugins.slots.memory` to `memory-lancedb`. If another plugin currently owns
 the memory slot, that plugin is disabled with a warning.
@@ -36,7 +36,7 @@ LanceDB's `memory_recall` does not receive the protected private transcript
 authorization used by `memory.search.rememberAcrossConversations`. Use LanceDB's
 `autoRecall` or its `memory_recall` tool through
 [advanced Active Memory](/concepts/active-memory#lancedb-memory).
-`openclaw doctor` reports when Remember across conversations is unavailable
+`paddy doctor` reports when Remember across conversations is unavailable
 with the current memory provider.
 </Note>
 
@@ -71,7 +71,7 @@ start it after configuration. Check the application result and inspect the
 plugin's runtime registration:
 
 ```bash
-openclaw plugins inspect memory-lancedb --runtime --json
+paddy plugins inspect memory-lancedb --runtime --json
 ```
 
 See [Apply changes and inspect](/plugins/manage-plugins#apply-changes-and-inspect)
@@ -145,7 +145,7 @@ base64-encoded float32 responses, so both response shapes work without config.
 
 ### Dimensions
 
-OpenClaw has a built-in dimension for `text-embedding-3-small` (1536) and
+Paddy has a built-in dimension for `text-embedding-3-small` (1536) and
 `text-embedding-3-large` (3072) only. Any other model needs an explicit
 `embedding.dimensions` so LanceDB can create the vector column, for example
 ZhiPu `embedding-3` at 2048 dimensions:
@@ -215,7 +215,7 @@ local server returns context-length errors.
 | `customTriggers`  | `[]`    | 0-50 items, each ≤100 chars | Literal phrases that make auto-capture consider a message.        |
 
 `recallMaxChars` bounds the `before_prompt_build` auto-recall query, the
-`memory_recall` tool, the `memory_forget` query path, and `openclaw ltm search`.
+`memory_recall` tool, the `memory_forget` query path, and `paddy ltm search`.
 Auto-recall embeds the current turn's prompt after removing media attachment
 notes and normalizing whitespace. The same limit bounds each recalled item
 after prompt escaping before that text reaches the model.
@@ -263,9 +263,9 @@ to save them. Explicit tool calls still follow their normal data-handling rules.
 (not only when it owns the active memory slot):
 
 ```bash
-openclaw ltm list [--agent <id>] [--limit <n>] [--order-by-created-at]
-openclaw ltm search <query> [--agent <id>] [--limit <n>]
-openclaw ltm stats [--agent <id>]
+paddy ltm list [--agent <id>] [--limit <n>] [--order-by-created-at]
+paddy ltm search <query> [--agent <id>] [--limit <n>]
+paddy ltm stats [--agent <id>]
 ```
 
 `ltm stats` gives its database read 60 seconds after plugin registration. It
@@ -276,8 +276,8 @@ zero. Plugin discovery and source capture happen before this deadline starts.
 `ltm query` runs a non-vector query directly against the LanceDB table:
 
 ```bash
-openclaw ltm query --agent research --cols id,text,createdAt --limit 20
-openclaw ltm query --filter "category = 'preference'" --order-by createdAt:desc
+paddy ltm query --agent research --cols id,text,createdAt --limit 20
+paddy ltm query --filter "category = 'preference'" --order-by createdAt:desc
 ```
 
 | Flag                              | Default                                 | Notes                                                                                                                                     |
@@ -330,7 +330,7 @@ mandatory owner predicate, so a filter cannot widen the query to another
 agent.
 
 Databases created before per-agent ownership have no reliable row provenance.
-On upgrade, `openclaw doctor --fix` assigns those legacy rows once to the
+On upgrade, `paddy doctor --fix` assigns those legacy rows once to the
 configured default agent. Runtime access fails closed until that migration has
 completed; other agents never inherit the old shared rows.
 
@@ -420,8 +420,8 @@ model, set `embedding.dimensions` to the vector size that model reports.
 Confirm `plugins.slots.memory` points at `memory-lancedb`, then run:
 
 ```bash
-openclaw ltm stats
-openclaw ltm search "recent preference"
+paddy ltm stats
+paddy ltm search "recent preference"
 ```
 
 If `autoCapture` is disabled, the plugin still recalls existing memories but

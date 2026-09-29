@@ -103,7 +103,7 @@ export async function ensureOnboardingAgent(params: {
     before ??= await readConfigFileSnapshot();
     if (hasCandidateRoster || hasResolvedRosterBeforeMigrations(before)) {
       throw new Error(
-        "The requested team was not created because an agent roster already exists. Use `openclaw agents team create` to add a team.",
+        "The requested team was not created because an agent roster already exists. Use `paddy agents team create` to add a team.",
       );
     }
   }

@@ -10,14 +10,14 @@ read_when:
 
 ## Runtime status
 
-| Aspect              | Value                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------- |
-| Executors           | Node (`node:vm`, default), QuickJS-WASI (bundled plugin)                                    |
-| Default state       | disabled                                                                                    |
-| Stability           | experimental OpenClaw surface (Codex Code Mode is a separate, stable Codex harness surface) |
-| Target surface      | generic OpenClaw agent runs                                                                 |
-| Security posture    | Node is trusted host execution; QuickJS provides hardened guest isolation                   |
-| User-facing promise | enabling code mode never silently falls back to broad direct tool exposure                  |
+| Aspect              | Value                                                                                    |
+| ------------------- | ---------------------------------------------------------------------------------------- |
+| Executors           | Node (`node:vm`, default), QuickJS-WASI (bundled plugin)                                 |
+| Default state       | disabled                                                                                 |
+| Stability           | experimental Paddy surface (Codex Code Mode is a separate, stable Codex harness surface) |
+| Target surface      | generic Paddy agent runs                                                                 |
+| Security posture    | Node is trusted host execution; QuickJS provides hardened guest isolation                |
+| User-facing promise | enabling code mode never silently falls back to broad direct tool exposure               |
 
 ## Scope
 
@@ -40,14 +40,14 @@ Provider-owned tools such as remote Python sandboxes are separate tools. See
 
 ## Terms
 
-- **Code mode**: the OpenClaw runtime mode that hides catalog-compatible model
+- **Code mode**: the Paddy runtime mode that hides catalog-compatible model
   tools and exposes `exec`, `wait`, plus required direct-only tools.
 - **Executor**: the implementation that owns JavaScript evaluation and its
   continuation. Node is built in; QuickJS is a bundled plugin. Core owns the
   catalog, tool authorization, and run lifecycle.
 - **Guest runtime**: the Node VM context or QuickJS-WASI VM evaluating model code.
 - **Host bridge**: the narrow JSON-compatible callback surface from guest code
-  back into OpenClaw.
+  back into Paddy.
 - **Catalog**: the run-scoped list of effective tools after normal tool
   policy, plugin, MCP, and client-tool resolution.
 - **Nested tool call**: a tool call made from guest code through the host
@@ -59,7 +59,7 @@ Provider-owned tools such as remote Python sandboxes are separate tools. See
 
 ## Nested tool execution
 
-Every nested tool call crosses the host bridge and re-enters OpenClaw,
+Every nested tool call crosses the host bridge and re-enters Paddy,
 preserving: active agent id, session id and key, sender and channel context,
 sandbox policy, approval policy, plugin `before_tool_call` hooks, abort
 signal, streaming updates where available, and trajectory/audit events.
@@ -120,7 +120,7 @@ session.`.
 - A run's continuation is released as soon as it settles to
   `completed` or `failed`, or is dropped on Gateway shutdown (nothing
   survives a restart: this is transient runtime state).
-- OpenClaw caps the number of concurrently suspended runs per process (64) and
+- Paddy caps the number of concurrently suspended runs per process (64) and
   rejects new suspensions past that cap with `too many suspended code mode
 runs.`.
 
@@ -180,7 +180,7 @@ dispose VM handles and snapshots after terminal states.
 Snapshot buffers transfer directly between workers and the Gateway without
 copying the VM heap through a storage serialization format.
 
-The runtime executes in a Node.js worker thread, outside OpenClaw's main
+The runtime executes in a Node.js worker thread, outside Paddy's main
 event loop. A guest infinite loop must not block the Gateway process
 indefinitely; the worker's interrupt handler enforces the wall-clock timeout
 independent of guest code cooperating.

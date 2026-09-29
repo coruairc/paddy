@@ -54,8 +54,8 @@ export function appendRetainedPluginSessionSourceIssue(
   pluginIds: readonly string[],
 ): void {
   const pending = pluginIds.length
-    ? `remain pending for plugin(s): ${pluginIds.join(", ")}. Install the plugin and run openclaw doctor --fix to finish.`
-    : "await archival. Run openclaw doctor --fix to finish.";
+    ? `remain pending for plugin(s): ${pluginIds.join(", ")}. Install the plugin and run paddy doctor --fix to finish.`
+    : "await archival. Run paddy doctor --fix to finish.";
   report.issues.push({
     code: "plugin_migration_source_retained",
     message: `Canonical session import is verified. Original session migration inputs, including unindexed history, ${pending}`,
@@ -72,7 +72,7 @@ export function appendActiveSqliteTranscriptFileIssues(
       if (!retainedPaths?.has(canonicalMigrationFilePath(transcriptPath))) {
         report.issues.push({
           code: "active_sqlite_transcript_jsonl",
-          message: `SQLite-backed session has a legacy JSONL transcript awaiting verification: ${transcriptPath}. Run openclaw doctor --fix or openclaw doctor --session-sqlite recover with the Gateway stopped to verify, import any missing events, and archive the original.`,
+          message: `SQLite-backed session has a legacy JSONL transcript awaiting verification: ${transcriptPath}. Run paddy doctor --fix or paddy doctor --session-sqlite recover with the Gateway stopped to verify, import any missing events, and archive the original.`,
           sessionKey,
         });
       }

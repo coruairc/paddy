@@ -150,7 +150,7 @@ export async function restoreFailedUpdateDatabases(params: {
       cwd: params.backup.directory,
       durationMs: Date.now() - startedAt,
       exitCode: 1,
-      stderrTail: `${reason}. Current databases were preserved. Keep the retained snapshots at ${params.backup.directory}; run openclaw doctor from the candidate version to inspect recovery before downgrading.`,
+      stderrTail: `${reason}. Current databases were preserved. Keep the retained snapshots at ${params.backup.directory}; run paddy doctor from the candidate version to inspect recovery before downgrading.`,
     };
     params.result.steps.push(step);
     params.progress?.onStepComplete?.({ ...step, index: 0, total: 0 });

@@ -15,7 +15,7 @@ The browser Control UI includes a dedicated MCP settings page at `/settings/mcp`
 
 For a shorter setup walkthrough covering Settings, the composer path (**+** → **Connectors** → **Add MCP server…**) and its **This session** / **Everywhere** scopes, CLI, and direct config, see [Connect MCP servers](/tools/mcp).
 
-Use the page for operator edits and quick inventory. Use `openclaw mcp doctor --probe` or `openclaw mcp probe` when you need live server proof.
+Use the page for operator edits and quick inventory. Use `paddy mcp doctor --probe` or `paddy mcp probe` when you need live server proof.
 
 Installed plugin detail pages show **Accounts** first for matching HTTP MCP
 servers configured with `auth: "oauth"`. **Connect** opens the existing OAuth flow; the page refreshes its saved status
@@ -42,11 +42,11 @@ Operator workflow:
 4. Toggle enablement when you want to keep a definition but exclude it from runtime discovery.
 5. Edit the scoped `mcp` config section for structural changes such as new servers, headers, TLS, OAuth metadata, or tool filters.
 6. Choose **Save** to persist config only, or **Save & Publish** to apply through the Gateway config path.
-7. Run `openclaw mcp doctor --probe` when you need live proof that the edited server starts and lists tools.
+7. Run `paddy mcp doctor --probe` when you need live proof that the edited server starts and lists tools.
 
 Notes:
 
 - command snippets quote server names so unusual names remain copyable in a shell
 - displayed URL-like values are redacted before rendering when they contain embedded credentials
 - the page does not start MCP transports by itself
-- active runtimes may need `openclaw mcp reload`, Gateway config publish, or process restart depending on which process owns the MCP clients
+- active runtimes may need `paddy mcp reload`, Gateway config publish, or process restart depending on which process owns the MCP clients

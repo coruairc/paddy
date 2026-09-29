@@ -1,35 +1,35 @@
 ---
-summary: "Connect OpenClaw to Radius with browser sign-in or an organization API key"
+summary: "Connect Paddy to Radius with browser sign-in or an organization API key"
 read_when:
-  - You want to use Radius models in OpenClaw
+  - You want to use Radius models in Paddy
   - You need Radius authentication or model discovery help
 title: "Radius"
 ---
 
 [Radius](https://radius.earendil.com) is Earendil's model gateway for Pi-compatible
-clients. The `radius` plugin connects OpenClaw's agent loop to Radius, including
+clients. The `radius` plugin connects Paddy's agent loop to Radius, including
 streamed responses, reasoning, images on supported models, and tool calls.
 Radius owns upstream routing, model policies, rewrites, and billing.
 
 ## Sign in
 
 Create a Radius account on the [Radius website](https://radius.earendil.com), then
-sign in from OpenClaw:
+sign in from Paddy:
 
 ```bash
-openclaw models auth login --provider radius --method oauth --set-default
+paddy models auth login --provider radius --method oauth --set-default
 ```
 
-OpenClaw displays a pairing code and opens the Radius verification page. Enter
+Paddy displays a pairing code and opens the Radius verification page. Enter
 the code, choose your organization, and authorize access. This device flow also
 works on a remote Gateway: open the displayed URL in your local browser.
-OpenClaw stores the OAuth credentials in its auth profiles and refreshes them
-automatically. Signing in to Pi separately does not sign OpenClaw in.
+Paddy stores the OAuth credentials in its auth profiles and refreshes them
+automatically. Signing in to Pi separately does not sign Paddy in.
 
 You can also select Radius during onboarding:
 
 ```bash
-openclaw onboard --auth-choice radius
+paddy onboard --auth-choice radius
 ```
 
 ### Organization API key
@@ -38,14 +38,14 @@ Create an API key from your organization's **API keys** page in Radius, then use
 the interactive prompt:
 
 ```bash
-openclaw models auth login --provider radius --method api-key --set-default
+paddy models auth login --provider radius --method api-key --set-default
 ```
 
 For unattended setup, supply `RADIUS_API_KEY` through your environment or secret
 manager and run:
 
 ```bash
-openclaw onboard --auth-choice radius-api-key
+paddy onboard --auth-choice radius-api-key
 ```
 
 Both authentication methods use the selected organization's credits, budgets,
@@ -55,11 +55,11 @@ does not extend an API key's lifetime.
 ## Choose a model
 
 ```bash
-openclaw models list --provider radius --refresh
-openclaw models set radius/balanced
+paddy models list --provider radius --refresh
+paddy models set radius/balanced
 ```
 
-OpenClaw discovers the catalog from Radius using your credential. This includes
+Paddy discovers the catalog from Radius using your credential. This includes
 organization models, reasoning capabilities, context limits, and pricing tiers.
 Sign-in recommends `radius/balanced` when available, otherwise the first model
 in your organization's catalog. Use a model ID shown by `models list`; available

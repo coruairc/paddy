@@ -432,7 +432,7 @@ function* openOpenClawAgentDatabaseSteps(
     openedDatabase = database;
     if (hasAgentDatabaseMaintenanceAuthority()) {
       throw new Error(
-        "Agent database maintenance is in progress; retry after openclaw doctor --fix completes.",
+        "Agent database maintenance is in progress; retry after paddy doctor --fix completes.",
       );
     }
     const cleanup = registerAgentDeletionDatabaseCleanup(database, databaseOptions);
@@ -613,7 +613,9 @@ export function getOpenClawAgentDatabaseIfOpen(
     isIncognitoOpenClawAgentSqlitePath(pathname, options) &&
     readAgentDeletionJournal(agentId, { env: options.env }, "runtime")
   ) {
-    throw new Error(`${PRODUCT_NAME} agent database is unavailable while agent ${agentId} is deleted.`);
+    throw new Error(
+      `${PRODUCT_NAME} agent database is unavailable while agent ${agentId} is deleted.`,
+    );
   }
   const database = cache.databases.get(pathname);
   if (!database?.db.isOpen) {

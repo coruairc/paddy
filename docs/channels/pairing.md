@@ -3,11 +3,11 @@ summary: "Pairing overview: approve who can DM you + which nodes can join"
 read_when:
   - Setting up DM access control
   - Pairing a new iOS/Android node
-  - Reviewing OpenClaw security posture
+  - Reviewing Paddy security posture
 title: "Pairing"
 ---
 
-"Pairing" is OpenClaw's explicit access approval step.
+"Pairing" is Paddy's explicit access approval step.
 It is used in two places:
 
 1. **DM pairing** (who is allowed to talk to the bot)
@@ -17,7 +17,7 @@ Security context: [Security](/gateway/security)
 
 ## 1) DM pairing (inbound chat access)
 
-DM pairing applies to channels that implement OpenClaw's pairing API. With DM
+DM pairing applies to channels that implement Paddy's pairing API. With DM
 policy `pairing`, unknown senders get a short code and their message is **not
 processed** until you approve.
 
@@ -54,8 +54,8 @@ not a permanent block; the sender can request access again later.
 ### Approve from the CLI
 
 ```bash
-openclaw pairing list telegram
-openclaw pairing approve telegram <CODE>
+paddy pairing list telegram
+paddy pairing approve telegram <CODE>
 ```
 
 Add `--notify` to tell the requester on the same channel. Multi-account channels
@@ -69,11 +69,11 @@ pairing approvals only grant DM access; they do not add more owners.
 
 Manually allowlisted senders are not automatically command owners. If an
 authorized sender has no owner access, owner-only commands reply with the exact
-`openclaw config set commands.ownerAllowFrom` command for the operator to run.
+`paddy config set commands.ownerAllowFrom` command for the operator to run.
 
 ### Set up an owner without DM pairing
 
-Run `openclaw channels add` and complete the channel setup. When no command owner
+Run `paddy channels add` and complete the channel setup. When no command owner
 exists, the wizard offers **Set up my operator account** separately from chat
 access. Enter your personal user ID and confirm the exact account that may
 administer this installation. **Skip for now** leaves ownership unchanged.
@@ -85,14 +85,14 @@ rules still apply. The wizard never promotes chat allowlists automatically or
 replaces an existing owner.
 
 <Note>
-WhatsApp's login QR links a WhatsApp account to OpenClaw. DM access requests
+WhatsApp's login QR links a WhatsApp account to Paddy. DM access requests
 approve people who message that account. These are separate flows.
 </Note>
 
 Supported channels include: `discord`, `feishu`, `googlechat`, `imessage`, `irc`, `line`, `matrix`, `mattermost`, `msteams`, `nextcloud-talk`, `nostr`, `signal`, `slack`, `sms`, `synology-chat`, `telegram`, `twitch`, `whatsapp`, `zalo`, `zalouser`.
 
 Installed external plugins can also support DM pairing if they implement
-OpenClaw's pairing API. Check the plugin's documentation for version-specific
+Paddy's pairing API. Check the plugin's documentation for version-specific
 limitations.
 
 ### Reusable sender groups
@@ -126,7 +126,7 @@ Access groups are documented in detail here: [Access groups](/channels/access-gr
 
 ### Where the state lives
 
-For channels that use OpenClaw's pairing API, state is stored in the shared SQLite
+For channels that use Paddy's pairing API, state is stored in the shared SQLite
 database at
 `~/.openclaw/state/openclaw.sqlite`:
 
@@ -140,7 +140,7 @@ Account scoping behavior:
 
 Older gateways wrote `<channel>-pairing.json` and
 `<channel>-<accountId>-allowFrom.json` under `~/.openclaw/credentials/`.
-`openclaw doctor --fix` imports those files into SQLite and removes each source
+`paddy doctor --fix` imports those files into SQLite and removes each source
 after a successful import. Normal Gateway startup leaves these legacy files
 unchanged. Treat the SQLite database as sensitive because these rows gate access
 to your assistant.
@@ -168,10 +168,10 @@ Use an already connected Control UI session with `operator.admin` access:
 3. Keep **Full access (recommended)**, or select **Limited access** to omit
    administrative Gateway controls.
 4. Click **Create setup code**.
-5. On your phone, open the OpenClaw app → **Settings** → **Gateway**.
+5. On your phone, open the Paddy app → **Settings** → **Gateway**.
 6. Scan the QR code or paste the setup code, then connect.
 
-Official OpenClaw iOS and Android apps are approved automatically when their
+Official Paddy iOS and Android apps are approved automatically when their
 setup-code metadata matches. If **Pending approval** shows a request (for
 example, for a non-official client or mismatched metadata), review its role and
 scopes before approving it.
@@ -188,7 +188,7 @@ If you use the `device-pair` plugin, you can do first-time device pairing entire
 
 1. In Telegram, message your bot: `/pair`
 2. The bot replies with two messages: an instruction message and a separate **setup code** message (easy to copy/paste in Telegram).
-3. On your phone, open the OpenClaw iOS app → Settings → Gateway.
+3. On your phone, open the Paddy iOS app → Settings → Gateway.
 4. Scan the QR code (`/pair qr`) or paste the setup code and connect.
 5. The official mobile app connects automatically. If `/pair pending` shows a
    request, review its role and scopes before approving it.
@@ -209,7 +209,7 @@ That bootstrap token carries the built-in pairing bootstrap profile:
 - the default handed-off `operator` token includes `operator.admin`,
   `operator.approvals`, `operator.read`, `operator.talk.secrets`, and
   `operator.write`
-- Control UI **Limited access** and `openclaw qr --limited` omit
+- Control UI **Limited access** and `paddy qr --limited` omit
   `operator.admin` while keeping the other operator scopes
 - plaintext LAN `ws://` setup automatically uses the same limited profile;
   configure `wss://` or Tailscale Serve and generate a new code for full access
@@ -230,12 +230,12 @@ emulator host. Non-loopback plaintext routes receive limited access. Tailnet
 CGNAT addresses, `.ts.net` names, and public hosts still fail closed before
 QR/setup-code issuance.
 
-OpenClaw advertises Tailscale setup URLs only when it owns the route through
+Paddy advertises Tailscale setup URLs only when it owns the route through
 `gateway.tailscale.mode=serve|funnel`. Legacy external Serve routes that proxy a
 `gateway.bind=lan` listener are not advertised because the ordinary listener
-rejects Tailscale-shaped proxy ingress. Run `openclaw doctor` to inspect the
+rejects Tailscale-shaped proxy ingress. Run `paddy doctor` to inspect the
 route; Doctor leaves the configuration unchanged because it cannot prove route
-ownership. If you confirm it is a stale route from an older OpenClaw release,
+ownership. If you confirm it is a stale route from an older Paddy release,
 remove only its root handler with `tailscale serve --yes --https=443
 --set-path=/ off` or `tailscale funnel --yes --https=443 --set-path=/ off`, then
 configure `gateway.bind=loopback` and `gateway.tailscale.mode=serve` manually and
@@ -248,9 +248,9 @@ ingress and prints the command needed to clear the retained Service route.
 ### Approve a node device
 
 ```bash
-openclaw devices list
-openclaw devices approve <requestId>
-openclaw devices reject <requestId>
+paddy devices list
+paddy devices approve <requestId>
+paddy devices reject <requestId>
 ```
 
 When an explicit approval is denied because the approving paired-device session
@@ -265,7 +265,7 @@ role/scopes/public key), the previous pending request is superseded and a new
 `requestId` is created.
 
 <Note>
-An already paired device does not get broader access silently. If it reconnects asking for more scopes or a broader role, OpenClaw keeps the existing approval as-is and creates a fresh pending upgrade request. Use `openclaw devices list` to compare the currently approved access with the newly requested access before you approve.
+An already paired device does not get broader access silently. If it reconnects asking for more scopes or a broader role, Paddy keeps the existing approval as-is and creates a fresh pending upgrade request. Use `paddy devices list` to compare the currently approved access with the newly requested access before you approve.
 </Note>
 
 ### Optional trusted-CIDR node auto-approve
@@ -298,12 +298,12 @@ Stored in the shared SQLite state database at `~/.openclaw/state/openclaw.sqlite
 - paired devices + tokens
 
 Older gateways kept this state in `~/.openclaw/devices/*.json`. Stop the Gateway
-and run `openclaw doctor --fix` to import those files into SQLite and archive
+and run `paddy doctor --fix` to import those files into SQLite and archive
 them with a `.migrated` suffix. Normal startup leaves legacy files unchanged.
 
 ### Notes
 
-- The `node.pair.*` API (CLI: `openclaw nodes pending|approve|reject|remove|rename`) manages
+- The `node.pair.*` API (CLI: `paddy nodes pending|approve|reject|remove|rename`) manages
   node capability approvals stored on the same paired device records. WS nodes
   still require device pairing; see [Node pairing](/gateway/pairing).
 - The pairing record is the durable source of truth for approved roles. Active
@@ -321,4 +321,4 @@ them with a `.migrated` suffix. Normal startup leaves legacy files unchanged.
   - iMessage: [iMessage](/channels/imessage)
   - Discord: [Discord](/channels/discord)
   - Slack: [Slack](/channels/slack)
-- [`openclaw pairing`](/cli/pairing) — drive pairing from the CLI
+- [`paddy pairing`](/cli/pairing) — drive pairing from the CLI

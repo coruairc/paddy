@@ -1,14 +1,14 @@
 # Telegram
 
-Talk to OpenClaw through a Telegram bot in direct messages, groups, channels, and
+Talk to Paddy through a Telegram bot in direct messages, groups, channels, and
 topics. The plugin supports media, voice notes, reactions, polls, and native
 commands.
 
 ## Get started
 
-Create a bot with **@BotFather**, then add Telegram using `openclaw channels add`
+Create a bot with **@BotFather**, then add Telegram using `paddy channels add`
 and provide the bot token. Verify the connection with
-`openclaw channels status --probe`.
+`paddy channels status --probe`.
 
 Send your bot a message, then approve the resulting pairing request. Group
 access uses separate allowlists and mention settings; configure these before

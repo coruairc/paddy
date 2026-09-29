@@ -10,7 +10,7 @@ read_when:
 ---
 
 `web_search` searches the web with your configured provider and returns
-normalized results, cached by query for 15 minutes (configurable). OpenClaw
+normalized results, cached by query for 15 minutes (configurable). Paddy
 also bundles `x_search` for X (formerly Twitter) posts and `web_fetch` for
 lightweight URL fetching. `web_fetch` always runs locally; `web_search` routes
 through xAI Responses when Grok is the provider, and `x_search` always uses
@@ -35,15 +35,15 @@ xAI Responses.
     its credentials, and test a search. Or use the CLI:
 
     ```bash
-    openclaw configure --section web
+    paddy configure --section web
     ```
     This stores the provider and any needed credential. For API-backed
     providers you can instead set the provider's env var (for example
     `BRAVE_API_KEY`) and skip this step.
 
     You can also configure search by talking to
-    [OpenClaw](/cli/openclaw): say `configure web search` in `openclaw setup`
-    or in the Control UI's **Settings → Ask OpenClaw** chat. The hosted flow
+    [Paddy](/cli/openclaw): say `configure web search` in `paddy setup`
+    or in the Control UI's **Settings → Ask Paddy** chat. The hosted flow
     owns provider choice and credential entry — API keys are masked in the
     browser, and the terminal chat hands off to the masked wizard via
     `open search wizard`.
@@ -51,7 +51,7 @@ xAI Responses.
   </Step>
   <Step title="Use it">
     ```javascript
-    await web_search({ query: "OpenClaw plugin SDK" });
+    await web_search({ query: "Paddy plugin SDK" });
     ```
 
     For X posts:
@@ -73,7 +73,7 @@ is determined when a turn starts.
 
 - **Automatic** uses supported native search for the model connection, or the
   managed provider selected by credential auto-detection.
-- Selecting a managed provider makes that provider available through OpenClaw's
+- Selecting a managed provider makes that provider available through Paddy's
   `web_search`, including for open-weight models. Provider credentials and options
   reuse the plugin settings, including compatible custom endpoints and SearXNG
   instance URLs.
@@ -243,7 +243,7 @@ before sharing them; redaction does not remove every kind of sensitive content.
 Provider lists in docs and setup flows are alphabetical. Auto-detection uses a
 separate, fixed precedence order and only picks a provider that needs a
 credential (`requiresCredential !== false`) when it finds one configured. If
-no `provider` is set, OpenClaw checks providers in this order and uses the
+no `provider` is set, Paddy checks providers in this order and uses the
 first one that is ready:
 
 API-backed providers first:
@@ -263,7 +263,7 @@ Configured endpoint providers after that:
 
 11. **SearXNG** -- `SEARXNG_BASE_URL` or `plugins.entries.searxng.config.webSearch.baseUrl` (order 200)
 
-If an auto-detected provider fails, OpenClaw tries the next eligible provider.
+If an auto-detected provider fails, Paddy tries the next eligible provider.
 If all attempts fail, it reports the first provider's error to help you diagnose
 the primary failure. An explicitly selected provider does not use automatic
 fallback.
@@ -272,7 +272,7 @@ Key-free providers such as **Parallel Search (Free)**, **DuckDuckGo**,
 **Ollama Web Search**, and **Codex Hosted Search** never win auto-detection,
 even though they have an internal order value. They are used only when you
 select them explicitly with `tools.web.search.provider` or through
-`openclaw configure --section web`. OpenClaw does not send managed
+`paddy configure --section web`. Paddy does not send managed
 `web_search` queries to a key-free provider just because no API-backed
 provider is configured.
 
@@ -288,7 +288,7 @@ instead.
   installed API-backed web search providers, including Brave, Exa, Firecrawl,
   Gemini, Grok, Kimi, MiniMax, Parallel, Perplexity, and Tavily,
   whether the provider is picked explicitly via `tools.web.search.provider` or
-  selected through auto-detect. In auto-detect mode, OpenClaw resolves only the
+  selected through auto-detect. In auto-detect mode, Paddy resolves only the
   selected provider key -- non-selected SecretRefs stay inactive, so you can
   keep multiple providers configured without paying resolution cost for the
   ones you are not using.
@@ -298,7 +298,7 @@ instead.
 
 Direct OpenAI Responses models (`api: "openai-responses"`, provider `openai`,
 no base URL or an official OpenAI API base URL) use OpenAI's hosted
-`web_search` tool automatically when OpenClaw web search is enabled and no
+`web_search` tool automatically when Paddy web search is enabled and no
 managed provider is pinned. This is provider-owned behavior in the bundled
 OpenAI plugin and does not apply to OpenAI-compatible proxy base URLs or Azure
 routes. Set `tools.web.search.provider` to another provider such as `brave` to
@@ -319,10 +319,10 @@ try another configured provider; explicit provider choices never fall back.
 
 The Codex app-server runtime uses Codex's hosted `web_search` tool automatically
 when web search is enabled and no managed provider is selected. Native hosted
-search and OpenClaw's managed `web_search` dynamic tool are mutually exclusive,
-so managed search cannot bypass native domain restrictions. OpenClaw uses the
+search and Paddy's managed `web_search` dynamic tool are mutually exclusive,
+so managed search cannot bypass native domain restrictions. Paddy uses the
 managed tool when hosted search is unavailable, explicitly disabled, or
-replaced by a selected managed provider. OpenClaw keeps Codex's standalone
+replaced by a selected managed provider. Paddy keeps Codex's standalone
 `web.run` extension disabled (`features.standalone_web_search: false`)
 because production app-server traffic rejects its user-defined `web`
 namespace.
@@ -336,7 +336,7 @@ namespace.
   external access for unrestricted app-server turns; set `"live"` to request
   live access explicitly
 - Set `tools.web.search.provider` to a managed provider such as `brave` to use
-  OpenClaw's managed `web_search` instead
+  Paddy's managed `web_search` instead
 - Set `tools.web.search.openaiCodex.enabled: false` to opt out of Codex-hosted
   search; other managed providers remain available
 - Restricting the Codex native tool surface also keeps managed `web_search`
@@ -385,21 +385,21 @@ managed search provider takes precedence on this transport too.
 ```
 
 For runtimes and providers that do not support native Codex search, Codex can
-use the managed `web_search` fallback through OpenClaw's dynamic tool namespace.
-Use an explicit managed provider when you need OpenClaw's provider-specific
+use the managed `web_search` fallback through Paddy's dynamic tool namespace.
+Use an explicit managed provider when you need Paddy's provider-specific
 network controls instead of Codex-hosted search.
 
 Selecting `provider: "codex"` enables the bundled `codex` plugin and uses the
 same `tools.web.search.openaiCodex` restrictions shown above. Authenticate the
-Codex app-server first with `openclaw models auth login --provider openai`.
+Codex app-server first with `paddy models auth login --provider openai`.
 The parent agent can use any model or runtime; only the bounded search worker
 runs through Codex.
 
 ## CLI harness search
 
-OpenClaw's Claude Code, Codex CLI, and Gemini CLI adapters disable their native
+Paddy's Claude Code, Codex CLI, and Gemini CLI adapters disable their native
 search tool when `tools.web.search.provider` selects a managed provider. The
-selected provider remains available through OpenClaw's MCP connection, subject
+selected provider remains available through Paddy's MCP connection, subject
 to the normal tool policy. If that connection or provider is unavailable, the
 adapter does not silently restore native search.
 
@@ -409,17 +409,17 @@ selection is represented by an omitted provider, not the strings `"auto"` or
 `tools.web.search.enabled: false` disables search even when a session has a
 stale enable override. Changing the native search setting updates the CLI
 session fingerprint so a resumed process cannot keep the old search policy.
-Turning search off for a session also removes it from OpenClaw's MCP tool list
+Turning search off for a session also removes it from Paddy's MCP tool list
 and invocation grant, while leaving unrelated tools available.
 
-Other external harnesses own their native tool behavior; configuring OpenClaw's
+Other external harnesses own their native tool behavior; configuring Paddy's
 managed provider does not establish that a third-party harness uses it.
 
 ## Network safety
 
-Managed HTTP `web_search` provider calls use OpenClaw's guarded fetch path,
+Managed HTTP `web_search` provider calls use Paddy's guarded fetch path,
 scoped to the current provider's own hostname. For that hostname only,
-OpenClaw allows Surge, Clash, and sing-box fake-IP DNS answers in
+Paddy allows Surge, Clash, and sing-box fake-IP DNS answers in
 `198.18.0.0/15` and `fc00::/7`. Other private, loopback, link-local, and
 metadata destinations remain blocked. Codex Hosted Search is the exception:
 its bounded worker delegates network access to Codex app-server's hosted
@@ -448,7 +448,7 @@ trusted proxy owns those synthetic ranges.
 }
 ```
 
-`tools.web.search.cacheTtlMinutes` controls OpenClaw's local search-result
+`tools.web.search.cacheTtlMinutes` controls Paddy's local search-result
 caches. Set it to `0` to bypass reads and writes, even for previously cached
 queries. A shorter positive TTL limits reuse by entry age; a longer TTL does
 not extend an entry's original expiry. Provider-side caching is separate.
@@ -458,7 +458,7 @@ Provider-specific config (API keys, base URLs, modes) lives under
 `models.providers.google.apiKey` and `models.providers.google.baseUrl` as lower-priority
 fallbacks after its dedicated web-search config and `GEMINI_API_KEY`. See the
 provider pages for examples.
-Grok can also reuse an xAI OAuth auth profile from `openclaw models auth login
+Grok can also reuse an xAI OAuth auth profile from `paddy models auth login
 --provider xai --method oauth`; API-key config remains the fallback.
 
 `tools.web.search.provider` is validated against the web-search provider ids
@@ -466,13 +466,13 @@ declared by bundled and installed plugin manifests. A typo such as `"brvae"`
 fails config validation instead of silently falling back to auto-detection. If a
 configured provider only has stale plugin evidence, such as a leftover
 `plugins.entries.<plugin>` block after uninstalling a third-party plugin,
-OpenClaw keeps startup resilient and reports a warning so you can reinstall the
-plugin or run `openclaw doctor --fix` to clean up the stale config.
+Paddy keeps startup resilient and reports a warning so you can reinstall the
+plugin or run `paddy doctor --fix` to clean up the stale config.
 
 `web_fetch` fallback provider selection is separate:
 
 - choose it with `tools.web.fetch.provider`
-- or omit that field and let OpenClaw auto-detect the first ready web-fetch
+- or omit that field and let Paddy auto-detect the first ready web-fetch
   provider from configured credentials
 - non-sandboxed `web_fetch` can use installed plugin providers that declare
   `contracts.webFetchProviders`; sandboxed fetches allow bundled providers and
@@ -481,8 +481,8 @@ plugin or run `openclaw doctor --fix` to clean up the stale config.
   contributor today, configured under
   `plugins.entries.firecrawl.config.webFetch.*`
 
-When you choose **Kimi** during `openclaw onboard` or
-`openclaw configure --section web`, OpenClaw can also ask for:
+When you choose **Kimi** during `paddy onboard` or
+`paddy configure --section web`, Paddy can also ask for:
 
 - the Moonshot API region (`https://api.moonshot.ai/v1` or `https://api.moonshot.cn/v1`)
 - the default Kimi web-search model (defaults to `kimi-k2.6`)
@@ -490,18 +490,18 @@ When you choose **Kimi** during `openclaw onboard` or
 For `x_search`, configure `plugins.entries.xai.config.xSearch.*`. It uses the
 same xAI auth profile as chat, or the `XAI_API_KEY` / plugin web-search
 credential used by Grok web search.
-Legacy `tools.web.x_search.*` config is auto-migrated by `openclaw doctor --fix`.
-When you choose Grok during `openclaw onboard` or `openclaw configure --section web`,
-OpenClaw also offers optional `x_search` setup with the same credential right
+Legacy `tools.web.x_search.*` config is auto-migrated by `paddy doctor --fix`.
+When you choose Grok during `paddy onboard` or `paddy configure --section web`,
+Paddy also offers optional `x_search` setup with the same credential right
 after Grok setup completes. This is a separate follow-up step inside the Grok
 path, not a separate top-level web-search provider choice. If you pick another
-provider, OpenClaw does not show the `x_search` prompt.
+provider, Paddy does not show the `x_search` prompt.
 
 ### Storing API keys
 
 <Tabs>
   <Tab title="Config file">
-    Run `openclaw configure --section web` or set the key directly:
+    Run `paddy configure --section web` or set the key directly:
 
     ```json5
     {
@@ -572,7 +572,7 @@ provider, OpenClaw does not show the `x_search` prompt.
 
 `x_search` queries X (formerly Twitter) posts using xAI and returns
 AI-synthesized answers with citations. It accepts natural-language queries and
-optional structured filters. OpenClaw constructs the built-in xAI `x_search`
+optional structured filters. Paddy constructs the built-in xAI `x_search`
 tool per request rather than keeping it permanently registered, so it is only
 active for the turn that actually calls it.
 
@@ -630,7 +630,7 @@ every provider. xAI credentials are always required.
 it falls back to `plugins.entries.xai.config.webSearch.baseUrl`, then the
 public xAI endpoint (`https://api.x.ai/v1`).
 
-`plugins.entries.xai.config.xSearch.cacheTtlMinutes` controls OpenClaw's local
+`plugins.entries.xai.config.xSearch.cacheTtlMinutes` controls Paddy's local
 `x_search` result cache. Set it to `0` to bypass reads and writes. A shorter TTL
 limits reuse of existing entries; a longer TTL does not extend their original
 expiry.
@@ -670,7 +670,7 @@ await x_search({
 
 ```javascript
 // Basic search
-await web_search({ query: "OpenClaw plugin SDK" });
+await web_search({ query: "Paddy plugin SDK" });
 
 // German-specific search
 await web_search({ query: "TV online schauen", country: "DE", language: "de" });

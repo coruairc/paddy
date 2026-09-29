@@ -291,11 +291,11 @@ export const formatHealthChannelLines = (
     // Deep status splits at the first colon, so plugin IDs must not become its state prefix.
     const label = id.includes(":") ? "Plugin" : `Plugin ${id}`;
     const detail = id.includes(":") ? `${id}: ${diagnostic}` : diagnostic;
-    lines.push(`${label}: ${plugin.state} - ${detail}; run openclaw doctor`);
+    lines.push(`${label}: ${plugin.state} - ${detail}; run paddy doctor`);
   }
   if (pluginWarnings.length > 20) {
     lines.push(
-      `Plugins: warning - ${pluginWarnings.length - 20} additional plugin warnings; run openclaw doctor`,
+      `Plugins: warning - ${pluginWarnings.length - 20} additional plugin warnings; run paddy doctor`,
     );
   }
   return lines;

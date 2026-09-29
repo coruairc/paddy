@@ -2,7 +2,7 @@
 summary: "Setting up ACP agents: acpx harness config, plugin setup, permissions"
 read_when:
   - Installing or configuring the acpx harness for Claude Code / Codex / Gemini CLI
-  - Enabling the plugin-tools or OpenClaw-tools MCP bridge
+  - Enabling the plugin-tools or Paddy-tools MCP bridge
   - Configuring ACP permission modes
 title: "ACP agents — setup"
 ---
@@ -16,7 +16,7 @@ app-server runtime config, use [Codex harness](/plugins/codex-harness). For
 OpenAI API keys or Codex OAuth model-provider config, use
 [OpenAI](/providers/openai).
 
-Codex has two OpenClaw routes:
+Codex has two Paddy routes:
 
 | Route                      | Config/command                                         | Setup page                              |
 | -------------------------- | ------------------------------------------------------ | --------------------------------------- |
@@ -56,22 +56,22 @@ Built-in acpx harness aliases (from the pinned `acpx` dependency):
 
 `factory-droid` and `factorydroid` also resolve to the built-in `droid` adapter.
 
-When OpenClaw uses the acpx backend, prefer these values for `agentId` unless your acpx config defines custom agent aliases.
+When Paddy uses the acpx backend, prefer these values for `agentId` unless your acpx config defines custom agent aliases.
 If your local Cursor install still exposes ACP as `agent acp`, override the `cursor` agent command in your acpx config instead of changing the built-in default.
 
-Direct acpx CLI usage can also target arbitrary adapters via `--agent <command>`, but that raw escape hatch is an acpx CLI feature (not the normal OpenClaw `agentId` path).
+Direct acpx CLI usage can also target arbitrary adapters via `--agent <command>`, but that raw escape hatch is an acpx CLI feature (not the normal Paddy `agentId` path).
 
 Model control is adapter-capability dependent. Codex ACP model refs are
-normalized by OpenClaw before startup. Other harnesses need an advertised model
+normalized by Paddy before startup. Other harnesses need an advertised model
 config option with `session/set_config_option`, or legacy ACP `models` with
 `session/set_model`. Without supported ACP model control or an adapter-specific
-startup model flag, OpenClaw/acpx cannot force a model selection.
+startup model flag, Paddy/acpx cannot force a model selection.
 
 ## GitHub Copilot CLI in native chat
 
-GitHub Copilot CLI can serve ordinary OpenClaw chat through the installed-agent
+GitHub Copilot CLI can serve ordinary Paddy chat through the installed-agent
 model picker, including web chat and channels. This route uses the local
-`copilot --acp --stdio` process, not an OpenClaw API-provider credential.
+`copilot --acp --stdio` process, not a Paddy API-provider credential.
 
 Install an ACP-capable CLI and sign in under the same OS account that runs the
 Gateway. Copilot CLI 1.0.86 supports model discovery and selection over ACP:
@@ -82,7 +82,7 @@ copilot --version
 copilot login
 ```
 
-Refresh the model catalog, then choose an `acp-copilot/<model-id>` entry. OpenClaw
+Refresh the model catalog, then choose an `acp-copilot/<model-id>` entry. Paddy
 uses only the models advertised by that CLI; it does not supply a static model
 list. Installation detection alone does not prove authentication or model access.
 To prevent new native Copilot turns and catalog discovery, set
@@ -100,8 +100,8 @@ Copilot owns authentication and billing:
 - Explicit CLI BYOK configuration (`COPILOT_PROVIDER_*`,
   `COPILOT_PROVIDERS_CONFIG`, or the CLI's `providers.json`) can route model
   requests to a separately billed provider even when GitHub login is available.
-  Configure that route deliberately. OpenClaw does not choose it or copy an
-  OpenClaw API credential into the native harness.
+  Configure that route deliberately. Paddy does not choose it or copy an
+  Paddy API credential into the native harness.
 
 See GitHub's [CLI authentication guide](https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/authenticate-copilot-cli)
 and [Copilot billing guide](https://docs.github.com/en/copilot/concepts/billing-and-usage/individuals/billing)
@@ -109,7 +109,7 @@ for account and plan requirements. Native chat permission and sandbox boundaries
 below still apply.
 
 Installed native agents keep their own sign-in. During discovery, `/models` can
-report **Checking native agent** without requiring an OpenClaw API key. If
+report **Checking native agent** without requiring a Paddy API key. If
 availability is unconfirmed, check the native app on the Gateway host and run
 `/models` again.
 
@@ -117,16 +117,16 @@ availability is unconfirmed, check the native app on the Gateway host and run
 
 ## Permissions for native chat runtimes
 
-When a native runtime cannot enforce the chat's optional OpenClaw tool, sandbox,
+When a native runtime cannot enforce the chat's optional Paddy tool, sandbox,
 or workspace restrictions, the Control UI offers **Continue for this chat** to
 an administrator. The same confirmation applies when selecting the runtime or
 sending a message with an existing selection.
 
 Confirming selects **Full access**, turns off optional sandboxing for that chat,
 and records consent for the exact native runtime. The native agent then uses its
-own permissions on the Gateway host. OpenClaw does not claim to enforce its
+own permissions on the Gateway host. Paddy does not claim to enforce its
 optional tool restrictions inside that agent. Other chats and global settings
-stay unchanged, and tools hosted by OpenClaw retain their existing policy.
+stay unchanged, and tools hosted by Paddy retain their existing policy.
 
 Declining leaves permissions unchanged and keeps the message unsent. A first send
 can create an empty chat so confirmation is bound to that chat, but no message is
@@ -199,9 +199,9 @@ See [Configuration Reference](/gateway/configuration-reference).
 
 ## Repair existing bare-session histories
 
-ACPX isolates bare session names by OpenClaw owner. If a session reports
+ACPX isolates bare session names by Paddy owner. If a session reports
 `SESSION_OWNER_MIGRATION_REQUIRED`, stop the Gateway and run
-`openclaw doctor --fix`, then restart. Doctor uses the same service workspace
+`paddy doctor --fix`, then restart. Doctor uses the same service workspace
 as the Gateway; ACPX's default state directory is `<service workspace>/state`.
 
 The repair requires one current, unambiguous canonical owner claim with matching
@@ -224,7 +224,7 @@ Install and enable it before using ACP harness sessions:
 
 ```bash
 openclaw plugins install @openclaw/acpx
-openclaw config set plugins.entries.acpx.enabled true
+paddy config set plugins.entries.acpx.enabled true
 ```
 
 Source checkouts can also use the local workspace plugin after `pnpm install`.
@@ -240,13 +240,13 @@ to switch back to the packaged plugin, use the explicit package path:
 
 ```bash
 openclaw plugins install @openclaw/acpx
-openclaw config set plugins.entries.acpx.enabled true
+paddy config set plugins.entries.acpx.enabled true
 ```
 
 Local workspace install during development:
 
 ```bash
-openclaw plugins install ./path/to/local/acpx-plugin
+paddy plugins install ./path/to/local/acpx-plugin
 ```
 
 Then verify backend health:
@@ -304,26 +304,26 @@ See [Plugins](/tools/plugin).
 
 `acpx` auto-downloads ACP adapters (for example the Claude and Codex ACP
 bridges) via `npx` on first use. You do not need to install adapter packages
-manually, and there is no separate postinstall step for OpenClaw itself. If an
+manually, and there is no separate postinstall step for Paddy itself. If an
 adapter download or spawn fails, `/acp doctor` reports the failure.
 
 ### Plugin tools MCP bridge
 
-By default, ACPX sessions do **not** expose OpenClaw plugin-registered tools to
+By default, ACPX sessions do **not** expose Paddy plugin-registered tools to
 the ACP harness.
 
 If you want ACP agents such as Codex or Claude Code to call installed
-OpenClaw plugin tools such as memory recall/store, enable the dedicated bridge:
+Paddy plugin tools such as memory recall/store, enable the dedicated bridge:
 
 ```bash
-openclaw config set plugins.entries.acpx.config.pluginToolsMcpBridge true
+paddy config set plugins.entries.acpx.config.pluginToolsMcpBridge true
 ```
 
 What this does:
 
 - Injects a built-in MCP server named `openclaw-plugin-tools` into ACPX session
   bootstrap.
-- Exposes plugin tools already registered by installed and enabled OpenClaw
+- Exposes plugin tools already registered by installed and enabled Paddy
   plugins.
 - Passes the active ACP session identity to plugin tool factories, so
   agent-scoped tools stay in that agent's namespace.
@@ -334,27 +334,27 @@ Security and trust notes:
 - This expands the ACP harness tool surface.
 - ACP agents get access only to plugin tools already active in the gateway.
 - Treat this as the same trust boundary as letting those plugins execute in
-  OpenClaw itself.
+  Paddy itself.
 - Review installed plugins before enabling it.
 
 Custom `mcpServers` still work as before. The built-in plugin-tools bridge is an
 additional opt-in convenience, not a replacement for generic MCP server config.
 
-### OpenClaw tools MCP bridge
+### Paddy tools MCP bridge
 
-By default, ACPX sessions also do **not** expose built-in OpenClaw tools through
+By default, ACPX sessions also do **not** expose built-in Paddy tools through
 MCP. Enable the separate core-tools bridge when an ACP agent needs selected
 built-in tools such as `cron`:
 
 ```bash
-openclaw config set plugins.entries.acpx.config.openClawToolsMcpBridge true
+paddy config set plugins.entries.acpx.config.openClawToolsMcpBridge true
 ```
 
 What this does:
 
 - Injects a built-in MCP server named `openclaw-tools` into ACPX session
   bootstrap.
-- Exposes selected built-in OpenClaw tools. The initial server exposes `cron`.
+- Exposes selected built-in Paddy tools. The initial server exposes `cron`.
 - Keeps core-tool exposure explicit and default-off.
 
 ### Runtime operation timeout configuration
@@ -365,10 +365,10 @@ to complete ACP startup and initialization. Override it if your host needs a
 different operation limit:
 
 ```bash
-openclaw config set plugins.entries.acpx.config.timeoutSeconds 180
+paddy config set plugins.entries.acpx.config.timeoutSeconds 180
 ```
 
-Runtime turns use OpenClaw agent/run timeouts, including `/acp timeout`.
+Runtime turns use Paddy agent/run timeouts, including `/acp timeout`.
 An interactive turn can continue beyond the plugin operation limit until its
 turn budget expires, the harness finishes, or you cancel it.
 `sessions_spawn` does not accept per-call timeout overrides; the operator path
@@ -384,7 +384,7 @@ the first allowed agent; otherwise it defaults to `codex`. If your deployment
 needs a different ACP agent for health checks, set the probe agent explicitly:
 
 ```bash
-openclaw config set plugins.entries.acpx.config.probeAgent claude
+paddy config set plugins.entries.acpx.config.probeAgent claude
 ```
 
 With the default hybrid reload mode, this change automatically reloads the plugin.
@@ -398,9 +398,9 @@ channel-delivered turn: those requests use transient Gateway questions instead.
 The acpx plugin provides two config keys that control harness permissions,
 `permissionMode` and `nonInteractivePermissions`, both described below.
 
-These ACPX harness permissions are separate from OpenClaw exec approvals and separate from CLI-backend vendor bypass flags such as Claude CLI `--permission-mode bypassPermissions`. ACPX `approve-all` is the harness-level break-glass switch for ACP sessions.
+These ACPX harness permissions are separate from Paddy exec approvals and separate from CLI-backend vendor bypass flags such as Claude CLI `--permission-mode bypassPermissions`. ACPX `approve-all` is the harness-level break-glass switch for ACP sessions.
 
-For the broader comparison between OpenClaw `tools.exec.mode`, Codex Guardian
+For the broader comparison between Paddy `tools.exec.mode`, Codex Guardian
 approvals, and ACPX harness permissions, see
 [Permission modes](/tools/permission-modes).
 
@@ -428,15 +428,15 @@ Controls what happens when a permission prompt would be shown but no interactive
 Set via plugin config:
 
 ```bash
-openclaw config set plugins.entries.acpx.config.permissionMode approve-all
-openclaw config set plugins.entries.acpx.config.nonInteractivePermissions fail
+paddy config set plugins.entries.acpx.config.permissionMode approve-all
+paddy config set plugins.entries.acpx.config.nonInteractivePermissions fail
 ```
 
 With the default hybrid reload mode, these changes automatically reload the plugin.
 See [Config hot reload](/gateway/configuration/hot-reload) for other reload modes.
 
 <Warning>
-OpenClaw defaults to `permissionMode=approve-reads` and `nonInteractivePermissions=fail`. In non-interactive ACP sessions, any write or exec that triggers a permission prompt can fail with `PermissionPromptUnavailableError: Permission prompt unavailable in non-interactive mode`.
+Paddy defaults to `permissionMode=approve-reads` and `nonInteractivePermissions=fail`. In non-interactive ACP sessions, any write or exec that triggers a permission prompt can fail with `PermissionPromptUnavailableError: Permission prompt unavailable in non-interactive mode`.
 
 If you need to restrict permissions, set `nonInteractivePermissions` to `deny` so sessions degrade gracefully instead of crashing.
 </Warning>

@@ -1,8 +1,8 @@
 ---
 doc-schema-version: 1
-summary: "Uninstall OpenClaw completely (CLI, service, state, workspace)"
+summary: "Uninstall Paddy completely (CLI, service, state, workspace)"
 read_when:
-  - You want to remove OpenClaw from a machine
+  - You want to remove Paddy from a machine
   - The gateway service is still running after uninstall
 title: "Uninstall"
 ---
@@ -17,43 +17,43 @@ Remove the service and selected local data first, then [any remaining CLI instal
 The command attempts independent requested cleanup scopes and returns a nonzero status if any scope fails or is blocked. Service teardown remains the safety gate for state and workspace deletion; if that gate fails, those data scopes are preserved while app cleanup is still attempted. Partial cleanup is reported explicitly and is never followed by an unconditional completion result.
 
 ```bash
-openclaw uninstall
+paddy uninstall
 ```
 
 The interactive prompt preselects only the Gateway service. For complete local
 removal, also select state, workspace, and app in the prompt, or run
-`openclaw uninstall --all`. State removal preserves configured workspace
+`paddy uninstall --all`. State removal preserves configured workspace
 directories unless you also select `--workspace`.
 
 Preview what will be removed (safe):
 
 ```bash
-openclaw uninstall --dry-run --all
+paddy uninstall --dry-run --all
 ```
 
 Non-interactive (automation / npx). Use with caution and only after confirming scopes:
 
 ```bash
-openclaw uninstall --all --yes --non-interactive
+paddy uninstall --all --yes --non-interactive
 npx -y openclaw uninstall --all --yes --non-interactive
 ```
 
 Flags: `--service`, `--state`, `--workspace`, `--app` select individual scopes; `--all` selects all four.
 
-Unlike `openclaw uninstall --state`, manual state deletion does not preserve
+Unlike `paddy uninstall --state`, manual state deletion does not preserve
 workspaces. Stop and uninstall the service successfully before deleting files.
 Before manual state or prefix deletion, move any configuration you want to keep outside that directory.
 
 1. Stop the gateway service:
 
 ```bash
-openclaw gateway stop
+paddy gateway stop
 ```
 
 2. Uninstall the gateway service (launchd/systemd/schtasks):
 
 ```bash
-openclaw gateway uninstall
+paddy gateway uninstall
 ```
 
 3. Decide whether to preserve the workspace.
@@ -149,16 +149,16 @@ Remove the Gateway service **before** deleting a checkout, launcher, or prefix. 
 
 Git checkouts default to `~/openclaw` (`%USERPROFILE%\openclaw` on Windows); use the actual target of the launcher, including custom `--git-dir` / `-GitDir` or `OPENCLAW_GIT_DIR`. On POSIX, `OPENCLAW_HOME` can change the default checkout. Remove state/workspaces only as selected above.
 
-Before deleting a prefix, move any state, configuration, and workspaces you want to keep outside it. **Never delete a shared prefix wholesale**: remove only verified OpenClaw files, preserving shared Node runtimes, packages, and tools.
+Before deleting a prefix, move any state, configuration, and workspaces you want to keep outside it. **Never delete a shared prefix wholesale**: remove only verified Paddy files, preserving shared Node runtimes, packages, and tools.
 
 If completion was installed, remove only its `# OpenClaw Completion` block and OpenClaw source line from the [selected shell profile](/cli/completion#install-flow). Remove a legacy `openclaw completion` source/eval line only if it contains no other command; preserve surrounding content.
 
 Remove an installer-added PATH entry only when no other command uses it. Keep shared bin directories such as `~/.local/bin`. On Windows, the same rule applies to portable Node/MinGit and their PATH entries under `%LOCALAPPDATA%\OpenClaw\deps`.
 
-Open a new shell and check `command -v openclaw` (PowerShell: `Get-Command openclaw -ErrorAction SilentlyContinue`). If a command still resolves, inspect it: a second install or foreign wrapper may remain.
+Open a new shell and check `command -v paddy` (PowerShell: `Get-Command paddy -ErrorAction SilentlyContinue`). If a command still resolves, inspect it: a second install or foreign wrapper may remain.
 
 ## Related
 
 - [Install overview](/install)
 - [Migration guide](/install/migrating)
-- [`openclaw uninstall`](/cli/uninstall) — command reference and flags
+- [`paddy uninstall`](/cli/uninstall) — command reference and flags

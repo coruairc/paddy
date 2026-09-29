@@ -1,7 +1,7 @@
 ---
-summary: "Run OpenClaw in a sandboxed macOS VM (local or hosted) when you need isolation or iMessage"
+summary: "Run Paddy in a sandboxed macOS VM (local or hosted) when you need isolation or iMessage"
 read_when:
-  - You want OpenClaw isolated from your main macOS environment
+  - You want Paddy isolated from your main macOS environment
   - You want iMessage integration in a sandbox
   - You want a resettable macOS environment you can clone
   - You want to compare local vs hosted macOS VM options
@@ -20,7 +20,7 @@ Use a macOS VM only when you specifically need macOS-only capabilities such as i
 
 ### Local VM on your Apple Silicon Mac (Lume)
 
-Run OpenClaw in a sandboxed macOS VM on your existing Apple Silicon Mac using [Lume](https://cua.ai/docs/lume). This gives you:
+Run Paddy in a sandboxed macOS VM on your existing Apple Silicon Mac using [Lume](https://cua.ai/docs/lume). This gives you:
 
 - Full macOS environment in isolation (your host stays clean)
 - iMessage support via `imsg`; the default local path is impossible on Linux/Windows
@@ -34,7 +34,7 @@ If you want macOS in the cloud, hosted Mac providers work too:
 - [MacStadium](https://www.macstadium.com/) (hosted Macs)
 - Other hosted Mac vendors also work; follow their VM + SSH docs
 
-Once you have SSH access to a macOS VM, continue at [Install OpenClaw](#6-install-openclaw) below.
+Once you have SSH access to a macOS VM, continue at [Install Paddy](#6-install-paddy) below.
 
 ## Quick path (Lume, experienced users)
 
@@ -42,7 +42,7 @@ Once you have SSH access to a macOS VM, continue at [Install OpenClaw](#6-instal
 2. `lume create openclaw --os macos --ipsw latest`
 3. Complete Setup Assistant, enable Remote Login (SSH).
 4. `lume run openclaw --no-display`
-5. SSH in, install OpenClaw, configure channels.
+5. SSH in, install Paddy, configure channels.
 6. Done.
 
 ## What you need (Lume)
@@ -114,14 +114,14 @@ ssh youruser@192.168.64.X
 
 Replace `youruser` with the account you created, and the IP with your VM's IP.
 
-## 6) Install OpenClaw
+## 6) Install Paddy
 
 Inside the VM, use the following command on npm 12 or npm 11.16+. On npm 11.15
 and earlier, omit `--allow-scripts=openclaw`.
 
 ```bash
 npm install -g openclaw@latest --allow-scripts=openclaw
-openclaw onboard --install-daemon
+paddy onboard --install-daemon
 ```
 
 Follow the onboarding prompts to set up your model provider (Anthropic, OpenAI, etc.).
@@ -134,16 +134,16 @@ Keep the Telegram token in the Gateway environment rather than copying it into
 
 ```bash
 export TELEGRAM_BOT_TOKEN="<bot-token>"
-openclaw channels add --channel telegram --use-env
+paddy channels add --channel telegram --use-env
 ```
 
 The managed Gateway reads the same state-directory `.env` after restart. For
 WhatsApp, configure your allowlist and then scan the login QR code:
 
 ```bash
-openclaw config set channels.whatsapp.dmPolicy allowlist
-openclaw config set channels.whatsapp.allowFrom '["+15551234567"]' --strict-json
-openclaw channels login --channel whatsapp
+paddy config set channels.whatsapp.dmPolicy allowlist
+paddy config set channels.whatsapp.allowFrom '["+15551234567"]' --strict-json
+paddy channels login --channel whatsapp
 ```
 
 ## 8) Run the VM headlessly
@@ -155,15 +155,15 @@ lume stop openclaw
 lume run openclaw --no-display
 ```
 
-The VM runs in the background; OpenClaw's daemon keeps the gateway running. To check status:
+The VM runs in the background; Paddy's daemon keeps the gateway running. To check status:
 
 ```bash
-ssh youruser@192.168.64.X "openclaw status"
+ssh youruser@192.168.64.X "paddy status"
 ```
 
 ## Bonus: iMessage integration
 
-This is the killer feature of running on macOS. Use [iMessage](/channels/imessage) with `imsg` to add Messages to OpenClaw.
+This is the killer feature of running on macOS. Use [iMessage](/channels/imessage) with `imsg` to add Messages to Paddy.
 
 Inside the VM:
 
@@ -172,7 +172,7 @@ Inside the VM:
 3. Grant Full Disk Access and Automation permission for the process running OpenClaw/`imsg`.
 4. Verify RPC support with `imsg rpc --help`.
 
-Add to your OpenClaw config:
+Add to your Paddy config:
 
 ```json5
 {
@@ -201,7 +201,7 @@ Reset anytime:
 
 ```bash
 lume stop openclaw && lume delete openclaw
-lume clone openclaw-golden openclaw
+lume clone paddy-golden paddy
 lume run openclaw --no-display
 ```
 
@@ -217,12 +217,12 @@ For true always-on, consider a dedicated Mac mini or a small VPS. See [VPS hosti
 
 ## Troubleshooting
 
-| Problem                  | Solution                                                                            |
-| ------------------------ | ----------------------------------------------------------------------------------- |
-| Cannot SSH into VM       | Check "Remote Login" is enabled in the VM's System Settings                         |
-| VM IP not showing        | Wait for VM to fully boot, run `lume get openclaw` again                            |
-| Lume command not found   | Add `~/.local/bin` to your PATH                                                     |
-| WhatsApp QR not scanning | Ensure you are logged into the VM (not host) when running `openclaw channels login` |
+| Problem                  | Solution                                                                         |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| Cannot SSH into VM       | Check "Remote Login" is enabled in the VM's System Settings                      |
+| VM IP not showing        | Wait for VM to fully boot, run `lume get openclaw` again                         |
+| Lume command not found   | Add `~/.local/bin` to your PATH                                                  |
+| WhatsApp QR not scanning | Ensure you are logged into the VM (not host) when running `paddy channels login` |
 
 ## Related docs
 

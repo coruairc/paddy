@@ -1,14 +1,14 @@
 ---
-summary: "Let an agent select plugin themes or create a personal OpenClaw theme"
+summary: "Let an agent select plugin themes or create a personal Paddy theme"
 title: "Theme"
 sidebarTitle: "Theme"
 read_when:
-  - You want an agent to change your OpenClaw theme
+  - You want an agent to change your Paddy theme
   - You want to create a custom theme and apply it in one call
   - You need the theme catalog and profile selection contract
 ---
 
-The `theme` tool lets an agent list, inspect, select, and create OpenClaw
+The `theme` tool lets an agent list, inspect, select, and create Paddy
 appearance themes. Settings and the agent use the same catalog of built-in,
 plugin, and personal themes. Theme descriptions explain their palette,
 typography, and character so the agent can choose a theme from a request such

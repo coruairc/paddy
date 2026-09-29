@@ -1,13 +1,13 @@
-# OpenClaw Synthetic Provider
+# Paddy Synthetic Provider
 
-Official OpenClaw provider plugin for Synthetic's hosted Anthropic-compatible
+Official Paddy provider plugin for Synthetic's hosted Anthropic-compatible
 API.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/synthetic-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 Configure `SYNTHETIC_API_KEY`, then select a `synthetic/<model-id>` model.

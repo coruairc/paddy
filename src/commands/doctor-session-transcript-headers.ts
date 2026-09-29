@@ -325,7 +325,7 @@ export async function noteSessionTranscriptHeaderHealth(params: {
     note(
       [
         `- Found ${countLabel(found, "canonical session transcript")} without a header.`,
-        `- Run "openclaw doctor --fix" to repair ${found === 1 ? "it" : "them"} before resuming the session.`,
+        `- Run "paddy doctor --fix" to repair ${found === 1 ? "it" : "them"} before resuming the session.`,
       ].join("\n"),
       NOTE_TITLE,
     );

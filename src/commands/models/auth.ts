@@ -310,7 +310,7 @@ export function resolveRequestedLoginProviderOrThrow(
     .toSorted((a, b) => a.localeCompare(b));
   const availableText = available.length > 0 ? available.join(", ") : "(none)";
   throw new Error(
-    `Unknown provider "${requested}". Loaded providers: ${availableText}. Verify plugins via \`${formatCliCommand("openclaw plugins list --json")}\`.`,
+    `Unknown provider "${requested}". Loaded providers: ${availableText}. Verify plugins via \`${formatCliCommand("paddy plugins list --json")}\`.`,
   );
 }
 
@@ -516,7 +516,7 @@ async function persistProviderAuthResult(params: {
       params.runtime.log(
         params.setDefault
           ? `Default model set to ${defaultModel}`
-          : `Default model available: ${defaultModel} (current default unchanged; run ${formatCliCommand(`openclaw models set ${defaultModel}`)} to apply)`,
+          : `Default model available: ${defaultModel} (current default unchanged; run ${formatCliCommand(`paddy models set ${defaultModel}`)} to apply)`,
       );
     }
     if (params.result.notes && params.result.notes.length > 0) {
@@ -700,7 +700,7 @@ export async function modelsAuthSetupTokenCommand(
 ) {
   if (!process.stdin.isTTY) {
     throw new Error(
-      `setup-token requires an interactive TTY. In automation, use ${formatCliCommand("openclaw models auth paste-token --provider <provider>")} instead.`,
+      `setup-token requires an interactive TTY. In automation, use ${formatCliCommand("paddy models auth paste-token --provider <provider>")} instead.`,
     );
   }
 
@@ -712,7 +712,7 @@ export async function modelsAuthSetupTokenCommand(
   const tokenProviders = listProvidersWithTokenMethods(providers);
   if (tokenProviders.length === 0) {
     throw new Error(
-      `No provider token-auth plugins found. Install one via \`${formatCliCommand("openclaw plugins install")}\`.`,
+      `No provider token-auth plugins found. Install one via \`${formatCliCommand("paddy plugins install")}\`.`,
     );
   }
 
@@ -722,7 +722,7 @@ export async function modelsAuthSetupTokenCommand(
     null;
   if (!provider) {
     throw new Error(
-      `No token-capable provider is available. Run ${formatCliCommand("openclaw plugins list")} to verify provider plugins are installed.`,
+      `No token-capable provider is available. Run ${formatCliCommand("paddy plugins list")} to verify provider plugins are installed.`,
     );
   }
 
@@ -768,7 +768,7 @@ export async function modelsAuthPasteTokenCommand(
   const rawProvider = normalizeOptionalString(opts.provider);
   if (!rawProvider) {
     throw new Error(
-      `Missing --provider. Run ${formatCliCommand("openclaw models status")} or ${formatCliCommand("openclaw plugins list")} to choose a provider.`,
+      `Missing --provider. Run ${formatCliCommand("paddy models status")} or ${formatCliCommand("paddy plugins list")} to choose a provider.`,
     );
   }
   const provider = normalizeManualAuthProvider(rawProvider);
@@ -784,7 +784,7 @@ export async function modelsAuthPasteTokenCommand(
       return validateAnthropicSetupToken(trimmed.replaceAll(/\s+/g, ""));
     }
     if (provider === "openai" && looksLikeOpenAIApiKey(trimmed)) {
-      return `That looks like an OpenAI API key. Use ${formatCliCommand("openclaw models auth paste-api-key --provider openai")} for API-key auth.`;
+      return `That looks like an OpenAI API key. Use ${formatCliCommand("paddy models auth paste-api-key --provider openai")} for API-key auth.`;
     }
     return undefined;
   };
@@ -837,7 +837,7 @@ export async function modelsAuthPasteApiKeyCommand(
   const rawProvider = normalizeOptionalString(opts.provider);
   if (!rawProvider) {
     throw new Error(
-      `Missing --provider. Run ${formatCliCommand("openclaw models status")} or ${formatCliCommand("openclaw plugins list")} to choose a provider.`,
+      `Missing --provider. Run ${formatCliCommand("paddy models status")} or ${formatCliCommand("paddy plugins list")} to choose a provider.`,
     );
   }
   const provider = normalizeManualAuthProvider(rawProvider);
@@ -926,7 +926,7 @@ export async function modelsAuthAddCommand(opts: { agent?: string }, runtime: Ru
       const method = tokenMethods.find((candidate) => candidate.id === methodId);
       if (!method) {
         throw new Error(
-          `Unknown token auth method "${methodId}". Run ${formatCliCommand("openclaw models auth login --provider " + providerPlugin.id)} to choose interactively.`,
+          `Unknown token auth method "${methodId}". Run ${formatCliCommand("paddy models auth login --provider " + providerPlugin.id)} to choose interactively.`,
         );
       }
       await runProviderAuthMethod({
@@ -1075,7 +1075,7 @@ async function runModelsAuthLoginFlow(
   }
   if (authProviders.length === 0) {
     throw new Error(
-      `No provider plugins found. Install one via \`${formatCliCommand("openclaw plugins install")}\`.`,
+      `No provider plugins found. Install one via \`${formatCliCommand("paddy plugins install")}\`.`,
     );
   }
   if (useProviderPicker) {
@@ -1092,7 +1092,7 @@ async function runModelsAuthLoginFlow(
         "Scope: System / agent",
         `Agent: ${context.agentId}`,
         `Location: the machine running Paddy`,
-        `For personal model accounts on a Gateway, run ${formatCliCommand("openclaw models accounts login --help")}.`,
+        `For personal model accounts on a Gateway, run ${formatCliCommand("paddy models accounts login --help")}.`,
       ].join("\n"),
       "Provider sign-in",
     );
@@ -1112,7 +1112,7 @@ async function runModelsAuthLoginFlow(
 
   if (!selectedProvider) {
     throw new Error(
-      `Unknown provider. Run ${formatCliCommand("openclaw models status")} or ${formatCliCommand("openclaw plugins list")} to see available provider plugins.`,
+      `Unknown provider. Run ${formatCliCommand("paddy models status")} or ${formatCliCommand("paddy plugins list")} to see available provider plugins.`,
     );
   }
 
@@ -1130,7 +1130,7 @@ async function runModelsAuthLoginFlow(
 
   if (!chosenMethod) {
     throw new Error(
-      `Unknown auth method. Run ${formatCliCommand("openclaw models auth login --provider " + selectedProvider.id)} without --method to choose interactively.`,
+      `Unknown auth method. Run ${formatCliCommand("paddy models auth login --provider " + selectedProvider.id)} without --method to choose interactively.`,
     );
   }
 
@@ -1253,7 +1253,7 @@ async function runModelsAuthLoginFlow(
 export async function modelsAuthLoginCommand(opts: LoginOptions, runtime: RuntimeEnv) {
   if (!process.stdin.isTTY) {
     throw new Error(
-      `models auth login requires an interactive TTY. In automation, use ${formatCliCommand("openclaw models auth paste-token --provider <provider>")} when token auth is available.`,
+      `models auth login requires an interactive TTY. In automation, use ${formatCliCommand("paddy models auth paste-token --provider <provider>")} when token auth is available.`,
     );
   }
 

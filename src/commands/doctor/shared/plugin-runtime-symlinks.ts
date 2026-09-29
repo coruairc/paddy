@@ -65,7 +65,7 @@ function stalePluginRuntimeSymlinkToHealthFinding(item: StalePluginRuntimeSymlin
     path: item.path,
     target: item.path,
     requirement: "stale-plugin-runtime-symlink-removed",
-    fixHint: "Run `openclaw doctor --fix` to remove stale plugin-runtime symlinks.",
+    fixHint: "Run `paddy doctor --fix` to remove stale plugin-runtime symlinks.",
   };
 }
 
@@ -97,7 +97,7 @@ export async function noteStalePluginRuntimeSymlinks(
   if (stale.length > MAX_REPORTED) {
     lines.push(`  - ...and ${stale.length - MAX_REPORTED} more`);
   }
-  lines.push("- Repair: run `openclaw doctor --fix` to remove the dangling symlinks.");
+  lines.push("- Repair: run `paddy doctor --fix` to remove the dangling symlinks.");
   note(lines.join("\n"), "Plugin-runtime symlinks");
 }
 

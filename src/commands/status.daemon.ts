@@ -29,7 +29,7 @@ async function buildDaemonStatusSummary(
     activePackageRoot ?? undefined,
   );
   const runtime = summary.runtime?.inspectionFailure
-    ? { ...summary.runtime, detail: `${summary.runtime.detail}; retry with openclaw status --deep` }
+    ? { ...summary.runtime, detail: `${summary.runtime.detail}; retry with paddy status --deep` }
     : summary.runtime;
   const loaded =
     summary.loadState.status === "unknown" ? null : summary.loadState.status === "loaded";

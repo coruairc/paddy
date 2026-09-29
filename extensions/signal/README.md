@@ -1,6 +1,6 @@
-# Signal OpenClaw channel
+# Signal Paddy channel
 
-Official OpenClaw channel plugin for Signal.
+Official Paddy channel plugin for Signal.
 
 ## Install
 

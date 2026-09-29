@@ -248,13 +248,13 @@ export async function assertSupportedRuntime(
   }
   const requirement =
     details.kind === "bun"
-      ? "openclaw requires Bun 1.4 or newer with WAL-reset-safe node:sqlite (SQLite 3.51.3+ or a patched 3.50.x/3.44.x release)."
+      ? "paddy requires Bun 1.4 or newer with WAL-reset-safe node:sqlite (SQLite 3.51.3+ or a patched 3.50.x/3.44.x release)."
       : (details.sqliteProbe && nodeRuntimeFailure(details.version, details.sqliteProbe)) ||
-        "openclaw requires Node >=24.16.0 <25, or >=26.1.0.";
+        "paddy requires Node >=24.16.0 <25, or >=26.1.0.";
   const retryHint =
     details.kind === "bun"
       ? `Upgrade Bun or run ${PRODUCT_NAME} with a supported Node release.`
-      : "Upgrade Node and re-run openclaw.";
+      : "Upgrade Node and re-run paddy.";
 
   runtime.error(
     [

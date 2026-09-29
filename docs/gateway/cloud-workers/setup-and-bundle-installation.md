@@ -8,9 +8,9 @@ What runs on the leased box before enrollment, how the Gateway prepares and veri
 
 ## The setup command
 
-`settings.setup` runs on the leased box after Crabbox reports it ready and before ephemeral node enrollment. It runs on **every** provision attempt, including replay after an interrupted dispatch, so it must be idempotent. Check Node's version, not just executable presence, and preserve supported installations as in the example. Recheck the installed version and npm after any repair. If the final check still fails, fix the image's PATH or package selection before dispatching again. Automatic bootstrap installs the Gateway-matched OpenClaw runtime, not Node.js; keep the image or setup prerequisites aligned with the serving Gateway's `package.json` `engines.node` requirement when upgrading. If setup or enrollment fails, the provider stops the lease and the dispatch fails closed; no half-configured paid box is hidden behind terminal state.
+`settings.setup` runs on the leased box after Crabbox reports it ready and before ephemeral node enrollment. It runs on **every** provision attempt, including replay after an interrupted dispatch, so it must be idempotent. Check Node's version, not just executable presence, and preserve supported installations as in the example. Recheck the installed version and npm after any repair. If the final check still fails, fix the image's PATH or package selection before dispatching again. Automatic bootstrap installs the Gateway-matched Paddy runtime, not Node.js; keep the image or setup prerequisites aligned with the serving Gateway's `package.json` `engines.node` requirement when upgrading. If setup or enrollment fails, the provider stops the lease and the dispatch fails closed; no half-configured paid box is hidden behind terminal state.
 
-The example profile supports both OpenClaw and Codex. Keep setup focused on machine prerequisites and project tools. You do not need to install OpenClaw globally, append a versioned Codex plugin install, or maintain a package URL in the profile. Remove those old runtime-install steps when updating an existing profile; bootstrap supplies the running Gateway's runtime automatically.
+The example profile supports both Paddy and Codex. Keep setup focused on machine prerequisites and project tools. You do not need to install Paddy globally, append a versioned Codex plugin install, or maintain a package URL in the profile. Remove those old runtime-install steps when updating an existing profile; bootstrap supplies the running Gateway's runtime automatically.
 
 When an agent tool waits for a bounded in-process Gateway request, stalled-run recovery honors the active response deadline, including nested Crabbox creation calls. Completing, failing, canceling, or timing out the wait removes its allowance; a prior run's pending request cannot extend the current run's budget. A response timeout does not by itself cancel provisioning. Inspect the environment's state before retrying an uncertain creation request.
 
@@ -26,7 +26,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 exit $LASTEXITCODE
 ```
 
-Use a Crabbox bootstrap or image that supplies a supported Node.js release and npm on the machine `PATH`, with npm's CLI installed beside `node.exe` under `node_modules/npm`. OpenClaw fails enrollment with a prerequisite message if Node or that npm installation is missing; it does not install Node. npm installs the node runtime archive, and OpenClaw extracts worker bundles with its Node archive library.
+Use a Crabbox bootstrap or image that supplies a supported Node.js release and npm on the machine `PATH`, with npm's CLI installed beside `node.exe` under `node_modules/npm`. Paddy fails enrollment with a prerequisite message if Node or that npm installation is missing; it does not install Node. npm installs the node runtime archive, and Paddy extracts worker bundles with its Node archive library.
 
 Headless Windows guests must include Crabbox's managed launcher at `C:\Program Files\Crabbox\bin\Start-CrabboxDetachedProcess.ps1`. It keeps the node alive after Crabbox closes its SSH command. Enrollment fails with guidance if the launcher is absent. A hidden PowerShell parent redirects node output to `node.log` under its isolated state directory because the launcher does not inherit SSH output handles.
 
@@ -36,7 +36,7 @@ Restart replay verifies the actual `node.exe` child's PID, creation time, execut
 
 Before enrolling a cloud node, the Gateway prepares a reusable runtime archive from its current built installation in a temporary staging directory. This works for published packages and source checkouts. It includes the complete node host and the trusted plugins that own the registered remote-execution commands required by the selected execution mode. Codex's plugin and its native dependency pin therefore travel with the node distribution without a separate profile recipe.
 
-The archive is selected and verified by SHA-256 content digest, not by the OpenClaw version string or Git commit alone. Two source builds with the same version can produce different archives, including a build containing uncommitted changes. Build source changes with `pnpm build` and restart the Gateway before dispatching. Bootstrap does not compile an unbuilt checkout, copy raw edits over a running build, or rewrite the running Gateway's installation. Missing or mismatched build metadata produces an actionable rebuild-and-restart error.
+The archive is selected and verified by SHA-256 content digest, not by the Paddy version string or Git commit alone. Two source builds with the same version can produce different archives, including a build containing uncommitted changes. Build source changes with `pnpm build` and restart the Gateway before dispatching. Bootstrap does not compile an unbuilt checkout, copy raw edits over a running build, or rewrite the running Gateway's installation. Missing or mismatched build metadata produces an actionable rebuild-and-restart error.
 
 Source builds may also contain private QA tooling. Bootstrap omits complete chunks only when their bytes match build-generated ownership metadata and all owners are private QA plugins. Chunks shared with public plugins or referenced by the retained runtime stay in the archive. Missing ownership metadata cannot authorize omission, and stale ownership or an incomplete import closure fails preparation without changing the running Gateway.
 
@@ -44,7 +44,7 @@ Crabbox uses the core bootstrap operation window for each runtime-preparation or
 
 Each enrollment receives short-lived download authority scoped to that live provisioning operation. Project image preparation first receives a runtime-only artifact grant: it installs the verified runtime without minting a node identity or enrollment credential. That grant closes before enrollment starts, and closing the provisioning operation revokes it. The node verifies the archive's declared size and digest, installs it as the node user, and enables its required plugins in isolated per-lease state only during enrollment. The archive contains runtime code and package metadata, not the Gateway's config, auth profiles, session state, or process environment. Download and enrollment credentials are not passed to npm or the launched node process.
 
-Native dependencies are installed by npm for the cloud machine's operating system and CPU; the archive does not copy the build host's native `node_modules`. Registry access is still required, and this is not an offline dependency bundle. Bootstrap does not select a global OpenClaw installation merely because its version matches.
+Native dependencies are installed by npm for the cloud machine's operating system and CPU; the archive does not copy the build host's native `node_modules`. Registry access is still required, and this is not an offline dependency bundle. Bootstrap does not select a global Paddy installation merely because its version matches.
 
 Bootstrap emits `CRABBOX_PHASE:openclaw-bootstrap-*` markers into the Crabbox command stream for download, installation, verification, plugin activation, and node launch. Crabbox records these as command phase timings; cached runs emit only the work they perform.
 
@@ -60,7 +60,7 @@ While a prepared worker is provisioning, cache cleanup retains the exact worker 
 
 ### Reuse a node runtime archive after Gateway restart
 
-Linux and macOS deployment images can retain an already prepared node runtime archive as `node-runtime.tgz` in the running OpenClaw package root, beside `package.json`. During image preparation, copy the producer's archive there before closing the producer:
+Linux and macOS deployment images can retain an already prepared node runtime archive as `node-runtime.tgz` in the running Paddy package root, beside `package.json`. During image preparation, copy the producer's archive there before closing the producer:
 
 ```bash
 cp /path/to/prepared/node-runtime.tgz /path/to/openclaw/node-runtime.tgz
@@ -97,7 +97,7 @@ After verifying the downloaded archive, install it with the mask scoped to the r
 
 ```bash
 sudo sh -c 'umask 022 && npm install -g /tmp/openclaw-cloud.tgz'
-openclaw --version
+paddy --version
 ```
 
 Use the path of your verified archive in place of `/tmp/openclaw-cloud.tgz`. Changing the install mask does not repair existing root-only parent directories; if an earlier install was inaccessible, correct access to that package and its parent directories before retrying enrollment.

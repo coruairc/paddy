@@ -55,16 +55,16 @@ Example with a stable public host:
 ## CLI
 
 ```bash
-openclaw voicecall call --to "+15555550123" --message "Hello from OpenClaw"
-openclaw voicecall start --to "+15555550123"   # alias for call
-openclaw voicecall continue --call-id <id> --message "Any questions?"
-openclaw voicecall speak --call-id <id> --message "One moment"
-openclaw voicecall dtmf --call-id <id> --digits "ww123456#"
-openclaw voicecall end --call-id <id>
-openclaw voicecall status --call-id <id>
-openclaw voicecall tail
-openclaw voicecall latency                      # summarize turn latency from logs
-openclaw voicecall expose --mode funnel
+paddy voicecall call --to "+15555550123" --message "Hello from Paddy"
+paddy voicecall start --to "+15555550123"   # alias for call
+paddy voicecall continue --call-id <id> --message "Any questions?"
+paddy voicecall speak --call-id <id> --message "One moment"
+paddy voicecall dtmf --call-id <id> --digits "ww123456#"
+paddy voicecall end --call-id <id>
+paddy voicecall status --call-id <id>
+paddy voicecall tail
+paddy voicecall latency                      # summarize turn latency from logs
+paddy voicecall expose --mode funnel
 ```
 
 When the Gateway is already running, operational `voicecall` commands

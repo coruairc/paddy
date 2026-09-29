@@ -25,8 +25,8 @@ Configure `channels.feishu.dmPolicy` (default: `pairing`) to control who can DM 
 **Approve a pairing request:**
 
 ```bash
-openclaw pairing list feishu
-openclaw pairing approve feishu <CODE>
+paddy pairing list feishu
+paddy pairing approve feishu <CODE>
 ```
 
 ### Group chats
@@ -171,7 +171,7 @@ Feishu ignores messages authored by other bots by default. To allow bot-to-bot g
 }
 ```
 
-Feishu only delivers bot-authored group events when another bot mentions this bot. Existing group policy, sender allowlists, and mention requirements still apply. OpenClaw drops self-authored messages, mentions the peer bot on every text or card reply, and applies the shared [`channels.defaults.botLoopProtection`](/channels/bot-loop-protection) guard.
+Feishu only delivers bot-authored group events when another bot mentions this bot. Existing group policy, sender allowlists, and mention requirements still apply. Paddy drops self-authored messages, mentions the peer bot on every text or card reply, and applies the shared [`channels.defaults.botLoopProtection`](/channels/bot-loop-protection) guard.
 
 <a id="get-groupuser-ids"></a>
 
@@ -188,11 +188,11 @@ Open the group in Feishu/Lark, click the menu icon in the top-right corner, and 
 Start the gateway, send a DM to the bot, then check the logs:
 
 ```bash
-openclaw logs --follow
+paddy logs --follow
 ```
 
 Look for `open_id` in the log output. You can also check pending pairing requests:
 
 ```bash
-openclaw pairing list feishu
+paddy pairing list feishu
 ```

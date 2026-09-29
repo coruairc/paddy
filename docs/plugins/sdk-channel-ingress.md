@@ -19,7 +19,7 @@ policy utilities from `openclaw/plugin-sdk/channel-ingress-runtime`.
 
 ## Runtime resolver
 
-In this example, `cfg` is the root OpenClaw configuration and `config` is the
+In this example, `cfg` is the root Paddy configuration and `config` is the
 resolved channel-account configuration. Supply `runtime`, `normalizePlatformUserId`,
 `route`, `agentRoute`, `readStoreAllowFrom`, and the message facts from your
 plugin's receive path.
@@ -78,7 +78,7 @@ another Gateway or a replacement plugin cannot redeem the result.
 
 The standalone `resolveChannelMessageIngress`,
 `resolveStableChannelMessageIngress`, and `createChannelIngressResolver`
-helpers retain the receive-path contract documented in OpenClaw 2026.9.5.
+helpers retain the receive-path contract documented in Paddy 2026.9.5.
 In a host-managed callback of a trusted,
 active channel plugin, they delegate to that exact plugin instance's registered
 runtime, preserving participant attribution when the result enters its
@@ -103,7 +103,7 @@ the finalized context message id identifies the last source result.
 An identity descriptor may provide `resolveParticipant(subject)`, returning
 `{ domain, idKind, id }` only when the plugin can prove those remote facts.
 The domain belongs to the remote service: for example, a Slack workspace or
-an application-scoped identity issuer. It is not OpenClaw's local `accountId`.
+an application-scoped identity issuer. It is not Paddy's local `accountId`.
 Keep user IDs, bot IDs, and proxy identities distinct when the service gives
 them different meanings. Names and successful Gateway profile lookups are
 not identity evidence.

@@ -1,9 +1,9 @@
 ---
-summary: "Schema-accurate configuration examples for common OpenClaw setups"
+summary: "Schema-accurate configuration examples for common Paddy setups"
 read_when:
-  - Learning how to configure OpenClaw
+  - Learning how to configure Paddy
   - Looking for configuration examples
-  - Setting up OpenClaw for the first time
+  - Setting up Paddy for the first time
 title: "Configuration examples"
 ---
 
@@ -180,7 +180,7 @@ Save to `~/.openclaw/openclaw.json` and you can DM the bot from that number.
       allowFrom: ["123456789012345678"],
       guilds: {
         "123456789012345678": {
-          slug: "friends-of-openclaw",
+          slug: "friends-of-paddy",
           requireMention: false,
           channels: {
             general: { enabled: true },
@@ -505,7 +505,7 @@ example `~/.agents/skills/manager -> ~/path/to/skills`.
 {
   agents: { defaults: { workspace: "~/.openclaw/workspace" } },
   channels: {
-    whatsapp: { allowFrom: ["+15555550123"], responsePrefix: "[openclaw]" },
+    whatsapp: { allowFrom: ["+15555550123"], responsePrefix: "[paddy]" },
     telegram: {
       enabled: true,
       botToken: "YOUR_TOKEN",

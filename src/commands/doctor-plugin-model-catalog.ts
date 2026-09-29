@@ -82,7 +82,7 @@ export async function maybeMigrateLegacyPluginModelCatalogs(params: {
         );
       }
     }
-    details.push("Run openclaw doctor --fix to verify and repair these catalogs.");
+    details.push("Run paddy doctor --fix to verify and repair these catalogs.");
     emitNote(details.join("\n"), "Plugin model catalogs");
   }
   const shouldRepair =

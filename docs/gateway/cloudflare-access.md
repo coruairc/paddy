@@ -8,7 +8,7 @@ title: "Cloudflare Tunnel and Access"
 ---
 
 Run the Gateway on loopback, publish it through a Cloudflare Tunnel, and let Cloudflare
-Access authenticate every request before it reaches OpenClaw. The Gateway keeps
+Access authenticate every request before it reaches Paddy. The Gateway keeps
 `gateway.bind: "loopback"`, so no port is exposed and no inbound firewall rule is
 needed; `cloudflared` dials out from the host.
 
@@ -58,7 +58,7 @@ users. Note the two headers Access adds to authenticated requests, because the G
 consumes them in the next step:
 
 - `cf-access-authenticated-user-email` — the authenticated identity.
-- `cf-access-jwt-assertion` — Access's signed assertion. OpenClaw checks only that this
+- `cf-access-jwt-assertion` — Access's signed assertion. Paddy checks only that this
   header is present and non-blank; it does not verify the JWT signature.
 
 ### OIDC sign-in and existing people
@@ -68,7 +68,7 @@ that identity provider. For example, use a signed role claim maintained by the
 provider. A GitHub organization policy applies to the GitHub identity provider;
 it does not grant access through a separate OIDC provider.
 
-OpenClaw verifies the OIDC identity through Cloudflare Access's identity endpoint
+Paddy verifies the OIDC identity through Cloudflare Access's identity endpoint
 and requires its email to match the authenticated user header. It then resolves
 that email through the existing person profile. Using the same email retains the
 person's profile and role; a different email requires an existing linked alias to
@@ -76,7 +76,7 @@ resolve to that person. GitHub sign-in continues to verify the immutable GitHub
 account ID. Failed identity verification does not fall back to email matching.
 
 Keep the identity provider responsible for verifying email ownership. Creating an
-OpenClaw person profile does not grant access through Cloudflare Access.
+Paddy person profile does not grant access through Cloudflare Access.
 
 ### Verified GitHub credit through OIDC
 
@@ -109,18 +109,18 @@ The provider must verify ownership of the GitHub account and bind it to the
 verified sign-in email. Its ID token must contain a canonical positive
 decimal-string account ID, such as `"12345"`, within JavaScript's safe-integer
 range. Configure Access to forward that exact [custom OIDC claim](https://developers.cloudflare.com/cloudflare-one/integrations/identity-providers/generic-oidc/#custom-oidc-claims).
-OpenClaw reads it from `oidc_fields` in the authenticated
+Paddy reads it from `oidc_fields` in the authenticated
 `/cdn-cgi/access/get-identity` response, or from `custom` when `oidc_fields` is
 absent, then verifies the numeric account through GitHub to obtain its current
-public login. A present `oidc_fields` container takes precedence: OpenClaw does
+public login. A present `oidc_fields` container takes precedence: Paddy does
 not retry `custom` if the preferred container lacks the claim or its value is
 invalid. The identity-provider **Test** preview uses `oidc_fields`; inspect the
 authenticated identity endpoint after a fresh sign-in to verify the response
-OpenClaw consumes.
+Paddy consumes.
 
 A missing or malformed optional claim, or an unselected issuer/provider, keeps
 ordinary email-only resolution. Malformed claims are never sent to GitHub or
-used to create an association or public credit. If the optional GitHub account lookup fails, OpenClaw resolves the
+used to create an association or public credit. If the optional GitHub account lookup fails, Paddy resolves the
 authenticated email through the normal profile and access-policy checks. An
 existing authorized profile or valid email invitation can still sign in. A
 GitHub-only access requirement is not satisfied by an email fallback.
@@ -190,10 +190,10 @@ application, then on the node host:
 ```bash
 export CF_ACCESS_CLIENT_ID="<client-id>"
 export CF_ACCESS_CLIENT_SECRET="<client-secret>"
-openclaw connect https://gateway.example/j/<code> --service
+paddy connect https://gateway.example/j/<code> --service
 ```
 
-`openclaw connect` persists these as env SecretRefs under
+`paddy connect` persists these as env SecretRefs under
 `gateway.cloudflareAccess.clientId` / `clientSecret`; see [Node CLI](/cli/node). The only
 cost is that the node needs those two values before the join command, so a join link is no
 longer paste-and-go on its own.
@@ -206,7 +206,7 @@ carries its own expiring credential. This keeps join links paste-and-go, at the 
 making those two routes publicly reachable. Prefer the service token unless you need that
 onboarding flow. See [Nodes](/nodes/node-host#gateway-deployments-that-cannot-host-nodes).
 
-If you do neither, `openclaw connect` fails against the tunnel even though the browser
+If you do neither, `paddy connect` fails against the tunnel even though the browser
 works, because the join request is redirected to the Access login page.
 
 ## Step 5: Connect each client
@@ -219,7 +219,7 @@ while new image and file requests require renewed website access. The Control UI
 first attempts automatic renewal through a hidden, sandboxed browser navigation.
 If your global Cloudflare Access session is still valid and your browser permits
 its cookies, Access can issue a fresh application cookie without another login.
-OpenClaw verifies access before retrying failed attachments, keeping your
+Paddy verifies access before retrying failed attachments, keeping your
 conversation and unsent draft open.
 
 If renewal still requires sign-in, the Control UI opens one **Sign in to continue
@@ -242,12 +242,12 @@ the WebSocket upgrade. Configure `gateway.remote.edgeAuth` as described in
 ## Verify
 
 ```bash
-openclaw tui
+paddy tui
 ```
 
 Expect the TUI to reach `wss://gateway.example` and show `connected`. A first
 connection may report `device pairing required`; approve it in the Control UI under
-Settings → Devices, or run `openclaw devices approve --latest` on the Gateway host
+Settings → Devices, or run `paddy devices approve --latest` on the Gateway host
 to preview the request, then rerun the approval command it prints.
 
 Reaching the Gateway's own pairing prompt is itself the proof that Access was
@@ -271,7 +271,7 @@ satisfied — an unauthenticated request never gets that far.
 | Symptom                                                             | Cause and fix                                                                                                                                     |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `gateway rejected websocket upgrade (HTTP 302)` from the CLI or TUI | Access intercepted the upgrade. Configure `gateway.remote.edgeAuth`; see [Remote access](/gateway/remote#gateway-behind-an-identity-aware-proxy). |
-| Browser works, `openclaw connect` fails                             | Node routes are still behind Access. Apply one of the options in step 4.                                                                          |
+| Browser works, `paddy connect` fails                                | Node routes are still behind Access. Apply one of the options in step 4.                                                                          |
 | `Exec provider ... exited with code 1`                              | The exec secret provider runs with a scrubbed environment; `cloudflared` needs `passEnv: ["HOME"]` to read its cached token.                      |
 | `secrets.providers.*.command must not be a symlink`                 | Point `command` at the resolved binary, not a package-manager symlink.                                                                            |
 | Gateway starts but every request is anonymous                       | `allowLoopback` is unset, so headers from the local `cloudflared` are ignored.                                                                    |

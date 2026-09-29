@@ -130,7 +130,7 @@ title: "Configuration — workplace chat channels"
   runtime current-conversation bindings remain unavailable. See
   [Enterprise Grid org-wide installs](/channels/slack/enterprise-grid#enterprise-grid-org-wide-installs)
   for the least-privilege manifest, setup workflow, and complete restrictions.
-- The retired `enterpriseOrgInstall` key is removed by `openclaw doctor --fix`
+- The retired `enterpriseOrgInstall` key is removed by `paddy doctor --fix`
   at the Slack root and account levels.
 - `botToken`, `appToken`, `signingSecret`, and `userToken` accept plaintext
   strings or SecretRef objects.
@@ -143,7 +143,7 @@ title: "Configuration — workplace chat channels"
 - `configWrites: false` blocks Slack-initiated config writes.
 - Optional `channels.slack.defaultAccount` overrides default account selection when it matches a configured account id.
 - `dm.groupEnabled` and `dm.groupChannels` only filter Slack group DMs (MPDMs) the app is already a member of. They cannot make the app see an existing group DM it never joined; convert the group DM to a private channel and invite the app, or have the app open a new MPDM with `conversations.open`. See [Group DMs (MPDMs) and bots](/channels/slack/access-control#group-dms-mpdms-and-bots).
-- `channels.slack.streaming.mode` is the canonical Slack stream mode key (default `"progress"`). `channels.slack.streaming.nativeTransport` controls Slack's native streaming transport (default `true`). Legacy `streamMode`, boolean `streaming`, `chunkMode`, `blockStreaming`, `blockStreamingCoalesce`, and `nativeStreaming` values are no longer read at runtime; run `openclaw doctor --fix` to migrate persisted config to `streaming.{mode,chunkMode,block.enabled,block.coalesce,nativeTransport}`.
+- `channels.slack.streaming.mode` is the canonical Slack stream mode key (default `"progress"`). `channels.slack.streaming.nativeTransport` controls Slack's native streaming transport (default `true`). Legacy `streamMode`, boolean `streaming`, `chunkMode`, `blockStreaming`, `blockStreamingCoalesce`, and `nativeStreaming` values are no longer read at runtime; run `paddy doctor --fix` to migrate persisted config to `streaming.{mode,chunkMode,block.enabled,block.coalesce,nativeTransport}`.
 - `unfurlLinks` and `unfurlMedia` pass Slack's `chat.postMessage` link and media unfurl booleans through for bot replies. `unfurlLinks` defaults to `false` so outbound bot links do not expand inline unless enabled; `unfurlMedia` is omitted unless configured. Set either value at `channels.slack.accounts.<accountId>` to override the top-level value for one account.
 - Use `user:<id>` (DM) or `channel:<id>` for delivery targets.
 
@@ -207,10 +207,10 @@ Chat modes: `oncall` (respond on @-mention, default), `onmessage` (every message
 When Mattermost native commands are enabled:
 
 - `commands.callbackPath` must be a path (for example `/api/channels/mattermost/command`), not a full URL.
-- `commands.callbackUrl` must resolve to the OpenClaw gateway endpoint and be reachable from the Mattermost server.
+- `commands.callbackUrl` must resolve to the Paddy gateway endpoint and be reachable from the Mattermost server.
 - Native slash callbacks are authenticated with the per-command tokens returned
   by Mattermost during slash command registration. If registration fails or no
-  commands are activated, OpenClaw rejects callbacks with
+  commands are activated, Paddy rejects callbacks with
   `Unauthorized: invalid command token.`
 - For private/tailnet/internal callback hosts, Mattermost may require
   `ServiceSettings.AllowedUntrustedInternalConnections` to include the callback host/domain.

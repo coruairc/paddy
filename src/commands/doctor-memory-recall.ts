@@ -54,8 +54,8 @@ function buildMemoryArtifactIssueNote(
     ...issues.map((issue) => `- ${issue.message}`),
     location,
     issues.some((issue) => issue.fixable)
-      ? `Fix: ${formatCliCommand("openclaw doctor --fix")} or ${formatCliCommand("openclaw memory status --fix")}`
-      : `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+      ? `Fix: ${formatCliCommand("paddy doctor --fix")} or ${formatCliCommand("paddy memory status --fix")}`
+      : `Verify: ${formatCliCommand("paddy memory status --deep")}`,
   ].join("\n");
 }
 
@@ -167,7 +167,7 @@ export async function maybeRepairMemoryRecallHealth(params: {
                 ? `- rewrote recall store${details ? ` (${details})` : ""}`
                 : null,
               repair.removedStaleLock ? "- removed stale promotion lock" : null,
-              `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+              `Verify: ${formatCliCommand("paddy memory status --deep")}`,
             ].filter(Boolean);
             note(
               formatMemoryDoctorAgentMessage(scope.agentId, labelAgents, lines.join("\n")),
@@ -204,7 +204,7 @@ export async function maybeRepairMemoryRecallHealth(params: {
         dreamingRepair.archivedDreamsDiary ? "- archived dream diary" : null,
         dreamingRepair.archiveDir ? `- archive dir: ${dreamingRepair.archiveDir}` : null,
         ...dreamingRepair.warnings.map((warning) => `- warning: ${warning}`),
-        `Verify: ${formatCliCommand("openclaw memory status --deep")}`,
+        `Verify: ${formatCliCommand("paddy memory status --deep")}`,
       ].filter(Boolean);
       note(
         formatMemoryDoctorAgentMessage(scope.agentId, labelAgents, lines.join("\n")),

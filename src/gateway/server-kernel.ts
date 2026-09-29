@@ -106,7 +106,7 @@ function formatRuntimeGatewayAuthTokenWarning(): string {
     return `${base} Set gateway.auth.token in your external config source and redeploy.`;
   }
   if (!isNixMode) {
-    return `${base} Persist one with \`openclaw config set gateway.auth.mode token\` and \`openclaw config set gateway.auth.token <token>\`.`;
+    return `${base} Persist one with \`paddy config set gateway.auth.mode token\` and \`paddy config set gateway.auth.token <token>\`.`;
   }
   return [
     base,

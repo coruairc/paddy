@@ -152,7 +152,7 @@ export async function restoreDoctorGatewayService(params: {
       if (inspection.kind === "owned-offline") {
         return true;
       }
-      const warning = `Warning: Gateway activation skipped (${inspection.kind}): ${inspection.reason} Run ${formatCliCommand("openclaw gateway status --deep", env)} before starting it.`;
+      const warning = `Warning: Gateway activation skipped (${inspection.kind}): ${inspection.reason} Run ${formatCliCommand("paddy gateway status --deep", env)} before starting it.`;
       warnings.push(warning);
       params.runtime.log(warning);
       return false;
@@ -275,7 +275,7 @@ export async function restoreDoctorGatewayService(params: {
         }
       }
       if (originalInstallation.requiresInstallRootRefresh) {
-        const message = `Gateway service still targets ${originalInstallation.root}; Doctor could not reconcile it with ${root}. The previous installation remains stopped because state compatibility is unverified. Run ${formatCliCommand("openclaw gateway install --force", env)} from the intended install.`;
+        const message = `Gateway service still targets ${originalInstallation.root}; Doctor could not reconcile it with ${root}. The previous installation remains stopped because state compatibility is unverified. Run ${formatCliCommand("paddy gateway install --force", env)} from the intended install.`;
         warnings.push(message);
         params.runtime.log(message);
         return undefined;

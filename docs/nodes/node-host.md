@@ -21,17 +21,17 @@ Use a **node host** when your Gateway runs on one machine and you want commands 
 Approval note:
 
 - Approval-backed node runs bind exact request context. The exec path prepares a canonical `systemRunPlan` before approval; once granted, the gateway forwards that stored plan, not any later caller-edited command/cwd/session fields, and re-validates the working directory before running.
-- For direct shell/runtime file executions, OpenClaw also best-effort binds one concrete local file operand and denies the run if that file changes before execution.
-- If OpenClaw cannot identify exactly one concrete local file for an interpreter/runtime command, approval-backed execution is denied instead of pretending full runtime coverage. Use sandboxing, separate hosts, or an explicit trusted allowlist/full workflow for broader interpreter semantics.
+- For direct shell/runtime file executions, Paddy also best-effort binds one concrete local file operand and denies the run if that file changes before execution.
+- If Paddy cannot identify exactly one concrete local file for an interpreter/runtime command, approval-backed execution is denied instead of pretending full runtime coverage. Use sandboxing, separate hosts, or an explicit trusted allowlist/full workflow for broader interpreter semantics.
 
 ### Gateway deployments that cannot host nodes
 
-A Gateway can remain healthy for browser users while node hosting is unavailable. Run `openclaw doctor` on the Gateway before onboarding nodes, and check these preconditions:
+A Gateway can remain healthy for browser users while node hosting is unavailable. Run `paddy doctor` on the Gateway before onboarding nodes, and check these preconditions:
 
 - **Machine authentication:** Tailscale identity headers do not authenticate node-role connections. In `gateway.auth.mode: "trusted-proxy"`, a new node also cannot supply the proxy's user identity headers. To use a shared token, switch to token mode and configure `gateway.auth.token` with a SecretRef; trusted-proxy mode rejects mixed token configuration. A trusted-proxy Gateway can use `gateway.auth.password` only for clean loopback/direct callers. See [trusted-proxy mixed token configuration](/gateway/trusted-proxy-auth#mixed-token-configuration).
-- **Node onboarding URL:** With only the default `gateway.bind: "loopback"` and no advertised endpoint, `openclaw devices join-code` reports that the Gateway is only bound to loopback and recommends `gateway.publicOrigin` as the primary fix. For public HTTPS ingress, set it to the proxy's reachable origin. Existing Tailscale Serve, `gateway.remote.url`, bind-derived addresses, and the pairing-specific `plugins.entries.device-pair.config.publicUrl` override retain their precedence; `publicOrigin` supplies the loopback fallback. Remote join URLs require TLS; enabling LAN bind alone does not enable plaintext remote join URLs. Explicitly configured loopback endpoints can produce HTTP join URLs, but the joining machine must be able to reach that loopback endpoint, for example through a local tunnel. Plaintext LAN pairing can use a setup code directly.
+- **Node onboarding URL:** With only the default `gateway.bind: "loopback"` and no advertised endpoint, `paddy devices join-code` reports that the Gateway is only bound to loopback and recommends `gateway.publicOrigin` as the primary fix. For public HTTPS ingress, set it to the proxy's reachable origin. Existing Tailscale Serve, `gateway.remote.url`, bind-derived addresses, and the pairing-specific `plugins.entries.device-pair.config.publicUrl` override retain their precedence; `publicOrigin` supplies the loopback fallback. Remote join URLs require TLS; enabling LAN bind alone does not enable plaintext remote join URLs. Explicitly configured loopback endpoints can produce HTTP join URLs, but the joining machine must be able to reach that loopback endpoint, for example through a local tunnel. Plaintext LAN pairing can use a setup code directly.
 - **Node onboarding support:** Join-code creation and `/j` redemption are core Gateway operations. They do not require enabling the `device-pair` plugin, even though its retained `publicUrl` configuration field can supply an endpoint. See [Join codes](/cli/devices#openclaw-devices-join-code) for the printed `npx openclaw connect <url>` command.
-- **Device session runtime:** Paired-device runners support the embedded OpenClaw runtime and explicitly authorized Codex `remote-exec`; ACPX routes cannot dispatch to a paired device. Codex requires `codex.exec-server.stdio.v1` in `gateway.nodes.commands.allow` plus its normal pairing and invocation approvals. Runtime policy belongs on provider/model routes, not the ignored whole-agent runtime keys. Multi-agent rosters must also set `agents.ownership: "explicit"`. See [Codex paired-device placement](/plugins/codex-harness/placement#run-codex-on-a-paired-device) and [runtime policy](/gateway/config-agents/runtime-and-cli-backends#runtime-policy).
+- **Device session runtime:** Paired-device runners support the embedded Paddy runtime and explicitly authorized Codex `remote-exec`; ACPX routes cannot dispatch to a paired device. Codex requires `codex.exec-server.stdio.v1` in `gateway.nodes.commands.allow` plus its normal pairing and invocation approvals. Runtime policy belongs on provider/model routes, not the ignored whole-agent runtime keys. Multi-agent rosters must also set `agents.ownership: "explicit"`. See [Codex paired-device placement](/plugins/codex-harness/placement#run-codex-on-a-paired-device) and [runtime policy](/gateway/config-agents/runtime-and-cli-backends#runtime-policy).
 - **Edge routing:** When a reverse proxy or access edge fronts the Gateway, the node must satisfy edge auth on the join request, its main Gateway WebSocket, and the worker WebSocket. Keep WebSocket upgrade enabled for `/__openclaw__/worker`. You can instead exempt `/j/*` and `/__openclaw__/worker` from edge identity auth because both routes enforce their own short-lived credentials. See [worker protocol](/gateway/protocol/handshake#worker-role-and-closed-protocol).
 
 For a Cloudflare Access-fronted Gateway:
@@ -43,24 +43,24 @@ For a Cloudflare Access-fronted Gateway:
    ```bash
    export CF_ACCESS_CLIENT_ID="<client-id>"
    export CF_ACCESS_CLIENT_SECRET="<client-secret>"
-   openclaw connect https://gateway.example/j/<code> --service
+   paddy connect https://gateway.example/j/<code> --service
    ```
 
-The canonical node connection keys are `gateway.cloudflareAccess.clientId` and `gateway.cloudflareAccess.clientSecret`; both accept SecretInput values. The environment fallback above persists those keys as env SecretRefs, not copied plaintext. For installed nodes, OpenClaw stores the environment values in the managed service environment file rather than inline in launchd, systemd, or Task Scheduler definitions. Resolved values are bound to the configured Gateway origin and are not followed across redirects. OpenClaw rejects the pair before resolution on plaintext `http://` or `ws://` routes; credential-free loopback and private-network plaintext behavior is unchanged.
+The canonical node connection keys are `gateway.cloudflareAccess.clientId` and `gateway.cloudflareAccess.clientSecret`; both accept SecretInput values. The environment fallback above persists those keys as env SecretRefs, not copied plaintext. For installed nodes, Paddy stores the environment values in the managed service environment file rather than inline in launchd, systemd, or Task Scheduler definitions. Resolved values are bound to the configured Gateway origin and are not followed across redirects. Paddy rejects the pair before resolution on plaintext `http://` or `ws://` routes; credential-free loopback and private-network plaintext behavior is unchanged.
 
 ### Start a node host (foreground)
 
 On the node machine:
 
 ```bash
-openclaw node run --host <gateway-host> --port 18789 --display-name "Build Node"
+paddy node run --host <gateway-host> --port 18789 --display-name "Build Node"
 ```
 
 For one-paste setup, create a **Node host** setup link from the Control UI
 Devices page, then run its copyable command on the node machine:
 
 ```bash
-openclaw node run --pair "oc-pair://<setup-code>"
+paddy node run --pair "oc-pair://<setup-code>"
 ```
 
 The link is single-use and expires after 10 minutes. It supplies the endpoint,
@@ -90,12 +90,12 @@ ssh -N -L 18790:127.0.0.1:18789 user@gateway-host
 
 # Terminal B: export the gateway token and connect through the tunnel
 export OPENCLAW_GATEWAY_TOKEN="<gateway-token>"
-openclaw node run --host 127.0.0.1 --port 18790 --display-name "Build Node"
+paddy node run --host 127.0.0.1 --port 18790 --display-name "Build Node"
 ```
 
 Notes:
 
-- `openclaw node run` supports token or password auth.
+- `paddy node run` supports token or password auth.
 - Env vars are preferred: `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`.
 - Config fallback is `gateway.auth.token` / `gateway.auth.password`.
 - In local mode, node host intentionally ignores `gateway.remote.token` / `gateway.remote.password`.
@@ -105,13 +105,13 @@ Notes:
 
 ### Restrict the node command surface
 
-Pass `--commands <ids>` to `openclaw node run`, `openclaw node install`, or
-`openclaw connect` to advertise only an explicit comma-separated list of exact
+Pass `--commands <ids>` to `paddy node run`, `paddy node install`, or
+`paddy connect` to advertise only an explicit comma-separated list of exact
 command IDs. For example, a [Session Share](/plugins/session-share) node can
 publish sessions without exposing execution or other machine capabilities:
 
 ```bash
-openclaw connect <join-url> --service \
+paddy connect <join-url> --service \
   --commands openclaw.sessions.list.v1,openclaw.sessions.read.v1
 ```
 
@@ -127,9 +127,9 @@ publication, plugin-tool publication, MCP servers, and worker hosting. An
 allowlist does not enable a disabled plugin or make an unavailable command
 available.
 
-Restore the full default surface with `openclaw node run --all-commands` in
-the foreground or `openclaw node install --force --all-commands` for an
-installed service. When enrolling with `openclaw connect`, add `--all-commands`
+Restore the full default surface with `paddy node run --all-commands` in
+the foreground or `paddy node install --force --all-commands` for an
+installed service. When enrolling with `paddy connect`, add `--all-commands`
 and optionally `--service`. This durably removes the saved allowlist and
 replaces the service's `--commands` arguments. Do not combine `--all-commands`
 with `--commands`.
@@ -137,9 +137,9 @@ with `--commands`.
 ### Start a node host (service)
 
 ```bash
-openclaw node install --host <gateway-host> --port 18789 --display-name "Build Node"
-openclaw node start
-openclaw node restart
+paddy node install --host <gateway-host> --port 18789 --display-name "Build Node"
+paddy node start
+paddy node restart
 ```
 
 `node install` also accepts `--context-path`, `--tls`, `--tls-fingerprint`, `--node-id` (legacy client instance ID only), `--share-installed-apps` / `--no-share-installed-apps`, `--runtime <node|bun>` (default: `node`), and `--force` to reinstall. Bun requires version 1.4+ with WAL-reset-safe `node:sqlite` and is an explicit opt-in; Node remains recommended. `node status`, `node stop`, and `node uninstall` are also available.
@@ -160,7 +160,7 @@ session hosting, even when the `node-host` directory itself is private.
 The node log and `environments.list` identify the offending directory and the
 remediation: run `chmod go-w '<reported-path>'` on the node, then restart the node
 host. Review shared-directory permissions before changing them; alternatively,
-move node state under a private directory. OpenClaw does not change ancestor
+move node state under a private directory. Paddy does not change ancestor
 permissions or bypass staging checks. A trusted sticky system temporary directory
 remains supported.
 
@@ -196,25 +196,25 @@ for the idle-work rules and configuration.
 On the Gateway host, approve the device request:
 
 ```bash
-openclaw devices list
-openclaw devices approve <deviceRequestId>
+paddy devices list
+paddy devices approve <deviceRequestId>
 ```
 
-If the node retries with changed auth details, re-run `openclaw devices list` and approve the current `requestId`.
+If the node retries with changed auth details, re-run `paddy devices list` and approve the current `requestId`.
 
 The node keeps reconnecting while device approval is pending, with exponential
 backoff capped at 30 seconds. After approval, its next reconnect creates a
 separate command-surface request. On the Gateway:
 
 ```bash
-openclaw nodes pending
-openclaw nodes approve <nodeRequestId>
-openclaw nodes describe --node <id|name|ip>
+paddy nodes pending
+paddy nodes approve <nodeRequestId>
+paddy nodes describe --node <id|name|ip>
 ```
 
 If an older client already reports that reconnect is paused, restart the
-installed node with `openclaw node restart`, or stop and rerun its foreground
-`openclaw node run` command once.
+installed node with `paddy node restart`, or stop and rerun its foreground
+`paddy node run` command once.
 
 The device and node request IDs are distinct. An initial unapproved surface has
 no effective commands. SSH-verified and bootstrap enrollment can approve the
@@ -225,8 +225,8 @@ and node-local exec approvals remain separate gates.
 
 Naming options:
 
-- `--display-name` on `openclaw node run` / `openclaw node install` (persists in the shared `nodeHost.config` SQLite machine-state value alongside the client instance ID and Gateway connection metadata).
-- `openclaw nodes rename --node <id|name|ip> --name "Build Node"` (gateway override).
+- `--display-name` on `paddy node run` / `paddy node install` (persists in the shared `nodeHost.config` SQLite machine-state value alongside the client instance ID and Gateway connection metadata).
+- `paddy nodes rename --node <id|name|ip> --name "Build Node"` (gateway override).
 
 ### Headless identity state
 
@@ -244,7 +244,7 @@ supported revoke-and-re-pair flow and upgrade notes.
 
 Retired `identity/device.json` and `identity/device-auth.json` files are
 Doctor-owned migration inputs. Stop the node host and run
-`openclaw doctor --fix`; Doctor imports and verifies their rows in SQLite before
+`paddy doctor --fix`; Doctor imports and verifies their rows in SQLite before
 removing the old files.
 
 The headless node and macOS app worker check this state before preparing
@@ -260,8 +260,8 @@ The macOS node and headless node host both expose `system.run.prepare`, `system.
 Examples:
 
 ```bash
-openclaw nodes notify --node <idOrNameOrIp> --title "Ping" --body "Gateway ready"
-openclaw nodes invoke --node <idOrNameOrIp> --command system.which --params '{"bins":["git"]}'
+paddy nodes notify --node <idOrNameOrIp> --title "Ping" --body "Gateway ready"
+paddy nodes invoke --node <idOrNameOrIp> --command system.which --params '{"bins":["git"]}'
 ```
 
 Notes:
@@ -282,12 +282,12 @@ Notes:
 
 ## Headless node host (cross-platform)
 
-OpenClaw can run a **headless node host** (no UI) that connects to the Gateway WebSocket and exposes `system.run` / `system.which`. This is useful on Linux/Windows or for running a minimal node alongside a server.
+Paddy can run a **headless node host** (no UI) that connects to the Gateway WebSocket and exposes `system.run` / `system.which`. This is useful on Linux/Windows or for running a minimal node alongside a server.
 
 Start it:
 
 ```bash
-openclaw node run --host <gateway-host> --port 18789
+paddy node run --host <gateway-host> --port 18789
 ```
 
 Notes:
@@ -301,5 +301,5 @@ Notes:
 
 ## Mac node mode
 
-- The macOS menubar app connects to the Gateway WS server as a node (so `openclaw nodes …` works against this Mac).
+- The macOS menubar app connects to the Gateway WS server as a node (so `paddy nodes …` works against this Mac).
 - In remote mode, the app opens an SSH tunnel for the Gateway port and connects to `localhost`.

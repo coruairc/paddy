@@ -36,7 +36,7 @@ Slack support covers DMs and channels via Slack app integrations. Default transp
 ## Huddles
 
 Use the separate [Slack huddles plugin](/plugins/slack-huddles) to call an agent
-into an active huddle. It drives Slack in the OpenClaw Chrome profile, signed in
+into an active huddle. It drives Slack in the Paddy Chrome profile, signed in
 as a dedicated Slack user account. Slack app and bot tokens cannot join huddles
 or read their audio.
 
@@ -93,11 +93,11 @@ Every section heading from the previous single-page version keeps its anchor her
 - <a id="size-download-and-model-limits" />[Size, download, and model limits](/channels/slack/media#size-download-and-model-limits)
 - <a id="socket-mode-default" />[Socket Mode (default)](/channels/slack/setup#socket-mode-default)
 - <a id="create-a-new-slack-app" />[Create a new Slack app](/channels/slack/setup#create-a-new-slack-app)
-- <a id="configure-openclaw" />[Configure OpenClaw](/channels/slack/setup#configure-openclaw)
+- <a id="configure-openclaw" />[Configure Paddy](/channels/slack/setup#configure-openclaw)
 - <a id="start-gateway" />[Start gateway](/channels/slack/setup#start-gateway)
 - <a id="http-request-urls-1" />[HTTP Request URLs](/channels/slack/setup#http-request-urls)
 - <a id="create-a-new-slack-app-1" />[Create a new Slack app](/channels/slack/setup#create-a-new-slack-app-1)
-- <a id="configure-openclaw-1" />[Configure OpenClaw](/channels/slack/setup#configure-openclaw-1)
+- <a id="configure-openclaw-1" />[Configure Paddy](/channels/slack/setup#configure-openclaw-1)
 - <a id="start-gateway-1" />[Start gateway](/channels/slack/setup#start-gateway-1)
 - <a id="optional-native-slash-commands" />[Optional native slash commands](/channels/slack/manifest-and-scopes#optional-native-slash-commands)
 - <a id="socket-mode-default-2" />[Socket Mode (default)](/channels/slack/manifest-and-scopes#socket-mode-default)

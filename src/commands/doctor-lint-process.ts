@@ -165,7 +165,7 @@ export async function runUpdateDoctorLintProcess(
       throw error;
     }
     // The readiness envelope has already been published; failures must not append another JSON.
-    process.stderr.write(`[openclaw] Reason: ${scrubDoctorErrorMessage(error)}\n`);
+    process.stderr.write(`[paddy] Reason: ${scrubDoctorErrorMessage(error)}\n`);
     return 2;
   } finally {
     cancelDisposalDeadline?.();

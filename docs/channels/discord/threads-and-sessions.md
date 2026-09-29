@@ -8,26 +8,26 @@ title: "Discord threads and sessions"
 sidebarTitle: "Threads and sessions"
 ---
 
-How Discord threads, forums, and channels map onto OpenClaw sessions.
+How Discord threads, forums, and channels map onto Paddy sessions.
 
 ## Forum channels
 
-Discord forum and media channels only accept thread posts. OpenClaw supports two ways to create them:
+Discord forum and media channels only accept thread posts. Paddy supports two ways to create them:
 
 - Send a message to the forum parent (`channel:<forumId>`) to auto-create a thread. The thread title is the first non-empty line of the message (truncated to Discord's 100-character thread-name limit).
-- Use `openclaw message thread create` to create a thread directly. Do not pass `--message-id` for forum channels.
+- Use `paddy message thread create` to create a thread directly. Do not pass `--message-id` for forum channels.
 
 Send to the forum parent to create a thread:
 
 ```bash
-openclaw message send --channel discord --target channel:<forumId> \
+paddy message send --channel discord --target channel:<forumId> \
   --message "Topic title\nBody of the post"
 ```
 
 Create a forum thread explicitly:
 
 ```bash
-openclaw message thread create --channel discord --target channel:<forumId> \
+paddy message thread create --channel discord --target channel:<forumId> \
   --thread-name "Topic title" --message "Body of the post"
 ```
 
@@ -68,7 +68,7 @@ failed chunk may have been delivered, so inspect the thread before retrying.
 
     Discord owns the history: fresh reads reflect its current message content,
     deletions, permissions, and availability. No separate durable message archive
-    is created. If automatic recovery fails, OpenClaw logs the omission and
+    is created. If automatic recovery fails, Paddy logs the omission and
     continues the addressed turn. Historical attachments without reusable local
     media are marked unavailable instead of restoring stale media.
     Recovery does not rewrite prior agent transcripts.
@@ -125,7 +125,7 @@ failed chunk may have been delivered, so inspect the thread before retrying.
     - `session.threadBindings.*` is the canonical policy for Discord and Telegram.
     - `spawnSessions` controls auto-create/bind threads for `sessions_spawn({ thread: true })` and ACP thread spawns. Default: `true`.
     - `defaultSpawnContext` controls native subagent context for thread-bound spawns. Default: `"fork"`.
-    - Deprecated `spawnSubagentSessions`/`spawnAcpSessions` keys are migrated by `openclaw doctor --fix`.
+    - Deprecated `spawnSubagentSessions`/`spawnAcpSessions` keys are migrated by `paddy doctor --fix`.
     - If thread bindings are disabled, thread-bound spawns are unavailable.
 
     See [Sub-agents](/tools/subagents), [ACP Agents](/tools/acp-agents), and [Configuration Reference](/gateway/configuration-reference).

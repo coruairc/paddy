@@ -18,7 +18,7 @@ reader to the [Control UI](/web/control-ui). It is separate from the
 GitHub previews that previously lived in core now belong to the bundled
 `github` plugin. A nonempty `plugins.allow` list remains authoritative: if it
 omits `github`, both hovercards and the reader stay unavailable, and links open
-externally. OpenClaw does **not** add a plugin to an existing allowlist during
+externally. Paddy does **not** add a plugin to an existing allowlist during
 an upgrade or Doctor repair.
 
 To restore previews, append `github` to your **existing** `plugins.allow` list

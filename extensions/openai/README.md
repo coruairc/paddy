@@ -1,6 +1,6 @@
 # OpenAI
 
-Connect OpenAI models to OpenClaw. The plugin also provides embeddings, media
+Connect OpenAI models to Paddy. The plugin also provides embeddings, media
 understanding, image generation, speech output, realtime transcription,
 and realtime voice.
 
@@ -9,11 +9,11 @@ and realtime voice.
 For OpenAI Platform access, run:
 
 ```bash
-openclaw onboard --auth-choice openai-api-key
+paddy onboard --auth-choice openai-api-key
 ```
 
 You can also supply `OPENAI_API_KEY` in the Gateway's environment. Browse models
-with `openclaw models list --provider openai`.
+with `paddy models list --provider openai`.
 
 Account sign-in is available through onboarding too. Authentication methods have
 different model and capability coverage; configuring chat does not configure

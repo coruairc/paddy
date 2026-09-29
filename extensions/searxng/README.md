@@ -1,6 +1,6 @@
-# SearXNG OpenClaw plugin
+# SearXNG Paddy plugin
 
-Official OpenClaw plugin for SearXNG.
+Official Paddy plugin for SearXNG.
 
 ## Install
 

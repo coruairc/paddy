@@ -2,12 +2,12 @@
 summary: "Visual summary and technical evidence for the May 2026 performance, package-size, dependency, and shrinkwrap cleanup"
 read_when:
   - You are validating the May 2026 performance and package-size cleanup
-  - You need the numbers behind the OpenClaw performance and dependency blog post
+  - You need the numbers behind the Paddy performance and dependency blog post
   - You need historical context before changing current policy at /gateway/security/dependency-locking
 title: "Release performance sweep"
 ---
 
-This page captures the evidence behind the May 2026 OpenClaw performance,
+This page captures the evidence behind the May 2026 Paddy performance,
 package-size, dependency, and shrinkwrap cleanup. It is the technical companion
 to the public blog post.
 
@@ -58,7 +58,7 @@ and **3 unavailable CI runs**. Latest stable measured point: `v2026.5.28`.
   <Card title="Latest stable install" icon="hard-drive">
     **361.7MiB fresh install**
 
-    Cuts the nested OpenClaw dependency tree sharply from the `2026.5.22`
+    Cuts the nested Paddy dependency tree sharply from the `2026.5.22`
     shrinkwrap-introduction peak, though a smaller 259.7MiB nested tree still
     remains in the local install audit.
 
@@ -248,7 +248,7 @@ Dependency samples use one stable release per month, plus the
 
 ### Shrinkwrap boundary
 
-`2026.5.20` shipped with no root shrinkwrap and no large nested OpenClaw
+`2026.5.20` shipped with no root shrinkwrap and no large nested Paddy
 dependency tree. `2026.5.22` introduced root shrinkwrap and installed 911.8MB
 under nested `openclaw/node_modules`. `2026.5.28` keeps shrinkwrap and still
 installs 259.7MiB under nested `openclaw/node_modules`, but no longer installs
@@ -270,7 +270,7 @@ Published tarball inspection verifies the boundary:
 
 The important distinction: **shrinkwrap itself is not the problem**.
 `v2026.5.28` still ships root shrinkwrap. The problem was the package shape
-that made npm materialize a large nested OpenClaw dependency tree and all 12
+that made npm materialize a large nested Paddy dependency tree and all 12
 `@napi-rs/canvas` platform packages. The nested tree is smaller in `v2026.5.28`,
 and the canvas platform fanout no longer lands in the local audit.
 

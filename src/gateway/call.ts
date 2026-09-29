@@ -590,7 +590,7 @@ function createGatewayUnreachableTransportError(params: {
     connectionDetails: params.connectionDetails,
     message: [
       `Gateway not reachable at ${projectGatewayUrlForDiagnostics(params.connectionDetails.url)}${code ? ` (${code})` : ""}.`,
-      "Start it with `openclaw gateway run` or check `openclaw gateway status`.",
+      "Start it with `paddy gateway run` or check `paddy gateway status`.",
       params.connectionDetails.message,
     ].join("\n"),
   });
@@ -975,7 +975,7 @@ async function callGatewayWithScopes<T = Record<string, unknown>>(
       throw new GatewayStoredDeviceAuthUnavailableError(
         [
           "No stored device auth for this gateway origin.",
-          `Run \`openclaw tui${bootstrap.sshTunnel ? "" : ` --url ${projectGatewayUrlForDiagnostics(url)}`}\` to send a pairing request, approve it in that gateway's Control UI (Settings -> Devices) or run \`openclaw devices approve --latest\` on the gateway host, then retry.`,
+          `Run \`paddy tui${bootstrap.sshTunnel ? "" : ` --url ${projectGatewayUrlForDiagnostics(url)}`}\` to send a pairing request, approve it in that gateway's Control UI (Settings -> Devices) or run \`paddy devices approve --latest\` on the gateway host, then retry.`,
         ].join("\n"),
       );
     }

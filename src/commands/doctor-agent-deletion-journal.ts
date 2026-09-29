@@ -34,7 +34,7 @@ export async function repairDoctorAgentDeletionJournal(params: {
       changes,
       warnings: [
         sanitizeForLog(
-          `${resolveOpenClawStateSqlitePath(params.env)}: ${discovery.deletionJournal.reason}. Stores remain held; restore verified deletion history, then rerun openclaw doctor --fix.`,
+          `${resolveOpenClawStateSqlitePath(params.env)}: ${discovery.deletionJournal.reason}. Stores remain held; restore verified deletion history, then rerun paddy doctor --fix.`,
         ),
         ...[...discovery.retainedTargets, ...discovery.unverifiedTargets].map(
           ({ agentId, path: pathname }) =>
@@ -63,7 +63,7 @@ export async function repairDoctorAgentDeletionJournal(params: {
     return {
       changes,
       warnings: [
-        "Agent deletion journal missing; stores remain held because their recovery inventory is incomplete. Repair the listed paths, then rerun openclaw doctor --fix.",
+        "Agent deletion journal missing; stores remain held because their recovery inventory is incomplete. Repair the listed paths, then rerun paddy doctor --fix.",
         ...discovery.failures.map(({ path: pathname, reason }) =>
           sanitizeForLog(`${pathname}: ${reason}`),
         ),
@@ -74,7 +74,7 @@ export async function repairDoctorAgentDeletionJournal(params: {
     return {
       changes,
       warnings: [
-        "Agent deletion journal missing; stores remain held because the ownership configuration could not be verified. Repair the configuration, then rerun openclaw doctor --fix.",
+        "Agent deletion journal missing; stores remain held because the ownership configuration could not be verified. Repair the configuration, then rerun paddy doctor --fix.",
       ],
     };
   }
@@ -117,7 +117,7 @@ export async function repairDoctorAgentDeletionJournal(params: {
         ? resolveAgentDir(snapshot.sourceConfig, target.agentId, params.env)
         : path.dirname(target.path);
       const restore = formatCliCommand(
-        `openclaw agents add ${quote(target.agentId)} --workspace ${quote(workspace)} --agent-dir ${quote(agentDir)} --non-interactive`,
+        `paddy agents add ${quote(target.agentId)} --workspace ${quote(workspace)} --agent-dir ${quote(agentDir)} --non-interactive`,
         params.env,
       );
       return sanitizeForLog(
@@ -126,7 +126,7 @@ export async function repairDoctorAgentDeletionJournal(params: {
     }),
     ...(missing && !params.shouldRepair
       ? [
-          `Run ${formatCliCommand("openclaw doctor --fix", params.env)} to reconstruct the journal without activating held stores.`,
+          `Run ${formatCliCommand("paddy doctor --fix", params.env)} to reconstruct the journal without activating held stores.`,
         ]
       : []),
   ];

@@ -1,5 +1,5 @@
 ---
-summary: "Gateway config reference for core OpenClaw keys, defaults, and links to dedicated subsystem references"
+summary: "Gateway config reference for core Paddy keys, defaults, and links to dedicated subsystem references"
 title: "Configuration reference"
 read_when:
   - You need exact field-level config semantics or defaults
@@ -9,11 +9,11 @@ doc-schema-version: 1
 
 Field-level reference for `~/.openclaw/openclaw.json`: keys, defaults, and links to deeper subsystem pages. For task-oriented setup guidance, see [Configuration](/gateway/configuration). Channel- and plugin-owned command catalogs and deep memory knobs live on their own pages, not here.
 
-Config format is **JSON5** (comments + trailing commas allowed). All fields are optional; OpenClaw uses safe defaults when omitted.
+Config format is **JSON5** (comments + trailing commas allowed). All fields are optional; Paddy uses safe defaults when omitted.
 
 Code truth beats this page:
 
-- `openclaw config schema` prints the live JSON Schema used for validation and Control UI, with bundled/plugin/channel metadata merged in.
+- `paddy config schema` prints the live JSON Schema used for validation and Control UI, with bundled/plugin/channel metadata merged in.
 - Agents should call the `gateway` tool action `config.schema.lookup` for one exact path-scoped schema node before editing config.
 - `pnpm config:docs:check` / `pnpm config:docs:gen` validate this doc's baseline hash against the current schema surface.
 
@@ -61,7 +61,7 @@ See [Configuration - agents](/gateway/config-agents) for:
 - `session.*` (session lifecycle, compaction, pruning)
 - `messages.*` (message delivery, TTS, markdown rendering)
 - `talk.*` (Talk mode)
-  - `talk.consultThinkingLevel`: thinking level override for the full OpenClaw agent run behind Control UI Talk realtime consults
+  - `talk.consultThinkingLevel`: thinking level override for the full Paddy agent run behind Control UI Talk realtime consults
   - `talk.consultFastMode`: one-shot fast-mode override for Control UI Talk realtime consults
   - `talk.speechLocale`: optional BCP 47 locale id for Talk speech recognition on Android, iOS, and macOS, and for iOS system-voice fallback
   - `talk.silenceTimeoutMs`: when unset, Talk keeps the platform default pause window before sending the transcript (`700 ms on macOS and Android, 900 ms on iOS`)
@@ -226,4 +226,4 @@ Moved to [Configuration — environment, secrets, and includes](/gateway/config-
 - [Configuration examples](/gateway/configuration-examples)
 - [Doctor](/gateway/doctor)
 - [Cloud Workers](/gateway/cloud-workers) — the feature these worker settings configure
-- [`openclaw configure`](/cli/configure) — interactive prompts that edit these settings without hand-editing the file
+- [`paddy configure`](/cli/configure) — interactive prompts that edit these settings without hand-editing the file

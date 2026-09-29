@@ -129,7 +129,7 @@ export function noteMissingDefaultAgentOwner(cfg: OpenClawConfig): void {
     !tryResolveLegacyCompatibilityAgentId(cfg)
   ) {
     note(
-      `No default agent is designated. Set a configured agent with "${formatCliCommand("openclaw config set agents.defaults.systemAgent.agentId <id>")}".`,
+      `No default agent is designated. Set a configured agent with "${formatCliCommand("paddy config set agents.defaults.systemAgent.agentId <id>")}".`,
       "Agent ownership",
     );
   }

@@ -51,9 +51,9 @@ data and restrict the target agent's tools and workspace separately.
 `hooks.token` should be distinct from active Gateway shared-secret auth
 (`gateway.auth.token` / `OPENCLAW_GATEWAY_TOKEN` or `gateway.auth.password` /
 `OPENCLAW_GATEWAY_PASSWORD`). Startup logs a non-fatal warning on reuse;
-`openclaw security audit` reports a critical finding, including password auth
+`paddy security audit` reports a critical finding, including password auth
 supplied at audit time (`--auth password --password <password>`). Use
-`openclaw doctor --fix` to rotate a persisted reused hook token, then update all
+`paddy doctor --fix` to rotate a persisted reused hook token, then update all
 external senders.
 
 ### Hook HTTP contract
@@ -308,10 +308,10 @@ example and must be available to the reader. Gmail fields:
 | `hooks.gmail` field          | Runtime default              | Contract                                                                                                                                                      |
 | ---------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `account`                    | required                     | Gmail account already authorized in `gog`.                                                                                                                    |
-| `label`                      | `"INBOX"`                    | Gmail label to watch. OpenClaw excludes `SPAM`, `TRASH`, `DRAFT`, and `SENT` when launching the watcher.                                                      |
+| `label`                      | `"INBOX"`                    | Gmail label to watch. Paddy excludes `SPAM`, `TRASH`, `DRAFT`, and `SENT` when launching the watcher.                                                         |
 | `topic`                      | required                     | Full Pub/Sub topic path. Setup can provision the `gog-gmail-watch` topic.                                                                                     |
 | `subscription`               | `"gog-gmail-watch-push"`     | Pub/Sub subscription used by setup.                                                                                                                           |
-| `pushToken`                  | required                     | Authenticates incoming pushes to the watcher. Separate from `hooks.token`, which authenticates forwarding to OpenClaw. Setup generates one if absent.         |
+| `pushToken`                  | required                     | Authenticates incoming pushes to the watcher. Separate from `hooks.token`, which authenticates forwarding to Paddy. Setup generates one if absent.            |
 | `hookUrl`                    | local Gateway `/hooks/gmail` | Forwarding URL built from `hooks.path` and Gateway port unless configured.                                                                                    |
 | `includeBody`                | `true`                       | Include email body snippets. Set `false` in config to omit them.                                                                                              |
 | `maxBytes`                   | `20000`                      | Positive integer per-message body limit passed to the watcher. Also used to derive the Gmail HTTP body allowance.                                             |

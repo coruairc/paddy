@@ -30,14 +30,14 @@ admission owner controls recovery; a secrets reload alone cannot readmit the age
 
 ## Egress-time injection (sentinels)
 
-For model-provider credentials backed by SecretRefs, OpenClaw mints an opaque, process-local sentinel during model-auth resolution. Auth storage, stream options, SDK configuration, logs, error objects, and most runtime introspection therefore see a value such as `oc-sent-v2.<authenticated-ciphertext>.end`, not the provider credential. The guarded model fetch and managed local-provider health probes replace known sentinels in URL and header values immediately before each request leaves the process.
+For model-provider credentials backed by SecretRefs, Paddy mints an opaque, process-local sentinel during model-auth resolution. Auth storage, stream options, SDK configuration, logs, error objects, and most runtime introspection therefore see a value such as `oc-sent-v2.<authenticated-ciphertext>.end`, not the provider credential. The guarded model fetch and managed local-provider health probes replace known sentinels in URL and header values immediately before each request leaves the process.
 
-Unknown sentinel-shaped values fail closed before network activity. OpenClaw refuses to send the request rather than forwarding an unresolved sentinel to a provider. Resolved secret values are also registered for exact-value log redaction as a defense in depth measure.
+Unknown sentinel-shaped values fail closed before network activity. Paddy refuses to send the request rather than forwarding an unresolved sentinel to a provider. Resolved secret values are also registered for exact-value log redaction as a defense in depth measure.
 
 Provider adapters use the latest injection point their SDK supports:
 
-- SDKs with a custom fetch option receive OpenClaw's guarded fetch, so the SDK retains the sentinel.
-- SDKs without a custom fetch option unwrap the sentinel immediately before client construction. Plugin-owned provider streams and agent harnesses unwrap at the final core-owned handoff because those transports do not share OpenClaw's guarded fetch.
+- SDKs with a custom fetch option receive Paddy's guarded fetch, so the SDK retains the sentinel.
+- SDKs without a custom fetch option unwrap the sentinel immediately before client construction. Plugin-owned provider streams and agent harnesses unwrap at the final core-owned handoff because those transports do not share Paddy's guarded fetch.
 
 Sentinels reduce plaintext exposure across the model-call chain, but they are not process isolation. The real value still exists in same-process memory and appears at the final adapter boundary. Plain environment credentials that are not configured through SecretRefs remain plaintext and are outside this mechanism.
 
@@ -51,7 +51,7 @@ For production deployments where agent-accessible files are in scope, treat migr
 
 - Supported credentials use SecretRefs instead of plaintext values.
 - Legacy plaintext residue is scrubbed from `openclaw.json`, the SQLite auth-profile store, `.env`, and generated `models.json` files. Retired auth JSON is doctor-owned migration input and is never rewritten by `secrets apply`.
-- `openclaw secrets audit --check` is clean after migration.
+- `paddy secrets audit --check` is clean after migration.
 - Any remaining unsupported or rotating credentials are protected by OS isolation, container isolation, or an external credential proxy.
 
 This is why the audit/configure/apply workflow is a security migration gate, not just a convenience helper.

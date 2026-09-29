@@ -39,10 +39,10 @@ title: "Configuration — community chat channels"
       replyToMode: "off", // off | first | all | batched
       dmPolicy: "pairing",
       allowFrom: ["1234567890", "123456789012345678"],
-      dm: { enabled: true, groupEnabled: false, groupChannels: ["openclaw-dm"] },
+      dm: { enabled: true, groupEnabled: false, groupChannels: ["paddy-dm"] },
       guilds: {
         "123456789012345678": {
-          slug: "friends-of-openclaw",
+          slug: "friends-of-paddy",
           requireMention: false,
           ignoreOtherMentions: true,
           reactionNotifications: "own",
@@ -137,10 +137,10 @@ title: "Configuration — community chat channels"
 - `channels.discord.voice.model` optionally overrides the LLM model used for Discord voice channel responses.
 - `channels.discord.voice.daveEncryption` (default `true`) and `channels.discord.voice.decryptionFailureTolerance` (default `24`) pass through to `@discordjs/voice` DAVE options.
 - `channels.discord.voice.connectTimeoutMs` controls the initial `@discordjs/voice` Ready wait for `/vc join` and auto-join attempts (default `30000`).
-- `channels.discord.voice.reconnectGraceMs` controls how long a disconnected voice session may take to enter reconnect signalling before OpenClaw destroys it (default `15000`).
-- Discord voice playback is not interrupted by another user's speaking-start event. To avoid feedback loops, OpenClaw ignores new voice capture while TTS is playing.
-- OpenClaw additionally attempts voice receive recovery by leaving/rejoining a voice session after repeated decrypt failures.
-- `channels.discord.streaming` is the canonical stream mode key. Discord preview streaming defaults to `off`; set `streaming.mode: "progress"` to opt into one edited tool/work progress message, or choose `partial` or `block` for answer previews. Legacy flat keys (`streamMode`, `chunkMode`, `blockStreaming`, `draftChunk`, `blockStreamingCoalesce`) are no longer read at runtime; run `openclaw doctor --fix` to migrate persisted config.
+- `channels.discord.voice.reconnectGraceMs` controls how long a disconnected voice session may take to enter reconnect signalling before Paddy destroys it (default `15000`).
+- Discord voice playback is not interrupted by another user's speaking-start event. To avoid feedback loops, Paddy ignores new voice capture while TTS is playing.
+- Paddy additionally attempts voice receive recovery by leaving/rejoining a voice session after repeated decrypt failures.
+- `channels.discord.streaming` is the canonical stream mode key. Discord preview streaming defaults to `off`; set `streaming.mode: "progress"` to opt into one edited tool/work progress message, or choose `partial` or `block` for answer previews. Legacy flat keys (`streamMode`, `chunkMode`, `blockStreaming`, `draftChunk`, `blockStreamingCoalesce`) are no longer read at runtime; run `paddy doctor --fix` to migrate persisted config.
 - `channels.discord.autoPresence` maps runtime availability to bot presence (healthy => online, degraded => idle, exhausted => dnd) and allows optional status text overrides.
 - `channels.discord.guilds.<id>.presenceEvents` routes human availability arrivals into one configured Discord channel as agent system events. Eligible members must be able to view `channelId`; public threads inherit parent visibility, while private threads additionally require membership or Manage Threads. `users` can further narrow that audience. It seeds current online members from complete `GUILD_CREATE` snapshots, routes observed offline-to-online transitions, and treats a first later online signal for an unseen member as newly available without asserting whether they came online or joined after the snapshot. Guilds above Discord's 75,000-member snapshot limit require an explicit offline update first. Throttling knobs: `reconnectSuppressSeconds` (quiet window after a new Gateway session while guild presence state is rebuilt, default 300, `0` disables) and `burstLimit`/`burstWindowSeconds` (per-guild successfully queued event rate limit, default 8 events per 60s sliding window). Resumed sessions do not start the reconnect suppression window. The existing per-user re-greet cooldown remains eight hours. It requires `channels.discord.intents.presence=true`, the privileged Presence Intent in Discord's Developer Portal, and an enabled agent heartbeat.
 - `channels.discord.intents.messageContent` defaults to `true`. Set it to `false` only for mention-only operation when Discord cannot grant the privileged Message Content intent; DMs and explicit bot mentions still carry message content, while other guild messages do not. Keep `requireMention: true` on every configured guild channel in this mode.

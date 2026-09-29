@@ -1,12 +1,12 @@
-# OpenClaw StepFun Provider
+# Paddy StepFun Provider
 
-Official OpenClaw provider plugin for StepFun.
+Official Paddy provider plugin for StepFun.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/stepfun-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/stepfun> for setup and configuration.

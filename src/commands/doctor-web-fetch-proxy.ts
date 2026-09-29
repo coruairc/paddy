@@ -106,7 +106,7 @@ async function collectWebFetchProxyDiagnostic(params: {
     "- web_fetch still uses direct connections because tools.web.fetch.useTrustedEnvProxy is not enabled.",
     directProbe,
     "- If direct web_fetch requests time out and the proxy is operator-controlled, enable the explicit opt-in:",
-    `  ${formatCliCommand("openclaw config set tools.web.fetch.useTrustedEnvProxy true")}`,
+    `  ${formatCliCommand("paddy config set tools.web.fetch.useTrustedEnvProxy true")}`,
     `- Keep the opt-in disabled for untrusted proxies; enabling it lets the proxy resolve DNS after ${PRODUCT_NAME}'s hostname checks.`,
   ].join("\n");
 }
@@ -129,19 +129,19 @@ export async function noteWebFetchProxyDiagnostic(
       loopbackMode === "proxy" || loopbackMode === "block"
         ? [
             `- proxy.loopbackMode=${loopbackMode} prevents direct local routing. Restore it with:`,
-            `  ${formatCliCommand("openclaw config set proxy.loopbackMode gateway-only")}`,
+            `  ${formatCliCommand("paddy config set proxy.loopbackMode gateway-only")}`,
           ]
         : [
             "- Temporarily disable managed routing to recover local connections:",
-            `  ${formatCliCommand("openclaw config set proxy.enabled false")}`,
+            `  ${formatCliCommand("paddy config set proxy.enabled false")}`,
             "- If external traffic requires a proxy, keep HTTP_PROXY/HTTPS_PROXY and set NO_PROXY=127.0.0.1,localhost,::1 in the Gateway service environment.",
           ];
     (params.noteFn ?? note)(
       [
         "- Managed proxy routing (proxy.enabled) is active, but a request to this process's loopback listener failed. This can cause WebChat/Codex handshake errors or 502 responses.",
-        `- Inspect the proxy configuration: ${formatCliCommand("openclaw config get proxy")}`,
+        `- Inspect the proxy configuration: ${formatCliCommand("paddy config get proxy")}`,
         ...repair,
-        `- Apply the change: ${formatCliCommand("openclaw gateway restart")}`,
+        `- Apply the change: ${formatCliCommand("paddy gateway restart")}`,
       ].join("\n"),
       "Managed proxy loopback",
     );

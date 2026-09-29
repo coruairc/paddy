@@ -1,14 +1,14 @@
 ---
 summary: "Read-only model and MCP catalogs a harness reports from its own native runtime"
 read_when:
-  - You are reporting native models to the OpenClaw model picker
+  - You are reporting native models to the Paddy model picker
   - You own MCP connections outside the in-process MCP runtime
   - You are implementing catalog readiness or cleanup joins
 title: "Agent harness native inventories"
 sidebarTitle: "Native inventories"
 ---
 
-The read-only catalogs a harness exposes to OpenClaw control surfaces: native model rows with their readiness, and MCP tool inventory owned outside the in-process MCP runtime. Part of the [Agent harness plugins](/plugins/sdk-agent-harness) reference.
+The read-only catalogs a harness exposes to Paddy control surfaces: native model rows with their readiness, and MCP tool inventory owned outside the in-process MCP runtime. Part of the [Agent harness plugins](/plugins/sdk-agent-harness) reference.
 
 ## Native model inventory
 
@@ -44,12 +44,12 @@ authorization, and all run-time compatibility and permission checks still apply.
 
 ## Native MCP inventory
 
-A harness that owns MCP connections outside OpenClaw's in-process MCP runtime
+A harness that owns MCP connections outside Paddy's in-process MCP runtime
 can implement `loadMcpToolCatalog(params)`. The callback is used by read-only
 control surfaces such as the composer Tool access view. It receives the
 authoritative session identity, runtime config, workspace, and sparse session
-MCP overrides. `mcpServerNames` is the bounded set of OpenClaw-configured
-servers whose session policy the harness may represent. Return OpenClaw's
+MCP overrides. `mcpServerNames` is the bounded set of Paddy-configured
+servers whose session policy the harness may represent. Return Paddy's
 `McpToolCatalog` shape for only that set.
 
 Use only an already-bound native process and thread. Returning `undefined`
@@ -57,7 +57,7 @@ means no live catalog is available; do not start a new harness process merely
 to answer inventory. Preserve raw server/tool names, assign collision-safe
 server names with `assignMcpCatalogSafeServerNames(...)`, and retain tools
 hidden only by a session denial in `sessionDeniedTools`. Core still applies the
-final OpenClaw tool policy and schema compatibility checks before exposing the
+final Paddy tool policy and schema compatibility checks before exposing the
 rows.
 
 `SessionMcpRuntime` implementations used by materialized tool views should

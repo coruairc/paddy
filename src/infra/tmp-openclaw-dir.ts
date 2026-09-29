@@ -72,7 +72,7 @@ export function resolvePreferredOpenClawTmpDir(
     ...options,
     preferredDir: options.preferredDir ?? DEFAULT_POSIX_TMP_ROOT,
     fallbackPrefix: "openclaw",
-    warningPrefix: "[openclaw]",
+    warningPrefix: "[paddy]",
     unsafeFallbackLabel: `${PRODUCT_NAME} temp dir`,
     skipPreferredOnWindows: true,
   });

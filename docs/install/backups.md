@@ -1,15 +1,15 @@
 ---
-summary: "Back up OpenClaw state: archives, per-database snapshots, scheduling, offsite copies, and continuous replication"
+summary: "Back up Paddy state: archives, per-database snapshots, scheduling, offsite copies, and continuous replication"
 read_when:
-  - You want a backup routine for an OpenClaw install instead of a one-off archive
+  - You want a backup routine for a Paddy install instead of a one-off archive
   - You want scheduled, offsite, or continuous backups without copying the whole database every time
-  - You need to restore OpenClaw state from a backup
+  - You need to restore Paddy state from a backup
 title: "Backups"
 ---
 
 <a id="backups" />
 
-OpenClaw keeps its authoritative state in SQLite: one global control-plane
+Paddy keeps its authoritative state in SQLite: one global control-plane
 database under the state directory (usually `~/.openclaw`), plus one database
 per configured agent at `<agentDir>/openclaw-agent.sqlite`. Agent directories
 default to locations under the state directory but can be configured outside
@@ -20,7 +20,7 @@ that should not re-upload whole databases on every backup.
 
 When [cold transcript storage](/reference/session-management-compaction/maintenance#cold-transcript-storage)
 is enabled, older transcript payloads also live in immutable compressed files.
-Use an OpenClaw backup command to capture those payloads with the database.
+Use a Paddy backup command to capture those payloads with the database.
 
 Never copy live `.sqlite`, `-wal`, `-shm`, or `-journal` files as a backup.
 The databases are written while the Gateway runs, and raw file copies of a
@@ -38,9 +38,9 @@ committed state safely.
 
 ## Choose a path
 
-- One-off state and workspace archive: `openclaw backup create`.
-- One database, compact and verified: `openclaw backup sqlite create`.
-- Versioned and incremental by content: `openclaw backup git create`.
+- One-off state and workspace archive: `paddy backup create`.
+- One database, compact and verified: `paddy backup sqlite create`.
+- Versioned and incremental by content: `paddy backup git create`.
 - Regular protection: provision the Gateway-owned backup automation.
 - Continuous, incremental, seconds of data loss: replicate the databases with
   Litestream.
@@ -55,14 +55,14 @@ activating state on another host or at another path; see the
 [backup symbolic-link caveat](/cli/backup#what-gets-backed-up).
 
 ```bash
-openclaw backup create --output ~/Backups/openclaw --verify
+paddy backup create --output ~/Backups/paddy --verify
 ```
 
 This writes a timestamped `.tar.gz` covering state, config, credentials, every
 configured agent directory, and (by default) workspaces, then validates the
 archive manifest and payload. Agent directories remain included when
 `--no-include-workspace` is set, even if their configured locations are outside
-the state directory. OpenClaw-owned SQLite databases, including agent databases
+the state directory. Paddy-owned SQLite databases, including agent databases
 inside workspace or managed-state assets, are captured with SQLite's online
 backup API, owner-verified, sanitized, and compacted. Other SQLite files in
 workspaces remain ordinary workspace files. [Backup CLI](/cli/backup)
@@ -75,7 +75,7 @@ workspace files; it does not bypass ownership discovery. Before repairing the
 configuration, save the active config file:
 
 ```bash
-openclaw backup create --only-config --output ~/Backups/openclaw --verify
+paddy backup create --only-config --output ~/Backups/paddy --verify
 ```
 
 This saves only the active JSON config file, without parsing it or including
@@ -88,21 +88,21 @@ daily routine for small installs. For large workspaces or frequent backups,
 prefer snapshots or continuous replication below.
 
 On ephemeral container hosts, keep the archive outside the container and use
-`openclaw backup restore` as the disaster-recovery primitive for rebuilding a
+`paddy backup restore` as the disaster-recovery primitive for rebuilding a
 fresh persistent state tree. Restore stages files only; activation remains an
 explicit offline deployment step.
 
 ## Per-database snapshots
 
 ```bash
-openclaw backup sqlite create --global --repository ~/Backups/openclaw-sqlite
-openclaw backup sqlite create --agent main --repository ~/Backups/openclaw-sqlite
+paddy backup sqlite create --global --repository ~/Backups/paddy-sqlite
+paddy backup sqlite create --agent main --repository ~/Backups/paddy-sqlite
 ```
 
 Each run publishes one verified snapshot directory (`manifest.json` plus
 `database.sqlite`) into the repository directory. Snapshots are vacuumed, so
 deleted-page remnants do not inflate them, and every snapshot records a
-SHA-256 that `openclaw backup sqlite verify` rechecks later.
+SHA-256 that `paddy backup sqlite verify` rechecks later.
 
 `--agent <id>` resolves the database from that agent's configured `agentDir`,
 including roots outside the state directory. The same owner-derived lookup
@@ -142,7 +142,7 @@ immutable `cold/` directory under each agent's session artifact directory,
 even if automatic archival is disabled. Capture the database first, then the
 files, and retain every file referenced by that database
 snapshot. A database replica without its referenced cold files is incomplete.
-Prefer the supported OpenClaw snapshot commands when you need one portable
+Prefer the supported Paddy snapshot commands when you need one portable
 recovery artifact.
 
 ## Schedule backups
@@ -155,7 +155,7 @@ initialize it once before enabling a pushed schedule:
 
 ```bash
 openclaw backup git init --repository ~/Backups/openclaw-git --remote git@github.com:you/openclaw-backups.git
-openclaw backup enable --repository ~/Backups/openclaw-git --every 24h --push
+paddy backup enable --repository ~/Backups/paddy-git --every 24h --push
 ```
 
 `backup enable --push` refuses to schedule when no `origin` remote is
@@ -175,7 +175,7 @@ Use `--global-only` or `--agent <id>` to narrow the scope. Add
 the fixed scheduled job instead of creating another one. Disable it with:
 
 ```bash
-openclaw backup disable
+paddy backup disable
 ```
 
 The Gateway must be reachable while enabling or disabling the schedule. There
@@ -196,8 +196,8 @@ emits one machine-readable result per run, so the log doubles as a backup
 audit trail. Prune old snapshot directories on your own retention schedule.
 
 Every non-dry-run archive, local SQLite snapshot, and Git backup attempt is
-also recorded in the shared state database. `openclaw status` shows the newest
-attempt, and `openclaw doctor` suggests a one-off or scheduled backup when no
+also recorded in the shared state database. `paddy status` shows the newest
+attempt, and `paddy doctor` suggests a one-off or scheduled backup when no
 successful run is recorded or the newest success is more than 14 days old.
 
 ## Copy backups offsite
@@ -220,19 +220,19 @@ replication.
 Git-backed backups dump each selected database into deterministic `schema.sql`,
 `manifest.json`, and per-table JSONL files, then create one commit for the
 whole run. Unchanged database content produces no commit, so Git stores and
-pushes only content changes by construction. OpenClaw stages only the
+pushes only content changes by construction. Paddy stages only the
 backup-owned `global` and `agents` paths, not unrelated files elsewhere in the
 repository.
 
 ```bash
-openclaw backup git init --repository ~/Backups/openclaw-git --remote <private-git-url>
-openclaw backup git create --repository ~/Backups/openclaw-git --all --push
-openclaw backup git log --repository ~/Backups/openclaw-git
+paddy backup git init --repository ~/Backups/paddy-git --remote <private-git-url>
+paddy backup git create --repository ~/Backups/paddy-git --all --push
+paddy backup git log --repository ~/Backups/paddy-git
 ```
 
-Use a repository dedicated to OpenClaw backups. Existing `global/` and
+Use a repository dedicated to Paddy backups. Existing `global/` and
 `agents/<agentId>/` scopes must be empty or contain a valid schema-version-1
-OpenClaw backup manifest. OpenClaw refuses to replace any other scope, and an
+Paddy backup manifest. Paddy refuses to replace any other scope, and an
 `--all` run validates every existing agent scope before deleting stale
 backup-owned entries.
 
@@ -250,8 +250,8 @@ than a credential-complete backup; see
 Verify or restore one database at any commit without overwriting a live file:
 
 ```bash
-openclaw backup git verify --repository ~/Backups/openclaw-git --ref <commit> --global
-openclaw backup git restore --repository ~/Backups/openclaw-git --ref <commit> --agent main --target ./restored-agent.sqlite
+paddy backup git verify --repository ~/Backups/paddy-git --ref <commit> --global
+paddy backup git restore --repository ~/Backups/paddy-git --ref <commit> --agent main --target ./restored-agent.sqlite
 ```
 
 Git restore converges derived search state: it rebuilds content-backed FTS5
@@ -262,14 +262,14 @@ table hashes, SQLite integrity, and foreign keys.
 ## Continuous replication with Litestream
 
 [Litestream](https://litestream.io) is an open-source replication daemon for
-SQLite. It runs alongside the Gateway with no OpenClaw changes: it watches
+SQLite. It runs alongside the Gateway with no Paddy changes: it watches
 each database's write-ahead log and streams incremental changes to object
 storage, with periodic snapshots so restores stay fast. Only changed pages
 leave the machine, which makes it the right tool when backups must not
 re-upload whole databases.
 
-Litestream's one hard requirement is WAL mode, which OpenClaw uses on local
-filesystems; on network-backed storage such as NFS or SMB, OpenClaw falls
+Litestream's one hard requirement is WAL mode, which Paddy uses on local
+filesystems; on network-backed storage such as NFS or SMB, Paddy falls
 back to rollback journaling, so verify with `PRAGMA journal_mode;` first.
 A minimal `litestream.yml` replicating the control-plane
 database and one agent database to an S3-compatible bucket:
@@ -308,7 +308,7 @@ between an origin and a replica database and ships only changed pages,
 typically over SSH with the same binary installed on both ends. Unlike a raw
 file copy, it takes a read transaction on the origin, so pulling from a live
 database while the Gateway runs produces a consistent replica. WAL mode is
-required on the origin. OpenClaw uses WAL on local filesystems but
+required on the origin. Paddy uses WAL on local filesystems but
 deliberately falls back to rollback journaling on network-backed storage
 such as NFS or SMB, so check the origin before relying on this path:
 
@@ -332,7 +332,7 @@ Re-running the command is incremental: an unchanged database exchanges only
 a few kilobytes of hashes, and appended data transfers at roughly its own
 size. Treat the replica as read-only and as sensitive as the origin.
 
-Two caveats. First, deltas are page-based, and OpenClaw's databases run
+Two caveats. First, deltas are page-based, and Paddy's databases run
 incremental auto-vacuum on a periodic maintenance timer; a vacuum pass
 relocates pages, so a sync shortly after one (or after large deletions such
 as transcript-archive eviction) can transfer far more than the actual data
@@ -350,7 +350,7 @@ Restore is deliberately explicit; nothing overwrites live state in place.
 
 ### Restore a full archive
 
-Start only from an archive you created or otherwise trust. `openclaw backup
+Start only from an archive you created or otherwise trust. `paddy backup
 verify` checks archive structure and payload layout, but it does not
 authenticate the archive or make untrusted content safe.
 
@@ -360,11 +360,11 @@ staging directory with one command:
 
 ```bash
 ARCHIVE=./2026-03-09T08-00-00.000+08-00-openclaw-backup.tar.gz
-openclaw backup restore "$ARCHIVE" --target ./restored-openclaw
+paddy backup restore "$ARCHIVE" --target ./restored-paddy
 ```
 
 The target must not exist or must be empty, and it must not be inside the live
-state directory or any configured live agent directory. OpenClaw verifies
+state directory or any configured live agent directory. Paddy verifies
 archive structure, the manifest, hardlinks, symbolic-link entries, and the root
 SQLite snapshot and its durably registered agent snapshots before it writes the
 target. Other payload remains opaque. A non-empty target is refused,
@@ -378,8 +378,8 @@ sessions, and workspace data.
   ratchet state, especially WhatsApp, may desynchronize after rollback and need
   relinking. Approvals and delivery/dedupe state also roll back, so review
   pending approvals before resuming the Gateway. Plugin `node_modules` trees
-  are not archived; after activation, run `openclaw plugins update <id>` or
-  reinstall with `openclaw plugins install <spec> --force`. Run `openclaw
+  are not archived; after activation, run `paddy plugins update <id>` or
+  reinstall with `paddy plugins install <spec> --force`. Run `paddy
   skills list` or start an agent session to regenerate the omitted
   `plugin-skills/` symlink index from current plugin metadata.
 </Warning>
@@ -410,21 +410,21 @@ every custom agent root using its recorded agent id and original source path;
 either preserve its configured `agentDir` or update that setting to its new
 location. On a new machine or under a different home directory, also use the
 manifest to map config, credentials, and workspace assets to their new paths.
-Run `openclaw doctor` before restarting the Gateway. See
+Run `paddy doctor` before restarting the Gateway. See
 [Updating](/install/updating#rollback) for the rollback workflow.
 
 ### Restore a database
 
-For a snapshot, `openclaw backup sqlite restore <snapshot-directory> --target
+For a snapshot, `paddy backup sqlite restore <snapshot-directory> --target
 <new-database-path>` writes a re-verified database to a fresh target. For Git
-history, `openclaw backup git restore --repository <dir> --ref <commit>
+history, `paddy backup git restore --repository <dir> --ref <commit>
 (--global | --agent <id>) --target <new-database-path>` materializes and
 verifies a fresh database. For Litestream, `litestream restore` writes a fresh
 database file. Move the result into place while the Gateway is stopped, then
-start the Gateway and check `openclaw health` and `openclaw doctor`.
+start the Gateway and check `paddy health` and `paddy doctor`.
 
-After restoring onto a different OpenClaw version, preflight the database
-first with `openclaw database preflight`; see
+After restoring onto a different Paddy version, preflight the database
+first with `paddy database preflight`; see
 [Database schemas](/reference/database-schemas#preflight-a-target-release).
 
 ## Related

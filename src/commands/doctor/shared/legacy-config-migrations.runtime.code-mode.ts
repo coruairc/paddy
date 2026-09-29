@@ -8,12 +8,12 @@ export const LEGACY_CONFIG_MIGRATION_RUNTIME_CODE_MODE = defineLegacyConfigMigra
     {
       path: ["tools", "codeMode", "languages"],
       message:
-        'tools.codeMode.languages is retired; Code Mode now runs JavaScript only. Run "openclaw doctor --fix".',
+        'tools.codeMode.languages is retired; Code Mode now runs JavaScript only. Run "paddy doctor --fix".',
     },
     {
       path: ["agents"],
       message:
-        'Per-agent tools.codeMode.languages is retired; Code Mode now runs JavaScript only. Run "openclaw doctor --fix".',
+        'Per-agent tools.codeMode.languages is retired; Code Mode now runs JavaScript only. Run "paddy doctor --fix".',
       match: (value) => {
         let found = false;
         visitAgentEntries({ agents: value }, (agent) => {
@@ -43,13 +43,12 @@ export const LEGACY_CONFIG_MIGRATION_RUNTIME_CODE_MODE_EXECUTOR = defineLegacyCo
   legacyRules: [
     {
       path: ["tools", "codeMode", "runtime"],
-      message:
-        'tools.codeMode.runtime moved to tools.codeMode.executor. Run "openclaw doctor --fix".',
+      message: 'tools.codeMode.runtime moved to tools.codeMode.executor. Run "paddy doctor --fix".',
     },
     {
       path: ["agents"],
       message:
-        'Per-agent tools.codeMode.runtime moved to tools.codeMode.executor. Run "openclaw doctor --fix".',
+        'Per-agent tools.codeMode.runtime moved to tools.codeMode.executor. Run "paddy doctor --fix".',
       match: (value) => {
         let found = false;
         visitAgentEntries({ agents: value }, (agent) => {

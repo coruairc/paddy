@@ -611,7 +611,7 @@ export async function maybeRepairCodexSessionRoutes(params: {
               [
                 "- Legacy session bindings or retired session model route state detected.",
                 `- Affected sessions: ${stale.length}.`,
-                "- Run `openclaw doctor --fix` to migrate legacy bindings and stale session model/provider pins across all agent session stores.",
+                "- Run `paddy doctor --fix` to migrate legacy bindings and stale session model/provider pins across all agent session stores.",
               ].join("\n"),
             ]
           : []),

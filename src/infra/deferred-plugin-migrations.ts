@@ -126,7 +126,7 @@ export class DeferredPluginMigrationConflictError extends Error {
 
   constructor(pending: readonly DeferredPluginMigration[]) {
     super(
-      'Plugin migration obligations changed while their inputs were being prepared. Retained inputs remain protected; run "openclaw doctor --fix" after the other repair finishes.',
+      'Plugin migration obligations changed while their inputs were being prepared. Retained inputs remain protected; run "paddy doctor --fix" after the other repair finishes.',
     );
     this.name = "DeferredPluginMigrationConflictError";
     this.pending = pending;

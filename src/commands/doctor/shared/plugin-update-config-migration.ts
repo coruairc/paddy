@@ -174,7 +174,7 @@ export async function preparePluginUpdateConfigMigration(params: {
               );
               if (unresolved.length > 0) {
                 throw new Error(
-                  `Plugin settings are not ready for activation: ${unresolved.map((entry) => entry.pluginId).join(", ")}. Run openclaw doctor --fix to complete their data migrations, then retry the plugin update.`,
+                  `Plugin settings are not ready for activation: ${unresolved.map((entry) => entry.pluginId).join(", ")}. Run paddy doctor --fix to complete their data migrations, then retry the plugin update.`,
                 );
               }
               return selectedPending

@@ -1,7 +1,7 @@
 ---
-summary: "How OpenClaw validates update paths, package migrations, and plugin install/update behavior"
+summary: "How Paddy validates update paths, package migrations, and plugin install/update behavior"
 read_when:
-  - Changing OpenClaw update, doctor, package acceptance, or plugin install behavior
+  - Changing Paddy update, doctor, package acceptance, or plugin install behavior
   - Preparing or approving a release candidate
   - Debugging package update, plugin dependency cleanup, or plugin install regressions
 title: "Testing: updates and plugins"
@@ -34,7 +34,7 @@ keys and network-touching suites, see [Testing live](/help/testing-live).
 - A user can move from an older published package to the candidate package
   without losing config, agents, sessions, workspaces, plugin allowlists, or
   channel config.
-- `openclaw doctor --fix --non-interactive` owns legacy migrations and repairs,
+- `paddy doctor --fix --non-interactive` owns legacy migrations and repairs,
   including genuinely dangling plugin-runtime aliases. Package postinstall owns
   package-local dependency debris; both preserve valid shared runtime roots that
   another installation or profile may use. Startup should not grow hidden
@@ -161,19 +161,19 @@ Important lanes:
   explicit upgrade, explicit downgrade, and uninstall after deleting the plugin
   code. It logs RSS and CPU metrics per phase.
 - `test:docker:plugin-update` validates that an unchanged installed plugin does
-  not reinstall or lose install metadata during `openclaw plugins update`.
+  not reinstall or lose install metadata during `paddy plugins update`.
 - `test:docker:upgrade-survivor` installs the candidate tarball over a dirty
   old-user fixture, runs package update plus non-interactive doctor, then starts
   a loopback Gateway and checks state preservation.
 - `test:docker:published-upgrade-survivor` first installs the latest stable release,
-  configures it through a baked `openclaw config set` recipe, updates it to the
+  configures it through a baked `paddy config set` recipe, updates it to the
   candidate tarball, runs doctor, checks legacy cleanup, starts the Gateway, and
   probes `/healthz`, `/readyz`, and RPC status. The baseline recipe configures
   Anthropic, Google Gemini, and OpenAI through env-referenced API keys, keeping
   OpenAI as the agents' primary model.
 - `test:docker:update-restart-auth` installs the candidate package, starts a
   managed token-auth Gateway, unsets caller gateway auth env for
-  `openclaw update --yes --json`, and requires the candidate update command to
+  `paddy update --yes --json`, and requires the candidate update command to
   restart the Gateway before the normal probes.
 - `test:docker:update-migration` is the cleanup-heavy published-update lane. It
   installs the latest stable release by default, starts from a configured
@@ -183,7 +183,7 @@ Important lanes:
   the shared runtime roots.
 
 Set `OPENCLAW_UPGRADE_SURVIVOR_LIVE_MODELS` to a whitespace-separated list of
-model refs to run one `openclaw agent --local` marker turn per model after the
+model refs to run one `paddy agent --local` marker turn per model after the
 update. Anthropic uses `ANTHROPIC_API_KEY`, Google uses `GEMINI_API_KEY`, and
 OpenAI uses `OPENAI_API_KEY`; missing selected keys fail the lane. Docker forwards
 only selected provider keys. Each turn has its own session and

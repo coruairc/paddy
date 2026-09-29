@@ -2,6 +2,7 @@
 import { createHash } from "node:crypto";
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import type { SystemAgentChatQuestion } from "../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   CONFIG_AUDIT_MAX_ENTRIES,
   CONFIG_AUDIT_SCOPE,
@@ -12,7 +13,6 @@ import { getHealthCache } from "../gateway/server/health-state.js";
 import { createSqliteAuditRecordStore } from "../infra/sqlite-audit-record-store.js";
 import { getUpdateAvailable, type UpdateAvailable } from "../infra/update-status-state.js";
 import { formatSystemAgentStartupMessage, type SystemAgentOverview } from "./overview.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 const SYSTEM_AGENT_GREETING_SCOPE = "system-agent-greeting";
 const SYSTEM_AGENT_GREETING_KEY = "latest";
@@ -299,8 +299,7 @@ function normalizeGreetingText(text: string): string | null {
  * cursor, so a model phrasing miss would silently lose the notification.
  * Appending deterministically removes that class instead of validating it.
  */
-export const SYSTEM_AGENT_EXTERNAL_EDIT_ALERT =
-  `Heads up: the config was edited outside ${PRODUCT_NAME} while I was away — open History to review it.`;
+export const SYSTEM_AGENT_EXTERNAL_EDIT_ALERT = `Heads up: the config was edited outside ${PRODUCT_NAME} while I was away — open History to review it.`;
 
 function withHostOwnedAlerts(text: string, facts: SystemAgentGreetingFacts): string {
   if (!facts.recentExternalEdit) {
@@ -579,7 +578,7 @@ export function buildSystemAgentGreetingQuestion(
 ): SystemAgentChatQuestion {
   const exceptional: SystemAgentChatQuestion["options"] = [];
   if (!overview.config.exists) {
-    exceptional.push({ label: "Set up OpenClaw", reply: "setup" });
+    exceptional.push({ label: "Set up Paddy", reply: "setup" });
   } else if (!overview.config.valid) {
     exceptional.push({ label: "Inspect config", reply: "doctor" });
   } else if (!overview.defaultModel) {

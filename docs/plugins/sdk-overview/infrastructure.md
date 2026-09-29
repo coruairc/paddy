@@ -21,7 +21,7 @@ background services, plus the SDK helpers those surfaces depend on. Part of the
 | `api.registerGatewayMethod(name, handler, opts?)` | Gateway RPC method                                                     |
 | `api.registerGatewayDiscoveryService(service)`    | Local Gateway discovery advertiser                                     |
 | `api.registerCli(registrar, opts?)`               | CLI subcommand                                                         |
-| `api.registerNodeCliFeature(registrar, opts?)`    | Node feature CLI under `openclaw nodes`                                |
+| `api.registerNodeCliFeature(registrar, opts?)`    | Node feature CLI under `paddy nodes`                                   |
 | `api.registerService(service)`                    | Background service                                                     |
 | `api.registerInteractiveHandler(registration)`    | Interactive handler                                                    |
 | `api.registerAgentToolResultMiddleware(...)`      | Runtime tool-result middleware                                         |
@@ -32,11 +32,11 @@ background services, plus the SDK helpers those surfaces depend on. Part of the
 | `api.registerMcpServerConnectionResolver(...)`    | Per-requester MCP transport (`url`/`headers`) for a static server name |
 | `api.registerTextTransforms(transforms)`          | Plugin-owned prompt/message compatibility text rewrites                |
 | `api.registerConfigMigration(migrate)`            | Lightweight config migration run before plugin runtime loads           |
-| `api.registerMigrationProvider(provider)`         | Importer for `openclaw migrate`                                        |
+| `api.registerMigrationProvider(provider)`         | Importer for `paddy migrate`                                           |
 | `api.registerAutoEnableProbe(probe)`              | Config probe that can auto-enable this plugin                          |
 | `api.registerReload(registration)`                | Restart/hot/noop config-prefix policy for reload handling              |
 | `api.registerNodeInvokePolicy(policy)`            | Allowlist/approval policy for node-invoked commands                    |
-| `api.registerSecurityAuditCollector(collector)`   | Findings collector for `openclaw security audit`                       |
+| `api.registerSecurityAuditCollector(collector)`   | Findings collector for `paddy security audit`                          |
 
 Gateway methods default to `profileAccess: "required"`, so authenticated-profile verification fails closed before plugin dispatch. Set `profileAccess: "independent"` only for an audited method that neither reads nor mutates durable user or session state. Operator scope remains a separate authorization requirement.
 
@@ -209,7 +209,7 @@ returns the corresponding output promise. The host currently rejects calls from
 other application workers, which need a shared host-broker connection.
 
 This first host supports filesystem-backed databases only. Empty paths, SQLite
-URIs, `:memory:`, and OpenClaw's reserved incognito database basename are refused
+URIs, `:memory:`, and Paddy's reserved incognito database basename are refused
 before normalization or worker admission. In-memory and incognito ownership
 remain pending; these locators must never become disk filenames.
 
@@ -322,7 +322,7 @@ delivery. Keep successful-response activity on `finish`, with the caller's
 success-status check, so an aborted request cannot report healthy activity.
 
 Older Bun HTTP transports use native response completion because their raw socket
-operations do not flush the HTTP response. OpenClaw detects the native HTTP
+operations do not flush the HTTP response. Paddy detects the native HTTP
 `destroySoon` implementation introduced by Bun's Node compatibility rework rather
 than relying on version labels shared by different canary builds. Queued HEAD
 rejections on newer Bun wait for response socket assignment, including builds
@@ -509,7 +509,7 @@ Contract notes:
   senders change. Before any requester resolves, no scoped specs are advertised.
 - Unauthenticated requesters on a shared-thread harness still see the advertised
   scoped tools; calling one returns a clean not-connected tool error for that
-  requester. OpenClaw never falls back to another requester's credentials.
+  requester. Paddy never falls back to another requester's credentials.
 
 Memory prompt supplement builders receive optional `agentId`,
 `agentSessionKey`, and `sandboxed` context. Memory corpus supplement `search`
@@ -523,13 +523,13 @@ Use `registerMemoryPromptPreparation(...)` when prompt text depends on async
 plugin state. The callback runs once before each full agent prompt and receives
 the same tool, agent, session, and sandbox context as synchronous memory prompt
 builders. Validate the current storage-owner instance before loading persisted
-state, then return only lines for that run. OpenClaw freezes those lines and
+state, then return only lines for that run. Paddy freezes those lines and
 hands the immutable result to synchronous prompt assembly. Keep persistence,
 atomic replacement, and owner-removal deletion inside the owning plugin; do not
 poll or read files from a prompt builder.
 
 Telegram interactive handlers can return `{ submitText }` to route text through
-Telegram's normal inbound agent path after the handler succeeds. OpenClaw keeps
+Telegram's normal inbound agent path after the handler succeeds. Paddy keeps
 the callback button when inbound policy skips the text or processing fails, so
 the user can retry after the blocking condition changes. This result field is
 Telegram-specific; other channels keep their own interactive result contracts.

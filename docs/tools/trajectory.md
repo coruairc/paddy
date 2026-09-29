@@ -1,14 +1,14 @@
 ---
-summary: "Export redacted trajectory bundles for debugging an OpenClaw agent session"
+summary: "Export redacted trajectory bundles for debugging a Paddy agent session"
 read_when:
   - Debugging why an agent answered, failed, or called tools a certain way
-  - Exporting a support bundle for an OpenClaw session
+  - Exporting a support bundle for a Paddy session
   - Investigating prompt context, tool calls, runtime errors, or usage metadata
   - Disabling trajectory capture
 title: "Trajectory bundles"
 ---
 
-Trajectory capture is OpenClaw's per-session flight recorder. It records a
+Trajectory capture is Paddy's per-session flight recorder. It records a
 structured timeline for each agent run, then `/export-trajectory` packages the
 current session into a redacted support bundle covering:
 
@@ -32,7 +32,7 @@ Send in the active session (alias `/trajectory`):
 /export-trajectory
 ```
 
-OpenClaw writes the bundle under the workspace:
+Paddy writes the bundle under the workspace:
 
 ```text
 .openclaw/trajectory-exports/openclaw-trajectory-<session>-<timestamp>/
@@ -50,7 +50,7 @@ The name resolves inside `.openclaw/trajectory-exports/`. Absolute paths and
 Trajectory bundles can contain prompts, model messages, tool schemas, tool
 results, runtime events, and local paths, so the chat command always runs
 through exec approval. Approve the export once when you intend to create the
-bundle; do not use allow-all. In group chats, OpenClaw sends the approval
+bundle; do not use allow-all. In group chats, Paddy sends the approval
 prompt and export result to the owner privately instead of posting trajectory
 details back to the shared room. The room receives only a status notice that
 distinguishes confirmed, pending, and suppressed private delivery.
@@ -59,7 +59,7 @@ For local inspection or support workflows, run the underlying CLI command
 directly:
 
 ```bash
-openclaw sessions export-trajectory --session-key "agent:main:telegram:direct:123" --workspace .
+paddy sessions export-trajectory --session-key "agent:main:telegram:direct:123" --workspace .
 ```
 
 Other flags: `--output <path>` (directory name inside
@@ -73,7 +73,7 @@ authorization checks plus the owner check for the channel.
 
 ## What gets recorded
 
-Trajectory capture is on by default for OpenClaw agent runs.
+Trajectory capture is on by default for Paddy agent runs.
 
 Runtime events include:
 
@@ -108,7 +108,7 @@ Events are written as JSON Lines with this schema marker:
 | `manifest.json`       | Bundle schema, source files, event counts, and generated file list                             |
 | `events.jsonl`        | Ordered runtime and transcript timeline                                                        |
 | `session-branch.json` | Redacted active transcript branch and session header                                           |
-| `metadata.json`       | OpenClaw version, OS/runtime, model, config snapshot, plugins, skills, and prompt metadata     |
+| `metadata.json`       | Paddy version, OS/runtime, model, config snapshot, plugins, skills, and prompt metadata        |
 | `artifacts.json`      | Final status, errors, usage, prompt cache, compaction count, assistant text, and tool metadata |
 | `prompts.json`        | Submitted prompts and selected prompt-building details                                         |
 | `system-prompt.txt`   | Latest compiled system prompt, when captured                                                   |
@@ -133,14 +133,14 @@ those files as cleanup targets; active capture writes database rows.
 export OPENCLAW_TRAJECTORY=0
 ```
 
-This disables runtime trajectory capture before starting OpenClaw.
+This disables runtime trajectory capture before starting Paddy.
 `/export-trajectory` can still export the transcript branch, but runtime-only
 data such as compiled context, provider artifacts, and prompt metadata may be
 missing.
 
 ## Tune flush timeout
 
-OpenClaw flushes runtime trajectory rows during agent cleanup. The default
+Paddy flushes runtime trajectory rows during agent cleanup. The default
 cleanup timeout is 10,000 ms. On slow disks or large stores, set
 `OPENCLAW_TRAJECTORY_FLUSH_TIMEOUT_MS` before starting OpenClaw:
 
@@ -148,14 +148,14 @@ cleanup timeout is 10,000 ms. On slow disks or large stores, set
 export OPENCLAW_TRAJECTORY_FLUSH_TIMEOUT_MS=30000
 ```
 
-This controls when OpenClaw logs an `openclaw-trajectory-flush` timeout and
+This controls when Paddy logs an `openclaw-trajectory-flush` timeout and
 continues; it does not change the trajectory size caps. To tune all agent
 cleanup steps that do not pass an explicit timeout, set
 `OPENCLAW_AGENT_CLEANUP_TIMEOUT_MS`.
 
 ## Privacy and limits
 
-Trajectory bundles are for support and debugging, not public posting. OpenClaw
+Trajectory bundles are for support and debugging, not public posting. Paddy
 redacts sensitive values before writing export files:
 
 - credentials and known secret-like payload fields

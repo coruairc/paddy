@@ -662,7 +662,7 @@ async function runPluginUpdateCommandUnlocked(
     if (getRetainedPluginInstallPublication(error)) {
       packageUpdatePersisted = true;
       await settlePluginInstallTransactions(deferredInstallTransactions, "commit").catch(() =>
-        logger.warn("Plugin update was retained, but cleanup failed. Run openclaw plugins doctor."),
+        logger.warn("Plugin update was retained, but cleanup failed. Run paddy plugins doctor."),
       );
     }
     throw error;

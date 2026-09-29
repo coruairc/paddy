@@ -105,11 +105,11 @@ export function resolvePluginVersionDriftUpdateCommand(
     }
     const exactNpmTarget = `${exactNpmPackageName}@${entry.targetResolution.version}`;
     if (parseRegistryNpmSpec(exactNpmTarget)?.selectorKind === "exact-version") {
-      return `openclaw plugins update ${exactNpmTarget}`;
+      return `paddy plugins update ${exactNpmTarget}`;
     }
     return undefined;
   }
-  return `openclaw plugins update ${entry.pluginId}`;
+  return `paddy plugins update ${entry.pluginId}`;
 }
 
 /**

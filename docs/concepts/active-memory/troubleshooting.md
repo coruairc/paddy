@@ -13,14 +13,14 @@ If active memory is not showing up where you expect:
 1. Confirm the plugin is enabled under `plugins.entries.active-memory.enabled`.
 2. For Remember across conversations, confirm the agent's effective
    `memory.search.rememberAcrossConversations` setting is enabled, run
-   `openclaw doctor` to verify the current memory provider supports protected
+   `paddy doctor` to verify the current memory provider supports protected
    transcript recall, and confirm `config.toolsAllow` includes `memory_search`
    when explicitly configured. For advanced Active Memory, confirm the agent ID
    is listed in `config.agents`.
 3. Confirm you are testing through an eligible interactive persistent conversation.
 4. Remember that groups and channels never use cross-conversation transcript recall.
 5. Turn on `config.logging: true` and watch the gateway logs.
-6. Verify memory search itself works with `openclaw status --deep`.
+6. Verify memory search itself works with `paddy status --deep`.
 
 If memory hits are noisy, tighten `maxSummaryChars`. If active memory is too
 slow, lower `queryMode`, lower `timeoutMs`, or reduce recent turn counts and
@@ -34,7 +34,7 @@ active-memory bugs. The default `memory-core` path uses `memory_search` and
 `memory_get`; the `memory-lancedb` slot uses `memory_recall`. If you use another
 memory plugin, confirm `config.toolsAllow` names the tools that plugin actually
 registers. Remember across conversations is narrower: the current memory
-provider must support OpenClaw's protected same-agent/private-session recall
+provider must support Paddy's protected same-agent/private-session recall
 path.
 
 <AccordionGroup>
@@ -53,14 +53,14 @@ path.
       names. Active Memory can use only the intersection of this list and the
       parent agent's effective tools. Keep `memory_search` when using Remember
       across conversations.
-    - Use `openclaw plugins inspect lossless-claw --runtime --json` to check
+    - Use `paddy plugins inspect lossless-claw --runtime --json` to check
       registration. A tool listed there is registered, but that output does not
       prove the parent agent or Active Memory is authorized to call it.
 
   </Accordion>
 
   <Accordion title="Embedding provider switched or stopped working">
-    If `memory.search.provider` is unset, OpenClaw uses OpenAI embeddings. Set
+    If `memory.search.provider` is unset, Paddy uses OpenAI embeddings. Set
     `memory.search.provider` explicitly for Bedrock, DeepInfra, Gemini, GitHub
     Copilot, LM Studio, local, Mistral, Ollama, Voyage, or OpenAI-compatible
     embeddings. If the configured provider cannot run, `memory_search` may
@@ -80,7 +80,7 @@ path.
       after each reply.
     - Watch gateway logs for `active-memory: ... start|done`,
       `memory sync failed (search-bootstrap)`, or provider embedding errors.
-    - Run `openclaw status --deep` to inspect the memory-search backend and
+    - Run `paddy status --deep` to inspect the memory-search backend and
       index health.
     - If you use `ollama`, confirm the embedding model is installed
       (`ollama list`).

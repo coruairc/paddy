@@ -1,12 +1,12 @@
-# OpenClaw Cloudflare AI Gateway Provider
+# Paddy Cloudflare AI Gateway Provider
 
-Official OpenClaw provider plugin for Cloudflare AI Gateway.
+Official Paddy provider plugin for Cloudflare AI Gateway.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/cloudflare-ai-gateway-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/cloudflare-ai-gateway> for setup and configuration.

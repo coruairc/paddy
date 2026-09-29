@@ -2,11 +2,11 @@
 summary: "Cloudflare AI Gateway setup (auth + model selection)"
 title: "Cloudflare AI gateway"
 read_when:
-  - You want to use Cloudflare AI Gateway with OpenClaw
+  - You want to use Cloudflare AI Gateway with Paddy
   - You need the account ID, gateway ID, or API key env var
 ---
 
-[Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/) sits in front of provider APIs and adds analytics, caching, and controls. For Anthropic, OpenClaw uses the Anthropic Messages API through your Gateway endpoint.
+[Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/) sits in front of provider APIs and adds analytics, caching, and controls. For Anthropic, Paddy uses the Anthropic Messages API through your Gateway endpoint.
 
 | Property      | Value                                                                                    |
 | ------------- | ---------------------------------------------------------------------------------------- |
@@ -20,7 +20,7 @@ read_when:
 For Anthropic models routed through Cloudflare AI Gateway, use your **Anthropic API key** as the provider key.
 </Note>
 
-When thinking is enabled for Anthropic Messages models, OpenClaw strips trailing
+When thinking is enabled for Anthropic Messages models, Paddy strips trailing
 assistant prefill turns before sending the payload through Cloudflare AI Gateway.
 Anthropic rejects response prefilling with extended thinking, while ordinary
 non-thinking prefill remains available.
@@ -43,14 +43,14 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
     Run onboarding and choose the Cloudflare AI Gateway auth option:
 
     ```bash
-    openclaw onboard --auth-choice cloudflare-ai-gateway-api-key
+    paddy onboard --auth-choice cloudflare-ai-gateway-api-key
     ```
 
     This prompts for your account ID, gateway ID, and API key.
 
   </Step>
   <Step title="Set a default model">
-    Add the model to your OpenClaw config:
+    Add the model to your Paddy config:
 
     ```json5
     {
@@ -65,7 +65,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
   </Step>
   <Step title="Verify the model is available">
     ```bash
-    openclaw models list --provider cloudflare-ai-gateway
+    paddy models list --provider cloudflare-ai-gateway
     ```
   </Step>
 </Steps>
@@ -75,7 +75,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
 For scripted or CI setups, pass all values on the command line:
 
 ```bash
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --mode local \
   --auth-choice cloudflare-ai-gateway-api-key \
   --cloudflare-ai-gateway-account-id "your-account-id" \

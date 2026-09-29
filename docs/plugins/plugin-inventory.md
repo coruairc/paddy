@@ -1,5 +1,5 @@
 ---
-summary: "Generated inventory of OpenClaw plugins shipped in core, published externally, or kept source-only"
+summary: "Generated inventory of Paddy plugins shipped in core, published externally, or kept source-only"
 read_when:
   - You are deciding whether a plugin ships in the core npm package or installs separately
   - You are updating bundled plugin package metadata or release automation
@@ -10,7 +10,7 @@ title: "Plugin inventory"
 <!-- Generated file. Do not edit by hand.
 Run `pnpm plugins:inventory:gen` to rebuild it. -->
 
-This page lists every OpenClaw plugin with its package, install route, and
+This page lists every Paddy plugin with its package, install route, and
 description. Operators use it to find a plugin and to see whether that plugin
 needs a separate install. Maintainers use it to check bundled plugin metadata
 and release automation.
@@ -18,7 +18,7 @@ and release automation.
 ## Definitions
 
 - **Core npm package:** built into the `openclaw` npm package and available without a separate plugin install.
-- **Official external package:** OpenClaw-maintained plugin omitted from the core npm package, kept in this official inventory, and installed on demand through ClawHub and/or npm.
+- **Official external package:** Paddy-maintained plugin omitted from the core npm package, kept in this official inventory, and installed on demand through ClawHub and/or npm.
 - **Source checkout only:** repo-local plugin omitted from published npm artifacts and not advertised as an installable package.
 
 Source checkouts are different from npm installs: after `pnpm install`, bundled
@@ -28,7 +28,7 @@ dependencies are available.
 ## Install a plugin
 
 Use the install route in each entry to decide whether install is needed. Plugins
-that say `included in OpenClaw` are already present in the core package.
+that say `included in Paddy` are already present in the core package.
 Official external packages need one install. Installation applies to the running
 local Gateway without restarting it; start the Gateway if it was stopped.
 
@@ -36,7 +36,7 @@ For example, Discord is an official external package:
 
 ```bash
 openclaw plugins install @openclaw/discord
-openclaw plugins inspect discord --runtime --json
+paddy plugins inspect discord --runtime --json
 ```
 
 Ordinary bare package specs install from npm. Use `clawhub:@openclaw/discord`
@@ -312,7 +312,7 @@ Each entry lists the package, distribution route, and description.
 
 - **[qianfan](/plugins/reference/qianfan)** (`@openclaw/qianfan-provider`) - npm or ClawHub: `clawhub:@openclaw/qianfan-provider`. Adds Qianfan model provider support to OpenClaw.
 
-- **[qqbot](/plugins/reference/qqbot)** (`@tencent-connect/openclaw-qqbot`) - npm. OpenClaw QQ Bot channel plugin for group and direct-message workflows.
+- **[qqbot](/plugins/reference/qqbot)** (`@tencent-connect/openclaw-qqbot`) - npm. Paddy QQ Bot channel plugin for group and direct-message workflows.
 
 - **[qwen](/plugins/reference/qwen)** (`@openclaw/qwen-provider`) - npm or ClawHub: `clawhub:@openclaw/qwen-provider`. Adds Qwen, Qwen Cloud, Model Studio, DashScope, Qwen Token Plan, Bailian Token Plan model provider support to OpenClaw.
 
@@ -388,7 +388,7 @@ Each entry lists the package, distribution route, and description.
 
 ## How this page is built
 
-OpenClaw generates this page from the top-level
+Paddy generates this page from the top-level
 `extensions/*/openclaw.plugin.json` manifests and the root npm package
 `files` exclusions. Optional `package.json` metadata enriches package and
 distribution details. Regenerate the page with:

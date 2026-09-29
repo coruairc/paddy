@@ -17,7 +17,7 @@ The card is durable session state. A reconnect or page reload reads the latest c
 
 Create a card only for substantial work with at least two meaningful sequential steps. Skip greetings, quick questions, and single-step requests; do not invent steps to justify a card. The checklist remains optional: eligible work can use Markdown, a plan, or both. Existing cards can still be updated when progress meaningfully changes or cleared when requested.
 
-OpenClaw adds a short progress-card reminder only for non-main, non-sub-agent sessions when a web, iOS, Android, or macOS card renderer is paired with the Gateway and the run is not using the agent's utility model. Channel-only deployments such as a WhatsApp-only Gateway do not receive the reminder.
+Paddy adds a short progress-card reminder only for non-main, non-sub-agent sessions when a web, iOS, Android, or macOS card renderer is paired with the Gateway and the run is not using the agent's utility model. Channel-only deployments such as a WhatsApp-only Gateway do not receive the reminder.
 
 The reminder says:
 
@@ -192,5 +192,5 @@ Omit `props.sessionKey` to follow the dashboard's session. To show another sessi
 ## Related
 
 - [Tools overview](/tools)
-- [`openclaw dashboard`](/cli/dashboard) — open the Control UI from the CLI
+- [`paddy dashboard`](/cli/dashboard) — open the Control UI from the CLI
 - [Control UI URLs](/web/urls) — reaching the Control UI in a browser

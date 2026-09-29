@@ -109,9 +109,9 @@ function logShadowedNpmInstallWarning(params: {
       `Warning: installed plugin "${params.pluginId}" is not the active source because a config-selected plugin with the same id is currently selected:`,
       `  active config source: ${shortenHomePath(active.source)}`,
       `  installed npm source: ${shortenHomePath(installedSource)}`,
-      "Run `openclaw plugins doctor` for repair options.",
+      "Run `paddy plugins doctor` for repair options.",
     ].join("\n"),
-    `Installed plugin "${params.pluginId}" is shadowed by a configured plugin source. Run \`openclaw plugins doctor\`.`,
+    `Installed plugin "${params.pluginId}" is shadowed by a configured plugin source. Run \`paddy plugins doctor\`.`,
   );
 }
 
@@ -284,7 +284,7 @@ async function persistPluginInstallOwned(
       );
       if (manifests.length === 0) {
         throw new Error(
-          `Plugin package "${params.pluginId}" has no authoritative runtime child list. Refresh the plugin registry, then reinstall the package or run openclaw doctor before retrying.`,
+          `Plugin package "${params.pluginId}" has no authoritative runtime child list. Refresh the plugin registry, then reinstall the package or run paddy doctor before retrying.`,
         );
       }
       const ownedPluginIds = manifests.map((plugin) => plugin.id).toSorted();
@@ -458,7 +458,7 @@ async function persistPluginInstallOwned(
           reportWarning = (message: string) =>
             warn(
               message,
-              "A previous plugin installation could not be fully cleaned up. Run `openclaw plugins doctor`.",
+              "A previous plugin installation could not be fully cleaned up. Run `paddy plugins doctor`.",
             ),
         ) => {
           const removalResult = await tracePluginLifecyclePhaseAsync(
@@ -514,14 +514,14 @@ async function persistPluginInstallOwned(
       const configWarning =
         params.enable !== false && configurationRequiredPluginIds.length > 0
           ? configurationRequiredPluginIds.length === 1
-            ? `Installed plugin "${configurationRequiredPluginIds[0]}" without enabling it because it requires configuration first. Configure it, then run \`openclaw plugins enable ${configurationRequiredPluginIds[0]}\`.`
-            : `Installed plugin entries ${configurationRequiredPluginIds.join(", ")} without enabling them because they require configuration first. Configure each entry, then run \`openclaw plugins enable <plugin-id>\`.`
+            ? `Installed plugin "${configurationRequiredPluginIds[0]}" without enabling it because it requires configuration first. Configure it, then run \`paddy plugins enable ${configurationRequiredPluginIds[0]}\`.`
+            : `Installed plugin entries ${configurationRequiredPluginIds.join(", ")} without enabling them because they require configuration first. Configure each entry, then run \`paddy plugins enable <plugin-id>\`.`
           : undefined;
       const warningMessage = [params.warningMessage, configWarning].filter(Boolean).join("\n");
       if (warningMessage) {
         warn(
           warningMessage,
-          configWarning ?? "Plugin installation reported a warning. Run `openclaw plugins doctor`.",
+          configWarning ?? "Plugin installation reported a warning. Run `paddy plugins doctor`.",
         );
       }
       runtime.log(

@@ -13,13 +13,13 @@ Yes, after installing the official ACP runtime plugin:
 
 ```bash
 openclaw plugins install @openclaw/acpx
-openclaw config set plugins.entries.acpx.enabled true
+paddy config set plugins.entries.acpx.enabled true
 ```
 
 Source checkouts can use the local `extensions/acpx` workspace plugin after
 `pnpm install`. Run `/acp doctor` for a readiness check.
 
-OpenClaw only teaches agents about ACP spawning when ACP is **truly usable**:
+Paddy only teaches agents about ACP spawning when ACP is **truly usable**:
 ACP must be enabled, dispatch must not be disabled, the current session must
 not be sandbox-blocked, and a runtime backend must be loaded and healthy. If
 any condition fails, ACP skills and `sessions_spawn` ACP guidance stay hidden
@@ -31,12 +31,12 @@ settings govern subsequent turns. Admitted turns retain their session ownership.
 The ACPX health check selects from the current allowed agents unless its plugin
 config sets an explicit `probeAgent`.
 
-ACPX session state defaults to `acpx/` inside the OpenClaw state directory
+ACPX session state defaults to `acpx/` inside the Paddy state directory
 (`OPENCLAW_STATE_DIR`, normally `~/.openclaw`). The working directory and installed
 package directory do not need to be writable for session resets. An explicit
 `plugins.entries.acpx.config.stateDir` still overrides this location. Sessions in
 the former `<workspace>/state` default are migrated automatically at ACPX startup
-or by `openclaw doctor --fix` when the new default is empty. Set `stateDir` only
+or by `paddy doctor --fix` when the new default is empty. Set `stateDir` only
 if you want to keep the old location. If migration fails, ACPX warns and keeps
 using the old location for that process; the warning names the override to set.
 
@@ -44,18 +44,18 @@ using the old location for that process; the warning names the override to set.
   <Accordion title="First-run gotchas">
     - If `plugins.allow` is set, it is a restrictive plugin inventory and **must** include `acpx`, or the installed ACP backend is intentionally blocked (`/acp doctor` reports the missing allowlist entry).
     - The Codex ACP adapter ships with the `acpx` plugin and launches locally when possible.
-    - Codex ACP runs with an isolated `CODEX_HOME`. OpenClaw copies trusted project trust entries plus safe model/provider routing config (`model`, `model_provider`, `model_reasoning_effort`, `sandbox_mode`, and safe `model_providers.<name>` fields) from the host Codex config; auth, notifications, and hooks stay on the host config only.
+    - Codex ACP runs with an isolated `CODEX_HOME`. Paddy copies trusted project trust entries plus safe model/provider routing config (`model`, `model_provider`, `model_reasoning_effort`, `sandbox_mode`, and safe `model_providers.<name>` fields) from the host Codex config; auth, notifications, and hooks stay on the host config only.
     - Other target harness adapters may be fetched on demand with `npx` on first use.
     - Vendor auth must already exist on the host for that harness.
     - If the host has no npm or network access, first-run adapter fetches fail until caches are pre-warmed or the adapter is installed another way.
 
   </Accordion>
   <Accordion title="Runtime prerequisites">
-    ACP launches a real external harness process. OpenClaw owns routing,
+    ACP launches a real external harness process. Paddy owns routing,
     background-task state, delivery, bindings, and policy; the harness owns
     its provider login, model catalog, filesystem behavior, and native tools.
 
-    Before blaming OpenClaw, verify:
+    Before blaming Paddy, verify:
 
     - `/acp doctor` reports an enabled, healthy backend.
     - The target id is allowed by `acp.allowedAgents` when that allowlist is set.
@@ -68,7 +68,7 @@ using the old location for that process; the warning names the override to set.
   </Accordion>
 </AccordionGroup>
 
-OpenClaw plugin tools and built-in OpenClaw tools are **not** exposed to ACP
+Paddy plugin tools and built-in Paddy tools are **not** exposed to ACP
 harnesses by default. Enable the explicit MCP bridges in
 [ACP agents - setup](/tools/acp-agents-setup) only when the harness should
 call those tools directly.
@@ -101,6 +101,6 @@ With the `acpx` backend, use these ids as `/acp spawn <id>` or
 `pi` (pi-acp) is also registered in the acpx backend but is not a coding
 harness in the same sense as the others above.
 
-Custom acpx agent aliases can be configured in acpx itself, but OpenClaw
+Custom acpx agent aliases can be configured in acpx itself, but Paddy
 policy still checks `acp.allowedAgents` and any
 `agents.entries.*.runtime.acp.agent` mapping before dispatch.

@@ -166,7 +166,7 @@ release contains a newer app.
 
 [scrcpy](https://github.com/Genymobile/scrcpy) mirrors an Android screen in a macOS window and
 forwards keyboard and pointer input through Android Debug Bridge (ADB). This is an operator-side
-workflow, separate from the OpenClaw node connection. It is useful when the Android device and the
+workflow, separate from the Paddy node connection. It is useful when the Android device and the
 Mac are in different locations but share a private Tailscale network.
 
 ### Before you begin
@@ -280,27 +280,27 @@ For Tailscale or public hosts, Android requires a secure endpoint:
 
 ### 1. Start the Gateway
 
-Use an authenticated Gateway. If it is not configured yet, run `openclaw onboard` first to configure a token or password.
+Use an authenticated Gateway. If it is not configured yet, run `paddy onboard` first to configure a token or password.
 
 For a trusted same-LAN setup, persist the LAN bind before starting:
 
 ```bash
-openclaw config set gateway.bind lan
-openclaw gateway --port 18789
+paddy config set gateway.bind lan
+paddy gateway --port 18789
 ```
 
 Bare-metal and virtual-machine hosts default to loopback, which a phone cannot reach. Detected containers can default to `auto` instead. Set the bind explicitly for this setup.
 
-Use the config command rather than `--bind lan` alone: a startup-only flag does not change the configuration read by a separate `openclaw qr` command. Without another configured URL route, setup-code creation still sees loopback and refuses to mint a code.
+Use the config command rather than `--bind lan` alone: a startup-only flag does not change the configuration read by a separate `paddy qr` command. Without another configured URL route, setup-code creation still sees loopback and refuses to mint a code.
 
-Run `openclaw gateway status`. Its `Gateway:` line should show `bind=lan (0.0.0.0)` and `port=18789`.
+Run `paddy gateway status`. Its `Gateway:` line should show `bind=lan (0.0.0.0)` and `port=18789`.
 
 For remote Android access, choose managed Tailscale Serve as an alternative to LAN binding. Keep its settings in config so setup-code creation can use the same route:
 
 ```bash
-openclaw config set gateway.bind loopback
-openclaw config set gateway.tailscale.mode serve
-openclaw gateway --port 18789
+paddy config set gateway.bind loopback
+paddy config set gateway.tailscale.mode serve
+paddy gateway --port 18789
 ```
 
 Tailscale must be installed and logged in. Managed Serve and Funnel require loopback binding; do not leave `gateway.bind=lan` set when switching to them. See [Tailscale](/gateway/tailscale) for Serve and password-authenticated Funnel setup.
@@ -320,7 +320,7 @@ More debugging notes: [Bonjour](/gateway/bonjour).
 If you also configured a wide-area discovery domain, compare against:
 
 ```bash
-openclaw gateway discover --json
+paddy gateway discover --json
 ```
 
 That shows `local.` plus the configured wide-area domain in one pass, using the resolved service endpoint instead of TXT-only hints.
@@ -336,9 +336,9 @@ Details and example CoreDNS config: [Bonjour](/gateway/bonjour).
 
 ### 3. Connect from Android
 
-Create a setup code in the [Control UI](/web/control-ui) (**Devices → Pair device**) or with `openclaw qr`.
+Create a setup code in the [Control UI](/web/control-ui) (**Devices → Pair device**) or with `paddy qr`.
 
-That mobile **setup code** (and its QR) is what Android **Scan QR or setup code** / **Enter setup code** accept. It is a different artifact from the gateway **join URL** minted by [`openclaw devices join-code`](/cli/devices#openclaw-devices-join-code) (`https://…/j/<code>`), which enrolls a headless node host via [`openclaw connect`](/cli/connect). Pasting a join URL or bare join code into Android setup is rejected — generate a fresh mobile QR/setup code with [`openclaw qr`](/cli/qr).
+That mobile **setup code** (and its QR) is what Android **Scan QR or setup code** / **Enter setup code** accept. It is a different artifact from the gateway **join URL** minted by [`paddy devices join-code`](/cli/devices#paddy-devices-join-code) (`https://…/j/<code>`), which enrolls a headless node host via [`paddy connect`](/cli/connect). Pasting a join URL or bare join code into Android setup is rejected — generate a fresh mobile QR/setup code with [`paddy qr`](/cli/qr).
 
 An explicit `--url` or `--public-url` override wins. Otherwise, setup-code URL selection uses this order:
 
@@ -348,7 +348,7 @@ An explicit `--url` or `--public-url` override wins. Otherwise, setup-code URL s
 4. The ordinary `gateway.remote.url` setting.
 5. A usable configured bind, such as the LAN bind from step 1.
 
-`openclaw qr --remote` selects remote credentials, ignores the configured device-pair `publicUrl`, and prefers `gateway.remote.url` before managed Tailscale. See [QR](/cli/qr).
+`paddy qr --remote` selects remote credentials, ignores the configured device-pair `publicUrl`, and prefers `gateway.remote.url` before managed Tailscale. See [QR](/cli/qr).
 
 URL selection does not test network reachability. Resolution errors stop setup-code creation instead of triggering a lower-priority route. A loopback-only Gateway with no configured URL or managed Tailscale route refuses to mint a code.
 
@@ -373,9 +373,9 @@ access by default over `wss://`. Plaintext non-loopback `ws://` setup
 automatically uses limited access for bearer-token safety. **Settings → Gateway**
 shows **Full** or **Limited** access. For a limited connection, configure
 `wss://` or Tailscale Serve, generate a new full-access code in Control UI or
-with `openclaw qr`, then scan or paste it on that page and reconnect. Operators
+with `paddy qr`, then scan or paste it on that page and reconnect. Operators
 who want the reduced profile can select **Limited access** in Control UI or run
-`openclaw qr --limited`.
+`paddy qr --limited`.
 
 ### Manage paired Gateways
 
@@ -405,9 +405,9 @@ The app counts the beacon as successfully recorded only when the Gateway respons
 On the Gateway machine:
 
 ```bash
-openclaw devices list
-openclaw devices approve <requestId>
-openclaw devices reject <requestId>
+paddy devices list
+paddy devices approve <requestId>
+paddy devices reject <requestId>
 ```
 
 Pairing details: [Pairing](/channels/pairing).
@@ -431,8 +431,8 @@ This is disabled by default. It applies only to fresh `role: node` pairing with 
 ### 5. Verify the node is connected
 
 ```bash
-openclaw nodes status
-openclaw gateway call node.list --params "{}"
+paddy nodes status
+paddy gateway call node.list --params "{}"
 ```
 
 ### 6. Chat + history
@@ -630,7 +630,7 @@ Android can forward device notifications to the Gateway as `node.event` items. T
 Notification forwarding requires the Android Notification Listener permission. The app prompts for this during setup.
 </Note>
 
-WhatsApp, WhatsApp Business, Telegram, Telegram X, Discord, and Signal notifications are always excluded. Their messages are already owned by native OpenClaw channel sessions; forwarding the Android notification as a separate node event could route a reply through the wrong conversation.
+WhatsApp, WhatsApp Business, Telegram, Telegram X, Discord, and Signal notifications are always excluded. Their messages are already owned by native Paddy channel sessions; forwarding the Android notification as a separate node event could route a reply through the wrong conversation.
 
 ## Related
 

@@ -15,7 +15,7 @@ import { normalizeUpdateFailureFacts, type UpdateFailureFact } from "./update-fa
 type NoticeSource = { notices?: readonly string[] } | undefined;
 
 const STARTUP_MIGRATION_FOLLOW_UP =
-  'Run "openclaw doctor --fix" against the same state/config, then restart the gateway.';
+  'Run "paddy doctor --fix" against the same state/config, then restart the gateway.';
 
 export function formatStartupMigrationFailure(errors: readonly string[]): string {
   return [

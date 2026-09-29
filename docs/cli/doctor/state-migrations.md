@@ -6,7 +6,7 @@ read_when:
   - You need to reconcile a migration conflict before rerunning `doctor --fix`
 ---
 
-`openclaw doctor --fix` owns the persistent file-to-SQLite migrations. This page
+`paddy doctor --fix` owns the persistent file-to-SQLite migrations. This page
 describes each migration source and what to do when one stays blocked.
 
 Pre-June Telegram and iMessage caches, Active Memory session toggles, Nostr bus
@@ -27,9 +27,9 @@ An explicit `OPENCLAW_STATE_DIR` keeps its selected location. If alias creation
 fails and the move rolls back, repair continues under ownership of the original
 location and reports the rollback.
 
-`openclaw doctor --fix` owns general persistent file-to-SQLite migrations. It validates and claims each recognized source, writes and verifies canonical rows, records a migration receipt, then removes the retired source. Gateway, node-host, and local CLI startup leave general legacy repair to Doctor. Normal versioned database opening, native initialization, and recovery of valid current config remain available. The narrow [restart-notice importer](/gateway/restart-recovery#agent-requested-restarts) also serves the late update notices written by shipped June updaters, through the same migration owner and receipts.
+`paddy doctor --fix` owns general persistent file-to-SQLite migrations. It validates and claims each recognized source, writes and verifies canonical rows, records a migration receipt, then removes the retired source. Gateway, node-host, and local CLI startup leave general legacy repair to Doctor. Normal versioned database opening, native initialization, and recovery of valid current config remain available. The narrow [restart-notice importer](/gateway/restart-recovery#agent-requested-restarts) also serves the late update notices written by shipped June updaters, through the same migration owner and receipts.
 
-The container image entrypoint automatically runs `openclaw doctor --fix --non-interactive`
+The container image entrypoint automatically runs `paddy doctor --fix --non-interactive`
 against the mounted state and config before starting the Gateway. If you override
 that entrypoint, run Doctor explicitly against the same mounts. Doctor performs
 the required legacy repairs under exclusive maintenance ownership and preserves
@@ -43,7 +43,7 @@ startup reports remaining readiness advisories. An advisory never hides a separa
 required-store refusal.
 
 If Doctor is interrupted during an agent schema or media migration, stop other
-OpenClaw processes using that state and rerun `openclaw doctor --fix`. Doctor
+Paddy processes using that state and rerun `paddy doctor --fix`. Doctor
 reclaims a recorded migration owner only when its host, PID, and process start
 identity prove that process has ended. Uncommitted database changes roll back;
 the next pass resumes pending work while retaining the pre-migration backups.
@@ -64,7 +64,7 @@ maintenance heartbeat exits. Valid or absent input remains blocked by the prior
 failure. This diagnostic inspection does not authorize later migrations or writes.
 
 `doctor --fix` includes the failing check, refusal code, and reason in its halt
-message and health warnings, using the same failure facts as `openclaw update repair`.
+message and health warnings, using the same failure facts as `paddy update repair`.
 Its bounded summary lists observed refusals before derivative blocked steps;
 the full receipt list retains the complete chain.
 
@@ -94,7 +94,7 @@ follows this rule, including its archived files.
 
 Completed agent deletions that intentionally kept their files are held back during
 update and migration discovery. Doctor records a recoverable warning naming the
-agent, database path, and `openclaw doctor --fix` guidance. These stores do not
+agent, database path, and `paddy doctor --fix` guidance. These stores do not
 block active agents' migrations or update rehearsals. If the shared auth source
 is held, its migration records a skip and dependent auth repairs wait; unrelated
 Doctor repairs continue. Restore an intended agent before migrating its retained
@@ -115,12 +115,12 @@ when deletion history is unavailable, preserving legacy sources without importin
 or archiving them. Recorded deletion and reconstruction holds and retained plugin
 inputs with import receipts remain protected.
 Unreadable history does not erase readable deletion identities or recorded holds.
-`openclaw doctor --fix` reconstructs the journal and records a receipt listing the
+`paddy doctor --fix` reconstructs the journal and records a receipt listing the
 held database paths in the existing migration tables. Reconstruction preserves
 those stores; it does not migrate or retire them. Runtime admission remains separate
 from Doctor's repair holds. Review the paths and use the
-noninteractive `openclaw agents add` command printed by Doctor to restore the
-intended agent, or `openclaw agents delete` to confirm deletion. An unconfigured
+noninteractive `paddy agents add` command printed by Doctor to restore the
+intended agent, or `paddy agents delete` to confirm deletion. An unconfigured
 agent must be restored before deletion. For a custom database filename, restore
 the original `session.store` configuration first; `agents add` refuses to create
 an empty replacement when it cannot select a held store. If Doctor cannot verify
@@ -129,7 +129,7 @@ as a failing `agent-deletion-journal` check. Rerun Doctor after resolving the ho
 
 Invalid configuration also leaves the journal unavailable: Doctor cannot record
 a complete recovery inventory until it can validate configured ownership paths.
-Repair the configuration, then rerun `openclaw doctor --fix` to discover and hold
+Repair the configuration, then rerun `paddy doctor --fix` to discover and hold
 external stores before reconstruction.
 
 The intact historical shared schema written by `2026.7.35` predates the deletion
@@ -169,7 +169,7 @@ process for every agent at every check. Repairs still verify the resulting schem
 before reporting completion; only successful recovery of a misplaced copy clears
 that copy's ownership refusal.
 
-Device Pair's legacy JSON import checks namespace capacity before writing. If the missing entries do not fit, doctor warns and leaves the source unchanged. The import also verifies that source keys and pre-existing destination keys remain in SQLite before reporting completion and archiving the source. A retention warning keeps the source available for inspection and retry; do not delete it to silence the warning, because it may contain state that SQLite did not retain. Resolve the capacity problem before rerunning `openclaw doctor --fix`.
+Device Pair's legacy JSON import checks namespace capacity before writing. If the missing entries do not fit, doctor warns and leaves the source unchanged. The import also verifies that source keys and pre-existing destination keys remain in SQLite before reporting completion and archiving the source. A retention warning keeps the source available for inspection and retry; do not delete it to silence the warning, because it may contain state that SQLite did not retain. Resolve the capacity problem before rerunning `paddy doctor --fix`.
 
 Microsoft Teams delegated OAuth tokens still migrate from `msteams-delegated.json`,
 which supported June releases wrote. Doctor verifies the imported credentials
@@ -179,18 +179,18 @@ Doctor also reports when shared auth still uses the legacy `agents/main/agent/op
 
 If the shared target already contains every legacy profile with identical credential content, Doctor preserves the richer target and completes cleanup, including an empty legacy profile set or older row timestamps. Credential comparison ignores JSON object-key order but preserves every field; it does not select credentials by timestamp. Different credentials, source-only profiles, malformed subset payloads, or differing runtime-state rows remain conflicts. Doctor names conflicting profile IDs and whether their credentials differ, are malformed, or are missing from the target. Store metadata and runtime-state conflicts are reported separately; credential values and arbitrary metadata are never printed.
 
-Stop OpenClaw processes and back up both databases named in the warning before reconciling them locally. For each differing profile, choose the credential to retain and make its complete entry agree in both stores; copy source-only profiles into the target without replacing unrelated profiles. Resolve malformed payloads or differing store metadata and runtime state in the named records, then rerun `openclaw doctor --fix`. Do not delete either database or the migration receipts to silence a conflict. Pending relocation receipts retain the original source digest through interrupted cleanup. After relocation completes, main-agent rows without a pending relocation receipt remain ordinary per-agent overrides.
+Stop Paddy processes and back up both databases named in the warning before reconciling them locally. For each differing profile, choose the credential to retain and make its complete entry agree in both stores; copy source-only profiles into the target without replacing unrelated profiles. Resolve malformed payloads or differing store metadata and runtime state in the named records, then rerun `paddy doctor --fix`. Do not delete either database or the migration receipts to silence a conflict. Pending relocation receipts retain the original source digest through interrupted cleanup. After relocation completes, main-agent rows without a pending relocation receipt remain ordinary per-agent overrides.
 
 For the retired QMD memory backend, including config rewrites and derived
 workspace cleanup, see [Migrating from QMD](/concepts/memory-builtin#migrating-from-qmd).
 
-This includes retired MCP OAuth files under `<state-dir>/mcp-oauth/*.json`. Stop the Gateway before repair. Doctor imports valid credentials into `<state-dir>/state/openclaw.sqlite`, preserves an existing canonical SQLite session when both stores exist, drops the obsolete persisted OAuth `state` value, and uses its receipt to prevent a recreated stale file from resurrecting logged-out credentials. Retired `.lock` sidecars fail closed: if Doctor reports a stale owner, verify that no older OpenClaw process is running, remove that sidecar, and rerun Doctor.
+This includes retired MCP OAuth files under `<state-dir>/mcp-oauth/*.json`. Stop the Gateway before repair. Doctor imports valid credentials into `<state-dir>/state/openclaw.sqlite`, preserves an existing canonical SQLite session when both stores exist, drops the obsolete persisted OAuth `state` value, and uses its receipt to prevent a recreated stale file from resurrecting logged-out credentials. Retired `.lock` sidecars fail closed: if Doctor reports a stale owner, verify that no older Paddy process is running, remove that sidecar, and rerun Doctor.
 
-After explicit repair (`--fix`, `--repair`, or `--yes`), Doctor verifies runtime schema readiness for existing configured, default-layout, and registered databases before reporting completion, including stores whose migration failed before registration. A blocked required migration exits nonzero; stop the Gateway and other OpenClaw processes, then rerun repair. Unrelated advisory warnings, including archived transcript repair failures, do not make a ready database fail this check. Missing databases are not created by the readiness check.
+After explicit repair (`--fix`, `--repair`, or `--yes`), Doctor verifies runtime schema readiness for existing configured, default-layout, and registered databases before reporting completion, including stores whose migration failed before registration. A blocked required migration exits nonzero; stop the Gateway and other Paddy processes, then rerun repair. Unrelated advisory warnings, including archived transcript repair failures, do not make a ready database fail this check. Missing databases are not created by the readiness check.
 
 Doctor also discovers retired setup state and interrupted migration claims in every resolved agent workspace, active sandbox workspace, and explicitly configured `agents.defaults.workspace` root. That shared root is included even when an explicit multi-agent roster uses only its subdirectories. Doctor imports both `<workspace>/openclaw-workspace-state.json` and `<workspace>/.openclaw/workspace-state.json` through the existing migration; it does not assign the root to an agent or move persona and memory files.
 
-Repair exits nonzero while retained legacy state still blocks agent turns, even if its data already reached SQLite. Gateway startup and live config candidates check readiness only for the workspaces they would use, not an unused default root. An unready live candidate is rejected and the last-good runtime stays active. Stop OpenClaw processes, save the intended workspace path if the live write was rejected before persistence, and keep the retained files in place. Run `openclaw doctor --fix` before restarting. Readiness checks never import or delete legacy state.
+Repair exits nonzero while retained legacy state still blocks agent turns, even if its data already reached SQLite. Gateway startup and live config candidates check readiness only for the workspaces they would use, not an unused default root. An unready live candidate is rejected and the last-good runtime stays active. Stop Paddy processes, save the intended workspace path if the live write was rejected before persistence, and keep the retained files in place. Run `paddy doctor --fix` before restarting. Readiness checks never import or delete legacy state.
 
 ## Pending plugin migrations
 
@@ -199,7 +199,7 @@ following recovery advice from an intermediate plugin warning. The updater may
 complete package convergence and run Doctor again before it exits.
 
 If the installed plugin still has not reported migration completion, run
-`openclaw doctor --fix`. If that cannot complete the migration, report the
+`paddy doctor --fix`. If that cannot complete the migration, report the
 remaining warning to the plugin maintainer. Repeating a package update alone
 does not prove that the plugin migrated its retained state. Keep the retained
 state and config inputs until the migration owner reports completion.

@@ -126,7 +126,7 @@ export async function maintainRetainedUpdateRuntimes(params: {
           }
           if (!params.repair) {
             messages.push(
-              `Runtime retained at ${directory}: run \`openclaw doctor --fix\` after its workers stop`,
+              `Runtime retained at ${directory}: run \`paddy doctor --fix\` after its workers stop`,
             );
             continue;
           }

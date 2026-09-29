@@ -52,7 +52,7 @@ export async function applyNonInteractiveAuthChoice(params: {
     rejectOnboardingOption(
       opts,
       runtime,
-      `Invalid --secret-input-mode. Use "plaintext" or "ref", or run ${formatCliCommand("openclaw onboard")} for interactive setup.`,
+      `Invalid --secret-input-mode. Use "plaintext" or "ref", or run ${formatCliCommand("paddy onboard")} for interactive setup.`,
     );
     return null;
   }
@@ -275,7 +275,7 @@ export async function applyNonInteractiveAuthChoice(params: {
           rejectOnboardingOption(
             opts,
             runtime,
-            `Replacement credential saved but inactive. Your connection is unchanged. Test and activate it with:\n${formatCliCommand(`openclaw models auth activate ${quoteCliArg(saved.profile.profileId)} --agent ${quoteCliArg(params.target.agentId)}`)}`,
+            `Replacement credential saved but inactive. Your connection is unchanged. Test and activate it with:\n${formatCliCommand(`paddy models auth activate ${quoteCliArg(saved.profile.profileId)} --agent ${quoteCliArg(params.target.agentId)}`)}`,
           );
           return null;
         }

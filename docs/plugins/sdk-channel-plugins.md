@@ -1,18 +1,18 @@
 ---
-summary: "Step-by-step guide to building a messaging channel plugin for OpenClaw"
+summary: "Step-by-step guide to building a messaging channel plugin for Paddy"
 title: "Building channel plugins"
 sidebarTitle: "Channel Plugins"
 read_when:
   - You are building a new messaging channel plugin
-  - You want to connect OpenClaw to a messaging platform
+  - You want to connect Paddy to a messaging platform
   - You need to understand the ChannelPlugin adapter surface
 ---
 
-This guide builds a channel plugin that connects OpenClaw to a messaging
+This guide builds a channel plugin that connects Paddy to a messaging
 platform: DM security, pairing, reply threading, and outbound messaging.
 
 <Info>
-  New to OpenClaw plugins? Read [Getting Started](/plugins/building-plugins)
+  New to Paddy plugins? Read [Getting Started](/plugins/building-plugins)
   first for package structure and manifest setup.
 </Info>
 
@@ -32,7 +32,7 @@ shared `message` tool. Your plugin owns:
   targets
 - **Formatting contract** - optional `agentPrompt.inboundFormattingHints`,
   resolved per delivering account. Despite its name, core gives it to every
-  OpenClaw agent turn whose visible text reaches the channel: replies,
+  Paddy agent turn whose visible text reaches the channel: replies,
   heartbeats, cron announces, subagent announces, and cron runs without a
   reply route that can send with the `message` tool (for example
   `delivery.mode: "none"`). Such a run uses the message tool's default
@@ -74,7 +74,7 @@ raw callback string. Actor and source-message checks remain channel-owned.
         "channel": {
           "id": "acme-chat",
           "label": "Acme Chat",
-          "blurb": "Connect OpenClaw to Acme Chat."
+          "blurb": "Connect Paddy to Acme Chat."
         }
       }
     }
@@ -392,7 +392,7 @@ raw callback string. Actor and source-message checks remain channel-owned.
     by skipping sender-specific overlays at both the matched-group and wildcard
     scopes while still applying the base `tools` policy.
 
-    OpenClaw sets this mode only for trusted non-ingress execution whose sender
+    Paddy sets this mode only for trusted non-ingress execution whose sender
     authority was already captured in a server-owned envelope, such as an
     explicitly capped scheduled run. Plugins must not derive the mode from
     inbound metadata, persist it as channel state, or expose it as config. Add
@@ -466,7 +466,7 @@ raw callback string. Actor and source-message checks remain channel-owned.
     });
     ```
 
-    Put channel-owned CLI descriptors in `registerCliMetadata(...)` so OpenClaw
+    Put channel-owned CLI descriptors in `registerCliMetadata(...)` so Paddy
     can show them in root help without activating the full channel runtime,
     while normal full loads still pick up the same descriptors for real command
     registration. Keep `registerFull(...)` for runtime-only work.
@@ -490,7 +490,7 @@ raw callback string. Actor and source-message checks remain channel-owned.
     export default defineSetupPluginEntry(acmeChatPlugin);
     ```
 
-    OpenClaw loads this instead of the full entry when the channel is disabled
+    Paddy loads this instead of the full entry when the channel is disabled
     or unconfigured. It avoids pulling in heavy runtime code during setup flows.
     See [Setup and Config](/plugins/sdk-setup#setup-entry) for details.
 
@@ -503,7 +503,7 @@ raw callback string. Actor and source-message checks remain channel-owned.
 
   <Step title="Handle inbound messages">
     Your plugin needs to receive messages from the platform and forward them to
-    OpenClaw. The typical pattern is a webhook that verifies the request and
+    Paddy. The typical pattern is a webhook that verifies the request and
     dispatches it through your channel's inbound handler:
 
     ```typescript
@@ -514,7 +514,7 @@ raw callback string. Actor and source-message checks remain channel-owned.
         handler: async (req, res) => {
           const event = parseWebhookPayload(req);
 
-          // Your inbound handler dispatches the message to OpenClaw.
+          // Your inbound handler dispatches the message to Paddy.
           // The exact wiring depends on your platform SDK -
           // see a real example in the bundled Microsoft Teams or Google Chat plugin package.
           await handleAcmeChatInbound(api, event);
@@ -787,7 +787,7 @@ This optional field keeps older adapters source-compatible. An omitted or empty
 declaration leaves newly enabled scheduled actions denied. Existing bundled
 provider-owned interactive paths keep their admission rules. To support the new
 installed-plugin path,
-upgrade OpenClaw and the plugin, implement the request and retry checks above,
+upgrade Paddy and the plugin, implement the request and retry checks above,
 declare only the covered actions, and load the updated registration. Existing
 direct-operator and interactive actions retain their admission rules. Upgrading
 the plugin does not grant additional authority to an existing job.

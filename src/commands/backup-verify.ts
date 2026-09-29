@@ -511,7 +511,7 @@ async function verifyResolvedBackupArchive(
   } catch (error) {
     if (hasErrnoCode(error, "ENOENT")) {
       throw new Error(
-        "Archive does not exist. Check the path and run `openclaw backup verify <archive>` again.",
+        "Archive does not exist. Check the path and run `paddy backup verify <archive>` again.",
         { cause: error },
       );
     }
@@ -522,7 +522,7 @@ async function verifyResolvedBackupArchive(
   }
   if (!archiveStat.isFile()) {
     throw new Error(
-      "Archive must be a regular file. Choose a backup archive created by `openclaw backup create` and try again.",
+      "Archive must be a regular file. Choose a backup archive created by `paddy backup create` and try again.",
     );
   }
 

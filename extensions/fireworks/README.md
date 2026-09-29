@@ -1,6 +1,6 @@
-# Fireworks OpenClaw provider
+# Fireworks Paddy provider
 
-Official OpenClaw provider plugin for Fireworks.
+Official Paddy provider plugin for Fireworks.
 
 ## Install
 

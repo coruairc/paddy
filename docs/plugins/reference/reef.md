@@ -15,12 +15,12 @@ Guarded end-to-end encrypted claw channel.
 ## Distribution
 
 - Package: `@openclaw/reef`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 
 - Channels: `reef`
-- CLI commands: `openclaw reef`
+- CLI commands: `paddy reef`
 
 ## Related docs
 

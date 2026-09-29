@@ -105,7 +105,7 @@ export async function prepareSessionStoreOwnerRecovery(params: {
       );
       break;
     }
-    const restoreCommand = formatCliCommand(`openclaw config set ${OWNER_KEY} ${owner.trim()}`);
+    const restoreCommand = formatCliCommand(`paddy config set ${OWNER_KEY} ${owner.trim()}`);
     const accepted = await params.prompter?.confirmRuntimeRepair({
       message: sanitizeDoctorNote(
         `Restore ${OWNER_KEY}=${JSON.stringify(owner)} from ${backupPath}? Its removal may have been intentional.`,

@@ -22,7 +22,7 @@ export const LEGACY_CONFIG_MIGRATION_RUNTIME_SECRETS_EGRESS: LegacyConfigMigrati
     describe: "Drop unusable secret egress proxy host entries",
     legacyRules: HOST_KEYS.map((key) => ({
       path: ["secrets", "egressProxy", key],
-      message: `secrets.egressProxy.${key} contains entries that are not usable hostnames. Run "openclaw doctor --fix".`,
+      message: `secrets.egressProxy.${key} contains entries that are not usable hostnames. Run "paddy doctor --fix".`,
       match: (value) =>
         Array.isArray(value) &&
         value.some((entry) => typeof entry !== "string" || !isValidExactHostname(entry)),

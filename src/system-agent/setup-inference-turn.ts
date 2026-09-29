@@ -498,8 +498,7 @@ export async function verifySetupInference(
     return {
       ok: false,
       status: "unknown",
-      error:
-        `The successful inference run did not report an exact execution binding. Retry setup before starting ${PRODUCT_NAME}.`,
+      error: `The successful inference run did not report an exact execution binding. Retry setup before starting ${PRODUCT_NAME}.`,
     };
   }
   return { ...verification, binding: verifiedBinding };
@@ -609,7 +608,7 @@ export async function verifySetupInferenceConfig(
     return {
       ok: false,
       status: "unavailable",
-      error: "No agent model is configured. Run `openclaw onboard` first.",
+      error: "No agent model is configured. Run `paddy onboard` first.",
     };
   }
   const route = params.agentDir

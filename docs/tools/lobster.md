@@ -1,5 +1,5 @@
 ---
-summary: "Typed workflow runtime for OpenClaw with resumable approval gates."
+summary: "Typed workflow runtime for Paddy with resumable approval gates."
 title: Lobster
 read_when:
   - You want deterministic multi-step workflows with explicit approvals
@@ -35,12 +35,12 @@ Without Lobster, a recurring email triage looks like:
 
 ```text
 User: "Check my email and draft replies"
-→ openclaw calls gmail.list
+→ paddy calls gmail.list
 → LLM summarizes
 → User: "draft replies to #2 and #5"
 → LLM drafts
 → User: "send #2"
-→ openclaw calls gmail.send
+→ paddy calls gmail.send
 (repeat daily, no memory of what was triaged)
 ```
 
@@ -187,7 +187,7 @@ For a **structured LLM step** inside a workflow, enable the optional
 
 The installed Lobster plugin runs workflows **in-process** inside the gateway.
 In that embedded mode, `openclaw.invoke` does **not** automatically inherit a
-gateway URL/auth context for nested OpenClaw CLI tool calls.
+gateway URL/auth context for nested Paddy CLI tool calls.
 
 That means this pattern is **not currently reliable in the embedded runner**:
 
@@ -360,7 +360,7 @@ pointer to that state, not the full pipeline state.
 
 - **Local in-process only** - workflows execute inside the gateway process; no
   network calls from the plugin itself.
-- **No secrets** - Lobster doesn't manage OAuth; it calls OpenClaw tools that
+- **No secrets** - Lobster doesn't manage OAuth; it calls Paddy tools that
   do.
 - **Sandbox-aware** - disabled when the tool context is sandboxed.
 - **Hardened** - timeouts and output caps enforced by the embedded runner.

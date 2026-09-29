@@ -38,7 +38,7 @@ export function classifySqliteTableReadError(
     // An authorizer can suppress PRAGMA results; empty inspection proves no column absence.
     if (existing.size > 0 && columnNames.some((column) => !existing.has(column))) {
       return new SqliteSchemaMismatchError(
-        `SQLite table ${tableName} is missing required columns; run openclaw doctor --fix to repair it.`,
+        `SQLite table ${tableName} is missing required columns; run paddy doctor --fix to repair it.`,
         { cause: error },
       );
     }

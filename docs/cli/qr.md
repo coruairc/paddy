@@ -1,34 +1,34 @@
 ---
-summary: "CLI reference for `openclaw qr` (generate mobile pairing QR + setup code)"
+summary: "CLI reference for `paddy qr` (generate mobile pairing QR + setup code)"
 read_when:
   - You want to pair a mobile node app with a gateway quickly
   - You need setup-code output for remote/manual sharing
 title: "QR"
 ---
 
-# `openclaw qr`
+# `paddy qr`
 
 Generate a mobile pairing QR and setup code from your current Gateway configuration.
 
-The legacy [`openclaw clawbot qr`](/cli/clawbot) alias accepts every flag below.
+The legacy [`paddy clawbot qr`](/cli/clawbot) alias accepts every flag below.
 
 ```bash
-openclaw qr
-openclaw qr --setup-code-only
-openclaw qr --json
-openclaw qr --remote
-openclaw qr --limited
-openclaw qr --voice-node
-openclaw qr --url wss://gateway.example/ws
+paddy qr
+paddy qr --setup-code-only
+paddy qr --json
+paddy qr --remote
+paddy qr --limited
+paddy qr --voice-node
+paddy qr --url wss://gateway.example/ws
 ```
 
-Official OpenClaw iOS and Android apps connect automatically when their
+Official Paddy iOS and Android apps connect automatically when their
 setup-code metadata matches. If a request remains pending (for example, for a
 non-official client or mismatched metadata), review and approve it:
 
 ```bash
-openclaw devices list
-openclaw devices approve <requestId>
+paddy devices list
+paddy devices approve <requestId>
 ```
 
 ## Options
@@ -57,7 +57,7 @@ Use `--limited` to keep the same node token while omitting `operator.admin` from
 
 Use `--voice-node` for an embedded or room voice client. It keeps the node token and hands off a separate operator token limited to `operator.read` and `operator.talk`; it cannot send messages, mutate configuration, or invoke general write-scoped Gateway methods.
 
-Plaintext LAN `ws://` setup remains available, but OpenClaw automatically uses
+Plaintext LAN `ws://` setup remains available, but Paddy automatically uses
 the limited profile because a network observer could capture and race the bearer
 bootstrap token. Configure `wss://` or Tailscale Serve, then generate a new code
 to get full access.
@@ -66,10 +66,10 @@ to get full access.
 
 Mobile pairing fails closed for Tailscale/public `ws://` gateway URLs: use Tailscale Serve/Funnel or a `wss://` gateway URL for those. Private LAN addresses and `.local` Bonjour hosts remain supported over plain `ws://`, with limited operator access as described above.
 
-The QR command advertises Tailscale URLs only when OpenClaw owns the route through `gateway.tailscale.mode=serve|funnel`. Legacy external Serve routes that target the ordinary Gateway listener are not advertised because that listener rejects Tailscale-shaped proxy ingress.
+The QR command advertises Tailscale URLs only when Paddy owns the route through `gateway.tailscale.mode=serve|funnel`. Legacy external Serve routes that target the ordinary Gateway listener are not advertised because that listener rejects Tailscale-shaped proxy ingress.
 
 If an older setup used `gateway.bind=lan` with a persistent default HTTPS Serve
-route, run `openclaw doctor` to inspect it. Doctor does not migrate or clear the
+route, run `paddy doctor` to inspect it. Doctor does not migrate or clear the
 route because its status cannot prove who owns it, even with `--fix`; if you
 confirm it is stale, clear only its root handler, configure
 `gateway.bind=loopback` plus `gateway.tailscale.mode=serve` manually, and restart

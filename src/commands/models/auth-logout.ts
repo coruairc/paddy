@@ -322,7 +322,7 @@ export async function removeModelAuthCredentials(params: {
     throw new Error("Saved credentials could not be removed. Wait a moment and retry.");
   }
   if (configChanged && !(application.claimed && (await application.result) === "applied")) {
-    return "Credentials were removed, but the Gateway has not confirmed applying the change. Run `openclaw gateway restart` to apply it.";
+    return "Credentials were removed, but the Gateway has not confirmed applying the change. Run `paddy gateway restart` to apply it.";
   }
   return undefined;
 }
@@ -335,7 +335,7 @@ export async function modelsAuthLogoutCommand(
   const profileId = opts.profileId?.trim();
   if (!profileId) {
     throw new Error(
-      `Missing profile id. Run ${formatCliCommand("openclaw models auth list")} to see saved profile ids.`,
+      `Missing profile id. Run ${formatCliCommand("paddy models auth list")} to see saved profile ids.`,
     );
   }
 
@@ -347,7 +347,7 @@ export async function modelsAuthLogoutCommand(
   const credential = store.profiles[profileId];
   if (!credential) {
     throw new Error(
-      `Auth profile "${profileId}" not found for agent "${agentId}". Run ${formatCliCommand(`openclaw models auth list --agent ${agentId}`)} to see saved profile ids.`,
+      `Auth profile "${profileId}" not found for agent "${agentId}". Run ${formatCliCommand(`paddy models auth list --agent ${agentId}`)} to see saved profile ids.`,
     );
   }
 
@@ -389,7 +389,7 @@ export async function modelsAuthLogoutCommand(
   );
   if (remaining.length === 0) {
     runtime.log(
-      `No auth profiles remain for ${credential.provider}. Run ${formatCliCommand(`openclaw models auth login --provider ${credential.provider}`)} to sign in again.`,
+      `No auth profiles remain for ${credential.provider}. Run ${formatCliCommand(`paddy models auth login --provider ${credential.provider}`)} to sign in again.`,
     );
   }
 }

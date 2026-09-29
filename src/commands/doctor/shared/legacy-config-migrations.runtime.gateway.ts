@@ -17,14 +17,14 @@ import { DEFAULT_GATEWAY_PORT } from "../../../config/paths.js";
 const GATEWAY_PORT_OOB_RULE: LegacyConfigRule = {
   path: ["gateway", "port"],
   message:
-    'gateway.port is outside the valid TCP range (1–65535) and will be removed to avoid startup failure. Run "openclaw doctor --fix".',
+    'gateway.port is outside the valid TCP range (1–65535) and will be removed to avoid startup failure. Run "paddy doctor --fix".',
   match: (value) => typeof value === "number" && (value < 1 || value > 65_535),
 };
 
 const GATEWAY_BIND_RULE: LegacyConfigRule = {
   path: ["gateway", "bind"],
   message:
-    'gateway.bind host aliases (for example 0.0.0.0/localhost) are legacy; use bind modes (lan/loopback/custom/tailnet/auto) instead. Run "openclaw doctor --fix".',
+    'gateway.bind host aliases (for example 0.0.0.0/localhost) are legacy; use bind modes (lan/loopback/custom/tailnet/auto) instead. Run "paddy doctor --fix".',
   match: (value) => normalizeLegacyGatewayBindHostAlias(value) !== null,
   requireSourceLiteral: true,
 };
@@ -32,27 +32,27 @@ const GATEWAY_BIND_RULE: LegacyConfigRule = {
 const GATEWAY_TAILSCALE_RESET_ON_EXIT_RULE: LegacyConfigRule = {
   path: ["gateway", "tailscale", "resetOnExit"],
   message:
-    'gateway.tailscale.resetOnExit is retired because managed routes now follow the Gateway lifecycle automatically. Run "openclaw doctor --fix".',
+    'gateway.tailscale.resetOnExit is retired because managed routes now follow the Gateway lifecycle automatically. Run "paddy doctor --fix".',
   match: (value) => typeof value === "boolean",
 };
 
 const GATEWAY_TAILSCALE_SERVICE_NAME_RULE: LegacyConfigRule = {
   path: ["gateway", "tailscale", "serviceName"],
   message:
-    'gateway.tailscale.serviceName is retired because named Services require persistent background routes that cannot follow the Gateway lifecycle. Run "openclaw doctor --fix".',
+    'gateway.tailscale.serviceName is retired because named Services require persistent background routes that cannot follow the Gateway lifecycle. Run "paddy doctor --fix".',
 };
 
 const CONTROL_UI_DEVICE_AUTH_MIGRATION_RULE: LegacyConfigRule = {
   path: ["gateway", "controlUi", "dangerouslyDisableDeviceAuth"],
   message:
-    'gateway.controlUi.dangerouslyDisableDeviceAuth is retired and ignored. Control UI browsers pair through the normal device flow; run "openclaw doctor --fix" to remove the legacy key.',
+    'gateway.controlUi.dangerouslyDisableDeviceAuth is retired and ignored. Control UI browsers pair through the normal device flow; run "paddy doctor --fix" to remove the legacy key.',
   match: (value) => typeof value === "boolean",
 };
 
 const CONTROL_UI_TOOL_TITLES_RULE: LegacyConfigRule = {
   path: ["gateway", "controlUi", "toolTitles"],
   message:
-    'gateway.controlUi.toolTitles is retired. Tool activity uses agent-provided descriptions automatically, without utility-model calls. Run "openclaw doctor --fix" to remove it.',
+    'gateway.controlUi.toolTitles is retired. Tool activity uses agent-provided descriptions automatically, without utility-model calls. Run "paddy doctor --fix" to remove it.',
 };
 
 const LEGACY_GATEWAY_BIND_HOST_ALIASES = new Map<string, "lan" | "loopback">([

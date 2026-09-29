@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 /** Coordinates explicit Doctor repair with the managed Gateway lifecycle. */
 import { formatCliCommand } from "../cli/command-format.js";
 import type { PreManagedServiceStop } from "../cli/update-cli/update-command-service-maintenance.js";
@@ -57,7 +58,6 @@ import {
   recordUpdateDoctorRefusal,
   resolveUpdateDoctorGitRecovery,
 } from "./doctor-update-refusal.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 export async function beginDoctorMaintenance(
   params: DoctorMaintenanceParams,
@@ -279,7 +279,7 @@ export async function beginDoctorMaintenance(
             : outcome === "restored"
               ? "The previous service definition was restored from its captured backup."
               : "Restoration was not verified; inspect the current service before replacing it.";
-        const message = `Doctor could not finish Gateway installation or activation under its maintenance authority (${outcome}). ${recovery} Run \`${formatCliCommand("openclaw gateway status --deep", serviceEnv)}\`; after the active maintenance or update finishes, run \`${formatDaemonServiceInstallCommand(serviceEnv, before.servicePort)}\` from the active CLI. Reason: ${error.message}`;
+        const message = `Doctor could not finish Gateway installation or activation under its maintenance authority (${outcome}). ${recovery} Run \`${formatCliCommand("paddy gateway status --deep", serviceEnv)}\`; after the active maintenance or update finishes, run \`${formatDaemonServiceInstallCommand(serviceEnv, before.servicePort)}\` from the active CLI. Reason: ${error.message}`;
         failureFacts.push(
           createUpdateFailureFact(
             {
@@ -339,7 +339,7 @@ export async function beginDoctorMaintenance(
         } catch (ownershipError) {
           const warning =
             ownershipError instanceof GatewayStateOwnerContentionError
-              ? `Warning: The stopped Gateway still holds state ownership after the service stop deadline. Shared-state repair is unsafe while that writer remains active. Restoring its service; run ${formatCliCommand("openclaw gateway status --deep", env)}, then retry ${formatCliCommand("openclaw doctor --fix", env)} after shutdown completes.`
+              ? `Warning: The stopped Gateway still holds state ownership after the service stop deadline. Shared-state repair is unsafe while that writer remains active. Restoring its service; run ${formatCliCommand("paddy gateway status --deep", env)}, then retry ${formatCliCommand("paddy doctor --fix", env)} after shutdown completes.`
               : `Warning: Doctor could not reacquire maintenance ownership: ${String(ownershipError)} Restoring its service without repairing shared state.`;
           warn(warning);
         }
@@ -367,7 +367,7 @@ export async function beginDoctorMaintenance(
       error instanceof DoctorMaintenanceRefusalError
         ? error
         : new DoctorMaintenanceRefusalError(
-            `Doctor could not enter maintenance. ${String(error)}${hasGatewayServiceStopUnsafeError(error) ? "" : ` Stop the Gateway service and other ${PRODUCT_NAME} processes using this state, then run ${formatCliCommand("openclaw doctor --fix", env)} from an independent shell.`}`,
+            `Doctor could not enter maintenance. ${String(error)}${hasGatewayServiceStopUnsafeError(error) ? "" : ` Stop the Gateway service and other ${PRODUCT_NAME} processes using this state, then run ${formatCliCommand("paddy doctor --fix", env)} from an independent shell.`}`,
             classifyDoctorMaintenanceRefusal(error),
             {
               cause: error,

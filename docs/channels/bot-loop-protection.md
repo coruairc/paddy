@@ -7,7 +7,7 @@ title: "Bot loop protection"
 sidebarTitle: "Bot loop protection"
 ---
 
-OpenClaw can accept messages written by other bots on channels that support `allowBots`. Discord and Slack default to accepting them under the normal mention and access rules; an explicit `allowBots: false` still disables bot-triggered turns. Bot messages can remain visible as conversation context independently of turn admission.
+Paddy can accept messages written by other bots on channels that support `allowBots`. Discord and Slack default to accepting them under the normal mention and access rules; an explicit `allowBots: false` still disables bot-triggered turns. Bot messages can remain visible as conversation context independently of turn admission.
 
 Pair loop protection bounds rapid exchanges between two bot identities. It is a sliding-window rate guard, so slower exchanges below the budget can continue.
 

@@ -8,7 +8,7 @@ title: "Policy findings, repair, and exit codes"
 sidebarTitle: "Findings and repair"
 ---
 
-Interpreting a policy finding, repairing it, and the exit codes. Part of the [`openclaw policy`](/cli/policy) reference.
+Interpreting a policy finding, repairing it, and the exit codes. Part of the [`paddy policy`](/cli/policy) reference.
 
 ## Findings
 
@@ -43,7 +43,7 @@ Interpreting a policy finding, repairing it, and the exit codes. Part of the [`o
 | `policy/gateway-remote-enabled`                          | Gateway remote mode is active when policy denies it.                              |
 | `policy/gateway-http-endpoint-enabled`                   | A Gateway HTTP API endpoint is enabled while denied by policy.                    |
 | `policy/gateway-http-url-fetch-unrestricted`             | Gateway HTTP URL-fetch input lacks a required URL allowlist.                      |
-| `policy/gateway-node-command-denied`                     | A node command denied by policy is not denied by OpenClaw config.                 |
+| `policy/gateway-node-command-denied`                     | A node command denied by policy is not denied by Paddy config.                    |
 | `policy/agents-workspace-access-denied`                  | Agent sandbox mode or workspace access is outside the policy allowlist.           |
 | `policy/agents-tool-not-denied`                          | An agent or default config does not deny a tool required by policy.               |
 | `policy/tools-profile-unapproved`                        | A configured global or per-agent tool profile is outside the allowlist.           |
@@ -176,7 +176,7 @@ Example findings:
 {
   "checkId": "policy/gateway-node-command-denied",
   "severity": "error",
-  "message": "Gateway node command 'system.run' is denied by policy but not denied by OpenClaw config.",
+  "message": "Gateway node command 'system.run' is denied by policy but not denied by Paddy config.",
   "source": "policy",
   "path": "openclaw config",
   "ocPath": "oc://openclaw.config/gateway/nodes/commands/deny",
@@ -232,10 +232,10 @@ also skipped when the finding reports shared telemetry config, because changing
 the shared setting would affect more than the scoped policy target.
 
 `dataHandling.sensitiveLogging.requireRedaction` has no check and no repair.
-Sensitive log redaction is unconditional in OpenClaw, so nothing can report it
-as disabled. The key stays a supported policy rule: `openclaw policy` validates
-its shape, `openclaw policy compare` still requires a candidate policy to be at
-least as strict as the baseline for it, and `openclaw policy check` records the
+Sensitive log redaction is unconditional in Paddy, so nothing can report it
+as disabled. The key stays a supported policy rule: `paddy policy` validates
+its shape, `paddy policy compare` still requires a candidate policy to be at
+least as strict as the baseline for it, and `paddy policy check` records the
 runtime invariant `oc://openclaw.invariant/logging/redaction` in the
 `dataHandling` evidence and attestation as proof the requirement is satisfied.
 

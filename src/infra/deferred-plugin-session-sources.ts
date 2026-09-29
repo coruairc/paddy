@@ -311,7 +311,7 @@ function assertVerifiedSessionSources(
         continue;
       }
       throw new Error(
-        `Retained session migration source changed: ${source.path}. Run openclaw doctor --fix to verify the current input or preserve it in the migration archive; canonical SQLite sessions were not replayed.`,
+        `Retained session migration source changed: ${source.path}. Run paddy doctor --fix to verify the current input or preserve it in the migration archive; canonical SQLite sessions were not replayed.`,
       );
     }
     verifiedPaths.set(source.path, verifiedPath);
@@ -376,7 +376,7 @@ function assertVerifiedSessionSources(
           continue;
         }
         throw new Error(
-          `Retained session migration source changed: ${candidate}. A previously unimported transcript appeared; run openclaw doctor --fix to preserve it in the migration archive.`,
+          `Retained session migration source changed: ${candidate}. A previously unimported transcript appeared; run paddy doctor --fix to preserve it in the migration archive.`,
         );
       }
     }
@@ -470,7 +470,7 @@ function parseSessionImportReceipt(
       );
     }
     recordStartupMigrationWarnings([
-      "Retained session import database identity changed; sources remain protected. Run openclaw doctor --session-sqlite recover to revalidate the receipt.",
+      "Retained session import database identity changed; sources remain protected. Run paddy doctor --session-sqlite recover to revalidate the receipt.",
     ]);
   }
   return recorded;

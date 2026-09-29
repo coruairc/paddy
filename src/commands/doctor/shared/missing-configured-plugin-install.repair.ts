@@ -386,7 +386,7 @@ async function repairMissingPluginInstallsWithLease(
       ) {
         continue;
       }
-      const detail = `Skipped package-manager repair for configured plugin "${pluginId}" during package update; rerun "openclaw doctor --fix" after the update completes.`;
+      const detail = `Skipped package-manager repair for configured plugin "${pluginId}" during package update; rerun "paddy doctor --fix" after the update completes.`;
       changes.push(detail);
       deferredRepairDetails.push(detail);
     }
@@ -724,7 +724,7 @@ async function repairMissingPluginInstallsWithLease(
   const pluginInventoryChanged = nextRecords !== persistedRecords || repairedPluginIds.size > 0;
   if ([...driftedPluginIds].some((pluginId) => repairedPluginIds.has(pluginId))) {
     changes.push(
-      `If the Gateway is not restarted by Doctor, run ${formatCliCommand("openclaw gateway restart", env)} to load the updated plugins.`,
+      `If the Gateway is not restarted by Doctor, run ${formatCliCommand("paddy gateway restart", env)} to load the updated plugins.`,
     );
   }
   const outcomes = [

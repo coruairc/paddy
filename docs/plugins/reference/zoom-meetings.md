@@ -19,7 +19,7 @@ Join Zoom meetings as a Chrome browser guest.
 
 ## Surface
 
-- CLI commands: `openclaw zoommeetings`
+- CLI commands: `paddy zoommeetings`
 - Contracts: `tools`, `transcriptSourceProviders`
 
 ## Related docs

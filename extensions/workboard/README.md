@@ -10,8 +10,8 @@ agent sessions and retain notes, proof, and run history.
 Enable the bundled plugin and open the dashboard:
 
 ```bash
-openclaw plugins enable workboard
-openclaw dashboard
+paddy plugins enable workboard
+paddy dashboard
 ```
 
 Open **Workboard** from navigation to create a board and cards. No

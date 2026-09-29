@@ -325,7 +325,7 @@ async function loadRemoteGatewayRosterWithShellEnvFallback(
 }
 
 function formatActiveGatewayLocalRefusal(identity: GatewayLockIdentity): string {
-  return `A Gateway is running for this state directory (pid ${identity.pid}, port ${identity.port}). Run without --local to use it, or stop the Gateway first (${formatCliCommand("openclaw gateway stop")}).`;
+  return `A Gateway is running for this state directory (pid ${identity.pid}, port ${identity.port}). Run without --local to use it, or stop the Gateway first (${formatCliCommand("paddy gateway stop")}).`;
 }
 
 async function acquireEmbeddedAgentStateLock(
@@ -364,7 +364,7 @@ function protectJsonStdout(opts: Pick<AgentCliOpts, "json">): void {
 
 function missingAgentMessageError(): Error {
   return new Error(
-    `Missing message. Use ${formatCliCommand('openclaw agent --message "..." --agent <id>')} or ${formatCliCommand("openclaw agent --message-file <path> --agent <id>")}.`,
+    `Missing message. Use ${formatCliCommand('paddy agent --message "..." --agent <id>')} or ${formatCliCommand("paddy agent --message-file <path> --agent <id>")}.`,
   );
 }
 
@@ -528,7 +528,7 @@ function formatGatewayAgentTransportLossHint(err: unknown): string | undefined {
     : "";
   return (
     `Gateway agent call ${failureHint}; the Gateway may still be running this turn${acceptedNote}. ` +
-    "Check `openclaw gateway status` and the session transcript before retrying or rerunning with --local, so the turn does not execute twice."
+    "Check `paddy gateway status` and the session transcript before retrying or rerunning with --local, so the turn does not execute twice."
   );
 }
 
@@ -946,7 +946,7 @@ async function agentViaGatewayCommand(
     !hasImplicitGlobalTarget
   ) {
     throw new Error(
-      `No target session selected. Use --agent <id>, --session-key <key>, --session-id <id>, or --to <E.164>. Run ${formatCliCommand("openclaw agents list")} to see agents.`,
+      `No target session selected. Use --agent <id>, --session-key <key>, --session-id <id>, or --to <E.164>. Run ${formatCliCommand("paddy agents list")} to see agents.`,
     );
   }
 
@@ -959,7 +959,7 @@ async function agentViaGatewayCommand(
       opts.remoteGatewayRoster?.agentIds ?? (remoteGateway ? undefined : listAgentIds(cfg));
     if (knownAgents && !knownAgents.includes(agentId)) {
       throw new Error(
-        `Unknown agent id "${agentIdRaw}". Use "${formatCliCommand("openclaw agents list")}" to see configured agents.`,
+        `Unknown agent id "${agentIdRaw}". Use "${formatCliCommand("paddy agents list")}" to see configured agents.`,
       );
     }
   }
@@ -1212,7 +1212,7 @@ export async function agentCliCommand(
   // Fail loudly and point at the first-class command instead of no-opping.
   if (isCompactControlCommand(messageOpts.message)) {
     throw new Error(
-      "Slash commands cannot be executed via --message from the CLI. Use: openclaw sessions compact <key>",
+      "Slash commands cannot be executed via --message from the CLI. Use: paddy sessions compact <key>",
     );
   }
   const dispatchOpts = await normalizeSessionKeyOptsForDispatch(messageOpts);

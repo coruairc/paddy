@@ -47,14 +47,14 @@ http://localhost:8085/oauth2callback
 </Step>
 </Steps>
 
-`meetings.space.created` is required by `spaces.create`. `meetings.space.readonly` resolves Meet URLs/codes to spaces. `meetings.space.settings` lets OpenClaw pass `SpaceConfig` settings such as `accessType` during API room creation. `meetings.conference.media.readonly` is for Meet Media API preflight and media work; Google may require Developer Preview enrollment for actual Media API use. `calendar.events.readonly` is only needed for `--today`/`--event` calendar lookup. `drive.meet.readonly` is only needed for `--include-doc-bodies` export. If you only need browser-based Chrome joins, skip OAuth entirely.
+`meetings.space.created` is required by `spaces.create`. `meetings.space.readonly` resolves Meet URLs/codes to spaces. `meetings.space.settings` lets Paddy pass `SpaceConfig` settings such as `accessType` during API room creation. `meetings.conference.media.readonly` is for Meet Media API preflight and media work; Google may require Developer Preview enrollment for actual Media API use. `calendar.events.readonly` is only needed for `--today`/`--event` calendar lookup. `drive.meet.readonly` is only needed for `--include-doc-bodies` export. If you only need browser-based Chrome joins, skip OAuth entirely.
 
 ### Mint the refresh token
 
 Configure `oauth.clientId` and optionally `oauth.clientSecret` (or pass them as environment variables), then run:
 
 ```bash
-openclaw googlemeet auth login --json
+paddy googlemeet auth login --json
 ```
 
 This runs a PKCE flow with a localhost callback on `http://localhost:8085/oauth2callback`, and prints an `oauth` config block with a refresh token. Add `--manual` for a copy/paste flow when the browser cannot reach the local callback:
@@ -62,7 +62,7 @@ This runs a PKCE flow with a localhost callback on `http://localhost:8085/oauth2
 ```bash
 OPENCLAW_GOOGLE_MEET_CLIENT_ID="your-client-id" \
 OPENCLAW_GOOGLE_MEET_CLIENT_SECRET="your-client-secret" \
-openclaw googlemeet auth login --json --manual
+paddy googlemeet auth login --json --manual
 ```
 
 JSON output:
@@ -101,12 +101,12 @@ Store the `oauth` object under the plugin config:
 }
 ```
 
-Prefer environment variables when you do not want the refresh token in config; config is resolved first, then environment as fallback. If you authenticated before meeting creation, calendar lookup, or document-body export support existed, rerun `openclaw googlemeet auth login --json` so the refresh token covers the current scope set.
+Prefer environment variables when you do not want the refresh token in config; config is resolved first, then environment as fallback. If you authenticated before meeting creation, calendar lookup, or document-body export support existed, rerun `paddy googlemeet auth login --json` so the refresh token covers the current scope set.
 
 ### Verify OAuth with doctor
 
 ```bash
-openclaw googlemeet doctor --oauth --json
+paddy googlemeet doctor --oauth --json
 ```
 
 This checks OAuth config exists and the refresh token can mint an access token, without loading the Chrome runtime or requiring a connected node. The report includes only status fields (`ok`, `configured`, `tokenSource`, `expiresAt`, check messages) and never prints the access token, refresh token, or client secret.
@@ -121,19 +121,19 @@ This checks OAuth config exists and the refresh token can mint an access token, 
 Prove Meet API enablement and `spaces.create` scope with the side-effecting create check:
 
 ```bash
-openclaw googlemeet doctor --oauth --create-space --json
+paddy googlemeet doctor --oauth --create-space --json
 ```
 
 Prove read access to an existing space:
 
 ```bash
-openclaw googlemeet doctor --oauth --meeting https://meet.google.com/abc-defg-hij --json
-openclaw googlemeet resolve-space --meeting https://meet.google.com/abc-defg-hij
+paddy googlemeet doctor --oauth --meeting https://meet.google.com/abc-defg-hij --json
+paddy googlemeet resolve-space --meeting https://meet.google.com/abc-defg-hij
 ```
 
-A `403` from these checks usually means the Meet REST API is disabled, the refresh token is missing the required scope, or the Google account cannot access that space. A refresh-token error means rerun `openclaw googlemeet auth login --json` and store the new `oauth` block.
+A `403` from these checks usually means the Meet REST API is disabled, the refresh token is missing the required scope, or the Google account cannot access that space. A refresh-token error means rerun `paddy googlemeet auth login --json` and store the new `oauth` block.
 
-No OAuth is needed for the browser fallback; Google auth there comes from the signed-in Chrome profile on the selected node, not OpenClaw config.
+No OAuth is needed for the browser fallback; Google auth there comes from the signed-in Chrome profile on the selected node, not Paddy config.
 
 These environment variables are accepted as fallbacks:
 
@@ -148,16 +148,16 @@ These environment variables are accepted as fallbacks:
 ### Resolve, preflight, and read artifacts
 
 ```bash
-openclaw googlemeet resolve-space --meeting https://meet.google.com/abc-defg-hij
-openclaw googlemeet preflight --meeting https://meet.google.com/abc-defg-hij
+paddy googlemeet resolve-space --meeting https://meet.google.com/abc-defg-hij
+paddy googlemeet preflight --meeting https://meet.google.com/abc-defg-hij
 ```
 
 After Meet has created conference records:
 
 ```bash
-openclaw googlemeet artifacts --meeting https://meet.google.com/abc-defg-hij
-openclaw googlemeet attendance --meeting https://meet.google.com/abc-defg-hij
-openclaw googlemeet export --meeting https://meet.google.com/abc-defg-hij --output ./meet-export
+paddy googlemeet artifacts --meeting https://meet.google.com/abc-defg-hij
+paddy googlemeet attendance --meeting https://meet.google.com/abc-defg-hij
+paddy googlemeet export --meeting https://meet.google.com/abc-defg-hij --output ./meet-export
 ```
 
 With `--meeting`, `artifacts` and `attendance` use the latest conference record by default; pass `--all-conference-records` for every retained record.
@@ -165,10 +165,10 @@ With `--meeting`, `artifacts` and `attendance` use the latest conference record 
 Calendar lookup resolves the meeting URL from Google Calendar before reading artifacts (requires a refresh token that includes the Calendar events readonly scope):
 
 ```bash
-openclaw googlemeet latest --today
-openclaw googlemeet calendar-events --today --json
-openclaw googlemeet artifacts --event "Weekly sync"
-openclaw googlemeet attendance --today --format csv --output attendance.csv
+paddy googlemeet latest --today
+paddy googlemeet calendar-events --today --json
+paddy googlemeet artifacts --event "Weekly sync"
+paddy googlemeet attendance --today --format csv --output attendance.csv
 ```
 
 `--today` searches today's `primary` calendar for an event with a Meet link; `--event <query>` searches matching event text; `--calendar <id>` targets a non-primary calendar. `calendar-events` previews matching events and marks which one `latest`/`artifacts`/`attendance`/`export` will choose.
@@ -176,29 +176,29 @@ openclaw googlemeet attendance --today --format csv --output attendance.csv
 If you already know the conference record id, address it directly:
 
 ```bash
-openclaw googlemeet latest --meeting https://meet.google.com/abc-defg-hij
-openclaw googlemeet artifacts --conference-record conferenceRecords/abc123 --json
-openclaw googlemeet attendance --conference-record conferenceRecords/abc123 --json
+paddy googlemeet latest --meeting https://meet.google.com/abc-defg-hij
+paddy googlemeet artifacts --conference-record conferenceRecords/abc123 --json
+paddy googlemeet attendance --conference-record conferenceRecords/abc123 --json
 ```
 
 Close the room for an API-created space:
 
 ```bash
-openclaw googlemeet end-active-conference https://meet.google.com/abc-defg-hij
+paddy googlemeet end-active-conference https://meet.google.com/abc-defg-hij
 ```
 
-Calls `spaces.endActiveConference` and requires OAuth with the `meetings.space.created` scope for a space the authorized account can manage. Accepts a Meet URL, meeting code, or `spaces/{id}` and resolves it to the API space resource first. This is separate from `googlemeet leave`: `leave` stops OpenClaw's local/session participation; `end-active-conference` asks Google Meet to end the active conference for the space.
+Calls `spaces.endActiveConference` and requires OAuth with the `meetings.space.created` scope for a space the authorized account can manage. Accepts a Meet URL, meeting code, or `spaces/{id}` and resolves it to the API space resource first. This is separate from `googlemeet leave`: `leave` stops Paddy's local/session participation; `end-active-conference` asks Google Meet to end the active conference for the space.
 
 Write a readable report:
 
 ```bash
-openclaw googlemeet artifacts --conference-record conferenceRecords/abc123 \
+paddy googlemeet artifacts --conference-record conferenceRecords/abc123 \
   --format markdown --output meet-artifacts.md
-openclaw googlemeet attendance --conference-record conferenceRecords/abc123 \
+paddy googlemeet attendance --conference-record conferenceRecords/abc123 \
   --format csv --output meet-attendance.csv
-openclaw googlemeet export --conference-record conferenceRecords/abc123 \
+paddy googlemeet export --conference-record conferenceRecords/abc123 \
   --include-doc-bodies --zip --output meet-export
-openclaw googlemeet export --conference-record conferenceRecords/abc123 \
+paddy googlemeet export --conference-record conferenceRecords/abc123 \
   --include-doc-bodies --dry-run
 ```
 
@@ -212,7 +212,7 @@ Agents use the same actions through the `google_meet` tool (`export`, `create` w
 
 ### Live smoke test
 
-`pnpm test:live` requires a source checkout of the OpenClaw repo; the `openclaw googlemeet` commands below run from any install.
+`pnpm test:live` requires a source checkout of the Paddy repo; the `paddy googlemeet` commands below run from any install.
 
 ```bash
 OPENCLAW_LIVE_TEST=1 \
@@ -221,8 +221,8 @@ pnpm test:live -- extensions/google-meet/google-meet.live.test.ts
 ```
 
 ```bash
-openclaw googlemeet setup --transport chrome-node --mode transcribe
-openclaw googlemeet test-listen https://meet.google.com/abc-defg-hij --transport chrome-node --timeout-ms 30000
+paddy googlemeet setup --transport chrome-node --mode transcribe
+paddy googlemeet test-listen https://meet.google.com/abc-defg-hij --transport chrome-node --timeout-ms 30000
 ```
 
 | Variable                                                                                                                  | Purpose                                                                |
@@ -238,7 +238,7 @@ The base artifact/attendance smoke needs `meetings.space.readonly` and `meetings
 ### Create examples
 
 ```bash
-openclaw googlemeet create
+paddy googlemeet create
 ```
 
 Prints the new meeting URI, source, and join session. With OAuth it uses the Meet API; without it, the pinned Chrome node's signed-in profile. Browser fallback JSON:
@@ -266,10 +266,10 @@ If the browser fallback hits Google login or a Meet permission blocker first, `g
 ```json
 {
   "source": "browser",
-  "error": "google-login-required: Sign in to Google in the OpenClaw browser profile, then retry meeting creation.",
+  "error": "google-login-required: Sign in to Google in the Paddy browser profile, then retry meeting creation.",
   "manualAction": {
     "reason": "google-login-required",
-    "message": "Sign in to Google in the OpenClaw browser profile, then retry meeting creation."
+    "message": "Sign in to Google in the Paddy browser profile, then retry meeting creation."
   },
   "browser": {
     "nodeId": "ba0f4e4bc...",
@@ -301,6 +301,6 @@ API create JSON:
 }
 ```
 
-Creating joins by default, but Chrome/Chrome-node still needs a signed-in Google profile to join through the browser; if signed out, OpenClaw returns `manualAction` or a browser fallback error and asks the operator to finish Google login before retrying.
+Creating joins by default, but Chrome/Chrome-node still needs a signed-in Google profile to join through the browser; if signed out, Paddy returns `manualAction` or a browser fallback error and asks the operator to finish Google login before retrying.
 
 Set `preview.enrollmentAcknowledged: true` only after confirming your Cloud project, OAuth principal, and meeting participants are enrolled in the Google Workspace Developer Preview Program for Meet media APIs.

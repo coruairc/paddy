@@ -1,6 +1,6 @@
 # NVIDIA
 
-Use NVIDIA-hosted models through NVIDIA's OpenAI-compatible API. OpenClaw provides
+Use NVIDIA-hosted models through NVIDIA's OpenAI-compatible API. Paddy provides
 model setup and a catalog of supported chat models, including available
 NVIDIA and third-party models.
 
@@ -9,11 +9,11 @@ NVIDIA and third-party models.
 Create an NVIDIA API key and run:
 
 ```bash
-openclaw onboard --auth-choice nvidia-api-key
+paddy onboard --auth-choice nvidia-api-key
 ```
 
 You can also supply `NVIDIA_API_KEY` in the Gateway's environment. Browse models
-with `openclaw models list --provider nvidia` and select an available model for
+with `paddy models list --provider nvidia` and select an available model for
 your agent.
 
 This plugin calls NVIDIA's hosted service; it does not install local GPU models.

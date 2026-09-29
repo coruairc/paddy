@@ -14,18 +14,18 @@ This is the deep runbook. Start at [/help/troubleshooting](/help/troubleshooting
 Run in this order:
 
 ```bash
-openclaw status
-openclaw gateway status
-openclaw logs --follow
-openclaw doctor
-openclaw channels status --probe
+paddy status
+paddy gateway status
+paddy logs --follow
+paddy doctor
+paddy channels status --probe
 ```
 
 Healthy signals:
 
-- `openclaw gateway status` shows `Runtime: running`, `Connectivity probe: ok`, and a `Capability: ...` line.
-- `openclaw doctor` reports no blocking config/service issues.
-- `openclaw channels status --probe` shows live per-account transport status and, where supported, `works` or `audit ok`.
+- `paddy gateway status` shows `Runtime: running`, `Connectivity probe: ok`, and a `Capability: ...` line.
+- `paddy doctor` reports no blocking config/service issues.
+- `paddy channels status --probe` shows live per-account transport status and, where supported, `works` or `audit ok`.
 
 ## Symptom index
 
@@ -98,10 +98,10 @@ Most post-upgrade breakage is config drift or stricter defaults now being enforc
 <AccordionGroup>
   <Accordion title="1. Auth and URL override behavior changed">
     ```bash
-    openclaw gateway status
-    openclaw config get gateway.mode
-    openclaw config get gateway.remote.url
-    openclaw config get gateway.auth.mode
+    paddy gateway status
+    paddy config get gateway.mode
+    paddy config get gateway.remote.url
+    paddy config get gateway.auth.mode
     ```
 
     What to check:
@@ -117,11 +117,11 @@ Most post-upgrade breakage is config drift or stricter defaults now being enforc
   </Accordion>
   <Accordion title="2. Bind and auth guardrails are stricter">
     ```bash
-    openclaw config get gateway.bind
-    openclaw config get gateway.auth.mode
-    openclaw config get gateway.auth.token
-    openclaw gateway status
-    openclaw logs --follow
+    paddy config get gateway.bind
+    paddy config get gateway.auth.mode
+    paddy config get gateway.auth.token
+    paddy gateway status
+    paddy logs --follow
     ```
 
     What to check:
@@ -137,10 +137,10 @@ Most post-upgrade breakage is config drift or stricter defaults now being enforc
   </Accordion>
   <Accordion title="3. Pairing and device identity state changed">
     ```bash
-    openclaw devices list
-    openclaw pairing list --channel <channel> [--account <id>]
-    openclaw logs --follow
-    openclaw doctor
+    paddy devices list
+    paddy pairing list --channel <channel> [--account <id>]
+    paddy logs --follow
+    paddy doctor
     ```
 
     What to check:
@@ -159,8 +159,8 @@ Most post-upgrade breakage is config drift or stricter defaults now being enforc
 If the service config and runtime still disagree after checks, reinstall service metadata from the same profile/state directory:
 
 ```bash
-openclaw gateway install --force
-openclaw gateway restart
+paddy gateway install --force
+paddy gateway restart
 ```
 
 Related:

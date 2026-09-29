@@ -4,7 +4,7 @@ import { en } from "./en.ts";
 // Plugin management and its lazy sibling surfaces register this shared copy on use.
 const enPluginManagement = {
   custodian: {
-    pluginPlaceholder: "Ask OpenClaw about {plugin}",
+    pluginPlaceholder: "Ask Paddy about {plugin}",
     pluginIntroTitle: "Ask about {plugin}",
     pluginStarterPurpose: "What does it do?",
     pluginStarterTools: "What tools does it have?",
@@ -13,7 +13,7 @@ const enPluginManagement = {
     pluginPromptTools: "What tools does {plugin} provide?",
     pluginPromptSetup: "How do I set up {plugin}?",
     pluginHelpQuestion: "Explain {setting}",
-    pluginHelpFailed: "Could not prepare the setting question. Try Ask OpenClaw again.",
+    pluginHelpFailed: "Could not prepare the setting question. Try Ask Paddy again.",
     pluginHelpUnset: "Not set",
     pluginHelpValue: "Current value: {value}",
   },
@@ -84,7 +84,7 @@ const enPluginManagement = {
       permissions: "Permissions",
       actions: "Actions for {name}",
       reset: "Reset value",
-      ask: "Ask OpenClaw",
+      ask: "Ask Paddy",
     },
     credentials: {
       stored: "••••••••",
@@ -129,8 +129,8 @@ const enPluginManagement = {
     },
     detailCapabilities: "Capabilities",
     uiCapabilities: {
-      page: { name: "Pages", description: "Adds pages to OpenClaw." },
-      navigation: { name: "Navigation", description: "Adds links to OpenClaw navigation." },
+      page: { name: "Pages", description: "Adds pages to Paddy." },
+      navigation: { name: "Navigation", description: "Adds links to Paddy navigation." },
       panel: { name: "Panels", description: "Adds interface panels." },
       action: { name: "Actions", description: "Adds buttons or menu actions." },
       accessory: {
@@ -191,7 +191,7 @@ const enPluginManagement = {
         name: "Transcripts",
         description: "Capture or import transcripts from supported sources.",
       },
-      migrationProviders: { name: "Migration", description: "Bring supported data into OpenClaw." },
+      migrationProviders: { name: "Migration", description: "Bring supported data into Paddy." },
     },
     breadcrumb: "Breadcrumb",
     settingsDescription: "Configure installed plugins, access, and lifecycle.",
@@ -311,7 +311,7 @@ const enPluginManagement = {
     detailSensitive: "Sensitive",
     detailMinimumGateway: "Minimum Gateway version",
     detailPluginApi: "Plugin API",
-    detailBuiltWith: "Built with OpenClaw",
+    detailBuiltWith: "Built with Paddy",
     detailSdkVersion: "Plugin SDK",
     detailSourceCommit: "Source commit",
     detailSourcePath: "Source path",
@@ -366,7 +366,7 @@ const enPluginManagement = {
     reload: "Reload",
     installSaved: "Installation of {name} was saved. {error}",
     installSavedNotApplied:
-      "Installation of {name} was saved, but the Gateway has not applied it. {error} Fix the reported problem, then run openclaw plugins reload {name}.",
+      "Installation of {name} was saved, but the Gateway has not applied it. {error} Fix the reported problem, then run paddy plugins reload {name}.",
     runtimeFailurePhase: "Runtime phase: {phase}.",
     enableAction: "Enable",
     working: "Working…",
@@ -374,7 +374,7 @@ const enPluginManagement = {
     detailPackage: "Package",
     detailPluginId: "Plugin ID",
     offlineBody: "Connect to browse installed and recommended plugins.",
-    optionalCapability: "Optional OpenClaw capability.",
+    optionalCapability: "Optional Paddy capability.",
     enabled: "Enabled",
     disabled: "Disabled",
     available: "Available",

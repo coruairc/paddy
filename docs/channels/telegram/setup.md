@@ -1,20 +1,20 @@
 ---
 summary: "Create the Telegram bot token, configure the channel, and approve the first DM"
 read_when:
-  - Connecting a Telegram bot to OpenClaw for the first time
+  - Connecting a Telegram bot to Paddy for the first time
   - Adding the bot to a group and finding the group chat ID
   - Setting BotFather privacy mode and group permissions
 title: "Telegram setup"
 sidebarTitle: "Setup"
 ---
 
-Create the bot in BotFather, give OpenClaw its token, approve the first DM, and add the bot to a group.
+Create the bot in BotFather, give Paddy its token, approve the first DM, and add the bot to a group.
 
 ## Quick setup
 
 <Steps>
   <Step title="Create the bot token in BotFather">
-    Both flows end with a token you paste into OpenClaw — pick one:
+    Both flows end with a token you paste into Paddy — pick one:
 
     - **Chat flow**: open Telegram and chat with **@BotFather**. Confirm the handle is exactly `@BotFather`. Run `/newbot`, follow the prompts, and save the token.
     - **Web flow**: open [BotFather's web app](https://t.me/BotFather?startapp). It runs in every Telegram client, including [web.telegram.org](https://web.telegram.org). Create the bot in the UI, then copy its token.
@@ -25,7 +25,7 @@ Create the bot in BotFather, give OpenClaw its token, approve the first DM, and 
     The fastest option is the CLI. It writes the token into your config for you:
 
 ```bash
-openclaw channels add --channel telegram --token <bot-token>
+paddy channels add --channel telegram --token <bot-token>
 ```
 
     To edit config by hand instead, put this in `~/.openclaw/openclaw.json`:
@@ -44,7 +44,7 @@ openclaw channels add --channel telegram --token <bot-token>
 ```
 
     Env fallback: `TELEGRAM_BOT_TOKEN` (default account only). Named accounts must use `botToken` or `tokenFile`.
-    Telegram does **not** use `openclaw channels login telegram`. Set the token in config or env, then start the gateway.
+    Telegram does **not** use `paddy channels login telegram`. Set the token in config or env, then start the gateway.
 
   </Step>
 
@@ -54,11 +54,11 @@ openclaw channels add --channel telegram --token <bot-token>
     Gateway applies the new channel configuration. Check that Telegram is ready:
 
 ```bash
-openclaw channels status --probe
+paddy channels status --probe
 ```
 
-    If the Gateway is offline, start it with `openclaw gateway start` for a managed
-    service, or `openclaw gateway` to run it in this terminal. If you changed the
+    If the Gateway is offline, start it with `paddy gateway start` for a managed
+    service, or `paddy gateway` to run it in this terminal. If you changed the
     service environment, restart the Gateway to load it.
 
   </Step>
@@ -68,8 +68,8 @@ openclaw channels status --probe
     pairing request the next command lists:
 
 ```bash
-openclaw pairing list telegram
-openclaw pairing approve telegram <CODE>
+paddy pairing list telegram
+paddy pairing approve telegram <CODE>
 ```
 
     Pairing codes expire after 1 hour.
@@ -82,7 +82,7 @@ openclaw pairing approve telegram <CODE>
     - your Telegram user ID, for `allowFrom` / `groupAllowFrom`
     - the Telegram group chat ID, as the key under `channels.telegram.groups`
 
-    Get the group chat ID from `openclaw logs --follow`, a forwarded-ID bot, or Bot API `getUpdates`. After the group is allowed, `/whoami@<bot_username>` confirms the user and group IDs.
+    Get the group chat ID from `paddy logs --follow`, a forwarded-ID bot, or Bot API `getUpdates`. After the group is allowed, `/whoami@<bot_username>` confirms the user and group IDs.
 
     Negative supergroup IDs starting with `-100` are group chat IDs. They go under `channels.telegram.groups`, not `groupAllowFrom`.
 
@@ -90,7 +90,7 @@ openclaw pairing approve telegram <CODE>
 </Steps>
 
 <Note>
-Token resolution is account-aware. `tokenFile` beats `botToken`, and `botToken` beats env. Config always wins over `TELEGRAM_BOT_TOKEN`, which only resolves for the default account. After a successful startup, OpenClaw caches the bot identity for up to 24 hours, so restarts skip an extra `getMe` call. Changing or removing the token clears that cache.
+Token resolution is account-aware. `tokenFile` beats `botToken`, and `botToken` beats env. Config always wins over `TELEGRAM_BOT_TOKEN`, which only resolves for the default account. After a successful startup, Paddy caches the bot identity for up to 24 hours, so restarts skip an extra `getMe` call. Changing or removing the token clears that cache.
 </Note>
 
 ## Telegram side settings

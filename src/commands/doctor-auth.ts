@@ -90,7 +90,7 @@ export function noteCopilotAmbientToken(cfg: OpenClawConfig, env = process.env):
   );
   if (claimed) {
     note(
-      "GitHub Copilot is no longer enabled by GH_TOKEN/GITHUB_TOKEN. To use Copilot, run `openclaw models auth login --provider github-copilot` or set COPILOT_GITHUB_TOKEN.",
+      "GitHub Copilot is no longer enabled by GH_TOKEN/GITHUB_TOKEN. To use Copilot, run `paddy models auth login --provider github-copilot` or set COPILOT_GITHUB_TOKEN.",
       "GitHub Copilot",
     );
   }
@@ -105,7 +105,7 @@ export function noteSharedAuthStoreStatus(env: NodeJS.ProcessEnv = process.env):
     return;
   }
   note(
-    "Shared auth profiles still live in the main agent database. Run `openclaw doctor --fix` to move them into shared SQLite state and make the main agent deletable.",
+    "Shared auth profiles still live in the main agent database. Run `paddy doctor --fix` to move them into shared SQLite state and make the main agent deletable.",
     "Shared auth store",
   );
 }
@@ -337,8 +337,8 @@ function authProfileIssueToHealthFinding(params: {
     fixHint:
       params.hint ??
       (params.issue.status === "expiring"
-        ? "Run `openclaw doctor --fix` to refresh expiring OAuth profiles, or re-authenticate static tokens."
-        : "Run `openclaw doctor --fix` to refresh OAuth profiles, or re-authenticate this provider."),
+        ? "Run `paddy doctor --fix` to refresh expiring OAuth profiles, or re-authenticate static tokens."
+        : "Run `paddy doctor --fix` to refresh OAuth profiles, or re-authenticate this provider."),
   };
 }
 

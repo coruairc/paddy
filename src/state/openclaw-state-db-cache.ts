@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   assertStateDatabaseAccessAllowed,
   assertStateDatabaseReadAllowed,
@@ -61,7 +62,6 @@ import { assertExistingOpenClawStateSchemaCacheAdmission } from "./openclaw-stat
 import { assertSupportedStateSchemaVersion } from "./openclaw-state-db-schema-version.js";
 import { openClawStateSnapshotOwners } from "./openclaw-state-db-snapshot-owner.js";
 import type { OpenClawStateWorkerContext } from "./openclaw-state-worker-context.types.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 const stateDatabaseLifecycle = resolveGlobalSingleton<StateDatabaseLifecycle>(
   Symbol.for("openclaw.stateDatabaseLifecycle"),
@@ -354,7 +354,9 @@ function getCachedOpenClawStateDatabase(
   }
   const database = cachedDatabases.get(path.resolve(pathname));
   if (database && borrowers.get(database.db)?.retiring) {
-    throw new Error(`${PRODUCT_NAME} state database native borrower cleanup is pending: ${pathname}`);
+    throw new Error(
+      `${PRODUCT_NAME} state database native borrower cleanup is pending: ${pathname}`,
+    );
   }
   if (database) {
     touchStateDatabase(database);
@@ -444,7 +446,9 @@ function assertOpenClawStateDatabaseOpenAllowed(pathname: string, ownership?: "c
       borrowers.get(database.db)?.retiring &&
       (database.path === resolvedPath || databaseIdentities.get(database.db)?.key === identity.key)
     ) {
-      throw new Error(`${PRODUCT_NAME} state database native borrower cleanup is pending: ${pathname}`);
+      throw new Error(
+        `${PRODUCT_NAME} state database native borrower cleanup is pending: ${pathname}`,
+      );
     }
   }
 }
@@ -503,10 +507,7 @@ function retireOpenClawStateDatabaseHandle(
         errors.push(error);
       }
     }
-    throwSqliteLifecycleErrors(
-      errors,
-      `OpenClaw state database cleanup failed for ${database.path}.`,
-    );
+    throwSqliteLifecycleErrors(errors, `Paddy state database cleanup failed for ${database.path}.`);
   } catch (error) {
     if (borrowedOwner) {
       retainStateDatabaseClose(database);
@@ -733,7 +734,7 @@ function retainSqliteDatabaseRemovalExclusion(
     }
     if (isSqliteLockError(error)) {
       throw new Error(
-        "Cannot remove OpenClaw state directory while another SQLite connection is active",
+        "Cannot remove Paddy state directory while another SQLite connection is active",
         {
           cause: error,
         },

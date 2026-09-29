@@ -194,7 +194,7 @@ export async function waitForUpdateCandidateReadiness(
           // Keep the last observed cause when the common deadline aborts a later poll.
           if (!deadline.signal.aborted || !failure) {
             const detail = redactSupportDiagnosticLine(outcome, params);
-            const nextStep = "Check Gateway logs and proxy.loopbackMode; rerun openclaw update.";
+            const nextStep = "Check Gateway logs and proxy.loopbackMode; rerun paddy update.";
             failure = {
               message: redactSupportString(
                 `Readiness probe ${url} failed: ${detail}${proxy ? ` (via proxy ${proxy.origin})` : ""}. ${nextStep}`,

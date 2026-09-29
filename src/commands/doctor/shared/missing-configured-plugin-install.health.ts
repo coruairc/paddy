@@ -302,21 +302,21 @@ const CONFIGURED_PLUGIN_INSTALL_ISSUE_DETAILS = {
   "stale-version-bound-runtime": {
     message: (pluginId: string) =>
       `Configured runtime plugin ${pluginId} is older than this ${PRODUCT_NAME} version.`,
-    fixHint: "Run `openclaw doctor --fix` to refresh the configured runtime plugin.",
+    fixHint: "Run `paddy doctor --fix` to refresh the configured runtime plugin.",
     action: "would-refresh-configured-runtime-plugin",
     dryRunSafe: false,
   },
   "stale-channel-config-descriptor": {
     message: (pluginId: string) =>
       `Configured plugin ${pluginId} has stale channel config metadata.`,
-    fixHint: "Run `openclaw doctor --fix` to repair the configured plugin install metadata.",
+    fixHint: "Run `paddy doctor --fix` to repair the configured plugin install metadata.",
     action: "would-repair-configured-plugin-install",
     dryRunSafe: false,
   },
   "deferred-package-manager-repair": {
     message: (pluginId: string) =>
       `Configured plugin ${pluginId} package repair is deferred until the package update finishes.`,
-    fixHint: "Rerun `openclaw doctor --fix` after the package update completes.",
+    fixHint: "Rerun `paddy doctor --fix` after the package update completes.",
     action: "would-defer-configured-plugin-install-repair",
     dryRunSafe: true,
   },
@@ -347,11 +347,11 @@ export function configuredPluginInstallIssueToHealthFinding(
     ...("installPath" in issue && issue.installPath ? { path: issue.installPath } : {}),
     fixHint:
       issue.kind === "missing-install-record"
-        ? `Run \`openclaw doctor --fix\` to install ${issue.installSpec}.`
+        ? `Run \`paddy doctor --fix\` to install ${issue.installSpec}.`
         : (detail.fixHint ??
           (installSpec
-            ? `Run \`openclaw plugins install ${installSpec} --force\` to reinstall the configured plugin package.`
-            : "Run `openclaw doctor --fix` to repair the configured plugin install. An exact reinstall command is unavailable because the install record has no package spec.")),
+            ? `Run \`paddy plugins install ${installSpec} --force\` to reinstall the configured plugin package.`
+            : "Run `paddy doctor --fix` to repair the configured plugin install. An exact reinstall command is unavailable because the install record has no package spec.")),
   };
 }
 

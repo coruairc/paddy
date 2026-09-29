@@ -130,7 +130,7 @@ export async function resetCommand(runtime: RuntimeEnv, opts: ResetOptions) {
     return;
   }
 
-  runtime.log(`Recommended first: ${formatCliCommand("openclaw backup create")}`);
+  runtime.log(`Recommended first: ${formatCliCommand("paddy backup create")}`);
   if (dryRun) {
     runtime.log("[dry-run] stop gateway service");
   } else if (!(await stopGatewayIfRunning(runtime))) {
@@ -178,5 +178,5 @@ export async function resetCommand(runtime: RuntimeEnv, opts: ResetOptions) {
     runtime.exit(1);
     return;
   }
-  runtime.log(`Next: ${formatCliCommand("openclaw onboard --install-daemon")}`);
+  runtime.log(`Next: ${formatCliCommand("paddy onboard --install-daemon")}`);
 }
