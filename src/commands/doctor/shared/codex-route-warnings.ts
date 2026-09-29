@@ -260,7 +260,7 @@ function collectCodexModelParamHits(
 
 function formatCodexModelParamWarning(hits: readonly CodexModelParamHit[]): string {
   const fixHint = hits.some((hit) => hit.removable)
-    ? '- Run `openclaw doctor --fix` to remove only redundant priority service-tier params; remove any remaining params or set the affected route\'s agentRuntime.id to "openclaw".'
+    ? '- Run `paddy doctor --fix` to remove only redundant priority service-tier params; remove any remaining params or set the affected route\'s agentRuntime.id to "paddy".'
     : '- Remove these params or set the affected route\'s agentRuntime.id to "openclaw"; Doctor cannot migrate them without changing behavior.';
   return [
     "- Explicit native Codex model routes cannot reproduce authored request transport parameters.",

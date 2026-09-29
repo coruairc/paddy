@@ -210,7 +210,7 @@ export function createSessionsSendTool(opts?: SessionsSendToolOptions): AnyAgent
       if (normalizedLabelAgentId && !normalizedLabelAgentId.ok) {
         return sendFailure(
           "error",
-          `Agent "${labelAgentIdInput}" not found. Run openclaw agents list to see configured agents.`,
+          `Agent "${labelAgentIdInput}" not found. Run paddy agents list to see configured agents.`,
         );
       }
       const explicitTargetAgentId = normalizedLabelAgentId?.value;
@@ -227,7 +227,7 @@ export function createSessionsSendTool(opts?: SessionsSendToolOptions): AnyAgent
         if (!agentMainKey) {
           return sendFailure(
             "error",
-            `Agent "${labelAgentIdInput}" not found. Run openclaw agents list to see configured agents.`,
+            `Agent "${labelAgentIdInput}" not found. Run paddy agents list to see configured agents.`,
           );
         }
         sessionKey = agentMainKey;

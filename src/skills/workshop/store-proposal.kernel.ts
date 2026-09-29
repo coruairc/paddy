@@ -101,7 +101,7 @@ export function updateSkillProposalRecordInDatabase(
     )
   ) {
     throw new Error(
-      "Skill proposal has unfinished apply recovery. Run openclaw doctor --fix and restore the files it identifies before retrying.",
+      "Skill proposal has unfinished apply recovery. Run paddy doctor --fix and restore the files it identifies before retrying.",
     );
   }
   if (params.invalidateRollback) {

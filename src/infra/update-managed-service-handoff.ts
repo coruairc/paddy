@@ -555,7 +555,7 @@ async function enterTriageAfterUpdate(continuation) {
     triageTransition: true,
     failure: continuation.failure,
     commandArgv: continuation.commandArgv,
-    commandLabel: "openclaw triage (automatic)",
+    commandLabel: "paddy triage (automatic)",
     scopeUnit,
     primaryFragment: primary.FragmentPath,
   });
@@ -1495,7 +1495,7 @@ async function spawnManagedServiceUpdateHandoff(
     commandArgv.push("--no-restart");
   }
   const commandLabel = params.action
-    ? "openclaw triage (automatic)"
+    ? "paddy triage (automatic)"
     : formatManagedServiceUpdateCommand(commandOptions, params.env) +
       (owner.operatorRestartWarning ? " --no-restart" : "");
   const metaFile: ControlPlaneUpdateSentinelMetaFile = {

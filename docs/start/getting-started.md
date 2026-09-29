@@ -39,7 +39,7 @@ saved. If no detected route works, onboarding opens manual provider setup.
 Choose **Custom setup** to walk through all guided options instead.
 
 To keep the Gateway running in the background later, install the CLI below and
-run `openclaw gateway install`. Run `openclaw` for the TUI or
+run `paddy gateway install`. Run `paddy` for the TUI or
 `paddy dashboard` to reopen the web UI.
 
 ## Quick setup

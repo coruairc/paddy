@@ -27,7 +27,7 @@ export function completeUpdateCommandResult(
     defaultRuntime.error(message);
     result.steps.push({
       name: "managed-service-membership",
-      command: "openclaw update",
+      command: "paddy update",
       cwd: result.root ?? "",
       durationMs: 0,
       exitCode: 0,

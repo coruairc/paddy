@@ -6,7 +6,7 @@ import type { GatewayServiceEnv } from "./service-types.js";
 const RESTART_WINDOW_MS = 10 * 60 * 1000;
 const RESTART_THRESHOLD = 3;
 const MAX_HISTORY_BYTES = 128 * 1024;
-const WARNING_PREFIX = "openclaw gateway restart-storm warning ";
+const WARNING_PREFIX = "paddy gateway restart-storm warning ";
 
 export type GatewayForcedRestartSummary = {
   count: number;

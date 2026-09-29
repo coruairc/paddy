@@ -86,7 +86,7 @@ OpenClaw reads auth profiles from each agent's `openclaw-agent.sqlite`. Endpoint
 
 If an older install still has `auth-profiles.json`, `auth-state.json`, or a flat shape like `{ "openrouter": { "apiKey": "..." } }`, run `paddy doctor --fix` to import it into SQLite; doctor keeps timestamped backups beside the original JSON files.
 
-External auth routes such as Bedrock `auth: "aws-sdk"` aren't credentials. For a named Bedrock route, set `auth.profiles.<id>.mode: "aws-sdk"` in `openclaw.json` — don't write `type: "aws-sdk"` into the auth profile store. `openclaw doctor --fix` migrates legacy AWS SDK markers from the credential store into config metadata.
+External auth routes such as Bedrock `auth: "aws-sdk"` aren't credentials. For a named Bedrock route, set `auth.profiles.<id>.mode: "aws-sdk"` in `openclaw.json` — don't write `type: "aws-sdk"` into the auth profile store. `paddy doctor --fix` migrates legacy AWS SDK markers from the credential store into config metadata.
 
 ### SecretRef-backed credentials
 

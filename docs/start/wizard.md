@@ -129,7 +129,7 @@ Quick start follows this path:
    settings.
 6. Start the Gateway in the foreground and open the browser dashboard. Press
    **Ctrl+C** to stop it; config persists. Use `paddy gateway install` later
-   for background operation, `openclaw` for the TUI, or `openclaw dashboard` to
+   for background operation, `paddy` for the TUI, or `paddy dashboard` to
    reopen the web UI.
 
 The Quick start choice is not offered for configured installs, remote Gateway

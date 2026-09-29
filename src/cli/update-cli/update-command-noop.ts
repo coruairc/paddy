@@ -90,7 +90,7 @@ export async function finishAlreadyCurrentUpdate(
         membership.message;
       result.steps.push({
         name: "current-core-maintenance",
-        command: "openclaw update",
+        command: "paddy update",
         cwd: params.root,
         durationMs: 0,
         exitCode: 0,

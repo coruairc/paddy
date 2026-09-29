@@ -5,6 +5,7 @@ import {
   normalizeStringEntries,
   normalizeTrimmedStringList,
 } from "@openclaw/normalization-core/string-normalization";
+import { PRODUCT_NAME } from "../brand.js";
 import { MANIFEST_KEY } from "../compat/legacy-names.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { readRegularFile, statRegularFile } from "../infra/fs-safe.js";
@@ -17,7 +18,6 @@ import { resolveWorkshopSkillsDir } from "../skills/workshop/skills-root.js";
 import type { SecurityAuditFinding } from "./audit.types.js";
 import { listInstalledPluginDirs } from "./installed-plugin-dirs.js";
 import { extensionUsesSkippedScannerPath, isPathInside } from "./scan-paths.js";
-import { PRODUCT_NAME } from "../brand.js";
 
 type SkillScanSummary = Awaited<
   ReturnType<typeof import("../skills/security/scanner.js").scanDirectoryWithSummary>
@@ -159,7 +159,7 @@ export async function collectPluginsCodeSafetyFindings(params: {
         title: "Plugin extensions directory scan failed",
         detail: `Static code scan could not list extensions directory: ${String(err)}`,
         remediation:
-          "Check file permissions and plugin layout, then rerun `openclaw security audit --deep`.",
+          "Check file permissions and plugin layout, then rerun `paddy security audit --deep`.",
       });
     },
   });
@@ -180,8 +180,7 @@ export async function collectPluginsCodeSafetyFindings(params: {
         detail:
           `Could not parse plugin manifest: ${String(manifestErr)}.\n` +
           "The extension entrypoint list is unavailable. Deep scan will cover the plugin directory but may miss entries declared via `openclaw.extensions`.",
-        remediation:
-          `Inspect the plugin package.json for syntax errors. If the plugin is untrusted, remove it from your ${PRODUCT_NAME} extensions state directory.`,
+        remediation: `Inspect the plugin package.json for syntax errors. If the plugin is untrusted, remove it from your ${PRODUCT_NAME} extensions state directory.`,
       });
       // Continue — getCodeSafetySummary below still scans the plugin directory
     }
@@ -228,7 +227,7 @@ export async function collectPluginsCodeSafetyFindings(params: {
         title: `Plugin "${pluginName}" code scan failed`,
         detail: `Static code scan could not complete: ${String(err)}`,
         remediation:
-          "Check file permissions and plugin layout, then rerun `openclaw security audit --deep`.",
+          "Check file permissions and plugin layout, then rerun `paddy security audit --deep`.",
       });
       return null;
     });
@@ -303,7 +302,7 @@ export async function collectInstalledSkillsCodeSafetyFindings(params: {
       title: "Workshop skill inventory scan failed",
       detail: `Static code scan could not inspect ${filePath}: ${String(error)}`,
       remediation:
-        "Check file permissions and skill layout, then rerun `openclaw security audit --deep`.",
+        "Check file permissions and skill layout, then rerun `paddy security audit --deep`.",
     });
   };
   // Installed-code audit includes hidden and shadowed Workshop skills, not only
@@ -349,7 +348,7 @@ export async function collectInstalledSkillsCodeSafetyFindings(params: {
         title: `Skill "${skillName}" code scan failed`,
         detail: `Static code scan could not complete for ${skillDir}: ${String(err)}`,
         remediation:
-          "Check file permissions and skill layout, then rerun `openclaw security audit --deep`.",
+          "Check file permissions and skill layout, then rerun `paddy security audit --deep`.",
       });
       return null;
     });

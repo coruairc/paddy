@@ -261,5 +261,5 @@ export function resolveUtilityModelSeparationError(config: OpenClawConfig): stri
   if (migrated.changes.length === 0 && hasUtilityModelSeparationMigrationMarker(migrated.config)) {
     return undefined;
   }
-  return "Utility-model setup cannot safely preserve the current implicit primary. Run openclaw doctor --fix to preserve it, or choose an explicit primary model in Model Setup, then retry.";
+  return "Utility-model setup cannot safely preserve the current implicit primary. Run paddy doctor --fix to preserve it, or choose an explicit primary model in Model Setup, then retry.";
 }

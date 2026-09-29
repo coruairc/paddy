@@ -511,7 +511,7 @@ export async function resolvePackageRuntimePreflight(params: {
       params.requestedChannel ??
       (params.channel === "extended-stable" ? params.channel : undefined);
     const recoveryTarget = [
-      "openclaw update",
+      "paddy update",
       recoveryChannel ? `--channel ${recoveryChannel}` : "",
       params.sourceRoot || params.channel === "extended-stable" ? "" : `--tag ${recoveryVersion}`,
     ]

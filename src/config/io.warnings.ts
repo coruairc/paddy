@@ -62,7 +62,7 @@ export function warnIfConfigFromFuture(
   logger.warn(
     [
       `Your ${PRODUCT_NAME} config was written by version ${touched}, but this command is running ${VERSION}.`,
-      "Check: `openclaw --version`, `which openclaw`, and `openclaw gateway status --deep`.",
+      "Check: `paddy --version`, `which paddy`, and `paddy gateway status --deep`.",
       `If unexpected, update PATH so \`openclaw\` points to the version you want, or reinstall the Gateway service from that same ${PRODUCT_NAME} install.`,
     ].join("\n"),
   );

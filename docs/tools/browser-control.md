@@ -559,7 +559,7 @@ These are useful for "make the site behave like X" workflows:
 
 ## Security and privacy
 
-- The openclaw browser profile may contain logged-in sessions. Treat it as sensitive.
+- The paddy browser profile may contain logged-in sessions. Treat it as sensitive.
 - `browser act kind=evaluate` / `paddy browser evaluate` and `wait --fn`
   execute arbitrary JavaScript in the page context. Prompt injection can steer
   this. Disable it with `browser.evaluateEnabled=false` if you do not need it.

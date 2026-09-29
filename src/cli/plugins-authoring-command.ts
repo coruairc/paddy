@@ -478,8 +478,8 @@ function writeToolPluginScaffold(params: { rootDir: string; id: string; name: st
     private: true,
     scripts: {
       build: "tsc -p tsconfig.json",
-      "plugin:build": "npm run build && openclaw plugins build --entry ./dist/index.js",
-      "plugin:validate": "npm run build && openclaw plugins validate --entry ./dist/index.js",
+      "plugin:build": "npm run build && paddy plugins build --entry ./dist/index.js",
+      "plugin:validate": "npm run build && paddy plugins validate --entry ./dist/index.js",
       test: "vitest run --config ./vitest.config.ts",
     },
     files: ["dist", "openclaw.plugin.json", "README.md"],

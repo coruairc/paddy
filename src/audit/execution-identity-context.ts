@@ -471,7 +471,7 @@ function inspectExactExecution(
       remediation: [
         {
           code: "inspect_state_integrity",
-          text: "Run openclaw doctor and inspect the shared state database before trusting this execution.",
+          text: "Run paddy doctor and inspect the shared state database before trusting this execution.",
         },
       ],
     });
@@ -549,7 +549,7 @@ function inspectRunSelector(
         remediation: [
           {
             code: "inspect_state_integrity",
-            text: "Run openclaw doctor and inspect the shared state database before trusting this run.",
+            text: "Run paddy doctor and inspect the shared state database before trusting this run.",
           },
         ],
       });
@@ -639,7 +639,7 @@ function inspectRunSelector(
       remediation: [
         {
           code: "inspect_state_integrity",
-          text: "Run openclaw doctor and retry the run inspection.",
+          text: "Run paddy doctor and retry the run inspection.",
         },
       ],
     });

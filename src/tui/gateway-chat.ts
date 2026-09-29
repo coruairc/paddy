@@ -294,7 +294,7 @@ export class GatewayChatClient implements TuiBackend {
     ) {
       error.message = [
         error.message,
-        "Pairing request sent. Approve it in that gateway's Control UI (Settings -> Devices), or run `openclaw devices approve --latest` on the gateway host, then retry.",
+        "Pairing request sent. Approve it in that gateway's Control UI (Settings -> Devices), or run `paddy devices approve --latest` on the gateway host, then retry.",
       ].join("\n");
     }
     this.pendingConnectError = error;
@@ -733,8 +733,7 @@ async function resolveGatewayConnection(
     ...(activeLocalGatewayPort ? { localPortOverride: activeLocalGatewayPort } : {}),
     explicitTlsFingerprint: opts.tlsFingerprint,
     allowStoredOriginAuth: hasStoredOriginDeviceAuth,
-    overrideAuthErrorHint:
-      `Fix: pass --token or --password once to request pairing, approve it in that gateway's Control UI (Settings -> Devices), then retry with the same credential so ${PRODUCT_NAME} can store the device token.`,
+    overrideAuthErrorHint: `Fix: pass --token or --password once to request pairing, approve it in that gateway's Control UI (Settings -> Devices), then retry with the same credential so ${PRODUCT_NAME} can store the device token.`,
     buildConnectionDetails: buildGatewayConnectionDetails,
   });
   const hasStoredOriginAuth = Boolean(

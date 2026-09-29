@@ -352,7 +352,7 @@ export const en = {
       invalidConfigUnknown: "- The config could not be parsed.",
       manualChoice: "How would you like to connect AI?",
       nextSteps:
-        "Workspace: {workspace}\nAdd a channel: `openclaw channels add`\nPrefer chatting? Run `openclaw setup` and say `connect telegram` (or `connect slack`).\nOpen the dashboard: `openclaw dashboard`\nChat later: `openclaw`",
+        "Workspace: {workspace}\nAdd a channel: `paddy channels add`\nPrefer chatting? Run `paddy setup` and say `connect telegram` (or `connect slack`).\nOpen the dashboard: `paddy dashboard`\nChat later: `paddy`",
       nextStepsWithoutAi:
         "Workspace: {workspace}\nAdd AI later: re-run `paddy onboard`\nAfter AI connects, add a channel: `paddy channels add`\nOpen the dashboard: `paddy dashboard`",
       nextStepsTitle: "Next steps",

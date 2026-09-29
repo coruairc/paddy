@@ -7,7 +7,7 @@ title: "Config"
 sidebarTitle: "Config"
 ---
 
-Non-interactive helpers for `openclaw.json`: get/set/patch/unset a value by path, print the schema, validate, or print the active file path. Run `openclaw config` with no subcommand to open the same guided wizard as `openclaw configure`.
+Non-interactive helpers for `openclaw.json`: get/set/patch/unset a value by path, print the schema, validate, or print the active file path. Run `paddy config` with no subcommand to open the same guided wizard as `paddy configure`.
 
 <Note>
 When `OPENCLAW_CONFIG_READONLY=1` or `OPENCLAW_NIX_MODE=1`, OpenClaw treats `openclaw.json` as immutable. Read-only commands (`config get`, `config file`, `config schema`, `config validate`) still work; config writers refuse.
@@ -591,7 +591,7 @@ Successful `config set` or `config unset` operations that produce no effective c
 
 ## Write safety
 
-`openclaw config set` and other OpenClaw-owned config writers validate the full post-change config before committing it to disk. If the new payload fails schema validation or looks like a destructive clobber, the active config is left alone and the rejected payload is saved beside it as `openclaw.json.rejected.*`.
+`paddy config set` and other OpenClaw-owned config writers validate the full post-change config before committing it to disk. If the new payload fails schema validation or looks like a destructive clobber, the active config is left alone and the rejected payload is saved beside it as `openclaw.json.rejected.*`.
 
 If staging a config save fails, the existing root or include backup ring is left
 untouched. Paddy prepares backup contents without blocking unrelated Gateway
@@ -626,7 +626,7 @@ ls -lt "$CONFIG".rejected.* 2>/dev/null | head
 paddy config validate
 ```
 
-Direct editor writes are still allowed, but the running Gateway treats them as untrusted until they validate. Startup validates config without rewriting legacy keys. Invalid direct edits stop startup; hot reload skips invalid edits without rewriting `openclaw.json`. Run `openclaw doctor --fix` for legacy-key repair, prefixed/clobbered config, or last-known-good recovery. See [Gateway troubleshooting](/gateway/troubleshooting#gateway-rejected-invalid-config).
+Direct editor writes are still allowed, but the running Gateway treats them as untrusted until they validate. Startup validates config without rewriting legacy keys. Invalid direct edits stop startup; hot reload skips invalid edits without rewriting `openclaw.json`. Run `paddy doctor --fix` for legacy-key repair, prefixed/clobbered config, or last-known-good recovery. See [Gateway troubleshooting](/gateway/troubleshooting#gateway-rejected-invalid-config).
 
 Ordinary recovery can restore an eligible, valid current backup verbatim. Backups that need legacy transformations must be recovered through Doctor. Plugin schema changes or `minHostVersion` skew stay loud instead of rolling back unrelated user settings such as models, providers, auth profiles, channels, gateway exposure, tools, memory, browser, or cron config.
 

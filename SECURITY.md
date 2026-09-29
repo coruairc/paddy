@@ -291,7 +291,7 @@ Security boundary notes:
 
 ### Operational Guidance
 
-For threat model + hardening guidance (including `openclaw security audit --deep` and `--fix`), see:
+For threat model + hardening guidance (including `paddy security audit --deep` and `--fix`), see:
 
 - `https://docs.openclaw.ai/gateway/security`
 
@@ -315,12 +315,12 @@ OpenClaw's web interface (Gateway Control UI + HTTP endpoints) is intended for *
 
 - Recommended: keep the Gateway **loopback-only** (`127.0.0.1` / `::1`).
   - Config: `gateway.bind="loopback"` (default).
-  - CLI: `openclaw gateway run --bind loopback`.
+  - CLI: `paddy gateway run --bind loopback`.
 - The retired `gateway.controlUi.dangerouslyDisableDeviceAuth` break-glass key is not a
   current security option. Upgrade migration accepts it only from older config
   versions and requires explicit self-pairing before normal enforcement resumes.
   - OpenClaw keeps deployment flexibility by design and does not hard-forbid non-local setups.
-  - Non-local and other risky configurations are surfaced by `openclaw security audit` as dangerous findings.
+  - Non-local and other risky configurations are surfaced by `paddy security audit` as dangerous findings.
   - This operator-selected tradeoff is by design and not, by itself, a security vulnerability.
 - Canvas host note: network-visible canvas is **intentional** for trusted node scenarios (LAN/tailnet).
   - Expected setup: non-loopback bind + Gateway auth (token/password/trusted-proxy) + firewall/tailnet controls.

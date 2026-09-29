@@ -56,14 +56,14 @@ export function resolveDeferredChannelConfigWarning(params: {
   return pluginId && params.deferredPluginIds.has(normalizePluginId(pluginId))
     ? {
         path: `channels.${params.channelId}`,
-        message: `Plugin "${pluginId}" channel settings cannot be checked until its data/settings upgrade finishes. Your existing settings have been kept. Run "openclaw update status" for repair details.`,
+        message: `Plugin "${pluginId}" channel settings cannot be checked until its data/settings upgrade finishes. Your existing settings have been kept. Run "paddy update status" for repair details.`,
       }
     : undefined;
 }
 
 function formatRemovedPluginConfigWarning(pluginId: string): string {
   if (pluginId === "skill-workshop") {
-    return `plugin removed: skill-workshop (stale plugin config ignored; Skill Workshop is built into ${PRODUCT_NAME} skills now. Use skills.workshop settings and openclaw skills workshop commands, then remove this plugins config entry)`;
+    return `plugin removed: skill-workshop (stale plugin config ignored; Skill Workshop is built into ${PRODUCT_NAME} skills now. Use skills.workshop settings and paddy skills workshop commands, then remove this plugins config entry)`;
   }
   return `plugin removed: ${pluginId} (stale config entry ignored; remove it from plugins config)`;
 }
@@ -81,9 +81,9 @@ function formatMissingOfficialExternalPluginWarning(
     return null;
   }
   if (pluginId === "memory-lancedb" && opts?.selectedMissingMemorySlot) {
-    return `plugin not installed: ${pluginId} — gateway will run without persistent memory until installed; install the official external plugin with: openclaw plugins install ${installSpec}`;
+    return `plugin not installed: ${pluginId} — gateway will run without persistent memory until installed; install the official external plugin with: paddy plugins install ${installSpec}`;
   }
-  return `plugin not installed: ${pluginId} — install the official external plugin with: openclaw plugins install ${installSpec}`;
+  return `plugin not installed: ${pluginId} — install the official external plugin with: paddy plugins install ${installSpec}`;
 }
 
 export function validateExplicitPluginConfig(params: {
@@ -207,7 +207,7 @@ export function validateExplicitPluginConfig(params: {
       deferredPluginWarningIds.add(normalized);
       warnings.push({
         path: issuePath,
-        message: `Plugin "${pluginId}" settings cannot be checked until its data/settings upgrade finishes. Your existing settings have been kept. Run "openclaw update status" for repair details.`,
+        message: `Plugin "${pluginId}" settings cannot be checked until its data/settings upgrade finishes. Your existing settings have been kept. Run "paddy update status" for repair details.`,
       });
     }
     return true;

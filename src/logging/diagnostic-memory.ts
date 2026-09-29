@@ -343,8 +343,8 @@ function logMemoryPressure(
 ): void {
   const nextStep =
     pressure.level === "critical"
-      ? "nextStep=run openclaw gateway diagnostics export, inspect an existing bundle with openclaw gateway stability --bundle latest, or on Node sample allocations with openclaw gateway call diagnostics.heapProfile --timeout 30000."
-      : "nextStep=run openclaw gateway status --deep and openclaw gateway diagnostics export; restart gateway if pressure persists";
+      ? "nextStep=run paddy gateway diagnostics export, inspect an existing bundle with paddy gateway stability --bundle latest, or on Node sample allocations with paddy gateway call diagnostics.heapProfile --timeout 30000."
+      : "nextStep=run paddy gateway status --deep and paddy gateway diagnostics export; restart gateway if pressure persists";
   const message =
     `memory pressure: level=${pressure.level} reason=${pressure.reason}` +
     ` ${formatPressureSummary(pressure)}` +

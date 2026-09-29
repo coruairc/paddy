@@ -370,7 +370,7 @@ export class ModelRegistry {
       ];
       if (diagnostics.length > 0) {
         errors.push(
-          `${diagnostics.join("\n")}\nRun openclaw doctor --fix to verify and import legacy provider catalogs.`,
+          `${diagnostics.join("\n")}\nRun paddy doctor --fix to verify and import legacy provider catalogs.`,
         );
       }
     }
@@ -589,7 +589,7 @@ export class ModelRegistry {
         sourceProviders = this.mergeProviderSources(pluginResult.providers, sourceProviders);
         if (pluginResult.error) {
           pluginCatalogErrors.push(
-            `${pluginResult.error}\nRun openclaw doctor --fix to repair persisted generated provider catalogs.`,
+            `${pluginResult.error}\nRun paddy doctor --fix to repair persisted generated provider catalogs.`,
           );
         }
       }

@@ -279,7 +279,7 @@ it after the local package operation finishes. Without a running Gateway, those
 commands update the local installation for its next startup.
 
 In the default `hybrid` reload mode, saving plugin configuration in the Control
-UI, through `openclaw config`, or in `openclaw.json` also applies automatically.
+UI, through `paddy config`, or in `openclaw.json` also applies automatically.
 By default, changes under `plugins.entries.<id>` replace that plugin's runtime
 instance, so registration, tools, hooks, and services receive its new configuration.
 Unchanged plugins keep their instances. A plugin can declare a narrower policy

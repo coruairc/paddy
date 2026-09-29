@@ -474,7 +474,7 @@ function buildUnknownModelError(params: {
   });
   return hint
     ? `${base}. ${hint}`
-    : `${base}. Run \`openclaw models list --refresh --provider ${params.provider}\` to inspect this provider's model choices, then retry with a model supported by your account.`;
+    : `${base}. Run \`paddy models list --refresh --provider ${params.provider}\` to inspect this provider's model choices, then retry with a model supported by your account.`;
 }
 
 function buildMissingProviderModelRegistrationHint(params: {

@@ -12,7 +12,7 @@ describe("Codex MCP tool approval projection", () => {
     { kind: "option-shaped", serverName: "--help" },
   ])("keeps $kind server names out of executable approval hints", ({ serverName }) => {
     expect(formatMcpCodexApprovalRemedy(serverName)).toContain(
-      "openclaw mcp configure <server> --approval approve",
+      "paddy mcp configure <server> --approval approve",
     );
   });
 

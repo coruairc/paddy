@@ -197,7 +197,7 @@ export function classifyGatewayStaleInstall(error: unknown): GatewayStaleInstall
   if (observer) {
     recordReplacement(observer);
   }
-  const restartCommand = formatCliCommand("openclaw gateway restart");
+  const restartCommand = formatCliCommand("paddy gateway restart");
   return {
     error: errorShape(
       ErrorCodes.UNAVAILABLE,

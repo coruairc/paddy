@@ -151,7 +151,7 @@ Git checkouts default to `~/openclaw` (`%USERPROFILE%\openclaw` on Windows); use
 
 Before deleting a prefix, move any state, configuration, and workspaces you want to keep outside it. **Never delete a shared prefix wholesale**: remove only verified Paddy files, preserving shared Node runtimes, packages, and tools.
 
-If completion was installed, remove only its `# OpenClaw Completion` block and OpenClaw source line from the [selected shell profile](/cli/completion#install-flow). Remove a legacy `openclaw completion` source/eval line only if it contains no other command; preserve surrounding content.
+If completion was installed, remove only its `# OpenClaw Completion` block and OpenClaw source line from the [selected shell profile](/cli/completion#install-flow). Remove a legacy `paddy completion` source/eval line only if it contains no other command; preserve surrounding content.
 
 Remove an installer-added PATH entry only when no other command uses it. Keep shared bin directories such as `~/.local/bin`. On Windows, the same rule applies to portable Node/MinGit and their PATH entries under `%LOCALAPPDATA%\OpenClaw\deps`.
 

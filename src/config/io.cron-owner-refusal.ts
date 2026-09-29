@@ -13,7 +13,7 @@ type CronOwnerRefusalDeps = Pick<
     typeof import("../cron/legacy-default-agent-owner-migration.js"),
     "materializeLegacyDefaultCronJobOwners"
   >;
-const RETRY = ' Run "openclaw doctor --fix", then retry.';
+const RETRY = ' Run "paddy doctor --fix", then retry.';
 const CRON_OWNER_REFUSAL = "cron-owner-safety";
 
 function refused(message: string, cause?: unknown): Error {

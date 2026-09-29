@@ -102,7 +102,7 @@ function invalidPersistedInstallRecordMessage(filePath: string): string {
 }
 
 const INVALID_CONFIG_INSTALL_RECORD_MESSAGE =
-  "plugins.installs contains invalid records. Back up openclaw.json, correct or remove the invalid retired plugins.installs record, then rerun `openclaw doctor --fix`.";
+  "plugins.installs contains invalid records. Back up openclaw.json, correct or remove the invalid retired plugins.installs record, then rerun `paddy doctor --fix`.";
 
 function mergeShippedPluginInstallRecords(
   previous: Record<string, PluginInstallRecord>,

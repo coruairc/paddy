@@ -389,7 +389,7 @@ export class OpenClawChannelBridge {
       inputPreview: params.inputPreview,
     });
     if (this.verbose) {
-      process.stderr.write(`openclaw mcp: pending Claude permission ${params.requestId}\n`);
+      process.stderr.write(`paddy mcp: pending Claude permission ${params.requestId}\n`);
     }
   }
 
@@ -418,10 +418,10 @@ export class OpenClawChannelBridge {
       }
       // Always surface a single low-noise record so swallowed delivery failures
       // remain observable; the spammy error detail stays behind --verbose.
-      process.stderr.write(`openclaw mcp: notification ${notification.method} failed\n`);
+      process.stderr.write(`paddy mcp: notification ${notification.method} failed\n`);
       if (this.verbose) {
         process.stderr.write(
-          `openclaw mcp: notification ${notification.method} error: ${String(error)}\n`,
+          `paddy mcp: notification ${notification.method} error: ${String(error)}\n`,
         );
       }
       return "failed";
@@ -539,11 +539,9 @@ export class OpenClawChannelBridge {
     } catch (error) {
       // Always surface a single low-noise record so swallowed gateway event
       // failures remain observable; the spammy error detail stays behind --verbose.
-      process.stderr.write(`openclaw mcp: gateway event ${event.event} failed\n`);
+      process.stderr.write(`paddy mcp: gateway event ${event.event} failed\n`);
       if (this.verbose) {
-        process.stderr.write(
-          `openclaw mcp: gateway event ${event.event} error: ${String(error)}\n`,
-        );
+        process.stderr.write(`paddy mcp: gateway event ${event.event} error: ${String(error)}\n`);
       }
     }
   }

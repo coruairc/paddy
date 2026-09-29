@@ -98,7 +98,7 @@ Example findings:
   "severity": "error",
   "message": "Channel 'telegram' uses denied provider 'telegram'.",
   "source": "policy",
-  "path": "openclaw config",
+  "path": "paddy config",
   "ocPath": "oc://openclaw.config/channels/telegram",
   "target": "oc://openclaw.config/channels/telegram",
   "requirement": "oc://policy.jsonc/channels/denyRules/#0",
@@ -126,7 +126,7 @@ Example findings:
   "severity": "error",
   "message": "MCP server 'remote' is not in the policy allowlist.",
   "source": "policy",
-  "path": "openclaw config",
+  "path": "paddy config",
   "ocPath": "oc://openclaw.config/mcp/servers/remote",
   "target": "oc://openclaw.config/mcp/servers/remote",
   "requirement": "oc://policy.jsonc/mcp/servers/allow"
@@ -139,7 +139,7 @@ Example findings:
   "severity": "error",
   "message": "Model ref 'anthropic/claude-sonnet-4.7' uses unapproved provider 'anthropic'.",
   "source": "policy",
-  "path": "openclaw config",
+  "path": "paddy config",
   "ocPath": "oc://openclaw.config/agents/defaults/model/fallbacks/#0",
   "target": "oc://openclaw.config/agents/defaults/model/fallbacks/#0",
   "requirement": "oc://policy.jsonc/models/providers/allow"
@@ -152,7 +152,7 @@ Example findings:
   "severity": "error",
   "message": "Network setting 'browser-private-network' allows private-network access.",
   "source": "policy",
-  "path": "openclaw config",
+  "path": "paddy config",
   "ocPath": "oc://openclaw.config/browser/ssrfPolicy/dangerouslyAllowPrivateNetwork",
   "target": "oc://openclaw.config/browser/ssrfPolicy/dangerouslyAllowPrivateNetwork",
   "requirement": "oc://policy.jsonc/network/privateNetwork/allow"
@@ -165,7 +165,7 @@ Example findings:
   "severity": "error",
   "message": "Gateway bind setting 'gateway-bind' permits non-loopback exposure.",
   "source": "policy",
-  "path": "openclaw config",
+  "path": "paddy config",
   "ocPath": "oc://openclaw.config/gateway/bind",
   "target": "oc://openclaw.config/gateway/bind",
   "requirement": "oc://policy.jsonc/gateway/exposure/allowNonLoopbackBind"
@@ -178,7 +178,7 @@ Example findings:
   "severity": "error",
   "message": "Gateway node command 'system.run' is denied by policy but not denied by Paddy config.",
   "source": "policy",
-  "path": "openclaw config",
+  "path": "paddy config",
   "ocPath": "oc://openclaw.config/gateway/nodes/commands/deny",
   "target": "oc://openclaw.config/gateway/nodes/commands/deny",
   "requirement": "oc://policy.jsonc/gateway/nodes/denyCommands",
@@ -192,7 +192,7 @@ Example findings:
   "severity": "error",
   "message": "agents.defaults sandbox workspaceAccess 'rw' is not allowed by policy.",
   "source": "policy",
-  "path": "openclaw config",
+  "path": "paddy config",
   "ocPath": "oc://openclaw.config/agents/defaults/sandbox/workspaceAccess",
   "target": "oc://openclaw.config/agents/defaults/sandbox/workspaceAccess",
   "requirement": "oc://policy.jsonc/agents/workspace/allowedAccess"

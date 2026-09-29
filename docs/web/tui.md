@@ -270,7 +270,7 @@ Compare my gateway auth config with the docs and suggest the smallest fix.
 
 Tips:
 
-- Prefer `openclaw config set` or `openclaw configure` over hand-editing `openclaw.json`.
+- Prefer `paddy config set` or `paddy configure` over hand-editing `openclaw.json`.
 - `paddy docs "<query>"` searches the live docs index from the same machine.
 - `paddy config validate --json` is useful when you want structured schema and SecretRef/resolvability errors.
 

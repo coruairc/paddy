@@ -86,7 +86,7 @@ export async function withModelsAccountsGateway<T>(
     preauthHandshakeTimeoutMs: bootstrap.preauthHandshakeTimeoutMs,
     requestTimeoutMs: timeoutMs,
     clientName: GATEWAY_CLIENT_NAMES.CLI,
-    clientDisplayName: "openclaw models accounts",
+    clientDisplayName: "paddy models accounts",
     mode: GATEWAY_CLIENT_MODES.CLI,
     role: "operator",
     scopes: access === "write" ? ["operator.read", "operator.write"] : ["operator.read"],

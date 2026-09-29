@@ -43,8 +43,8 @@ const LEGACY_NODE_WORKER_LAUNCH_TOOL_NAMES = Object.freeze([
 export const NODE_RUNNER_UPDATE_REQUIRED_ISSUE = {
   code: "update-required",
   action: "update-and-reconnect",
-  updateCommand: "openclaw update",
-  headlessReconnectCommand: "openclaw node restart",
+  updateCommand: "paddy update",
+  headlessReconnectCommand: "paddy node restart",
 } as const;
 
 export type NodeRunnerInventoryIssue =

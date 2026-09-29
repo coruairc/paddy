@@ -170,7 +170,7 @@ export async function runPackageUpdateDoctor(params: PackageDoctorOptions) {
       : [entryPath, "doctor", "--non-interactive", ...(doctorPolicy.fix ? ["--fix"] : [])]),
   ];
   const doctorProgressInfo = {
-    name: "openclaw doctor",
+    name: "paddy doctor",
     command: doctorArgv.join(" "),
     index: 0,
     total: 0,
@@ -346,7 +346,7 @@ export async function runPackageUpdateDoctor(params: PackageDoctorOptions) {
   const completedSteps: UpdateStepResult[] = [];
   const runDoctor = (runCommand?: Parameters<typeof runUpdateStep>[0]["runCommand"]) =>
     runUpdateStep({
-      name: "openclaw doctor",
+      name: "paddy doctor",
       results: completedSteps,
       argv: doctorArgv,
       cwd: params.root,

@@ -227,7 +227,7 @@ export class MemoryFileWatcher {
     log.warn(
       `Memory file watching is tracking ${count} observed directories. ${detail} ` +
         "Remove unnecessary memory.search.extraPaths entries or narrow their roots. After changes, restart the Gateway. To refresh the index, run in the Gateway's environment: " +
-        formatCliCommand("openclaw memory index --force --agent " + this.options.agentId) +
+        formatCliCommand("paddy memory index --force --agent " + this.options.agentId) +
         ".",
     );
   }

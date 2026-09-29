@@ -27,7 +27,7 @@ uses `loaded`. JSON retains the underlying registry status and separate `importe
 
 For multi-entry packages, inspecting any child shows the shared package install metadata. `inspect --all --json` includes that same record for each child. If package ownership is missing or ambiguous, inspection omits install metadata rather than attributing an unrelated install record.
 
-Plugin-owned CLI commands are usually installed as root `openclaw` command groups, but plugins may also register nested commands under a core parent such as `openclaw nodes`. After `inspect --runtime` shows a command under `cliCommands`, run it at the listed path; for example a plugin that registers `demo-git` can be verified with `openclaw demo-git ping`.
+Plugin-owned CLI commands are usually installed as root `paddy` command groups, but plugins may also register nested commands under a core parent such as `paddy nodes`. After `inspect --runtime` shows a command under `cliCommands`, run it at the listed path; for example a plugin that registers `demo-git` can be verified with `paddy demo-git ping`.
 
 Each plugin is classified by what it actually registers at runtime:
 

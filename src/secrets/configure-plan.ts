@@ -242,7 +242,7 @@ export function buildSecretsConfigurePlan(params: {
     version: 1,
     protocolVersion: 1,
     generatedAt: params.generatedAt ?? new Date().toISOString(),
-    generatedBy: "openclaw secrets configure",
+    generatedBy: "paddy secrets configure",
     targets: [...params.selectedTargets.values()].map((entry) =>
       Object.assign(
         {

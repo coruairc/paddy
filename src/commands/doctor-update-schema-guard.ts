@@ -141,10 +141,10 @@ async function readDrivingUpdater(
         version: blocker.updaterVersion,
         canDeferStateSchema: tableExists(database, "config_machine_state"),
         earlyDoctorRunning:
-          row?.status === "running" && stepStatus("openclaw doctor") === "in_progress",
+          row?.status === "running" && stepStatus("paddy doctor") === "in_progress",
         postCoreStarted:
           row?.status === "running" &&
-          stepStatus("openclaw doctor") === "completed" &&
+          stepStatus("paddy doctor") === "completed" &&
           stepStatus("post-update verification") === "in_progress",
       };
     } finally {
@@ -205,7 +205,7 @@ export async function guardUpdateDoctorSchemaUpgrade(options: {
   const postCoreRecovery = {
     message:
       "The update has already committed its package. Complete Doctor repair with the installed compatible build before restarting the Gateway; package rollback cannot undo migrated state.",
-    commands: ["openclaw doctor --fix", "openclaw gateway start"],
+    commands: ["paddy doctor --fix", "paddy gateway start"],
   };
   const recovery = updater.postCoreStarted
     ? postCoreRecovery

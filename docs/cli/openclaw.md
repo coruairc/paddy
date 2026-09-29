@@ -29,7 +29,7 @@ Running `paddy setup` first live-tests the configured default model. A passing t
 
 If inference plugin loading or owner verification fails, the error includes the underlying cause after applying Paddy's error redaction. One-shot text and JSON output retain that detail alongside onboarding guidance.
 
-Noninteractive bare `openclaw` (no TTY) exits with a short message instead of printing root help: it points to non-interactive onboarding on a fresh or invalid install, or to `openclaw agent --local ...` when config is valid.
+Noninteractive bare `paddy` (no TTY) exits with a short message instead of printing root help: it points to non-interactive onboarding on a fresh or invalid install, or to `paddy agent --local ...` when config is valid.
 
 `paddy onboard --modern` remains a compatibility alias for Paddy, but uses the same inference gate: working inference opens the chat, interactive failures start guided inference setup, and noninteractive failures exit with onboarding guidance. `paddy onboard --classic` opens the full step-by-step wizard.
 
@@ -289,7 +289,7 @@ supervision opt-outs remain untouched during inference setup.
 
 ## AI conversation
 
-Interactive OpenClaw's free-form conversation runs through the same agent loop as regular OpenClaw agents, restricted to one ring-zero OpenClaw authority tool, `openclaw`, that wraps the typed operations. Read actions run freely, mutations require your conversational approval for that exact operation (see Operations and approval), and every applied write is audited and re-validated. The agent session persists, so OpenClaw has real multi-turn memory. If the verified inference route later stops working, return to `openclaw onboard` and repair it before continuing.
+Interactive OpenClaw's free-form conversation runs through the same agent loop as regular OpenClaw agents, restricted to one ring-zero OpenClaw authority tool, `paddy`, that wraps the typed operations. Read actions run freely, mutations require your conversational approval for that exact operation (see Operations and approval), and every applied write is audited and re-validated. The agent session persists, so OpenClaw has real multi-turn memory. If the verified inference route later stops working, return to `paddy onboard` and repair it before continuing.
 
 A failed or timed-out turn ends that setup conversation with a visible error.
 Retrying starts a fresh conversation and live-checks the inference route again.

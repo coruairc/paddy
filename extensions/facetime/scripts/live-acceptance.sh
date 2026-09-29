@@ -48,7 +48,7 @@ log_file="${log_dir}/$(date +%Y%m%d-%H%M%S).log"
 exec > >(tee "$log_file") 2>&1
 
 gateway_call() {
-  openclaw gateway call "$@" --json --timeout 30000
+  paddy gateway call "$@" --json --timeout 30000
 }
 
 read_status() {

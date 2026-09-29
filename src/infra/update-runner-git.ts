@@ -542,7 +542,7 @@ export async function updateGitCheckout(params: {
       }
       steps.push(
         doctorStep ?? {
-          name: "openclaw doctor",
+          name: "paddy doctor",
           command: "run activation doctor",
           cwd: gitRoot,
           durationMs: 0,

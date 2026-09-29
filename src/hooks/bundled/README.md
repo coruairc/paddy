@@ -38,7 +38,7 @@ openclaw hooks enable command-logger
 For an installed Gateway service:
 
 ```bash
-openclaw gateway restart
+paddy gateway restart
 ```
 
 For a foreground development Gateway, stop and restart the process you own. Do

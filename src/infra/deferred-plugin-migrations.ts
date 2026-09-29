@@ -384,7 +384,7 @@ export function formatDeferredPluginMigration(
   pending: DeferredPluginMigration,
   env: NodeJS.ProcessEnv = process.env,
 ): string {
-  const retry = pending.command === "openclaw doctor --fix" ? "" : ', then "openclaw doctor --fix"';
+  const retry = pending.command === "paddy doctor --fix" ? "" : ', then "paddy doctor --fix"';
   const updating =
     isTruthyEnvValue(env.OPENCLAW_UPDATE_IN_PROGRESS) ||
     isTruthyEnvValue(env.OPENCLAW_UPDATE_POST_CORE_CONVERGENCE);

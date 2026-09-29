@@ -132,7 +132,7 @@ export function describeSecretResolutionOperatorDiagnostic(value: unknown): stri
 /** Sanitized recovery action suitable for operator-facing diagnostics. */
 export function describeSecretResolutionOperatorRecovery(value: unknown): string | undefined {
   if (value instanceof SecretRefResolutionError && value.code === "SECRET_REF_REDACTED_VALUE") {
-    return "Run openclaw doctor --fix to repair a store-backed Gateway token; supply a real credential for other secrets, then restart the Gateway and reconnect or re-pair clients";
+    return "Run paddy doctor --fix to repair a store-backed Gateway token; supply a real credential for other secrets, then restart the Gateway and reconnect or re-pair clients";
   }
   if (
     !(value instanceof SecretProviderResolutionError) ||

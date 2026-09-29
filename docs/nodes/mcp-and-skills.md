@@ -68,7 +68,7 @@ Install skills under the node machine's active Paddy skills directory,
 `~/.openclaw/skills` by default. `OPENCLAW_HOME`, `OPENCLAW_STATE_DIR`, and
 `OPENCLAW_CONFIG_PATH` move that active profile. `OPENCLAW_STATE_DIR` takes
 precedence for skills; otherwise, `skills/` is beside the path printed by
-`openclaw config file`. The headless node host publishes valid `SKILL.md` files
+`paddy config file`. The headless node host publishes valid `SKILL.md` files
 after it connects, and the Gateway adds them to agent skill snapshots only while
 that node remains connected. Each skill directory name must match the `name`
 frontmatter field so the abstract node locator maps to one entry without adding

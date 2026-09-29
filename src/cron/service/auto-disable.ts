@@ -49,7 +49,7 @@ export function autoDisableCronJob(params: {
   const text = [
     `⚠️ Automation "${name}" was auto-disabled after ${params.consecutiveErrors} consecutive ${autoDisableReasonLabel(params.reason)}.`,
     ...cronFailureDetailLines(errorReason),
-    `Fix the underlying cause, then run \`openclaw automations enable ${job.id}\` to re-enable it.`,
+    `Fix the underlying cause, then run \`paddy automations enable ${job.id}\` to re-enable it.`,
   ].join("\n");
   params.deferredNotifications.push({ kind: "auto-disabled", job: cronNotificationJob(job), text });
   return true;

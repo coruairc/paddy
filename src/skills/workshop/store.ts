@@ -162,7 +162,7 @@ export class SkillProposalDraftMissingError extends Error {
     options?: ErrorOptions,
   ) {
     super(
-      `Skill proposal draft is missing: ${proposalId}. Run openclaw doctor --fix for recovery.`,
+      `Skill proposal draft is missing: ${proposalId}. Run paddy doctor --fix for recovery.`,
       options,
     );
   }

@@ -482,7 +482,7 @@ export function redactPublicSupportDiagnosticLine(
   if (
     [
       "The npm global install layout cannot stage a candidate. Reinstall with npm into its default global layout, then retry the update.",
-      "Cannot locate the installed updater; run `openclaw doctor` before retrying.",
+      "Cannot locate the installed updater; run `paddy doctor` before retrying.",
       "Managed update handoff requires a user-scope systemd unit; perform a manual system-service update.",
       "managed update handoff requires a finite restart deadline",
       "systemd-run is required to launch a transient user scope",

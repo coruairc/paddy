@@ -33,11 +33,10 @@ export function wrapPluginStateError(
   // database paths, SQL, or stored values and must stay out of this message.
   if (fallbackCode === "PLUGIN_STATE_OPEN_FAILED") {
     if (isSqliteSchemaVersionError(error)) {
-      publicMessage +=
-        `\nThe state database uses a newer schema. Run a ${PRODUCT_NAME} build that supports it.`;
+      publicMessage += `\nThe state database uses a newer schema. Run a ${PRODUCT_NAME} build that supports it.`;
     } else if (error instanceof Error && isTerminalSqliteIntegrityError(error)) {
       publicMessage +=
-        "\nDatabase integrity verification failed. Restore or repair the state database, then run openclaw doctor --fix.";
+        "\nDatabase integrity verification failed. Restore or repair the state database, then run paddy doctor --fix.";
     }
   }
   return createPluginStateError({

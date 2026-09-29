@@ -82,7 +82,7 @@ export function markPackagePostInstallDoctorAdvisory<
       ? result.failureFacts
       : [
           createUpdateFailureFact({
-            check: "openclaw doctor",
+            check: "paddy doctor",
             code: "doctor-failed",
             message: "Post-install Doctor reported an error without diagnostic details.",
           }),

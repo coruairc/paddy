@@ -158,7 +158,7 @@ export async function createMcpOAuthClientProvider(params: {
     params.login?.assertCurrent();
     if (params.allowAuthorizationRedirect !== true) {
       throw new Error(
-        `MCP server "${params.identity.serverName}" requires OAuth authorization. Run openclaw mcp login ${params.identity.serverName}.`,
+        `MCP server "${params.identity.serverName}" requires OAuth authorization. Run paddy mcp login ${params.identity.serverName}.`,
       );
     }
   };

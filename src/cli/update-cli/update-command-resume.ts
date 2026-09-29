@@ -114,8 +114,7 @@ export async function resumePostCoreUpdate(params: ResumePostCoreUpdateParams): 
       }
       const inPostCore = (current: ReturnType<typeof getUpdateRun>) =>
         current?.status === "running" &&
-        current.steps.findLast((entry) => entry.step === "openclaw doctor")?.status ===
-          "completed" &&
+        current.steps.findLast((entry) => entry.step === "paddy doctor")?.status === "completed" &&
         current.steps.findLast((entry) => entry.step === "post-update verification")?.status ===
           "in_progress";
       const root = resolveUpdateInstallRoot(params.root);

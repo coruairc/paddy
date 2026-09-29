@@ -41,7 +41,7 @@ export async function inspectNpmGlobalDestination(
   };
   const quote = process.platform === "win32" ? quotePowerShellArg : quoteCliArg;
   const retry = formatCliCommandWithNodeLauncher(
-    "openclaw update",
+    "paddy update",
     path.resolve(root, "openclaw.mjs"),
   );
   const unknown = (prefix: string | null, cause: "permission" | "unreadable-layout") => ({
@@ -114,7 +114,7 @@ export async function inspectNpmGlobalDestination(
     const select =
       serviceInspection?.verdict.refreshDefinition && !wrapper && ownsLauncher && launcherTarget
         ? formatCliCommandWithNodeLauncher(
-            `openclaw gateway install --force --runtime-path ${quote(process.execPath)}`,
+            `paddy gateway install --force --runtime-path ${quote(process.execPath)}`,
             launcherTarget,
           )
         : undefined;

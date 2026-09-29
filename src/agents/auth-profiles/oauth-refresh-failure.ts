@@ -506,7 +506,7 @@ export function buildOAuthRefreshFailureLoginCommand(
         ? ` --provider ${sanitizedProvider}`
         : "";
   const command = formatCliCommand(
-    `openclaw models auth login${providerOption}${sanitizedProvider ? profileOption : ""}${agentOption}`,
+    `paddy models auth login${providerOption}${sanitizedProvider ? profileOption : ""}${agentOption}`,
   );
   return sanitizedProvider === "claude-cli"
     ? `${formatCliCommand("claude auth login")} && ${command}`
@@ -528,7 +528,7 @@ export function buildAuthProfileUnusableHint(params: {
     if (params.provider === "google-gemini-cli") {
       // The legacy runtime has no auth method of its own. Recovery creates a
       // supported Google API-key profile and then selects it for that runtime.
-      const command = formatCliCommand("openclaw models auth login --provider google");
+      const command = formatCliCommand("paddy models auth login --provider google");
       return `Gemini CLI OAuth cannot be repaired by ${PRODUCT_NAME}. Connect Google with an AI Studio API key using ${formatOAuthRefreshFailureLoginCommandMarkdown(command)}, then select that Google profile for the Gemini CLI runtime.`;
     }
     const command = buildOAuthRefreshFailureLoginCommand(params.provider, {

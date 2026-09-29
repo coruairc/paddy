@@ -55,7 +55,7 @@ const NATIVE_CHECKS = new Set<string>([
   "plugin-sync",
   "plugin-convergence",
   "build",
-  "openclaw doctor",
+  "paddy doctor",
   "post-install verification",
   "package rollback",
   "global install verify",

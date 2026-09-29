@@ -35,7 +35,7 @@ export function createLegacyWebhookListenerDoctorContract(params: {
     legacyConfigRules: [
       {
         path: ["channels", params.channelKey],
-        message: `${prefix} webhook listeners moved to Gateway routes. Run "openclaw doctor --fix" to preserve explicitly configured listener settings as legacyWebhook.`,
+        message: `${prefix} webhook listeners moved to Gateway routes. Run "paddy doctor --fix" to preserve explicitly configured listener settings as legacyWebhook.`,
         match: (value) => {
           const accounts = asObjectRecord(asObjectRecord(value)?.accounts);
           return hasLegacy(value) || Object.values(accounts ?? {}).some(hasLegacy);
