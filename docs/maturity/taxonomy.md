@@ -1778,7 +1778,7 @@ A surface is a product area such as Gateway runtime, Discord, or the macOS app. 
         <div><span className="maturity-score maturity-score-beta"><span className="maturity-score-label"><span className="maturity-level-pill maturity-level-beta">Beta</span><span>70%</span></span><span className="maturity-meter" aria-hidden="true"><span style={{ width: "70%" }} /></span></span></div>
         <div className="maturity-category-docs">
 
-    [Diagnostics](/gateway/diagnostics), [Session Management Compaction](/reference/session-management-compaction), [Flags](/diagnostics/flags), [Backup](/cli/backup), [Backups](/install/backups), [Versioned State Guarded Upgrades](/start/why-openclaw/versioned-state-guarded-upgrades), [State Schema History](/reference/database-schemas/state-schema-history)
+    [Diagnostics](/gateway/diagnostics), [Session Management Compaction](/reference/session-management-compaction), [Flags](/diagnostics/flags), [Backup](/cli/backup), [Backups](/install/backups), [Versioned State Guarded Upgrades](/start/why-paddy/versioned-state-guarded-upgrades), [State Schema History](/reference/database-schemas/state-schema-history)
 
     </div>
       </div>
@@ -3406,7 +3406,7 @@ A surface is a product area such as Gateway runtime, Discord, or the macOS app. 
         <div><span className="maturity-score maturity-score-beta"><span className="maturity-score-label"><span className="maturity-level-pill maturity-level-beta">Beta</span><span>79%</span></span><span className="maturity-meter" aria-hidden="true"><span style={{ width: "79%" }} /></span></span></div>
         <div className="maturity-category-docs">
 
-    [Linux](/platforms/linux), [Paddy](/start/openclaw), [Doctor](/gateway/doctor)
+    [Linux](/platforms/linux), [Paddy](/start/paddy), [Doctor](/gateway/doctor)
 
     </div>
       </div>

@@ -158,7 +158,7 @@ paddy setup --non-interactive --accept-risk --mode remote --remote-url wss://gat
 
 ## Notes
 
-- Inside the interactive Paddy chat, `configure skills`, `configure web search`, and `configure gateway` run hosted setup flows. `open search wizard` and `open gateway wizard` hand credential entry to masked terminal wizards. Gateway setup is local-only and config-only; restart afterward with `restart gateway` in chat or `paddy gateway restart` in the terminal. See [`paddy setup` operations](/cli/openclaw#operations-and-approval).
+- Inside the interactive Paddy chat, `configure skills`, `configure web search`, and `configure gateway` run hosted setup flows. `open search wizard` and `open gateway wizard` hand credential entry to masked terminal wizards. Gateway setup is local-only and config-only; restart afterward with `restart gateway` in chat or `paddy gateway restart` in the terminal. See [`paddy setup` operations](/cli/paddy#operations-and-approval).
 - `import memory` copies detected local memory into the existing default agent workspace without importing config, credentials, or skills. Finish onboarding first; the chat reports partial and failed copies instead of assuming success.
 - After baseline setup, run `paddy onboard` for the full guided journey, `paddy configure` for targeted changes, or `paddy channels add` to add channel accounts.
 - If Hermes state is detected, interactive onboarding can offer migration automatically. Import onboarding requires a fresh setup; use [Migrate](/cli/migrate) for dry-run plans, backups, and overwrite mode outside onboarding.

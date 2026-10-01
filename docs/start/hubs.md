@@ -23,7 +23,7 @@ Use these hubs to discover more of the documentation, including deep dives and r
 - [Docs directory](/start/docs-directory)
 - [Configuration](/gateway/configuration)
 - [Configuration examples](/gateway/configuration-examples)
-- [Paddy assistant](/start/openclaw)
+- [Paddy assistant](/start/paddy)
 - [Lore](/start/lore)
 
 ## Installation + updates

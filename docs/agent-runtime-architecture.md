@@ -95,5 +95,5 @@ task inputs; execution wall time includes worker startup and host waits.
 
 ## Related
 
-- [OpenClaw agent runtime workflow](/openclaw-agent-runtime)
+- [OpenClaw agent runtime workflow](/paddy-agent-runtime)
 - [Agent runtimes](/concepts/agent-runtimes)

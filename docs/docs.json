@@ -100,7 +100,7 @@
     },
     {
       "source": "/cli/crestodian",
-      "destination": "/cli/openclaw"
+      "destination": "/cli/paddy"
     },
     {
       "source": "/channels/bluebubbles",
@@ -168,7 +168,7 @@
     },
     {
       "source": "/pi-dev",
-      "destination": "/openclaw-agent-runtime"
+      "destination": "/paddy-agent-runtime"
     },
     {
       "source": "/providers/modelstudio",
@@ -500,15 +500,15 @@
     },
     {
       "source": "/clawd",
-      "destination": "/start/openclaw"
+      "destination": "/start/paddy"
     },
     {
       "source": "/start/clawd",
-      "destination": "/start/openclaw"
+      "destination": "/start/paddy"
     },
     {
       "source": "/start/clawd/",
-      "destination": "/start/openclaw"
+      "destination": "/start/paddy"
     },
     {
       "source": "/start/pairing",
@@ -1293,6 +1293,30 @@
     {
       "source": "/plugins/webhooks",
       "destination": "/automation#background-execution-and-workflows"
+    },
+    {
+      "source": "/cli/openclaw",
+      "destination": "/cli/paddy"
+    },
+    {
+      "source": "/start/openclaw",
+      "destination": "/start/paddy"
+    },
+    {
+      "source": "/openclaw-agent-runtime",
+      "destination": "/paddy-agent-runtime"
+    },
+    {
+      "source": "/start/why-openclaw",
+      "destination": "/start/why-paddy"
+    },
+    {
+      "source": "/help/faq/what-is-openclaw",
+      "destination": "/help/faq/what-is-paddy"
+    },
+    {
+      "source": "/start/why-paddy/paddy-and-hermes-agent",
+      "destination": "/start/why-paddy/paddy-and-hermes-agent"
     }
   ],
   "navigation": {
@@ -1307,14 +1331,14 @@
                 "group": "Overview",
                 "pages": [
                   "index",
-                  "start/why-openclaw",
-                  "start/why-openclaw/the-trust-boundary",
-                  "start/why-openclaw/policy-as-code",
-                  "start/why-openclaw/identity-and-roles",
-                  "start/why-openclaw/secrets",
-                  "start/why-openclaw/versioned-state-guarded-upgrades",
-                  "start/why-openclaw/provenance",
-                  "start/why-openclaw/openclaw-and-hermes-agent",
+                  "start/why-paddy",
+                  "start/why-paddy/the-trust-boundary",
+                  "start/why-paddy/policy-as-code",
+                  "start/why-paddy/identity-and-roles",
+                  "start/why-paddy/secrets",
+                  "start/why-paddy/versioned-state-guarded-upgrades",
+                  "start/why-paddy/provenance",
+                  "start/why-paddy/paddy-and-hermes-agent",
                   "concepts/features",
                   "start/hubs",
                   "start/docs-directory"
@@ -1332,7 +1356,7 @@
               {
                 "group": "Setup guides and reference",
                 "pages": [
-                  "start/openclaw",
+                  "start/paddy",
                   "start/teams",
                   "start/wizard-cli-reference",
                   "start/wizard-cli-automation"
@@ -2753,7 +2777,7 @@
                       "cli/backup",
                       "cli/migrate",
                       "cli/onboard",
-                      "cli/openclaw",
+                      "cli/paddy",
                       "cli/reset",
                       "cli/setup",
                       "cli/uninstall",
@@ -3109,7 +3133,7 @@
                 "group": "Technical reference",
                 "pages": [
                   "agent-runtime-architecture",
-                  "openclaw-agent-runtime",
+                  "paddy-agent-runtime",
                   "reference/openclaw-ai",
                   "reference/token-use",
                   "reference/api-usage-costs",
@@ -3330,7 +3354,7 @@
                   {
                     "group": "FAQ topics",
                     "pages": [
-                      "help/faq/what-is-openclaw",
+                      "help/faq/what-is-paddy",
                       "help/faq/skills-and-automation",
                       "help/faq/sandboxing-and-memory",
                       "help/faq/where-things-live-on-disk",

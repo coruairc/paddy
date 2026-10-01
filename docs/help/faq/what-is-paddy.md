@@ -70,7 +70,7 @@ read_when:
   </Accordion>
 
   <Accordion title="How is Paddy funded, and how does that compare?">
-    The Foundation is funded by donations and has no product to sell: no paid tier, no hosted service, no token. It is not venture-backed. Some other self-hosted agents are built by venture-funded companies that sell a subscription their agent offers during setup. That is a difference in incentives, not a judgment of their engineering; see the [governance comparison](/start/why-openclaw#governance).
+    The Foundation is funded by donations and has no product to sell: no paid tier, no hosted service, no token. It is not venture-backed. Some other self-hosted agents are built by venture-funded companies that sell a subscription their agent offers during setup. That is a difference in incentives, not a judgment of their engineering; see the [governance comparison](/start/why-paddy#governance).
 
   </Accordion>
 

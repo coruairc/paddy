@@ -7,7 +7,7 @@ read_when:
 title: "Team setup"
 ---
 
-This guide sets up one Paddy gateway that a whole team uses: a bot in the workspace chat you already have, shared sessions everyone can open and steer in the Control UI, and roles that bound what each person can do. It is the same product as the [personal assistant setup](/start/openclaw) - team operation is configuration, not a separate edition.
+This guide sets up one Paddy gateway that a whole team uses: a bot in the workspace chat you already have, shared sessions everyone can open and steer in the Control UI, and roles that bound what each person can do. It is the same product as the [personal assistant setup](/start/paddy) - team operation is configuration, not a separate edition.
 
 For an always-on Linux deployment with Cloudflare Access, GitHub identity sync,
 role bootstrap, and operations, follow [Deploy a team server](/gateway/team-server).
@@ -153,7 +153,7 @@ container network when that access needs tighter controls. See
 
 ## Related
 
-- [Why Paddy: working together](/start/why-openclaw#working-together) - the team collaboration surfaces in one place
+- [Why Paddy: working together](/start/why-paddy#working-together) - the team collaboration surfaces in one place
 - [Multi-user mode](/concepts/multi-user) - ownership, participants, and owner filtering in depth
 - [Operator scopes](/gateway/operator-scopes) - connection roles, scopes, and role assignment
 - [Groups](/channels/groups) - group behavior, mention gating, and context visibility

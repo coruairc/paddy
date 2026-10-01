@@ -208,5 +208,5 @@ user service (no lingering needed). See [Gateway runbook](/gateway) for the syst
 - [Gateway runbook](/gateway) (flags, supervision, ports)
 - [Gateway configuration](/gateway/configuration) (config schema + examples)
 - [Discord](/channels/discord) and [Telegram](/channels/telegram) (reply tags + replyToMode settings)
-- [Paddy assistant setup](/start/openclaw)
+- [Paddy assistant setup](/start/paddy)
 - [macOS app](/platforms/macos) (gateway lifecycle)

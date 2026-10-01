@@ -9,7 +9,7 @@ read_when:
 
 <AccordionGroup>
   <Accordion title="My skill generated an image/PDF, but nothing was sent">
-    Outbound attachments from the agent must use structured media fields such as `media`, `mediaUrl`, `path`, or `filePath`. See [Paddy assistant setup](/start/openclaw) and [Agent send](/tools/agent-send).
+    Outbound attachments from the agent must use structured media fields such as `media`, `mediaUrl`, `path`, or `filePath`. See [Paddy assistant setup](/start/paddy) and [Agent send](/tools/agent-send).
 
     ```bash
     paddy message send --target +15555550123 --message "Here you go" --media /path/to/file.png

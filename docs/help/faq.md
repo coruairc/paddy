@@ -13,7 +13,7 @@ topic. The triage ladder stays on this page; open the page that matches your que
 
 | Page                                                                                       | Read it when                                                                    |
 | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| [What is Paddy?](/help/faq/what-is-openclaw)                                               | You are evaluating Paddy, or explaining what it is and who funds it.            |
+| [What is Paddy?](/help/faq/what-is-paddy)                                                  | You are evaluating Paddy, or explaining what it is and who funds it.            |
 | [Skills and automation](/help/faq/skills-and-automation)                                   | You are customizing skills, or a cron job, reminder, or subagent misbehaved.    |
 | [Sandboxing and memory](/help/faq/sandboxing-and-memory)                                   | You are tuning the sandbox, or memory is not persisting.                        |
 | [Where things live on disk](/help/faq/where-things-live-on-disk)                           | You need to find, back up, move, or remove Paddy data.                          |
@@ -107,17 +107,17 @@ Every question heading from the previous single-page version keeps its anchor
 here, so an existing link such as `/help/faq#where-things-live-on-disk` still
 resolves. Each entry points at the page that now holds the answer.
 
-- <a id="what-is-openclaw%3F" /><a id="what-is-openclaw" />[What is Paddy?](/help/faq/what-is-openclaw#what-is-openclaw)
-- <a id="what-is-openclaw-in-one-paragraph" />[What is Paddy, in one paragraph?](/help/faq/what-is-openclaw#what-is-openclaw-in-one-paragraph)
-- <a id="can-my-team-share-one-openclaw" />[Can my team share one Paddy?](/help/faq/what-is-openclaw#can-my-team-share-one-openclaw)
-- <a id="value-proposition" />[Value proposition](/help/faq/what-is-openclaw#value-proposition)
-- <a id="i-just-set-it-up-what-should-i-do-first" />[I just set it up - what should I do first?](/help/faq/what-is-openclaw#i-just-set-it-up-what-should-i-do-first)
-- <a id="what-are-the-top-five-everyday-use-cases-for-openclaw" />[What are the top five everyday use cases for Paddy?](/help/faq/what-is-openclaw#what-are-the-top-five-everyday-use-cases-for-openclaw)
-- <a id="can-openclaw-help-with-lead-gen-outreach-ads-and-blogs-for-a-saas" />[Can Paddy help with lead gen, outreach, ads, and blogs for a SaaS?](/help/faq/what-is-openclaw#can-openclaw-help-with-lead-gen-outreach-ads-and-blogs-for-a-saas)
-- <a id="is-openclaw-owned-by-openai" />[Is Paddy owned by OpenAI?](/help/faq/what-is-openclaw#is-openclaw-owned-by-openai)
-- <a id="what-does-openclaw-send-to-the-foundation" />[What does Paddy send to the Foundation?](/help/faq/what-is-openclaw#what-does-openclaw-send-to-the-foundation)
-- <a id="how-is-openclaw-funded-and-how-does-that-compare" />[How is Paddy funded, and how does that compare?](/help/faq/what-is-openclaw#how-is-openclaw-funded-and-how-does-that-compare)
-- <a id="what-are-the-advantages-vs-claude-code-for-web-development" />[What are the advantages vs Claude Code for web development?](/help/faq/what-is-openclaw#what-are-the-advantages-vs-claude-code-for-web-development)
+- <a id="what-is-openclaw%3F" /><a id="what-is-openclaw" />[What is Paddy?](/help/faq/what-is-paddy#what-is-openclaw)
+- <a id="what-is-openclaw-in-one-paragraph" />[What is Paddy, in one paragraph?](/help/faq/what-is-paddy#what-is-openclaw-in-one-paragraph)
+- <a id="can-my-team-share-one-openclaw" />[Can my team share one Paddy?](/help/faq/what-is-paddy#can-my-team-share-one-openclaw)
+- <a id="value-proposition" />[Value proposition](/help/faq/what-is-paddy#value-proposition)
+- <a id="i-just-set-it-up-what-should-i-do-first" />[I just set it up - what should I do first?](/help/faq/what-is-paddy#i-just-set-it-up-what-should-i-do-first)
+- <a id="what-are-the-top-five-everyday-use-cases-for-openclaw" />[What are the top five everyday use cases for Paddy?](/help/faq/what-is-paddy#what-are-the-top-five-everyday-use-cases-for-openclaw)
+- <a id="can-openclaw-help-with-lead-gen-outreach-ads-and-blogs-for-a-saas" />[Can Paddy help with lead gen, outreach, ads, and blogs for a SaaS?](/help/faq/what-is-paddy#can-openclaw-help-with-lead-gen-outreach-ads-and-blogs-for-a-saas)
+- <a id="is-openclaw-owned-by-openai" />[Is Paddy owned by OpenAI?](/help/faq/what-is-paddy#is-openclaw-owned-by-openai)
+- <a id="what-does-openclaw-send-to-the-foundation" />[What does Paddy send to the Foundation?](/help/faq/what-is-paddy#what-does-openclaw-send-to-the-foundation)
+- <a id="how-is-openclaw-funded-and-how-does-that-compare" />[How is Paddy funded, and how does that compare?](/help/faq/what-is-paddy#how-is-openclaw-funded-and-how-does-that-compare)
+- <a id="what-are-the-advantages-vs-claude-code-for-web-development" />[What are the advantages vs Claude Code for web development?](/help/faq/what-is-paddy#what-are-the-advantages-vs-claude-code-for-web-development)
 - <a id="skills-and-automation" />[Skills and automation](/help/faq/skills-and-automation#skills-and-automation)
 - <a id="how-do-i-customize-skills-without-keeping-the-repo-dirty" />[How do I customize skills without keeping the repo dirty?](/help/faq/skills-and-automation#how-do-i-customize-skills-without-keeping-the-repo-dirty)
 - <a id="can-i-load-skills-from-a-custom-folder" />[Can I load skills from a custom folder?](/help/faq/skills-and-automation#can-i-load-skills-from-a-custom-folder)

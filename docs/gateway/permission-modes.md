@@ -58,7 +58,7 @@ Independent filesystem and sandbox boundaries, tool policy, and system-agent
 operation restrictions still apply. The host also checks that the requesting run
 and verified inference route remain valid. Interactive setup wizards and agent
 handoffs still need a direct operator session. See
-[Paddy operations and approval](/cli/openclaw#operations-and-approval).
+[Paddy operations and approval](/cli/paddy#operations-and-approval).
 
 ## Change permissions during a task
 

@@ -42,7 +42,7 @@ xAI Responses.
     `BRAVE_API_KEY`) and skip this step.
 
     You can also configure search by talking to
-    [Paddy](/cli/openclaw): say `configure web search` in `paddy setup`
+    [Paddy](/cli/paddy): say `configure web search` in `paddy setup`
     or in the Control UI's **Settings → Ask Paddy** chat. The hosted flow
     owns provider choice and credential entry — API keys are masked in the
     browser, and the terminal chat hands off to the masked wizard via
