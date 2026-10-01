@@ -58,7 +58,7 @@ The short answers, with details and limits on the linked pages:
 
 <a id="openclaw-and-hermes-agent" />
 
-The [comparison table](/start/why-paddy/openclaw-and-hermes-agent) condenses the source-verified contrast with Hermes. [What we do not claim](#what-we-do-not-claim) states the limits, starting with sandboxing being off by default.
+The [comparison table](/start/why-paddy/paddy-and-hermes-agent) condenses the source-verified contrast with Hermes. [What we do not claim](#what-we-do-not-claim) states the limits, starting with sandboxing being off by default.
 
 ## The vendor's harness, as a plugin
 
