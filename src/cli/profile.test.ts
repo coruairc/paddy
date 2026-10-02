@@ -407,9 +407,7 @@ describe("formatCliCommand", () => {
   });
 
   it("handles command with no args after openclaw", () => {
-    expect(formatCliCommand("openclaw", { OPENCLAW_PROFILE: "test" })).toBe(
-      "paddy --profile test",
-    );
+    expect(formatCliCommand("openclaw", { OPENCLAW_PROFILE: "test" })).toBe("paddy --profile test");
   });
 
   it("handles pnpm wrapper", () => {
@@ -437,7 +435,10 @@ describe("formatCliCommand", () => {
 
   it.each([
     ["openclaw update", "paddy update"],
-    ["pnpm openclaw --profile work update --channel beta", "pnpm paddy --profile work update --channel beta"],
+    [
+      "pnpm openclaw --profile work update --channel beta",
+      "pnpm paddy --profile work update --channel beta",
+    ],
     ["openclaw --profile=work update", "paddy --profile=work update"],
     ["openclaw --log-level debug update", "paddy --log-level debug update"],
     ["openclaw --dev update", "paddy --dev update"],
@@ -454,7 +455,10 @@ describe("formatCliCommand", () => {
 
   it.each([
     ["openclaw plugins update telegram", "paddy --container demo plugins update telegram"],
-    ["pnpm openclaw plugins update telegram", "pnpm paddy --container demo plugins update telegram"],
+    [
+      "pnpm openclaw plugins update telegram",
+      "pnpm paddy --container demo plugins update telegram",
+    ],
     [
       "openclaw --profile work plugins update telegram",
       "paddy --container demo --profile work plugins update telegram",
