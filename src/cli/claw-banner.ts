@@ -1,7 +1,8 @@
-// Shared Paddy banner: the dot-matrix mascot beside the PADDY wordmark, with a
+// Shared Paddy banner: the Irish flag beside the PADDY wordmark, with a
 // short startup animation on rich interactive terminals.
 // Used by the wizard flows (doctor/onboard/configure) and the foreground
 // gateway run; non-TTY and CI paths always get the plain static banner.
+import chalk from "chalk";
 import {
   decorativeEmoji,
   supportsDecorativeEmoji,
@@ -12,21 +13,15 @@ import type { RuntimeEnv } from "../runtime.js";
 import { PRODUCT_NAME } from "./cli-name.js";
 
 // Mascot and wordmark are separate so they can be tinted independently; the
-// wordmark starts on mascot row 3, keeping the clover above the text line.
-const MASCOT_ART = [
-  "     (@@)    (@@)   ",
-  "    (@@@@)  (@@@@)  ",
-  "     (@@)    (@@)   ",
-  "        \\\\//        ",
-  "         ||         ",
-  "        _||_        ",
-  "       |    |       ",
-  "       |    |       ",
-  "       |____|       ",
-  "                    ",
-] as const;
-// Leaves opened out; swapping these two rows in and out makes the clover sway.
-const MASCOT_OPEN_ROWS = ["    (@@@)    (@@@)  ", "   (@@@@)  (@@@@)   "] as const;
+// wordmark starts on mascot row 3, beside the lower half of the flag.
+// Green is the existing accent. White and orange are the flag's own bands.
+const WHITE = chalk.hex("#FFFFFF");
+const ORANGE = chalk.hex("#FF883E");
+const FLAG_ROW = " ██████████████████ ";
+const FLAG_WAVE = "  ██████████████████";
+const MASCOT_ART = [FLAG_ROW, FLAG_ROW, FLAG_ROW, FLAG_ROW, FLAG_ROW, FLAG_ROW] as const;
+// The fly edge shifts for one beat, then settles back onto the static flag.
+const MASCOT_OPEN_ROWS = [FLAG_WAVE, FLAG_WAVE] as const;
 const MASCOT_WIDTH = 20;
 const WORDMARK_ROW_OFFSET = 3;
 
@@ -60,6 +55,22 @@ type CellTint = (col: number) => (text: string) => string;
 
 const identityTint: (text: string) => string = (text) => text;
 
+function flagTint(row: string, col: number): (text: string) => string {
+  let start = col;
+  while (start > 0 && row[start - 1] === "█") {
+    start -= 1;
+  }
+  let end = col;
+  while (end + 1 < row.length && row[end + 1] === "█") {
+    end += 1;
+  }
+  const band = Math.floor(((col - start) * 3) / (end - start + 1));
+  if (band <= 0) {
+    return theme.accent;
+  }
+  return band === 1 ? WHITE : ORANGE;
+}
+
 // Composes one banner frame. Tints run per glyph column so the wipe edge and
 // shimmer band can cut through individual letters.
 function composeFrame(params: {
@@ -74,7 +85,7 @@ function composeFrame(params: {
     let out = "";
     for (let col = 0; col < mascotRow.length; col++) {
       const ch = mascotRow[col] ?? " ";
-      out += ch === " " ? " " : (params.mascotTint?.(col) ?? theme.accent)(ch);
+      out += ch === " " ? " " : (params.mascotTint?.(col) ?? flagTint(mascotRow, col))(ch);
     }
     const wordmarkRow = WORDMARK_ART[row - WORDMARK_ROW_OFFSET];
     if (wordmarkRow) {
@@ -106,7 +117,7 @@ const defaultSleep = (ms: number) =>
   });
 
 // One combined entrance: a left-to-right molt wipe reveals the color, a
-// shimmer band sweeps the wordmark, and the shamrock sways once. The 330ms sequence
+// shimmer band sweeps the wordmark, and the flag settles once. The 330ms sequence
 // ends on the exact static banner.
 async function animateBanner(opts: {
   settleWhen?: PromiseLike<unknown>;
@@ -179,7 +190,7 @@ async function animateBanner(opts: {
         return "settled";
       }
     }
-    // Sway: the top leaf widens and settles once.
+    // Settle: the fly edge shifts for one beat, then returns to the static flag.
     draw(composeFrame({ mascotRows: [...MASCOT_OPEN_ROWS, ...MASCOT_ART.slice(2)] }));
     if (!(await pause(35))) {
       return "settled";

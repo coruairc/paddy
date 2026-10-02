@@ -1,6 +1,8 @@
+import chalk from "chalk";
 // Claw banner tests: static/animated gating and the final-frame invariant.
 import { describe, expect, it, vi } from "vitest";
 import { stripAnsi } from "../../packages/terminal-core/src/ansi.js";
+import { theme } from "../../packages/terminal-core/src/theme.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { printClawBanner } from "./claw-banner.js";
 
@@ -34,17 +36,8 @@ async function runStatic() {
     .filter((row) => row.length > 0);
 }
 
-const EXPECTED_MASCOT = [
-  "     (@@)    (@@)",
-  "    (@@@@)  (@@@@)",
-  "     (@@)    (@@)",
-  "        \\\\//",
-  "         ||",
-  "        _||_",
-  "       |    |",
-  "       |    |",
-  "       |____|",
-] as const;
+const FLAG_ROW = " ██████████████████";
+const EXPECTED_MASCOT = [FLAG_ROW, FLAG_ROW, FLAG_ROW, FLAG_ROW, FLAG_ROW, FLAG_ROW] as const;
 
 describe("printClawBanner", () => {
   it("prints the static banner when not animatable", async () => {
@@ -54,6 +47,26 @@ describe("printClawBanner", () => {
     const rows = output.split("\n").filter((row) => row.length > 0);
     expect(rows.map((row) => row.slice(0, 20).trimEnd())).toEqual(EXPECTED_MASCOT);
     expect(output).toContain("█▀▀▀█ █▀▀▀█ █▀▀▀▄ █▀▀▀▄");
+  });
+
+  it("paints the flag green, white, and orange", async () => {
+    const { runtime, log } = runtimeStub();
+    await printClawBanner(runtime, { columns: 120, isTty: false, env: {} });
+    const raw = String(log.mock.calls[0]?.[0]);
+    const plain = stripAnsi(raw);
+    const white = chalk.hex("#FFFFFF")("█");
+    const orange = chalk.hex("#FF883E")("█");
+    expect(raw).toContain(theme.accent("█"));
+    expect(plain).toContain(FLAG_ROW.trim());
+    expect(plain).not.toContain("│ │ │");
+    expect(plain).not.toContain("🍀");
+    expect(plain).not.toContain("🍺");
+    if (white !== "█") {
+      expect(raw).toContain(white);
+      expect(raw).toContain(orange);
+      expect(white).not.toBe(theme.accent("█"));
+      expect(orange).not.toBe(theme.accent("█"));
+    }
   });
 
   it("stays static under CI even on a rich TTY", async () => {
@@ -83,8 +96,8 @@ describe("printClawBanner", () => {
     expect(
       frames.flatMap((frame, index) => {
         const [first = "", second = ""] = stripAnsi(frame).split("\n");
-        return first.slice(0, 20).trimEnd() === "    (@@@)    (@@@)" &&
-          second.slice(0, 20).trimEnd() === "   (@@@@)  (@@@@)"
+        return first.slice(0, 20).trimEnd() === "  ██████████████████" &&
+          second.slice(0, 20).trimEnd() === "  ██████████████████"
           ? [index]
           : [];
       }),
