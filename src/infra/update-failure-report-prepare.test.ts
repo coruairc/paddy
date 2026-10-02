@@ -859,6 +859,8 @@ describe("update report diagnostic command boundary", () => {
 
   it.each([
     ["openclaw doctor", "package-doctor"],
+    ["paddy doctor", "package-doctor"],
+    ["paddy doctor entry", "package-doctor-entry"],
     ["candidate doctor lint", "candidate-doctor-lint"],
     ["Checking update health cleanup", "candidate-doctor-lint-cleanup"],
     ["candidate snapshot", "candidate-state-snapshot"],
