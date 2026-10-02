@@ -87,9 +87,9 @@ describe("device placement projection", () => {
       environment: node({ sessionHost: false, workerSlots: undefined }),
       selectable: false,
       reason:
-        "Session hosting is disabled. Run openclaw connect --service --session-host on the device.",
+        "Session hosting is disabled. Run paddy connect --service --session-host on the device.",
       facts: [
-        "Session hosting is disabled. Run openclaw connect --service --session-host on the device.",
+        "Session hosting is disabled. Run paddy connect --service --session-host on the device.",
         "macOS",
         "Camera",
       ],

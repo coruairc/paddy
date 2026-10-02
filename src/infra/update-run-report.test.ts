@@ -125,7 +125,7 @@ describe("update run report", () => {
       const record = run({
         status: "failed",
         reason,
-        origin: { doctorHint: "Run openclaw doctor --fix", nextAction: "Run openclaw triage" },
+        origin: { doctorHint: "Run openclaw doctor --fix", nextAction: "Run paddy triage" },
         steps: [
           { step: "reconcile:abandoned", status: "failed", detail: "inactive-driver-dead" },
           { step: "reconcile:acknowledged", status: "completed", endedAtMs: 301 },
@@ -153,7 +153,7 @@ describe("update run report", () => {
         }),
       );
       expect(report.headline).toBe("⚠️ Paddy update failed: abandoned.");
-      expect(report.markdown).toContain("Run openclaw triage");
+      expect(report.markdown).toContain("Run paddy triage");
     },
   );
 
@@ -367,7 +367,7 @@ describe("update run report", () => {
         "⚠️ Paddy update failed: restart-unhealthy. The gateway is running 2026.9.1.
       Phases: staging (300ms)
       Verification: service running.
-      Run openclaw triage to diagnose and repair the failed update.",
+      Run paddy triage to diagnose and repair the failed update.",
         "ℹ️ Paddy update skipped: dry-run.
       Phases: staging (300ms)",
         "↩️ Paddy update rolled back to 2026.9.1: build-failed.
@@ -406,7 +406,7 @@ describe("update run report", () => {
     expect(report.markdown.length).toBeLessThanOrEqual(1500);
     expect(Buffer.from(report.markdown).toString("utf8")).toBe(report.markdown);
     expect(
-      report.markdown.endsWith("Run openclaw triage to diagnose and repair the failed update."),
+      report.markdown.endsWith("Run paddy triage to diagnose and repair the failed update."),
     ).toBe(true);
     expect(report.lines.join("\n").length).toBeGreaterThan(1500);
   });
@@ -443,7 +443,7 @@ describe("update run report", () => {
       expect(report.markdown).toContain("Historical recovery advice:");
       expect(report.markdown).toContain(nextAction);
     }
-    expect(report.markdown).not.toContain("Run openclaw triage");
+    expect(report.markdown).not.toContain("Run paddy triage");
     expect(report.markdown).not.toContain("run openclaw doctor --fix");
     expect(report.markdown).not.toContain("operator can run openclaw triage locally");
     if (source === "options") {
@@ -700,7 +700,7 @@ describe("update run report", () => {
       const record = run({
         status: "failed",
         reason,
-        origin: { doctorHint: "Run openclaw doctor --fix", nextAction: "Run openclaw triage" },
+        origin: { doctorHint: "Run openclaw doctor --fix", nextAction: "Run paddy triage" },
         steps: [
           { step: "requested", status: "failed" },
           { step: "finalize:doctor", status: "failed" },

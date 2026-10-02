@@ -133,7 +133,7 @@ describe("resolveGatewayService", () => {
     expect(runtime.status).toBe("unknown");
     expect(service.unsupportedReason).toBe(runtime.detail);
     expect(runtime.detail).toContain("Node service management is not supported");
-    expect(runtime.detail).toContain("`openclaw node run`");
+    expect(runtime.detail).toContain("`paddy node run`");
     expect(runtime.detail).not.toContain("service openclaw");
     expect(runtime.detail).not.toContain("openclaw gateway run");
     const args = {

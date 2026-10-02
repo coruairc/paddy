@@ -240,7 +240,7 @@ it.each(["guidance", "staging"])(
         });
         const nextAction = resolveUpdateResultNextAction({ result, env });
         expect(nextAction).toContain(globalRoot);
-        expect(nextAction).toContain("rerun `openclaw update`");
+        expect(nextAction).toContain("rerun `paddy update`");
         expect(nextAction).not.toContain("Initial dependency resolution failed");
         expect(result).toMatchObject({
           reason: "global-install-permission-denied",

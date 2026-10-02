@@ -136,7 +136,7 @@ describe.skipIf(process.platform === "win32")("LaunchAgent file restoration", ()
       expect(invalid.status).toBe(78);
       expect(invalid.stdout).toBe("");
       expect(invalid.stderr).toContain("Invalid LaunchAgent environment file");
-      expect(invalid.stderr).toContain("openclaw gateway install --force");
+      expect(invalid.stderr).toContain("paddy gateway install --force");
     }
   });
 

@@ -165,7 +165,7 @@ it.each(["awaited", "published driver", "settled child"] as const)(
     });
     const saved = await fs.readFile(reportPath, "utf8");
     expect(saved).toContain(`Paddy update failed: ${reason}`);
-    expect(saved).toContain("Run openclaw triage");
+    expect(saved).toContain("Run paddy triage");
     expect(saved).toContain("Complete Doctor lint findings (1)");
     expect(saved).toContain(lintMessage);
     expect(saved).not.toContain("in progress");

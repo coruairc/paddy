@@ -211,7 +211,7 @@ describe("runSystemAgentTui", () => {
     expect(options.session).toBe("agent:openclaw:main");
     expect(options.historyLimit).toBe(200);
     expect(options.config).toEqual({});
-    expect(options.title).toBe("openclaw setup");
+    expect(options.title).toBe("paddy setup");
     if (!options.backend || typeof options.backend !== "object") {
       throw new Error("expected openclaw TUI backend");
     }
@@ -289,7 +289,7 @@ describe("runSystemAgentTui", () => {
         expect.objectContaining({
           local: true,
           session: "agent:openclaw:main",
-          title: "openclaw setup",
+          title: "paddy setup",
         }),
       );
     } finally {

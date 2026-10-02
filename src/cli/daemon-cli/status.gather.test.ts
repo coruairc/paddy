@@ -1558,7 +1558,7 @@ describe("gatherDaemonStatus", () => {
         expect(output.match(/they will SIGTERM each other/g) ?? []).toHaveLength(diagnose ? 1 : 0);
         if (diagnose) {
           expect(output).toContain(status.gateway?.duelingScopesWarning);
-          expect(output).toContain("Run `openclaw doctor` interactively");
+          expect(output).toContain("Run `paddy doctor` interactively");
         } else {
           expect(findSystemdGatewayInstallation).not.toHaveBeenCalled();
           expect(status.gateway?.duelingScopesWarning).toBeUndefined();
@@ -2088,7 +2088,7 @@ describe("gatherDaemonStatus", () => {
       }
       expect(status.rpc?.authWarning).toContain("env:default:DAEMON_GATEWAY_TOKEN");
       expect(status.rpc?.authWarning).toContain("redaction placeholder");
-      expect(status.rpc?.authWarning).toContain("openclaw doctor --fix");
+      expect(status.rpc?.authWarning).toContain("paddy doctor --fix");
       expect(capturePrintedDaemonStatus(status, { json: false, deep: true }).errors).toContain(
         "redaction placeholder",
       );

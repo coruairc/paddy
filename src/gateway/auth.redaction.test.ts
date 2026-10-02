@@ -95,5 +95,5 @@ it("keeps the corrupted store entry and Doctor remedy in the startup refusal", a
   expect(failure).toBeInstanceOf(Error);
   expect(String(failure)).toContain(ref.id);
   expect(String(failure)).toContain("redaction placeholder");
-  expect(String(failure)).toContain("openclaw doctor --fix");
+  expect(String(failure)).toContain("paddy doctor --fix");
 });

@@ -669,7 +669,7 @@ describe("Scheduled Task stop/restart cleanup", () => {
 
     expect(String(failure)).toContain("remaining listener ownership could not be verified");
     expect(String(failure)).toContain("pid 6262");
-    expect(String(failure)).toContain("openclaw gateway");
+    expect(String(failure)).toContain("paddy gateway");
     expect(killProcessTreeMock).not.toHaveBeenCalled();
     expect(taskkillPids()).not.toContain(6262);
   });

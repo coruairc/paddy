@@ -2421,7 +2421,7 @@ describe("launchd install", () => {
     );
     expect(message).toContain(`LaunchAgent ${domain}/ai.openclaw.gateway is not loaded`);
     expect(message).toContain("The gateway is down and launchd has no job left to respawn it.");
-    expect(message).toContain("openclaw gateway start");
+    expect(message).toContain("paddy gateway start");
   });
 
   it("does not wait out the teardown deadline when the reload bootstrap reports already-loaded", async () => {

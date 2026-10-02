@@ -280,7 +280,7 @@ describe("manifest model suppression", () => {
         suppress: true,
         retirement: replacedBy ? { replacedBy } : {},
       });
-      expect(retired?.errorMessage).toContain("openclaw doctor --fix");
+      expect(retired?.errorMessage).toContain("paddy doctor --fix");
       expect(resolver({ provider: "fixture", id: "old-model" })).toBeUndefined();
       expect(
         resolver({ provider: "fixture", id: "old-model", baseUrl: "https://api.example/v1" }),

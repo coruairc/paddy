@@ -565,7 +565,7 @@ describe("devices cli approve", () => {
       const errorOutput = readRuntimeErrorOutput();
       expect(errorOutput).toContain("No pending device request matches");
       expect(errorOutput).toContain(`Node reapproval pending for ${expectedName}. Run`);
-      expect(errorOutput).toContain("openclaw nodes approve node-req-1");
+      expect(errorOutput).toContain("paddy nodes approve node-req-1");
       expect(errorOutput).toContain(
         "Reuse the same connection options when rerunning: --url, --token.",
       );

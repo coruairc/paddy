@@ -3279,7 +3279,7 @@ describe("qa mock openai server", () => {
         ],
       },
       "web_search",
-      "OpenClaw runtime parity fixed query",
+      "Paddy runtime parity fixed query",
     ],
     [
       "plans QA tool-search calls from explicit fixture targets even without Responses tools",

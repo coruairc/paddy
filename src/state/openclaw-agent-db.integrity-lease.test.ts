@@ -363,7 +363,7 @@ it.each(["closing", "unregistering", "reopening shared state before closing"])(
       expect.objectContaining({ agentId: "retained", path: pathname }),
     ]);
     expect(discovery.warnings.join("\n")).toContain(`Held agent retained database ${pathname}`);
-    expect(discovery.warnings.join("\n")).toContain("openclaw doctor --fix");
+    expect(discovery.warnings.join("\n")).toContain("paddy doctor --fix");
     const reopened = openOpenClawAgentDatabase({ agentId: "retained", path: pathname, env });
     expect(
       reopened.db

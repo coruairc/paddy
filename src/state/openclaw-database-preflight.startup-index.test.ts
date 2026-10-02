@@ -202,7 +202,7 @@ it("reports every refused database and its missing indexes without mutating any 
   for (const row of rows) {
     expect(row).toContain("missing table session_key_contract");
     expect(row).toContain("missing or drifted index idx_agent_session_nodes_active");
-    expect(row).toContain("openclaw doctor --fix");
+    expect(row).toContain("paddy doctor --fix");
   }
   expect(agents.map((agent) => fs.readFileSync(agent.path))).toEqual(before);
 });

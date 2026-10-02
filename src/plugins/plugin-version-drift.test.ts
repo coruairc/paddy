@@ -393,7 +393,7 @@ describe("resolvePluginVersionDriftTargets", () => {
       resolvePluginVersionDriftUpdateCommand(
         expectDefined(floating.drifts[0], "floating plugin drift"),
       ),
-    ).toBe("openclaw plugins update brave");
+    ).toBe("paddy plugins update brave");
     expect(fetchNpmPackageTargetStatus).not.toHaveBeenCalled();
   });
 });
@@ -465,9 +465,7 @@ describe("resolvePluginVersionDriftTargets for ClawHub installs", () => {
       const entry = expectDefined(report.drifts[0], "available ClawHub correction");
       expect(entry.targetResolution).toMatchObject({ status: "resolved", version: latest });
       expect(resolvePluginVersionDriftRegistryLag(entry)).toBeUndefined();
-      expect(resolvePluginVersionDriftUpdateCommand(entry)).toBe(
-        "openclaw plugins update whatsapp",
-      );
+      expect(resolvePluginVersionDriftUpdateCommand(entry)).toBe("paddy plugins update whatsapp");
     },
   );
 
@@ -492,7 +490,7 @@ describe("resolvePluginVersionDriftTargets for ClawHub installs", () => {
       requestedTarget: "2026.9.4",
       version: "2026.9.3",
     });
-    expect(resolvePluginVersionDriftUpdateCommand(entry)).toBe("openclaw plugins update whatsapp");
+    expect(resolvePluginVersionDriftUpdateCommand(entry)).toBe("paddy plugins update whatsapp");
   });
 
   it.each([
@@ -604,7 +602,7 @@ describe("resolvePluginVersionDriftTargets for ClawHub installs", () => {
       version: "2026.9.3",
     });
     const command = resolvePluginVersionDriftUpdateCommand(entry);
-    expect(command).toBe("openclaw plugins update whatsapp");
+    expect(command).toBe("paddy plugins update whatsapp");
     const rawId = expectDefined(command, "repair command").replace("openclaw plugins update ", "");
     // Consume the emitted argument through the current CLI owner. An accompanying
     // package-owned alias must deduplicate to the same installed record.

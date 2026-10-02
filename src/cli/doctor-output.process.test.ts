@@ -202,7 +202,7 @@ describe("Doctor report process output", () => {
         "Deferred legacy agent/session migration: select an agent owner",
       );
       expect(refusedOutput).toContain("No listed legacy source was removed.");
-      expect(refusedOutput).toContain('rerun "openclaw doctor --fix"');
+      expect(refusedOutput).toContain('rerun "paddy doctor --fix"');
       expect(fs.readFileSync(configPath)).toEqual(configBefore);
       expect(fs.readFileSync(workspaceSource)).toEqual(workspaceBefore);
       expect(fs.readFileSync(tuiSource)).toEqual(tuiBefore);
@@ -269,7 +269,7 @@ describe("Doctor report process output", () => {
     expect(result.signal, output).toBeNull();
     expect(result.code, output).toBe(1);
     expect(output).toContain("Legacy session store requires migration");
-    expect(output).toContain("openclaw doctor --fix");
+    expect(output).toContain("paddy doctor --fix");
     expect(output).not.toContain("Doctor complete.");
     expect(fs.readFileSync(storePath)).toEqual(original);
     expect(JSON.parse(fs.readFileSync(configPath, "utf8"))).toMatchObject({

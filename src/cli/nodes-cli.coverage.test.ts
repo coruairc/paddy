@@ -132,7 +132,7 @@ describe("nodes-cli coverage", () => {
     });
     nodes?.outputHelp();
 
-    expect(output.join("")).toContain("openclaw nodes pending");
+    expect(output.join("")).toContain("paddy nodes pending");
     expect(output.join("")).not.toContain("openclaw nodes pairing pending");
   });
 
@@ -160,7 +160,7 @@ describe("nodes-cli coverage", () => {
     const output = runtimeErrors.join("\n");
     expect(output).toContain("Unknown node pairing requestId: stale-request");
     expect(output).toContain("Pending requestIds: current-request");
-    expect(output).toContain("openclaw nodes pending");
+    expect(output).toContain("paddy nodes pending");
     expect(output).toContain("Reuse the same connection options when rerunning: --url, --token.");
     expect(output).not.toContain("gateway.example.test");
     expect(output).not.toContain("secret-token");
@@ -190,7 +190,7 @@ describe("nodes-cli coverage", () => {
     expect(output).toContain("Unknown node pairing requestId: expired-request");
     expect(output).not.toContain("No pending node pairing requests are currently visible.");
     expect(output).not.toContain("Pending requestIds:");
-    expect(output).toContain("openclaw nodes pending");
+    expect(output).toContain("paddy nodes pending");
     expect(output).not.toContain("GatewayClientRequestError: unknown requestId");
     expect(callGateway.mock.calls.map(([call]) => call.method)).toEqual([
       "node.pair.list",
@@ -237,7 +237,7 @@ describe("nodes-cli coverage", () => {
 
     const output = runtimeErrors.join("\n");
     expect(output).toContain("Unknown node pairing requestId: stale-request");
-    expect(output).toContain("openclaw nodes pending");
+    expect(output).toContain("paddy nodes pending");
     expect(output).toContain("Reuse the same connection options when rerunning: --url, --token.");
     expect(output).not.toContain("gateway.example.test");
     expect(output).not.toContain("secret-token");
