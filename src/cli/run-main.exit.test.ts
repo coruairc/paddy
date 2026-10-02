@@ -875,7 +875,7 @@ describe("runCli exit behavior", () => {
   it("loads state dotenv before a custom config-root fallback", async () => {
     await withGatewayHome(
       () => ({
-        ".openclaw/.env": "OPENCLAW_GATEWAY_TOKEN=state-token\n",
+        ".paddy/.env": "OPENCLAW_GATEWAY_TOKEN=state-token\n",
         "profile/.env":
           "OPENCLAW_GATEWAY_PASSWORD=config-root-password\nOPENCLAW_GATEWAY_TOKEN=config-root-token\n",
       }),
@@ -948,7 +948,7 @@ describe("runCli exit behavior", () => {
   it("drops gateway.env selectors when the default state dotenv selects a custom state", async () => {
     await withGatewayHome(
       (home) => ({
-        ".openclaw/.env": `OPENCLAW_STATE_DIR=${path.join(home, "selected-state")}\n`,
+        ".paddy/.env": `OPENCLAW_STATE_DIR=${path.join(home, "selected-state")}\n`,
         ".config/openclaw/gateway.env":
           "OPENCLAW_CONFIG_PATH=/tmp/wrong-openclaw.json\nOPENCLAW_GATEWAY_TOKEN=fallback-token\n",
         "selected-state/.env":
@@ -982,7 +982,7 @@ describe("runCli exit behavior", () => {
   it("drops early target credentials when a later guard selects another state", async () => {
     await withGatewayHome(
       () => ({
-        ".openclaw/.env": "OPENCLAW_GATEWAY_TOKEN=early-token\n",
+        ".paddy/.env": "OPENCLAW_GATEWAY_TOKEN=early-token\n",
         "selected-state/.env": "OPENCLAW_GATEWAY_TOKEN=selected-token\n",
       }),
       async (home) => {

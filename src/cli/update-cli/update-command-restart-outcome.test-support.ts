@@ -194,7 +194,7 @@ export function registerRestartOutcomeTests(
         );
         await fs.writeFile(packageEntry, "export {};\n");
         // Model the persisted output of candidate Doctor before service revalidation.
-        const configPath = path.join(root, ".openclaw", "openclaw.json");
+        const configPath = path.join(root, ".paddy", "openclaw.json");
         const config = JSON.parse(await fs.readFile(configPath, "utf8"));
         config.update = { channel: "stable" };
         await fs.writeFile(configPath, `${JSON.stringify(config)}\n`);

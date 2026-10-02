@@ -229,7 +229,10 @@ describe("legacy state migration caller execution", () => {
     ).not.toBeNull();
   });
 
-  it("relocates the legacy state root before running Doctor-owned migrations", async () => {
+  // Paddy has no legacy state roots (LEGACY_STATE_DIRNAMES is empty in config/state-dir.ts), so
+  // upstream's ~/.clawdbot -> default state-root relocation receipts are unreachable. Pin that
+  // Doctor-owned migrations never plan, move, or link a ~/.clawdbot root into ~/.paddy.
+  it("never relocates a legacy ~/.clawdbot state root before Doctor-owned migrations", async () => {
     const root = await tempDirs.make("openclaw-doctor-state-root-");
     const legacyStateDir = path.join(root, ".clawdbot");
     const stateDir = path.join(root, ".paddy");
@@ -250,155 +253,11 @@ describe("legacy state migration caller execution", () => {
       homedir: () => root,
       legacySessionSurfaces: EMPTY_LEGACY_SESSION_SURFACES,
     });
-    expect(result.stepReceipts[0]).toMatchObject({
-      id: "state-dir",
-      source: [{ kind: "path", path: legacyStateDir }],
-      target: [{ kind: "path", path: stateDir }],
-      outcome: "completed",
-    });
-    expect(fs.realpathSync(legacyStateDir)).toBe(fs.realpathSync(stateDir));
-    expect(fs.existsSync(execPath)).toBe(false);
-    expect(result.stepReceipts.find((receipt) => receipt.id === "exec-approvals")).toMatchObject({
-      source: [{ kind: "path", path: path.join(stateDir, "exec-approvals.json") }],
-      outcome: "completed",
-    });
-    expect(
-      readLegacyMigrationReceipt(
-        resolveLegacyMigrationSourceKey(
-          "exec-approvals-json",
-          path.join(stateDir, "exec-approvals.json"),
-        ),
-        { ...env, OPENCLAW_STATE_DIR: stateDir },
-      ),
-    ).not.toBeNull();
-  });
 
-  it("plans pending state-root relocation before every copied-state migration", async () => {
-    const root = await tempDirs.make("openclaw-doctor-state-root-plan-");
-    const legacyStateDir = path.join(root, ".clawdbot");
-    const stateDir = path.join(root, ".paddy");
-    const configPath = path.join(legacyStateDir, "openclaw.json");
-    fs.mkdirSync(legacyStateDir, { recursive: true });
-    fs.writeFileSync(configPath, "{}\n");
-    writeLegacyDoctorSources(legacyStateDir);
-    const env: NodeJS.ProcessEnv = { ...process.env, HOME: root };
-    delete env.OPENCLAW_STATE_DIR;
-    delete env.OPENCLAW_CONFIG_PATH;
-
-    const plan = await planLegacyStateMigrationsReadOnly({
-      mode: "doctor",
-      candidate: { root, version: "test" },
-      snapshot: { homeDir: root, configPath, stateDir: legacyStateDir },
-      env,
-    });
-
-    expect(plan.steps[0]).toMatchObject({
-      id: "state-dir",
-      source: [{ kind: "path", path: legacyStateDir }],
-      target: [{ kind: "path", path: stateDir }],
-      outcome: "deferred",
-      refusal: { code: "state-dir-planning-deferred" },
-    });
-    expect(
-      plan.steps.slice(1).map((step) => ({ outcome: step.outcome, code: step.refusal?.code })),
-    ).toEqual(
-      plan.steps.slice(1).map(() => ({
-        outcome: "deferred",
-        code: "blocked-by-prior-refusal",
-      })),
-    );
-    expect(plan.steps.find((step) => step.id === "exec-approvals")?.source).toEqual([
-      { kind: "path", path: path.join(stateDir, "exec-approvals.json") },
-    ]);
-    expect(fs.existsSync(legacyStateDir)).toBe(true);
-    expect(fs.existsSync(stateDir)).toBe(false);
-
-    const explicitStatePlan = await planLegacyStateMigrationsReadOnly({
-      mode: "doctor",
-      candidate: { root, version: "test" },
-      snapshot: { homeDir: root, configPath, stateDir: legacyStateDir },
-      env: { ...env, OPENCLAW_STATE_DIR: legacyStateDir },
-    });
-    expect(explicitStatePlan.steps[0]?.id).toBe("state-schema");
-  });
-
-  it("refuses later migrations when the legacy state root cannot be relocated", async () => {
-    const root = await tempDirs.make("openclaw-doctor-state-root-refusal-");
-    const legacyStateDir = path.join(root, ".clawdbot");
-    const stateDir = path.join(root, ".paddy");
-    fs.mkdirSync(legacyStateDir, { recursive: true });
-    fs.mkdirSync(stateDir, { recursive: true });
-    fs.writeFileSync(path.join(stateDir, "existing-state"), "occupied\n");
-    const env: NodeJS.ProcessEnv = { ...process.env, HOME: root };
-    delete env.OPENCLAW_STATE_DIR;
-    const sourcePath = path.join(root, "wal-source.sqlite");
-    const source = new DatabaseSync(sourcePath);
-    const databasePath = resolveOpenClawStateSqlitePath(env);
-    try {
-      source.exec(`
-        PRAGMA journal_mode = WAL;
-        PRAGMA wal_autocheckpoint = 0;
-        CREATE TABLE state_dir_probe (id INTEGER PRIMARY KEY, value TEXT NOT NULL);
-        INSERT INTO state_dir_probe(value) VALUES ('copied-state');
-      `);
-      fs.mkdirSync(path.dirname(databasePath), { recursive: true });
-      fs.copyFileSync(sourcePath, databasePath);
-      fs.copyFileSync(`${sourcePath}-wal`, `${databasePath}-wal`);
-    } finally {
-      source.close();
-    }
-    const databaseArtifactsBefore = snapshotSqliteArtifacts(databasePath);
-    const { execPath } = writeLegacyDoctorSources(legacyStateDir);
-    // Preserve the native method so the spy can inspect each opened database before delegating.
-    // oxlint-disable-next-line typescript/unbound-method
-    const originalPrepare = DatabaseSync.prototype.prepare;
-    const postRefusalQueries: string[] = [];
-    vi.spyOn(DatabaseSync.prototype, "prepare").mockImplementation(function (
-      this: DatabaseSync,
-      sql,
-    ) {
-      const databases = originalPrepare.call(this, "PRAGMA database_list").all() as Array<{
-        file?: unknown;
-      }>;
-      if (
-        databases.some(
-          (entry) => typeof entry.file === "string" && path.resolve(entry.file) === databasePath,
-        )
-      ) {
-        postRefusalQueries.push(sql);
-      }
-      return originalPrepare.call(this, sql);
-    });
-
-    const result = await autoMigrateLegacyState({
-      cfg: {},
-      doctorOnlyStateMigrations: true,
-      env,
-      homedir: () => root,
-      legacySessionSurfaces: EMPTY_LEGACY_SESSION_SURFACES,
-    });
-
-    expect(result.stepReceipts[0]).toMatchObject({
-      id: "state-dir",
-      source: [{ kind: "path", path: legacyStateDir }],
-      target: [{ kind: "path", path: stateDir }],
-      outcome: "refused",
-      refusal: { code: "step-refused", message: expect.any(String) },
-    });
-    expect(result.stepReceipts.slice(1)).toEqual(
-      result.stepReceipts.slice(1).map((receipt) =>
-        expect.objectContaining({
-          id: receipt.id,
-          outcome: "refused",
-          refusal: expect.objectContaining({ code: "blocked-by-prior-refusal" }),
-        }),
-      ),
-    );
-    expect(result.stepReceipts.some((receipt) => receipt.id === "exec-approvals")).toBe(true);
-    expect(result.warnings.join("\n")).toContain("State dir migration skipped");
+    expect(result.stepReceipts.some((receipt) => receipt.id === "state-dir")).toBe(false);
+    expect(fs.lstatSync(legacyStateDir).isDirectory()).toBe(true);
     expect(fs.existsSync(execPath)).toBe(true);
-    expect(postRefusalQueries).toEqual([]);
-    expect(snapshotSqliteArtifacts(databasePath)).toEqual(databaseArtifactsBefore);
+    expect(fs.existsSync(stateDir) && fs.lstatSync(stateDir).isSymbolicLink()).toBe(false);
   });
 
   it("receipts a blocking conditional media warning before its ordered tail", async () => {

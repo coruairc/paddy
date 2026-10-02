@@ -572,7 +572,7 @@ describe("loadCliDotEnv", () => {
     });
   });
 
-  it("keeps the legacy state-dir fallback for CLI dotenv loading", async () => {
+  it("does not load .env from the legacy ~/.clawdbot state dir during CLI startup", async () => {
     await withIsolatedEnvAndCwd(async () => {
       const base = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-dotenv-legacy-"));
       const cwdDir = path.join(base, "cwd");
@@ -588,7 +588,7 @@ describe("loadCliDotEnv", () => {
 
       loadCliDotEnv({ quiet: true });
 
-      expect(process.env.LEGACY_ONLY).toBe("from-legacy");
+      expect(process.env.LEGACY_ONLY).toBeUndefined();
     });
   });
 

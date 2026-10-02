@@ -65,7 +65,9 @@ export function startNodeHostAutoUpdate(params: {
     const snapshot = await configIO.readConfigFileSnapshot();
     signal.throwIfAborted();
     if (!snapshot.valid) {
-      throw new Error(`Node auto-update deferred: fix the invalid ${PRODUCT_NAME} configuration first.`);
+      throw new Error(
+        `Node auto-update deferred: fix the invalid ${PRODUCT_NAME} configuration first.`,
+      );
     }
     const channel = resolveEffectiveUpdateChannel({
       configChannel: snapshot.config.update?.channel,
