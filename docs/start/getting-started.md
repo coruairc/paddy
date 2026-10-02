@@ -49,17 +49,12 @@ run `paddy gateway install`. Run `paddy` for the TUI or
     <Tabs>
       <Tab title="macOS / Linux">
         ```bash
-        curl -fsSL https://openclaw.ai/install.sh | bash
+        curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
         ```
-        <img
-  src="/assets/install-script.svg"
-  alt="Install Script Process"
-  className="rounded-lg"
-/>
       </Tab>
       <Tab title="Windows (PowerShell)">
         ```powershell
-        iwr -useb https://openclaw.ai/install.ps1 | iex
+        iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex
         ```
       </Tab>
     </Tabs>

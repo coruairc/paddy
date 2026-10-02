@@ -252,7 +252,7 @@ Set up an Azure Linux VM with the Azure CLI, apply Network Security Group (NSG) 
 
   <Step title="Install Paddy (in the VM shell)">
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh -o /tmp/install.sh
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh -o /tmp/install.sh
     bash /tmp/install.sh
     rm -f /tmp/install.sh
     ```

@@ -37,12 +37,12 @@ Windows desktop users can also install the native [Windows Hub](/platforms/windo
 <Tabs>
   <Tab title="macOS / Linux / WSL2">
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
     ```
   </Tab>
   <Tab title="Windows (PowerShell)">
     ```powershell
-    iwr -useb https://openclaw.ai/install.ps1 | iex
+    iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex
     ```
   </Tab>
 </Tabs>
@@ -52,12 +52,12 @@ To install without running onboarding:
 <Tabs>
   <Tab title="macOS / Linux / WSL2">
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --no-onboard
     ```
   </Tab>
   <Tab title="Windows (PowerShell)">
     ```powershell
-    & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -NoOnboard
+    & ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1))) -NoOnboard
     ```
   </Tab>
 </Tabs>
@@ -68,15 +68,12 @@ For all flags and CI/automation options, see [Installer internals](/install/inst
 
 ### Local prefix installer (`install-cli.sh`)
 
-Use this when you want Paddy and Node kept under a local prefix such as
-`~/.openclaw`, without depending on a system-wide Node install:
+Paddy does not publish `install-cli.sh`. The root installer clones this
+repository to `~/.paddy/src` and writes the `paddy` command to `~/.local/bin`.
 
-```bash
-curl -fsSL https://openclaw.ai/install-cli.sh | bash
-```
-
-It supports npm installs by default, plus git-checkout installs under the same
-prefix flow. Full reference: [Installer internals](/install/installer#install-clish).
+`https://openclaw.ai/install-cli.sh` is the upstream OpenClaw prefix installer.
+It is not how you install Paddy. Its flags are catalogued under
+[Upstream OpenClaw installer](/install/installer#upstream-openclaw-installer).
 
 Already installed? Switch between package and git installs with
 `paddy update --channel dev` and `paddy update --channel stable`. See
@@ -152,8 +149,8 @@ If you already manage Node yourself:
 For contributors or anyone who wants to run from a local checkout:
 
 ```bash
-git clone https://github.com/openclaw/openclaw.git
-cd openclaw
+git clone https://github.com/coruairc/paddy.git
+cd paddy
 corepack enable
 pnpm install && pnpm build && pnpm ui:build
 pnpm add --global "openclaw@link:$PWD"
@@ -172,7 +169,7 @@ Or skip the global install and use `pnpm paddy ...` from inside the repo. See [S
 ### Install from the GitHub main checkout
 
 ```bash
-curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git --version main
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --ref main
 ```
 
 ### Containers and package managers

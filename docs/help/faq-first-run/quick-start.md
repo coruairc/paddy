@@ -17,7 +17,7 @@ where to run the Gateway see
 <AccordionGroup>
   <Accordion title="Recommended way to install and set up Paddy">
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash
+    curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
     ```
 
     The installer starts guided onboarding for you, so there is no separate
@@ -36,8 +36,8 @@ where to run the Gateway see
     From source (contributors/dev):
 
     ```bash
-    git clone https://github.com/openclaw/openclaw.git
-    cd openclaw
+    git clone https://github.com/coruairc/paddy.git
+    cd paddy
     pnpm install
     pnpm build
     pnpm ui:build
@@ -63,7 +63,7 @@ where to run the Gateway see
     code + docs and reason about the exact version you run:
 
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git
+    curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
     ```
 
     Ask the agent to plan and supervise the fix step-by-step, then execute only the
@@ -291,15 +291,17 @@ where to run the Gateway see
 
     One-liners (macOS/Linux):
 
-    ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --beta
-    ```
+    Paddy's installer does not accept `--beta` or `--install-method`. It clones
+    this fork. `--ref main` is the default.
 
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git
+    curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --ref main
     ```
 
-    Windows installer (PowerShell): `iwr -useb https://openclaw.ai/install.ps1 | iex`
+    Windows installer (PowerShell): `iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex`
+
+    On an existing install, beta and dev channels are `paddy update --channel beta`
+    and `paddy update --channel dev`.
 
     More detail: [Development channels](/install/development-channels) and [Installer flags](/install/installer).
 
@@ -320,14 +322,14 @@ where to run the Gateway see
     2. **Hackable (git) install (fresh machine):**
 
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git
+    curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --ref main
     ```
 
     Prefer a manual clone:
 
     ```bash
-    git clone https://github.com/openclaw/openclaw.git
-    cd openclaw
+    git clone https://github.com/coruairc/paddy.git
+    cd paddy
     pnpm install
     pnpm build
     ```
@@ -351,16 +353,15 @@ where to run the Gateway see
   </Accordion>
 
   <Accordion title="Installer stuck? How do I get more feedback?">
-    Re-run with `--verbose`:
+    Preview the Paddy installer without installing:
 
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --verbose
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --beta --verbose
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git --verbose
+    curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --dry-run
     ```
 
-    `install.ps1` has no dedicated verbose switch; wrap it in `Set-PSDebug -Trace 1` /
-    `-Trace 0` instead. Full flag reference: [Installer flags](/install/installer).
+    Paddy's installer has no `--verbose`, `--beta`, or `--install-method` flag.
+    `--dry-run` prints the actions and installs nothing. `install.ps1` has no
+    dedicated verbose switch. Supported flags: [Installer internals](/install/installer).
 
   </Accordion>
 
@@ -414,7 +415,7 @@ where to run the Gateway see
     your bot (or Claude/Codex) **from that folder** so it can read the repo and answer precisely.
 
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git
+    curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
     ```
 
     More detail: [Install](/install) and [Installer flags](/install/installer).

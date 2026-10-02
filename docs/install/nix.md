@@ -1,5 +1,5 @@
 ---
-summary: "Install Paddy declaratively with Nix"
+summary: "Upstream nix-openclaw module. It installs OpenClaw, not the Paddy fork."
 read_when:
   - You want reproducible, rollback-able installs
   - You're already using Nix/NixOS/Home Manager
@@ -7,7 +7,7 @@ read_when:
 title: "Nix"
 ---
 
-Install OpenClaw declaratively with **[nix-openclaw](https://github.com/openclaw/nix-openclaw)**, the first-party, batteries-included Home Manager module.
+The upstream **[nix-openclaw](https://github.com/openclaw/nix-openclaw)** Home Manager module installs OpenClaw, not this Paddy fork. Use the [Paddy installer](/install) when you want Paddy.
 
 <Info>
 The [nix-openclaw](https://github.com/openclaw/nix-openclaw) repo is the source of truth for Nix installation. This page is a quick overview.

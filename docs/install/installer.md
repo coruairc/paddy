@@ -1,20 +1,48 @@
 ---
-summary: "How the installer scripts work (install.sh, install-cli.sh, install.ps1), flags, and automation"
+summary: "Paddy installer flags, plus the upstream OpenClaw installer reference"
 read_when:
-  - You want to understand `openclaw.ai/install.sh`
-  - You want to automate installs (CI / headless)
-  - You want to install from a GitHub checkout
-  - You want to install a private Node runtime without reinstalling Paddy
+  - You want the flags Paddy's root installer actually accepts
+  - You want to automate a Paddy install (CI / headless)
+  - You are comparing that with the upstream OpenClaw installer
 title: "Installer internals"
 ---
 
-Paddy ships three installer scripts, served from `openclaw.ai`.
+Paddy's installer is the repository root [`install.sh`](https://raw.githubusercontent.com/coruairc/paddy/main/install.sh) (macOS, Linux, WSL) and [`install.ps1`](https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1) (Windows PowerShell). It clones `coruairc/paddy` at ref `main` into `~/.paddy/src`, installs dependencies with pnpm, builds, and writes a `paddy` wrapper to `~/.local/bin`. On Unix it also writes an `openclaw` compatibility alias. Paddy is a fork and is not affiliated with the OpenClaw Foundation.
 
-| Script                             | Platform                      | What it does                                                                                                                |
-| ---------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| [`install.sh`](#installsh)         | macOS / Linux / WSL           | Installs Node if needed, installs Paddy via npm (default) or git, can run onboarding.                                       |
-| [`install-cli.sh`](#install-clish) | macOS / Linux / WSL / FreeBSD | Installs Node + Paddy into a local prefix (`~/.openclaw`) via npm (FreeBSD) or npm/git (macOS/Linux/WSL). No root required. |
-| [`install.ps1`](#installps1)       | Windows (PowerShell)          | Installs Node if needed, installs Paddy via npm (default) or git, can run onboarding.                                       |
+```bash
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --help
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --no-onboard
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --ref main
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --dry-run
+```
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex
+& ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1))) -NoOnboard
+```
+
+| Flag                          | Meaning                                          |
+| ----------------------------- | ------------------------------------------------ |
+| `--help`                      | Print the installer help                         |
+| `--yes`                       | Install missing git or Node without asking       |
+| `--no-onboard`, `--no-config` | Skip the first-run wizard                        |
+| `--skip-build`                | Clone and install dependencies, but do not build |
+| `--ref <ref>`                 | Git branch or tag (default `main`)               |
+| `--repo <owner/name>`         | Source repository (default `coruairc/paddy`)     |
+| `--git-dir <path>`            | Checkout path (default `~/.paddy/src`)           |
+| `--bin-dir <path>`            | Wrapper path (default `~/.local/bin`)            |
+| `--dry-run`                   | Print actions, install nothing                   |
+
+Windows accepts `-NoOnboard`, `-NoConfig`, `-SkipBuild`, `-DryRun`, `-Yes`, `-Ref`, `-Repo`, `-GitDir`, `-BinDir`, and `-CliName`.
+
+Paddy's installer does not accept `--install-method`, `--version`, `--beta`, `--verify`, `--verbose`, or `--no-prompt`, and it does not publish `install-cli.sh`. Passing an unknown flag stops the install.
+
+<a id="upstream-openclaw-installer"></a>
+
+## Upstream OpenClaw installer
+
+The sections below describe the upstream OpenClaw installer served from `openclaw.ai` (`install.sh`, `install-cli.sh`, and `install.ps1`). They are not Paddy's root installer. Keep them when you need the upstream flag catalog. Do not point those commands at the Paddy URLs above: Paddy's script rejects the extra flags.
 
 All three support Node **24.16+ or 26.1+** with a WAL-reset-safe linked SQLite library. When Node is missing and nvm is not detected, `install.sh` provisions Node 26 through Homebrew on macOS and the supported Node 24 LTS line through NodeSource on Linux. When a supported RPM-owned Node links unsafe SQLite, `install.sh` preserves the distro package and provisions a user-space Node runtime through `install-cli.sh`. The rootless `install-cli.sh` downloads Node 24.21.0 on macOS and glibc Linux. FreeBSD uses an installed system runtime. Linux ARMv7 is unsupported. On Windows, winget/Chocolatey/Scoop install the supported Node LTS line, and the portable fallback downloads Node 26.
 
@@ -67,6 +95,8 @@ manual builds, follow [From source](/install#from-source) to select the
 checkout-pinned toolchain rather than reusing an older ambient launcher.
 
 ## Quick commands
+
+These tabs call the upstream OpenClaw installer. Use the Paddy commands at the top of this page to install Paddy.
 
 <Tabs>
   <Tab title="install.sh">

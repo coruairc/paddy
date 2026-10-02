@@ -92,7 +92,7 @@ Run a persistent, always-on Paddy Gateway on a Raspberry Pi. Since the Pi is jus
 
   <Step title="Install Paddy">
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --no-onboard
     ```
   </Step>
 

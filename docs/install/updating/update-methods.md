@@ -275,25 +275,16 @@ instead — it manages the checkout, build, and gateway restart for you.
 ## Alternative: re-run the installer
 
 ```bash
-curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
 ```
 
-Add `--no-onboard` to skip onboarding. To force a specific install type, pass
-`--install-method git --no-onboard` or `--install-method npm --no-onboard`.
+Add `--no-onboard` to skip onboarding. The installer always clones the git
+checkout. Select a branch or tag with `--ref` (default `main`). It does not
+accept `--install-method` or `--version`.
 
-If `paddy triage` cannot start after a failed npm package replacement, re-run
-the installer. It runs the global package install directly and can recover a
-partially updated npm install. Keep an unverified Gateway stopped while repairing it.
-
-```bash
-curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method npm
-```
-
-Pin the recovery to a specific version or dist-tag with `--version`:
-
-```bash
-curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method npm --version <version-or-dist-tag>
-```
+A failed npm-global install of the `openclaw` package is a different path.
+Reinstall that package with npm (`npm install -g openclaw@latest`). Paddy's
+root installer does not pin an npm dist-tag.
 
 ## Homebrew formula installs
 

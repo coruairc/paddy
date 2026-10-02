@@ -159,12 +159,12 @@ The Gateway is the single source of truth for sessions, routing, and channel con
     <Tabs>
       <Tab title="macOS / Linux / WSL2">
         ```bash
-        curl -fsSL https://openclaw.ai/install.sh | bash
+        curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
         ```
       </Tab>
       <Tab title="Windows (PowerShell)">
         ```powershell
-        iwr -useb https://openclaw.ai/install.ps1 | iex
+        iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex
         ```
       </Tab>
     </Tabs>

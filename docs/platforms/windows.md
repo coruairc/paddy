@@ -137,7 +137,7 @@ Mode matrix:
 For terminal-first use, install Paddy from PowerShell:
 
 ```powershell
-iwr -useb https://openclaw.ai/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex
 ```
 
 Verify:
@@ -284,7 +284,7 @@ wsl --shutdown
 Then install Paddy inside WSL with the Linux quickstart:
 
 ```bash
-curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
 paddy gateway status
 ```
 

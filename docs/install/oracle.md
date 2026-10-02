@@ -73,7 +73,7 @@ Run a persistent Paddy Gateway on Oracle Cloud's **Always Free** ARM tier (up to
 
   <Step title="Install Paddy">
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
     source ~/.bashrc
     ```
 

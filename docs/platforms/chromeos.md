@@ -32,7 +32,7 @@ Run every command below inside that Terminal.
 1. Install via the installer script (it installs a supported Node for you):
 
    ```bash
-   curl -fsSL https://openclaw.ai/install.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
    ```
 
 2. Onboard and install the service:

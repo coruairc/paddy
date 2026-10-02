@@ -17,18 +17,20 @@ This guide assumes exe.dev's default **exeuntu** image. Map packages accordingly
 
 ## Beginner quick path
 
-1. Open [https://exe.new/openclaw](https://exe.new/openclaw)
-2. Fill in your auth key/token as needed
-3. Click "Agent" next to your VM and wait for Shelley to finish provisioning
-4. Open `https://<vm-name>.exe.xyz/` and authenticate with the configured shared secret (token auth by default; password auth also works if you switch `gateway.auth.mode`)
-5. Approve pending device pairing requests with `paddy devices approve <requestId>`
+1. Create a VM and connect: `ssh exe.dev new`, then `ssh <vm-name>.exe.xyz`.
+2. Install Paddy and complete onboarding: `curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash`.
+3. Configure nginx and the public browser origin as in [Manual installation](#manual-installation).
+4. Open `https://<vm-name>.exe.xyz/` and authenticate with the configured token (token auth by default; password auth also works if you switch `gateway.auth.mode`).
+5. Approve pending device pairing requests with `paddy devices approve <requestId>`.
+
+The [exe.new/openclaw template](https://exe.new/openclaw) installs upstream OpenClaw, not this fork; use it only if you want upstream OpenClaw.
 
 ## Automated install with Shelley
 
 Shelley, exe.dev's agent, can install Paddy from a prompt:
 
 ```text
-Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-interactive and accept-risk flags for openclaw onboarding. Add the supplied auth or token as needed. Configure nginx to forward from the default port 18789 to the root location on the default enabled site config, making sure to enable Websocket support. Set gateway.controlUi.allowedOrigins to the exact https://<vm-name>.exe.xyz origin, and set gateway.trustedProxies to ["127.0.0.1"] because nginx connects to the Gateway over loopback and overwrites X-Forwarded-For. Pairing is done by "openclaw devices list" and "openclaw devices approve <request id>". Make sure the dashboard shows that OpenClaw's health is OK. exe.dev handles forwarding from port 8000 to port 80/443 and HTTPS for us, so the final "reachable" should be <vm-name>.exe.xyz, without port specification.
+Set up Paddy on this VM by running: curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash. Use the non-interactive and accept-risk flags for paddy onboarding. Add the supplied auth or token as needed. Configure nginx to forward from the default port 18789 to the root location on the default enabled site config, making sure to enable Websocket support. Set gateway.controlUi.allowedOrigins to the exact https://<vm-name>.exe.xyz origin, and set gateway.trustedProxies to ["127.0.0.1"] because nginx connects to the Gateway over loopback and overwrites X-Forwarded-For. Pairing is done by "paddy devices list" and "paddy devices approve <request id>". Make sure the dashboard shows that Paddy's health is OK. exe.dev handles forwarding from port 8000 to port 80/443 and HTTPS for us, so the final "reachable" should be <vm-name>.exe.xyz, without port specification.
 ```
 
 ## Manual installation
@@ -62,7 +64,7 @@ Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-inter
 
   <Step title="Install Paddy">
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
     ```
   </Step>
 

@@ -49,7 +49,7 @@ DigitalOcean is a straightforward paid VPS path. For cheaper or free options:
     apt install -y nodejs
 
     # Install Paddy; run onboarding later as the non-root owner.
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --no-onboard
 
     # Create the non-root user that will own Paddy state and services.
     adduser openclaw

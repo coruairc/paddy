@@ -239,12 +239,15 @@ first-run failures see
     follow-ups, refreshes plugin sources for the target channel, and restarts the gateway
     unless you pass `--no-restart`.
 
-    The installer can force either mode too:
+    Paddy's installer always checks out git. It does not accept `--install-method`.
+    A fresh checkout is:
 
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method npm
+    curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
     ```
+
+    Switch an existing install with the `paddy update --channel` commands above.
+    The published npm package name remains `openclaw` (`npm install -g openclaw@latest`).
 
     Backup tips: [Where things live on disk](/help/faq#where-things-live-on-disk).
 
