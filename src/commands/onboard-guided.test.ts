@@ -462,7 +462,7 @@ describe("runGuidedOnboarding", () => {
 
     expect(deps.runBrowserHandoff).not.toHaveBeenCalled();
     expect(deps.launchHatchTui).not.toHaveBeenCalled();
-    expect(prompter.outro).toHaveBeenCalledWith("Paddy is ready.");
+    expect(prompter.outro).toHaveBeenCalledWith("Grand. Paddy is ready.");
   });
 
   it("never attempts browser handoff for remote chat onboarding", async () => {
@@ -1067,9 +1067,7 @@ describe("runGuidedOnboarding", () => {
     expect(notes).toContain("/tmp/broken-openclaw.json");
     expect(notes).toContain("agents.defaults.model: Expected a model reference");
     expect(prompter.outro).toHaveBeenCalledWith(expect.stringContaining("paddy doctor --fix"));
-    expect(prompter.outro).toHaveBeenCalledWith(
-      expect.stringContaining("paddy config validate"),
-    );
+    expect(prompter.outro).toHaveBeenCalledWith(expect.stringContaining("paddy config validate"));
     expect(runtime.exit).toHaveBeenCalledWith(1);
     expect(deps.runSystemAgentChat).not.toHaveBeenCalled();
     expect(deps.detect).not.toHaveBeenCalled();

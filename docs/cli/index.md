@@ -101,13 +101,13 @@ check the exit status.
 
 ## Color palette
 
-Paddy uses a lobster palette for CLI output:
+Paddy uses Irish green for branding accents. Informational text, success, warnings, and errors keep their own colours:
 
 | Token          | Hex       | Used for                             |
 | -------------- | --------- | ------------------------------------ |
-| `accent`       | `#FF5A2D` | Headings, labels, primary highlights |
-| `accentBright` | `#FF7A3D` | Command names, emphasis              |
-| `accentDim`    | `#D14A22` | Secondary highlight text             |
+| `accent`       | `#169B62` | Headings, labels, primary highlights |
+| `accentBright` | `#1FBE72` | Command names, emphasis              |
+| `accentDim`    | `#0E6B40` | Secondary highlight text             |
 | `info`         | `#FF8A5B` | Informational values                 |
 | `success`      | `#2FBF71` | Success states                       |
 | `warn`         | `#FFB020` | Warnings, option flags, fallbacks    |

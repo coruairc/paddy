@@ -12,21 +12,21 @@ import type { RuntimeEnv } from "../runtime.js";
 import { PRODUCT_NAME } from "./cli-name.js";
 
 // Mascot and wordmark are separate so they can be tinted independently; the
-// wordmark starts on mascot row 3, keeping the leaves above the text line.
+// wordmark starts on mascot row 3, keeping the clover above the text line.
 const MASCOT_ART = [
-  "        .:••:.      ",
-  "      .:••••••:.    ",
-  "     :••••••••••:   ",
-  "    :••••••••••••:  ",
-  "  .:••••:  :••••:.  ",
-  " .:••••••••••••••:. ",
-  " :••••••••••••••••: ",
-  "   :••••••••••••:   ",
-  "        :●●●●:      ",
-  "        :●●●●:      ",
+  "     (@@)    (@@)   ",
+  "    (@@@@)  (@@@@)  ",
+  "     (@@)    (@@)   ",
+  "        \\\\//        ",
+  "         ||         ",
+  "        _||_        ",
+  "       |    |       ",
+  "       |    |       ",
+  "       |____|       ",
+  "                    ",
 ] as const;
-// Top leaf widened; swapping these two rows in and out makes the shamrock sway.
-const MASCOT_OPEN_ROWS = ["       .:••••:.     ", "     .:••••••••:.   "] as const;
+// Leaves opened out; swapping these two rows in and out makes the clover sway.
+const MASCOT_OPEN_ROWS = ["    (@@@)    (@@@)  ", "   (@@@@)  (@@@@)   "] as const;
 const MASCOT_WIDTH = 20;
 const WORDMARK_ROW_OFFSET = 3;
 
@@ -91,9 +91,13 @@ function composeFrame(params: {
 }
 
 function plainTitleLine(): string {
-  const icon = decorativeEmoji("🦞");
+  const clover = decorativeEmoji("🍀");
+  const pint = decorativeEmoji("🍺");
   const title = PRODUCT_NAME.toUpperCase();
-  return supportsDecorativeEmoji() && icon ? `${icon} ${title} ${icon}` : title;
+  if (!supportsDecorativeEmoji() || !clover) {
+    return title;
+  }
+  return pint ? `${clover} ${title} ${pint}` : `${clover} ${title}`;
 }
 
 const defaultSleep = (ms: number) =>
@@ -202,7 +206,7 @@ async function animateBanner(opts: {
 }
 
 /**
- * Prints the OpenClaw banner: animated on rich interactive terminals, static
+ * Prints the Paddy banner: animated on rich interactive terminals, static
  * otherwise, plain title on terminals too narrow for the art.
  */
 export async function printClawBanner(

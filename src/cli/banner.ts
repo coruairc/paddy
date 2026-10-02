@@ -68,7 +68,7 @@ export function formatCliBannerLine(version: string, options: BannerOptions = {}
     : `${baseLine}\n${" ".repeat(indent.length)}${taglineText}`;
 }
 
-// Rare day-seeded ASCII lobster above the banner: random-tagline mode only,
+// Rare day-seeded clover or pint above the banner: random-tagline mode only,
 // rich terminals only, never in CI (see lobster-art.ts for the odds).
 function resolveLobsterArt(options: BannerOptions): string | null {
   const mode = parseTaglineMode(options.mode);

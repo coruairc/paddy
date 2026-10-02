@@ -300,7 +300,8 @@ export const en = {
       aiAccessTitle: "AI access",
       appliedTitle: "Inference ready",
       localSetupTitle: "Local setup",
-      alreadySetUp: "Everything's already set up here — your AI just passed a fresh check.",
+      alreadySetUp:
+        "That's grand. Everything's already set up, and the AI just passed a fresh check.",
       applyFailedFallback:
         "Something went wrong while applying setup: {detail}\nLet's finish together in chat instead.",
       browserHandoffContinuing: "Dashboard connected — continuing in your browser.",
@@ -312,7 +313,7 @@ export const en = {
       codingAgentQuip:
         "I can see {labels} on this machine — good taste. Once your AI works I can bring their memories along too.",
       controlUiPreparing: "Preparing the Control UI…",
-      custodianIntro: `Hi — I'm ${PRODUCT_NAME}. I keep this system running. Let's get you set up.`,
+      custodianIntro: `Right — I'm ${PRODUCT_NAME}. I'll keep this running. Let's get you set up.`,
       findMeLater:
         "You can always find me later — run `paddy` in a terminal, or open Settings in the dashboard.",
       hatchingNow: "Hatching your agent now…",
@@ -324,7 +325,7 @@ export const en = {
       setupFailed: "Setup failed",
       workspaceSetupFailed: "Workspace setup failed",
       gatewaySetupFailed: "Gateway setup failed",
-      complete: `${PRODUCT_NAME} is ready.`,
+      complete: `Grand. ${PRODUCT_NAME} is ready.`,
       completeWithoutAi: `${PRODUCT_NAME} setup is saved. Connect AI before opening chat.`,
       detected: "AI detection complete.",
       detectedCandidate: "{label} — {detail}{recommended}",

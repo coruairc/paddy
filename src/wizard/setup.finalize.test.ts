@@ -542,7 +542,7 @@ describe("finalizeSetupWizard", () => {
     expectNoteNotContains(prompter, "Web UI:");
     expectNoteNotContains(prompter, gatewayToken);
     expect(prompter.outro).toHaveBeenCalledWith(
-      "Paddy is ready. When you're ready: paddy dashboard",
+      "Grand. Paddy is ready. When you're ready: paddy dashboard",
     );
     expect(runTui).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -573,7 +573,7 @@ describe("finalizeSetupWizard", () => {
     expect(resolveControlUiHandoffTarget).not.toHaveBeenCalled();
     expect(waitForControlUiDocument).not.toHaveBeenCalled();
     expectNoteNotContains(prompter, "Web UI:");
-    expect(prompter.outro).toHaveBeenCalledWith("OpenClaw is ready.");
+    expect(prompter.outro).toHaveBeenCalledWith("Grand. Paddy is ready.");
   });
 
   it("probes the canonical loopback dashboard for custom TLS Gateway paths", async () => {
@@ -1110,7 +1110,7 @@ describe("finalizeSetupWizard", () => {
         expectNoteNotContains(prompter, "openclaw gateway run");
         expectNoteNotContains(prompter, "openclaw onboard --install-daemon");
         expect(prompter.outro).toHaveBeenCalledWith(
-          "Gateway not detected yet. OpenClaw gateway lifecycle is managed by an external " +
+          "Gateway not detected yet. Paddy gateway lifecycle is managed by an external " +
             "supervisor (OPENCLAW_SUPERVISOR_MODE=external). Use that supervisor to start the " +
             "gateway.",
         );

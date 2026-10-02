@@ -1,9 +1,9 @@
-// Lobster palette tokens for CLI/UI theming. Use this palette for all CLI color output.
-// Keep in sync with docs/cli/index.md (CLI palette section).
+// CLI color tokens. Brand accents are Irish green; info, success, warnings,
+// and errors keep their own meanings. Keep in sync with docs/cli/index.md.
 export const LOBSTER_PALETTE = {
-  accent: "#FF5A2D",
-  accentBright: "#FF7A3D",
-  accentDim: "#D14A22",
+  accent: "#169B62",
+  accentBright: "#1FBE72",
+  accentDim: "#0E6B40",
   info: "#FF8A5B",
   success: "#2FBF71",
   warn: "#FFB020",

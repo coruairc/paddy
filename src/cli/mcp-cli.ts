@@ -709,8 +709,7 @@ async function probeMcpServersOrFail(params: {
   }
 }
 
-const OPENCLAW_MCP_REGISTRY_SCOPE_NOTE =
-  `Note: this command only shows Paddy-managed mcp.servers entries and does not include mcporter servers from config/mcporter.json.`;
+const OPENCLAW_MCP_REGISTRY_SCOPE_NOTE = `Note: this command only shows Paddy-managed mcp.servers entries and does not include mcporter servers from config/mcporter.json.`;
 
 export function registerMcpCli(program: Command) {
   const mcp = program
@@ -802,8 +801,8 @@ export function registerMcpCli(program: Command) {
       if (!opts.json) {
         defaultRuntime.log(
           name
-            ? `OpenClaw-managed MCP server "${name}" (${loaded.path}):`
-            : `OpenClaw-managed MCP servers (${loaded.path}):`,
+            ? `Paddy-managed MCP server "${name}" (${loaded.path}):`
+            : `Paddy-managed MCP servers (${loaded.path}):`,
         );
       }
       defaultRuntime.writeJson(value ?? {});

@@ -35,16 +35,15 @@ async function runStatic() {
 }
 
 const EXPECTED_MASCOT = [
-  "        .:••:.",
-  "      .:••••••:.",
-  "     :••••••••••:",
-  "    :••••••••••••:",
-  "  .:••••:  :••••:.",
-  " .:••••••••••••••:.",
-  " :••••••••••••••••:",
-  "   :••••••••••••:",
-  "        :●●●●:",
-  "        :●●●●:",
+  "     (@@)    (@@)",
+  "    (@@@@)  (@@@@)",
+  "     (@@)    (@@)",
+  "        \\\\//",
+  "         ||",
+  "        _||_",
+  "       |    |",
+  "       |    |",
+  "       |____|",
 ] as const;
 
 describe("printClawBanner", () => {
@@ -84,8 +83,8 @@ describe("printClawBanner", () => {
     expect(
       frames.flatMap((frame, index) => {
         const [first = "", second = ""] = stripAnsi(frame).split("\n");
-        return first.slice(0, 20).trimEnd() === "       .:••••:." &&
-          second.slice(0, 20).trimEnd() === "     .:••••••••:."
+        return first.slice(0, 20).trimEnd() === "    (@@@)    (@@@)" &&
+          second.slice(0, 20).trimEnd() === "   (@@@@)  (@@@@)"
           ? [index]
           : [];
       }),
