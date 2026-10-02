@@ -367,23 +367,9 @@ module.exports = { stateMigrations: [{
     });
   });
 
+  // Upstream's "legacy root: true" rows relocated ~/.clawdbot into the default state root. Paddy has
+  // no legacy state roots, so only the in-place index migration rows apply.
   it.each([
-    {
-      phase: undefined,
-      legacyRoot: true,
-      fromInstallIndex: true,
-      direct: false,
-      legacySchema: false,
-      excludeDoctorOnly: false,
-    },
-    {
-      phase: "after-session-repair" as const,
-      legacyRoot: true,
-      fromInstallIndex: false,
-      direct: false,
-      legacySchema: false,
-      excludeDoctorOnly: false,
-    },
     {
       phase: undefined,
       legacyRoot: false,

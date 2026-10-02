@@ -645,8 +645,8 @@ describe("preserved update activation with real version guards", () => {
             ? {
                 OPENCLAW_PROFILE: "second",
                 OPENCLAW_SYSTEMD_UNIT: "openclaw-gateway-second.service",
-                OPENCLAW_STATE_DIR: path.join(root, ".openclaw-second"),
-                OPENCLAW_CONFIG_PATH: path.join(root, ".openclaw-second", "openclaw.json"),
+                OPENCLAW_STATE_DIR: path.join(root, ".paddy-second"),
+                OPENCLAW_CONFIG_PATH: path.join(root, ".paddy-second", "openclaw.json"),
               }
             : {
                 OPENCLAW_PROFILE: "default",
