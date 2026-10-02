@@ -8,6 +8,7 @@ export const CONTROL_UI_ROOT_PUBLIC_ASSETS = [
   "favicon-32.png",
   "favicon.ico",
   "favicon.svg",
+  "paddy-icon.jpg",
   "manifest.webmanifest",
   "sw.js",
 ] as const;

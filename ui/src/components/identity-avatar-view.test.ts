@@ -364,11 +364,11 @@ describe("shared agent avatar view", () => {
       for (const avatar of [undefined, "/avatar/custom?v=1"]) {
         render(renderAgentIdentityAvatar({ id, avatar, textAvatar: "🔧" }), container);
         const image = container.querySelector("img");
-        expect(image?.getAttribute("src")).toBe("/favicon.svg");
+        expect(image?.getAttribute("src")).toBe("/paddy-icon.jpg");
         image?.dispatchEvent(new Event("error"));
         await vi.dynamicImportSettled();
         expect(container.querySelector("svg, [data-avatar]")).toBeNull();
-        expect(image?.getAttribute("src")).toBe("/favicon.svg");
+        expect(image?.getAttribute("src")).toBe("/paddy-icon.jpg");
       }
       expect(fetchAvatar).not.toHaveBeenCalled();
       render(nothing, container);
@@ -383,7 +383,7 @@ describe("shared agent avatar view", () => {
     try {
       render(renderAgentIdentityAvatar({ id: "openclaw" }), container);
       expect(container.querySelector("img")?.getAttribute("src")).toBe(
-        "/control/favicon.svg?v=build-1",
+        "/control/paddy-icon.jpg?v=build-1",
       );
     } finally {
       render(nothing, container);

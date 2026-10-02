@@ -53,7 +53,7 @@ describe("AppSidebar agent roster", () => {
     patchSettings({ theme: "claw" });
     context.theme.refresh();
     await sidebar.updateComplete;
-    expect(header?.querySelector("img")?.getAttribute("src")).toBe("/favicon.svg");
+    expect(header?.querySelector("img")?.getAttribute("src")).toBe("/paddy-icon.jpg");
   });
 
   it.each([undefined, "Studio workspace", "   "])(
@@ -75,7 +75,7 @@ describe("AppSidebar agent roster", () => {
         const header = sidebar.querySelector(".sidebar-workspace-header");
         expect(header?.textContent).toContain(name?.trim() || "OpenClaw");
         expect(header?.querySelector(".sidebar-agent-card__avatar")).toBeNull();
-        expect(header?.querySelector("img")?.getAttribute("src")).toBe("/favicon.svg");
+        expect(header?.querySelector("img")?.getAttribute("src")).toBe("/paddy-icon.jpg");
         expect(sidebar.querySelector("openclaw-sidebar-agent-card")).toBeNull();
         sidebar.querySelector<HTMLButtonElement>(".sidebar-workspace-header__main")?.click();
         await vi.waitFor(() => expect(sidebar.querySelector(".sidebar-agent-menu")).not.toBeNull());

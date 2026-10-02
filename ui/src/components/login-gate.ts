@@ -358,7 +358,7 @@ function renderFormBody(params: { props: LoginGateProps; feedback: LoginFailureF
 
 function renderLoginGate(props: LoginGateProps, refreshAction: RefreshAction) {
   const resourceBasePath = normalizeBasePath(props.resourceBasePath);
-  const faviconSrc = controlUiPublicAssetPath("favicon.svg", resourceBasePath);
+  const faviconSrc = controlUiPublicAssetPath("paddy-icon.jpg", resourceBasePath);
   const feedback = resolveLoginFailureFeedback(props);
   const body =
     feedback?.placement === "status"

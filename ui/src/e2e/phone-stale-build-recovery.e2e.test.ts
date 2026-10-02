@@ -501,7 +501,7 @@ suite.define(() => {
         const installedArtifact = await observeCurrentArtifact();
         expect(installedArtifact.buildId).not.toBeNull();
         expect(installedArtifact.bodyDisplay).toBe("block");
-        expect(installedArtifact.icon.pathname).toBe("/favicon.svg");
+        expect(installedArtifact.icon.pathname).toBe("/paddy-icon.jpg");
         expect(installedArtifact.font.pathname).toBe("/fonts/space-grotesk.css");
         expect(installedArtifact.theme.pathname).toBe("/themes/absolutely.css");
         for (const asset of [

@@ -1,7 +1,7 @@
-# Paddy 🍀 — OpenClaw, with memory you actually approve
+# Paddy 🍀
 
 <p align="center">
-  <img src="ui/public/favicon.svg" width="160" height="160" alt="Paddy">
+  <img src="ui/public/paddy-icon.jpg" width="160" height="160" alt="Paddy">
 </p>
 
 <p align="center">
@@ -9,27 +9,20 @@
   <img src="https://img.shields.io/badge/based%20on-OpenClaw-blue?style=flat-square" alt="Based on OpenClaw">
 </p>
 
-Paddy is an Irish-roots super harness: a fork of [OpenClaw](https://github.com/openclaw/openclaw)
-with **Hermes-style memory** built in. Same Gateway, same channels, same agent runtime, same
-plugin system — plus a memory you review instead of one the agent fills behind your back.
+Paddy is an Irish-roots fork of [OpenClaw](https://github.com/openclaw/openclaw).
+The Gateway, channels, agent runtime, and plugin system are OpenClaw's.
+The command you run is `paddy`.
 
 Not affiliated with the OpenClaw Foundation, Nous Research, Guinness, or Paddy Irish Whiskey.
 
-## What Paddy adds
+## What is different
 
-OpenClaw's memory trusts the agent to curate — it promotes what it judges worth keeping.
-Paddy keeps the human in the loop.
-
-|                               |                                                                                |
-| ----------------------------- | ------------------------------------------------------------------------------ |
-| **You approve**               | The curator proposes; nothing becomes durable without `paddy memory approve`   |
-| **Per-entry rollback**        | Undo a single memory with its provenance intact, not the whole store           |
-| **Scoped by default**         | A memory written for one identity is never recalled for another                |
-| **Secrets screened on write** | A deterministic pattern filter runs before storage — not an LLM judgement call |
-| **Fail-open**                 | A memory fault warns and continues; it never breaks an otherwise-valid turn    |
-| **Local by default**          | Embedded SQLite under `~/.paddy`. No external database, no service to run      |
-
-Everything else is OpenClaw as upstream ships it. Paddy's value is the combination.
+|                   |                                                                                                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Command**       | `paddy` and `openclaw` are the same binary. `openclaw` stays so upstream paths, plugin imports, and existing scripts keep working.                            |
+| **Install**       | The installer clones this fork. The default checkout is `~/.paddy/src`.                                                                                       |
+| **State**         | Sessions, config, and logs stay in `~/.openclaw`, or `$OPENCLAW_STATE_DIR` when that is set.                                                                  |
+| **Hermes import** | `paddy migrate hermes` copies supported Hermes config, memory files, skills, and MCP servers into this install. It does not replace OpenClaw's memory engine. |
 
 ## Install
 
@@ -59,10 +52,6 @@ The first build takes a while — this is a large workspace. `--skip-build` clon
 installs dependencies without building. `--git-dir`, `--bin-dir`, `--ref`, and `--repo`
 override the defaults; the same values are settable through `PADDY_*` environment variables.
 
-`paddy` and `openclaw` are both wired to the same binary, so either name works in your
-shell. `openclaw` is retained so upstream paths, plugin imports, and existing scripts keep
-working.
-
 <details>
 <summary>Manual install from a checkout</summary>
 
@@ -90,17 +79,25 @@ Send a message in the Control UI to confirm the assistant is working.
 
 ## Memory
 
+Memory is plain Markdown in the agent workspace (default `~/.openclaw/workspace`):
+`MEMORY.md`, `USER.md`, and daily notes under `memory/`. Recall searches those files.
+Nothing is stored in a separate Paddy database.
+
 ```bash
-paddy memory status              # usage against caps, plus the fail-open error log
-paddy memory list                # proposed and approved entries, scoped to you
-paddy memory approve <id>        # promote a proposal into durable memory
-paddy memory reject <id>
-paddy memory rollback <id>       # restore that entry's prior version
-paddy memory add "..." --scope <scope>   # write one directly
+paddy memory status
+paddy memory search "meeting notes"
+paddy memory index --force
+paddy memory promote --limit 10          # review short-term candidates
+paddy memory promote --apply             # append the top candidates to MEMORY.md
+paddy memory forget --session <id> --dry-run
 ```
 
-Recall is ranked by relevance rather than dumping the store into context, and it respects
-the scope boundary: what one identity learned is not recalled for another.
+To bring an existing Hermes workspace across:
+
+```bash
+paddy migrate hermes --dry-run
+paddy migrate apply hermes
+```
 
 ## How it fits together
 
@@ -108,11 +105,11 @@ the scope boundary: what one identity learned is not recalled for another.
 - The [Control UI](https://docs.openclaw.ai/web/control-ui), CLI, and [TUI](https://docs.openclaw.ai/web/tui) connect to the Gateway.
 - [Channels](https://docs.openclaw.ai/channels) bring the assistant to WhatsApp, Telegram, Slack, Discord, Google Chat, Signal, iMessage, and other messaging services.
 - [Companion apps and nodes](https://docs.openclaw.ai/platforms) add voice, Canvas, camera, screen, and device-local actions on supported platforms.
-- Hermes memory occupies the exclusive `plugins.slots.memory` slot as a bundled plugin. Point that slot at another provider and the rest of Paddy is unchanged.
 
 Paddy works with hosted and local [model providers](https://docs.openclaw.ai/concepts/model-providers).
 Its [tools](https://docs.openclaw.ai/tools), [skills](https://docs.openclaw.ai/tools/skills), and
 [plugins](https://docs.openclaw.ai/plugins) extend what an assistant can do.
+Memory behavior is documented in [Memory](https://docs.openclaw.ai/concepts/memory).
 
 ## Security
 
@@ -127,7 +124,7 @@ or exposing the Gateway remotely.
 
 ## Documentation
 
-Upstream OpenClaw docs apply to everything Paddy inherits, which is nearly all of it.
+Upstream OpenClaw docs apply to the Gateway, channels, tools, and memory. Use `paddy` wherever those docs say `openclaw`.
 
 | Goal                             | Start here                                                                                                                              |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -151,9 +148,7 @@ pnpm ui:build
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). Paddy tracks
-`openclaw/openclaw` as `upstream` and merges (never rebases) to stay current. Keep
-Paddy-specific code isolated under `extensions/memory-hermes/` and the small set of
-rebrand files so upstream merges stay low-conflict.
+`openclaw/openclaw` as `upstream` and merges (never rebases) to stay current.
 
 ## Built on OpenClaw
 
@@ -164,6 +159,7 @@ Foundation, an independent 501(c)(3); Paddy is not affiliated with or endorsed b
 The upstream `LICENSE` and `THIRD_PARTY_NOTICES.md` are retained unchanged, as the MIT
 license requires. Portions of OpenClaw were adapted from [Pi / pi-mono](https://github.com/earendil-works/pi-mono)
 (MIT, © 2025 Mario Zechner); bundled icon work derives from GitHub Octicons (MIT).
+The Paddy mark in `ui/public/paddy-icon.jpg` comes from [paddy-gui](https://github.com/coruairc/paddy-gui).
 
 ## License
 

@@ -154,7 +154,7 @@ function renderSidebarWorkspaceHeader(host: AppSidebarRenderHost) {
               >`
             : html`<img
                 class="sidebar-workspace-header__mark"
-                src=${controlUiPublicAssetPath("favicon.svg", host.basePath)}
+                src=${controlUiPublicAssetPath("paddy-icon.jpg", host.basePath)}
                 alt=""
                 aria-hidden="true"
               />`

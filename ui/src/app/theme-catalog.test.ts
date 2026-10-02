@@ -131,14 +131,14 @@ it("notifies leaf branding consumers when a newly selected built-in palette load
     patchSettings({ theme: "knot" });
     expect(theme.settings.theme).toBe("knot");
     expect(renderMark).toHaveBeenCalledTimes(1);
-    expect(container.querySelector("img")?.getAttribute("src")).toBe("/favicon.svg");
+    expect(container.querySelector("img")?.getAttribute("src")).toBe("/paddy-icon.jpg");
     const palette = document.getElementById("openclaw-theme-palette-knot")!;
     expect(document.documentElement.dataset.themeId).toBe(descriptor.id);
     palette.dispatchEvent(new Event("load"));
     expect(renderMark).toHaveBeenCalledTimes(2);
     expect(document.documentElement.dataset.themeId).toBe("knot");
     expect(document.documentElement.dataset.themeAvatarHat).toBeUndefined();
-    expect(container.querySelector("img")?.getAttribute("src")).toBe("/favicon.svg");
+    expect(container.querySelector("img")?.getAttribute("src")).toBe("/paddy-icon.jpg");
   } finally {
     unsubscribe();
     theme.dispose();

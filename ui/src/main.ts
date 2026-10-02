@@ -65,7 +65,7 @@ if (isProd && "serviceWorker" in navigator) {
 }
 
 function syncDocumentPublicAssetLinks() {
-  setDocumentLinkHref('link[rel="icon"][type="image/svg+xml"]', "favicon.svg");
+  setDocumentLinkHref('link[rel="icon"][type="image/jpeg"]', "paddy-icon.jpg");
   setDocumentLinkHref('link[rel="icon"][type="image/png"]', "favicon-32.png");
   setDocumentLinkHref('link[rel="apple-touch-icon"]', "apple-touch-icon.png");
   setDocumentLinkHref('link[rel="manifest"]', "manifest.webmanifest");
