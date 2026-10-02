@@ -8,7 +8,7 @@ read_when:
 
 ## First run (recommended)
 
-OpenClaw agents use a workspace directory. Default: `~/.openclaw/workspace` (configurable via `agents.defaults.workspace`, supports `~`).
+Paddy agents use a workspace directory. Default: `~/.openclaw/workspace` (configurable via `agents.defaults.workspace`, supports `~`).
 
 1. Create the workspace:
 
@@ -97,7 +97,7 @@ git commit -m "Add workspace"
 ## What Paddy does
 
 - Runs a messaging-channel gateway (WhatsApp, Telegram, Discord, Signal, iMessage, Slack, and more) plus an embedded agent, so the assistant can read/write chats, fetch context, and run skills via the host machine.
-- The macOS app manages permissions (screen recording, notifications, microphone) and exposes the `openclaw` CLI via its bundled binary.
+- The macOS app manages permissions (screen recording, notifications, microphone) and exposes the `paddy` CLI via its bundled binary.
 - Direct chats collapse into the agent's `main` session by default; groups and channels/rooms get their own session keys. See [Channel routing](/channels/channel-routing) for the exact key formats. Heartbeats keep background tasks alive.
 
 ## Core skills (enable in Settings → Skills)
@@ -124,7 +124,7 @@ Example roster for a personal-assistant workspace, last reviewed for 2026.9.3; s
 
 ## Usage notes
 
-- Prefer the `openclaw` CLI for scripting; the desktop app handles permissions.
+- Prefer the `paddy` CLI for scripting; the desktop app handles permissions.
 - Run installs from the Skills tab; the install button is hidden once a required binary is already present.
 - Keep heartbeats enabled so the assistant can schedule reminders, monitor inboxes, and trigger camera captures.
 - For browser-driven verification, use the `paddy browser` CLI (bundled `browser` plugin) with the Paddy-managed Chrome/Brave/Edge/Chromium profile.

@@ -11,7 +11,7 @@
       { "id": "memory-core-qmd-file-locks-to-sqlite-leases" }
     ]
   },
-  "name": "OpenClaw Memory",
+  "name": "Paddy Memory",
   "cliCommands": [
     {
       "name": "memory",

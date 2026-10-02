@@ -3,7 +3,7 @@ summary: "Install and configure Node.js for Paddy - version requirements, instal
 title: "Node.js"
 read_when:
   - "You need to install Node.js before installing Paddy"
-  - "You installed OpenClaw but `openclaw` is command not found"
+  - "You installed Paddy but `paddy` is command not found"
   - "npm install -g fails with permissions or PATH issues"
 ---
 
@@ -21,7 +21,7 @@ Upgrade Node before updating Paddy to avoid SQLite TEXT truncation. See [Node.js
 
 ### Update from the CLI
 
-If you run `openclaw` with an incompatible Node.js, startup first checks for an
+If you run `paddy` with an incompatible Node.js, startup first checks for an
 already available compatible runtime: the private Paddy runtime, the Node
 recorded in the managed Gateway service, Node on PATH, then nvm, fnm, Volta, and
 Homebrew defaults. Each candidate must pass the same SQLite capability checks as
@@ -59,7 +59,7 @@ If none is available and you are in an interactive terminal, the CLI offers:
 Update NodeJS: Y/N [N]:
 ```
 
-Enter **Y** to download a compatible Node.js for OpenClaw and retry the same command. The download is checksum-verified and stored under `~/.openclaw/tools/cli-node` (or the home selected by `OPENCLAW_HOME`). The Node.js installation does not replace system Node.js, change shell settings, reinstall OpenClaw, or repair/restart Gateway services. The retried command keeps its normal behavior.
+Enter **Y** to download a compatible Node.js for Paddy and retry the same command. The download is checksum-verified and stored under `~/.openclaw/tools/cli-node` (or the home selected by `OPENCLAW_HOME`). The Node.js installation does not replace system Node.js, change shell settings, reinstall Paddy, or repair/restart Gateway services. The retried command keeps its normal behavior.
 
 Later CLI invocations reuse that runtime when the active Node.js is incompatible. A supported active Node.js still takes precedence. Enter **N**, press Enter, or cancel to leave your installation unchanged and see manual upgrade instructions.
 
@@ -152,7 +152,7 @@ fnm use 26
 ```
 
   <Warning>
-  Initialize your version manager in your shell startup file (`~/.zshrc` or `~/.bashrc`). If you skip this, `openclaw` may not be found in new terminal sessions because PATH won't include Node's bin directory.
+  Initialize your version manager in your shell startup file (`~/.zshrc` or `~/.bashrc`). If you skip this, `paddy` may not be found in new terminal sessions because PATH won't include Node's bin directory.
   </Warning>
 </Accordion>
 

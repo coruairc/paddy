@@ -20,7 +20,7 @@ Paddy Matrix channel plugin for rooms and direct messages.
 ## Surface
 
 - Channels: `matrix`
-- CLI commands: `paddy matrix`
+- CLI commands: `openclaw matrix`
 
 ## Related docs
 

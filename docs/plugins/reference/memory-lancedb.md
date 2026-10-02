@@ -19,7 +19,7 @@ Paddy LanceDB-backed long-term memory plugin with auto-recall, auto-capture, and
 
 ## Surface
 
-- CLI commands: `paddy ltm`
+- CLI commands: `openclaw ltm`
 - Contracts: `tools`
 
 ## Related docs

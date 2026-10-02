@@ -8,7 +8,7 @@ title: "Browser login"
 
 ## Manual login (recommended)
 
-When a site requires login, sign in manually in the host browser's `openclaw`
+When a site requires login, sign in manually in the host browser's `paddy`
 profile. Automated logins often trigger anti-bot defenses and can lock the account.
 
 For an owner-authorized task, the agent may use owner-supplied credentials through
@@ -22,18 +22,18 @@ Back to the main browser docs: [Browser](/tools/browser).
 
 ## Which Chrome profile is used?
 
-OpenClaw controls a dedicated Chrome profile named `openclaw` (orange-tinted
+Paddy controls a dedicated Chrome profile named `paddy` (orange-tinted
 UI), separate from your daily browser profile.
 
 For agent browser tool calls:
 
-- Default choice: the agent uses its isolated `openclaw` browser.
+- Default choice: the agent uses its isolated `paddy` browser.
 - Use `profile="user"` only when existing logged-in sessions matter and you
   are at the computer to click/approve any attach prompt.
 - If you have multiple user-browser profiles, specify the profile explicitly
   instead of guessing.
 
-Two ways to access the `openclaw` profile:
+Two ways to access the `paddy` profile:
 
 1. Ask the agent to open the browser, then log in yourself.
 2. Open it via CLI:
@@ -44,7 +44,7 @@ paddy browser open https://x.com
 ```
 
 For a non-default profile, put `--browser-profile <name>` before the
-subcommand (default is `openclaw`):
+subcommand (default is `paddy`):
 
 ```bash
 paddy browser --browser-profile <name> open https://x.com

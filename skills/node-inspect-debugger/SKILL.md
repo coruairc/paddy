@@ -1,7 +1,7 @@
 ---
 name: node-inspect-debugger
 description: Debug Node.js with node inspect, --inspect, breakpoints, CDP, heap, and CPU profiles.
-metadata: { "openclaw": { "emoji": "🪲", "requires": { "bins": ["node"] } } }
+metadata: { "paddy": { "emoji": "🪲", "requires": { "bins": ["node"] } } }
 ---
 
 # Node Inspect Debugger
@@ -16,8 +16,8 @@ Quick start
 - TypeScript: `node --inspect-brk --import tsx path/to/script.ts`
 - Existing PID: `kill -SIGUSR1 <pid>` then `node inspect -p <pid>`
 - Inspect target list: `curl -s http://127.0.0.1:9229/json/list | jq`
-- OpenClaw CLI path: `node --inspect-brk openclaw.mjs ...`
-- OpenClaw test path: `OPENCLAW_VITEST_MAX_WORKERS=1 node --inspect-brk scripts/run-vitest.mjs <file>`
+- Paddy CLI path: `node --inspect-brk openclaw.mjs ...`
+- Paddy test path: `OPENCLAW_VITEST_MAX_WORKERS=1 node --inspect-brk scripts/run-vitest.mjs <file>`
 
 Debugger REPL
 

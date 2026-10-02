@@ -19,7 +19,7 @@ Fetch, list, and write files on paired nodes via dedicated node commands. Bypass
 
 ## Surface
 
-- CLI commands: `paddy file-transfer`
+- CLI commands: `openclaw file-transfer`
 - Contracts: `tools`
 
 <!-- openclaw-plugin-reference:manual-start -->

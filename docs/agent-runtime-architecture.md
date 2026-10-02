@@ -3,7 +3,7 @@ title: "Agent runtime architecture"
 summary: "How Paddy structures the built-in agent runtime: code layout, boundaries, resource manifests, and runtime selection."
 ---
 
-OpenClaw owns the built-in agent runtime. Runtime code lives under `src/agents/`, model/provider transport lives under `src/llm/`, and `openclaw/plugin-sdk/*` barrels expose the plugin-facing contracts.
+Paddy owns the built-in agent runtime. Runtime code lives under `src/agents/`, model/provider transport lives under `src/llm/`, and `openclaw/plugin-sdk/*` barrels expose the plugin-facing contracts.
 
 ## Runtime Layout
 
@@ -20,7 +20,7 @@ OpenClaw owns the built-in agent runtime. Runtime code lives under `src/agents/`
 
 ## Boundaries
 
-Core calls the built-in runtime through OpenClaw modules and SDK barrels. No external agent framework packages remain. Plugins use documented `openclaw/plugin-sdk/*` entrypoints and do not import `src/**` internals.
+Core calls the built-in runtime through Paddy modules and SDK barrels. No external agent framework packages remain. Plugins use documented `openclaw/plugin-sdk/*` entrypoints and do not import `src/**` internals.
 
 `@earendil-works/pi-tui` remains a third-party dependency: a terminal component toolkit used by the local TUI and session tool renderers. Internalizing it would be a separate vendoring effort.
 
@@ -95,5 +95,5 @@ task inputs; execution wall time includes worker startup and host waits.
 
 ## Related
 
-- [OpenClaw agent runtime workflow](/paddy-agent-runtime)
+- [Paddy agent runtime workflow](/paddy-agent-runtime)
 - [Agent runtimes](/concepts/agent-runtimes)

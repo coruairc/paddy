@@ -1,9 +1,9 @@
 ---
 doc-schema-version: 1
-summary: "Ask OpenClaw, the Home dock, the operator terminal, and the browser panel"
+summary: "Ask Paddy, the Home dock, the operator terminal, and the browser panel"
 read_when:
   - Opening a terminal or browser beside a conversation
-  - Using Ask OpenClaw for setup and repair
+  - Using Ask Paddy for setup and repair
   - Using the Home dock
 title: "Panels and docks"
 sidebarTitle: "Panels and docks"
@@ -13,9 +13,9 @@ Surfaces that dock beside the current page instead of replacing it.
 
 ## Paddy system care
 
-Open **Settings → Ask OpenClaw** to talk to the system setup and repair agent. To open it alongside your current page, click **Home** in the sidebar footer and select the **Ask OpenClaw** tab, or use the **Ask OpenClaw** command-palette action. The full page and dockable panel share one machine-wide conversation whose durable history lives on the Gateway. Closing the UI never cancels a turn; reopening Ask OpenClaw shows the completed conversation. The panel docks on the right or bottom, remembers its placement and size in the browser profile, and hides itself while the full page is open.
+Open **Settings → Ask Paddy** to talk to the system setup and repair agent. To open it alongside your current page, click **Home** in the sidebar footer and select the **Ask Paddy** tab, or use the **Ask Paddy** command-palette action. The full page and dockable panel share one machine-wide conversation whose durable history lives on the Gateway. Closing the UI never cancels a turn; reopening Ask Paddy shows the completed conversation. The panel docks on the right or bottom, remembers its placement and size in the browser profile, and hides itself while the full page is open.
 
-If no AI provider is configured, Ask OpenClaw offers **Connect an AI provider**. If a configured runtime fails to start or verify, the conversation stays visible with the actual error and **Retry**. Sending stays disabled until verification succeeds. Retry checks the runtime without resending your earlier message or clearing your draft.
+If no AI provider is configured, Ask Paddy offers **Connect an AI provider**. If a configured runtime fails to start or verify, the conversation stays visible with the actual error and **Retry**. Sending stays disabled until verification succeeds. Retry checks the runtime without resending your earlier message or clearing your draft.
 
 Onboarding suggestions can focus the recommended answer when nothing else has focus. If you have already focused the composer or another control, arriving suggestions leave your keyboard focus there.
 
@@ -31,7 +31,7 @@ Outside onboarding, this page can show at most one dismissible event chip per vi
 
 ## Home dock
 
-Use the **Home** button in the sidebar footer, or in the toolbar when the sidebar is collapsed, to open the selected agent's main conversation alongside your current page. Select the **Ask OpenClaw** tab in the same dock for system setup and repair. When the same Home conversation is already open as the page, the dock stays hidden rather than showing it twice.
+Use the **Home** button in the sidebar footer, or in the toolbar when the sidebar is collapsed, to open the selected agent's main conversation alongside your current page. Select the **Ask Paddy** tab in the same dock for system setup and repair. When the same Home conversation is already open as the page, the dock stays hidden rather than showing it twice.
 
 Your Home draft and attachments follow the conversation between the page and dock. Files still being prepared keep their progress and Remove action, and Send waits until preparation finishes.
 
@@ -47,7 +47,7 @@ When the terminal is disabled or your connection lacks admin access, the main te
 
 On Linux and macOS, a Gateway running on Bun uses Bun's native PTY without a
 Node runtime only on builds providing `Bun.Terminal.pause()` and `resume()`,
-such as the OpenClaw Bun fork builds that also carry the macOS child-exit fix.
+such as the Paddy Bun fork builds that also carry the macOS child-exit fix.
 Other Bun releases use a Node helper for terminal I/O. Keep Node available on
 the Gateway's `PATH`; Paddy skips Bun's `node` shim, and an unavailable Node
 executable produces a startup error with installation guidance. Windows keeps

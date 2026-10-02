@@ -45,7 +45,7 @@ paddy tui --local
 - `paddy chat` and `paddy terminal` are aliases for `paddy tui --local`.
 - `--local` cannot be combined with `--url`, `--token`, or `--password`.
 - Local mode uses the embedded agent runtime directly. Most local tools work, but Gateway-only features are unavailable.
-- Bare `openclaw` (no subcommand) picks a target automatically. An unconfigured install runs inference onboarding. Invalid config opens classic doctor guidance. A reachable configured Gateway opens this TUI shell in gateway mode. Otherwise, a configured local model opens it in local mode.
+- Bare `paddy` (no subcommand) picks a target automatically. An unconfigured install runs inference onboarding. Invalid config opens classic doctor guidance. A reachable configured Gateway opens this TUI shell in gateway mode. Otherwise, a configured local model opens it in local mode.
 
 ## What you see
 
@@ -194,7 +194,7 @@ pending prompts, and `interrupt` stops the current run before starting the new
 one. Explicit `/steer <message>` is Gateway-only. Use `/queue steer` plus a
 normal message in local mode.
 
-OpenClaw:
+Paddy:
 
 - `/paddy [request]` returns from the normal agent TUI to the [Paddy](#paddy-setup-and-repair-helper) setup/repair chat, optionally forwarding one request.
 
@@ -307,7 +307,7 @@ disabled by default inside tmux and GNU Screen. Sixel is not supported.
 ## Terminal colors
 
 - The TUI keeps assistant body text in your terminal's default foreground so dark and light terminals both stay readable.
-- If your terminal uses a light background and auto-detection is wrong, set `OPENCLAW_THEME=light` before starting `openclaw tui`.
+- If your terminal uses a light background and auto-detection is wrong, set `OPENCLAW_THEME=light` before starting `paddy tui`.
 - To force the original dark palette instead, set `OPENCLAW_THEME=dark`.
 
 ## History + streaming

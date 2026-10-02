@@ -19,7 +19,7 @@ Join Slack huddles through a dedicated Slack user in Chrome.
 
 ## Surface
 
-- CLI commands: `paddy slackhuddles`
+- CLI commands: `openclaw slackhuddles`
 - Contracts: `tools`, `transcriptSourceProviders`
 
 ## Related docs

@@ -3,7 +3,7 @@ name: coding-agent
 description: "Delegate coding work to Codex, Claude Code, or OpenCode as background workers; not simple edits or read-only code lookup."
 metadata:
   {
-    "openclaw":
+    "paddy":
       {
         "emoji": "🧩",
         "requires":
@@ -34,7 +34,7 @@ metadata:
 
 # Coding Agent
 
-Use for background feature builds, PR reviews, large refactors, and issue-to-PR loops. Do not use for simple edits, read-only lookup, ACP thread-bound work, or any run inside `~/.openclaw`, `$OPENCLAW_STATE_DIR`, or active OpenClaw state dirs.
+Use for background feature builds, PR reviews, large refactors, and issue-to-PR loops. Do not use for simple edits, read-only lookup, ACP thread-bound work, or any run inside `~/.openclaw`, `$OPENCLAW_STATE_DIR`, or active Paddy state dirs.
 
 ## Hard rules
 

@@ -17,7 +17,7 @@ Branch `feat/paddy-branding`, pushed to `origin` (`github.com/coruairc/paddy`).
 ## Verified before stopping
 
 - `pnpm tsgo` exit 0
-- corruption scan: 0 malformed tokens, 0 orphaned word-tails, 0 `an Paddy`
+- corruption scan: 0 malformed tokens, 0 orphaned word-tails, 0 `a Paddy`
 - line-cap ratchet exit 0 against `upstream/main` (a stale `origin/main` gives false positives)
 - max-lines ratchet + `OPENCLAW_*` budget 475/475
 - docs gate: format, lint, MDX, 14,624 internal links (0 broken); i18n glossary

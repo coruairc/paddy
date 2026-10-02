@@ -19,7 +19,7 @@ Paddy voice-call plugin for Twilio, Telnyx, and Plivo phone calls.
 
 ## Surface
 
-- CLI commands: `paddy voicecall`
+- CLI commands: `openclaw voicecall`
 - Contracts: `tools`
 - Skills
 

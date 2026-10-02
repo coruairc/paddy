@@ -1,5 +1,5 @@
-// Shared OpenClaw banner: the dot-matrix lobster mascot beside the OPENCLAW
-// wordmark, with a short startup animation on rich interactive terminals.
+// Shared Paddy banner: the dot-matrix mascot beside the PADDY wordmark, with a
+// short startup animation on rich interactive terminals.
 // Used by the wizard flows (doctor/onboard/configure) and the foreground
 // gateway run; non-TTY and CI paths always get the plain static banner.
 import {
@@ -12,32 +12,35 @@ import type { RuntimeEnv } from "../runtime.js";
 import { PRODUCT_NAME } from "./cli-name.js";
 
 // Mascot and wordmark are separate so they can be tinted independently; the
-// wordmark starts on mascot row 3, keeping the claws above the text line.
+// wordmark starts on mascot row 3, keeping the leaves above the text line.
 const MASCOT_ART = [
-  " •●●:.        .:●●•",
-  ":●●●●:        :●●●●:",
-  ".●●●●:.:•●●•:.:●●●●.",
-  " .●●●: •●●●●• :●●●.",
-  " ..:••●●●●●●●●••:..",
-  ".::••••●●●●●●••••::.",
-  " . .:  •●●●●•  :. .",
-  "    .  :●●●●:  .",
-  "      .●●●●●●.",
-  "       :••••:",
+  "        .:••:.      ",
+  "      .:••••••:.    ",
+  "     :••••••••••:   ",
+  "    :••••••••••••:  ",
+  "  .:••••:  :••••:.  ",
+  " .:••••••••••••••:. ",
+  " :••••••••••••••••: ",
+  "   :••••••••••••:   ",
+  "        :●●●●:      ",
+  "        :●●●●:      ",
 ] as const;
-// Claw tips with the pincer notch widened; swapping the top two rows in and
-// out produces the "snip".
-const MASCOT_OPEN_ROWS = ["•●•.:.        .:.•●•", ":●●●•:        :•●●●:"] as const;
+// Top leaf widened; swapping these two rows in and out makes the shamrock sway.
+const MASCOT_OPEN_ROWS = ["       .:••••:.     ", "     .:••••••••:.   "] as const;
 const MASCOT_WIDTH = 20;
 const WORDMARK_ROW_OFFSET = 3;
 
+// Block glyphs spelling PADDY: P A D D Y, each five columns wide.
 const WORDMARK_ART = [
-  "█▀▀▀█ █▀▀▀█ █▀▀▀▀ █▄  █ █▀▀▀▀ █     █▀▀▀█ █   █",
-  "█   █ █▀▀▀▀ █▀▀▀  █ ▀▄█ █     █     █▀▀▀█ █▄▀▄█",
-  "▀▀▀▀▀ ▀     ▀▀▀▀▀ ▀   ▀ ▀▀▀▀▀ ▀▀▀▀▀ ▀   ▀ ▀   ▀",
+  "█▀▀▀█ █▀▀▀█ █▀▀▀▄ █▀▀▀▄ █   █",
+  "█▀▀▀▀ █▀▀▀█ █   █ █   █  ▀▄▀ ",
+  "▀     ▀   ▀ ▀▀▀▀  ▀▀▀▀    ▀  ",
 ] as const;
 const GAP = 3;
-const BANNER_WIDTH = MASCOT_WIDTH + GAP + 48;
+// Derived from the art so the wipe edge, shimmer band and width gate follow the
+// wordmark if it is ever redrawn again.
+const WORDMARK_WIDTH = WORDMARK_ART[0].length;
+const BANNER_WIDTH = MASCOT_WIDTH + GAP + WORDMARK_WIDTH;
 const ROWS = MASCOT_ART.length;
 
 type ClawBannerOptions = {
@@ -99,7 +102,7 @@ const defaultSleep = (ms: number) =>
   });
 
 // One combined entrance: a left-to-right molt wipe reveals the color, a
-// shimmer band sweeps the wordmark, and the claws snip once. The 330ms sequence
+// shimmer band sweeps the wordmark, and the shamrock sways once. The 330ms sequence
 // ends on the exact static banner.
 async function animateBanner(opts: {
   settleWhen?: PromiseLike<unknown>;
@@ -172,7 +175,7 @@ async function animateBanner(opts: {
         return "settled";
       }
     }
-    // Snip: claws open and close once.
+    // Sway: the top leaf widens and settles once.
     draw(composeFrame({ mascotRows: [...MASCOT_OPEN_ROWS, ...MASCOT_ART.slice(2)] }));
     if (!(await pause(35))) {
       return "settled";

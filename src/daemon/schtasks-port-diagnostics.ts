@@ -19,7 +19,7 @@ export async function describeUnverifiedPortListeners(
     const identity = argv
       ? classifyOpenClawArgv(argv, { command: "gateway" }).kind === "openclaw"
         ? "paddy gateway"
-        : "not an paddy gateway"
+        : "not a paddy gateway"
       : "argv unavailable";
     const name = listener.command ?? "unknown";
     return pid ? `pid ${pid} (${name}, ${identity})` : `${name} (${identity})`;

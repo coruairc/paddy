@@ -19,7 +19,7 @@ Dashboard workboard for agent-owned issues and sessions.
 
 ## Surface
 
-- CLI commands: `paddy workboard`
+- CLI commands: `openclaw workboard`
 - Contracts: `tools`
 - Dashboard data bindings: `workboard.cards.list`, `workboard.stats`, `workboard.boards.list`
 - Dashboard action verbs: `workboard.dispatch`

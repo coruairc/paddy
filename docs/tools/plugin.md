@@ -21,7 +21,7 @@ bundled, official external, and source-only plugins, see
 
 ## Requirements
 
-- an OpenClaw checkout or installation with the `openclaw` CLI available
+- a Paddy checkout or installation with the `paddy` CLI available
 - network access to the selected source (ClawHub, npm, or a git host)
 - any plugin-specific credentials, config keys, or OS tools named by that
   plugin's setup docs
@@ -248,10 +248,10 @@ see [config migrations](/gateway/doctor/config-migrations).
 
 Paddy recognizes two plugin formats:
 
-| Format                 | How it loads                                                                             | Use when                                                               |
-| ---------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Native OpenClaw plugin | `openclaw.plugin.json` plus a runtime module loaded in process                           | You are installing or building OpenClaw-specific runtime capabilities  |
-| Compatible bundle      | Agent Plugins, Codex, Claude, or Cursor plugin layout mapped into Paddy plugin inventory | You are reusing compatible skills, commands, hooks, or bundle metadata |
+| Format              | How it loads                                                                             | Use when                                                               |
+| ------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Native Paddy plugin | `openclaw.plugin.json` plus a runtime module loaded in process                           | You are installing or building OpenClaw-specific runtime capabilities  |
+| Compatible bundle   | Agent Plugins, Codex, Claude, or Cursor plugin layout mapped into Paddy plugin inventory | You are reusing compatible skills, commands, hooks, or bundle metadata |
 
 Both formats appear in `paddy plugins list`, `paddy plugins inspect`,
 `paddy plugins enable`, and `paddy plugins disable`. See

@@ -6,7 +6,7 @@ read_when:
 title: Yuanbao
 ---
 
-Tencent Yuanbao is Tencent's AI assistant platform. The community-maintained `openclaw-plugin-yuanbao` plugin connects Yuanbao bots to OpenClaw over WebSocket for direct messages and group chats.
+Tencent Yuanbao is Tencent's AI assistant platform. The community-maintained `openclaw-plugin-yuanbao` plugin connects Yuanbao bots to Paddy over WebSocket for direct messages and group chats.
 
 **Status:** production-ready for bot DMs and group chats. WebSocket is the only supported connection mode. This plugin is maintained by the Tencent Yuanbao team as an external catalog entry, not by core Paddy; the config/behavior details below (beyond install and the generic CLI surface) come from the plugin's own docs and are not verified against Paddy core source.
 

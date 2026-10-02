@@ -16,7 +16,7 @@ classic doctor path.
 
 ## When it starts
 
-Running `openclaw` with no subcommand routes based on config state:
+Running `paddy` with no subcommand routes based on config state:
 
 - Config missing, or exists with no authored settings (empty, or only `$schema`/`meta` keys): starts guided onboarding with live AI verification.
 - Config exists but fails validation: starts classic onboarding, which reports the issues and directs you to `paddy doctor`.
@@ -46,7 +46,7 @@ It does not dump secrets or load plugin CLI commands just to start.
 
 Use `status` for the detailed inventory: config path, docs/source paths, local CLI probes, key/token presence, agents, model, and Gateway details.
 
-OpenClaw uses the same reference discovery as regular agents: in a Git checkout it points at local `docs/` and the source tree; in an npm install it uses bundled docs and links to [https://github.com/openclaw/openclaw](https://github.com/openclaw/openclaw), with guidance to check source when docs are not enough.
+Paddy uses the same reference discovery as regular agents: in a Git checkout it points at local `docs/` and the source tree; in an npm install it uses bundled docs and links to [https://github.com/openclaw/openclaw](https://github.com/openclaw/openclaw), with guidance to check source when docs are not enough.
 
 ## Examples
 
@@ -143,7 +143,7 @@ change. Stopping the requesting run cancels its approval. A late approval cannot
 restart a closed run: request the change again from an active run if still needed.
 
 Configured agents can ask Paddy to create another agent through their
-`openclaw` tool. The request enters the same typed create-agent operation and
+`paddy` tool. The request enters the same typed create-agent operation and
 host authorization flow; any approval summary names the requesting agent.
 Paddy remains the executor, and authorized creation records that requesting
 agent as the new agent's creator.
@@ -157,7 +157,7 @@ requesting run ends.
 
 Doctor repairs are unavailable inside Paddy because they can rewrite the provider, authentication, or default-agent inference route powering the session. Exit Paddy and run `paddy doctor --fix` in a terminal. Read-only `doctor` remains available inside Paddy.
 
-New agents inherit the live-verified default inference route. The agent ids `openclaw` and `crestodian` are reserved for the system agent and cannot be created as normal agents. The retired id remains blocked so an old config cannot claim it.
+New agents inherit the live-verified default inference route. The agent ids `paddy` and `crestodian` are reserved for the system agent and cannot be created as normal agents. The retired id remains blocked so an old config cannot claim it.
 
 `config set`, `config unset`, and `config set-ref` propose config changes for approval.
 Use `config unset <path>` to remove an authored setting and let its inherited or
@@ -289,7 +289,7 @@ supervision opt-outs remain untouched during inference setup.
 
 ## AI conversation
 
-Interactive OpenClaw's free-form conversation runs through the same agent loop as regular OpenClaw agents, restricted to one ring-zero OpenClaw authority tool, `paddy`, that wraps the typed operations. Read actions run freely, mutations require your conversational approval for that exact operation (see Operations and approval), and every applied write is audited and re-validated. The agent session persists, so OpenClaw has real multi-turn memory. If the verified inference route later stops working, return to `paddy onboard` and repair it before continuing.
+Interactive Paddy's free-form conversation runs through the same agent loop as regular Paddy agents, restricted to one ring-zero Paddy authority tool, `paddy`, that wraps the typed operations. Read actions run freely, mutations require your conversational approval for that exact operation (see Operations and approval), and every applied write is audited and re-validated. The agent session persists, so Paddy has real multi-turn memory. If the verified inference route later stops working, return to `paddy onboard` and repair it before continuing.
 
 A failed or timed-out turn ends that setup conversation with a visible error.
 Retrying starts a fresh conversation and live-checks the inference route again.
@@ -298,7 +298,7 @@ System-agent turns use `agents.defaults.timeoutSeconds`, including `0` to disabl
 the deadline, just like ordinary agent turns. The default is 48 hours; there is
 no separate two-minute cap for setup and repair.
 
-When a regular agent calls its `openclaw` tool, it delegates to this system agent
+When a regular agent calls its `paddy` tool, it delegates to this system agent
 through the running Gateway rather than launching the CLI. That adds a separate
 model turn, so routine session and workspace checks should use the agent's
 available tools directly. The embedded system helper does not load workspace
@@ -307,7 +307,7 @@ skill catalogs because it can act only through its built-in system tool.
 The host does not parse natural-language requests into operations. Free-form
 messages — including command-looking text and questions such as "why did my
 gateway stop?" — go to the AI, which can map the request to a typed operation
-through the `openclaw` tool.
+through the `paddy` tool.
 
 When a mutation is pending, only unambiguous approval or decline phrases from a
 closed list are resolved without inference. Ambiguous consent goes to a
@@ -324,7 +324,7 @@ Message-channel rescue mode never uses the model-assisted planner. Remote rescue
 
 Embedded runtimes and the Codex app-server harness enforce the ring-zero
 restriction directly: the run carries a Paddy tool allow-list with only
-the `openclaw` tool. For Codex, OpenClaw also disables environments, native
+the `paddy` tool. For Codex, Paddy also disables environments, native
 execution, multi-agent, goal, app/plugin, skill/MCP, web-search,
 `request_user_input`, and its native planning utility for that run. CLI
 harnesses do not consume Paddy's allow-list,
@@ -332,14 +332,14 @@ so Paddy admits only backends whose own tool-selection contract can prove
 the same restriction:
 
 - Selectable backends, including Claude Code, launch with an empty native-tool
-  selection and one MCP tool, `openclaw`. Claude's generated MCP config is
+  selection and one MCP tool, `paddy`. Claude's generated MCP config is
   applied with `--strict-mcp-config`, so no other MCP servers are loaded.
 - Backends that declare no native tools receive the same dedicated Paddy
   MCP server.
 - Always-on or unknown native-tool backends fail closed before inference; they
   cannot host a Paddy session.
 
-Only Paddy sessions get the openclaw MCP server; normal agent runs
+Only Paddy sessions get the paddy MCP server; normal agent runs
 never see this tool. Selectable/no-native CLI backends and API-key models
 therefore enforce the literal single-tool loop. Codex app-server models enforce
 a single Paddy authority tool plus the inert native planning utility. In all
@@ -411,7 +411,7 @@ Security contract for remote rescue:
 - Requires an explicit owner identity; no wildcard sender rules, open group policy, unauthenticated webhooks, or anonymous channels.
 - Rescue is limited to owner DMs.
 - Plugin search and list are read-only. Plugin install is always local-only (blocked in rescue, even when otherwise enabled) because it downloads executable code. Plugin uninstall is refused in both local Paddy and rescue; run `paddy plugins uninstall <id>` from a terminal.
-- Remote rescue cannot open the local TUI or switch into an interactive agent session; use local `openclaw` for agent handoff.
+- Remote rescue cannot open the local TUI or switch into an interactive agent session; use local `paddy` for agent handoff.
 - `config unset` is unavailable in remote rescue because that path cannot revalidate owner policy at the final write. Ask your regular agent to remove the setting through the setup helper, or run `paddy config unset <path>` locally.
 - Persistent writes still require approval, even in rescue mode.
 - Pending approvals are one-use. Any newer rescue command for the same account, channel, and sender revokes the older plan; failed execution also consumes approval, so resend the command to retry.

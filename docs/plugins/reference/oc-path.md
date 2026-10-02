@@ -19,7 +19,7 @@ Adds the paddy path CLI for oc:// workspace file addressing.
 
 ## Surface
 
-- CLI commands: `paddy path`
+- CLI commands: `openclaw path`
 
 ## Related docs
 

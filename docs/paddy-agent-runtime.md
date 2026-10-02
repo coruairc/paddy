@@ -46,7 +46,7 @@ tool streaming and payload handling.
 
 ## Clean slate reset
 
-State lives in the OpenClaw state directory: `~/.openclaw` by default, or
+State lives in the Paddy state directory: `~/.openclaw` by default, or
 `$OPENCLAW_STATE_DIR` when set. Paths relative to that directory:
 
 | Path                                           | Holds                                                              |
@@ -61,7 +61,7 @@ State lives in the OpenClaw state directory: `~/.openclaw` by default, or
 
 Delete those paths for a full reset. Narrower resets:
 
-- Sessions only: do not delete `agents/<agentId>/agent/openclaw-agent.sqlite`; session rows live there alongside other per-agent state. Use `/new` or `/reset` to start a fresh session for one chat, and `openclaw sessions cleanup` for session maintenance.
+- Sessions only: do not delete `agents/<agentId>/agent/openclaw-agent.sqlite`; session rows live there alongside other per-agent state. Use `/new` or `/reset` to start a fresh session for one chat, and `paddy sessions cleanup` for session maintenance.
 - Keep auth: leave `agents/<agentId>/agent/openclaw-agent.sqlite` and `credentials/` in place.
 
 Legacy `auth-profiles.json` files are no longer read at runtime;

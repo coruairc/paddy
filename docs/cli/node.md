@@ -342,7 +342,7 @@ Run `paddy devices list` again before approval.
 
 The headless node separates its client instance ID from the signed device
 identity that the Gateway uses for pairing and routing. This state lives in the
-OpenClaw state directory (`~/.openclaw` by default, or `$OPENCLAW_STATE_DIR`
+Paddy state directory (`~/.openclaw` by default, or `$OPENCLAW_STATE_DIR`
 when set):
 
 | State                                                                   | Purpose                                                                                                                          |

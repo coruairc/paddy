@@ -21,7 +21,7 @@ Paddy connects to Zalo ClawBot through the catalog-listed external `@zalo-platfo
 ## Prerequisites
 
 - Node.js >= 22
-- [OpenClaw](/install) installed (`openclaw` CLI available)
+- [Paddy](/install) installed (`paddy` CLI available)
 - A Zalo account on a mobile device to scan the login QR code
 
 ## Install with onboard (recommended)

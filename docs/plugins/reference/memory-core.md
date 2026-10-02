@@ -19,6 +19,6 @@ Adds agent-callable tools.
 
 ## Surface
 
-- CLI commands: `paddy memory`
+- CLI commands: `openclaw memory`
 - Slash commands: `/dreaming`
 - Contracts: `tools`

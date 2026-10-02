@@ -20,7 +20,7 @@ Guarded end-to-end encrypted claw channel.
 ## Surface
 
 - Channels: `reef`
-- CLI commands: `paddy reef`
+- CLI commands: `openclaw reef`
 
 ## Related docs
 

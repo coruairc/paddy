@@ -103,7 +103,7 @@ paddy workboard dispatch
 paddy workboard dispatch --json
 paddy workboard dispatch --max-starts 10
 paddy workboard dispatch --admin
-openclaw workboard dispatch --url http://127.0.0.1:18789 --token "$OPENCLAW_GATEWAY_TOKEN"
+paddy workboard dispatch --url http://127.0.0.1:18789 --token "$OPENCLAW_GATEWAY_TOKEN"
 ```
 
 `dispatch` first calls the running Gateway RPC method `workboard.cards.dispatch`. That method uses the same subagent runtime as the dashboard dispatch action. Ready cards therefore become task-tracked worker runs with linked session keys. `--max-starts` uses the additive `workboard.cards.dispatchWithOptions` method, so an older Gateway rejects the option before starting any workers. Restart the Gateway after upgrading, before you use the flag. Cards with an assigned agent use agent-scoped subagent session keys. Unassigned cards keep an unscoped subagent key, so the Gateway's configured default agent is preserved.
@@ -168,7 +168,7 @@ Slash command dispatch also uses the Gateway subagent runtime. It follows the sa
 
 The CLI dispatch path normally requests Gateway `operator.write` and `operator.read` scopes. Workspace-bound cards run directly in an exact configured agent workspace. A worktree request is narrowed to that directory, so the host does not materialize repository-controlled code. The selected worker must have writable, non-shared Docker sandbox access to that exact workspace, a live container hash matching the requested mounts and policy, and no host escape capability. Pass `--admin` to explicitly request `operator.admin`, allow another host checkout, and use normal managed-worktree setup. The connection fails if that scope is not approved for the client. A read-only Gateway token can inspect Workboard data through read methods, but it cannot create cards or dispatch workers. Workspace limits do not otherwise change manual card movement for callers with Workboard mutation permission.
 
-Local `list`, `create`, `show`, and `move` commands operate on the local OpenClaw state directory used by the current profile. Use `--dev` or `--profile <name>` on the top-level `openclaw` command when you need a different state root.
+Local `list`, `create`, `show`, and `move` commands operate on the local Paddy state directory used by the current profile. Use `--dev` or `--profile <name>` on the top-level `paddy` command when you need a different state root.
 
 ## Troubleshooting
 

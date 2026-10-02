@@ -177,14 +177,14 @@ When your connection is bound to an authenticated Gateway profile, theme, theme 
 
 ## Opening links
 
-Under **Settings → Appearance → Chat**, enable **Open links outside OpenClaw**
+Under **Settings → Appearance → Chat**, enable **Open links outside Paddy**
 to open web links outside Paddy instead of in built-in readers or browser panels.
 In a web browser, links use ordinary browser navigation; in a native app, they open
 in the system's default browser. The switch is off by default, preserving current
 behavior. Turning it off restores built-in readers and any existing **Open links
 in Control UI browser** preference. Browser preview cards also follow this setting
 when you click their image or **Open** button. Their three-dot menu offers
-**Open in OpenClaw** when external opening is enabled, or **Open in new tab**
+**Open in Paddy** when external opening is enabled, or **Open in new tab**
 when it is disabled. Explicit context-menu choices still work.
 
 This preference is stored only in the current browser or app webview, separately
@@ -235,7 +235,7 @@ description. The metadata rail shows available release details, categories, repo
 documentation. Security audits link to ClawHub.
 
 Installed, disabled plugins put **Enable** first as the primary action, followed
-by **Ask OpenClaw**. Enabled plugins put primary **Ask OpenClaw** first, followed
+by **Ask Paddy**. Enabled plugins put primary **Ask Paddy** first, followed
 by **Disable**. Both rows then offer **Uninstall** when removable and an icon
 button for **Settings**. Uninstalled plugins put **Install** first. **Install**
 starts installation immediately and accepts the staged plugin’s declared
@@ -363,7 +363,7 @@ local Gateway still uses **Update Mac app + Gateway** and the native update flow
 Open **Apps** from the sidebar **More** menu, the command palette, or the
 sidebar agent menu (**Get the apps**), or use `/apps` relative to the
 configured Control UI base path. The page collects install links for every
-OpenClaw companion surface: the [iOS](/platforms/ios) and
+Paddy companion surface: the [iOS](/platforms/ios) and
 [Android](/platforms/android) apps, the Apple Watch and Wear OS companions
 bundled with them, the [macOS](/platforms/macos), [Windows](/platforms/windows),
 and [Linux](/platforms/linux) desktop apps, the
@@ -372,7 +372,7 @@ and [Linux](/platforms/linux) desktop apps, the
 
 ## Settings
 
-Inside **Settings**, the dedicated sidebar includes **Ask OpenClaw** and starts with a **Search settings** field for quickly finding settings sections.
+Inside **Settings**, the dedicated sidebar includes **Ask Paddy** and starts with a **Search settings** field for quickly finding settings sections.
 
 Form edits save automatically. If the connection changes while edits are pending,
 autosave pauses until you choose **Save** to keep them or **Reload Config** to
@@ -418,7 +418,7 @@ results echo the originating request's document ID, including `stale-document`
 rejections, so they cannot match another document's request. The host must verify
 the current document's ID before adopting readiness and clear its binding on navigation, reload, or process termination.
 
-Native commands use the `openclaw:native-conversation-command` window event with
+Native commands use the `paddy:native-conversation-command` window event with
 `detail: { contract: 1, documentId, requestId, type, payload }`. Supported commands
 are `navigate { agentId, sessionKey }`, `presentation { visible, active }`, and
 `focus-composer {}`. Each request receives one `command-result`; stale document
@@ -502,7 +502,7 @@ and actions, location preferences, and active computer presence.
 **Talk** adds a **This Mac** section for Voice Wake, push-to-talk, sounds,
 microphone, and languages. **Updates** adds the app version, automatic update
 preference, and **Check for Updates**. These device settings appear only inside
-the OpenClaw app; ordinary browsers keep the Gateway settings. Talk trigger words
+the Paddy app; ordinary browsers keep the Gateway settings. Talk trigger words
 are Gateway settings and remain available in every browser.
 
 On iOS, the group is **This iPhone** or **This iPad**. The device page shows
@@ -561,7 +561,7 @@ credentials through this page. Files are copied below `memory/imports/` in the
 selected workspace, where the active memory plugin can index them. Sources are
 never changed.
 
-For a narrower conversational path, open **Settings → Ask OpenClaw** and say
+For a narrower conversational path, open **Settings → Ask Paddy** and say
 `import memory`. The chat wizard copies only new detected memory into the
 existing default agent workspace; it does not choose another destination agent
 or replace conflicts. It reports each source's confirmed copy count and warns

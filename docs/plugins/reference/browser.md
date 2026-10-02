@@ -19,7 +19,7 @@ Adds agent-callable tools.
 
 ## Surface
 
-- CLI commands: `paddy browser`
+- CLI commands: `openclaw browser`
 - Contracts: `tools`
 - Skills
 

@@ -19,7 +19,7 @@ Paddy Google Meet participant plugin for joining calls through Chrome or Twilio 
 
 ## Surface
 
-- CLI commands: `paddy googlemeet`
+- CLI commands: `openclaw googlemeet`
 - Contracts: `tools`, `transcriptSourceProviders`
 
 ## Related docs

@@ -302,7 +302,7 @@ export const zh_CN = {
         "我看到这台机器上有 {labels} — 品味不错。等 AI 就绪后，我还能把它们的记忆一并带过来。",
       controlUiPreparing: "正在准备 Control UI…",
       custodianIntro: `你好 — 我是 ${PRODUCT_NAME}，负责维护这套系统。我们开始设置吧。`,
-      findMeLater: "以后随时可以找到我 — 在终端运行 `openclaw`，或在仪表盘中打开设置。",
+      findMeLater: "以后随时可以找到我 — 在终端运行 `paddy`，或在仪表盘中打开设置。",
       hatchingNow: "正在孵化你的智能体…",
       lookAroundManual: "不用 — 我自己手动配置",
       lookAroundQuestion: "可以让我查找一下你的 AI 访问方式吗？",

@@ -19,7 +19,7 @@ Adds policy-backed doctor checks for workspace conformance.
 
 ## Surface
 
-- CLI commands: `paddy policy`
+- CLI commands: `openclaw policy`
 
 <!-- openclaw-plugin-reference:manual-start -->
 

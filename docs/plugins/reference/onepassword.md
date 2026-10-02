@@ -19,7 +19,7 @@ openclaw-plugin-reference:manual-end comment markers. -->
 
 ## Surface
 
-- CLI commands: `paddy onepassword`
+- CLI commands: `openclaw onepassword`
 - Contracts: `tools`
 
 ## Related docs

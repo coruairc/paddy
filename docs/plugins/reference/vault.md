@@ -19,7 +19,7 @@ HashiCorp Vault SecretRef provider integration.
 
 ## Surface
 
-- CLI commands: `paddy vault`
+- CLI commands: `openclaw vault`
 
 ## Related docs
 

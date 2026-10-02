@@ -14,7 +14,7 @@ Status: downloadable plugin (bot token + WebSocket events). Channels, private ch
 <Tabs>
   <Tab title="npm registry">
     ```bash
-    openclaw plugins install @openclaw/mattermost
+    paddy plugins install @openclaw/mattermost
     ```
   </Tab>
   <Tab title="Local checkout">
@@ -463,7 +463,7 @@ When a user clicks a button:
 
 ### Direct API integration (external scripts)
 
-External scripts and webhooks can post buttons directly via the Mattermost REST API instead of going through the agent's `message` tool. Prefer OpenClaw's `message` tool. For direct integrations, import `buildButtonAttachments` from `@openclaw/mattermost/api.js`; if posting raw JSON, follow these rules:
+External scripts and webhooks can post buttons directly via the Mattermost REST API instead of going through the agent's `message` tool. Prefer Paddy's `message` tool. For direct integrations, import `buildButtonAttachments` from `@openclaw/mattermost/api.js`; if posting raw JSON, follow these rules:
 
 **Payload structure:**
 

@@ -19,7 +19,7 @@ Cloud worker provider and lease-backed sandbox backend for the Crabbox CLI.
 
 ## Surface
 
-- CLI commands: `paddy crabbox`
+- CLI commands: `openclaw crabbox`
 - Contracts: `tools`, `workerProviders`
 - Skills
 

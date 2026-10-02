@@ -314,7 +314,7 @@ export const en = {
       controlUiPreparing: "Preparing the Control UI…",
       custodianIntro: `Hi — I'm ${PRODUCT_NAME}. I keep this system running. Let's get you set up.`,
       findMeLater:
-        "You can always find me later — run `openclaw` in a terminal, or open Settings in the dashboard.",
+        "You can always find me later — run `paddy` in a terminal, or open Settings in the dashboard.",
       hatchingNow: "Hatching your agent now…",
       lookAroundManual: "No — I'll configure it manually",
       lookAroundQuestion: "May I look around to find your AI access?",

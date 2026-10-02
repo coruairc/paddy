@@ -19,7 +19,7 @@ Local typed decisions using pinned ONNX classifiers.
 
 ## Surface
 
-- CLI commands: `paddy onnx`
+- CLI commands: `openclaw onnx`
 - Contracts: `decisionProviders`
 
 ## Related docs

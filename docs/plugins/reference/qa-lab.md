@@ -19,5 +19,5 @@ Paddy QA lab plugin with private debugger UI and scenario runner.
 
 ## Surface
 
-- CLI commands: `paddy qa`
+- CLI commands: `openclaw qa`
 - Contracts: `tools`, `webSearchProviders`, `workerProviders`

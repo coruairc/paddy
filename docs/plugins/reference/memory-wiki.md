@@ -19,7 +19,7 @@ Persistent wiki compiler and Obsidian-friendly knowledge vault for Paddy.
 
 ## Surface
 
-- CLI commands: `paddy wiki`
+- CLI commands: `openclaw wiki`
 - Contracts: `tools`
 - Skills
 
