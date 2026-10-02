@@ -24,12 +24,19 @@ import { isParentDefaultHelpAction } from "./parent-default-help.js";
 
 const HELP_OR_VERSION_FLAGS = new Set(["-h", "--help", "-V", "--version"]);
 
-// Every CLI invocation presents as `paddy` in process listings instead of `node`; only the
+// Every CLI invocation presents as `openclaw` in process listings instead of `node`; only the
 // long-running Gateway takes a distinct title (see gateway-cli/run-loop.ts), so lock readers and
 // operators can tell it apart from ordinary commands.
+//
+// This title is a process identity matched by exact string elsewhere (run-loop.ts promotes
+// `openclaw` to `openclaw-gateway`, which daemon markers and lock readers then match), so it stays
+// pinned to the upstream binary name. Using the display name here would silently stop the Gateway
+// from ever taking its gateway identity.
+const CLI_PROCESS_TITLE = "openclaw";
+
 function setProcessTitleForCommand() {
-  if (process.title !== CLI_NAME) {
-    process.title = CLI_NAME;
+  if (process.title !== CLI_PROCESS_TITLE) {
+    process.title = CLI_PROCESS_TITLE;
   }
 }
 
@@ -115,7 +122,7 @@ async function runStateStoreGuard(commandPath: string[]): Promise<void> {
   let outcome: import("../state-dir-gateway-check.js").CliGatewayStateDirOutcome;
   try {
     const { checkCliGatewayStateDir } = await import("../state-dir-gateway-check.js");
-    outcome = await checkCliGatewayStateDir({ command: `openclaw ${commandPath.join(" ")}` });
+    outcome = await checkCliGatewayStateDir({ command: `${CLI_NAME} ${commandPath.join(" ")}` });
   } catch (error) {
     const { formatErrorMessage } = await import("../../infra/errors.js");
     const { logDebug } = await import("../../logger.js");
@@ -160,6 +167,7 @@ export function registerPreActionHooks(program: Command, programVersion: string)
     applyResolvedCommandOutputMode(jsonOutputMode, machineOutputMode);
     const startupPolicy = resolveCliStartupPolicy({
       argv,
+      options: actionCommand.opts(),
       commandPath,
       jsonOutputMode,
       machineOutputMode,

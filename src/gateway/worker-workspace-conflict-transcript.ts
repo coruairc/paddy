@@ -1,4 +1,5 @@
 import { err, ok, type Result } from "@openclaw/normalization-core/result";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   appendSessionTranscriptReport,
   readLatestSessionTranscriptReport,
@@ -139,7 +140,7 @@ export function createWorkerWorkspaceConflictTranscriptHandlers(
             customTypes: [WORKSPACE_RECOVERY_FAILURE_TRANSCRIPT_TYPE],
             selectReport: (latestRecovery) => {
               const error = boundedWorkerError(failure, 768);
-              const content = `Cloud workspace recovery attempt failed: ${error}. OpenClaw preserved the result and will retry.`;
+              const content = `Cloud workspace recovery attempt failed: ${error}. ${PRODUCT_NAME} preserved the result and will retry.`;
               if (latestRecovery?.content !== content) {
                 return {
                   customType: WORKSPACE_RECOVERY_FAILURE_TRANSCRIPT_TYPE,

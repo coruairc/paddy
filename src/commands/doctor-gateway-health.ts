@@ -3,6 +3,7 @@ import { redactSensitiveUrlLikeString } from "@openclaw/net-policy/redact-sensit
 import { GatewayProtocolRequestTimeoutError } from "../../packages/gateway-client/src/protocol-request.js";
 import { note } from "../../packages/terminal-core/src/note.js";
 import { sanitizeTerminalText } from "../../packages/terminal-core/src/safe-text.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { probeGatewayStatus } from "../cli/daemon-cli/probe.js";
 import { DEFAULT_RESTART_HEALTH_TIMEOUT_MS } from "../cli/daemon-cli/restart-health.constants.js";
@@ -30,6 +31,7 @@ import type {
   DoctorMemoryStatusPayload,
 } from "../gateway/server-methods/doctor.js";
 import { collectChannelStatusIssues } from "../infra/channels-status-issues.js";
+import { formatMissingChildRuntimeWarning } from "../infra/child-runtime-viability.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { formatDurationSeconds } from "../infra/format-time/format-duration.js";
 import { readGatewayLastInstallationReplacement } from "../infra/gateway-boot-lifecycle.js";
@@ -37,6 +39,7 @@ import type { RuntimeEnv } from "../runtime.js";
 import type { StatusSummary } from "../status/summary.js";
 import { VERSION } from "../version.js";
 import { projectDoctorSecretRuntimeDegradations } from "./doctor-secret-runtime-degradation.js";
+import { isServiceRepairExternallyManaged } from "./doctor-service-repair-policy.js";
 import { waitForGatewayDiagnostic } from "./gateway-diagnostic-readiness.js";
 import {
   GATEWAY_HEALTH_CREDENTIALS_REQUIRED_MESSAGE,
@@ -109,7 +112,7 @@ export async function collectGatewayHealthFindings(
         ...historyFindings,
         warning(
           "Authenticated Gateway health inspection was intentionally skipped because an active credential uses an exec SecretRef.",
-          "Rerun `openclaw doctor --lint --only core/doctor/gateway-health --allow-exec` to permit configured secret execution.",
+          "Rerun `paddy doctor --lint --only core/doctor/gateway-health --allow-exec` to permit configured secret execution.",
         ),
       ];
     }
@@ -136,14 +139,14 @@ export async function collectGatewayHealthFindings(
     const sqliteWalWarning = formatSqliteWalHealthWarning(status.sqliteWal);
     if (sqliteWalWarning) {
       findings.push(
-        warning(`SQLite WAL: ${sqliteWalWarning}`, "Inspect openclaw status --deep output."),
+        warning(`SQLite WAL: ${sqliteWalWarning}`, "Inspect paddy status --deep output."),
       );
     }
     if (status.installationReplacementWarning) {
       findings.push(
         warning(
           formatGatewayHealthDiagnostic(status.installationReplacementWarning),
-          "Wait for the service manager to restart the Gateway; for a foreground Gateway, run `openclaw gateway run` again after it exits.",
+          "Wait for the service manager to restart the Gateway; for a foreground Gateway, run `paddy gateway run` again after it exits.",
         ),
       );
     }
@@ -154,7 +157,7 @@ export async function collectGatewayHealthFindings(
         ...historyFindings,
         warning(
           `Gateway health inspection could not be prepared: ${formatGatewayHealthDiagnostic(error)}`,
-          "Fix Gateway connection configuration, then rerun `openclaw doctor --lint --only core/doctor/gateway-health`.",
+          "Fix Gateway connection configuration, then rerun `paddy doctor --lint --only core/doctor/gateway-health`.",
         ),
       ];
     }
@@ -175,7 +178,7 @@ export async function collectGatewayHealthFindings(
             fixHint:
               mode === "remote"
                 ? "Verify the remote Gateway URL, network path, TLS settings, and credentials."
-                : "Inspect the service with `openclaw gateway status --deep`, or run `openclaw doctor` for guided checks.",
+                : "Inspect the service with `paddy gateway status --deep`, or run `paddy doctor` for guided checks.",
           };
     return [...historyFindings, warning(diagnostic.message, diagnostic.fixHint)];
   }
@@ -223,11 +226,11 @@ function noteCliGatewayVersionSkew(status: StatusSummary | undefined): void {
   }
   note(
     [
-      `This command is OpenClaw ${VERSION}; the running Gateway is OpenClaw ${gatewayVersion}.`,
-      "Check `openclaw --version`, `which openclaw`, and `openclaw gateway status --deep`.",
-      "If this mismatch is unexpected, update PATH so `openclaw` points to the version you want, or reinstall the Gateway service from that same OpenClaw install.",
+      `This command is ${PRODUCT_NAME} ${VERSION}; the running Gateway is ${PRODUCT_NAME} ${gatewayVersion}.`,
+      "Check `paddy --version`, `which paddy`, and `paddy gateway status --deep`.",
+      `If this mismatch is unexpected, update PATH so \`paddy\` points to the version you want, or reinstall the Gateway service from that same ${PRODUCT_NAME} install.`,
     ].join("\n"),
-    "OpenClaw version mismatch",
+    `${PRODUCT_NAME} version mismatch`,
   );
 }
 
@@ -257,7 +260,7 @@ function noteGatewayStateDirectory(
 async function noteInstalledGatewayStateDirectory(cfg: OpenClawConfig, timeoutMs: number) {
   // A remote Gateway can use a loopback tunnel or have no configured URL.
   // Neither case makes the local installed service authoritative.
-  if (cfg.gateway?.mode === "remote") {
+  if (cfg.gateway?.mode === "remote" || isServiceRepairExternallyManaged()) {
     return;
   }
   try {
@@ -301,7 +304,11 @@ export async function checkGatewayHealth(params: {
   let gatewaySnapshot: GatewayHello["snapshot"] | undefined;
   try {
     const remainingMs = await waitForGatewayDiagnostic(
-      { config: params.cfg, timeoutMs },
+      {
+        config: params.cfg,
+        timeoutMs,
+        serviceMode: isServiceRepairExternallyManaged() ? "external" : "native",
+      },
       params.runtime,
     );
     if (remainingMs === undefined) {
@@ -336,6 +343,12 @@ export async function checkGatewayHealth(params: {
     }
     if (status.startupRecoveryWarning) {
       note(sanitizeTerminalText(status.startupRecoveryWarning), "Startup session recovery");
+    }
+    const childRuntimeWarning = status.childRuntime
+      ? formatMissingChildRuntimeWarning(status.childRuntime)
+      : undefined;
+    if (childRuntimeWarning) {
+      note(sanitizeTerminalText(childRuntimeWarning), "Gateway runtime");
     }
     if (status.installationReplacementWarning) {
       note(sanitizeTerminalText(status.installationReplacementWarning), "Installation replaced");
@@ -395,7 +408,7 @@ export async function checkGatewayHealth(params: {
           isGatewayCallTimeout(formatErrorMessage(channelsResult.reason))
             ? slowDiagnosticNote("channel")
             : `Channel status probe failed: ${sanitizeTerminalText(formatErrorMessage(channelsResult.reason))}`,
-          `Retry: ${formatCliCommand("openclaw channels status --probe")}`,
+          `Retry: ${formatCliCommand("paddy channels status --probe")}`,
         ].join("\n"),
         "Channel warnings",
       );
@@ -412,7 +425,7 @@ export async function checkGatewayHealth(params: {
           isGatewayCallTimeout(formatErrorMessage(exporterResult.reason))
             ? slowDiagnosticNote("exporter")
             : `Exporter diagnostics failed: ${sanitizeTerminalText(formatErrorMessage(exporterResult.reason))}`,
-          `Retry: ${formatCliCommand("openclaw gateway stability --type telemetry.exporter")}`,
+          `Retry: ${formatCliCommand("paddy gateway stability --type telemetry.exporter")}`,
         ].join("\n"),
         "Telemetry exporters",
       );
@@ -478,13 +491,7 @@ export async function probeGatewayMemoryStatus(params: {
       timeoutMs,
       config: params.cfg,
     });
-    // Propagate the gateway's checked flag. When the gateway skips the embedding
-    // probe (probe: false path), it returns checked: false to signal that no
-    // readiness determination was made. Mapping that to checked: true here would
-    // cause the renderer to treat a skipped probe as a checked-but-not-ready
-    // failure and emit a false-positive warning for key-optional providers.
-    // We also carry skipped: true so renderers can distinguish an intentional
-    // non-deep skip from a transport timeout (which also returns checked: false).
+    // An intentional shallow skip must not look like an embedding-readiness failure.
     const gatewayChecked = payload.embedding.checked !== false;
     return {
       checked: gatewayChecked,
@@ -495,18 +502,11 @@ export async function probeGatewayMemoryStatus(params: {
     };
   } catch (err) {
     const message = formatErrorMessage(err);
-    if (isGatewayCallTimeout(message)) {
-      return {
-        checked: false,
-        ready: false,
-        error: `gateway memory probe timed out: ${message}`,
-        skipped: false,
-      };
-    }
+    const timedOut = isGatewayCallTimeout(message);
     return {
-      checked: true,
+      checked: !timedOut,
       ready: false,
-      error: `gateway memory probe unavailable: ${message}`,
+      error: `gateway memory probe ${timedOut ? "timed out" : "unavailable"}: ${message}`,
       skipped: false,
     };
   }

@@ -5,6 +5,7 @@ import {
   resolveAmbientOwnerAgentId,
   toAgentEntriesRecord,
 } from "../agents/agent-scope-config.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { hasResolvedRosterBeforeMigrations } from "../config/agent-roster-provenance.js";
 import { readConfigFileSnapshot, resolveConfigSnapshotHash } from "../config/config.js";
 import { inheritLegacyDefaultAgentId } from "../config/legacy.default-agent-owner.js";
@@ -86,10 +87,10 @@ export async function ensureOnboardingAgent(params: {
   const hasExpectedConfigHash = Object.hasOwn(params, "expectedConfigHash");
   let before = hasExpectedConfigHash ? await readConfigFileSnapshot() : undefined;
   if (before?.exists && !before.valid) {
-    throw new Error("Cannot create the first agent from an invalid OpenClaw config.");
+    throw new Error(`Cannot create the first agent from an invalid ${PRODUCT_NAME} config.`);
   }
   if (before && (resolveConfigSnapshotHash(before) ?? null) !== params.expectedConfigHash) {
-    throw new Error("OpenClaw config changed before first-agent creation. Retry setup.");
+    throw new Error(`${PRODUCT_NAME} config changed before first-agent creation. Retry setup.`);
   }
   // Provider, gateway, and hook proposals can copy config. Restore the reader's
   // owner before returning an existing fleet to the remaining setup effects.
@@ -102,7 +103,7 @@ export async function ensureOnboardingAgent(params: {
     before ??= await readConfigFileSnapshot();
     if (hasCandidateRoster || hasResolvedRosterBeforeMigrations(before)) {
       throw new Error(
-        "The requested team was not created because an agent roster already exists. Use `openclaw agents team create` to add a team.",
+        "The requested team was not created because an agent roster already exists. Use `paddy agents team create` to add a team.",
       );
     }
   }
@@ -117,7 +118,7 @@ export async function ensureOnboardingAgent(params: {
   }
   before ??= await readConfigFileSnapshot();
   if (before.exists && !before.valid) {
-    throw new Error("Cannot create the first agent from an invalid OpenClaw config.");
+    throw new Error(`Cannot create the first agent from an invalid ${PRODUCT_NAME} config.`);
   }
   const effective = before.config;
   const candidateBase = params.baseConfig ?? effective;
@@ -165,10 +166,10 @@ export async function ensureOnboardingAgent(params: {
   const createdTeam = "coordinatorId" in created;
   const after = await readConfigFileSnapshot();
   if (!after.valid) {
-    throw new Error("Agent creation wrote an invalid OpenClaw config.");
+    throw new Error(`Agent creation wrote an invalid ${PRODUCT_NAME} config.`);
   }
   if (created.configHash && after.hash !== created.configHash) {
-    throw new Error("OpenClaw config changed after first-agent creation. Retry setup.");
+    throw new Error(`${PRODUCT_NAME} config changed after first-agent creation. Retry setup.`);
   }
   const config = mergeOnboardingCandidate({
     base: candidateBase,

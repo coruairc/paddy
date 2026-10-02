@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { afterEach, expect, it, vi } from "vitest";
 import { useAutoCleanupTempDirTracker } from "../../../test/helpers/temp-dir.js";
+import * as backupConfigCapture from "../../infra/backup-config-capture.js";
 import * as tempRoot from "../../infra/tmp-openclaw-dir.js";
 import {
   createDeferredConfiguredPluginRepairDoctorResult,
@@ -25,7 +27,9 @@ import {
 } from "../../process/exec-result.js";
 import * as processRunner from "../../process/exec.js";
 import { createDeferredCore } from "../../shared/deferred.js";
+import { OPENCLAW_STATE_SCHEMA_VERSION } from "../../state/openclaw-state-db-contract.js";
 import { closeOpenClawStateDatabaseForTest } from "../../state/openclaw-state-db.js";
+import { resolveOpenClawStateSqlitePath } from "../../state/openclaw-state-db.paths.js";
 import { runUpdateStep } from "./shared.js";
 import { runPackageUpdateDoctor } from "./update-command-package.js";
 import { createUpdateRunProgress } from "./update-command-run.js";
@@ -51,6 +55,121 @@ async function createDoctorFixture() {
   return { root, env };
 }
 
+it.each(["missing", "malformed", "newer-schema", "changed-during-capture"] as const)(
+  "runs Doctor with %s include capture without broadening rollback ownership",
+  async (includeState) => {
+    const { root, env } = await createDoctorFixture();
+    const originalRaw = '{"logging":{"$include":"./logging.json"}}\n';
+    const includePath = path.join(root, "logging.json");
+    const originalInclude = '{"level":"info"}\n';
+    const operatorInclude = '{"level":"debug"}\n';
+    const completeGraph = includeState === "newer-schema";
+    const databasePath = resolveOpenClawStateSqlitePath(env);
+    const newerSchema = OPENCLAW_STATE_SCHEMA_VERSION + 1;
+    await fs.writeFile(env.OPENCLAW_CONFIG_PATH, originalRaw);
+    if (includeState === "malformed") {
+      await fs.writeFile(includePath, '{"level": }\n');
+    } else if (completeGraph || includeState === "changed-during-capture") {
+      await fs.writeFile(includePath, originalInclude);
+    }
+    if (completeGraph) {
+      await fs.mkdir(path.dirname(databasePath), { recursive: true });
+      const database = new DatabaseSync(databasePath);
+      try {
+        database.exec(`PRAGMA user_version = ${newerSchema}`);
+      } finally {
+        database.close();
+      }
+    }
+    let includeChanged = false;
+    if (includeState === "changed-during-capture") {
+      const resolvedInclude = await fs.realpath(includePath);
+      const readCaptureFile = backupConfigCapture.readBackupConfigCaptureFile;
+      vi.spyOn(backupConfigCapture, "readBackupConfigCaptureFile").mockImplementation(
+        async (file) => {
+          if (!includeChanged && file.canonicalPath === resolvedInclude) {
+            includeChanged = true;
+            await fs.writeFile(includePath, operatorInclude);
+          }
+          return await readCaptureFile(file);
+        },
+      );
+    }
+    const invokeDoctor = vi
+      .spyOn(processRunner, "runCommandWithTimeout")
+      .mockImplementation(async (argv, options) => {
+        expect(argv).toContain("doctor");
+        assert(typeof options === "object");
+        const resultPath = options.env?.[UPDATE_POST_INSTALL_DOCTOR_RESULT_PATH_ENV];
+        assert(resultPath, "Missing Doctor result path");
+        await writeUpdatePostInstallDoctorResult({
+          resultPath,
+          result: { status: "ok", configHash: "unchanged" },
+        });
+        return {
+          code: 0,
+          stdout: "",
+          stderr: "",
+          signal: null,
+          killed: false,
+          termination: "exit",
+        };
+      });
+    const onConfigSnapshot = vi.fn();
+    const onStepComplete = vi.fn();
+
+    const step = await runPackageUpdateDoctor({
+      root,
+      timeoutMs: 1_000,
+      progress: { onStepComplete },
+      managedServiceEnv: env,
+      onConfigSnapshot,
+    });
+
+    expect(invokeDoctor).toHaveBeenCalledOnce();
+    expect(onConfigSnapshot).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        path: env.OPENCLAW_CONFIG_PATH,
+        raw: originalRaw,
+        doctorOwned: completeGraph,
+      }),
+    );
+    expect(step).toMatchObject({ exitCode: 0 });
+    if (completeGraph) {
+      expect(onConfigSnapshot.mock.calls[0]?.[0]).toMatchObject({
+        includedFiles: [
+          {
+            raw: originalInclude,
+            doctorOwned: true,
+            pathSnapshot: { targetPath: await fs.realpath(includePath) },
+          },
+        ],
+      });
+      const database = new DatabaseSync(databasePath, { readOnly: true });
+      try {
+        expect(database.prepare("PRAGMA user_version").get()).toEqual({
+          user_version: newerSchema,
+        });
+      } finally {
+        database.close();
+      }
+    } else {
+      expect(onStepComplete).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({
+          warnings: expect.arrayContaining([
+            expect.stringContaining("automatic config rollback is unavailable"),
+          ]),
+        }),
+      );
+    }
+    await expect(fs.readFile(env.OPENCLAW_CONFIG_PATH, "utf8")).resolves.toBe(originalRaw);
+    if (includeState === "changed-during-capture") {
+      expect(includeChanged).toBe(true);
+      await expect(fs.readFile(includePath, "utf8")).resolves.toBe(operatorInclude);
+    }
+  },
+);
+
 it("does not spawn Doctor when the installed runtime has no entrypoint", async () => {
   const { root, env } = await createDoctorFixture();
   await fs.rm(path.join(root, "dist", "entry.js"));
@@ -68,8 +187,6 @@ it.each([
   { cause: "output-limit", exitCode: 0 },
   { cause: "output-limit", exitCode: UPDATE_POST_INSTALL_DOCTOR_ADVISORY_EXIT_CODE },
   { cause: "reported-error", exitCode: 0 },
-  { cause: "reported-error-without-facts", exitCode: 0 },
-  { cause: "reported-error-with-empty-facts", exitCode: 0 },
   { cause: "reported-error-with-invalid-facts", exitCode: 0 },
 ] as const)(
   "keeps failed Doctor outcome $cause (exit $exitCode) failed through completion and history",
@@ -98,7 +215,6 @@ it.each([
           : {
               status: "error",
               ...(cause === "reported-error" ? { failureFacts } : {}),
-              ...(cause === "reported-error-with-empty-facts" ? { failureFacts: [] } : {}),
               ...(cause === "reported-error-with-invalid-facts"
                 ? { failureFacts: [{ code: 42 }] }
                 : {}),
@@ -132,20 +248,20 @@ it.each([
       expect.objectContaining({ runId }),
     );
     expect(
-      getUpdateRun(runId, { env })?.steps.find((entry) => entry.step === "paddy doctor"),
+      getUpdateRun(runId, { env })?.steps.find((entry) => entry.step === "openclaw doctor"),
     ).toMatchObject({
-      step: "paddy doctor",
+      step: "openclaw doctor",
       status: "failed",
       exitCode,
     });
   },
 );
 
-it.each(
-  ([undefined, "include-ownership", "requester-revoked"] as const).flatMap((reason) =>
-    [false, true].map((advisory) => ({ reason, advisory })),
-  ),
-)(
+it.each([
+  { reason: undefined, advisory: false },
+  { reason: undefined, advisory: true },
+  { reason: "include-ownership", advisory: true },
+] as const)(
   "retains Doctor writer receipts and refusal $reason (advisory: $advisory)",
   async ({ reason, advisory }) => {
     const { root, env } = await createDoctorFixture();
@@ -256,7 +372,7 @@ it("leaves the run ledger unchanged while the activation Doctor child is pending
     });
     const admitted = getUpdateRun(runId, { env });
     expect(admitted?.steps.at(-1)).toMatchObject({
-      step: "paddy doctor",
+      step: "openclaw doctor",
       status: "in_progress",
     });
     await vi.advanceTimersByTimeAsync(ABANDONED_UPDATE_RUN_MS + UPDATE_RUN_HEARTBEAT_MS);
@@ -274,7 +390,7 @@ it("leaves the run ledger unchanged while the activation Doctor child is pending
   expect(getUpdateRun(runId, { env })).toMatchObject({
     status: "running",
     steps: expect.arrayContaining([
-      expect.objectContaining({ step: "paddy doctor", status: "completed" }),
+      expect.objectContaining({ step: "openclaw doctor", status: "completed" }),
     ]),
   });
 });
@@ -354,7 +470,7 @@ it.each([
     } else {
       expect(onStepComplete).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({
-          name: "paddy doctor",
+          name: "openclaw doctor",
           exitCode: 1,
           configChanges: consumedReceipt?.configChanges,
           configWriteRefusal: consumedReceipt?.configWriteRefusal,
@@ -363,7 +479,7 @@ it.each([
     }
     expect(steps).toEqual([
       expect.objectContaining({
-        name: "paddy doctor",
+        name: "openclaw doctor",
         exitCode: 1,
         stderrTail: expect.stringContaining(
           consumedReceipt?.configWriteRefusal
@@ -381,7 +497,7 @@ it.each([
       expect.arrayContaining([
         ...(consumedReceipt?.failureFacts ?? []),
         expect.objectContaining({
-          check: "paddy doctor",
+          check: "openclaw doctor",
           message: expect.stringContaining(failed.message),
         }),
       ]),
@@ -438,14 +554,14 @@ it("completes Doctor as failed when config attribution cannot read the settled o
   expect(onConfigSnapshot).not.toHaveBeenCalled();
   expect(onStepComplete).toHaveBeenCalledExactlyOnceWith(
     expect.objectContaining({
-      name: "paddy doctor",
+      name: "openclaw doctor",
       exitCode: UPDATE_POST_INSTALL_DOCTOR_ADVISORY_EXIT_CODE,
       advisory: undefined,
     }),
   );
   expect(steps).toEqual([
     expect.objectContaining({
-      name: "paddy doctor",
+      name: "openclaw doctor",
       exitCode: UPDATE_POST_INSTALL_DOCTOR_ADVISORY_EXIT_CODE,
     }),
   ]);

@@ -36,7 +36,7 @@ session deliberately, use `/acp spawn --bind here`.
     `sessions_spawn` with `thread: true` (and optionally `mode: "session"`).
   </Step>
   <Step title="Bind">
-    OpenClaw opens a new child thread in the active channel and binds it to that session.
+    Paddy opens a new child thread in the active channel and binds it to that session.
   </Step>
   <Step title="Route follow-ups">
     Replies and follow-up messages in that thread route to the bound session.
@@ -89,13 +89,13 @@ that would run unsandboxed.
 
 Use `agents_list` to see which agent ids are currently allowed for
 `sessions_spawn`. The response includes each listed agent's effective
-model and embedded runtime metadata so callers can distinguish OpenClaw, Codex
+model and embedded runtime metadata so callers can distinguish Paddy, Codex
 app-server, and other configured native runtimes.
 
 `allowAgents` entries must point at configured agent ids in `agents.entries.*`.
 `["*"]` means any configured target agent plus the requester. If an agent config
 is deleted but its id remains in `allowAgents`, `sessions_spawn` rejects that id
-and `agents_list` omits it. Run `openclaw doctor --fix` to clean stale
+and `agents_list` omits it. Run `paddy doctor --fix` to clean stale
 allowlist entries, or add a minimal `agents.entries.*` entry when the target should
 remain spawnable while inheriting defaults.
 

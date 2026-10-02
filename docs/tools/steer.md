@@ -10,7 +10,7 @@ sidebarTitle: "Steer"
 
 `/steer` first tries to send guidance to an already-active run. It is for
 "adjust this run while it is still working" moments. If the current runtime
-cannot accept steering, OpenClaw sends the message as a normal prompt instead
+cannot accept steering, Paddy sends the message as a normal prompt instead
 of dropping it.
 
 `/tell` is an alias of `/steer`. The two names are interchangeable everywhere
@@ -44,7 +44,7 @@ that injection is not available, the command prefix is stripped and `<message>`
 continues as a normal prompt.
 
 The explicit `/steer` (and `/tell`) command is Gateway-backed. In
-`openclaw chat` or `openclaw tui --local`, select `/queue steer` and send the
+`paddy chat` or `paddy tui --local`, select `/queue steer` and send the
 guidance as a normal message; the embedded runtime applies the same steering
 policy without forwarding a Gateway command.
 

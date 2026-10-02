@@ -12,6 +12,7 @@ import {
   errorShape,
   type ErrorShape,
 } from "../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { tryReadJson } from "../infra/json-files.js";
 import {
@@ -28,7 +29,7 @@ import { resolveRuntimeServiceBuildId, VERSION } from "../version.js";
 import { isGatewayTransportError } from "./transport-error.js";
 
 export const GATEWAY_STALE_INSTALL_CLOSE_REASON =
-  "gateway install changed; run: openclaw gateway restart";
+  "gateway install changed; run: paddy gateway restart";
 
 export type GatewayStaleConnectionReason = "installation-replaced" | "legacy-handler-unavailable";
 
@@ -196,11 +197,11 @@ export function classifyGatewayStaleInstall(error: unknown): GatewayStaleInstall
   if (observer) {
     recordReplacement(observer);
   }
-  const restartCommand = formatCliCommand("openclaw gateway restart");
+  const restartCommand = formatCliCommand("paddy gateway restart");
   return {
     error: errorShape(
       ErrorCodes.UNAVAILABLE,
-      `The running Gateway can no longer load part of its OpenClaw installation. The installation may have changed while the Gateway was running. Restart it with: ${restartCommand}`,
+      `The running Gateway can no longer load part of its ${PRODUCT_NAME} installation. The installation may have changed while the Gateway was running. Restart it with: ${restartCommand}`,
       { details: { code: "STALE_INSTALL", restartCommand }, retryable: false },
     ),
     restartCommand,

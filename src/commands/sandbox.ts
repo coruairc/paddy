@@ -83,7 +83,7 @@ export async function sandboxRecreateCommand(
 
   if (filtered.containers.length + filtered.browsers.length === 0) {
     runtime.log(
-      `No sandbox runtimes found matching the criteria. Run ${formatCliCommand(`openclaw sandbox list${opts.browser ? " --browser" : ""}`)} to inspect active runtimes.`,
+      `No sandbox runtimes found matching the criteria. Run ${formatCliCommand(`paddy sandbox list${opts.browser ? " --browser" : ""}`)} to inspect active runtimes.`,
     );
     return;
   }
@@ -100,7 +100,7 @@ export async function sandboxRecreateCommand(
 
   if (result.failCount > 0) {
     runtime.error(
-      `Run ${formatCliCommand(`openclaw sandbox list${opts.browser ? " --browser" : ""}`)} to inspect what remains.`,
+      `Run ${formatCliCommand(`paddy sandbox list${opts.browser ? " --browser" : ""}`)} to inspect what remains.`,
     );
     runtime.exit(1);
   }
@@ -109,7 +109,7 @@ export async function sandboxRecreateCommand(
 function validateRecreateOptions(opts: SandboxRecreateOptions, runtime: RuntimeEnv): boolean {
   if (!opts.all && !opts.session && !opts.agent) {
     runtime.error(
-      `Choose the sandbox scope: --all, --session <key>, or --agent <id>. Run ${formatCliCommand(`openclaw sandbox list${opts.browser ? " --browser" : ""}`)} to inspect active runtimes first.`,
+      `Choose the sandbox scope: --all, --session <key>, or --agent <id>. Run ${formatCliCommand(`paddy sandbox list${opts.browser ? " --browser" : ""}`)} to inspect active runtimes first.`,
     );
     runtime.exit(1);
     return false;

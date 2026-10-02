@@ -10,6 +10,7 @@ import {
   normalizeOptionalString,
 } from "@openclaw/normalization-core/string-coerce";
 import { BASE_THINKING_LEVELS } from "../auto-reply/thinking.shared.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { GatewaySessionRow } from "../gateway/session-utils.js";
 
 /** ACP config option ids exposed to compatible ACP clients. */
@@ -145,7 +146,7 @@ export function buildSessionPresentation(params: {
       name: "Thought level",
       category: "thought_level",
       description:
-        "Controls how much deliberate reasoning OpenClaw requests from the Gateway model.",
+        `Controls how much deliberate reasoning ${PRODUCT_NAME} requests from the Gateway model.`,
       currentValue: currentModeId,
       values: availableLevelIds,
     }),
@@ -160,7 +161,7 @@ export function buildSessionPresentation(params: {
       id: ACP_VERBOSE_LEVEL_CONFIG_ID,
       name: "Tool verbosity",
       description:
-        "Controls how much tool progress and output detail OpenClaw keeps enabled for the session.",
+        `Controls how much tool progress and output detail ${PRODUCT_NAME} keeps enabled for the session.`,
       currentValue: normalizeOptionalString(row.verboseLevel) || "off",
       values: ["off", "on", "full"],
     }),
@@ -182,7 +183,7 @@ export function buildSessionPresentation(params: {
       id: ACP_RESPONSE_USAGE_CONFIG_ID,
       name: "Usage detail",
       description:
-        "Controls how much usage information OpenClaw attaches to responses for the session. 'inherit' follows the configured default; 'off' explicitly disables it for this session.",
+        `Controls how much usage information ${PRODUCT_NAME} attaches to responses for the session. 'inherit' follows the configured default; 'off' explicitly disables it for this session.`,
       currentValue: normalizeOptionalString(row.responseUsage) || "inherit",
       values: ["inherit", "off", "tokens", "full"],
     }),

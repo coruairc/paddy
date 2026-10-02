@@ -5,6 +5,7 @@ import {
 } from "../../agents/auth-profiles.js";
 import { isMalformedApiKeyInput } from "../../agents/auth-profiles/credential-state.js";
 import { resolveEnvApiKey } from "../../agents/model-auth.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { formatCliCommand } from "../../cli/command-format.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import type { ProviderNonInteractiveApiKeyResult } from "../../plugins/provider-authentication.types.js";
@@ -92,7 +93,7 @@ export async function resolveNonInteractiveApiKey(params: {
       return envVarName ? { key, source, envVarName } : { key, source };
     }
     const envHint = source === "env" ? ` Check ${envVarName ?? params.envVar}.` : "";
-    return reject(`Paste the API key value, not an OpenClaw onboarding command.${envHint}`);
+    return reject(`Paste the API key value, not a ${PRODUCT_NAME} onboarding command.${envHint}`);
   };
 
   const useSecretRefMode = params.secretInputMode === "ref"; // pragma: allowlist secret
@@ -157,6 +158,6 @@ export async function resolveNonInteractiveApiKey(params: {
   const profileHint =
     params.allowProfile === false ? "" : `, or existing ${params.provider} API-key profile`;
   return reject(
-    `Missing ${params.flagName} (or ${params.envVar} in env${profileHint}). Export ${params.envVar}, pass ${params.flagName}, or run ${formatCliCommand("openclaw onboard")} for interactive setup.`,
+    `Missing ${params.flagName} (or ${params.envVar} in env${profileHint}). Export ${params.envVar}, pass ${params.flagName}, or run ${formatCliCommand("paddy onboard")} for interactive setup.`,
   );
 }

@@ -15,11 +15,11 @@ import { runCommandWithTimeout } from "../process/exec.js";
 export async function formatUpdateDoctorServiceStopRefusal(
   env: NodeJS.ProcessEnv,
 ): Promise<string> {
-  const stop = formatCliCommand("openclaw gateway stop", env);
+  const stop = formatCliCommand("paddy gateway stop", env);
   const lines = [
     "The update parent must stop the managed Gateway before Doctor maintenance; Doctor left the service unchanged.",
     "The managed Gateway is still loaded or running. If the stop command already returned successfully, its managed-service shutdown did not complete.",
-    `After the current update exits, run ${stop} from an independent shell, then retry ${formatCliCommand("openclaw update repair", env)}.`,
+    `After the current update exits, run ${stop} from an independent shell, then retry ${formatCliCommand("paddy update repair", env)}.`,
   ];
   if (process.platform === "darwin") {
     const { resolveLaunchAgentGuiDomain } = await import("../daemon/launchd-runtime.js");
@@ -198,7 +198,7 @@ export async function resolveUpdateDoctorGitRecovery(
       "After the updater exits, run each command from an independent shell only after the previous one succeeds:",
       shellCommand,
       `Service hints (choose the appropriate one): ${renderGatewayServiceStartHints().join("; ")}`,
-      "Fix the refusal cause, then rerun openclaw update. Once the upgrade succeeds, subsequent updates validate before activation.",
+      "Fix the refusal cause, then rerun paddy update. Once the upgrade succeeds, subsequent updates validate before activation.",
     ].join("\n"),
   };
 }

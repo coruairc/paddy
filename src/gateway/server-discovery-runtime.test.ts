@@ -25,7 +25,7 @@ const mocks = vi.hoisted(() => ({
     changed: true,
     zonePath: "/tmp/openclaw.internal.db",
   })),
-  formatBonjourInstanceName: vi.fn((name: string) => `${name} (OpenClaw)`),
+  formatBonjourInstanceName: vi.fn((name: string) => `${name} (Paddy)`),
   resolveBonjourCliPath: vi.fn(() => "/usr/local/bin/openclaw"),
   resolveTailnetDnsHint: vi.fn(async () => "gateway.tailnet.example.ts.net"),
 }));

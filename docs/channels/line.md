@@ -1,13 +1,13 @@
 ---
 summary: "LINE Messaging API plugin setup, config, and usage"
 read_when:
-  - You want to connect OpenClaw to LINE
+  - You want to connect Paddy to LINE
   - You need LINE webhook + credential setup
   - You want LINE-specific message options
 title: LINE
 ---
 
-LINE connects to OpenClaw via the LINE Messaging API. The plugin runs as a webhook
+LINE connects to Paddy via the LINE Messaging API. The plugin runs as a webhook
 receiver on the Gateway and uses your channel access token + channel secret for
 authentication.
 
@@ -26,7 +26,7 @@ openclaw plugins install @openclaw/line
 Local checkout (when running from a git repo):
 
 ```bash
-openclaw plugins install ./path/to/local/line-plugin
+paddy plugins install ./path/to/local/line-plugin
 ```
 
 ## Setup
@@ -61,8 +61,8 @@ If you need a custom path, set `channels.line.webhookPath` or
 
 Security notes:
 
-- LINE signature verification is body-dependent (HMAC over the raw body), so OpenClaw applies a strict pre-auth body limit (64 KB) and read timeout before verification.
-- OpenClaw processes webhook events from the verified raw request bytes. Upstream middleware-transformed `req.body` values are ignored for signature-integrity safety.
+- LINE signature verification is body-dependent (HMAC over the raw body), so Paddy applies a strict pre-auth body limit (64 KB) and read timeout before verification.
+- Paddy processes webhook events from the verified raw request bytes. Upstream middleware-transformed `req.body` values are ignored for signature-integrity safety.
 
 ## Inbound durability
 
@@ -214,8 +214,8 @@ Direct messages default to pairing. Unknown senders get a pairing code and their
 messages are ignored until approved:
 
 ```bash
-openclaw pairing list line
-openclaw pairing approve line <CODE>
+paddy pairing list line
+paddy pairing approve line <CODE>
 ```
 
 Allowlists and policies:
@@ -240,9 +240,9 @@ LINE IDs are case-sensitive. Valid IDs look like:
 
 ## Directory
 
-`openclaw directory peers list --channel line` lists user IDs from the selected
+`paddy directory peers list --channel line` lists user IDs from the selected
 account's `allowFrom`, `groupAllowFrom`, and per-group `allowFrom` entries.
-`openclaw directory groups list --channel line` lists configured group and room
+`paddy directory groups list --channel line` lists configured group and room
 IDs. Prefixes normalize to sendable IDs, duplicates appear once, and `*` and
 `accessGroup:<name>` entries are omitted. Use `--account`, `--query`, `--limit`,
 and `--json` as described in [Directory](/cli/directory).
@@ -332,7 +332,7 @@ the agent writes is still honoured. Replies quote inline and stay visible in the
 conversation, so nothing is hidden by threading them.
 
 LINE quotes by a token it issues with each inbound message rather than by message
-id, and OpenClaw can only quote a message it kept that token for. Quoting
+id, and Paddy can only quote a message it kept that token for. Quoting
 therefore has limits the setting cannot lift:
 
 - LINE issues a quote token only for text, image, video, and sticker messages.
@@ -340,10 +340,10 @@ therefore has limits the setting cannot lift:
 - LINE rejects a quote on a Flex card, on media, and on a location pin, so one
   reply quotes once, on the first message that can carry it. A reply made only of
   those is sent unquoted.
-- A reply can only quote a message OpenClaw received. LINE also returns a quote
+- A reply can only quote a message Paddy received. LINE also returns a quote
   token for each message the bot itself sends, but those are not kept, so a reply
   that answers one of the bot's own earlier messages is sent unquoted.
-- Only a message OpenClaw handed to the agent as its own turn is remembered. In
+- Only a message Paddy handed to the agent as its own turn is remembered. In
   a group with `requireMention` on, a skipped message still reaches the agent as
   a line of group history, but that line carries no id the reply can name, so it
   cannot be quoted.
@@ -352,8 +352,8 @@ therefore has limits the setting cannot lift:
 - Tokens live in the running Gateway, the most recent 500 per account across all
   of its chats. A reply that answers a message from before the last restart, one
   a busier chat on the same account has since pushed out, or one sent by a
-  separate process such as `openclaw message send`, is sent unquoted.
-- If LINE rejects a request carrying a quote token with HTTP 400, OpenClaw
+  separate process such as `paddy message send`, is sent unquoted.
+- If LINE rejects a request carrying a quote token with HTTP 400, Paddy
   retries the same reply without the quote. Deleting or unsending the quoted
   message does not itself invalidate its token; LINE may instead show the quoted
   content as unavailable. See [LINE quote messages](https://developers.line.biz/en/docs/messaging-api/sending-messages/#send-quote-messages).
@@ -383,7 +383,7 @@ block-mode streaming controls shared across channels; see
 Each block LINE receives is a separate message, and LINE counts messages against
 the channel's monthly quota, so leaving this off keeps a long reply to the fewest
 messages. `coalesce.minChars` is the lever if you want blocks to arrive early but
-not one paragraph at a time — OpenClaw's own default is 800 characters.
+not one paragraph at a time — Paddy's own default is 800 characters.
 
 LINE cannot edit a message it has already sent, so it has no preview streaming
 mode: there is no `streaming.mode` or `streaming.preview` here, and a reply is
@@ -503,7 +503,7 @@ The LINE plugin also ships a `/card` command for Flex message presets:
 /card info "Welcome" "Thanks for joining!"
 ```
 
-Card images and icons must use HTTPS. OpenClaw removes images with malformed or
+Card images and icons must use HTTPS. Paddy removes images with malformed or
 non-HTTPS URLs and adds an "Image unavailable" note when it fits within LINE's
 30 KB bubble and 50 KB carousel limits. Video
 heroes keep their required alternative content: an unusable video or preview URL
@@ -533,7 +533,7 @@ suffix. Native suffix inference supports JPEG/PNG, MP4, and MP3/M4A. Suffixless 
 retain the image fallback. Other suffixed URLs and inferred MP4 without a preview
 become text links. Explicit video still requires `previewImageUrl`.
 
-Outbound media URLs must be public HTTPS URLs of at most 2000 characters. OpenClaw
+Outbound media URLs must be public HTTPS URLs of at most 2000 characters. Paddy
 validates the target hostname before handing the URL to LINE and rejects loopback,
 link-local, and private-network targets.
 
@@ -541,38 +541,38 @@ link-local, and private-network targets.
 
 - **Webhook verification fails:** ensure the webhook URL is HTTPS and the
   `channelSecret` matches the LINE console.
-- **No inbound events:** run `openclaw channels status --probe`. LINE only delivers
+- **No inbound events:** run `paddy channels status --probe`. LINE only delivers
   events while the channel's webhook URL is registered and **Use webhook** is on in
   the Messaging API tab of the LINE Developers Console, and the probe reports both —
   a channel whose webhook is off or unregistered is named with the setting to change.
-  OpenClaw does not set either for you: the URL has an API but depends on a public
-  address OpenClaw does not know, and the **Use webhook** switch has no API at all.
+  Paddy does not set either for you: the URL has an API but depends on a public
+  address Paddy does not know, and the **Use webhook** switch has no API at all.
   The webhook state comes from the probe, so
-  `openclaw channels status` without `--probe` does not report it. If the probe
+  `paddy channels status` without `--probe` does not report it. If the probe
   reports the webhook as on, confirm the webhook path matches
   `channels.line.webhookPath` and that the Gateway is reachable from LINE.
 - **Media download errors:** raise `channels.line.mediaMaxMb` if media exceeds the
   default limit.
 - **Pushes refused with HTTP 429:** Run
-  `openclaw channels status --channel line --probe --json`. For a limited allowance,
+  `paddy channels status --channel line --probe --json`. For a limited allowance,
   the account’s `quota` contains `used` and `limit`. Missing quota is unknown, not unlimited.
   A healthy bot identity can coexist with an exhausted push allowance. Check the
   account allowance or plan in LINE Official Account Manager before retrying.
   429 can also reflect rate limits or temporary message reservations. Ordinary
   reply-token messages do not consume this monthly allowance, unlike pushes.
   See [LINE message pricing](https://developers.line.biz/en/docs/messaging-api/pricing/).
-- **Bot silently skips messages (events dead-lettered):** `openclaw logs` shows
+- **Bot silently skips messages (events dead-lettered):** `paddy logs` shows
   `line: spooled update <id> ... dead-lettered` lines with the failure reason.
-  Inspect with `openclaw channels dead-letters list --channel line --account default`
+  Inspect with `paddy channels dead-letters list --channel line --account default`
   and check the failure reason before recovering: `resubmit` re-enqueues by event
   id without checking why the event failed. After fixing the cause of a failure
   with no committed side effects (for example `retry-limit-exceeded` after a
   provider outage), re-enqueue one event with
-  `openclaw channels dead-letters resubmit <event-id> --channel line --account default`.
+  `paddy channels dead-letters resubmit <event-id> --channel line --account default`.
   Never resubmit a `delivery-side-effects-committed` event: that reason means the
   delivery already adopted an agent turn or consumed its reply token, so
   re-enqueuing repeats the committed work — for example a second visible reply.
-  `openclaw health` reports dead-letter counts and `openclaw doctor` names
+  `paddy health` reports dead-letter counts and `paddy doctor` names
   affected accounts.
 - **`handler-timeout` retries:** the delivery was claimed but neither reached
   agent-turn adoption nor reported deferred progress for 5 minutes. This is a
@@ -581,12 +581,12 @@ link-local, and private-network targets.
   cause and is never cut off by it. Look at the dispatch path instead: the
   delivery preparation that runs between claim and adoption, such as inbound
   media download or a Gateway that is not accepting new work. This does not
-  dead-letter the event. `openclaw logs` shows
+  dead-letter the event. `paddy logs` shows
   `applying retry policy (handler-timeout)` and the event waits out its backoff
   with `handler-timeout` as its last error. A stall that keeps repeating is what
   eventually exhausts the retry limit, so an event that stalls its way to a dead
   letter lands under `retry-limit-exceeded`, not under a timeout reason. Check
-  `openclaw logs --follow` around the affected event id.
+  `paddy logs --follow` around the affected event id.
 
 ## Related
 

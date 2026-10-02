@@ -62,7 +62,7 @@ function createMattermostQuestionInteractionHandler(
     const auth = await decide();
     if (!auth.ok) {
       // No Gateway I/O for a click current policy refuses; the prompt stays usable.
-      return { ephemeral_text: `OpenClaw ignored this action for ${auth.roomLabel}.` };
+      return { ephemeral_text: `Paddy ignored this action for ${auth.roomLabel}.` };
     }
     try {
       const result = await questionGatewayRuntime.resolveOption({
@@ -76,7 +76,7 @@ function createMattermostQuestionInteractionHandler(
         authorize: async () => (await decide()).ok,
       });
       if (result.status === "denied") {
-        return { ephemeral_text: `OpenClaw ignored this action for ${auth.roomLabel}.` };
+        return { ephemeral_text: `Paddy ignored this action for ${auth.roomLabel}.` };
       }
       if (result.status !== "answered") {
         return { ephemeral_text: "This question was already answered." };
@@ -109,7 +109,7 @@ export function registerMattermostInteractions(params: {
   handleModelPickerInteraction: MattermostModelPickerInteractionHandler;
 }): () => void {
   const { monitor } = params;
-  const { account, botUserId, cfg, client, core, pairing, resources, runtime } = monitor;
+  const { account, cfg, client, core, pairing, resources, runtime } = monitor;
   const { resolveChannelInfo } = resources;
   const handleQuestionInteraction = createMattermostQuestionInteractionHandler(monitor);
   return registerPluginHttpRoute({
@@ -118,7 +118,6 @@ export function registerMattermostInteractions(params: {
     auth: "plugin",
     handler: createMattermostInteractionHandler({
       client,
-      botUserId,
       accountId: account.accountId,
       allowedSourceIps: params.allowedSourceIps,
       trustedProxies: cfg.gateway?.trustedProxies,
@@ -153,7 +152,7 @@ export function registerMattermostInteractions(params: {
         return {
           ok: false,
           response: {
-            ephemeral_text: `OpenClaw ignored this action for ${decision.roomLabel}.`,
+            ephemeral_text: `Paddy ignored this action for ${decision.roomLabel}.`,
           },
         };
       },

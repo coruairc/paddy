@@ -9,7 +9,7 @@ title: "Skill Workshop"
 sidebarTitle: "Skill Workshop"
 ---
 
-Skill Workshop is OpenClaw's governed path for creating and updating its own
+Skill Workshop is Paddy's governed path for creating and updating its own
 generated skills. Through this path, agents and operators create a **proposal** (pending
 draft with content, target binding, scanner state, hashes, and rollback
 metadata) that becomes a live skill only when applied.
@@ -83,4 +83,4 @@ the page that now holds the content.
 - [Creating skills](/tools/creating-skills) for hand-written `SKILL.md`
   basics
 - [Skills config](/tools/skills-config) for the full `skills.workshop` schema
-- [Skills CLI](/cli/skills) for `openclaw skills` commands
+- [Skills CLI](/cli/skills) for `paddy skills` commands

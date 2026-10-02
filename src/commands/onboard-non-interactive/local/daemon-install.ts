@@ -43,7 +43,7 @@ export async function installGatewayDaemonNonInteractive(params: {
     // Container and CI sessions often lack a user systemd manager; onboarding
     // owns the failure outcome for an explicitly requested installation.
     runtime.log(
-      "Systemd user services are unavailable; skipping service install. Use a direct shell run (`openclaw gateway run`) or rerun without --install-daemon on this session.",
+      "Systemd user services are unavailable; skipping service install. Use a direct shell run (`paddy gateway run`) or rerun without --install-daemon on this session.",
     );
     return { installed: false, skippedReason: "systemd-user-unavailable" };
   }
@@ -85,6 +85,8 @@ export async function installGatewayDaemonNonInteractive(params: {
     env: selection.env,
     port,
     runtime: selection.runtime,
+    runtimeExplicit: selection.runtimeExplicit,
+    runtimePath: selection.runtimePath,
     pinnedRuntimePath: selection.pinnedRuntimePath,
     existingCommand,
     warn: (message) => runtime.log(message),

@@ -1,6 +1,7 @@
 // Persists restart sentinel state that coordinates deferred restarts.
 import { isRecord as isPlainRecord } from "@openclaw/normalization-core/record-coerce";
 import { sliceUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { withExistingOpenClawStateDatabaseReadOnly } from "../state/openclaw-state-db-readonly.js";
@@ -59,9 +60,9 @@ export function formatDoctorNonInteractiveHint(
   env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
 ): string {
   return `Recommended follow-up: run ${formatCliCommand(
-    "openclaw doctor --non-interactive",
+    "paddy doctor --non-interactive",
     env,
-  )} in a terminal or approvals-capable OpenClaw surface.`;
+  )} in a terminal or approvals-capable ${PRODUCT_NAME} surface.`;
 }
 
 export async function writeRestartSentinel(
@@ -291,10 +292,6 @@ export async function readRestartSentinelSnapshot(): Promise<{
   );
 }
 
-function cloneRestartSentinelPayload(payload: RestartSentinelPayload): RestartSentinelPayload {
-  return structuredClone(payload);
-}
-
 async function rewriteRestartSentinel(
   rewrite: (payload: RestartSentinelPayload) => RestartSentinelPayload | null,
   env: NodeJS.ProcessEnv = process.env,
@@ -305,7 +302,7 @@ async function rewriteRestartSentinel(
       if (current.kind !== "valid") {
         return null;
       }
-      const nextPayload = rewrite(cloneRestartSentinelPayload(current.sentinel.payload));
+      const nextPayload = rewrite(structuredClone(current.sentinel.payload));
       return nextPayload
         ? writeRestartSentinelRowIfRevisionSync(db, nextPayload, current.sentinel.revision)
         : null;
@@ -348,7 +345,7 @@ export async function finalizeUpdateRestartSentinelRunningVersion(
         return null;
       }
 
-      const payload = cloneRestartSentinelPayload(current.sentinel.payload);
+      const payload = structuredClone(current.sentinel.payload);
       const stats = payload.stats ? { ...payload.stats } : {};
       const after = isPlainRecord(stats.after) ? { ...stats.after } : {};
       let changed = false;
@@ -428,15 +425,10 @@ export async function markUpdateRestartSentinelFailure(
     ) {
       return null;
     }
-    const payloadWithoutContinuation = { ...payload };
-    delete payloadWithoutContinuation.continuation;
-    const stats = payload.stats ? { ...payload.stats } : {};
-    stats.reason = reason;
-    return {
-      ...payloadWithoutContinuation,
-      status: "error",
-      stats,
-    };
+    delete payload.continuation;
+    payload.status = "error";
+    payload.stats = { ...payload.stats, reason };
+    return payload;
   }, env);
 }
 

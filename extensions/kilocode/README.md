@@ -1,12 +1,12 @@
-# OpenClaw Kilo Gateway Provider
+# Paddy Kilo Gateway Provider
 
-Official OpenClaw provider plugin for Kilo Gateway.
+Official Paddy provider plugin for Kilo Gateway.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/kilocode-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/kilocode> for setup and configuration.

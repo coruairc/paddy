@@ -2,9 +2,9 @@
 summary: "Resolve SecretRefs and give agents curated, audited access to 1Password"
 read_when:
   - You want agents to request curated 1Password secrets
-  - You want OpenClaw config credentials to resolve from 1Password
+  - You want Paddy config credentials to resolve from 1Password
   - You need per-secret approval policy and audit history
-  - You are configuring a 1Password service account for OpenClaw
+  - You are configuring a 1Password service account for Paddy
 title: "1Password plugin"
 ---
 
@@ -26,13 +26,13 @@ configured item registry.
   file and is never accepted in `openclaw.json`.
 - Curated agent registry only. Agents can list configured slugs, but the plugin
   never enumerates a 1Password vault. SecretRef reads are limited to references
-  explicitly stored on registered OpenClaw credential targets.
+  explicitly stored on registered Paddy credential targets.
 - Per-slug `auto`, `approve`, or `deny` policy.
 - Approval grants expire. A cached value never bypasses current policy.
-- Every access attempt is recorded in OpenClaw's shared SQLite state. Audit
+- Every access attempt is recorded in Paddy's shared SQLite state. Audit
   rows include the supplied reason; keep reasons non-sensitive. The broker
   never copies a fetched value or the service token into an audit row.
-- After the current tool execution, OpenClaw-owned transcript persistence
+- After the current tool execution, Paddy-owned transcript persistence
   replaces a successful `get` value with redacted metadata.
 - The value is model-visible for that execution. If the model copies it into a
   later tool call or reply, that separate record is outside this plugin's
@@ -59,10 +59,10 @@ You need:
 Enable the bundled plugin:
 
 ```bash
-openclaw plugins enable onepassword
+paddy plugins enable onepassword
 ```
 
-Create the token directory and file under the OpenClaw state directory:
+Create the token directory and file under the Paddy state directory:
 
 ```bash
 mkdir -p ~/.openclaw/credentials/onepassword
@@ -82,7 +82,7 @@ other users.
 Create a secrets apply plan for common model provider keys:
 
 ```bash
-openclaw onepassword secretref setup \
+paddy onepassword secretref setup \
   --anthropic-id op://Automation/Anthropic/credential \
   --openrouter-id op://Automation/OpenRouter/credential \
   --plan-out ./openclaw-1password-secrets-plan.json
@@ -95,11 +95,11 @@ The command requires at least one target and writes a plan. Inspect it, check
 the local `op` and token-file prerequisites, then apply and reload:
 
 ```bash
-openclaw onepassword secretref status
-openclaw secrets apply --from ./openclaw-1password-secrets-plan.json --dry-run --allow-exec
-openclaw secrets apply --from ./openclaw-1password-secrets-plan.json --allow-exec
-openclaw secrets audit --check --allow-exec
-openclaw secrets reload
+paddy onepassword secretref status
+paddy secrets apply --from ./paddy-1password-secrets-plan.json --dry-run --allow-exec
+paddy secrets apply --from ./paddy-1password-secrets-plan.json --allow-exec
+paddy secrets audit --check --allow-exec
+paddy secrets reload
 ```
 
 Before apply, status can report that the provider itself is not configured yet;
@@ -145,7 +145,7 @@ Manual provider configuration uses the existing plugin id:
 References use `op://<vault>/<item>/<field>` or
 `op://<vault>/<item>/<section>/<field>`. Vault, item, section, and field names
 may contain spaces. The setup command stores references that do not fit
-OpenClaw's shared exec-id grammar in a plugin-local opaque form and decodes them
+Paddy's shared exec-id grammar in a plugin-local opaque form and decodes them
 only inside the resolver. Very long references should use stable 1Password IDs;
 they are shorter and reduce the number of 1Password API requests.
 
@@ -158,7 +158,7 @@ Windows ACL verification must also succeed. Check provider wiring and local
 readiness with:
 
 ```bash
-openclaw onepassword secretref status --json
+paddy onepassword secretref status --json
 ```
 
 ## Configure registered secrets
@@ -246,7 +246,7 @@ any supplied value, and an unknown value fails the request.
 
 Allow once authorizes only the current tool call. Allow always writes a standing
 grant for that agent and slug to SQLite; other agents must receive their own
-approval. OpenClaw offers allow always only when the caller has a concrete agent
+approval. Paddy offers allow always only when the caller has a concrete agent
 identity. The grant expires after `grantTtlHours`, which defaults to 720 hours.
 An unresolved or timed-out approval denies the request; the maximum approval
 wait is 600 seconds. The plugin retains up to 1,024 standing grants; at that
@@ -274,7 +274,7 @@ cached values.
 Show readiness and registry counts:
 
 ```bash
-openclaw onepassword status
+paddy onepassword status
 ```
 
 This reports whether the token file exists, whether `op` resolved and its path,
@@ -284,8 +284,8 @@ token or secret values.
 Show the 50 most recent audit rows:
 
 ```bash
-openclaw onepassword audit
-openclaw onepassword audit --limit 100
+paddy onepassword audit
+paddy onepassword audit --limit 100
 ```
 
 Rows are newest first and show timestamp, agent, slug, outcome, an `errorCode`
@@ -337,4 +337,4 @@ Policy and validation errors:
 
 - [Secrets management](/gateway/secrets)
 - [1Password](/gateway/1password) — the built-in `op://` secret source, and how the plugin, skill, and MCP options compare
-- [`openclaw secrets`](/cli/secrets) — store, reload, audit, configure, and apply SecretRefs from the CLI
+- [`paddy secrets`](/cli/secrets) — store, reload, audit, configure, and apply SecretRefs from the CLI

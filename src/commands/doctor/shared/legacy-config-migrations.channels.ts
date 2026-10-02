@@ -96,13 +96,13 @@ const THREAD_BINDING_RULES: LegacyConfigRule[] = [
   {
     path: ["session", "threadBindings"],
     message:
-      'session.threadBindings.spawnSubagentSessions/spawnAcpSessions were replaced by session.threadBindings.spawnSessions. Run "openclaw doctor --fix".',
+      'session.threadBindings.spawnSubagentSessions/spawnAcpSessions were replaced by session.threadBindings.spawnSessions. Run "paddy doctor --fix".',
     match: hasLegacyThreadBindingSpawnSplit,
   },
   {
     path: ["channels"],
     message:
-      'channels.<id>.threadBindings.spawnSubagentSessions/spawnAcpSessions were replaced by channels.<id>.threadBindings.spawnSessions. Run "openclaw doctor --fix".',
+      'channels.<id>.threadBindings.spawnSubagentSessions/spawnAcpSessions were replaced by channels.<id>.threadBindings.spawnSessions. Run "paddy doctor --fix".',
     match: hasLegacyThreadBindingInAnyChannel,
   },
 ];

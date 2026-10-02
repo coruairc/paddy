@@ -24,7 +24,7 @@
   "uiHints": {
     "modelDir": {
       "label": "Model directory",
-      "help": "Local model artifacts. Download models explicitly with openclaw onnx download."
+      "help": "Local model artifacts. Download models explicitly with paddy onnx download."
     },
     "threads": {
       "label": "CPU inference threads",

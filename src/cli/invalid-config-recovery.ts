@@ -1,5 +1,6 @@
 import { formatErrorMessage } from "../infra/errors.js";
 import { ExitError, type RuntimeEnv } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import { isTerminalInteractive } from "./terminal-interactivity.js";
 
@@ -20,7 +21,7 @@ export async function offerInvalidConfigRecovery<T>(params: {
   retry: () => Promise<T>;
   deps?: InvalidConfigRecoveryDeps;
 }): Promise<InvalidConfigRecoveryResult<T>> {
-  const command = formatCliCommand("openclaw doctor --fix");
+  const command = formatCliCommand(`${CLI_NAME} doctor --fix`);
   const printCommand = () => {
     params.runtime.error(`Run "${command}" to repair the config, then retry.`);
   };

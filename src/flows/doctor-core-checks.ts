@@ -42,6 +42,7 @@ import { createAcpAgentModelCheck } from "./doctor-acp-agent-model-check.js";
 import { finalConfigValidationCheck } from "./doctor-config-validation-check.js";
 import { detectGatewayAuthHealth } from "./doctor-gateway-auth.js";
 import { hasActiveGatewayExecCredential } from "./doctor-gateway-exec-credential.js";
+import { gatewayServicesExtraCheck } from "./doctor-gateway-services-check.js";
 import { createModelReferenceCheck } from "./doctor-model-reference-check.js";
 import { removedWorkspacesStateCheck } from "./doctor-removed-workspaces-state-check.js";
 import {
@@ -62,17 +63,10 @@ const BROWSER_CLAWD_PROFILE_RESIDUE_CHECK_ID = "core/doctor/browser-clawd-profil
 const CODEX_SESSION_ROUTES_CHECK_ID = "core/doctor/codex-session-routes";
 const GATEWAY_DAEMON_CHECK_ID = "core/doctor/gateway-daemon";
 const GATEWAY_HEALTH_CHECK_ID = "core/doctor/gateway-health";
-const GATEWAY_SERVICES_EXTRA_CHECK_ID = "core/doctor/gateway-services/extra";
 const TELEGRAM_GENERAL_TOPIC_CONVERSATIONS_CHECK_ID =
   "core/doctor/telegram-general-topic-conversations";
 const SKILL_WORKSHOP_TOOL_POLICY_CHECK_ID = "core/doctor/skill-workshop-tool-policy";
 const SKILL_WORKSHOP_RELOCATION_CHECK_ID = "core/doctor/skill-workshop-relocation";
-type CoreHealthCheckContext = HealthCheckContext & {
-  readonly deep?: boolean;
-};
-type CoreHealthRepairContext = HealthRepairContext & {
-  readonly deep?: boolean;
-};
 
 export type CoreHealthCheckDeps = {
   readonly detectUnavailableSkills: (
@@ -222,7 +216,7 @@ const gatewayConfigCheck: HealthCheck = {
         message: "gateway.mode is unset; gateway start will be blocked.",
         path: "gateway.mode",
         fixHint:
-          "Run `openclaw configure` and set Gateway mode (local/remote), or `openclaw config set gateway.mode local`.",
+          "Run `paddy configure` and set Gateway mode (local/remote), or `paddy config set gateway.mode local`.",
       });
     }
     if (ctx.cfg.gateway?.mode !== "remote" && hasAmbiguousGatewayAuthModeConfig(ctx.cfg)) {
@@ -233,7 +227,7 @@ const gatewayConfigCheck: HealthCheck = {
           "gateway.auth.token and gateway.auth.password are both configured while gateway.auth.mode is unset; auth selection is ambiguous.",
         path: "gateway.auth.mode",
         fixHint:
-          "Set an explicit mode: `openclaw config set gateway.auth.mode token` or `... password`.",
+          "Set an explicit mode: `paddy config set gateway.auth.mode token` or `... password`.",
       });
     }
     return findings;
@@ -257,7 +251,7 @@ const commandOwnerCheck: HealthCheck = {
           "No command owner is configured. Owner-only commands (/diagnostics, /export-trajectory, /config, exec approvals) have no allowed sender.",
         path: "commands.ownerAllowFrom",
         fixHint:
-          "Set commands.ownerAllowFrom to your channel user id, e.g. `openclaw config set commands.ownerAllowFrom '[\"telegram:123456789\"]'`.",
+          "Set commands.ownerAllowFrom to your channel user id, e.g. `paddy config set commands.ownerAllowFrom '[\"telegram:123456789\"]'`.",
       },
     ];
   },
@@ -324,8 +318,8 @@ const skillWorkshopRelocationCheck: HealthCheck = {
     ) {
       fixHints.push(
         ctx.mode === "doctor"
-          ? "If Workshop repair has not run, use `openclaw doctor --fix`. Otherwise review the remaining targets and migration warnings above. Resolve their ownership or recovery blockers before retrying Doctor; repeating the same repair alone will not resolve them."
-          : "Run `openclaw doctor --fix` to process eligible Workshop relocations and legacy collection backups.",
+          ? "If Workshop repair has not run, use `paddy doctor --fix`. Otherwise review the remaining targets and migration warnings above. Resolve their ownership or recovery blockers before retrying Doctor; repeating the same repair alone will not resolve them."
+          : "Run `paddy doctor --fix` to process eligible Workshop relocations and legacy collection backups.",
       );
     }
     if (inspection.preservedLegacyBackupRootCount > 0) {
@@ -414,14 +408,14 @@ const legacyStateCheck: HealthCheck & { readonly defaultEnabled: false } = {
         severity: "warning",
         message: line.replace(/^- /, ""),
         path: detected.stateDir,
-        fixHint: "Run `openclaw doctor --fix` to migrate legacy state.",
+        fixHint: "Run `paddy doctor --fix` to migrate legacy state.",
       })),
       ...detected.warnings.map((warning): HealthFinding => ({
         checkId: "core/doctor/legacy-state",
         severity: "warning",
         message: warning,
         path: detected.stateDir,
-        fixHint: "Resolve the warning, then rerun `openclaw doctor --fix`.",
+        fixHint: "Resolve the warning, then rerun `paddy doctor --fix`.",
       })),
     ];
   },
@@ -719,11 +713,11 @@ const codexSessionRoutesCheck: HealthCheck = {
         fixHint: issue.repairBlocked
           ? [
               "Enable plugins.entries.codex and plugin loading, and remove codex from plugins.deny;",
-              "or set the affected OpenAI models to an OpenClaw runtime policy.",
+              `or set the affected OpenAI models to a Paddy runtime policy.`,
             ].join(" ")
           : [
-              "Run `openclaw doctor --fix`: it enables plugins.entries.codex,",
-              "or set the affected OpenAI models to an OpenClaw runtime policy.",
+              "Run `paddy doctor --fix`: it enables plugins.entries.codex,",
+              `or set the affected OpenAI models to a Paddy runtime policy.`,
             ].join(" "),
       }),
     );
@@ -757,7 +751,7 @@ const telegramGeneralTopicConversationsCheck: HealthCheck = {
       message: `Agent ${repair.agentId} has a stale Telegram General-topic conversation identity.`,
       target: repair.agentId,
       requirement: "One canonical chat-scoped conversation binding for Telegram General topic.",
-      fixHint: "Run `openclaw doctor --fix` to merge the stale topic-qualified identity.",
+      fixHint: "Run `paddy doctor --fix` to merge the stale topic-qualified identity.",
     }));
   },
   async repair(ctx) {
@@ -782,38 +776,6 @@ const telegramGeneralTopicConversationsCheck: HealthCheck = {
     return {
       changes: [`Merged ${repaired} stale Telegram General-topic conversation identity row(s).`],
       effects: repaired > 0 ? [effect] : [],
-    };
-  },
-};
-
-const gatewayServicesExtraCheck: HealthCheck = {
-  id: GATEWAY_SERVICES_EXTRA_CHECK_ID,
-  kind: "core",
-  description: "Extra gateway-like services are represented as structured findings.",
-  source: "doctor",
-  async detect(ctx) {
-    const coreCtx = ctx as CoreHealthCheckContext;
-    const { detectExtraGatewayServiceIssues, extraGatewayServiceToHealthFinding } =
-      await import("../commands/doctor-gateway-services.js");
-    return (await detectExtraGatewayServiceIssues({ deep: coreCtx.deep === true })).map(
-      extraGatewayServiceToHealthFinding,
-    );
-  },
-  async repair(ctx) {
-    const coreCtx = ctx as CoreHealthRepairContext;
-    const { detectExtraGatewayServiceIssues, extraGatewayServiceToRepairEffects } =
-      await import("../commands/doctor-gateway-services.js");
-    const effects = (
-      await detectExtraGatewayServiceIssues({ deep: coreCtx.deep === true })
-    ).flatMap(extraGatewayServiceToRepairEffects);
-    if (ctx.dryRun === true) {
-      return { status: "repaired", changes: [], effects };
-    }
-    return {
-      status: "skipped",
-      reason: "legacy doctor gateway service contribution owns cleanup",
-      changes: [],
-      effects,
     };
   },
 };
@@ -975,7 +937,7 @@ function unavailableSkillToFinding(skill: SkillStatusEntry): HealthFinding {
     message: `${skill.name} is allowed but unavailable: ${formatMissingSkillSummary(skill)}.`,
     path: skillReadinessPath(skill),
     fixHint:
-      "Install/configure the missing requirement, or run `openclaw doctor --fix` to disable unused unavailable skills.",
+      "Install/configure the missing requirement, or run `paddy doctor --fix` to disable unused unavailable skills.",
   };
 }
 
@@ -1008,7 +970,7 @@ function browserResidueFinding(residue: LegacyClawdBrowserProfileResidue): Healt
     path: residue.legacyProfileDir,
     ocPath: "oc://state/browser/clawd",
     fixHint:
-      "Run `openclaw doctor --fix` to archive the stale clawd profile safely instead of deleting it in place.",
+      "Run `paddy doctor --fix` to archive the stale clawd profile safely instead of deleting it in place.",
   };
 }
 
@@ -1024,7 +986,7 @@ const browserClawdProfileResidueCheck: HealthCheck = {
   id: BROWSER_CLAWD_PROFILE_RESIDUE_CHECK_ID,
   kind: "core",
   description:
-    "Legacy clawd managed browser profile residue has been archived after the OpenClaw rename.",
+    "Legacy clawd managed browser profile residue has been archived after the Paddy rename.",
   source: "doctor",
   async detect(ctx, scope) {
     const residue = await detectLegacyClawdBrowserProfileResidue(ctx.cfg, browserResidueDeps(ctx));

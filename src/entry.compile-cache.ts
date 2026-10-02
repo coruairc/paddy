@@ -5,7 +5,6 @@ import { getCompileCacheDir } from "node:module";
 import path from "node:path";
 import process from "node:process";
 import { resolveOpenClawCompileCacheDirectory } from "../node-compile-cache.mjs";
-import { CLI_NAME } from "./brand.js";
 import { isForegroundGatewayRunArgv } from "./cli/gateway-run-argv.js";
 import {
   isForegroundGmailRunArgv,
@@ -151,7 +150,7 @@ function runOpenClawCompileCacheRespawnPlan(
     runtime,
     onError: (error) => {
       return runtime.writeError(
-        `[${CLI_NAME}] Failed to respawn CLI without compile cache: ${
+        `[openclaw] Failed to respawn CLI without compile cache: ${
           error instanceof Error ? (error.stack ?? error.message) : String(error)
         }\n`,
       );

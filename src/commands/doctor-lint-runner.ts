@@ -47,6 +47,10 @@ import {
   resolvePluginInstallRoots,
   withPluginInstallRoots,
 } from "../plugins/install-root-context.js";
+import {
+  getPluginSourceCaptureStorage,
+  withPluginSourceCaptureStorage,
+} from "../plugins/plugin-source-capture-context.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { closeOpenClawStateDatabaseByPathAsync } from "../state/openclaw-state-db-cache.js";
 import {
@@ -180,7 +184,7 @@ async function prepareDoctorLintExecution(
                 runtime.log(
                   `[warning] ${finding.checkId} [${finding.errorCode}]: ${finding.message}`,
                 );
-                runtime.log(finding.fixHint ?? "Run `openclaw doctor` after activation.");
+                runtime.log(finding.fixHint ?? "Run `paddy doctor` after activation.");
               }
             }
           },
@@ -460,7 +464,7 @@ async function executeDoctorLint(
         requirement: "update-validation-scope",
         message:
           "Advisory inspection deferred until after update activation; required migration, config, plugin, and Gateway readiness checks remain enabled.",
-        fixHint: `Run \`openclaw doctor --lint --only ${check.id}\` after activation to complete this inspection.`,
+        fixHint: `Run \`paddy doctor --lint --only ${check.id}\` after activation to complete this inspection.`,
       })),
   ];
   const advisoryChecks = new Set(
@@ -532,6 +536,10 @@ async function withReadOnlyPluginStateSnapshot<T>(
   cleanupWarnings?: HealthFinding[],
 ): Promise<T> {
   const sourceDatabasePath = resolveOpenClawStateSqlitePath(sourceEnv);
+  const captureStorage = Object.freeze({
+    stateDir: getPluginSourceCaptureStorage()?.stateDir ?? resolveStateDir(sourceEnv),
+    placement: "temporary" as const,
+  });
   let cleanup: () => Promise<boolean>;
   let privateRoot: string;
   let prepared: ReturnType<typeof prepareSqliteReadOnlyLocationSync> | undefined;
@@ -582,11 +590,13 @@ async function withReadOnlyPluginStateSnapshot<T>(
       // Runtime schema checks defer OAuth probes: external rotation cannot be snapshotted.
       outcome = {
         ok: true,
-        value: await withDisposableOpenClawStateReads(privateDatabasePath, () =>
-          withPluginInstallRoots({ ...installRoots, stateDir: privateStateDir }, async () => {
-            runStarted = true;
-            return await run(privateEnv);
-          }),
+        value: await withPluginSourceCaptureStorage(captureStorage, () =>
+          withDisposableOpenClawStateReads(privateDatabasePath, () =>
+            withPluginInstallRoots({ ...installRoots, stateDir: privateStateDir }, async () => {
+              runStarted = true;
+              return await run(privateEnv);
+            }),
+          ),
         ),
       };
     } catch (error) {
@@ -645,7 +655,7 @@ function recordSnapshotCleanupWarning(warnings: HealthFinding[]): void {
     severity: "warning",
     requirement: "temporary-snapshot-cleanup",
     message: "Temporary doctor lint state snapshot cleanup did not complete.",
-    fixHint: "Rerun `openclaw doctor --lint` after the update to check snapshot cleanup.",
+    fixHint: "Rerun `paddy doctor --lint` after the update to check snapshot cleanup.",
   });
 }
 

@@ -28,7 +28,7 @@ See [Configuration](/gateway/configuration) for the full schema.
 
 ## Inbound dedupe
 
-Channels can redeliver the same message after a reconnect. OpenClaw keeps an in-memory cache keyed by agent scope, channel route (channel + peer + account + thread), and message id, so a redelivered message does not trigger a second agent run. The cache entry expires after 20 minutes or once 5000 entries are tracked, whichever comes first.
+Channels can redeliver the same message after a reconnect. Paddy keeps an in-memory cache keyed by agent scope, channel route (channel + peer + account + thread), and message id, so a redelivered message does not trigger a second agent run. The cache entry expires after 20 minutes or once 5000 entries are tracked, whichever comes first.
 
 ## Inbound debouncing
 
@@ -54,7 +54,7 @@ Rapid text messages from the same sender can be batched into one agent turn via 
 - Telegram batches ordinary text by default after a 300ms quiet window. Other channels have no generic debounce delay unless configured.
 - `messages.inbound.byChannel.<channel>` takes precedence over `messages.inbound.debounceMs`; either overrides the channel default. Set `0` to disable ordinary burst batching.
 - For non-forwarded Telegram text, messages of at least 4000 characters allow up to 1500ms for continuations. Short and long messages share the same batch, without requiring consecutive message IDs. This automatic long-paste assembly remains active when ordinary batching is disabled.
-- iMessage follows the same generic debounce policy. `imsg` 0.13.1 and newer coalesces Apple URL-preview split-sends before OpenClaw receives them, so no iMessage-specific debounce setting is needed.
+- iMessage follows the same generic debounce policy. `imsg` 0.13.1 and newer coalesces Apple URL-preview split-sends before Paddy receives them, so no iMessage-specific debounce setting is needed.
 
 Changes to `messages.inbound.debounceMs` and `messages.inbound.byChannel` apply without
 reconnecting Discord, Feishu, iMessage, Mattermost, Microsoft Teams, Signal, Slack,
@@ -129,7 +129,7 @@ Channel plugins may preserve ordering, debounce input, and apply transport backp
 
 Once a turn is durably accepted, an unexpected failure before its answer produces a compact error reply in direct chats and explicitly addressed conversations where automatic replies are enabled. Progress acknowledgments do not replace that final outcome. The turn remains failed and is not replayed as a new inbound message; delivery policies and replies already sent through the message tool still apply.
 
-With the OpenClaw runtime, an assistant turn that errors or is aborted after producing partial text, without tool calls, appears as a short failure marker in the next model request. Its unfinished text is not replayed, and the stored failed turn stays unchanged. Empty and placeholder-only failures remain excluded; failed tool calls keep their existing pairing rules. The marker does not establish whether an earlier action completed.
+With the Paddy runtime, an assistant turn that errors or is aborted after producing partial text, without tool calls, appears as a short failure marker in the next model request. Its unfinished text is not replayed, and the stored failed turn stays unchanged. Empty and placeholder-only failures remain excluded; failed tool calls keep their existing pairing rules. The marker does not establish whether an earlier action completed.
 
 ## Streaming, chunking, and batching
 
@@ -140,7 +140,7 @@ Block streaming sends partial replies as the model produces text blocks; chunkin
 - `agents.defaults.blockStreamingChunk` (`minChars|maxChars|breakPreference`)
 - `agents.defaults.blockStreamingCoalesce` (idle-based batching)
 - `agents.defaults.humanDelay` (human-like pause between block replies)
-- Channel overrides: `*.streaming.block.enabled` and `*.streaming.block.coalesce` on bundled channels; stale flat keys are migrated by `openclaw doctor --fix`. Block streaming is off unless explicitly enabled, on every channel including Telegram. QQ Bot is the exception: it has no `streaming.block` keys and streams block replies unless `channels.qqbot.streaming.mode` is `"off"`.
+- Channel overrides: `*.streaming.block.enabled` and `*.streaming.block.coalesce` on bundled channels; stale flat keys are migrated by `paddy doctor --fix`. Block streaming is off unless explicitly enabled, on every channel including Telegram. QQ Bot is the exception: it has no `streaming.block` keys and streams block replies unless `channels.qqbot.streaming.mode` is `"off"`.
 
 Details: [Streaming + chunking](/concepts/streaming).
 
@@ -162,7 +162,7 @@ Details: [Configuration](/gateway/config-agents/messages-and-talk#messages) and 
 
 ## Silent replies
 
-The silent token `NO_REPLY` (case-insensitive, so `no_reply` also matches) is never delivered as user-visible text. When a turn also has pending tool media, such as generated TTS audio, OpenClaw strips the silent text but still delivers the media attachment.
+The silent token `NO_REPLY` (case-insensitive, so `no_reply` also matches) is never delivered as user-visible text. When a turn also has pending tool media, such as generated TTS audio, Paddy strips the silent text but still delivers the media attachment.
 
 Silence policy resolves by conversation type:
 

@@ -92,7 +92,7 @@ describe("daemon status version reporting", () => {
     expect(output).toContain("Gateway version: 2026.5.6");
     expect(output).toContain("this Paddy command is version 2026.4.23");
     expect(output).toContain(
-      "if this mismatch is unexpected, update PATH so `paddy` points to the version you want",
+      "if this mismatch is unexpected, update PATH so `openclaw` points to the version you want",
     );
   });
 

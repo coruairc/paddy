@@ -61,9 +61,9 @@ earliest known creation date only. Without that history, `createdAtMs` and
 
 A zero `useCount` or null `lastUsedAtMs` means use is not recorded, not that the
 skill was never used. Tracking includes successful known skill reads through
-OpenClaw tools registered with the Codex dynamic-tool bridge and explicit
+Paddy tools registered with the Codex dynamic-tool bridge and explicit
 tool-dispatched skill commands. It does not infer native Codex skill activation
-or reads made outside the OpenClaw tool boundary. There is no historical backfill.
+or reads made outside the Paddy tool boundary. There is no historical backfill.
 
 During upgrades, clients without the capability receive the unchanged legacy
 response shape: no marker, numeric creation dates, and only current entries whose
@@ -124,7 +124,7 @@ Unless overridden, `<state-dir>` is `~/.openclaw`.
 - Each generation contains one `PROPOSAL.md` and all of that revision's support
   files. Revision publication never overwrites the active generation in place.
 - Generation files are flushed before publication. After the complete bundle is
-  renamed into place, OpenClaw syncs the `generations/` parent directory where
+  renamed into place, Paddy syncs the `generations/` parent directory where
   the platform supports directory flushing, before committing SQLite state.
   Platforms that report directory synchronization as unsupported retain atomic
   rename and process-interruption safety, but do not claim power-loss durability
@@ -137,7 +137,7 @@ Proposals created by older releases can still reference the earlier root-level
 next successful revision moves the proposal onto the generation layout and
 retires the previous bundle.
 
-Startup and `openclaw doctor --fix` use the same Workshop migration. It imports
+Startup and `paddy doctor --fix` use the same Workshop migration. It imports
 the previous `proposals.json`, `proposal.json`, and `rollback.json` metadata into
 SQLite after verifying each proposal, then removes the migrated JSON files.
 It moves applied legacy Workshop creates into `workshop-skills`, retargets
@@ -145,7 +145,7 @@ eligible pending creates, and marks outside updates stale before normal use.
 Pending updates follow their relocated skill in the same database commit.
 Ownership-only moves preserve the proposal's existing edit time.
 Interrupted moves resume without discarding those pending updates.
-If older workspace setup files remain, run `openclaw doctor --fix`.
+If older workspace setup files remain, run `paddy doctor --fix`.
 Startup defers the affected skill moves and backup conversion until Doctor
 has imported that workspace state.
 The migration infers each legacy proposal's owner from its row, origin metadata,
@@ -193,7 +193,7 @@ attestations keep their protection.
 
 If a proposal's draft is missing, Suggestions marks it unavailable. You can
 reject it, but cannot apply, evaluate, or revise content that is no longer there.
-Run `openclaw doctor --fix` to mark these proposals stale and remove them from
+Run `paddy doctor --fix` to mark these proposals stale and remove them from
 actionable Suggestions. Doctor preserves their metadata and remaining files.
 If a proposal has unfinished apply recovery, Reject and Quarantine refuse to
 dismiss it. Doctor leaves it pending and asks you to restore the draft before

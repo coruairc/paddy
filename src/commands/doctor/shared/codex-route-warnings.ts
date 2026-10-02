@@ -9,6 +9,7 @@ import {
   resolveModelExtraParamSources,
 } from "../../../agents/model-extra-params.js";
 import { resolveModelRuntimePolicy } from "../../../agents/model-runtime-policy.js";
+import { CLI_NAME, PRODUCT_NAME } from "../../../brand.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import { detectWindowsSpawnCommandInlineArgs } from "../../../plugin-sdk/windows-spawn.js";
 import { listMutableCodexRouteAgentEntries } from "./codex-route-agent-entries.js";
@@ -40,7 +41,6 @@ import {
 } from "./codex-route-model-ref.js";
 import { maybeRepairCodexSessionRoutes } from "./codex-route-session-repair.js";
 import type {
-  CodexRouteHit,
   CodexRuntimeRouteHit,
   LegacyLosslessCompactionConfig,
   UnsupportedCodexCompactionOverride,
@@ -68,16 +68,12 @@ export function resolveKnownModelRefMigrationTarget(
   return typeof migrated === "string" && migrated !== ref ? migrated : undefined;
 }
 
-function formatCodexRouteChange(hit: CodexRouteHit): string {
-  return `${hit.path}: ${hit.model} -> ${hit.canonicalModel}.`;
-}
-
 function formatUnsupportedCompactionWarning(params: {
   hits: UnsupportedCodexCompactionOverride[];
   fixHint: string;
 }): string {
   return [
-    "- Codex runtime uses native server-side compaction and ignores OpenClaw compaction summarizer overrides.",
+    `- Codex runtime uses native server-side compaction and ignores ${PRODUCT_NAME} compaction summarizer overrides.`,
     ...params.hits.map(
       (hit) => `- ${hit.path}: ${hit.value} is ignored while this agent uses Codex runtime.`,
     ),
@@ -108,7 +104,7 @@ function formatLegacyLosslessCompactionWarning(params: {
     "- Legacy Lossless compaction config should use the Lossless context-engine slot for Codex.",
     ...configLines,
     params.canAutoFix
-      ? "- Run `openclaw doctor --fix`: it migrates legacy Lossless compaction config to the Lossless context-engine slot."
+      ? "- Run `paddy doctor --fix`: it migrates legacy Lossless compaction config to the Lossless context-engine slot."
       : "- Move the Lossless config manually; doctor will not overwrite an existing non-Lossless context-engine slot or collapse conflicting per-agent summary models.",
   ].join("\n");
 }
@@ -118,8 +114,8 @@ function formatDisabledCodexPluginWarning(params: {
   repairBlocked: boolean;
 }): string {
   const fixHint = params.repairBlocked
-    ? "- Enable plugins.entries.codex and plugin loading, and remove `codex` from plugins.deny; or set the affected OpenAI models to an OpenClaw runtime policy."
-    : "- Run `openclaw doctor --fix`: it enables plugins.entries.codex, or set the affected OpenAI models to an OpenClaw runtime policy.";
+    ? `- Enable plugins.entries.codex and plugin loading, and remove \`codex\` from plugins.deny; or set the affected OpenAI models to a ${PRODUCT_NAME} runtime policy.`
+    : `- Run \`${CLI_NAME} doctor --fix\`: it enables plugins.entries.codex, or set the affected OpenAI models to a ${PRODUCT_NAME} runtime policy.`;
   return [
     "- Codex runtime is selected, but the Codex plugin is disabled.",
     ...params.hits.map(
@@ -152,9 +148,9 @@ function collectCodexAppServerCommandWarnings(cfg: OpenClawConfig): string[] {
         ]
       : []),
     [
-      "- Custom Codex app-server command bypasses OpenClaw's managed exact-version binary.",
+      `- Custom Codex app-server command bypasses ${PRODUCT_NAME}'s managed exact-version binary.`,
       "- plugins.entries.codex.config.appServer.command: Doctor did not execute, inspect, or rewrite this command.",
-      "- Remove the override to use managed Codex startup, or verify the custom binary matches the Codex version bundled with this OpenClaw release.",
+      `- Remove the override to use managed Codex startup, or verify the custom binary matches the Codex version bundled with this ${PRODUCT_NAME} release.`,
     ].join("\n"),
   ];
 }
@@ -264,7 +260,7 @@ function collectCodexModelParamHits(
 
 function formatCodexModelParamWarning(hits: readonly CodexModelParamHit[]): string {
   const fixHint = hits.some((hit) => hit.removable)
-    ? '- Run `openclaw doctor --fix` to remove only redundant priority service-tier params; remove any remaining params or set the affected route\'s agentRuntime.id to "openclaw".'
+    ? '- Run `paddy doctor --fix` to remove only redundant priority service-tier params; remove any remaining params or set the affected route\'s agentRuntime.id to "paddy".'
     : '- Remove these params or set the affected route\'s agentRuntime.id to "openclaw"; Doctor cannot migrate them without changing behavior.';
   return [
     "- Explicit native Codex model routes cannot reproduce authored request transport parameters.",
@@ -414,7 +410,7 @@ export function collectCodexRouteWarnings(params: {
               hit.runtime ? `; current runtime is "${hit.runtime}"` : ""
             }.`,
         ),
-        "- Run `openclaw doctor --fix`: it rewrites configured model refs and stale sessions to `openai/*`, moves Codex intent to provider/model runtime policy, and clears old whole-agent runtime pins.",
+        "- Run `paddy doctor --fix`: it rewrites configured model refs and stale sessions to `openai/*`, moves Codex intent to provider/model runtime policy, and clears old whole-agent runtime pins.",
       ].join("\n"),
     );
   }
@@ -465,8 +461,7 @@ export function collectCodexRouteWarnings(params: {
     warnings.push(
       formatUnsupportedCompactionWarning({
         hits: fixableHits,
-        fixHint:
-          "- Run `openclaw doctor --fix`: it removes unsupported Codex compaction overrides.",
+        fixHint: "- Run `paddy doctor --fix`: it removes unsupported Codex compaction overrides.",
       }),
     );
   }
@@ -506,27 +501,17 @@ export function maybeRepairCodexRoutes(params: {
     (hit) => hit.removable,
   );
   if (
-    hits.length === 0 &&
-    disabledCodexPluginHits.length === 0 &&
-    unsupportedCompactionOverrides.length === 0 &&
-    legacyLosslessCompactionConfigs.length === 0 &&
-    !hasRemovableServiceTier &&
-    !blockedProviderPlan.warning
+    !params.shouldRepair ||
+    (hits.length === 0 &&
+      disabledCodexPluginHits.length === 0 &&
+      unsupportedCompactionOverrides.length === 0 &&
+      legacyLosslessCompactionConfigs.length === 0 &&
+      !hasRemovableServiceTier &&
+      !blockedProviderPlan.warning)
   ) {
     return {
       cfg: params.cfg,
       warnings: collectCodexRouteWarnings({ cfg: params.cfg, env, blockedProviderPlan }),
-      changes: [],
-    };
-  }
-  if (!params.shouldRepair) {
-    return {
-      cfg: params.cfg,
-      warnings: collectCodexRouteWarnings({
-        cfg: params.cfg,
-        env,
-        blockedProviderPlan,
-      }),
       changes: [],
     };
   }
@@ -549,7 +534,7 @@ export function maybeRepairCodexRoutes(params: {
     repaired.changes.length > 0
       ? [
           `Repaired Codex model routes:\n${repaired.changes
-            .map((hit) => `- ${formatCodexRouteChange(hit)}`)
+            .map((hit) => `- ${hit.path}: ${hit.model} -> ${hit.canonicalModel}.`)
             .join("\n")}`,
         ]
       : [];

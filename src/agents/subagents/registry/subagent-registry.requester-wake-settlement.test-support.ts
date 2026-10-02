@@ -9,6 +9,7 @@ export function registerRequesterWakeSettlementBoundaryTests({
   requesterSessionKey,
   spawnVisibleChild,
   emitCompleted,
+  flushOwnedWork,
   waitForDeliveredCleanup,
   getRequesterWakeCalls,
   useGlobalSessionScope,
@@ -20,6 +21,7 @@ export function registerRequesterWakeSettlementBoundaryTests({
     requesterTurnRunId: string;
   }) => Promise<void>;
   emitCompleted: (runId: string, childSessionKey: string, text: string) => void;
+  flushOwnedWork: () => Promise<void>;
   waitForDeliveredCleanup: (runId: string) => Promise<void>;
   getRequesterWakeCalls: () => GatewayRequest[];
   useGlobalSessionScope: () => void;
@@ -66,12 +68,12 @@ export function registerRequesterWakeSettlementBoundaryTests({
     await spawnVisibleChild({ ...child, requesterTurnRunId });
     await createSessionsYieldTool({
       sessionId: "sess-main",
-      claimYield: () =>
-        registry.markRequesterTurnYielded({
+      claimYield: async () =>
+        (await registry.markRequesterTurnYielded({
           requesterSessionKey,
           requesterAgentId: "main",
           requesterTurnRunId,
-        }) > 0,
+        })) > 0,
       onYield: () => {},
     }).execute("yield-current-result", {});
     const { withLocalSessionPlacementTurnSettlement } =
@@ -93,6 +95,7 @@ export function registerRequesterWakeSettlementBoundaryTests({
       }),
     );
     emitCompleted(child.runId, child.childSessionKey, "current counting result");
+    await flushOwnedWork();
     await waitForDeliveredCleanup(child.runId);
 
     expect(getRequesterWakeCalls()).toHaveLength(1);
@@ -162,6 +165,7 @@ export function registerRequesterWakeSettlementBoundaryTests({
     const completions: Array<{ delivered: boolean; error?: string }> = [];
     const runWake = () =>
       maybeWakeRequesterAfterAllChildrenSettled({
+        isSourceCurrent: () => true,
         requesterSessionKey,
         settledEntry: batch,
         transitionBatch: (_runIds, state) => {

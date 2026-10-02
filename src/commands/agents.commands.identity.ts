@@ -1,4 +1,3 @@
-// Implements identity metadata updates for configured agents.
 import path from "node:path";
 import { expectDefined } from "@openclaw/normalization-core";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
@@ -62,7 +61,6 @@ function resolveAgentIdByWorkspace(
   );
 }
 
-/** Update an agent identity from flags or workspace identity markdown. */
 export async function agentsSetIdentityCommand(
   opts: AgentsSetIdentityOptions,
   runtime: RuntimeEnv = defaultRuntime,
@@ -85,7 +83,7 @@ export async function agentsSetIdentityCommand(
   const wantsIdentityFile = Boolean(opts.fromIdentity || identityFileRaw || !hasExplicitIdentity);
   const normalizedAgent = opts.agent === undefined ? null : normalizeAgentIdStrict(opts.agent);
   if (normalizedAgent && !normalizedAgent.ok) {
-    failAgentIdentity(`Agent "${opts.agent}" not found. Create it with \`openclaw agents add\`.`);
+    failAgentIdentity(`Agent "${opts.agent}" not found. Create it with \`paddy agents add\`.`);
   }
   let agentId = normalizedAgent?.value;
 
@@ -124,9 +122,7 @@ export async function agentsSetIdentityCommand(
   const resolvedAgentId = expectDefined(agentId, "agent id");
   const resolvedAgentIds = listAgentIds(cfg).map((id) => normalizeAgentId(id));
   if (!resolvedAgentIds.includes(resolvedAgentId)) {
-    failAgentIdentity(
-      `Agent "${resolvedAgentId}" not found. Create it with \`openclaw agents add\`.`,
-    );
+    failAgentIdentity(`Agent "${resolvedAgentId}" not found. Create it with \`paddy agents add\`.`);
   }
   let identityFromFile: AgentIdentityFile | null = null;
   if (wantsIdentityFile) {
@@ -198,23 +194,22 @@ export async function agentsSetIdentityCommand(
 
   logConfigUpdated(runtime);
   runtime.log(`Agent: ${sanitizeTerminalText(resolvedAgentId)}`);
-  if (committedIdentity.name) {
-    runtime.log(`Name: ${sanitizeTerminalText(committedIdentity.name)}`);
-  }
-  if (committedIdentity.theme) {
-    runtime.log(`Theme: ${sanitizeTerminalText(committedIdentity.theme)}`);
-  }
-  if (committedIdentity.emoji) {
-    runtime.log(`Emoji: ${sanitizeTerminalText(committedIdentity.emoji)}`);
-  }
-  if (committedIdentity.avatar) {
-    runtime.log(`Avatar: ${sanitizeTerminalText(committedIdentity.avatar)}`);
+  for (const [field, label] of [
+    ["name", "Name"],
+    ["theme", "Theme"],
+    ["emoji", "Emoji"],
+    ["avatar", "Avatar"],
+  ] as const) {
+    const value = committedIdentity[field];
+    if (value) {
+      runtime.log(`${label}: ${sanitizeTerminalText(value)}`);
+    }
   }
   runtime.log(`Workspace: ${sanitizeTerminalText(shortenHomePath(storedWorkspaceDir))}`);
   if (locatorDiffers && workspaceLocatorDir) {
     runtime.log(`Workspace locator: ${sanitizeTerminalText(shortenHomePath(workspaceLocatorDir))}`);
     runtime.log(
-      `Stored workspace unchanged. Relocate with ${formatCliCommand(`openclaw config set agents.entries.${resolvedAgentId}.workspace ${quoteCliArg(workspaceLocatorDir)}`)}.`,
+      `Stored workspace unchanged. Relocate with ${formatCliCommand(`paddy config set agents.entries.${resolvedAgentId}.workspace ${quoteCliArg(workspaceLocatorDir)}`)}.`,
     );
   } else if (identitySourceDiffers && identitySourceDir) {
     runtime.log(`Identity source: ${sanitizeTerminalText(shortenHomePath(identitySourceDir))}`);

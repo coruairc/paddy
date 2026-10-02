@@ -1,7 +1,7 @@
 {
   "name": "@openclaw/llama-cpp-provider",
   "version": "2026.9.6",
-  "description": "OpenClaw provider for managed and external llama.cpp servers",
+  "description": "Paddy provider for managed and external llama.cpp servers",
   "repository": {
     "type": "git",
     "url": "https://github.com/openclaw/openclaw"
@@ -33,6 +33,6 @@
     }
   },
   "dependencies": {
-    "@openclaw/fs-safe": "0.21.0"
+    "@openclaw/fs-safe": "0.21.2"
   }
 }

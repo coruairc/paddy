@@ -212,7 +212,7 @@ describe("Codex Computer Use readiness", () => {
       "thread/start",
       {
         input: [],
-        developerInstructions: "OpenClaw Computer Use readiness probe",
+        developerInstructions: "Paddy Computer Use readiness probe",
         ephemeral: true,
       },
       { timeoutMs: 60_000 },

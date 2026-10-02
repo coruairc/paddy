@@ -7,7 +7,7 @@ export function buildCodexAppServerInitializeParams(): CodexInitializeParams {
   return {
     clientInfo: {
       name: "openclaw",
-      title: "OpenClaw",
+      title: "Paddy",
       version: OPENCLAW_VERSION,
     },
     capabilities: {

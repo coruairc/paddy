@@ -1,4 +1,5 @@
 import { coerceErrorMessage } from "@openclaw/normalization-core/error-coercion";
+import { PRODUCT_NAME } from "../brand.js";
 import { sleep } from "../utils/sleep.js";
 import { runMeetingBrowserAct } from "./browser-act-lock.js";
 import { asMeetingBrowserTabs } from "./browser-request.js";
@@ -34,7 +35,6 @@ async function leaveMeetingInPage<
 }): Promise<{
   departed: boolean;
   clickedLeave: boolean;
-  clickedConfirmation: boolean;
   ownershipRetained?: boolean;
   sessionConflict?: boolean;
   sessionMatched?: boolean;
@@ -42,7 +42,6 @@ async function leaveMeetingInPage<
 }> {
   const deadline = performance.now() + params.timeoutMs;
   let clickedLeave = false;
-  let clickedConfirmation = false;
   let ownershipRetained = false;
   do {
     const remainingMs = Math.floor(deadline - performance.now());
@@ -66,14 +65,12 @@ async function leaveMeetingInPage<
     });
     const step = params.adapter.browser.parseLeaveResult(evaluated);
     clickedLeave ||= step.leaveAction === "leave";
-    clickedConfirmation ||= step.leaveAction === "confirm";
     if (step.sessionMatched === false) {
       const stepOwnershipRetained = clickedLeave && step.sessionConflict !== true;
       if (step.departed || !stepOwnershipRetained) {
         return {
           departed: stepOwnershipRetained ? step.departed : false,
           clickedLeave,
-          clickedConfirmation,
           ownershipRetained: stepOwnershipRetained,
           sessionConflict: step.sessionConflict,
           sessionMatched: false,
@@ -86,13 +83,12 @@ async function leaveMeetingInPage<
       return {
         departed: step.departed,
         clickedLeave,
-        clickedConfirmation,
         ...(ownershipRetained && step.sessionConflict !== true ? { ownershipRetained: true } : {}),
         urlMatched: step.urlMatched,
       };
     }
     if (!step.leaveAction && !clickedLeave) {
-      return { departed: false, clickedLeave, clickedConfirmation, urlMatched: true };
+      return { departed: false, clickedLeave, urlMatched: true };
     }
     if (!step.leaveAction) {
       await sleep(100);
@@ -101,7 +97,6 @@ async function leaveMeetingInPage<
   return {
     departed: false,
     clickedLeave,
-    clickedConfirmation,
     ...(ownershipRetained ? { ownershipRetained: true, sessionMatched: false } : {}),
     urlMatched: true,
   };
@@ -200,12 +195,12 @@ export async function leaveMeetingWithBrowser<
       if (leaveResult.sessionConflict !== true) {
         return {
           left: false,
-          note: `Browser control could not verify that the ${params.adapter.browserLabel} tab still belongs to this OpenClaw meeting session.`,
+          note: `Browser control could not verify that the ${params.adapter.browserLabel} tab still belongs to this ${PRODUCT_NAME} meeting session.`,
         };
       }
       return {
         left: true,
-        note: `${params.adapter.browserLabel} tab belongs to another OpenClaw meeting session; left its current call untouched.`,
+        note: `${params.adapter.browserLabel} tab belongs to another ${PRODUCT_NAME} meeting session; left its current call untouched.`,
       };
     }
     if (leaveResult.urlMatched !== true && !leaveResult.departed) {
@@ -276,7 +271,7 @@ export async function readMeetingTranscriptWithBrowser<
   }
   if (snapshot.sessionMatched === false) {
     throw new Error(
-      `The tracked ${params.adapter.browserLabel} tab now belongs to another OpenClaw meeting session.`,
+      `The tracked ${params.adapter.browserLabel} tab now belongs to another ${PRODUCT_NAME} meeting session.`,
     );
   }
   return {

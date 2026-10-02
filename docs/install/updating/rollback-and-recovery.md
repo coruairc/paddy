@@ -2,7 +2,7 @@
 summary: "Downgrading, automatic schema-neutral rollback, verified pre-update backups, and triage when an update leaves you stuck"
 read_when:
   - Something broke after an update and you need to go back
-  - You want to know when `openclaw update` can roll back automatically
+  - You want to know when `paddy update` can roll back automatically
   - You are creating a verified backup before a significant update
   - An update failed and you need triage or unattended repair
 title: "Rollback and recovery"
@@ -13,15 +13,15 @@ Downgrades, automatic rollback, verified pre-update backups, and triage when an 
 ## Downgrade
 
 Verify the upgrade and your session history before retiring recovery originals
-with `openclaw update cleanup`. Downgrading the package does not reverse config
+with `paddy update cleanup`. Downgrading the package does not reverse config
 or database migrations. Once state has migrated beyond the older release's
 supported format, the supported recovery is to restore a verified pre-update
-backup with its matching OpenClaw release.
+backup with its matching Paddy release.
 
-Prefer `openclaw update` for upgrades and recovery. It validates the target,
+Prefer `paddy update` for upgrades and recovery. It validates the target,
 runs required Doctor migrations, and verifies the activated Gateway. A raw
 `npm i -g` replacement does not retain the previous package or run this recovery
-workflow; use `openclaw update` or [create a backup first](#before-updating-create-a-verified-backup).
+workflow; use `paddy update` or [create a backup first](#before-updating-create-a-verified-backup).
 
 The updater retains the previous package during activation and keeps it when
 failed recovery cannot prove a working installation. Migration recovery originals
@@ -46,8 +46,8 @@ For a target that can read the current state, preview and use the managed
 rollback path:
 
 ```bash
-openclaw update --tag <known-good-version> --dry-run
-openclaw update --tag <known-good-version>
+paddy update --tag <known-good-version> --dry-run
+paddy update --tag <known-good-version>
 ```
 
 The updater checks compatibility and asks for downgrade confirmation. If the
@@ -69,13 +69,13 @@ installation's package manager; a backup archive does not contain the package.
 
 A complete recovery point must cover these together:
 
-- The matching OpenClaw package version or source revision and built runtime.
+- The matching Paddy package version or source revision and built runtime.
 - `openclaw.json`, including `meta.lastTouchedVersion`.
 - `state/openclaw.sqlite` and every `agents/<id>/agent/openclaw-agent.sqlite`,
   including databases at configured paths outside the default layout.
 - The workspaces, credentials, and retained originals needed by that installation.
 
-Use `openclaw backup create --verify` for a verified, WAL-aware archive. Never copy only the
+Use `paddy backup create --verify` for a verified, WAL-aware archive. Never copy only the
 main `.sqlite` file from a live WAL database: committed data can still be in
 `-wal`. Restore the verified consolidated database offline; do not mix it with
 `-wal` or `-shm` files from another database generation. See [Backup](/cli/backup)
@@ -86,7 +86,7 @@ leave configuration, databases, and migration inputs unchanged when preflight
 refuses startup. A successful start can migrate state forward. An older binary may then refuse
 both the database schema and the config's `meta.lastTouchedVersion`; changing
 either version marker does not undo the migration. Repair the installed version
-with `openclaw doctor --fix --non-interactive`, or use the backup recovery above.
+with `paddy doctor --fix --non-interactive`, or use the backup recovery above.
 
 During recovery, prevent an enabled [auto-updater](/install/updating/automatic-updates#auto-updater) from immediately
 reapplying the newer release by setting `OPENCLAW_NO_AUTO_UPDATE=1` in the Gateway
@@ -95,30 +95,42 @@ environment.
 After recovery, verify the running installation before cleanup:
 
 ```bash
-openclaw --version
-openclaw health
-openclaw gateway status --deep --json
-openclaw doctor --lint --json
-openclaw update cleanup --dry-run
+paddy --version
+paddy health
+paddy gateway status --deep --json
+paddy doctor --lint --json
+paddy update cleanup --dry-run
 ```
 
 <a id="automatic-checkpoint-recovery" />
 
 ### Full-state recovery requires a backup
 
-Package updates retain pre-migration SQLite snapshots alongside the package
-backup. If the Gateway was confirmed stopped during capture, a failed candidate
+Package updates keep pre-migration SQLite snapshots alongside the package
+backup until verified successful activation removes them with that backup.
+Rollback, failed or unverified completion, and refused restoration retain them.
+If cleanup cannot finish, the update reports a maintenance warning with the
+retained path. Older snapshot directories are not automatically removed: their
+ownership and successful outcome cannot be proven from existing receipts.
+Doctor reports older npm snapshot directories with their size and removal command.
+Confirm no update is in progress and inspect the corresponding update report and
+recovery state before manual cleanup.
+If the Gateway was confirmed stopped during capture, a failed candidate
 that was never allowed to start can restore those databases before package
 rollback when Doctor's recorded write fingerprints still match. A change between
 capture and Doctor admission, or after Doctor finishes, preserves the current
 databases and reports `state-migrated-no-rollback` with the snapshot location and
 Doctor recovery guidance. Without Doctor write evidence, rollback requires the
 last verified database generations to remain unchanged.
-Snapshots taken while a Gateway may still be writing are retained for
-manual recovery only, even if it exits later. Migrated files are kept as
+Snapshots taken while a Gateway may still be writing are available for
+manual recovery only until verified successful activation, even if it exits later.
+Migrated files are kept as
 `<database>.migrated-<runId>` for inspection, and the report names the snapshots
 and displaced files. See [Recovery limits](/cli/update/how-updates-run#recovery-limits)
 for disk requirements and the lifecycle checks.
+
+Database restoration preserves current update history, including failure details
+recorded after capture. The retained original snapshots remain unchanged.
 
 This requires the repaired updater to drive the update; already-running older
 drivers cannot gain database rollback from the candidate. A candidate that
@@ -136,7 +148,7 @@ verified backup. An interrupted or refused restore is not a successful rollback.
 
 ### Automatic schema-neutral rollback
 
-If a newly activated package fails verification, `openclaw update` compares the
+If a newly activated package fails verification, `paddy update` compares the
 shared and affected per-agent SQLite `user_version` values with their
 pre-activation values and checks that the config file still matches the content
 reported by the new version’s activation Doctor writer.
@@ -157,23 +169,27 @@ identity, plugins, channels, and `/readyz` again. Update verification does not u
 model inference: the managed service must be running and own its port, and the
 Gateway hello handshake must match the expected artifact.
 
-The new version’s Doctor migrations in the main config file do not block rollback, including on
+The new version’s Doctor migrations in the main config file and its `$include` files do not block rollback, including on
 a fresh install’s first update. The updater retains the config immediately before
 Doctor and verifies that Doctor consumed those captured bytes before making changes.
-It also checks the current file against the output hash reported by Doctor’s writer.
+It also checks each current file against the output hash reported by Doctor’s writer.
 Rollback restores the original bytes only while both hashes match. Restoration
-holds the normal config writer lock and rechecks the hash after acquiring it. Operator edits
+holds the normal config writer locks and rechecks the files after acquiring them. Operator edits
 made after activation block restoration, including edits before Doctor reads the
-config and between Doctor’s last write and the updater’s capture. Separate `$include` files must retain
-their pre-activation configuration content; they are not restored by the root-file
-snapshot. The existing intentional-recovery
+config and between Doctor’s last write and the updater’s capture. Changed include paths
+also block restoration. Older updater handoffs that retain only the root file still
+require includes to remain unchanged. The existing intentional-recovery
 allowance applies only to service commands, so the older-binary guard does not
 block recovery; it is never saved in config or the service environment.
+
+Missing or malformed includes do not prevent Doctor from running. When the updater
+cannot capture the complete include graph, it warns that automatic config rollback
+is unavailable and leaves any Doctor repairs in place if the update later fails.
 
 Successful recovery leaves the previous Gateway running and finishes the run as
 `rolled-back`, with `after.version` set to the previous version and downtime
 measured from service stop through verified recovery. The headline is
-`↩️ OpenClaw update rolled back to <previous>: <reason>`, retaining the original
+`↩️ Paddy update rolled back to <previous>: <reason>`, retaining the original
 verification failure. The command still exits nonzero; recovery does not turn a
 rejected version into a successful update.
 
@@ -183,19 +199,19 @@ an additional repair was needed. If the restored service fails its health check,
 the result records `recovery.service: "failed"`; the report says health failed
 and includes the recorded recovery reason. Health is reported as unverified only
 when verification could not run or complete, such as a readiness timeout. Both
-outcomes direct you to `openclaw gateway status --deep` to check the serving version
+outcomes direct you to `paddy gateway status --deep` to check the serving version
 and readiness. Rollback uses the same startup allowance as the update's activation check.
 Restart notifications retain the recovery fields understood by the restored runtime.
 Detailed recovery reasons remain in the update result, status diagnostics, and failure report.
 
-Use `openclaw update status` for the recorded reason and `openclaw triage` to
+Use `paddy update status` for the recorded reason and `paddy triage` to
 diagnose a failed check. Recovery guidance reports whether the Gateway is running
 or stopped from the latest service observation, even when the new version is running but did
 not pass verification. A restored Gateway must pass its own verification checks
 before the run can finish as `rolled-back`.
 
 In the Control UI, open **Settings → Updates** and choose **Diagnose update** to
-ask OpenClaw to investigate the recorded failure. Loading the dashboard,
+ask Paddy to investigate the recorded failure. Loading the dashboard,
 reconnecting, or receiving an update failure does not start diagnosis. Each
 diagnostic request requires a button press; it does not retry the update.
 
@@ -232,16 +248,16 @@ A refusal before the live swap restarts the unchanged Gateway and preserves the 
 
 ### Before updating: create a verified backup
 
-`openclaw update` preserves an automatic pre-update config copy, not a full-state
+`paddy update` preserves an automatic pre-update config copy, not a full-state
 recovery point. Before a significant update, create an independent verified backup
 explicitly:
 
 ```bash
 mkdir -p ~/Backups/openclaw
-openclaw backup create --output ~/Backups/openclaw --verify
+paddy backup create --output ~/Backups/paddy --verify
 ```
 
-The archive manifest records the OpenClaw version and the source paths included
+The archive manifest records the Paddy version and the source paths included
 in the backup. The archive can contain credentials, auth profiles, and channel
 state, so store it with owner-only permissions and the same protection as the
 live state directory. See [Backup](/cli/backup) for included and intentionally
@@ -262,39 +278,39 @@ for staging and memory details.
 
 ## If you are stuck
 
-Run `openclaw triage` in a terminal on the Gateway host, using the printed
+Run `paddy triage` in a terminal on the Gateway host, using the printed
 installation-specific command or keeping the same profile and state/config
 overrides. It opens the first directly launchable coding agent in this order:
 Claude Code, Codex, OpenCode, then Pi. The agent receives local diagnostics and
 any recorded failed-update outcome so it can repair the installation and verify
 Gateway health, using its normal authentication, sandbox, and approval settings.
-Use `openclaw triage --agent codex` to select a particular agent.
+Use `paddy triage --agent codex` to select a particular agent.
 
 Failed interactive updates offer triage after updater cleanup and
 pass the captured failure to the agent before fresh diagnostics can delay the
-handoff. Before launch, OpenClaw shows the agent, saved prompt path when available,
+handoff. Before launch, Paddy shows the agent, saved prompt path when available,
 and use of your own account/tokens. Only an affirmative Yes proceeds. Enter, `n`,
 cancellation, or 30 seconds without an answer skips the launch, prints a manual
 recovery command, and preserves diagnostics and the failed update's exit status.
-Explicit `openclaw triage` does not ask for this confirmation.
+Explicit `paddy triage` does not ask for this confirmation.
 JSON, `--yes`, and non-interactive update invocations can start one owned automatic
 repair after an eligible failure; other failures retain diagnostics and handoff
 commands. For diagnostic collection
-alone, use `openclaw triage --non-interactive`; add `--update-result <path>` to
+alone, use `paddy triage --non-interactive`; add `--update-result <path>` to
 include a saved update-failure artifact. See [Triage](/cli/triage) for command
 formatting and installation targeting.
 
 Triage keeps the failed update's report intact. An update started during repair
 creates its own history entry. After package replacement, restart commands run
 from the updated installation. A restart accepted by the service owner can still
-fail readiness checks; inspect `openclaw gateway status --deep` before retrying.
+fail readiness checks; inspect `paddy gateway status --deep` before retrying.
 
 Keep a stopped, unverified Gateway stopped and preserve migrated state during
 repair. A reachable version retained after a schema migration can continue
 serving while you diagnose it.
 The failed update retains its nonzero exit code even if the agent repairs it.
 
-- For `openclaw update --channel dev` on source checkouts, the updater auto-bootstraps `pnpm` when needed. If you see a pnpm/corepack bootstrap error, install `pnpm` manually (or re-enable `corepack`) and rerun the update.
+- For `paddy update --channel dev` on source checkouts, the updater auto-bootstraps `pnpm` when needed. If you see a pnpm/corepack bootstrap error, install `pnpm` manually (or re-enable `corepack`) and rerun the update.
 - Check: [Troubleshooting](/gateway/troubleshooting)
 - Ask in Discord: [https://discord.gg/clawd](https://discord.gg/clawd)
 
@@ -318,7 +334,7 @@ the update settles. New candidates retain its response protocol but report
 inference repair unavailable without loading a model or changing operator state.
 The published driver still owns that first update's control flow and budgets.
 
-For an explicit repair using configured inference, run `openclaw triage --run`
+For an explicit repair using configured inference, run `paddy triage --run`
 in a terminal on the Gateway host. Triage runs Doctor health checks, attempts
 up to one embedded repair turn with time and tool-call limits, and runs Doctor
 again. It uses the normal runtime credential resolver, including inherited

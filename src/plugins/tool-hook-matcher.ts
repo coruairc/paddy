@@ -1,4 +1,5 @@
 import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import type { PluginToolMatcher } from "./hook-types.js";
 
 export type PluginToolMatcherScope = {
@@ -48,14 +49,11 @@ export function normalizePluginToolMatcher(matcher: unknown): PluginToolMatcher 
       NON_CANONICAL_TOOL_MATCHER_NAMES.has(canonicalToolName) ||
       NON_CANONICAL_TOOL_MATCHER_NAMES.has(toolName.trim())
     ) {
-      throw new TypeError("tool hook matcher entries must use canonical OpenClaw tool ids");
+      throw new TypeError(`tool hook matcher entries must use canonical ${PRODUCT_NAME} tool ids`);
     }
     normalized.add(canonicalToolName);
   }
   const toolNames = Array.from(normalized).toSorted();
-  if (toolNames.length === 0) {
-    throw new TypeError("tool hook matcher entries must be non-empty strings");
-  }
   const [firstToolName, ...remainingToolNames] = toolNames;
   if (!firstToolName) {
     throw new TypeError("tool hook matcher entries must be non-empty strings");

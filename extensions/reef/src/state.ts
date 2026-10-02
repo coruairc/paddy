@@ -86,7 +86,7 @@ function assertReefIdentityMigrationComplete(runtime: PluginRuntime): void {
   });
   if (durableMigration.lookup(REEF_DURABLE_MIGRATION_KEY)) {
     throw new Error(
-      "Reef durable state migration is incomplete; repair the legacy state files and rerun openclaw doctor --fix",
+      "Reef durable state migration is incomplete; repair the legacy state files and rerun paddy doctor --fix",
     );
   }
   const migration = runtime.state.openSyncKeyedStore<ReefIdentityMigrationRecord>({
@@ -96,7 +96,7 @@ function assertReefIdentityMigrationComplete(runtime: PluginRuntime): void {
   });
   if (migration.lookup(REEF_KEYS_MIGRATION_KEY)) {
     throw new Error(
-      "Reef identity migration is incomplete; repair the legacy identity files and rerun openclaw doctor --fix",
+      "Reef identity migration is incomplete; repair the legacy identity files and rerun paddy doctor --fix",
     );
   }
 }
@@ -267,10 +267,6 @@ export class ReefDeliveredStore {
     });
   }
 
-  async has(id: string): Promise<boolean> {
-    return (await this.#delivered.lookup(id))?.id === id;
-  }
-
   async status(id: string): Promise<"delivered" | undefined> {
     return (await this.#delivered.lookup(id))?.id === id ? "delivered" : undefined;
   }
@@ -280,10 +276,6 @@ export class ReefDeliveredStore {
     if (!inserted && (await this.#delivered.lookup(id))?.id !== id) {
       throw new Error("Failed persisting Reef delivered marker");
     }
-  }
-
-  async add(id: string): Promise<void> {
-    await this.confirm(id);
   }
 }
 

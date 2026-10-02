@@ -1,4 +1,4 @@
-# OpenClaw FaceTime
+# Paddy FaceTime
 
 Experimental FaceTime carrier plugin for a dedicated Apple Silicon
 Mac. The public setup, security, operation, and removal guides are:
@@ -12,7 +12,7 @@ separately from `openclaw/openclaw-facetime`:
 ```bash
 openclaw plugins install @openclaw/facetime
 brew install openclaw/tap/openclaw-facetime
-openclaw gateway restart
+paddy gateway restart
 ```
 
 ## Ownership boundaries
@@ -33,7 +33,7 @@ openclaw gateway restart
 - `src/audio-pump.ts` owns bounded native capture, SoX playback, and child
   teardown.
 - `openclaw/openclaw-facetime` owns the native process tap and injected helper.
-  This plugin validates native protocol version 1, the exact OpenClaw
+  This plugin validates native protocol version 1, the exact Paddy
   Foundation Developer ID identity, and Apple notarization before activation.
 - `src/talk-driver.ts` owns provider response/tool generations and exact agent
   consult cancellation.

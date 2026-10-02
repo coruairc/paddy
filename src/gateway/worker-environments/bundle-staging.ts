@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { PRODUCT_NAME } from "../../brand.js";
 import { sha256File } from "../../infra/directory-durability.js";
 import { root, type Root } from "../../infra/fs-safe.js";
 import {
@@ -21,7 +22,7 @@ async function stageWorkerDeployArtifact(params: {
     expectedRealPath = await fs.realpath(sourcePath);
   } catch (error) {
     throw new Error(
-      `OpenClaw worker deploy artifact is missing; build the running package at ${params.sourceRoot}`,
+      `${PRODUCT_NAME} worker deploy artifact is missing; build the running package at ${params.sourceRoot}`,
       { cause: error },
     );
   }
@@ -68,7 +69,7 @@ export async function collectWorkerBundleManifest(
 ): Promise<WorkerBundleHashEntry[]> {
   const source = await root(sourceRoot, { maxBytes: Infinity }).catch((error: unknown) => {
     throw new Error(
-      `OpenClaw worker deploy artifact is missing; build the running package at ${sourceRoot}`,
+      `${PRODUCT_NAME} worker deploy artifact is missing; build the running package at ${sourceRoot}`,
       { cause: error },
     );
   });

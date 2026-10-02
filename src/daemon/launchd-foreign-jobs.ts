@@ -3,6 +3,7 @@ import { constants } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { sanitizeForLog } from "../../packages/terminal-core/src/ansi.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveGatewayLaunchAgentLabel, resolveNodeLaunchAgentLabel } from "./constants.js";
 import {
   execLaunchctl,
@@ -10,7 +11,7 @@ import {
   isLaunchctlNotLoaded,
 } from "./launchd-exec.js";
 import { resolveLaunchAgentLabel } from "./launchd-label.js";
-import { resolveLaunchAgentGuiDomain } from "./launchd-runtime.js";
+import { parseLaunchctlJob, resolveLaunchAgentGuiDomain } from "./launchd-runtime.js";
 
 type GatewayAction = "restart" | "start" | "stop";
 export type ForeignLaunchdJob = {
@@ -233,26 +234,16 @@ async function inspectJob(
   if (result.code !== 0) {
     throw new Error(`Cannot inspect launchd job ${label}: ${formatLaunchctlResultDetail(result)}`);
   }
-  const output = result.stdout;
-  if (!output.startsWith(`${target} = {\n`)) {
-    throw new Error(`Cannot parse launchd job ${label}`);
-  }
-  const field = (name: string) => output.match(new RegExp(`^\\t${name} = (.+)$`, "m"))?.[1];
+  const job = parseLaunchctlJob(result.stdout, target);
+  const field = (name: string) => job.fields.get(name);
   const program = field("program") ?? "unknown";
   const rawPath = field("path");
   const plistPath = rawPath?.startsWith("/") ? rawPath : undefined;
-  const args = (output.match(/^\targuments = \{\n([\s\S]*?)^\t\}/m)?.[1] ?? "")
-    .split("\n")
-    .filter((line) => line.startsWith("\t\t"))
-    .map((line) => line.slice(2));
-  const environment = output.match(/^\tenvironment = \{\n([\s\S]*?)^\t\}/m)?.[1] ?? "";
+  const args = job.arguments ?? [];
+  const environment = job.environment;
   // launchd also injects the `inherited environment` and `default environment`
   // blocks into the process; a shell reads BASH_ENV/SHELLOPTS from any of them.
-  const environmentBlocks = [
-    ...output.matchAll(/^\t(?:inherited |default )?environment = \{\n([\s\S]*?)^\t\}/gm),
-  ]
-    .map((match) => match[1] ?? "")
-    .join("\n");
+  const environmentBlocks = job.environmentBlocks;
   const plist = plistPath ? await readOwnedText(plistPath) : undefined;
   const hasServiceMarker =
     /^\t\tOPENCLAW_SERVICE_MARKER => openclaw$/m.test(environment) &&
@@ -332,14 +323,14 @@ export async function findForeignLaunchdJobs(
   ].toSorted();
   if (labels.length > MAX_JOBS) {
     throw new Error(
-      `Too many OpenClaw launchd jobs to inspect safely (${labels.length}; limit ${MAX_JOBS}).`,
+      `Too many ${PRODUCT_NAME} launchd jobs to inspect safely (${labels.length}; limit ${MAX_JOBS}).`,
     );
   }
   const jobs: ForeignLaunchdJob[] = [];
   const deadline = Date.now() + 10_000;
   for (const label of labels) {
     if (Date.now() >= deadline) {
-      throw new Error("OpenClaw launchd job inspection exceeded its 10-second budget.");
+      throw new Error(`${PRODUCT_NAME} launchd job inspection exceeded its 10-second budget.`);
     }
     const job = await inspectJob(label, env);
     if (job) {
@@ -355,7 +346,7 @@ export function formatForeignLaunchdJobs(jobs: ForeignLaunchdJob[]): string {
       [
         `${job.label}: program=${job.program}, keepalive=${job.keepAlive}, Gateway lifecycle=${job.gatewayActions.join("|") || "not verified"}`,
         job.safeToRemove
-          ? "  Removable with openclaw doctor --fix."
+          ? "  Removable with paddy doctor --fix."
           : "  Report only; left unchanged.",
         ...(job.diagnostic ? [`  ${job.diagnostic}`] : []),
       ].join("\n"),

@@ -1,4 +1,5 @@
 ---
+doc-schema-version: 1
 summary: "Shared state database schema versions, their changes, and their first releases"
 read_when:
   - "Looking up which release first shipped a state schema version"
@@ -85,7 +86,7 @@ snapshot survives deferral and restart; it does not replace current role, grant,
 session, or execution authority checks. Publisher selection, repository routing,
 human attribution, and receipt retention are unchanged.
 
-Startup and `openclaw doctor --fix` add the columns to existing tables without
+Startup and `paddy doctor --fix` add the columns to existing tables without
 rebuilding or rewriting their rows. Historical values stay `NULL`: migration
 does not infer a requester from the publisher, session creator, or current
 assignee. Unproven pending requests cannot begin new effects. Terminal receipts
@@ -148,7 +149,7 @@ absent. Per-agent schemas and native companion tables do not change; native
 clients can continue validating and reading their existing owned tables at
 state schema 17 without performing migrations.
 
-Startup and `openclaw doctor --fix` apply the schema-16 Skill Workshop migration
+Startup and `paddy doctor --fix` apply the schema-16 Skill Workshop migration
 before the prepared-worker migration when opening a schema-15 database. A
 schema-16 database receives only the prepared-worker migration. The tuple
 constraint belongs to the last added column, so migration scans existing
@@ -182,7 +183,7 @@ collection review had released becomes `stale` with a status reason, so the
 skill path it once created stays user-owned and Doctor never relocates it.
 
 Skill Workshop ownership is now the physical
-`<state-dir>/agents/<agentId>/agent/workshop-skills` directory. Startup and `openclaw doctor --fix`
+`<state-dir>/agents/<agentId>/agent/workshop-skills` directory. Startup and `paddy doctor --fix`
 drop the retired columns and index in the shared schema transaction. Both then
 run the same migration to relocate applied legacy Workshop creates to the
 inferred owner agent and retarget eligible pending creates. Conflicts and ambiguous ownership become
@@ -208,9 +209,9 @@ table is required.
 
 ### State schema 15
 
-Schema 15 removes `target_agent_id` and `target_session_id` from `current_conversation_bindings`. The target index uses the complete `target_session_key` and remains non-unique: several conversations may point at the same destination. This lets plugin-owned targets persist without inventing an OpenClaw agent owner. Channel/account isolation, plugin approvals, binding identifiers, target keys, JSON metadata, expiry, and detach behavior are unchanged.
+Schema 15 removes `target_agent_id` and `target_session_id` from `current_conversation_bindings`. The target index uses the complete `target_session_key` and remains non-unique: several conversations may point at the same destination. This lets plugin-owned targets persist without inventing a Paddy agent owner. Channel/account isolation, plugin approvals, binding identifiers, target keys, JSON metadata, expiry, and detach behavior are unchanged.
 
-Startup and `openclaw doctor --fix` run the migration in the existing exclusive write transaction. They remove only the two projections and replace the target index, preserving all other row values. A dependent trigger, index, or failed schema check rolls the transaction back; migration does not discard an unknown dependency to force the upgrade. Column removal rewrites the binding table, so upgrade cost scales with its size.
+Startup and `paddy doctor --fix` run the migration in the existing exclusive write transaction. They remove only the two projections and replace the target index, preserving all other row values. A dependent trigger, index, or failed schema check rolls the transaction back; migration does not discard an unknown dependency to force the upgrade. Column removal rewrites the binding table, so upgrade cost scales with its size.
 
 Stop older writers and create a verified, WAL-aware backup before upgrading. Builds supporting shared-state schema 14 or earlier refuse the migrated database. To return to an older build, restore that pre-upgrade backup into a separate state directory; do not lower the version markers or reconstruct an agent projection. See [Downgrade](/install/updating#downgrade) for the general recovery contract.
 

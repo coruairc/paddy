@@ -7,6 +7,7 @@ import {
   PACKAGE_LIFECYCLE_MARKER_CONTRACT_RELATIVE_PATH,
   PACKAGE_LIFECYCLE_PENDING_RELATIVE_PATH,
 } from "../../scripts/lib/package-lifecycle-marker.mjs";
+import { PRODUCT_NAME } from "../brand.js";
 import { getFileLockProcessStartTime, isPidAlive } from "../shared/pid-alive.js";
 import { asFsSafeFileLockRoot, createFileLockManager } from "./file-lock-manager.js";
 import { root } from "./fs-safe.js";
@@ -25,7 +26,7 @@ export class PackageLifecycleOwnershipError extends Error {
   constructor(packageRoot: string, reason: string, cause?: unknown) {
     const lockPath = path.join(packageRoot, PACKAGE_LIFECYCLE_LOCK_RELATIVE_PATH);
     super(
-      `OpenClaw package lifecycle ownership is uncertain (${reason}). Preserved package: ${packageRoot}. ` +
+      `${PRODUCT_NAME} package lifecycle ownership is uncertain (${reason}). Preserved package: ${packageRoot}. ` +
         `Wait for its lifecycle writers to settle before retrying or recovering ${lockPath}; lock age or a dead parent alone does not establish settlement.`,
       { cause },
     );
@@ -276,7 +277,7 @@ function runPackageLifecycleScript(
   }
   if (result.status !== 0) {
     throw new Error(
-      `OpenClaw package ${script.name} failed${result.signal ? ` with ${result.signal}` : ` with exit code ${result.status ?? "unknown"}`}`,
+      `${PRODUCT_NAME} package ${script.name} failed${result.signal ? ` with ${result.signal}` : ` with exit code ${result.status ?? "unknown"}`}`,
     );
   }
 }
@@ -434,7 +435,7 @@ export async function completePendingPackageLifecycle(params: {
       await fs.rm(paths.pending, { force: true });
     }
     if (await isPackageLifecyclePending(paths, packageDirectory)) {
-      throw new Error("OpenClaw package postinstall did not complete its lifecycle marker");
+      throw new Error(`${PRODUCT_NAME} package postinstall did not complete its lifecycle marker`);
     }
     return true;
   };

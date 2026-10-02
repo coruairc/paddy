@@ -46,7 +46,7 @@ describe("formatCliBannerLine", () => {
       mode: "default",
     });
 
-    expect(line).toBe("🦞 Paddy 2026.3.7 (abc1234) — All your chats, one Paddy.");
+    expect(line).toBe("🍀 Paddy 2026.3.7 (abc1234) — Grand so. Let's get on with it.");
   });
 
   it("drops decorative emoji for generic Linux terminals", () => {
@@ -82,11 +82,11 @@ describe("emitCliBanner", () => {
 
     emitCliBanner("2026.3.7", bannerOptions);
 
-    expect(writeSpy).toHaveBeenCalledWith("\n🦞 Paddy 2026.3.7 (abc1234)\n\n");
+    expect(writeSpy).toHaveBeenCalledWith("\n🍀 Paddy 2026.3.7 (abc1234)\n\n");
     expect(hasEmittedCliBanner()).toBe(true);
   });
 
-  it("adds the ASCII lobster on lobster days for rich random-mode terminals", async () => {
+  it("adds the clover or pint on the shared calendar day for rich random-mode terminals", async () => {
     const { emitCliBanner } = await importFreshBannerModule();
     setStdoutIsTty(true);
     const writeSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
@@ -99,13 +99,13 @@ describe("emitCliBanner", () => {
     });
 
     const written = writeSpy.mock.calls.map(([chunk]) => String(chunk)).join("");
-    expect(written).toContain("( o.o )");
+    expect(written).toMatch(/@@@@|~~~~/);
   });
 
   it.each([
     { label: "plain terminals", mode: "random" as const, richTty: false },
     { label: "pinned tagline modes", mode: "off" as const, richTty: true },
-  ])("keeps lobster day out of $label", async ({ mode, richTty }) => {
+  ])("keeps the calendar drawing out of $label", async ({ mode, richTty }) => {
     const { emitCliBanner } = await importFreshBannerModule();
     setStdoutIsTty(true);
     const writeSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);

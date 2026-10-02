@@ -1,5 +1,6 @@
 // OpenClaw CLI runner selects JSON, one-shot, or interactive setup-helper mode.
 import { stdin as defaultStdin, stdout as defaultStdout } from "node:process";
+import { PRODUCT_NAME } from "../brand.js";
 import { withProgress } from "../cli/progress.js";
 import { defaultRuntime, writeRuntimeJson, type RuntimeEnv } from "../runtime.js";
 import type { SystemAgentAssistantPlanner } from "./assistant.js";
@@ -219,7 +220,7 @@ async function runBoundSystemAgent(
     // same snapshot for planning so reply-only plans do not print before it.
     const overview = await withProgress(
       {
-        label: "Loading OpenClaw overview…",
+        label: `Loading ${PRODUCT_NAME} overview…`,
         indeterminate: true,
         delayMs: 0,
         fallback: "none",
@@ -248,7 +249,7 @@ async function runBoundSystemAgent(
   const outputIsTty = (output as { isTTY?: boolean }).isTTY === true;
   if (!inputIsTty || !outputIsTty) {
     // Without a TTY, OpenClaw cannot safely ask for confirmation; require --message instead.
-    runtime.error("OpenClaw needs an interactive TTY. Use --message for one command.");
+    runtime.error(`${PRODUCT_NAME} needs an interactive TTY. Use --message for one command.`);
     runtime.exit(1);
     return;
   }

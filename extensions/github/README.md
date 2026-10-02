@@ -1,7 +1,7 @@
 # GitHub
 
 Read public GitHub issues, pull requests, and commits beside your conversation in
-OpenClaw. This official plugin is included with OpenClaw and enabled by default.
+Paddy. This official plugin is included with Paddy and enabled by default.
 
 ## What it adds
 

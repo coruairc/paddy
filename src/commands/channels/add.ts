@@ -21,8 +21,6 @@ import {
 } from "../../cli/error-format.js";
 import { isTerminalInteractive } from "../../cli/terminal-interactivity.js";
 import type { OpenClawConfig } from "../../config/config.js";
-import { commitConfigWithPendingPluginInstalls } from "../../plugins/install-record-commit.js";
-import { refreshPluginRegistryAfterConfigMutation } from "../../plugins/registry-refresh.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
 import { createLazyPromise } from "../../shared/lazy-promise.js";
 import { createClackPrompter } from "../../wizard/clack-prompter.js";
@@ -31,13 +29,14 @@ import { normalizeExternalChannelSetupConfig } from "../channel-setup/config-com
 import { resolveChannelSetupOwner } from "../channel-setup/owner.js";
 import { withCommandPluginMetadata, type ConfigWriteSnapshot } from "../config-validation.js";
 import { parseAccountSelector } from "./account-selector.js";
+import { persistChannelPluginConfig } from "./plugin-config-persistence.js";
 import { channelLabel } from "./runtime-label.js";
 import { requireValidConfigForWrite } from "./shared.js";
 
 const loadChannelSetupPluginInstall = createLazyPromise(
   () => import("../channel-setup/plugin-install.js"),
 );
-const loadOnboardChannels = createLazyPromise(() => import("../onboard-channels.js"));
+const loadOnboardChannels = createLazyPromise(() => import("../../flows/channel-setup.js"));
 
 export type ChannelsAddOptions = {
   agent?: string;
@@ -141,8 +140,8 @@ async function configureChannelAccount(
     if (!isTerminalInteractive()) {
       runtime.error(
         channelOmitsEnvBackedSetupOption(opts.channel)
-          ? `Interactive channel setup requires a TTY. Run ${formatCliCommand(`openclaw channels add --channel ${opts.channel?.trim() || "<id>"} --help`)} to list the setup flags this channel accepts, then pass them for non-interactive setup.`
-          : "Interactive channel setup requires a TTY. Use `openclaw channels add --channel <id> --use-env` or pass the channel's credential flags for non-interactive setup.",
+          ? `Interactive channel setup requires a TTY. Run ${formatCliCommand(`paddy channels add --channel ${opts.channel?.trim() || "<id>"} --help`)} to list the setup flags this channel accepts, then pass them for non-interactive setup.`
+          : "Interactive channel setup requires a TTY. Use `paddy channels add --channel <id> --use-env` or pass the channel's credential flags for non-interactive setup.",
       );
       runtime.exit(1);
       return;
@@ -247,7 +246,7 @@ async function configureChannelAccount(
 
   if (!channel) {
     const hint = catalogEntry
-      ? `Plugin ${catalogEntry.meta.label} could not be loaded after install. Run openclaw doctor --fix, then retry openclaw channels add.`
+      ? `Plugin ${catalogEntry.meta.label} could not be loaded after install. Run paddy doctor --fix, then retry paddy channels add.`
       : formatUnknownChannelMessage({ channel: rawChannel });
     runtime.error(hint);
     runtime.exit(1);
@@ -264,7 +263,7 @@ async function configureChannelAccount(
           `${formatUnsupportedChannelActionMessage({
             channel: selectedChannel,
             action: "non-interactive add",
-          })} Run ${formatCliCommand("openclaw channels add")} with no flags for guided setup.`,
+          })} Run ${formatCliCommand("paddy channels add")} with no flags for guided setup.`,
         );
         runtime.exit(1);
         return;
@@ -286,7 +285,7 @@ async function configureChannelAccount(
             ? `${formatUnsupportedChannelActionMessage({
                 channel: selectedChannel,
                 action: "non-interactive add",
-              })} Run ${formatCliCommand("openclaw channels add")} with no flags for guided setup.`
+              })} Run ${formatCliCommand("paddy channels add")} with no flags for guided setup.`
             : prepared.error.message,
         );
         runtime.exit(1);
@@ -307,17 +306,13 @@ async function configureChannelAccount(
       });
 
       await params?.beforePersistentEffect?.();
-      const committed = await commitConfigWithPendingPluginInstalls({
-        sourceConfig: nextConfig,
+      const committed = await persistChannelPluginConfig({
+        cfg: nextConfig,
+        pluginInstalled: pluginRegistrySourceChanged,
         writeOptions: writeSnapshot.writeOptions,
         baseHash: writeSnapshot.snapshot.hash,
+        runtime,
       });
-      if (committed.movedInstallRecords || pluginRegistrySourceChanged) {
-        await refreshPluginRegistryAfterConfigMutation({
-          reason: "source-changed",
-          logger: { warn: (message) => runtime.log(message) },
-        });
-      }
       runtime.log(
         `Added ${plugin.meta.label ?? channelLabel(selectedChannel)} account "${applied.accountId}".`,
       );

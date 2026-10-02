@@ -359,22 +359,13 @@ async function migrateWithExclusiveStateOwnership(params: {
     return { changes, warnings };
   }
 
+  let result: ReturnType<typeof migrateIntoDatabase>;
   try {
     await source.claim({
       snapshot,
       mismatchMessage: "legacy node-host source changed before Doctor could claim it",
       beforeClaim: params.beforeClaim,
     });
-  } catch (error) {
-    const restoreError = await source.restore();
-    warnings.push(
-      `Failed migrating legacy node-host state: ${String(error)}${restoreError ? `; restore failure: ${restoreError}` : ""}`,
-    );
-    return { changes, warnings };
-  }
-
-  let result: ReturnType<typeof migrateIntoDatabase>;
-  try {
     result = migrateIntoDatabase({ env: params.env, legacy });
   } catch (error) {
     const restoreError = await source.restore();
@@ -424,7 +415,7 @@ export async function migrateLegacyNodeHostConfig(params: {
     label: "legacy node-host state",
     releaseLabel: "Node-host",
     errorLabel: "Failed reading legacy node-host state",
-    retryGuidance: "Stop the Gateway and node host, then run `openclaw doctor --fix` again.",
+    retryGuidance: "Stop the Gateway and node host, then run `paddy doctor --fix` again.",
     run: async (env) => {
       const stateRoot = await root(params.stateDir, {
         hardlinks: "reject",

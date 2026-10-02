@@ -1,4 +1,5 @@
 // Formats pairing challenge replies and setup instructions.
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { PairingChannel } from "./pairing-store.types.js";
 
@@ -12,7 +13,7 @@ export function buildPairingReply(params: {
   const { channel, idLine, code } = params;
   const approveCommand = formatCliCommand(`openclaw pairing approve ${channel} ${code}`);
   return [
-    "OpenClaw: access not configured.",
+    `${PRODUCT_NAME}: access not configured.`,
     "",
     idLine,
     "Pairing code:",

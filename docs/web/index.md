@@ -52,7 +52,7 @@ When `hooks.enabled=true`, the Gateway also exposes a webhook endpoint on the sa
     Start the gateway:
 
     ```bash
-    openclaw gateway
+    paddy gateway
     ```
 
     Open `https://<magicdns>/` (or your configured `gateway.controlUi.basePath`).

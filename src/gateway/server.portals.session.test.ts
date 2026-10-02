@@ -192,7 +192,7 @@ it("carries authenticated session previews through the node and retires access b
           console.info("Portal transport proof: current Gateway worker build receipt");
         } catch (error) {
           assert(error instanceof Error);
-          expect(error.message).toMatch(/^OpenClaw worker deploy artifact is missing;/);
+          expect(error.message).toMatch(/^Paddy worker deploy artifact is missing;/);
           expect(error.cause).toMatchObject({ code: "ENOENT" });
           // Source-only Gateways preserve admitted leases when no replacement build exists.
           bootstrapReceipt = {

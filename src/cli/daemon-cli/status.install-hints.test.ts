@@ -22,31 +22,31 @@ const surfaces = [
     kind: "missing-unit",
     name: "missing service unit",
     fact: "Service unit not found",
-    command: "openclaw gateway install",
+    command: "paddy gateway install",
   },
   {
     kind: "config-mismatch",
     name: "CLI/service config-path mismatch",
     fact: "CLI and service are using different config paths",
-    command: "openclaw gateway install --force",
+    command: "paddy gateway install --force",
   },
   {
     kind: "cached-label",
     name: "cached LaunchAgent label with missing plist",
     fact: "LaunchAgent label cached but plist missing",
-    command: "openclaw gateway install",
+    command: "paddy gateway install",
   },
   {
     kind: "config-audit",
     name: "embedded-token service audit",
     fact: "embeds OPENCLAW_GATEWAY_TOKEN",
-    command: "openclaw gateway install --force",
+    command: "paddy gateway install --force",
   },
   {
     kind: "version-mismatch",
     name: "installed service version mismatch",
     fact: "Gateway service version: 2026.4.15",
-    command: "openclaw gateway install --force",
+    command: "paddy gateway install --force",
   },
 ] as const;
 type StatusSurface = (typeof surfaces)[number]["kind"];
@@ -265,9 +265,9 @@ describe("eligible status recovery", () => {
           ],
         };
         print(status, { json: false });
-        expect(humanOutput()).toContain("openclaw doctor");
+        expect(humanOutput()).toContain("paddy doctor");
         expect(humanOutput()).toContain("Reinstalling alone may select the same runtime");
-        expect(humanOutput()).not.toContain("openclaw gateway install --force");
+        expect(humanOutput()).not.toContain("paddy gateway install --force");
       },
     );
   });
@@ -381,7 +381,7 @@ describe("eligible status recovery", () => {
       async (accountHome, print) => {
         print(await createStatus("config-audit", accountHome), { json: false });
         const output = humanOutput();
-        expect(output).toContain("openclaw gateway install --force");
+        expect(output).toContain("paddy gateway install --force");
         expect(output).not.toContain("managed by an external supervisor");
       },
     );
@@ -397,7 +397,7 @@ describe("eligible status recovery", () => {
 
         const output = humanOutput();
         expect(output).toContain("launchctl bootout gui/$UID/ai.openclaw.gateway");
-        expect(output).toContain("openclaw gateway install");
+        expect(output).toContain("paddy gateway install");
       },
     );
   });

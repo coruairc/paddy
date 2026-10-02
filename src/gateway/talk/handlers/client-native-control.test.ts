@@ -150,8 +150,8 @@ describe("native Talk through the public OpenAI plugin registration", () => {
           const preControlSocketIndex = socket.sent.length;
           const reply =
             text === "cancel"
-              ? "Cancelled the active OpenClaw run."
-              : "OpenClaw is working on the current voice request.";
+              ? "Cancelled the active Paddy run."
+              : "Paddy is working on the current voice request.";
           const waitForControlReply = () =>
             vi.waitFor(() => {
               expect(socket.sent.slice(preControlSocketIndex).join("\n")).toContain(reply);
@@ -179,7 +179,7 @@ describe("native Talk through the public OpenAI plugin registration", () => {
           expect(
             socket.sent
               .slice(preControlSocketIndex)
-              .filter((frame) => frame.includes("Internal OpenClaw voice control result.")),
+              .filter((frame) => frame.includes("Internal Paddy voice control result.")),
           ).toHaveLength(1);
           expect(
             readSessionTranscriptMessageEvents({ agentId: AGENT_ID, sessionId: SESSION_ID }),
@@ -307,7 +307,7 @@ describe("native Talk through the public OpenAI plugin registration", () => {
                 content: [
                   expect.objectContaining({
                     type: "input_text",
-                    text: expect.stringContaining("Cancelled the active OpenClaw run."),
+                    text: expect.stringContaining("Cancelled the active Paddy run."),
                   }),
                 ],
               }),

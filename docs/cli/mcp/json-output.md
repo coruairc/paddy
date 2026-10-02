@@ -1,8 +1,8 @@
 ---
-summary: "JSON output shapes for openclaw mcp status, doctor, and probe"
+summary: "JSON output shapes for paddy mcp status, doctor, and probe"
 title: "JSON output shapes"
 read_when:
-  - Scripting or building a dashboard on `openclaw mcp --json` output
+  - Scripting or building a dashboard on `paddy mcp --json` output
   - Checking which fields `status`, `doctor`, or `probe` report
 ---
 
@@ -62,7 +62,7 @@ Read commands report invalid config, unknown servers, and disabled named probes 
           "issues": [
             {
               "level": "warning",
-              "message": "OAuth credentials are not authorized; run openclaw mcp login docs"
+              "message": "OAuth credentials are not authorized; run paddy mcp login docs"
             }
           ]
         }

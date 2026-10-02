@@ -2,7 +2,7 @@
 doc-schema-version: 1
 summary: "Session goals: durable per-session objectives, /goal controls, model goal tools, token budgets, and TUI status"
 read_when:
-  - You want OpenClaw to keep one objective visible across a long session
+  - You want Paddy to keep one objective visible across a long session
   - You need to pause, resume, block, complete, or clear a session goal
   - You want to understand the get_goal, create_goal, and update_goal tools
   - You want to use the Goal composer in the Control UI or see goals in the TUI
@@ -11,7 +11,7 @@ title: "Goal"
 
 <a id="goal" />
 
-A **goal** is one durable objective attached to the current OpenClaw session.
+A **goal** is one durable objective attached to the current Paddy session.
 It gives the agent and the operator a shared target for long-running work,
 without turning that target into a background task, reminder, cron job, or
 standing order.
@@ -37,7 +37,7 @@ a separate sandbox policy session.
 ```
 
 `start` is optional: `/goal get CI green for PR 87469` also creates a goal,
-OpenClaw treats any text after `/goal` that is not a known action word as a
+Paddy treats any text after `/goal` that is not a known action word as a
 new objective.
 
 Explicit actions such as `start` and `edit` preserve line breaks, indentation,
@@ -57,8 +57,7 @@ across many turns:
 - A maintenance task: inspect current state, make bounded changes, run the
   right checks, and report what changed.
 
-A goal is not a task queue. Use [Task Flow](/automation/taskflow),
-[tasks](/automation/tasks), [cron jobs](/automation/cron-jobs), or
+A goal is not a task queue. Use [subagents](/tools/subagents), [cron jobs](/automation/cron-jobs), or
 [standing orders](/automation/standing-orders) when work should run detached,
 repeat on a schedule, fan out into managed sub-work, or persist as a policy.
 
@@ -122,7 +121,7 @@ start fresh session context.
 Goals can have an optional positive token budget, set through the
 `create_goal` tool's `token_budget` parameter. The budget is measured from the
 session's fresh token count at goal-creation time. If the session only has a
-stale or unknown token snapshot when the goal starts, OpenClaw waits for the
+stale or unknown token snapshot when the goal starts, Paddy waits for the
 next fresh snapshot and uses that as the baseline, so tokens spent before the
 goal existed are not charged to it.
 
@@ -137,11 +136,11 @@ count.
 
 Token budgets are a session-goal guardrail, not a billing cap. Provider
 quota, cost reporting, and context-window behavior still use the normal
-OpenClaw usage and model controls.
+Paddy usage and model controls.
 
 ## Model tools
 
-OpenClaw exposes three goal tools to agent harnesses:
+Paddy exposes three goal tools to agent harnesses:
 
 | Tool          | Purpose                                                                                                                  |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -172,7 +171,7 @@ Every user/chat turn with an active goal includes this user-role context line:
 Active goal: <objective> — advance; keep active until fully achieved; block only after the same blocker on 3 consecutive turns; after update_goal, provide the requested visible final.
 ```
 
-OpenClaw keeps the line compact by truncating long objectives. Paused,
+Paddy keeps the line compact by truncating long objectives. Paused,
 blocked, budget-limited, usage-limited, and complete goals are not injected,
 so an operator stop remains in effect until the goal is resumed.
 
@@ -195,7 +194,7 @@ the objective as a normal chat draft. Complete pasted commands such as
 Starting a Goal saves the Goal, its user turn, and the run admission together
 before acknowledging Send. A failed admission leaves the draft intact and
 does not create a Goal. A failed older chat send stays separate from a newly opened
-Goal draft instead of filling its empty objective. Start and Resume require the built-in OpenClaw runtime
+Goal draft instead of filling its empty objective. Start and Resume require the built-in Paddy runtime
 and an idle local session with recoverable history. They are unavailable for
 native Codex and other external runtimes, and are not queued or steered into
 another run. The UI reports unsupported or busy sessions rather than creating
@@ -246,8 +245,9 @@ request expires and its literal payload is removed; **Review current goal** refr
 state before another decision. Forgetting this browser or switching authenticated
 accounts removes that Gateway's previous account recovery payloads.
 
-The action buttons are unavailable without a connection. The expand chevron
-keeps working. Concurrent Goal actions are rejected while an operation is
+The action buttons are unavailable without a connection or while the initial
+chat history loads and confirms the session identity. The expand chevron keeps
+working. Concurrent Goal actions are rejected while an operation is
 pending. These controls require
 a Gateway advertising the structured Goal capability. Text `/goal` commands
 remain available for CLI and other command-capable surfaces.
@@ -300,7 +300,7 @@ note, token budget, and available commands.
 
 ## Channel behavior
 
-`/goal` works in command-capable OpenClaw sessions, including the TUI and
+`/goal` works in command-capable Paddy sessions, including the TUI and
 chat surfaces that permit text commands. Goal state attaches to the
 session key, not the transport, so two surfaces sharing a session key see the
 same goal.
@@ -317,7 +317,7 @@ channel, change queue behavior, approve tools, or schedule work.
 | `Goal error: goal is already complete` | The goal is terminal. Clear it before starting or resuming another objective.                                                                |
 
 If token usage shows `0` or looks stale, the active session may not have a
-fresh token snapshot yet. Usage refreshes as OpenClaw records session usage
+fresh token snapshot yet. Usage refreshes as Paddy records session usage
 and transcript-derived totals.
 
 ## Related
@@ -326,5 +326,4 @@ and transcript-derived totals.
 - [TUI](/web/tui)
 - [Session tool](/concepts/session-tool)
 - [Compaction](/concepts/compaction)
-- [Task Flow](/automation/taskflow)
 - [Standing orders](/automation/standing-orders)

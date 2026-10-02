@@ -1,5 +1,5 @@
 ---
-summary: "`openclaw gateway` run options, startup behavior, and revealing the configured token"
+summary: "`paddy gateway` run options, startup behavior, and revealing the configured token"
 read_when:
   - Running the Gateway from the CLI (dev or servers)
   - Debugging Gateway auth, bind modes, and connectivity
@@ -8,25 +8,26 @@ title: "Run the Gateway"
 sidebarTitle: "Running"
 ---
 
-Starting the Gateway process and reading its configured token. Part of the [`openclaw gateway`](/cli/gateway) reference.
+Starting the Gateway process and reading its configured token. Part of the [`paddy gateway`](/cli/gateway) reference.
 
 ## Run the Gateway
 
 ```bash
-openclaw gateway
-openclaw gateway run   # equivalent, explicit form
+paddy gateway
+paddy gateway run   # equivalent, explicit form
 ```
 
 <AccordionGroup>
   <Accordion title="Startup behavior">
     - Refuses to start unless `gateway.mode=local` is set in `~/.openclaw/openclaw.json`. Use `--allow-unconfigured` for ad-hoc/dev runs; it bypasses the guard without writing or repairing config.
     - Startup automatically applies deterministic, prompt-free legacy-key migrations to eligible invalid single-file configs, including in non-interactive service runs. It writes only after full validation, including plugins, and keeps the previous config in the `.bak` ring. Configs using `$include`, Nix-managed configs, and configs written by a newer version are excluded. See [Legacy config key migrations](/gateway/doctor#detailed-behavior-and-rationale).
-    - If automatic migration cannot make the config valid, an interactive terminal can offer to run `openclaw doctor --fix` and retry startup once after consent. Non-interactive runs print the command instead. If the repaired config is still invalid, startup remains stopped.
-    - `openclaw onboard --mode local` and `openclaw setup` write `gateway.mode=local`. If the config file exists but `gateway.mode` is missing, that is treated as damaged/clobbered config and the Gateway refuses to guess `local` for you — re-run onboarding, set the key manually, or pass `--allow-unconfigured`.
+    - If automatic migration cannot make the config valid, an interactive terminal can offer to run `paddy doctor --fix` and retry startup once after consent. Non-interactive runs print the command instead. If the repaired config is still invalid, startup remains stopped.
+    - Configuration read failures, including unavailable storage during SQLite inspection, stop startup with exit code `1` so service supervision can retry. They do not trigger config repair. Invalid configuration and required offline migrations retain exit code `78`, which prevents systemd restart loops; resolve the reported problem before restarting.
+    - `paddy onboard --mode local` and `paddy setup` write `gateway.mode=local`. If the config file exists but `gateway.mode` is missing, that is treated as damaged/clobbered config and the Gateway refuses to guess `local` for you — re-run onboarding, set the key manually, or pass `--allow-unconfigured`.
     - Binding beyond loopback without auth is blocked.
     - `--bind` values `lan`, `tailnet`, and `custom` resolve over IPv4-only paths; IPv6-only bring-your-own-host setups need an IPv4 sidecar or proxy in front of the Gateway.
     - `SIGUSR2` triggers an in-process restart when authorized. `commands.restart` (default: enabled) gates externally-sent `SIGUSR2`; set it to `false` to block manual OS-signal restarts. The agent-facing `gateway` tool is read-only; agents request restart through the `openclaw` delegation tool. Effective Full Access, including Default (Full Access), authorizes permitted delegated changes without an approval prompt; restricted runs require human approval. See [Delegated setup and repair](/gateway/permission-modes#delegated-setup-and-repair).
-    - `SIGUSR1` is reserved for Node's inspector, so attaching a debugger does not restart the Gateway. Prefer `openclaw gateway restart` for restarts; update manual restart scripts to send `SIGUSR2`.
+    - `SIGUSR1` is reserved for Node's inspector, so attaching a debugger does not restart the Gateway. Prefer `paddy gateway restart` for restarts; update manual restart scripts to send `SIGUSR2`.
     - `SIGINT`/`SIGTERM` stop the process but do not restore custom terminal state — if you wrap the CLI in a TUI or raw-mode input, restore the terminal yourself before exit.
 
   </Accordion>
@@ -101,9 +102,9 @@ For `--bind custom`, set `gateway.customBindHost` to an IPv4 address. Any addres
 Run this on the Gateway host when a client needs the configured shared token:
 
 ```bash
-openclaw gateway auth-token --show
+paddy gateway auth-token --show
 ```
 
 The command resolves `gateway.auth.token`, `OPENCLAW_GATEWAY_TOKEN`, and configured SecretRefs, then prints only the token. It requires an interactive terminal and refuses redirected or piped output so the credential does not silently enter command logs. Treat the terminal output as a secret.
 
-If no persistent token is configured, run `openclaw doctor --generate-gateway-token`, restart the Gateway, and then rerun the command. Generic `openclaw config get` output remains redacted, including `--json`.
+If no persistent token is configured, run `paddy doctor --generate-gateway-token`, restart the Gateway, and then rerun the command. Generic `paddy config get` output remains redacted, including `--json`.

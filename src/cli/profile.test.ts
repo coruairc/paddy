@@ -374,34 +374,34 @@ describe("formatCliCommand", () => {
     },
     {
       name: "profile is Default (case-insensitive)",
-      cmd: "paddy doctor --fix",
+      cmd: "openclaw doctor --fix",
       env: { OPENCLAW_PROFILE: "Default" },
       expected: "paddy doctor --fix",
     },
     {
       name: "profile is invalid",
-      cmd: "paddy doctor --fix",
+      cmd: "openclaw doctor --fix",
       env: { OPENCLAW_PROFILE: "bad profile" },
       expected: "paddy doctor --fix",
     },
     {
       name: "--profile is already present",
-      cmd: "paddy --profile work doctor --fix",
+      cmd: "openclaw --profile work doctor --fix",
       env: { OPENCLAW_PROFILE: "work" },
       expected: "paddy --profile work doctor --fix",
     },
     {
       name: "--dev is already present",
-      cmd: "paddy --dev doctor",
+      cmd: "openclaw --dev doctor",
       env: { OPENCLAW_PROFILE: "dev" },
       expected: "paddy --dev doctor",
     },
-  ])("returns command unchanged when $name", ({ cmd, env, expected }) => {
+  ])("brands the alias prefix when $name", ({ cmd, env, expected }) => {
     expect(formatCliCommand(cmd, env)).toBe(expected);
   });
 
   it("trims whitespace from profile", () => {
-    expect(formatCliCommand("paddy doctor --fix", { OPENCLAW_PROFILE: "  jbopenclaw  " })).toBe(
+    expect(formatCliCommand("openclaw doctor --fix", { OPENCLAW_PROFILE: "  jbopenclaw  " })).toBe(
       "paddy --profile jbopenclaw doctor --fix",
     );
   });
@@ -413,14 +413,14 @@ describe("formatCliCommand", () => {
   });
 
   it("handles pnpm wrapper", () => {
-    expect(formatCliCommand("pnpm paddy doctor", { OPENCLAW_PROFILE: "work" })).toBe(
+    expect(formatCliCommand("pnpm openclaw doctor", { OPENCLAW_PROFILE: "work" })).toBe(
       "pnpm paddy --profile work doctor",
     );
   });
 
   it("ignores unsafe container hints", () => {
     expect(
-      formatCliCommand("paddy gateway status --deep", {
+      formatCliCommand("openclaw gateway status --deep", {
         OPENCLAW_CONTAINER_HINT: "demo; rm -rf /",
       }),
     ).toBe("paddy gateway status --deep");
@@ -428,7 +428,7 @@ describe("formatCliCommand", () => {
 
   it("preserves both --container and --profile hints", () => {
     expect(
-      formatCliCommand("paddy doctor", {
+      formatCliCommand("openclaw doctor", {
         OPENCLAW_CONTAINER_HINT: "demo",
         OPENCLAW_PROFILE: "work",
       }),
@@ -436,31 +436,40 @@ describe("formatCliCommand", () => {
   });
 
   it.each([
-    "paddy update",
-    "pnpm paddy --profile work update --channel beta",
-    "paddy --profile=work update",
-    "paddy --log-level debug update",
-    "paddy --dev update",
-    "paddy --no-color --profile work --log-level=debug update",
-    "paddy --profile update update",
-  ])("does not prepend --container to root update: %s", (command) => {
+    ["openclaw update", "paddy update"],
+    ["pnpm openclaw --profile work update --channel beta", "pnpm paddy --profile work update --channel beta"],
+    ["openclaw --profile=work update", "paddy --profile=work update"],
+    ["openclaw --log-level debug update", "paddy --log-level debug update"],
+    ["openclaw --dev update", "paddy --dev update"],
+    [
+      "openclaw --no-color --profile work --log-level=debug update",
+      "paddy --no-color --profile work --log-level=debug update",
+    ],
+    ["openclaw --profile update update", "paddy --profile update update"],
+  ])("does not prepend --container to root update: %s", (command, expected) => {
     expect(
       formatCliCommand(command, { OPENCLAW_CONTAINER_HINT: "demo", OPENCLAW_PROFILE: "work" }),
-    ).toBe(command);
+    ).toBe(expected);
   });
 
   it.each([
-    ["paddy", "plugins update telegram"],
-    ["pnpm paddy", "plugins update telegram"],
-    ["paddy", "--profile work plugins update telegram"],
-    ["paddy", "--profile update plugins list"],
-    ["paddy", "config set action update"],
-  ])("preserves the active container for non-root update: %s %s", (prefix, command) => {
+    ["openclaw plugins update telegram", "paddy --container demo plugins update telegram"],
+    ["pnpm openclaw plugins update telegram", "pnpm paddy --container demo plugins update telegram"],
+    [
+      "openclaw --profile work plugins update telegram",
+      "paddy --container demo --profile work plugins update telegram",
+    ],
+    [
+      "openclaw --profile update plugins list",
+      "paddy --container demo --profile update plugins list",
+    ],
+    ["openclaw config set action update", "paddy --container demo config set action update"],
+  ])("preserves the active container for non-root update: %s", (command, expected) => {
     expect(
-      formatCliCommand(`${prefix} ${command}`, {
+      formatCliCommand(command, {
         OPENCLAW_CONTAINER_HINT: "demo",
         OPENCLAW_PROFILE: "work",
       }),
-    ).toBe(`${prefix} --container demo ${command}`);
+    ).toBe(expected);
   });
 });

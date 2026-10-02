@@ -1,5 +1,5 @@
 import { sanitizeTerminalText } from "../../packages/terminal-core/src/safe-text.js";
-import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { VERSION } from "../version.js";
 import { hashConfigRaw } from "./io.read-helpers.js";
 import {
@@ -41,12 +41,11 @@ export function logConfigWarningsOnce(params: {
     )
     .join("; ");
   const fingerprint = hashConfigRaw(details);
-  if (loggedConfigWarningFingerprints.get(params.configPath) === fingerprint) {
-    setBoundedConfigIoWarningEntry(loggedConfigWarningFingerprints, params.configPath, fingerprint);
-    return;
-  }
+  const repeated = loggedConfigWarningFingerprints.get(params.configPath) === fingerprint;
   setBoundedConfigIoWarningEntry(loggedConfigWarningFingerprints, params.configPath, fingerprint);
-  params.logger.warn(`Config warnings: ${details}`);
+  if (!repeated) {
+    params.logger.warn(`Config warnings: ${details}`);
+  }
 }
 
 export function warnIfConfigFromFuture(
@@ -63,8 +62,8 @@ export function warnIfConfigFromFuture(
   logger.warn(
     [
       `Your ${PRODUCT_NAME} config was written by version ${touched}, but this command is running ${VERSION}.`,
-      `Check: \`${CLI_NAME} --version\`, \`which ${CLI_NAME}\`, and \`${CLI_NAME} gateway status --deep\`.`,
-      `If unexpected, update PATH so \`${CLI_NAME}\` points to the version you want, or reinstall the Gateway service from that same ${PRODUCT_NAME} install.`,
+      "Check: `paddy --version`, `which paddy`, and `paddy gateway status --deep`.",
+      `If unexpected, update PATH so \`paddy\` points to the version you want, or reinstall the Gateway service from that same ${PRODUCT_NAME} install.`,
     ].join("\n"),
   );
 }

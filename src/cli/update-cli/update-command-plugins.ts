@@ -48,6 +48,7 @@ import {
   type PluginUpdateOutcome,
 } from "../../plugins/update.js";
 import { defaultRuntime, type RuntimeEnv } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { resolvePluginCapabilityConsentCliOptions } from "../plugin-capability-consent.js";
 import { readPackageVersion } from "./shared.js";
@@ -396,7 +397,7 @@ async function updatePluginsAfterCoreUpdateWithLease(
       reason: unavailable ? "plugin-target-unavailable" : "retained-plugin-pin",
       message,
       guidance: unavailable
-        ? [formatCliCommand(`openclaw plugins update ${outcome.pluginId}`)]
+        ? [formatCliCommand(`${CLI_NAME} plugins update ${outcome.pluginId}`)]
         : ["Keep the pin if intentional; replacing it is an explicit operator choice."],
     });
     if (unavailable) {

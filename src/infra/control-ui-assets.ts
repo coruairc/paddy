@@ -6,6 +6,7 @@ import { normalizeStringEntries } from "@openclaw/normalization-core/string-norm
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import { stripAnsi } from "../../packages/terminal-core/src/ansi.js";
 import { sanitizeTerminalText } from "../../packages/terminal-core/src/safe-text.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { quoteCliArg, quotePowerShellArg } from "../cli/quote-cli-arg.js";
 import { CONTROL_UI_BUILD_ID_ATTRIBUTE } from "../gateway/control-ui-root-assets.js";
 import { runCommandWithTimeout } from "../process/exec.js";
@@ -418,7 +419,7 @@ export async function ensureControlUiAssetsBuilt(
           ? `Incomplete Control UI assets${location} (missing ${health.missingAsset})`
           : `Missing Control UI assets${location}`;
     return controlUiAssetsFailure(
-      `${hint}. Reinstall OpenClaw to restore bundled Control UI assets.`,
+      `${hint}. Reinstall ${PRODUCT_NAME} to restore bundled Control UI assets.`,
     );
   }
 

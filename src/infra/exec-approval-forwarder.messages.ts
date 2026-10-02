@@ -1,5 +1,6 @@
 import { normalizeStringEntries } from "@openclaw/normalization-core/string-normalization";
 import type { ReplyPayload } from "../auto-reply/types.js";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   getLoadedChannelPlugin,
   resolveChannelApprovalAdapter,
@@ -214,7 +215,7 @@ function buildForwardedSystemAgentApprovalRequest(
 ): string {
   const expiresIn = Math.max(0, Math.round((request.expiresAtMs - nowMs) / 1000));
   return [
-    "🛠️ OpenClaw change requires approval",
+    `🛠️ ${PRODUCT_NAME} change requires approval`,
     `Change: ${request.request.description}`,
     ...(request.request.agentId ? [`Agent: ${request.request.agentId}`] : []),
     `ID: ${request.id}`,
@@ -256,7 +257,7 @@ export function buildForwardedSystemAgentResolvedPayload(params: {
             approvalKind: "system-agent",
             approvalId: resolved.id,
             phase: "resolved",
-            title: "OpenClaw change",
+            title: `${PRODUCT_NAME} change`,
             description: resolved.request?.description ?? null,
             metadata: [],
             commandText: resolved.request?.description ?? "",

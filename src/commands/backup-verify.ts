@@ -5,6 +5,7 @@ import type { DatabaseSync } from "node:sqlite";
 import { toStringifiedError } from "@openclaw/normalization-core/error-coercion";
 import * as tar from "tar";
 import { loadSqliteVecExtension } from "../../packages/memory-host-sdk/src/host/sqlite-vec.js";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import {
   recordArchiveSymbolicLink,
   type BackupSymbolicLink,
@@ -76,8 +77,6 @@ type NormalizedArchiveEntry = {
 type SqliteSnapshotIdentity = { role: "global" } | { role: "agent"; agentId: string };
 
 type SqliteSnapshotEntry = NormalizedArchiveEntry & SqliteSnapshotIdentity;
-
-type ExpectedSqliteRole = "agent" | "global";
 
 async function listArchiveEntries(archivePath: string) {
   const entries: ArchiveEntry[] = [];
@@ -170,22 +169,17 @@ function isRegularArchiveFile(entryType: string | undefined): boolean {
   return entryType === "File" || entryType === "OldFile" || entryType === "ContiguousFile";
 }
 
-function resolveCanonicalStateAssetRoot(manifest: BackupManifest): string | undefined {
+function assertCanonicalStateAssetRoot(manifest: BackupManifest): void {
   const stateAssets = manifest.assets.filter((asset) => asset.kind === "state");
-  if (stateAssets.length === 0) {
-    return undefined;
+  const stateAsset = stateAssets[0];
+  if (!stateAsset) {
+    return;
   }
   if (stateAssets.length !== 1) {
     throw new Error(
       `Backup manifest must contain at most one state asset; found ${stateAssets.length}.`,
     );
   }
-
-  const stateAsset = stateAssets[0];
-  if (!stateAsset) {
-    return undefined;
-  }
-
   const stateAssetRoot = normalizeArchivePath(
     stateAsset.archivePath,
     "Backup manifest state asset path",
@@ -197,7 +191,6 @@ function resolveCanonicalStateAssetRoot(manifest: BackupManifest): string | unde
   if (stateAssetRoot !== expectedStateAssetRoot) {
     throw new Error("Backup manifest state asset archivePath does not match its sourcePath.");
   }
-  return stateAssetRoot;
 }
 
 type SqliteSnapshotOwner = { archivePath: string } & SqliteSnapshotIdentity;
@@ -297,7 +290,7 @@ function assertSqliteExtractionBudget(params: {
 function assertExpectedSqliteRole(
   database: DatabaseSync,
   archivePath: string,
-  expectedRole: ExpectedSqliteRole,
+  expectedRole: SqliteSnapshotIdentity["role"],
 ): void {
   const schemaMetaTable = database
     .prepare("SELECT type FROM sqlite_schema WHERE name = 'schema_meta'")
@@ -392,7 +385,7 @@ async function verifySqliteSnapshots(params: {
   if (initialEntries.length === 0) {
     return verifiedOwners;
   }
-  resolveCanonicalStateAssetRoot(params.manifest);
+  assertCanonicalStateAssetRoot(params.manifest);
   const tempRoot = os.tmpdir();
   assertSqliteExtractionBudget({ entries: initialEntries, tempRoot });
   const tempDir = await fs.mkdtemp(path.join(tempRoot, "openclaw-backup-verify-sqlite-"));
@@ -518,7 +511,7 @@ async function verifyResolvedBackupArchive(
   } catch (error) {
     if (hasErrnoCode(error, "ENOENT")) {
       throw new Error(
-        "Archive does not exist. Check the path and run `openclaw backup verify <archive>` again.",
+        "Archive does not exist. Check the path and run `paddy backup verify <archive>` again.",
         { cause: error },
       );
     }
@@ -529,7 +522,7 @@ async function verifyResolvedBackupArchive(
   }
   if (!archiveStat.isFile()) {
     throw new Error(
-      "Archive must be a regular file. Choose a backup archive created by `openclaw backup create` and try again.",
+      "Archive must be a regular file. Choose a backup archive created by `paddy backup create` and try again.",
     );
   }
 
@@ -540,7 +533,7 @@ async function verifyResolvedBackupArchive(
   });
   if (listing.invalidReason) {
     throw new Error(
-      `Archive is not a valid OpenClaw backup. ${listing.invalidReason.replace(/[.!?]*$/u, ".")} Choose another archive or create a new one with \`openclaw backup create\`.`,
+      `Archive is not a valid ${PRODUCT_NAME} backup. ${listing.invalidReason.replace(/[.!?]*$/u, ".")} Choose another archive or create a new one with \`${CLI_NAME} backup create\`.`,
     );
   }
   const rawEntries = listing.entries;

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { asOptionalRecord } from "@openclaw/normalization-core/record-coerce";
 import {
   REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME,
   buildRealtimeVoiceAgentConsultWorkingResponse,
@@ -14,8 +15,7 @@ import {
   completeAfterToolResultSubmissions,
   submitFinalProviderToolResult,
   suppressedToolResultOptions,
-  trackAgentFinalToolResult,
-  trackPendingWorkingToolResult,
+  trackToolResultCompletion,
 } from "./provider-results.js";
 import {
   broadcastToOwner,
@@ -27,29 +27,21 @@ import {
   type RelayAgentControlProviderSubmission,
   type RelaySession,
 } from "./state.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 
 const FORCED_CONSULT_FALLBACK_DELAY_MS = 200;
 const FORCED_CONSULT_RESULT_MAX_CHARS = 1_800;
 
-function isWorkingToolResult(result: unknown): boolean {
-  return (
-    Boolean(result) &&
-    typeof result === "object" &&
-    !Array.isArray(result) &&
-    (result as Record<string, unknown>).status === "working"
-  );
-}
-
 function buildForcedConsultCheckingPrompt(): string {
   return [
-    "Briefly tell the person that you are checking with OpenClaw.",
-    "Do not answer the request yet. Wait for the OpenClaw result before giving the actual answer.",
+    `Briefly tell the person that you are checking with ${PRODUCT_NAME}.`,
+    `Do not answer the request yet. Wait for the ${PRODUCT_NAME} result before giving the actual answer.`,
   ].join(" ");
 }
 
 function buildForcedConsultSpeechPrompt(text: string): string {
   return [
-    "OpenClaw finished checking. Speak this result naturally and concisely.",
+    `${PRODUCT_NAME} finished checking. Speak this result naturally and concisely.`,
     "Do not mention tool calls, JSON, or internal routing.",
     "",
     text,
@@ -59,7 +51,7 @@ function buildForcedConsultSpeechPrompt(text: string): string {
 export function buildAlreadyDeliveredToolResult(): Record<string, string> {
   return {
     status: "already_delivered",
-    message: "OpenClaw already delivered this consult result internally. Do not repeat it.",
+    message: `${PRODUCT_NAME} already delivered this consult result internally. Do not repeat it.`,
   };
 }
 
@@ -124,7 +116,11 @@ export function submitRelayAgentControlProviderResults(
         clearTerminal();
         finalizeAgentCall(callId, forcedConsult);
       });
-      const tracked = trackAgentFinalToolResult(session, callId, completed?.finally(clearTerminal));
+      const tracked = trackToolResultCompletion(
+        session.pendingFinalToolResults,
+        callId,
+        completed?.finally(clearTerminal),
+      );
       submissions.push(tracked);
       continue;
     }
@@ -136,7 +132,7 @@ export function submitRelayAgentControlProviderResults(
       options: toolResultOptions,
       onAccepted: () => finalizeAgentCall(callId),
     });
-    submissions.push(trackAgentFinalToolResult(session, callId, submitted));
+    submissions.push(trackToolResultCompletion(session.pendingFinalToolResults, callId, submitted));
   }
   const completion = completeAfterToolResultSubmissions(session, submissions, () => {});
   return {
@@ -185,7 +181,7 @@ export function scheduleForcedAgentConsult(
       args: {
         question: handle.question,
         context:
-          "The realtime provider produced a final user transcript without invoking openclaw_agent_consult, so OpenClaw is forcing the consult for realtime Talk.",
+          `The realtime provider produced a final user transcript without invoking openclaw_agent_consult, so ${PRODUCT_NAME} is forcing the consult for realtime Talk.`,
         responseStyle: "Reply in a concise spoken tone.",
       },
       talkEvent: session.harness.talk.emit({
@@ -301,7 +297,7 @@ export function submitRealtimeAgentConsultWorkingResponse(
       }),
     });
   });
-  return trackPendingWorkingToolResult(session, callId, completion);
+  return trackToolResultCompletion(session.pendingWorkingToolResults, callId, completion);
 }
 
 export function submitForcedTalkRealtimeRelayToolResult(
@@ -322,7 +318,7 @@ export function submitForcedTalkRealtimeRelayToolResult(
   }
   if (cancelled) {
     const providerResult = buildRealtimeVoiceAgentCancelProviderResult(
-      "OpenClaw cancelled this consult before completion. Do not restart it.",
+      `${PRODUCT_NAME} cancelled this consult before completion. Do not restart it.`,
     );
     const existing = session.forcedTerminalProviderResults.get(forcedConsult.id);
     const terminal: ForcedTerminalProviderResult =
@@ -364,12 +360,16 @@ export function submitForcedTalkRealtimeRelayToolResult(
         final: true,
       });
     });
-    return trackAgentFinalToolResult(session, params.callId, completion?.finally(clearTerminal));
+    return trackToolResultCompletion(
+      session.pendingFinalToolResults,
+      params.callId,
+      completion?.finally(clearTerminal),
+    );
   }
   const suppressResponse = params.options?.suppressResponse === true;
   const final = params.options?.willContinue !== true;
   if (!final) {
-    if (!suppressResponse && isWorkingToolResult(params.result)) {
+    if (!suppressResponse && asOptionalRecord(params.result)?.status === "working") {
       session.bridge.sendUserMessage(buildForcedConsultCheckingPrompt());
     }
     broadcastToolResultToOwner(session, {
@@ -422,5 +422,9 @@ export function submitForcedTalkRealtimeRelayToolResult(
     });
   });
   const trackedCompletion = completion?.finally(clearTerminal);
-  return trackAgentFinalToolResult(session, params.callId, trackedCompletion);
+  return trackToolResultCompletion(
+    session.pendingFinalToolResults,
+    params.callId,
+    trackedCompletion,
+  );
 }

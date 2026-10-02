@@ -328,7 +328,7 @@ function prepareLegacySessionImport(
       report.issues.push({
         code: "sqlite_transcript_count_mismatch",
         sessionKey: record.sessionKey,
-        message: `${record.transcriptPath}: ${formatErrorMessage(error)}. Original retained. Compare the named events with a verified backup, restore a corrected JSONL at this path, then rerun openclaw doctor --session-sqlite recover.`,
+        message: `${record.transcriptPath}: ${formatErrorMessage(error)}. Original retained. Compare the named events with a verified backup, restore a corrected JSONL at this path, then rerun paddy doctor --session-sqlite recover.`,
       });
       return undefined;
     }

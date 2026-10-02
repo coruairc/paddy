@@ -33,14 +33,14 @@ read_when:
 
   </Step>
   <Step title="Try it in chat">
-    `/tts status` shows the current state. `/tts audio Hello from OpenClaw`
+    `/tts status` shows the current state. `/tts audio Hello from Paddy`
     sends a one-off audio reply.
   </Step>
 </Steps>
 
 <Note>
 Auto-TTS is **off** by default. When `tts.provider` is unset,
-OpenClaw picks the first configured provider in registry auto-select order.
+Paddy picks the first configured provider in registry auto-select order.
 The built-in `tts` agent tool is explicit-intent only: ordinary chat stays
 text unless the user asks for audio, uses `/tts`, or enables Auto-TTS/directive
 speech.
@@ -60,7 +60,7 @@ audio as a file attachment; the WhatsApp send fails. See
 | **DeepInfra**     | `DEEPINFRA_API_KEY`                                                                                              | OpenAI-compatible TTS. Defaults to `hexgrad/Kokoro-82M`.                                    |
 | **ElevenLabs**    | `ELEVENLABS_API_KEY` or `XI_API_KEY`                                                                             | Voice cloning, multilingual, deterministic via `seed`; streamed for Discord voice playback. |
 | **Fish Audio**    | `FISH_API_KEY` or `FISH_AUDIO_API_KEY`                                                                           | S2.1 hosted TTS, expressive tags, voice discovery, streaming, and telephony.                |
-| **Google Gemini** | `GEMINI_API_KEY` or `GOOGLE_API_KEY`                                                                             | Gemini API batch TTS; persona-aware via `promptTemplate: "audio-profile-v1"`.               |
+| **Google Gemini** | `GEMINI_API_KEY` or `GOOGLE_API_KEY`                                                                             | Gemini API TTS; opt in to Gemini 3.8, where persona style is metadata, not spoken text.     |
 | **Gradium**       | `GRADIUM_API_KEY`                                                                                                | Voice-note and telephony output.                                                            |
 | **Inworld**       | `INWORLD_API_KEY`                                                                                                | Streaming TTS API. Native Opus voice-note and PCM telephony.                                |
 | **Local CLI**     | none                                                                                                             | Runs a configured local TTS command.                                                        |
@@ -82,6 +82,6 @@ if you keep summaries enabled.
 The bundled **Microsoft** provider uses Microsoft Edge's online neural TTS
 service via `node-edge-tts`. It is a public web service without a published
 SLA or quota — treat it as best-effort. The legacy provider id `edge` is
-normalized to `microsoft` and `openclaw doctor --fix` rewrites persisted
+normalized to `microsoft` and `paddy doctor --fix` rewrites persisted
 config; new configs should always use `microsoft`.
 </Warning>

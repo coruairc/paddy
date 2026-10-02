@@ -2,7 +2,7 @@
 summary: "The @openclaw/ai npm package: reusable model transports, isolated runtimes, and host policy ports"
 title: "@openclaw/ai package"
 read_when:
-  - You want to reuse OpenClaw's model transports in another application
+  - You want to reuse Paddy's model transports in another application
   - You are changing packages/ai or the AI transport host ports
   - You are reviewing what the openclaw release publishes to npm besides the root package
 ---
@@ -18,7 +18,7 @@ It publishes alongside the root `openclaw` package on every release, pinned to
 the same version. Its exact-pinned direct dependencies resolve at install time;
 the package ships no npm lockfile. Installing `openclaw` installs the matching
 `@openclaw/ai` automatically, and library consumers can depend on it directly
-without any OpenClaw application code.
+without any Paddy application code.
 
 ## Quick start
 
@@ -50,14 +50,14 @@ A runnable version lives in the repository at `examples/ai-chat`.
   example SSRF policy), secret redaction of tool-result replay text, OpenAI
   strict-tool defaults, and diagnostics logging are `AiTransportHost` ports
   configured with `configureAiTransportHost`. The library defaults are inert;
-  OpenClaw installs its real implementations in its stream facade.
+  Paddy installs its real implementations in its stream facade.
 - **One event-stream identity.** `@openclaw/ai/event-stream` is the canonical
-  `EventStream` constructor shared by OpenClaw core, agent-core, and external
+  `EventStream` constructor shared by Paddy core, agent-core, and external
   consumers.
-- **`internal/*` subpaths are not API.** They exist for the OpenClaw
+- **`internal/*` subpaths are not API.** They exist for the Paddy
   application itself and carry no semver guarantee.
 - Provider ids, credentials, model catalogs, retries, and failover remain
-  application concerns. OpenClaw layers those around this package; a library
+  application concerns. Paddy layers those around this package; a library
   consumer supplies a `Model` object and options directly.
 
 ## Subpath exports
@@ -70,7 +70,7 @@ A runnable version lives in the repository at `examples/ai-chat`.
 | `./validation`   | Tool argument validation                                                       |
 | `./diagnostics`  | Diagnostics contracts, transport logging, and sanitized URL formatting         |
 | `./event-stream` | Shared `EventStream` implementation                                            |
-| `./internal/*`   | OpenClaw-internal, no semver guarantee                                         |
+| `./internal/*`   | Paddy-internal, no semver guarantee                                            |
 
 Use `@openclaw/ai/diagnostics` for `emitModelTransportDebug`,
 `formatModelTransportDebugUrl`, and `formatModelTransportDebugBaseUrl` when

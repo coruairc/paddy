@@ -237,7 +237,7 @@ describe("relaunchGatewayScheduledTask", () => {
       });
       expect(output.join("\n")).not.toContain("restart finished");
       expect(output.join("\n")).toContain("restart failed source=windows-task-handoff");
-      expect(output.join("\n")).toContain("openclaw gateway restart --force");
+      expect(output.join("\n")).toContain("paddy gateway restart --force");
       expect(commands.filter((line) => line.startsWith("schtasks /Run"))).toHaveLength(1);
     },
   );
@@ -261,7 +261,7 @@ describe("relaunchGatewayScheduledTask", () => {
       expect(output.some((line) => line.includes("restart failed"))).toBe(!exited);
       expect(commands.some((line) => line.includes("Get-NetTCPConnection"))).toBe(exited);
       if (!exited) {
-        expect(output.join("\n")).toContain("openclaw --profile work gateway restart --force");
+        expect(output.join("\n")).toContain("paddy --profile work gateway restart --force");
       }
     },
   );

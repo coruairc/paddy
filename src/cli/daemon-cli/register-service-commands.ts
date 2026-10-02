@@ -3,6 +3,7 @@ import { Option, type Command } from "commander";
 import { isGatewayServiceEnv } from "../../daemon/constants.js";
 import { isGatewayExternallySupervised } from "../../infra/gateway-supervision.js";
 import { createLazyImportLoader } from "../../shared/lazy-promise.js";
+import { PRODUCT_NAME } from "../cli-name.js";
 import { inheritOptionFromParent } from "../command-options.js";
 import { resolveGatewayRpcOptionsWithLocalPort } from "../gateway-rpc.js";
 import type { DaemonInstallOptions, DaemonLifecycleOptions } from "./types.js";
@@ -11,6 +12,12 @@ const daemonInstallModuleLoader = createLazyImportLoader(() => import("./install
 const daemonLifecycleModuleLoader = createLazyImportLoader(() => import("./lifecycle.runtime.js"));
 const updateExecutorModuleLoader = createLazyImportLoader(() => import("./update-executor.js"));
 const daemonStatusModuleLoader = createLazyImportLoader(() => import("./status.runtime.js"));
+
+function updateExecutorOption(): Option {
+  return new Option("--update-executor <mode>", "Private update executor")
+    .choices(["check", "run"])
+    .hideHelp();
+}
 
 async function runUpdateCommand(
   mode: string | undefined,
@@ -95,7 +102,14 @@ export function addGatewayServiceCommands(parent: Command, opts?: { statusDescri
     .action(async (cmdOpts, command) => {
       const { runDaemonStatus } = await daemonStatusModuleLoader.load();
       await runDaemonStatus({
-        rpc: resolveGatewayRpcOptionsWithLocalPort(cmdOpts, command),
+        rpc: resolveGatewayRpcOptionsWithLocalPort(
+          {
+            ...cmdOpts,
+            timeout:
+              command.getOptionValueSource("timeout") === "default" ? undefined : cmdOpts.timeout,
+          },
+          command,
+        ),
         probe: Boolean(cmdOpts.probe),
         requireRpc: Boolean(cmdOpts.requireRpc),
         deep: Boolean(cmdOpts.deep),
@@ -114,11 +128,7 @@ export function addGatewayServiceCommands(parent: Command, opts?: { statusDescri
     .option("--allow-unconfigured", "Allow the service to start without gateway.mode=local")
     .option("--force", "Reinstall if already installed (may restart a running Gateway)", false)
     .option("--json", "Output JSON", false)
-    .addOption(
-      new Option("--update-executor <mode>", "Private update executor")
-        .choices(["check", "run"])
-        .hideHelp(),
-    )
+    .addOption(updateExecutorOption())
     .action(async (cmdOpts, command) => {
       await runUpdateCommand(cmdOpts.updateExecutor, "install", async () => {
         const { runDaemonInstall } = await daemonInstallModuleLoader.load();
@@ -126,31 +136,23 @@ export function addGatewayServiceCommands(parent: Command, opts?: { statusDescri
       });
     });
 
-  parent
-    .command("uninstall")
-    .description("Uninstall the Gateway service (launchd/systemd/schtasks)")
-    .option("--json", "Output JSON", false)
-    .action(async (cmdOpts, command) => {
-      const { runDaemonUninstall } = await daemonLifecycleModuleLoader.load();
-      await runDaemonUninstall({ ...cmdOpts, json: resolveJsonOption(cmdOpts, command) });
-    });
-
-  parent
-    .command("start")
-    .description("Start the Gateway service (launchd/systemd/schtasks)")
-    .option("--json", "Output JSON", false)
-    .action(async (cmdOpts, command) => {
-      const { runDaemonStart } = await daemonLifecycleModuleLoader.load();
-      await runDaemonStart({ ...cmdOpts, json: resolveJsonOption(cmdOpts, command) });
-    });
+  for (const [name, description, action] of [
+    ["uninstall", "Uninstall", "runDaemonUninstall"],
+    ["start", "Start", "runDaemonStart"],
+  ] as const) {
+    parent
+      .command(name)
+      .description(`${description} the Gateway service (launchd/systemd/schtasks)`)
+      .option("--json", "Output JSON", false)
+      .action(async (cmdOpts, command) => {
+        const lifecycle = await daemonLifecycleModuleLoader.load();
+        await lifecycle[action]({ ...cmdOpts, json: resolveJsonOption(cmdOpts, command) });
+      });
+  }
 
   parent
     .command("stop")
-    .addOption(
-      new Option("--update-executor <mode>", "Private update executor")
-        .choices(["check", "run"])
-        .hideHelp(),
-    )
+    .addOption(updateExecutorOption())
     .description("Stop the Gateway service (launchd/systemd/schtasks)")
     .option("--force", "Allow stop from a non-interactive shell", false)
     .option("--json", "Output JSON", false)
@@ -168,17 +170,13 @@ export function addGatewayServiceCommands(parent: Command, opts?: { statusDescri
 
   parent
     .command("restart")
-    .addOption(
-      new Option("--update-executor <mode>", "Private update executor")
-        .choices(["check", "run"])
-        .hideHelp(),
-    )
+    .addOption(updateExecutorOption())
     .description("Restart the Gateway service (launchd/systemd/schtasks)")
     .option("--preserve-definition", "Keep the native service definition", false)
     .option("--force", "Begin restart now; drain admitted work within the shutdown budget", false)
     .option(
       "--safe",
-      "Request an OpenClaw-aware restart after active work drains " +
+      `Request a ${PRODUCT_NAME}-aware restart after active work drains ` +
         "(bounded wait; may force after the timeout expires)",
       false,
     )

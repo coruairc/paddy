@@ -1,20 +1,20 @@
 ---
-summary: "Reference catalog of checkIds emitted by openclaw security audit"
+summary: "Reference catalog of checkIds emitted by paddy security audit"
 read_when:
-  - You saw a specific `checkId` in `openclaw security audit` output and want to know what it means
+  - You saw a specific `checkId` in `paddy security audit` output and want to know what it means
   - You need the fix key/path for a given finding
   - You are triaging severity across a security audit run
 title: "Security audit checks"
 ---
 
-`openclaw security audit` emits structured findings keyed by `checkId`. This
+`paddy security audit` emits structured findings keyed by `checkId`. This
 page is the reference catalog for those IDs. For the high-level threat model
 and hardening guidance, see [Security](/gateway/security).
 
-Some checks only run with `openclaw security audit --deep`: plugin/skill code
+Some checks only run with `paddy security audit --deep`: plugin/skill code
 scans (`plugins.code_safety*`, `skills.code_safety*`) and live Gateway probe
 checks (`gateway.probe_*`). Everything else in this table runs on a plain
-`openclaw security audit`.
+`paddy security audit`.
 
 Deep code scans check up to 500 source files per plugin or skill, prioritizing
 declared plugin entrypoints, and skip files larger than 1 MiB. Traversal also
@@ -104,8 +104,8 @@ exhaustive):
 | `sandbox.dangerous_apparmor_profile`                            | critical           | Sandbox AppArmor profile weakens container isolation                                               | `agents.*.sandbox.docker.securityOpt`                                                                   | no       |
 | `sandbox.browser_cdp_bridge_unrestricted`                       | warn               | Sandbox browser bridge is exposed without source-range restriction                                 | `sandbox.browser.cdpSourceRange`                                                                        | no       |
 | `sandbox.browser_container.non_loopback_publish`                | critical           | Existing browser container publishes CDP on non-loopback interfaces                                | browser sandbox container publish config                                                                | no       |
-| `sandbox.browser_container.hash_label_missing`                  | warn               | Existing browser container predates current config-hash labels                                     | `openclaw sandbox recreate --browser --all`                                                             | no       |
-| `sandbox.browser_container.hash_epoch_stale`                    | warn               | Existing browser container predates current browser config epoch                                   | `openclaw sandbox recreate --browser --all`                                                             | no       |
+| `sandbox.browser_container.hash_label_missing`                  | warn               | Existing browser container predates current config-hash labels                                     | `paddy sandbox recreate --browser --all`                                                                | no       |
+| `sandbox.browser_container.hash_epoch_stale`                    | warn               | Existing browser container predates current browser config epoch                                   | `paddy sandbox recreate --browser --all`                                                                | no       |
 | `sandbox.browser_container.docker_probe_timeout`                | warn               | Docker label probe for the browser container timed out                                             | Docker daemon reachability                                                                              | no       |
 | `tools.exec.host_sandbox_no_sandbox_defaults`                   | warn               | `exec host=sandbox` fails closed when sandbox is off                                               | `tools.exec.host`, `agents.defaults.sandbox.mode`                                                       | no       |
 | `tools.exec.host_sandbox_no_sandbox_agents`                     | warn               | Per-agent `exec host=sandbox` fails closed when sandbox is off                                     | `agents.entries.*.tools.exec.host`, `agents.entries.*.sandbox.mode`                                     | no       |

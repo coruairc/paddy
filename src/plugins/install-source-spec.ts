@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { parseRegistryNpmSpec } from "../infra/npm-registry-spec.js";
 import { shortenHomePath } from "../utils.js";
 import type { BundledPluginSource } from "./bundled-sources.js";
@@ -129,6 +130,6 @@ export function resolveBundledInstallPlanBeforeNpm(params: {
   }
   return {
     bundledSource,
-    warning: `Using bundled plugin "${bundledSource.pluginId}" from ${shortenHomePath(bundledSource.localPath)} for npm install spec "${rawSpec}" because this plugin ships with the current OpenClaw build. To force an external npm override, use npm:${rawSpec}.`,
+    warning: `Using bundled plugin "${bundledSource.pluginId}" from ${shortenHomePath(bundledSource.localPath)} for npm install spec "${rawSpec}" because this plugin ships with the current ${PRODUCT_NAME} build. To force an external npm override, use npm:${rawSpec}.`,
   };
 }

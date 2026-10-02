@@ -13,7 +13,7 @@ Host-only bash commands use `! <cmd>` (with `/bash <cmd>` as an alias).
 
 When a conversation is bound to an ACP session, normal text routes to the ACP
 harness. Gateway management commands remain local: `/acp ...` always reaches
-the OpenClaw command handler, and `/status` plus `/session` stay local whenever
+the Paddy command handler, and `/status` plus `/session` stay local whenever
 command handling is enabled for the surface.
 
 ## Three command types
@@ -121,7 +121,7 @@ command handling is enabled for the surface.
 </ParamField>
 
 <ParamField path="commands.mcp" type="boolean" default="false">
-  Enables `/mcp` (reads/writes OpenClaw-managed MCP config under `mcp.servers`). Owner-only.
+  Enables `/mcp` (reads/writes Paddy-managed MCP config under `mcp.servers`). Owner-only.
 </ParamField>
 
 <ParamField path="commands.plugins" type="boolean" default="false">
@@ -143,7 +143,7 @@ command handling is enabled for the surface.
   non-owners receive a refusal with the exact configuration command for their
   sender ID when using an owner-only command such as `/restart` or `/update`.
   Use `channel:id` (for example, `discord:123456789012345678`). If an upgrade
-  leaves a legacy `channel:user:id` owner entry, run `openclaw doctor --fix`.
+  leaves a legacy `channel:user:id` owner entry, run `paddy doctor --fix`.
   Doctor rewrites recognized channel entries and reports their list positions.
 </ParamField>
 
@@ -302,8 +302,7 @@ plugins, and installed skills.
     | `/goal [status\|start\|edit\|pause\|resume\|complete\|block\|clear] ...` | Manage the current session's durable [goal](/tools/goal) |
     | `/dashboard [request]` | Create or update the current session's dashboard using the Control UI dashboard workflow |
     | `/diagnostics [note]` | Owner-only support-report flow. Asks for exec approval every time |
-    | `/openclaw <request>` | Run the OpenClaw setup and repair helper from an owner DM |
-    | `/tasks` | List active/recent background tasks for the current session |
+    | `/openclaw <request>` | Run the Paddy setup and repair helper from an owner DM |
     | `/context [list\|detail\|map\|json]` | Explain how context is assembled |
     | `/whoami` | Show your sender id. Alias: `/id` |
     | `/usage off\|tokens\|full\|reset\|cost` | Control the per-response usage footer (`reset`/`inherit`/`clear`/`default` clears the session override to re-inherit the configured default) or print a local cost summary |
@@ -323,7 +322,7 @@ user skill directly.
     | `/loop status` | Owner-only. List loops bound to this conversation |
     | `/loop stop [name]` | Owner-only. Stop matching loops bound to this conversation |
     | `/allowlist [list\|add\|remove] ...` | Manage allowlist entries. Text-only |
-    | `/approve <id> <decision>` | Resolve exec, plugin, or OpenClaw change approval prompts |
+    | `/approve <id> <decision>` | Resolve exec, plugin, or Paddy change approval prompts |
     | `/btw <question>` | Ask a side question without changing session context. Alias: `/side`. See [BTW](/tools/btw) |
   </Accordion>
 
@@ -340,11 +339,11 @@ user skill directly.
     | Command | Requires | Description |
     | --- | --- | --- |
     | `/config show\|get\|set\|unset` | `commands.config: true` | Read or write `openclaw.json`. Owner-only |
-    | `/mcp show\|get\|set\|unset` | `commands.mcp: true` | Read or write OpenClaw-managed MCP server config. Owner-only |
+    | `/mcp show\|get\|set\|unset` | `commands.mcp: true` | Read or write Paddy-managed MCP server config. Owner-only |
     | `/plugins list\|inspect\|show\|get\|install\|enable\|disable` | `commands.plugins: true` | Inspect or mutate plugin state. Owner-only for writes. Alias: `/plugin` |
     | `/debug show\|set\|unset\|reset` | `commands.debug: true` | Runtime-only config overrides. Owner-only |
-    | `/restart` | `commands.restart: true` (default) | Restart OpenClaw |
-    | `/update` | `commands.restart: true` (default), owner | Update OpenClaw using its configured update channel; works with default tool profiles and sends a completion or failure notice in the same chat |
+    | `/restart` | `commands.restart: true` (default) | Restart Paddy |
+    | `/update` | `commands.restart: true` (default), owner | Update Paddy using its configured update channel; works with default tool profiles and sends a completion or failure notice in the same chat |
     | `/send on\|off\|inherit` | owner | Set send policy |
 
     Natural-language update requests use the `gateway` tool's `update.run`
@@ -476,7 +475,7 @@ Without owner/admin authority, bare commands remain session-only and explicit
 /config show
 /config show channels.whatsapp.responsePrefix
 /config get channels.whatsapp.responsePrefix
-/config set channels.whatsapp.responsePrefix="[openclaw]"
+/config set channels.whatsapp.responsePrefix="[paddy]"
 /config unset channels.whatsapp.responsePrefix
 ```
 
@@ -496,7 +495,7 @@ updates persist across restarts.
 /mcp unset context7
 ```
 
-`/mcp` stores config in OpenClaw config, not embedded-agent project settings.
+`/mcp` stores config in Paddy config, not embedded-agent project settings.
 `/mcp show` redacts credential-bearing fields, recognized credential flag
 values, and known secret-shaped arguments. When run from a group, the
 configuration is routed privately to the owner. The group notice distinguishes
@@ -513,7 +512,7 @@ the command asks the owner to retry from a direct chat.
 
 ```text
 /debug show
-/debug set channels.whatsapp.responsePrefix="[openclaw]"
+/debug set channels.whatsapp.responsePrefix="[paddy]"
 /debug set channels.whatsapp.allowFrom=["+1555","+4477"]
 /debug unset channels.whatsapp.responsePrefix
 /debug reset
@@ -561,7 +560,7 @@ that reply, then rerun with `--accept-capabilities`:
 /plugins enable <plugin-id> --accept-capabilities
 ```
 
-Bundled plugins and verified plugins from OpenClaw's official catalog are exempt
+Bundled plugins and verified plugins from Paddy's official catalog are exempt
 from capability consent. Third-party capability consent is separate from the
 source acknowledgement provided by `--force`.
 
@@ -641,7 +640,7 @@ See [BTW side questions](/tools/btw) for the full behavior.
 
 - **Provider usage/quota** (e.g., "Claude 80% left") shows in `/status` for the current model provider when usage tracking is enabled.
 - **Token/cache lines** in `/status` can fall back to the latest transcript usage entry when the live session snapshot is sparse.
-- **Execution vs runtime:** `/status` reports `Execution` for the effective sandbox path and `Runtime` for who is running the session: `OpenClaw Default`, `OpenAI Codex`, a CLI backend, or an ACP backend.
+- **Execution vs runtime:** `/status` reports `Execution` for the effective sandbox path and `Runtime` for who is running the session: `Paddy Default`, `OpenAI Codex`, a CLI backend, or an ACP backend.
 - **Per-response tokens/cost:** controlled by `/usage off|tokens|full`.
 - `/model status` is about models/auth/endpoints, not usage.
 

@@ -18,7 +18,7 @@ function createEngine(requiredCapabilities: ContextEngineHostCapability[]): Cont
         "agent-run": {
           requiredCapabilities,
           unsupportedMessage:
-            "Use the native Codex or OpenClaw embedded runtime, or switch contextEngine to legacy.",
+            "Use the native Codex or Paddy embedded runtime, or switch contextEngine to legacy.",
         },
       },
     },

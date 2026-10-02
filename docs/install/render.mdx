@@ -1,12 +1,12 @@
 ---
-summary: "Deploy OpenClaw on Render with Infrastructure-as-Code"
+summary: "Deploy Paddy on Render with Infrastructure-as-Code"
 read_when:
-  - Deploying OpenClaw to Render
+  - Deploying Paddy to Render
   - You want a declarative cloud deploy with Render Blueprints
 title: "Render"
 ---
 
-Deploy OpenClaw on [Render](https://render.com) using the repo's `render.yaml` Blueprint. It declares the service, disk, and environment variables in one file.
+Deploy Paddy on [Render](https://render.com) using the repo's `render.yaml` Blueprint. It declares the service, disk, and environment variables in one file.
 
 ## Prerequisites
 
@@ -24,7 +24,7 @@ This creates a Render service from `render.yaml`, builds the Docker image, and d
 ```yaml
 services:
   - type: web
-    name: openclaw
+    name: paddy
     runtime: docker
     plan: starter
     dockerCommand: node openclaw.mjs gateway --allow-unconfigured
@@ -59,7 +59,7 @@ services:
 | Starter   | Never             | 1GB+          | Personal use, small teams     |
 | Standard+ | Never             | 1GB+          | Production, multiple channels |
 
-The Blueprint defaults to `starter`. To use the free tier, change `plan: free` **and delete the `disk:` block** in your fork's `render.yaml`; Render rejects a Blueprint that attaches a persistent disk to a free instance. Without that disk, OpenClaw state resets on every deploy.
+The Blueprint defaults to `starter`. To use the free tier, change `plan: free` **and delete the `disk:` block** in your fork's `render.yaml`; Render rejects a Blueprint that attaches a persistent disk to a free instance. Without that disk, Paddy state resets on every deploy.
 
 ## After deployment
 
@@ -92,16 +92,16 @@ Render redeploys automatically when the connected repo's branch gets a new commi
 
 ## Scaling
 
-- **Vertical**: change the plan for more CPU/RAM. Usually sufficient for OpenClaw.
-- **Horizontal**: increase instance count (Standard plan and above). Requires sticky sessions or external state management since OpenClaw keeps runtime state on the local disk.
+- **Vertical**: change the plan for more CPU/RAM. Usually sufficient for Paddy.
+- **Horizontal**: increase instance count (Standard plan and above). Requires sticky sessions or external state management since Paddy keeps runtime state on the local disk.
 
 ## Backups and migration
 
 From the Render Dashboard shell, export state, config, auth profiles, and workspace at any time:
 
 ```bash
-openclaw backup create
-openclaw backup restore <archive.tar.gz> --target <fresh-directory>
+paddy backup create
+paddy backup restore <archive.tar.gz> --target <fresh-directory>
 ```
 
 Restore verifies and extracts into a fresh staging directory; activation is a
@@ -123,7 +123,7 @@ Free tier services spin down after 15 minutes of inactivity; the first request a
 
 ### Data loss after redeploy
 
-Happens on the free tier (no persistent disk). Upgrade to a paid plan, or regularly export a backup with `openclaw backup create` from the Render shell.
+Happens on the free tier (no persistent disk). Upgrade to a paid plan, or regularly export a backup with `paddy backup create` from the Render shell.
 
 ### Health check failures
 
@@ -161,4 +161,4 @@ See [Docker](/install/docker) for the full local container workflow.
 
 - Set up messaging channels: [Channels](/channels)
 - Configure the Gateway: [Gateway configuration](/gateway/configuration)
-- Keep OpenClaw up to date: [Updating](/install/updating)
+- Keep Paddy up to date: [Updating](/install/updating)

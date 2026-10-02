@@ -9,7 +9,7 @@ only its documented method allowlist.
 Enable the bundled plugin:
 
 ```bash
-openclaw plugins enable admin-http-rpc
+paddy plugins enable admin-http-rpc
 ```
 
 Use the Gateway's HTTP authentication and send a JSON request with `method` and

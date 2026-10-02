@@ -76,6 +76,8 @@ import {
   resolveGatewayServiceRecovery,
   admitSystemdUpdate,
   joinSystemServiceUpdateHandoffs,
+  observeManagedServiceUpdateHandoffClose,
+  SYSTEM_SERVICE_UPDATE_SETTLED_MARKER,
 } from "./update-managed-service-handoff-service.js";
 import type {
   ActiveManagedServiceUpdateHandoff,
@@ -502,7 +504,7 @@ async function enterTriageAfterUpdate(continuation) {
     params.serviceRecovery?.kind !== "systemd" ||
     typeof process.execve !== "function"
   ) {
-    appendLog("automatic triage continuation unavailable; run openclaw triage manually");
+    appendLog("automatic triage continuation unavailable; run paddy triage manually");
     return;
   }
   const primary = await inspectSystemdService(params.serviceRecovery.unit);
@@ -514,7 +516,7 @@ async function enterTriageAfterUpdate(continuation) {
     !ownsManagedUpdateLease()
   ) {
     appendLog(
-      "automatic triage could not verify the installed service after update restoration; run openclaw triage manually",
+      "automatic triage could not verify the installed service after update restoration; run paddy triage manually",
     );
     return;
   }
@@ -530,11 +532,11 @@ async function enterTriageAfterUpdate(continuation) {
   try {
     retargeted = leaseStore.retarget(managedUpdateLease, continuation.failure.installationRoot, action);
   } catch (error) {
-    appendLog("automatic triage destination admission failed: " + String(error) + "; run openclaw triage manually");
+    appendLog("automatic triage destination admission failed: " + String(error) + "; run paddy triage manually");
     return;
   }
   if (!retargeted) {
-    appendLog("automatic triage lost its completed update owner; run openclaw triage manually");
+    appendLog("automatic triage lost its completed update owner; run paddy triage manually");
     return;
   }
   if (retargeted.kind === "busy") {
@@ -553,7 +555,7 @@ async function enterTriageAfterUpdate(continuation) {
     triageTransition: true,
     failure: continuation.failure,
     commandArgv: continuation.commandArgv,
-    commandLabel: "openclaw triage (automatic)",
+    commandLabel: "paddy triage (automatic)",
     scopeUnit,
     primaryFragment: primary.FragmentPath,
   });
@@ -1353,7 +1355,7 @@ let automaticRequested = false;
             recovery?.service === "healthy" ? "updater already verified recovery" :
               recovery?.service === "failed" ? "updater recovery failed; no automatic retry" :
                 "no verified recovery result; inspect the installation before restarting"));
-        if (restorationArmed && !restored) { const alarm = "Gateway recovery failed after the update. OpenClaw stopped automatic recovery because it could not safely verify the installed runtime. Recovery details were saved with the update result."; appendLog(alarm); runWarnings.set("warning:gateway-availability", alarm); }
+        if (restorationArmed && !restored) { const alarm = "Gateway recovery failed after the update. Paddy stopped automatic recovery because it could not safely verify the installed runtime. Recovery details were saved with the update result."; appendLog(alarm); runWarnings.set("warning:gateway-availability", alarm); }
         if (childStatus !== "skipped" || !restored) {
           recordUpdateHandoffOutcome("managed-service-handoff-failed", undefined, childStatus === "skipped" ? "error" : childStatus);
         }
@@ -1388,6 +1390,7 @@ let automaticRequested = false;
     cleanupSensitiveFiles();
     stopTriageScope();
     appendLog("managed update helper completed code=" + (process.exitCode || 0));
+    if (params.operatorRestartWarning) fs.writeSync(1, ${JSON.stringify(SYSTEM_SERVICE_UPDATE_SETTLED_MARKER)});
     if (foregroundClosed && parentIdentityCurrent())
       fs.writeSync(1, "foreground-settled:" + (foregroundRespawn ? "respawn" : "stopped") + "\n");
     process.stdin.destroy();
@@ -1492,7 +1495,7 @@ async function spawnManagedServiceUpdateHandoff(
     commandArgv.push("--no-restart");
   }
   const commandLabel = params.action
-    ? "openclaw triage (automatic)"
+    ? "paddy triage (automatic)"
     : formatManagedServiceUpdateCommand(commandOptions, params.env) +
       (owner.operatorRestartWarning ? " --no-restart" : "");
   const metaFile: ControlPlaneUpdateSentinelMetaFile = {
@@ -1607,7 +1610,7 @@ async function spawnManagedServiceUpdateHandoff(
     ),
     // This hint becomes a model/channel notice; host paths remain in the helper log.
     triageHint:
-      "Update triage runs after service recovery; see the managed update helper log for the outcome and the installation-specific openclaw triage command.",
+      "Update triage runs after service recovery; see the managed update helper log for the outcome and the installation-specific paddy triage command.",
     commandLabel,
     handoffId: params.handoffId,
     nonFailureSkippedReasons: Object.keys(SKIPPED_UPDATE_OUTCOMES),
@@ -1657,12 +1660,7 @@ async function spawnManagedServiceUpdateHandoff(
       stdio: ["pipe", "pipe", "ignore"],
     });
     owner.launcher = child;
-    owner.closed = new Promise((resolve) => {
-      child.once("close", () => {
-        owner.settled = child.exitCode !== null && child.signalCode === null;
-        resolve();
-      });
-    });
+    owner.closed = observeManagedServiceUpdateHandoffClose(owner, child);
     child.stdin.on("error", () => child.stdin.destroy()).once("close", () => child.stdin.destroy());
     // Failed spawn handles are not processes and must never be signalled.
     if (!child.pid) {
@@ -1840,7 +1838,7 @@ export async function startManagedServiceUpdateHandoff(
   params.requesterAuthority?.signal?.throwIfAborted();
   if (params.action && params.supervisor !== "systemd") {
     throw new Error(
-      "Automatic managed triage requires a Linux user-systemd scope; run openclaw triage manually.",
+      "Automatic managed triage requires a Linux user-systemd scope; run paddy triage manually.",
     );
   }
   if (
@@ -1855,7 +1853,7 @@ export async function startManagedServiceUpdateHandoff(
       : undefined;
   if (operatorRestartWarning && params.action) {
     throw new Error(
-      "Automatic managed triage requires a Linux user-systemd scope; run openclaw triage manually.",
+      "Automatic managed triage requires a Linux user-systemd scope; run paddy triage manually.",
     );
   }
   const root = resolveUpdateInstallRoot(params.root);
@@ -2017,6 +2015,8 @@ export async function isCurrentManagedServiceUpdateHandoffProcess(params: {
   root: string;
   runId: string | undefined;
   env?: NodeJS.ProcessEnv;
+  /** Retain the executor's admitted physical store through the sentinel await. */
+  store?: ReturnType<typeof createManagedHandoffLeaseStore>;
 }): Promise<boolean> {
   const env = params.env ?? process.env;
   if (env.OPENCLAW_UPDATE_RUN_HANDOFF !== "1" || !params.runId) {
@@ -2032,8 +2032,8 @@ export async function isCurrentManagedServiceUpdateHandoffProcess(params: {
   ) {
     return false;
   }
-  const lease = readManagedServiceUpdateHandoffLease(root);
-  const store = createManagedHandoffLeaseStore();
+  const lease = readManagedServiceUpdateHandoffLease(root, undefined, params.store);
+  const store = params.store ?? createManagedHandoffLeaseStore();
   return (
     lease?.owner === meta.handoffId &&
     lease.executor.pid === process.pid &&
@@ -2289,15 +2289,13 @@ export async function completeForegroundUpdateHandoffAfterClose(
 function readManagedServiceUpdateHandoffLease(
   root: string,
   stale?: ActiveManagedServiceUpdateHandoff,
+  selectedStore?: ReturnType<typeof createManagedHandoffLeaseStore>,
 ): ManagedHandoffLease | null | undefined {
   const owner = stale ?? activeManagedServiceUpdateHandoffs.get(root);
-  const store = owner ? owner.leaseStore : createManagedHandoffLeaseStore();
-  if (!store) {
-    return undefined;
-  }
-  const result = store.read(root);
-  if (result.kind !== "current") {
-    return result.kind === "absent" ? null : undefined;
+  const store = selectedStore ?? (owner ? owner.leaseStore : createManagedHandoffLeaseStore());
+  const result = store?.read(root);
+  if (!store || result?.kind !== "current") {
+    return result?.kind === "absent" ? null : undefined;
   }
   const lease = result.lease;
   if (

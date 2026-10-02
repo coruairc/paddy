@@ -22,6 +22,7 @@ import * as setupAdmission from "./setup-admission.js";
 import type { SystemAgentChatSession } from "./system-agent.js";
 import {
   callChat,
+  defaultClient,
   inferenceFallbackMocks,
   makeContext,
   makeRespond,
@@ -116,7 +117,7 @@ describe("openclaw.setup", () => {
           sessionId,
           authChoice: "custom-api-key",
         },
-        client: { internal: { isLocalClient } },
+        client: { ...defaultClient, internal: { isLocalClient } },
         context,
         respond,
       } as never);
@@ -186,7 +187,7 @@ describe("openclaw.setup", () => {
           payload: undefined,
           error: {
             code: "UNAVAILABLE",
-            message: "OpenClaw setup is already in progress; try again when it finishes.",
+            message: "Paddy setup is already in progress; try again when it finishes.",
             details: { code: "SETUP_ADMISSION_BUSY" },
             retryable: true,
           },
@@ -225,7 +226,7 @@ describe("openclaw.setup", () => {
           payload: undefined,
           error: {
             code: "UNAVAILABLE",
-            message: "OpenClaw setup is already in progress; try again when it finishes.",
+            message: "Paddy setup is already in progress; try again when it finishes.",
             details: { code: "SETUP_ADMISSION_BUSY" },
             retryable: true,
           },
@@ -265,7 +266,7 @@ describe("openclaw.chat", () => {
       ok: false,
       error: {
         code: "UNAVAILABLE",
-        message: "OpenClaw requires working inference: no configured model",
+        message: "Paddy requires working inference: no configured model",
         details: {
           code: "system_agent_inference_unavailable",
         },

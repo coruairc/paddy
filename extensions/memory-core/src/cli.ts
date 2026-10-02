@@ -82,51 +82,51 @@ export function registerMemoryCli(program: Command, hostOptions?: MemoryCoreRunt
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw memory status", "Show index and provider status."],
+          ["paddy memory status", "Show index and provider status."],
           [
-            "openclaw memory status --fix",
+            "paddy memory status --fix",
             "Repair stale recall locks and normalize promotion metadata.",
           ],
-          ["openclaw memory status --deep", "Probe embedding provider readiness."],
-          ["openclaw memory index --force", "Force a full reindex."],
-          ['openclaw memory search "meeting notes"', "Quick search using positional query."],
+          ["paddy memory status --deep", "Probe embedding provider readiness."],
+          ["paddy memory index --force", "Force a full reindex."],
+          ['paddy memory search "meeting notes"', "Quick search using positional query."],
           [
-            'openclaw memory search --query "deployment" --max-results 20',
+            'paddy memory search --query "deployment" --max-results 20',
             "Limit results for focused troubleshooting.",
           ],
           [
-            "openclaw memory forget --hook-source gmail --dry-run",
+            "paddy memory forget --hook-source gmail --dry-run",
             "Preview deletion of memories derived from matching sessions.",
           ],
           [
-            `openclaw memory promote --limit 10 --min-score ${DEFAULT_PROMOTION_MIN_SCORE}`,
+            `paddy memory promote --limit 10 --min-score ${DEFAULT_PROMOTION_MIN_SCORE}`,
             "Review weighted short-term candidates for long-term memory.",
           ],
           [
-            "openclaw memory promote --apply",
+            "paddy memory promote --apply",
             "Append top-ranked short-term candidates into MEMORY.md.",
           ],
           [
-            'openclaw memory promote-explain "router vlan"',
+            'paddy memory promote-explain "router vlan"',
             "Explain why a specific candidate would or would not promote.",
           ],
           [
-            "openclaw memory rem-harness --json",
+            "paddy memory rem-harness --json",
             "Preview REM reflections, candidate truths, and deep promotion output.",
           ],
           [
-            "openclaw memory rem-backfill --path ./memory",
+            "paddy memory rem-backfill --path ./memory",
             "Write grounded historical REM entries into DREAMS.md for UI review.",
           ],
           [
-            "openclaw memory rem-backfill --path ./memory --stage-short-term",
+            "paddy memory rem-backfill --path ./memory --stage-short-term",
             "Also seed durable grounded candidates into the live short-term promotion store.",
           ],
           [
-            "openclaw memory session-backfill --agent main --from 2026-01-01",
+            "paddy memory session-backfill --agent main --from 2026-01-01",
             "Preview trusted candidates from retained session history.",
           ],
-          ["openclaw memory status --json", "Output machine-readable JSON (good for scripts)."],
+          ["paddy memory status --json", "Output machine-readable JSON (good for scripts)."],
         ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/memory", "docs.openclaw.ai/cli/memory")}\n`,
     );
 

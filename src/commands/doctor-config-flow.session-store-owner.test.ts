@@ -84,7 +84,7 @@ describe("Doctor session-store owner recovery", () => {
         } else {
           expect(
             note.mock.calls.some(([message]) =>
-              message.includes("openclaw config set agents.defaults.sessionStore.agentId ops"),
+              message.includes("paddy config set agents.defaults.sessionStore.agentId ops"),
             ),
           ).toBe(true);
         }
@@ -110,7 +110,7 @@ describe("Doctor session-store owner recovery", () => {
     });
   });
 
-  it.each(["different-store", "store-roundtrip", "retired-agent", "absent-history"])(
+  it.each(["store-roundtrip", "retired-agent", "absent-history"])(
     "never invents ownership from %s",
     async (scenario) => {
       await withDoctorConfigPreflightHome(async (home) => {

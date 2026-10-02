@@ -29,8 +29,8 @@ export function getSecurityNoteMessage(): string {
     `- ${t("wizard.security.baselineStrongModel")}`,
     "",
     chalk.bold(t("wizard.security.runRegularly")),
-    formatCliCommand("openclaw security audit --deep"),
-    formatCliCommand("openclaw security audit --fix"),
+    formatCliCommand("paddy security audit --deep"),
+    formatCliCommand("paddy security audit --fix"),
     "",
     `${t("wizard.security.learnMore")} https://docs.openclaw.ai/gateway/security`,
   ].join("\n");

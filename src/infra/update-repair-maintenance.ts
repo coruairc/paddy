@@ -1,9 +1,11 @@
 import { z } from "zod";
 import type { ClientToolDefinition } from "../agents/command/shared-types.js";
 import { recordAgentCleanupFailure } from "../agents/run-cleanup-timeout.js";
+import { resolveNodeRunner } from "../cli/update-cli/node-runner.js";
 import { hasCommandProcessCleanupError } from "../process/exec-result.js";
 import type { UpdateRepairTarget } from "./update-repair-protocol.js";
 import { buildUpdateDoctorEnv } from "./update-runner-doctor.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const UPDATE_REPAIR_MAINTENANCE_TOOL = "request_update_maintenance";
 const requestSchema = z.strictObject({ operation: z.enum(["doctor-fix", "update-repair"]) });
@@ -53,17 +55,15 @@ export async function runUpdateRepairMaintenance(params: {
   assertCurrent: () => void;
   allowGatewayActivation: boolean;
 }) {
-  const [{ resolveGatewayInstallEntrypoint }, { isNodeRuntime }, { runUtf8CommandWithTimeout }] =
-    await Promise.all([
-      import("../daemon/gateway-entrypoint.js"),
-      import("../daemon/runtime-binary.js"),
-      import("../process/exec.js"),
-    ]);
+  const [{ resolveGatewayInstallEntrypoint }, { runUtf8CommandWithTimeout }] = await Promise.all([
+    import("../daemon/gateway-entrypoint.js"),
+    import("../process/exec.js"),
+  ]);
   const entrypoint = await resolveGatewayInstallEntrypoint(params.target.installRoot);
   params.signal.throwIfAborted();
   params.assertCurrent();
   if (!entrypoint) {
-    throw new Error("The installed OpenClaw entrypoint is unavailable.");
+    throw new Error(`The installed ${PRODUCT_NAME} entrypoint is unavailable.`);
   }
   const args =
     params.request.operation === "update-repair"
@@ -76,33 +76,30 @@ export async function runUpdateRepairMaintenance(params: {
         ]
       : ["doctor", "--fix", "--non-interactive"];
   try {
-    const result = await runUtf8CommandWithTimeout(
-      [isNodeRuntime(process.execPath) ? process.execPath : "node", entrypoint, ...args],
-      {
-        cwd: params.target.installRoot,
-        baseEnv: {},
-        // The fixing subtree must not recursively start another automatic repair.
-        env: {
-          ...params.env,
-          // Preserve an intentional stop; otherwise let the command's existing
-          // maintenance owner enforce its native service and activation policy.
-          ...(!params.allowGatewayActivation
-            ? buildUpdateDoctorEnv({
-                allowGatewayServiceRepair: false,
-                allowGatewayActivation: false,
-                serviceRepairPolicy: "external",
-              })
-            : {}),
-          OPENCLAW_SHELL: "exec",
-        },
-        input: "",
-        signal: params.signal,
-        killProcessTree: true,
-        requireProcessTreeExtinction: true,
-        outputCapture: "tail",
-        maxOutputBytes: 32 * 1024,
+    const result = await runUtf8CommandWithTimeout([resolveNodeRunner(), entrypoint, ...args], {
+      cwd: params.target.installRoot,
+      baseEnv: {},
+      // The fixing subtree must not recursively start another automatic repair.
+      env: {
+        ...params.env,
+        // Preserve an intentional stop; otherwise let the command's existing
+        // maintenance owner enforce its native service and activation policy.
+        ...(!params.allowGatewayActivation
+          ? buildUpdateDoctorEnv({
+              allowGatewayServiceRepair: false,
+              allowGatewayActivation: false,
+              serviceRepairPolicy: "external",
+            })
+          : {}),
+        OPENCLAW_SHELL: "exec",
       },
-    );
+      input: "",
+      signal: params.signal,
+      killProcessTree: true,
+      requireProcessTreeExtinction: true,
+      outputCapture: "tail",
+      maxOutputBytes: 32 * 1024,
+    });
     if (result.cleanup === "uncertain" || result.cleanup === "forced") {
       recordAgentCleanupFailure();
       throw new Error("Maintenance subprocess cleanup is unconfirmed.");

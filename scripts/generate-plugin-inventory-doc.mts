@@ -148,6 +148,9 @@ function pluginReferenceLabel(record: PluginRecord) {
 }
 
 function humanizeId(value: string) {
+  if (value === "slack-huddles") {
+    return "Slack huddles";
+  }
   if (value === "teams-meetings") {
     return "Microsoft Teams meetings";
   }
@@ -245,12 +248,12 @@ function resolveDescription({ manifest, packageJson }: PluginSourceEntry) {
   if (channels.length > 0) {
     const channelLabel = displayList(channels);
     const channelNoun = channelLabel.toLowerCase().includes("channel") ? "" : " channel";
-    return `Adds the ${channelLabel}${channelNoun} surface for sending and receiving OpenClaw messages.`;
+    return `Adds the ${channelLabel}${channelNoun} surface for sending and receiving Paddy messages.`;
   }
 
   const providers = Array.isArray(manifest.providers) ? manifest.providers : [];
   if (providers.length > 0) {
-    return `Adds ${displayList(providers)} model provider support to OpenClaw.`;
+    return `Adds ${displayList(providers)} model provider support to Paddy.`;
   }
 
   const contracts = Object.keys(manifest.contracts ?? {}).toSorted((left, right) =>
@@ -282,7 +285,7 @@ function resolveDescription({ manifest, packageJson }: PluginSourceEntry) {
   }
 
   const packageDescription = normalizePackageDescription(packageJson.description);
-  return packageDescription ? `${packageDescription}.` : "Provides an OpenClaw plugin.";
+  return packageDescription ? `${packageDescription}.` : "Provides a Paddy plugin.";
 }
 
 function pushUniqueDocLink(values: DocLink[], value: DocLink | null) {
@@ -363,13 +366,13 @@ function resolveInstallRoute(packageJson: PluginPackageJson, status: PluginStatu
   if (status === "core") {
     // Explicit bundle ownership describes the current install surface; release flags may stage future publication.
     if (packageJson.openclaw?.build?.bundledDist === true) {
-      return "included in OpenClaw";
+      return "included in Paddy";
     }
     const release = packageJson.openclaw?.release;
     if (release?.publishToClawHub === true || release?.publishToNpm === true) {
-      return `included in OpenClaw, and also from ${resolveInstallRoute(packageJson, "external")}`;
+      return `included in Paddy, and also from ${resolveInstallRoute(packageJson, "external")}`;
     }
-    return "included in OpenClaw";
+    return "included in Paddy";
   }
   const install = packageJson.openclaw?.install;
   const release = packageJson.openclaw?.release;
@@ -508,16 +511,16 @@ ${renderSurface(record.surface)}${manualBlock ? `\n\n${manualBlock}` : ""}${rela
 function renderReferenceIndex(records: PluginRecord[]) {
   const referenceCount = records.filter(hasGeneratedReferencePage).length;
   return `---
-summary: "Pointer to the generated OpenClaw plugin reference pages"
+summary: "Pointer to the generated Paddy plugin reference pages"
 read_when:
-  - You need a reference page for a specific OpenClaw plugin
+  - You need a reference page for a specific Paddy plugin
   - You are auditing plugin docs coverage
 title: "Plugin reference"
 ---
 
 ${GENERATED_NOTICE}
 
-This section holds one reference page for each OpenClaw plugin. Each page states
+This section holds one reference page for each Paddy plugin. Each page states
 the package, the install route, and the surface the plugin adds.
 
 This page is a pointer, not the index. The browsable list of all
@@ -527,7 +530,7 @@ and description.
 
 ## How this page is built
 
-OpenClaw generates this page from the top-level
+Paddy generates this page from the top-level
 \`extensions/*/openclaw.plugin.json\` manifests. Package metadata enriches
 entries when \`package.json\` is present. Regenerate the page with:
 
@@ -652,7 +655,7 @@ function renderDocument(records: PluginRecord[]) {
   };
 
   return `---
-summary: "Generated inventory of OpenClaw plugins shipped in core, published externally, or kept source-only"
+summary: "Generated inventory of Paddy plugins shipped in core, published externally, or kept source-only"
 read_when:
   - You are deciding whether a plugin ships in the core npm package or installs separately
   - You are updating bundled plugin package metadata or release automation
@@ -662,7 +665,7 @@ title: "Plugin inventory"
 
 ${GENERATED_NOTICE}
 
-This page lists every OpenClaw plugin with its package, install route, and
+This page lists every Paddy plugin with its package, install route, and
 description. Operators use it to find a plugin and to see whether that plugin
 needs a separate install. Maintainers use it to check bundled plugin metadata
 and release automation.
@@ -670,7 +673,7 @@ and release automation.
 ## Definitions
 
 - **Core npm package:** built into the \`openclaw\` npm package and available without a separate plugin install.
-- **Official external package:** OpenClaw-maintained plugin omitted from the core npm package, kept in this official inventory, and installed on demand through ClawHub and/or npm.
+- **Official external package:** Paddy-maintained plugin omitted from the core npm package, kept in this official inventory, and installed on demand through ClawHub and/or npm.
 - **Source checkout only:** repo-local plugin omitted from published npm artifacts and not advertised as an installable package.
 
 Source checkouts are different from npm installs: after \`pnpm install\`, bundled
@@ -680,7 +683,7 @@ dependencies are available.
 ## Install a plugin
 
 Use the install route in each entry to decide whether install is needed. Plugins
-that say \`included in OpenClaw\` are already present in the core package.
+that say \`included in Paddy\` are already present in the core package.
 Official external packages need one install. Installation applies to the running
 local Gateway without restarting it; start the Gateway if it was stopped.
 
@@ -720,7 +723,7 @@ ${renderInventoryList(groups.source)}
 
 ## How this page is built
 
-OpenClaw generates this page from the top-level
+Paddy generates this page from the top-level
 \`extensions/*/openclaw.plugin.json\` manifests and the root npm package
 \`files\` exclusions. Optional \`package.json\` metadata enriches package and
 distribution details. Regenerate the page with:

@@ -12,7 +12,7 @@ Operators do not need it to run doctor.
 ## Structured health checks
 
 To inspect registry clone shape, run
-`openclaw doctor --lint --only core/doctor/project-clone-shape --json`.
+`paddy doctor --lint --only core/doctor/project-clone-shape --json`.
 This check also runs in ordinary Doctor and `--lint --all`. Unreadable clones
 produce a skipped-inspection warning without aborting the remaining checks.
 Repair guidance removes all partial-clone filters, refetches from origin

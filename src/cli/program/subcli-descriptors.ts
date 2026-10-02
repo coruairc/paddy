@@ -1,4 +1,5 @@
 // Sub-CLI descriptor catalog used for root help placeholders and lazy registration.
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { isCronMachineOutput } from "../cron-cli/output-mode.js";
 import { isDevicesMachineOutput } from "../devices-output-mode.js";
 import { isGatewayMachineOutput } from "../gateway-cli/output-mode.js";
@@ -9,9 +10,6 @@ import { isSkillsMachineOutput } from "../skills-output-mode.js";
 import { isSystemMachineOutput } from "../system-output-mode.js";
 import type { NamedCommandDescriptor } from "./command-group-descriptors.js";
 import { isPrivateQaCliEnabled } from "./private-qa-cli.js";
-
-/** Descriptor shape for root-level sub-CLI commands. */
-export type SubCliDescriptor = NamedCommandDescriptor;
 
 const subCliCommandDescriptors = [
   { name: "acp", description: "Run an ACP bridge backed by the Gateway", hasSubcommands: true },
@@ -85,7 +83,7 @@ const subCliCommandDescriptors = [
   {
     name: "devices",
     description:
-      "Device pairing and auth tokens (for mobile app setup codes, use `openclaw qr` instead)",
+      `Device pairing and auth tokens (for mobile app setup codes, use \`${CLI_NAME} qr\` instead)`,
     hasSubcommands: true,
     machineOutput: ({ argv }) => isDevicesMachineOutput(argv),
     parentDefaultHelp: true,
@@ -103,7 +101,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "connect",
-    description: "Connect this machine to an OpenClaw Gateway as a node",
+    description: `Connect this machine to a ${PRODUCT_NAME} Gateway as a node`,
     hasSubcommands: false,
   },
   {
@@ -173,7 +171,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "docs",
-    description: "Search the live OpenClaw docs",
+    description: `Search the live ${PRODUCT_NAME} docs`,
     hasSubcommands: false,
   },
   {
@@ -183,7 +181,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "proxy",
-    description: "Run the OpenClaw debug proxy and inspect captured traffic",
+    description: `Run the ${PRODUCT_NAME} debug proxy and inspect captured traffic`,
     hasSubcommands: true,
     machineOutput: ({ argv }) => isProxyMachineOutput(argv),
   },
@@ -214,7 +212,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "plugins",
-    description: "Manage OpenClaw plugins and extensions",
+    description: `Manage ${PRODUCT_NAME} plugins and extensions`,
     hasSubcommands: true,
     parentDefaultHelp: true,
   },
@@ -247,7 +245,7 @@ const subCliCommandDescriptors = [
   },
   {
     name: "update",
-    description: "Update OpenClaw and inspect update channel status",
+    description: `Update ${PRODUCT_NAME} and inspect update channel status`,
     hasSubcommands: true,
   },
   {
@@ -255,26 +253,22 @@ const subCliCommandDescriptors = [
     description: "Generate shell completion script",
     hasSubcommands: false,
   },
-] as const satisfies ReadonlyArray<SubCliDescriptor>;
+] as const satisfies ReadonlyArray<NamedCommandDescriptor>;
 
-/** Visible sub-CLI descriptors after private QA gating. */
 export const SUB_CLI_DESCRIPTORS = getSubCliEntriesCore();
 
-/** Return visible sub-CLI descriptors in help/registration order. */
-export function getSubCliEntriesCore(): ReadonlyArray<SubCliDescriptor> {
+export function getSubCliEntriesCore(): ReadonlyArray<NamedCommandDescriptor> {
   return isPrivateQaCliEnabled()
     ? subCliCommandDescriptors
     : subCliCommandDescriptors.filter((descriptor) => descriptor.name !== "qa");
 }
 
-/** Return visible sub-CLI names that own child subcommands. */
 export function getSubCliCommandsWithSubcommands(): string[] {
   return getSubCliEntriesCore()
     .filter((descriptor) => descriptor.hasSubcommands)
     .map((descriptor) => descriptor.name);
 }
 
-/** Return visible sub-CLI names whose parent command should show help by default. */
 export function getSubCliParentDefaultHelpCommands(): string[] {
   return getSubCliEntriesCore()
     .filter((descriptor) => descriptor.parentDefaultHelp)

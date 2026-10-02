@@ -1,13 +1,13 @@
 ---
-summary: "Host OpenClaw on Oracle Cloud's Always Free ARM tier"
+summary: "Host Paddy on Oracle Cloud's Always Free ARM tier"
 read_when:
-  - Setting up OpenClaw on Oracle Cloud
-  - Looking for free VPS hosting for OpenClaw
-  - Want 24/7 OpenClaw on a small server
+  - Setting up Paddy on Oracle Cloud
+  - Looking for free VPS hosting for Paddy
+  - Want 24/7 Paddy on a small server
 title: "Oracle Cloud"
 ---
 
-Run a persistent OpenClaw Gateway on Oracle Cloud's **Always Free** ARM tier (up to 4 OCPU, 24 GB RAM, 200 GB storage) at no cost.
+Run a persistent Paddy Gateway on Oracle Cloud's **Always Free** ARM tier (up to 4 OCPU, 24 GB RAM, 200 GB storage) at no cost.
 
 ## Prerequisites
 
@@ -52,7 +52,7 @@ Run a persistent OpenClaw Gateway on Oracle Cloud's **Always Free** ARM tier (up
 
   <Step title="Configure user and hostname">
     ```bash
-    sudo hostnamectl set-hostname openclaw
+    sudo hostnamectl set-hostname paddy
     sudo passwd ubuntu
     sudo loginctl enable-linger ubuntu
     ```
@@ -71,9 +71,9 @@ Run a persistent OpenClaw Gateway on Oracle Cloud's **Always Free** ARM tier (up
 
   </Step>
 
-  <Step title="Install OpenClaw">
+  <Step title="Install Paddy">
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
     source ~/.bashrc
     ```
 
@@ -86,13 +86,13 @@ Run a persistent OpenClaw Gateway on Oracle Cloud's **Always Free** ARM tier (up
     Use token auth with Tailscale Serve for secure remote access.
 
     ```bash
-    openclaw config set gateway.bind loopback
-    openclaw config set gateway.auth.mode token
-    openclaw doctor --generate-gateway-token
-    openclaw config set gateway.tailscale.mode serve
-    openclaw config set gateway.trustedProxies '["127.0.0.1"]'
+    paddy config set gateway.bind loopback
+    paddy config set gateway.auth.mode token
+    paddy doctor --generate-gateway-token
+    paddy config set gateway.tailscale.mode serve
+    paddy config set gateway.trustedProxies '["127.0.0.1"]'
 
-    openclaw gateway install
+    paddy gateway install
     systemctl --user restart openclaw-gateway.service
     ```
 
@@ -114,7 +114,7 @@ Run a persistent OpenClaw Gateway on Oracle Cloud's **Always Free** ARM tier (up
 
   <Step title="Verify">
     ```bash
-    openclaw --version
+    paddy --version
     systemctl --user status openclaw-gateway.service
     tailscale serve status
     curl http://localhost:18789
@@ -147,7 +147,7 @@ With the VCN locked down (only UDP 41641 open) and the Gateway bound to loopback
 Still recommended:
 
 - `chmod 700 ~/.openclaw` to restrict credential file permissions.
-- `openclaw security audit` for an OpenClaw-specific posture check.
+- `paddy security audit` for a Paddy-specific posture check.
 - Regular `sudo apt update && sudo apt upgrade` for OS patches.
 - Review devices in the [Tailscale admin console](https://login.tailscale.com/admin) periodically.
 
@@ -166,7 +166,7 @@ sudo systemctl disable --now ssh
 
 ## ARM notes
 
-The Always Free tier is ARM (`aarch64`). Most OpenClaw features work fine; a small number of native binaries need ARM builds:
+The Always Free tier is ARM (`aarch64`). Most Paddy features work fine; a small number of native binaries need ARM builds:
 
 - Node.js, Telegram, WhatsApp (Baileys): pure JavaScript, no issues.
 - Most npm packages with native code: pre-built `linux-arm64` artifacts available.
@@ -176,7 +176,7 @@ Verify the architecture with `uname -m` (should print `aarch64`). For binaries w
 
 ## Persistence and backups
 
-OpenClaw state lives under:
+Paddy state lives under:
 
 - `~/.openclaw/` -- `openclaw.json`, shared and per-agent SQLite auth stores, channel/provider state, and session data.
 - `~/.openclaw/workspace/` -- the agent workspace (SOUL.md, memory, artifacts).
@@ -184,8 +184,8 @@ OpenClaw state lives under:
 These survive reboots. To create a backup archive:
 
 ```bash
-openclaw backup create
-openclaw backup restore <archive.tar.gz> --target <fresh-directory>
+paddy backup create
+paddy backup restore <archive.tar.gz> --target <fresh-directory>
 ```
 
 Absolute symbolic links keep their original target locations, including links
@@ -220,7 +220,7 @@ Then open `http://localhost:18789`.
 
 - [Channels](/channels) -- connect Telegram, WhatsApp, Discord, and more
 - [Gateway configuration](/gateway/configuration) -- all config options
-- [Updating](/install/updating) -- keep OpenClaw up to date
+- [Updating](/install/updating) -- keep Paddy up to date
 
 ## Related
 

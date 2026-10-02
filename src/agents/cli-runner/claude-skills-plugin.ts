@@ -1,22 +1,17 @@
 /**
  * Materializes selected OpenClaw skills as a temporary Claude CLI plugin.
  */
-import { accessSync } from "node:fs";
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolvePreferredOpenClawTmpDir } from "../../infra/tmp-openclaw-dir.js";
 import type { SkillSnapshot } from "../../skills/types.js";
 import { cliBackendLog } from "./log.js";
 
 const CLAUDE_CLI_BACKEND_ID = "claude-cli";
 const OPENCLAW_CLAUDE_PLUGIN_NAME = "openclaw-skills";
-
-type MaterializedSkill = {
-  name: string;
-  sourceDir: string;
-  targetDirName: string;
-};
 
 function sanitizeSkillDirName(name: string, used: Set<string>): string {
   const base =
@@ -32,43 +27,6 @@ function sanitizeSkillDirName(name: string, used: Set<string>): string {
   }
   used.add(candidate);
   return candidate;
-}
-
-/** Returns whether a resolved skill file is readable before linking it into the Claude plugin. */
-function isClaudeCliSkillFileAccessible(skillFilePath: string): boolean {
-  try {
-    accessSync(skillFilePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function collectClaudePluginSkills(snapshot?: SkillSnapshot): Promise<MaterializedSkill[]> {
-  const skills = snapshot?.resolvedSkills ?? [];
-  if (skills.length === 0) {
-    return [];
-  }
-
-  const usedTargetNames = new Set<string>();
-  const materialized: MaterializedSkill[] = [];
-  for (const skill of skills) {
-    const name = skill.name?.trim();
-    const skillFilePath = skill.filePath?.trim();
-    if (!name || !skillFilePath) {
-      continue;
-    }
-    if (!isClaudeCliSkillFileAccessible(skillFilePath)) {
-      cliBackendLog.warn(`claude skill plugin skipped missing skill file: ${skillFilePath}`);
-      continue;
-    }
-    materialized.push({
-      name,
-      sourceDir: path.dirname(skillFilePath),
-      targetDirName: sanitizeSkillDirName(name, usedTargetNames),
-    });
-  }
-  return materialized;
 }
 
 async function linkOrCopySkillDir(params: { sourceDir: string; targetDir: string }) {
@@ -103,7 +61,25 @@ export async function prepareClaudeCliSkillsPlugin(params: {
     return { args: [], cleanup: async () => {} };
   }
 
-  const skills = await collectClaudePluginSkills(params.skillsSnapshot);
+  const usedTargetNames = new Set<string>();
+  const skills = (params.skillsSnapshot?.resolvedSkills ?? []).flatMap((skill) => {
+    const name = skill.name?.trim();
+    const skillFilePath = skill.filePath?.trim();
+    if (!name || !skillFilePath) {
+      return [];
+    }
+    if (!existsSync(skillFilePath)) {
+      cliBackendLog.warn(`claude skill plugin skipped missing skill file: ${skillFilePath}`);
+      return [];
+    }
+    return [
+      {
+        name,
+        sourceDir: path.dirname(skillFilePath),
+        targetDirName: sanitizeSkillDirName(name, usedTargetNames),
+      },
+    ];
+  });
   if (skills.length === 0) {
     return { args: [], cleanup: async () => {} };
   }
@@ -120,7 +96,7 @@ export async function prepareClaudeCliSkillsPlugin(params: {
   const manifest = {
     name: OPENCLAW_CLAUDE_PLUGIN_NAME,
     version: "0.0.0",
-    description: "Session-scoped OpenClaw skills selected for this agent run.",
+    description: `Session-scoped ${PRODUCT_NAME} skills selected for this agent run.`,
     skills: "./skills",
   };
   await fs.writeFile(

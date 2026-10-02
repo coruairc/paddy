@@ -271,6 +271,11 @@ function writeLedger(params: {
   runOpenClawStateWriteTransaction(
     ({ db }) => {
       const kysely = getNodeSqliteKysely<LedgerDatabase>(db);
+      const completion = {
+        finished_at: params.now,
+        status: "completed",
+        report_json: reportJson,
+      };
       executeSqliteQuerySync(
         db,
         kysely
@@ -278,18 +283,20 @@ function writeLedger(params: {
           .values({
             id: runId,
             started_at: params.now,
-            finished_at: params.now,
-            status: "completed",
-            report_json: reportJson,
+            ...completion,
           })
-          .onConflict((conflict) =>
-            conflict.column("id").doUpdateSet({
-              finished_at: params.now,
-              status: "completed",
-              report_json: reportJson,
-            }),
-          ),
+          .onConflict((conflict) => conflict.column("id").doUpdateSet(completion)),
       );
+      const sourceCompletion = {
+        source_path: params.stateDir,
+        source_sha256: identityHash,
+        source_record_count: params.outcomes.length,
+        last_run_id: runId,
+        status: "completed",
+        imported_at: params.now,
+        removed_source: 1,
+        report_json: reportJson,
+      };
       executeSqliteQuerySync(
         db,
         kysely
@@ -297,29 +304,11 @@ function writeLedger(params: {
           .values({
             source_key: SOURCE_KEY,
             migration_kind: MIGRATION_KIND,
-            source_path: params.stateDir,
             target_table: "session_nodes",
-            source_sha256: identityHash,
             source_size_bytes: null,
-            source_record_count: params.outcomes.length,
-            last_run_id: runId,
-            status: "completed",
-            imported_at: params.now,
-            removed_source: 1,
-            report_json: reportJson,
+            ...sourceCompletion,
           })
-          .onConflict((conflict) =>
-            conflict.column("source_key").doUpdateSet({
-              source_path: params.stateDir,
-              source_sha256: identityHash,
-              source_record_count: params.outcomes.length,
-              last_run_id: runId,
-              status: "completed",
-              imported_at: params.now,
-              removed_source: 1,
-              report_json: reportJson,
-            }),
-          ),
+          .onConflict((conflict) => conflict.column("source_key").doUpdateSet(sourceCompletion)),
       );
     },
     { env: params.env },
@@ -383,7 +372,7 @@ async function migrateLegacyMainSessionKeysInternal(
       outcomes: [{ kind: "not-armed", detail: arming.reason }],
       warnings: unresolved
         ? [
-            `session: legacy ${legacyAgentId} rows have no unambiguous configured owner; preserve them and run openclaw doctor --fix after assigning agents.defaults.sessionStore.agentId`,
+            `session: legacy ${legacyAgentId} rows have no unambiguous configured owner; preserve them and run paddy doctor --fix after assigning agents.defaults.sessionStore.agentId`,
           ]
         : [],
     };
@@ -407,12 +396,12 @@ async function migrateLegacyMainSessionKeysInternal(
   const warnings = [...base.warnings];
   for (const unreadable of resolved.unreadable) {
     warnings.push(
-      `session: could not inspect ${unreadable.paths?.[0] ?? "session store"}: ${unreadable.detail ?? "unknown error"}; run openclaw doctor --fix`,
+      `session: could not inspect ${unreadable.paths?.[0] ?? "session store"}: ${unreadable.detail ?? "unknown error"}; run paddy doctor --fix`,
     );
   }
   for (const pathname of resolved.jsonPaths) {
     warnings.push(
-      `session: deferred legacy-main session migration for JSON store ${pathname}; run openclaw doctor --fix`,
+      `session: deferred legacy-main session migration for JSON store ${pathname}; run paddy doctor --fix`,
     );
   }
   const identityBase = { legacyAgentId, mainKey, ownerAgentId };
@@ -443,7 +432,7 @@ async function migrateLegacyMainSessionKeysInternal(
         ownerAgentId,
         outcomes: [{ kind: "store-unreadable", detail: String(error) }],
         warnings: [
-          `session: could not read the legacy-main migration ledger: ${String(error)}; run openclaw doctor --fix`,
+          `session: could not read the legacy-main migration ledger: ${String(error)}; run paddy doctor --fix`,
         ],
       };
     }
@@ -462,13 +451,13 @@ async function migrateLegacyMainSessionKeysInternal(
       }
       outcomes.push({ kind: "store-unreadable", detail: String(error), paths: [store.path] });
       warnings.push(
-        `session: could not inspect ${store.path}: ${String(error)}; run openclaw doctor --fix`,
+        `session: could not inspect ${store.path}: ${String(error)}; run paddy doctor --fix`,
       );
     },
   });
   if (params.mode === "detect" && allLegacy.length > 0) {
     warnings.push(
-      `session: ${allLegacy.length} retained legacy ${legacyAgentId} session claim(s) require Doctor repair; run openclaw doctor --fix`,
+      `session: ${allLegacy.length} retained legacy ${legacyAgentId} session claim(s) require Doctor repair; run paddy doctor --fix`,
     );
   }
 
@@ -662,7 +651,7 @@ export async function migrateLegacyMainSessionKeys(params: {
       outcomes: [{ kind: "store-unreadable", detail: String(error) }],
       ...(arming.armed ? { ownerAgentId: arming.ownerAgentId } : {}),
       warnings: [
-        `session: legacy-main session migration deferred: ${String(error)}; run openclaw doctor --fix`,
+        `session: legacy-main session migration deferred: ${String(error)}; run paddy doctor --fix`,
       ],
     };
   }

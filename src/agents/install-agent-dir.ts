@@ -70,7 +70,7 @@ export function resolveInstallAgentDir(
         const inspection = inspectOpenClawAgentDatabaseOwner(databasePath);
         if (inspection.status !== "owned") {
           throw new Error(
-            `Cannot read the agent database owner at ${databasePath}. Run openclaw doctor --fix.`,
+            `Cannot read the agent database owner at ${databasePath}. Run paddy doctor --fix.`,
           );
         }
         return inspection.agentId;

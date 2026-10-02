@@ -1,8 +1,6 @@
-// Qa Matrix plugin module implements recovery scenario runtime E2EE behavior.
 import { randomUUID } from "node:crypto";
 import { truncateUtf16Safe } from "openclaw/plugin-sdk/text-utility-runtime";
 import { createMatrixQaClient } from "../substrate/client.js";
-import { createMatrixQaE2eeScenarioClient } from "../substrate/e2ee-client.js";
 import {
   assertMatrixQaExpectedBootstrapFailure,
   assertMatrixQaFaultedRecoveryOwnerVerificationRequired,
@@ -12,10 +10,10 @@ import {
 } from "./scenario-runtime-e2ee-room.js";
 import {
   assertMatrixQaBootstrapSucceeded,
+  createMatrixQaE2eeAccountClient,
   ensureMatrixQaE2eeOwnDeviceVerified,
   MATRIX_QA_OWNER_SIGNATURE_UPLOAD_BLOCKED_RULE_ID,
   MATRIX_QA_ROOM_KEY_BACKUP_VERSION_ENDPOINT,
-  requireMatrixQaE2eeOutputDir,
   requireMatrixQaPassword,
   resolveMatrixQaE2eeScenarioGroupRoom,
   waitForMatrixQaNonEmptyRoomKeyRestore,
@@ -85,23 +83,19 @@ export async function runMatrixQaE2eeRecoveryKeyLifecycleScenario(
         baseUrl: context.baseUrl,
       });
       const recoveryDevice = await loginClient.loginWithPassword({
-        deviceName: "OpenClaw Matrix QA Recovery Restore Device",
+        deviceName: "Paddy Matrix QA Recovery Restore Device",
         password: driverPassword,
         userId: context.driverUserId,
       });
       if (!recoveryDevice.deviceId) {
         throw new Error("Matrix E2EE recovery login did not return a secondary device id");
       }
-      const recoveryClient = await createMatrixQaE2eeScenarioClient({
+      const recoveryClient = await createMatrixQaE2eeAccountClient(context, {
         accessToken: recoveryDevice.accessToken,
         actorId: `driver-recovery-${randomUUID().slice(0, 8)}`,
-        baseUrl: context.baseUrl,
         deviceId: recoveryDevice.deviceId,
-        observedEvents: context.observedEvents,
-        outputDir: requireMatrixQaE2eeOutputDir(context),
         password: recoveryDevice.password,
         scenarioId: "matrix-e2ee-recovery-key-lifecycle",
-        timeoutMs: context.timeoutMs,
         userId: recoveryDevice.userId,
       });
       let cleanupRecoveryDevice = true;
@@ -209,7 +203,7 @@ export async function runMatrixQaE2eeRecoveryOwnerVerificationRequiredScenario(
         baseUrl: context.baseUrl,
       });
       const recoveryDevice = await loginClient.loginWithPassword({
-        deviceName: "OpenClaw Matrix QA Owner Verification Required Device",
+        deviceName: "Paddy Matrix QA Owner Verification Required Device",
         password: driverPassword,
         userId: context.driverUserId,
       });

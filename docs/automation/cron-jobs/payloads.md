@@ -22,7 +22,7 @@ Every job carries exactly one payload kind, chosen by flag:
 | Command       | `--command <shell>` or `--command-argv <json>` | A shell/process on the Gateway host, no model call         |
 | Script        | `--script <file\|->`                           | A headless code-mode script using the owning agent's tools |
 
-System-owned monitor jobs are gateway-converged and cannot be created or edited through the CLI or API. The `heartbeat` kind creates one heartbeat monitor job per heartbeat-enabled agent (see [Heartbeat](/gateway/heartbeat)). The weekly Skill Workshop review is a normal isolated `agentTurn` job with a reserved declaration key. Both appear in `openclaw cron list`; use `--all` to include disabled rows.
+System-owned monitor jobs are gateway-converged and cannot be created or edited through the CLI or API. The `heartbeat` kind creates one heartbeat monitor job per heartbeat-enabled agent (see [Heartbeat](/gateway/heartbeat)). The weekly Skill Workshop review is a normal isolated `agentTurn` job with a reserved declaration key. Both appear in `paddy cron list`; use `--all` to include disabled rows.
 The `skillCollectionReview` payload kind is not accepted. Stored rows that use it are replaced with the canonical review job.
 
 Skill collection review runs every 7 days. It is enabled when `skills.workshop.autonomous.mode` is `auto`; `propose` and `off` keep the system-owned job disabled. In `auto` mode, a review stays disabled when every statically resolvable model candidate is known to lack rooted execution support. Its display name includes `no-rooted-runtime`; inspect disabled rows with `openclaw cron list --all --json`. A supported fallback keeps the job enabled. Stored session model/runtime preferences and unknown eligibility also keep it enabled, with final checks at execution time. The Gateway converges these jobs at startup and after config reload. Convergence clears the reason and restores auto-mode enablement when the configured chain becomes eligible or unknown. Scheduled reviews require automations. When `cron.enabled` is `false` or `OPENCLAW_SKIP_CRON=1`, the Gateway logs a startup warning and does not run scheduled reviews. There is no separate weekly Gateway timer.
@@ -114,10 +114,10 @@ and action, and the bot's required Discord permissions. Use an updated Discord p
 [scheduled write support](/plugins/sdk-channel-plugins#scheduled-channel-administration).
 
 Account-bound jobs can use Discord `channel-edit` when an authenticated Discord
-turn has authorized their current definition. OpenClaw privately retains that
+turn has authorized their current definition. Paddy privately retains that
 requester's Discord account and sender identity, and Discord's current channel
 or thread permissions must allow the edit. The original session creator and a
-configured OpenClaw owner are not substitutes for those native permissions.
+configured Paddy owner are not substitutes for those native permissions.
 
 Executable edits from the job's owning conversation and account bind the job to
 the current authorized editor. This includes the prompt, model, name, schedule,
@@ -141,7 +141,7 @@ disabling or narrowing the job itself stops later requests and retries in the
 current invocation. A confirmed write still returns its result if authority ends
 while the response is pending.
 
-`--model` sets the job's primary model; it does not replace a session `/model` override, so configured fallback chains still apply on top of it. An unresolved or disallowed model fails the run with an explicit validation error rather than silently falling back to the default. If a job has `--model` but no explicit or configured fallback list, OpenClaw passes an empty fallback override instead of silently appending the agent primary as a hidden retry target.
+`--model` sets the job's primary model; it does not replace a session `/model` override, so configured fallback chains still apply on top of it. An unresolved or disallowed model fails the run with an explicit validation error rather than silently falling back to the default. If a job has `--model` but no explicit or configured fallback list, Paddy passes an empty fallback override instead of silently appending the agent primary as a hidden retry target.
 
 Pick the model for the job's difficulty, not the agent's default. Routine
 automation - summaries, triage, classification, status checks - runs well on a
@@ -162,7 +162,7 @@ When a runtime reports token usage without a cost, automation estimates use the 
 
 If a run hits a live model-switch handoff, the scheduler retries with the switched provider/model and persists that selection (and any new auth profile) for the active run. Retries are bounded: after the initial attempt plus 2 switch retries, the scheduler aborts instead of looping.
 
-Before an isolated run starts, OpenClaw checks reachable local endpoints for configured `api: "ollama"` and `api: "openai-completions"` providers whose `baseUrl` is loopback, private-network, or `.local`. This preflight walks the job's configured fallback chain and only marks the run `skipped` once every candidate is unreachable; `--fallbacks ""` keeps that walk strict to just the primary model. A down endpoint records the run as `skipped` with a clear error instead of starting a model call. The result is cached for 5 minutes per endpoint (not per job or model), so many due jobs sharing a dead local Ollama/vLLM/SGLang/LM Studio server cost one probe instead of a request storm. Skipped preflight runs do not increment execution-error backoff; set `failureAlert.includeSkipped` to opt into repeated skip alerts.
+Before an isolated run starts, Paddy checks reachable local endpoints for configured `api: "ollama"` and `api: "openai-completions"` providers whose `baseUrl` is loopback, private-network, or `.local`. This preflight walks the job's configured fallback chain and only marks the run `skipped` once every candidate is unreachable; `--fallbacks ""` keeps that walk strict to just the primary model. A down endpoint records the run as `skipped` with a clear error instead of starting a model call. The result is cached for 5 minutes per endpoint (not per job or model), so many due jobs sharing a dead local Ollama/vLLM/SGLang/LM Studio server cost one probe instead of a request storm. Skipped preflight runs do not increment execution-error backoff; set `failureAlert.includeSkipped` to opt into repeated skip alerts.
 
 Client-side preflight timeouts are not cached. The next scheduled run probes the endpoint again instead of inheriting a timeout from another run.
 
@@ -177,7 +177,7 @@ Command payloads are an operator-admin Gateway automation surface, not an agent 
 </Note>
 
 ```bash
-openclaw automations create "*/15 * * * *" \
+paddy automations create "*/15 * * * *" \
   --name "Queue depth probe" \
   --command "scripts/check-queue.sh" \
   --command-cwd "/srv/app" \
@@ -197,7 +197,7 @@ When the run deadline stops a command, run history retains its captured output a
 Script payloads run headlessly in the same code-mode executor as trigger scripts, without starting a conversational agent turn. They are available by default; setting `cron.triggers.enabled: false` disables creation and execution of script payloads together with condition-trigger scripts and stream schedules. Script jobs support only `main` and `isolated` session targets.
 
 ```bash
-openclaw automations create "0 * * * *" \
+paddy automations create "0 * * * *" \
   --name "Hourly queue check" \
   --script ./automation/check-queue.js \
   --script-timeout-seconds 300 \
@@ -218,7 +218,7 @@ The script may return an object with these optional fields:
 Throws, timeouts, exhausted tool budgets, invalid results, and `nextCheck` without pacing are normal automation run errors: they enter run history, backoff, and failure-alert handling without persisting returned state.
 
 Plugin reloads invalidate cached script preparation. If a plugin retires during setup,
-OpenClaw refreshes the tools once before starting the script, within the original
+Paddy refreshes the tools once before starting the script, within the original
 deadline. A failure after the script starts never triggers this setup retry.
 If the refresh fails, run history and failure alerts explain that automatic setup
 recovery failed and the script did not run.
@@ -232,7 +232,7 @@ Gateway restart. The completed run still retains its history.
 ### Codex apps in scheduled automations
 
 Codex-created automations can retain the app IDs and permission ceiling
-available to the authenticated creator thread. At execution, OpenClaw requires
+available to the authenticated creator thread. At execution, Paddy requires
 the same prepared Codex profile and account, then narrows the stored cap against
 current app policy. Revoked apps, account/runtime changes, and interactive
 approval requirements fail closed with a recovery message; they never fall
@@ -254,13 +254,17 @@ Agent-turn jobs default to the creating conversation when the create request car
   <Accordion title="Main session vs current vs isolated vs custom">
     **Main session** jobs enqueue a system event into the owning agent's main session and optionally wake the heartbeat (`--wake now` or `--wake next-heartbeat`). The event is processed with that session's existing context and last delivery context. Internal automation turns do not extend daily or idle reset freshness; only visible user activity updates session freshness. **Current-session** jobs execute in a detached run session, read a bounded tail of the conversation captured when the job was created, and commit the final visible assistant result back to that exact conversation. **Isolated** jobs run a dedicated agent turn with a fresh session. **Custom sessions** (`session:xxx`) persist context across runs, enabling workflows like daily standups that build on previous summaries.
 
+    `current` binds conversation context and result delivery, not the original agent execution or its worktree. The detached run uses the scheduled agent's workspace and captured tool restrictions. A task-specific checkout path in the prompt does not grant access to it. Before using a job to continue repository work, verify that its execution environment can access the required checkout and tools; otherwise keep the work with its existing execution owner. A result committed to the conversation does not itself resume the original agent.
+
+    Custom-session agent turns use the existing session’s saved workspace and working directory, including its managed worktree. Requester-scoped jobs may use a saved workspace only for their owning conversation; trusted operator-scheduled jobs can target another conversation’s saved workspace. A missing, retired, or mismatched worktree stops the run instead of falling back to the agent’s default workspace. Filesystem containment and the job’s tool restrictions still apply; a path in the job prompt does not grant access. Persistent-session rollover keeps the saved workspace binding, permission mode, containment root, and inherited tool restrictions; detached runs do not inherit this workspace context. A new `session:custom-id` without an existing session starts in the configured agent workspace. Use `delivery: { mode: "none" }` without an external target for quiet named-session work that needs no runner fallback announcement.
+
     Main-session automation events are self-contained system-event reminders. They do not automatically include the default heartbeat prompt or the heartbeat monitor scratch; say it explicitly in the automation event text if a reminder should consult that context.
 
     Main-session jobs use the owning session's delivery context, not a separate chat announce target. Edits that enable announce delivery, or set a chat target without explicitly choosing no delivery, are rejected without changing the job. Use an isolated job with `--message` and `--announce` for chat delivery. Primary webhook delivery remains supported for main-session jobs.
 
   </Accordion>
   <Accordion title="What 'fresh session' means for isolated jobs">
-    A new transcript/session id per run. OpenClaw carries safe preferences (thinking/fast/verbose settings, labels, explicit user-selected model/auth overrides), but does not inherit ambient conversation context from an older automation session row: channel/group routing, send or queue policy, elevation, origin, or ACP runtime binding. Use `current` or `session:<id>` when a recurring job should deliberately build on the same conversation context.
+    A new transcript/session id per run. Paddy carries safe preferences (thinking/fast/verbose settings, labels, explicit user-selected model/auth overrides), but does not inherit ambient conversation context from an older automation session row: channel/group routing, send or queue policy, elevation, origin, or ACP runtime binding. Use `current` or `session:<id>` when a recurring job should deliberately build on the same conversation context.
   </Accordion>
   <Accordion title="Unattended run contract">
     Isolated automation and hook agent turns are explicitly unattended: no one is present to clarify or approve. The final reply must be the deliverable rather than a plan, acknowledgement, or request for input. The agent returns `NO_REPLY` when nothing needs doing and states failures plainly; the scheduler owns retry and failure-alert policy.
@@ -269,9 +273,9 @@ Agent-turn jobs default to the creating conversation when the create request car
 
   </Accordion>
   <Accordion title="Subagent and Discord delivery">
-    When isolated automation runs orchestrate subagents, delivery prefers the final descendant output over stale parent interim text. If descendant tasks are still running or settling, OpenClaw suppresses that partial parent update instead of announcing it. This includes a yielded orchestrator waiting for its successor to start and completed descendants whose result delivery is still pending. The wait shares the existing run deadline and stops on cancellation.
+    When isolated automation runs orchestrate subagents, delivery prefers the final descendant output over stale parent interim text. If descendant tasks are still running or settling, Paddy suppresses that partial parent update instead of announcing it. This includes a yielded orchestrator waiting for its successor to start and completed descendants whose result delivery is still pending. The wait shares the existing run deadline and stops on cancellation.
 
-    For text-only Discord announce targets, OpenClaw sends the canonical final assistant text once instead of replaying both streamed/intermediate text and the final answer. Media and structured Discord payloads are still delivered separately so attachments and components are not dropped.
+    For text-only Discord announce targets, Paddy sends the canonical final assistant text once instead of replaying both streamed/intermediate text and the final answer. Media and structured Discord payloads are still delivered separately so attachments and components are not dropped.
 
   </Accordion>
 </AccordionGroup>

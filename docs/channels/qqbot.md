@@ -1,13 +1,13 @@
 ---
 summary: "QQ Bot setup, config, and usage"
 read_when:
-  - You want to connect OpenClaw to QQ
+  - You want to connect Paddy to QQ
   - You need QQ Bot credential setup
   - You want QQ Bot group or private chat support
 title: QQ bot
 ---
 
-QQ Bot connects to OpenClaw via the official QQ Bot API (WebSocket gateway).
+QQ Bot connects to Paddy via the official QQ Bot API (WebSocket gateway).
 C2C private chat and group `@`-mentions are the primary chat types, with rich
 media (images, voice, video, files). Guild channel messages are supported for
 text and remote-URL images only; voice, video, file uploads, and local/Base64
@@ -19,11 +19,11 @@ Status: official downloadable plugin.
 ## Install
 
 ```bash
-openclaw plugins install @tencent-connect/openclaw-qqbot
+paddy plugins install @tencent-connect/paddy-qqbot
 ```
 
 If the bot was installed as `@openclaw/qqbot` under plugin id `qqbot`,
-`openclaw plugins update qqbot` and `openclaw update` rewrite it to
+`paddy plugins update qqbot` and `paddy update` rewrite it to
 `@tencent-connect/openclaw-qqbot` under plugin id `openclaw-qqbot`. Channel
 config stays under `channels.qqbot`.
 
@@ -41,26 +41,26 @@ Save the AppSecret before leaving the QQ Open Platform page; otherwise, you will
 4. Add the channel:
 
 ```bash
-openclaw channels add --channel qqbot --token "AppID:AppSecret"
+paddy channels add --channel qqbot --token "AppID:AppSecret"
 ```
 
-5. Check `openclaw channels status --probe`; start the Gateway if it is offline. Config changes follow [hot reload](/gateway/configuration/hot-reload).
+5. Check `paddy channels status --probe`; start the Gateway if it is offline. Config changes follow [hot reload](/gateway/configuration/hot-reload).
 
 ## Inbound durability
 
-For QQ gateway turn events, OpenClaw persists the raw event before advancing the saved gateway resume sequence. Pending or retryable turns survive a Gateway restart, remain serialized per conversation, and use the provider event ID to suppress duplicate queue entries while the active or retained completion record exists.
+For QQ gateway turn events, Paddy persists the raw event before advancing the saved gateway resume sequence. Pending or retryable turns survive a Gateway restart, remain serialized per conversation, and use the provider event ID to suppress duplicate queue entries while the active or retained completion record exists.
 
-If durable admission fails, OpenClaw terminates the current gateway socket without advancing the sequence. The reconnect/resume path can then request the uncommitted event again. Delivery is still at least once across the queue-to-agent boundary, so a crash during handoff can replay a turn.
+If durable admission fails, Paddy terminates the current gateway socket without advancing the sequence. The reconnect/resume path can then request the uncommitted event again. Delivery is still at least once across the queue-to-agent boundary, so a crash during handoff can replay a turn.
 
 Interactive setup:
 
 ```bash
-openclaw channels add
+paddy channels add
 ```
 
 The wizard also offers QR-code binding as an alternative to typing AppID/AppSecret
 manually: scan the code with the phone app tied to the target QQ Bot to complete
-binding. OpenClaw persists the returned credentials under the account's config
+binding. Paddy persists the returned credentials under the account's config
 scope.
 
 ## Configure
@@ -138,13 +138,13 @@ For a file-backed AppSecret, configure a `singleValue` file provider:
 
 Notes:
 
-- `openclaw channels add --channel qqbot --token-file ...` sets the AppSecret
+- `paddy channels add --channel qqbot --token-file ...` sets the AppSecret
   only; `appId` must already be set in config or `QQBOT_APP_ID`. Run
-  `openclaw doctor --fix` afterward to migrate the legacy file setting.
+  `paddy doctor --fix` afterward to migrate the legacy file setting.
 - `clientSecret` accepts plaintext or an environment-, file-, exec-, or
-  store-backed SecretRef. OpenClaw resolves the reference before handing the
+  store-backed SecretRef. Paddy resolves the reference before handing the
   credential to the QQ Bot plugin.
-- `clientSecretFile` is a migration-only legacy setting. `openclaw doctor --fix`
+- `clientSecretFile` is a migration-only legacy setting. `paddy doctor --fix`
   replaces it with a file-backed `clientSecret` SecretRef. New configurations
   should use `clientSecret` directly.
 - Top-level credentials and environment fallbacks belong only to the default
@@ -169,7 +169,7 @@ Notes:
 - `streaming.nativeTransport: true` streams C2C (DM) replies through QQ's
   official `stream_messages` API; group/channel targets are unaffected.
 - Legacy `streaming: true|false` scalars and the `streaming.c2cStreamApi` key
-  migrate to this shape via `openclaw doctor --fix`.
+  migrate to this shape via `paddy doctor --fix`.
 - `/bot-streaming on|off` toggles the same config from a DM.
 
 ### Access policy
@@ -191,7 +191,7 @@ Notes:
 
 ### Multi-account setup
 
-Run multiple QQ bots under a single OpenClaw instance:
+Run multiple QQ bots under a single Paddy instance:
 
 ```json5
 {
@@ -230,7 +230,7 @@ unchanged account can retain its last-known-good credential; see
 Add a second bot via CLI:
 
 ```bash
-openclaw channels add --channel qqbot --account bot2 --token "222222222:secret-of-bot-2"
+paddy channels add --channel qqbot --account bot2 --token "222222222:secret-of-bot-2"
 ```
 
 ### Group chats
@@ -287,7 +287,7 @@ entry overrides those defaults for one group. Group settings:
 | `safety` | `/help`, `/btw`, `/stop` stay visible in the group; sensitive commands (`/config`, `/tools`, `/bash`, etc.) must be run in private chat.      |
 | `strict` | Only group-session controls needed for strict operation are allowed. `/stop` still works so an authorized sender can interrupt an active run. |
 
-Old QQBot `toolPolicy` entries are retired. Run `openclaw doctor --fix` to migrate them to `tools`.
+Old QQBot `toolPolicy` entries are retired. Run `paddy doctor --fix` to migrate them to `tools`.
 
 Activation modes are `mention` and `always`. `requireMention: true` maps to
 `mention`; `requireMention: false` maps to `always`. A session-level activation
@@ -374,7 +374,7 @@ Built-in commands intercepted before the AI queue:
 | `/bot-ping`          | —         | any          | Latency test                                                                   |
 | `/bot-help`          | —         | any          | List all commands                                                              |
 | `/bot-me`            | —         | private only | Show the sender's QQ user ID (openid) for `allowFrom` / `groupAllowFrom` setup |
-| `/bot-version`       | —         | private only | Show the OpenClaw framework version and plugin version                         |
+| `/bot-version`       | —         | private only | Show the Paddy framework version and plugin version                            |
 | `/bot-upgrade`       | —         | private only | Show the QQBot upgrade guide link                                              |
 | `/bot-approve`       | allowlist | private only | Manage command-execution approval config (on / off / always / reset / status)  |
 | `/bot-logs`          | allowlist | private only | Export recent gateway logs as a file                                           |

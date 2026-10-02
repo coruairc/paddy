@@ -40,7 +40,7 @@ describe("daemon action JSON hints", () => {
     );
   });
 
-  it.each(["openclaw --profile work gateway install", "openclaw --container demo node install"])(
+  it.each(["paddy --profile work gateway install", "paddy --container demo node install"])(
     "classifies scoped Gateway and node service install hints: %s",
     (hint) => {
       const writeJson = vi.spyOn(defaultRuntime, "writeJson").mockImplementation(() => {});

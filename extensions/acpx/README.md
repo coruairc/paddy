@@ -1,8 +1,8 @@
 # @openclaw/acpx
 
-Official ACP runtime backend for OpenClaw.
+Official ACP runtime backend for Paddy.
 
-ACPx lets OpenClaw run external coding harnesses through the Agent Client Protocol while OpenClaw still owns sessions, channels, delivery, permissions, and Gateway state.
+ACPx lets Paddy run external coding harnesses through the Agent Client Protocol while Paddy still owns sessions, channels, delivery, permissions, and Gateway state.
 
 ## Install
 
@@ -12,18 +12,24 @@ openclaw plugins install @openclaw/acpx
 
 Restart the Gateway after installing or updating the plugin.
 
+The generated Codex and Claude ACP wrappers prefer the installed adapter while its
+entry file exists. If plugin capture cleanup removes that file, the next launch
+uses the existing pinned `npm exec` / `npx` fallback. This may require registry
+access when the pinned package is not cached. Restart the Gateway after updating
+to regenerate wrappers written by an older plugin version.
+
 ## What it provides
 
 - ACP-backed agent runtime sessions.
 - Plugin-owned session and transport management.
-- MCP bridge helpers for OpenClaw tools and plugin tools.
+- MCP bridge helpers for Paddy tools and plugin tools.
 - Static runtime assets used by the ACP process bridge.
 
 ## Native agents in the model picker
 
 Install GitHub Copilot CLI, Kilo Code, OpenCode, Pi ACP, or Qwen Code and complete its login on the Gateway host,
 then refresh the model catalog. Choose one of its models to use that agent in ordinary chat.
-The agent owns its credentials; OpenClaw keeps the conversation transcript and asks for approval
+The agent owns its credentials; Paddy keeps the conversation transcript and asks for approval
 when the agent requests permission. Pi does not request tool approval unless an extension adds it.
 The same selection works in the web app and channels.
 
@@ -41,13 +47,13 @@ executables; it does not prove that an agent is logged in or can serve a model.
 
 For GitHub Copilot CLI, run `copilot login` under the Gateway's OS account before refreshing
 the catalog. Copilot owns GitHub authentication, model access, and plan usage. Its explicitly
-configured BYOK providers remain CLI-owned and can incur separate API charges; OpenClaw does
+configured BYOK providers remain CLI-owned and can incur separate API charges; Paddy does
 not select a BYOK route for it. See the
 [Copilot setup and billing notes](https://docs.openclaw.ai/tools/acp-agents-setup#github-copilot-cli-in-native-chat).
 
 Native picker runtimes run on the Gateway host and use the native app's permissions.
-OpenClaw checks that execution choice before dispatching a chat turn; ACP runners do not
-implement OpenClaw sandboxing or workspace-only filesystem confinement.
+Paddy checks that execution choice before dispatching a chat turn; ACP runners do not
+implement Paddy sandboxing or workspace-only filesystem confinement.
 
 When optional chat restrictions cannot be enforced, an administrator can choose
 **Continue for this chat** to use the native app's permissions. This grants Full Access
@@ -57,7 +63,7 @@ Confirming a model selection without a pending message does not send anything.
 
 A creator-role-required sandbox cannot be removed, and remote execution placement
 is not supported. Choose a compatible runtime when those boundaries must remain.
-OpenClaw's Read Only, Guarded, and Workspace permission modes are not supported
+Paddy's Read Only, Guarded, and Workspace permission modes are not supported
 by these native runtimes.
 
 Native tool permission requests still require their one-shot approval. Once approved,
@@ -81,4 +87,4 @@ Use the ACP docs for harness-specific setup, permission modes, and model/runtime
 
 - Plugin id: `acpx`
 - Package: `@openclaw/acpx`
-- Minimum OpenClaw host: `2026.4.25`
+- Minimum Paddy host: `2026.4.25`

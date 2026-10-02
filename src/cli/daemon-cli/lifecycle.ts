@@ -19,6 +19,7 @@ import {
 } from "../../infra/gateway-lock.js";
 import { readGatewayOwnerLease } from "../../infra/gateway-owner-lease.js";
 import {
+  findVerifiedGatewayListenerPidsOnPortSync,
   formatGatewayPidList,
   signalVerifiedGatewayPidSync,
 } from "../../infra/gateway-processes.js";
@@ -33,6 +34,7 @@ import { resolveGatewayRestartDrainTimeoutMs } from "../../infra/restart-budget.
 import type { GatewayRestartIntent } from "../../infra/restart-intent.js";
 import { hasCommandProcessCleanupError } from "../../process/exec-result.js";
 import { defaultRuntime } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import {
   isTerminalInteractive,
@@ -54,7 +56,7 @@ import {
   runSafeGatewayRestart,
   resolveGatewayRestartIntentOptions,
 } from "./lifecycle-safe-restart.js";
-import { resolveVerifiedGatewayListenerPids, signalGatewayRestart } from "./lifecycle-unmanaged.js";
+import { signalGatewayRestart } from "./lifecycle-unmanaged.js";
 import { createDaemonActionContext, createNullWriter } from "./response.js";
 import {
   DEFAULT_RESTART_HEALTH_ATTEMPTS,
@@ -131,7 +133,7 @@ async function stopGatewayWithoutServiceManager(
     serviceContext?.env ?? process.env,
     serviceContext?.command ?? null,
   );
-  const listenerPids = resolveVerifiedGatewayListenerPids(port, env);
+  const listenerPids = findVerifiedGatewayListenerPidsOnPortSync(port, { env });
   // Listener discovery needs lsof, which minimal containers omit. The gateway
   // lock already names the verified owner of this port, so signal it instead of
   // reporting the gateway as not running while it keeps serving.
@@ -142,8 +144,8 @@ async function stopGatewayWithoutServiceManager(
     if (portUsage !== "free") {
       throw new Error(
         portUsage === "busy"
-          ? `Port ${port} is in use but the owning process could not be identified. Run ${formatCliCommand("openclaw gateway status --deep")} to diagnose.`
-          : `Could not determine whether port ${port} is still in use, so the gateway cannot be confirmed stopped. Run ${formatCliCommand("openclaw gateway status --deep")} to diagnose.`,
+          ? `Port ${port} is in use but the owning process could not be identified. Run ${formatCliCommand(`${CLI_NAME} gateway status --deep`)} to diagnose.`
+          : `Could not determine whether port ${port} is still in use, so the gateway cannot be confirmed stopped. Run ${formatCliCommand(`${CLI_NAME} gateway status --deep`)} to diagnose.`,
       );
     }
     return null;
@@ -559,7 +561,10 @@ export async function runDaemonRestart(opts: DaemonLifecycleOptions = {}): Promi
 
         fail(
           `Gateway restart timed out after ${waitSeconds}s waiting for health checks.`,
-          [formatCliCommand("openclaw gateway status --deep"), formatCliCommand("openclaw doctor")],
+          [
+            formatCliCommand(`${CLI_NAME} gateway status --deep`),
+            formatCliCommand(`${CLI_NAME} doctor`),
+          ],
           activationAccepted ? "restart-health-failed" : undefined,
         );
         throw new Error("unreachable after gateway restart health failure");
@@ -633,7 +638,10 @@ export async function runDaemonRestart(opts: DaemonLifecycleOptions = {}): Promi
 
       fail(
         failure.failMessage,
-        [formatCliCommand("openclaw gateway status --deep"), formatCliCommand("openclaw doctor")],
+        [
+          formatCliCommand(`${CLI_NAME} gateway status --deep`),
+          formatCliCommand(`${CLI_NAME} doctor`),
+        ],
         health.waitOutcome === "still-starting"
           ? // Published updater parents recognize this envelope and continue readiness verification.
             managedRestartContext.env.OPENCLAW_UPDATE_IN_PROGRESS === "1"

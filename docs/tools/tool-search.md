@@ -1,49 +1,40 @@
 ---
-summary: "Tool Search: compact large OpenClaw tool catalogs behind search, describe, and call"
+summary: "Tool Search: compact large Paddy tool catalogs behind search, describe, and call"
 title: "Tool Search"
 read_when:
-  - You want OpenClaw agents to use a large tool catalog without adding every tool schema to the prompt
-  - You want OpenClaw tools, MCP tools, and client tools exposed through one compact runtime surface
-  - You are implementing or debugging tool discovery for OpenClaw runs
+  - You want Paddy agents to use a large tool catalog without adding every tool schema to the prompt
+  - You want Paddy tools, MCP tools, and client tools exposed through one compact runtime surface
+  - You are implementing or debugging tool discovery for Paddy runs
 ---
 
-Tool Search is an experimental OpenClaw agent runtime feature. It gives agents one
+Tool Search is an experimental Paddy agent runtime feature. It gives agents one
 compact way to discover and call large tool catalogs. It is useful when the run
 has many available tools but the model is likely to need only a few of them.
 
-This page documents OpenClaw Tool Search. It is not the Codex-native tool
+This page documents Paddy Tool Search. It is not the Codex-native tool
 search or dynamic-tools surface. Codex-native code mode, tool search, deferred
 dynamic tools, and nested tool calls are stable Codex harness surfaces and do
 not depend on `tools.toolSearch`.
 
-For the generic OpenClaw runtime that exposes a JavaScript `exec`/`wait`
+For the generic Paddy runtime that exposes a JavaScript `exec`/`wait`
 surface instead of Tool Search controls, see [Code Mode](/tools/code-mode).
 
-OpenClaw embedded and Copilot runs use structured Tool Search automatically when
+Paddy embedded and Copilot runs use structured Tool Search automatically when
 `tools.toolSearch` is unset. This defers tool schemas while keeping the
 policy-approved capabilities available. It does not enable lean mode or remove
 optional tools. Set `tools.toolSearch: false` to restore direct schemas. Engaged
 [Code Mode](/tools/code-mode) takes precedence, and Codex keeps its native surface.
-Explicit settings are preserved; no configuration file is rewritten.
+This automatic default does not rewrite the configuration file.
 
-When enabled for OpenClaw runs, the model automatically receives a bounded
-directory of the available trusted tool names and descriptions. Explicitly
-setting `tools.toolSearch: true` selects one `tool_search_code` tool, plus any direct-only tools whose
-structured results cannot cross the compact bridge. The code tool runs a short
-JavaScript body in an isolated Node subprocess with an `openclaw.tools` bridge:
-
-```js
-const hits = await openclaw.tools.search("create a GitHub issue");
-const tool = await openclaw.tools.describe(hits[0].id);
-return await openclaw.tools.call(tool.id, {
-  title: "Crash on startup",
-  body: "Steps to reproduce...",
-});
-```
+When enabled for Paddy runs, the model automatically receives a bounded
+directory of the available trusted tool names and descriptions, plus the
+structured `tool_search`, `tool_describe`, and `tool_call` controls. Setting
+`tools.toolSearch: true` or an object without a mode selects this structured
+surface. Direct-only tools remain visible alongside the controls.
 
 The directory scales with the active model's context window. When space is tight,
 descriptions shorten before tool names are omitted; every authorized catalog
-entry remains searchable and callable. Invalid arguments for OpenClaw-owned
+entry remains searchable and callable. Invalid arguments for Paddy-owned
 tools include a bounded expected input signature when one can be rendered, so
 the model can correct the call without another schema lookup.
 If a call mistakes an admitted skill name for a tool ID, the error points back
@@ -52,49 +43,46 @@ to the skill’s complete instructions instead of sending the model through tool
 The deferred directory omits tools already exposed directly. They remain searchable,
 so discovery can still return their complete schemas without duplicating native guidance.
 
-The catalog can include catalog-eligible OpenClaw tools, plugin tools, MCP
+The catalog can include catalog-eligible Paddy tools, plugin tools, MCP
 tools, and client-provided tools. The directory gives the model an idea of
 which trusted capabilities it can discover without exposing every cataloged
 schema up front. It also explains that policy-approved MCP and client tools
 may be discoverable. Their untrusted names and descriptions are not copied into
 the system prompt. Instead, the model searches compact descriptors, describes
 one selected tool when it needs the exact schema, and calls that tool through
-OpenClaw. Direct-only tools remain model-visible and are not added to the
+Paddy. Direct-only tools remain model-visible and are not added to the
 catalog.
 
-Codex harness runs do not receive these experimental OpenClaw Tool Search
-controls. OpenClaw passes product capabilities to Codex as dynamic tools, and
+Codex harness runs do not receive these experimental Paddy Tool Search
+controls. Paddy passes product capabilities to Codex as dynamic tools, and
 Codex owns the stable native code mode, native tool search, deferred dynamic
 tools, and nested tool calls.
 
 ## How a turn runs
 
-At planning time the OpenClaw embedded runner builds the effective catalog for the
+At planning time the Paddy embedded runner builds the effective catalog for the
 run:
 
 1. Resolve the active tool policy for the agent, profile, sandbox, and session.
-2. List eligible OpenClaw and plugin tools.
+2. List eligible Paddy and plugin tools.
 3. List eligible MCP tools through the session MCP runtime.
 4. Add eligible client tools supplied for the current run.
 5. Keep core coding primitives and direct-only tools model-visible and index
    compact descriptors for the remaining catalog-eligible tools.
 6. Add a deterministic, bounded, policy-filtered capability directory to the
    cache-stable system-prompt prefix.
-7. Expose the OpenClaw code bridge, the structured fallback tools, or the
-   compact directory surface alongside those stable, directly callable tools.
+7. Expose the structured search, describe, and call tools or the compact
+   directory surface alongside those stable, directly callable tools.
 
-At execution time every real tool call returns to OpenClaw. The isolated Node
-runtime does not hold plugin implementations, MCP client objects, or secrets.
-`openclaw.tools.call(...)` crosses the bridge back into the Gateway, where the
-normal policy, approval, hook, logging, and result handling still apply.
+At execution time every real tool call returns to Paddy, where the normal
+policy, approval, hook, logging, and result handling still apply.
 
 ## Modes
 
-`tools.toolSearch` has three model-facing modes:
+`tools.toolSearch` has two model-facing modes:
 
-- `code`: exposes `tool_search_code`, the explicitly selected JavaScript bridge,
-  alongside the capability directory and direct-only tools.
-- `tools`: the default when `tools.toolSearch` is unset. Exposes `tool_search`,
+- `tools`: the default when `tools.toolSearch` is unset, `true`, or an object
+  without a mode. Exposes `tool_search`,
   `tool_describe`, and `tool_call` as plain structured tools, alongside the
   capability directory and direct-only tools.
 - `directory`: exposes `tool_search`, `tool_describe`, and `tool_call` plus a
@@ -102,31 +90,26 @@ normal policy, approval, hook, logging, and result handling still apply.
   tools, and tools required by the run's delivery policy remain visible; other
   schemas stay deferred.
 
-All modes use the same policy-filtered catalog and normal OpenClaw execution
+All modes use the same policy-filtered catalog and normal Paddy execution
 path. Tools marked `catalogMode: "direct-only"` stay outside that catalog and
-remain model-visible. If the current runtime cannot launch the isolated Node code-mode child
-process, explicitly selected `code` mode falls back to `tools` before catalog
-compaction. In `directory` mode, client-provided tools stay directly visible
-for the current run while OpenClaw tools, plugin tools, and MCP tools can be
+remain model-visible. In `directory` mode, client-provided tools stay directly visible
+for the current run while Paddy tools, plugin tools, and MCP tools can be
 compacted behind the directory catalog. A direct call to an exact hidden
 directory name is hydrated from that same authorized catalog before execution
 in the embedded harness. The [Copilot harness](/plugins/copilot) instead maps
-`directory` to structured `tools` semantics: hidden OpenClaw catalog names must
+`directory` to structured `tools` semantics: hidden Paddy catalog names must
 be invoked through `tool_call`, because they are not registered SDK handlers.
 
-The structured `tools` surface is on by default for OpenClaw runs. It does not
-add the Node code bridge's wall-clock deadline to tools that wait for approval or
-take more than a few seconds. Explicit `toolSearch: true` and object settings
-retain their existing semantics: `true` still selects `code`, and an object
-without a mode still uses `code`. See [Runtime boundary](#runtime-boundary).
-Codex harness runs use their native surfaces.
+The structured `tools` surface is on by default for Paddy runs. Target tools
+keep their own timeouts and approval behavior. Codex harness runs use their
+native surfaces.
 
 Compaction is not always cheaper: small catalogs can gain schema overhead, and
 additional discovery turns can offset initial payload savings. Set
 `tools.toolSearch: false` when direct schemas suit your workload better.
 
 There is no separate source-selection config. When Tool Search is enabled, the
-catalog includes catalog-eligible OpenClaw, MCP, and client tools after normal
+catalog includes catalog-eligible Paddy, MCP, and client tools after normal
 policy filtering; direct-only tools are retained separately.
 
 ## Why this exists
@@ -138,9 +121,7 @@ selection.
 Tool Search changes the shape:
 
 - direct tools: the model sees every selected schema before the first token
-- Tool Search code mode: the model sees one compact code tool, a bounded
-  capability directory, a short API contract, and any direct-only tools
-- Tool Search tools mode: the model sees three compact structured fallback
+- Tool Search tools mode: the model sees three compact structured
   tools, the same capability directory, and any direct-only tools
 - Tool Search directory mode: the model sees a bounded directory plus
   search/describe/call controls, policy-required direct tools, and any
@@ -152,21 +133,22 @@ servers or client-provided app tools. Structured search is the default, but
 actual request size and latency depend on the catalog and the model's calls.
 
 The capability directory is sorted by tool name, limited to 18,000 characters,
-and built from the already policy-filtered catalog. OpenClaw reuses the
+and built from the already policy-filtered catalog. Paddy reuses the
 rendered directory for an unchanged catalog snapshot and places it above the
 system-prompt cache boundary. User messages, per-turn tool guesses, session
 identifiers, and untrusted MCP or client metadata do not enter the directory.
 This keeps repeated turns eligible for prompt KV-cache reuse. When the
-authorized catalog changes, OpenClaw builds a new directory for the new
+authorized catalog changes, Paddy builds a new directory for the new
 snapshot. Prompt-hook `toolsAllow` restrictions apply before the final prompt is
 submitted: the embedded and Copilot prompts advertise only the remaining
 catalog, without rerunning the hook or rewriting earlier conversation turns.
 
-## API
+## Structured controls
 
-`openclaw.tools.search(query, options?)`
+### Search
 
-Searches the effective catalog for the current run.
+`tool_search` searches the effective catalog for the current run. It accepts a
+query and an optional limit.
 
 Queries must be written in English. Ranking is lexical (Okapi BM25 over tool
 names, descriptions, and first-party parameter names and descriptions), with
@@ -177,8 +159,7 @@ so a query in another language will usually match nothing. It is not rejected �
 a catalog may legitimately describe a tool in another script — but a query with
 no usable terms returns no ranked results rather than an arbitrary slice of the
 catalog. An exact tool name is still honored even when it tokenizes to nothing.
-Both `tool_search` and the code-mode bridge state this
-requirement in their model-facing descriptions.
+`tool_search` states this requirement in its model-facing description.
 
 Untrusted parameter schemas are never indexed. MCP and client tools are matched
 on name and description only, which is the same boundary that defers their input
@@ -187,41 +168,48 @@ signatures as `input: "unknown"`.
 Results are compact and safe
 to put back into prompt context. Each hit includes a bounded TypeScript-style
 `input` signature, such as `{ id: string; mode?: "drip" | "flood" }`, so the
-model can skip `describe` when that signature is sufficient. A trusted
-OpenClaw core or plugin tool may also include a compact `output` hint, such as
+model can skip `tool_describe` when that signature is sufficient. A trusted
+Paddy core or plugin tool may also include a compact `output` hint, such as
 `Array<{ id: string; paid: boolean }>`. MCP and client output-schema claims are
 not promoted into this trusted hint. Their untrusted input schemas are also
-deferred as `input: "unknown"`; use `describe` before calling them. Open,
+deferred as `input: "unknown"`; use `tool_describe` before calling them. Open,
 oversized, or otherwise partial output schemas omit the hint and remain
-available through `describe` instead.
+available through `tool_describe` instead.
 
-```js
-const hits = await openclaw.tools.search("calendar event", { limit: 5 });
+```json
+{ "query": "calendar event", "limit": 5 }
 ```
 
-`openclaw.tools.describe(id)`
+### Describe
 
-Loads full metadata for one search result, including the exact input schema and
-the trusted full `outputSchema` when the tool declares one.
+`tool_describe` accepts the `id` of a search result and loads its full metadata,
+including the exact input schema and the trusted full `outputSchema` when the
+tool declares one.
 
-```js
-const calendarCreate = await openclaw.tools.describe("mcp:calendar:create_event");
+```json
+{ "id": "mcp:calendar:create_event" }
 ```
 
-`openclaw.tools.call(id, args)`
+### Call
 
-Calls a selected tool through OpenClaw and returns the raw `{ tool, result }`
-envelope. JSON-returning tools normally place their value in
-`result.details`. OpenClaw validates a trusted core or plugin tool's declared
+`tool_call` accepts a tool `id` and its target `args`, calls the selected tool
+through Paddy, and returns the `{ tool, result }` envelope. JSON-returning tools normally place their value in
+`result.details`. Paddy validates a trusted core or plugin tool's declared
 input schema before execution. Missing required arguments, incorrect types,
 and forbidden properties return actionable tool errors instead of executing
 the tool; misspelled properties include a suggested parameter when available.
-If a trusted tool also declares `outputSchema`, OpenClaw compiles that schema
+If a trusted tool also declares `outputSchema`, Paddy compiles that schema
 before execution and validates final `details` after normal tool hooks before
 returning the catalog call. MCP and client-owned schemas remain deferred to
 their owning execution boundary.
 
-In structured mode, `tool_call` also repairs flattened target arguments from
+If `tool_call` names a direct-only tool declared for the current turn, it returns
+guidance to call that tool directly by its declared name and parameters. It does
+not dispatch direct-only tools through the catalog or suggest searching for them.
+Tools not available in the current turn still receive the ordinary catalog-miss
+error.
+
+`tool_call` also repairs flattened target arguments from
 local models. It preserves target fields such as `id` and `name`, and rejects
 ambiguous tool selectors instead of calling the wrong tool. Nest target
 arguments under `args` when a target field matches another cataloged tool.
@@ -231,11 +219,14 @@ The structured control's model-facing text includes only the tool's `id`,
 the description and input signature. Its structured `details` retain the full
 call envelope for runtime consumers. Use `tool_describe` for full tool metadata.
 
-```js
-await openclaw.tools.call(calendarCreate.id, {
-  summary: "Planning",
-  start: "2026-05-09T14:00:00Z",
-});
+```json
+{
+  "id": "mcp:calendar:create_event",
+  "args": {
+    "summary": "Planning",
+    "start": "2026-05-09T14:00:00Z"
+  }
+}
 ```
 
 Tool authors declare output contracts on the tool's `outputSchema` property.
@@ -244,19 +235,15 @@ all non-throwing variants or omit it for unstable results. See
 [Code Mode output contracts](/tools/code-mode/output#declared-output-contracts) and
 [Tool plugins](/plugins/tool-plugins#output-contracts).
 
-The structured fallback mode exposes the same operations as tools:
-
-- `tool_search`
-- `tool_describe`
-- `tool_call`
-
 Deferred names are catalog entries, not directly callable functions in this
 mode. Put the result ID or name in `tool_call.id` and all target parameters in
 `tool_call.args`, including when other instructions refer to the deferred tool
 by name. A compact search signature may be enough to call it; use
 `tool_describe` when the full schema is needed.
 
-`tool_search` accepts either the existing single-query shape or a batch of
+### Batch search
+
+`tool_search` accepts either the single-query shape or a batch of
 independent queries:
 
 ```json
@@ -305,6 +292,8 @@ queries, with at most 512 characters per query and 512 UTF-8 bytes across the
 serialized query list. Invalid batches fail as one request, while a valid query
 with no matches returns an empty `candidates` array.
 
+### Directory mode
+
 Directory mode exposes:
 
 - `tool_search`
@@ -320,45 +309,12 @@ the bounded directory omits entries, use `tool_search` to find them and
 hidden directory tool name directly, the embedded harness resolves it from the
 authorized catalog before normal execution. Copilot uses `tool_call` instead,
 as described under [Modes](#modes).
-Directory-mode client tool names must not collide with OpenClaw, plugin, or MCP
+Directory-mode client tool names must not collide with Paddy, plugin, or MCP
 tool names because exact deferred dispatch uses those names.
 
-## Runtime boundary
+## Execution policy
 
-The code bridge runs in a short-lived Node subprocess. The subprocess starts
-with Node permission mode enabled, an empty environment, no filesystem or
-network grants, and no child-process or worker grants. OpenClaw enforces a
-parent-process wall-clock timeout and kills the subprocess on timeout, including
-after async continuations.
-
-The default `codeTimeoutMs` is 10 seconds for the entire `tool_search_code`
-invocation, including bridged tool execution and approval waits. The deadline
-does not pause while `openclaw.tools.call(...)` waits on the host. This bridge
-does not return a resumable `waiting` result: expiry kills the child and cancels
-outstanding calls. Before retrying a timed-out mutation, inspect its outcome;
-cancellation cannot undo side effects that already occurred.
-
-This is different from the [Code Mode](/tools/code-mode/configuration)
-`exec`/`wait` surface, which pauses its budget for approvals and can checkpoint
-unfinished tool waits for a later `wait`. Use structured `tools` mode when the
-Node bridge deadline is unsuitable; target tools still enforce their own
-timeouts, approvals, and cancellation. The hard deadline also stops runaway
-JavaScript after async continuations, so disabling it around host waits is not
-a safe substitute for resumable execution.
-
-Outstanding bridged tool calls are canceled when the child settles, including
-fatal exits and final results. Failed exits wait for stderr to drain before
-rendering a bounded diagnostic. The error separately reports bytes discarded
-from the 64 KiB retained tail and bytes omitted from its final text preview.
-
-The runtime exposes only:
-
-- `console.log`, `console.warn`, and `console.error`
-- `openclaw.tools.search`
-- `openclaw.tools.describe`
-- `openclaw.tools.call`
-
-Normal OpenClaw behavior still applies to final calls:
+Normal Paddy behavior still applies to final calls:
 
 - tool allow and deny policies
 - per-agent and per-sandbox tool restrictions
@@ -371,7 +327,7 @@ Normal OpenClaw behavior still applies to final calls:
 
 ## Config
 
-With `tools.toolSearch` unset, OpenClaw runs use structured `tools` mode with
+With `tools.toolSearch` unset, Paddy runs use structured `tools` mode with
 a default search limit of 8 and a maximum of 20. Local Ollama models, LM Studio,
 and managed local services retain their smaller limits of 5 and 10. Known hosted
 Ollama routes use the general limits. An untagged alias served by an Ollama daemon
@@ -382,10 +338,10 @@ An explicit `tools.toolSearch` value takes precedence, including `false`.
 Setting `agents.defaults.experimental.localModelLean: false` restores optional
 tools but does not turn off automatic Tool Search.
 
-Opt into the legacy Node code bridge explicitly (not the structured default):
+Enable structured Tool Search explicitly:
 
 ```bash
-openclaw config set tools.toolSearch true
+paddy config set tools.toolSearch true
 ```
 
 Equivalent JSON:
@@ -410,7 +366,7 @@ Pin the structured default explicitly:
 }
 ```
 
-Use the compact directory surface instead for OpenClaw runs:
+Use the compact directory surface instead for Paddy runs:
 
 ```json5
 {
@@ -422,14 +378,13 @@ Use the compact directory surface instead for OpenClaw runs:
 }
 ```
 
-Tune code-mode timeout and search result limits (values shown are the defaults):
+Tune search result limits (values shown are the defaults):
 
 ```json5
 {
   tools: {
     toolSearch: {
-      mode: "code",
-      codeTimeoutMs: 10000,
+      mode: "tools",
       searchDefaultLimit: 8,
       maxSearchLimit: 20,
     },
@@ -437,8 +392,8 @@ Tune code-mode timeout and search result limits (values shown are the defaults):
 }
 ```
 
-The runtime clamps `codeTimeoutMs` to 1000-60000, `maxSearchLimit` to 1-50, and
-`searchDefaultLimit` to 1..`maxSearchLimit`.
+The runtime clamps `maxSearchLimit` to 1-50 and `searchDefaultLimit` to
+1..`maxSearchLimit`.
 
 Disable it:
 
@@ -450,23 +405,25 @@ Disable it:
 }
 ```
 
-## Prompt and telemetry
+## Upgrading
 
-Code mode attaches a `telemetry` object to every `tool_search_code` result:
+Tool Search code mode (`tool_search_code`) is retired. Run
+`paddy doctor --fix` to migrate `tools.toolSearch.mode: "code"` to `"tools"`
+and remove `codeTimeoutMs`. The migration preserves whether Tool Search is
+enabled. `paddy update` normally runs it for you; updates that defer
+Doctor config repair, such as older Git updaters, need `paddy doctor --fix`
+afterward. A Gateway started on an unmigrated config exits and names the
+retired key and this command.
+`toolSearch: true` and objects without a mode now select structured
+search. Use [Code Mode](/tools/code-mode) and its `exec`/`wait` surface for
+JavaScript orchestration.
 
-- `catalogSize`: number of catalog entries the runtime resolved
-- `sources`: catalog entry counts split into `openclaw`, `mcp`, and `client`
-- `counterScope`: opaque identifier for the counter lifetime; it stays stable
-  when tools are appended or prompt policy narrows the catalog, and changes
-  when the catalog is replaced or restored
-- `searchCount`, `describeCount`, `callCount`: running totals for the catalog
-  session, carried across calls rather than reset per call
+## Session activity
 
-`tools` and `directory` mode emit no telemetry object; their `tool_search`,
-`tool_describe`, and `tool_call` results carry only the catalog data for that
-operation. OpenClaw does not record serialized tool or prompt byte counts. The
+Search, describe, and call results carry the catalog data for that operation.
+Paddy does not record serialized tool or prompt byte counts. The
 [E2E scenario](#e2e-validation) measures provider payload bytes separately from
-the mock provider lane, not from the runtime.
+the mock provider lane.
 
 Regardless of mode, completed target calls persist as bounded, redacted display
 activity in session history without adding synthetic model turns to replay.
@@ -476,29 +433,30 @@ Session logs therefore still answer:
 - how many tool schemas the model saw up front
 - how many search and describe operations it performed
 - which final tool was called
-- whether the result came from OpenClaw, MCP, or a client tool
+- whether the result came from Paddy, MCP, or a client tool
 
 ## E2E validation
 
-The QA Lab gateway scenario proves all three paths with the OpenClaw runtime:
+The QA Lab gateway scenario compares direct and structured Tool Search with the
+Paddy runtime:
 
 ```bash
-pnpm openclaw qa suite --provider-mode mock-openai --scenario tool-search-gateway-e2e
+pnpm paddy qa suite --provider-mode mock-openai --scenario tool-search-gateway-e2e
 ```
 
 It creates a temporary fake plugin with a large tool catalog, starts the mock
-OpenAI provider, then runs the Gateway in direct, code-mode Tool Search, and
-structured Tool Search modes. It compares provider request payloads for direct
-and code mode, then verifies session logs and tool flow across all three lanes.
+OpenAI provider, then runs the Gateway in direct and structured Tool Search
+modes. It compares provider request payloads, then verifies session logs and
+tool flow across both lanes.
 
 The regression proves:
 
 1. Direct mode can call the fake plugin tool.
 2. Tool Search can call the same fake plugin tool.
 3. Direct mode exposes the fake plugin tool schemas directly to the provider.
-4. Tool Search exposes only the compact bridge plus any direct-only tools.
+4. Tool Search exposes compact structured controls plus any direct-only tools.
 5. The Tool Search request payload is smaller for the large fake catalog.
-6. Session logs show the expected tool-call counts and bridged call telemetry.
+6. Session logs show the expected tool-call counts.
 7. Structured mode resolves two queries with one `tool_search` call before the
    selected plugin tool runs through `tool_call`.
 
@@ -509,8 +467,8 @@ pnpm test:live -- src/agents/tool-search.live.test.ts
 ```
 
 This opt-in probe uses configured OpenAI credentials; without them it is skipped.
-It compares direct exposure, the unset default, and all three explicit Tool Search modes with small and large
-synthetic catalogs through the OpenClaw runner. A verification code created inside
+It compares direct exposure, the unset default, and both explicit Tool Search modes with small and large
+synthetic catalogs through the Paddy runner. A verification code created inside
 the target tool proves actual execution. The probe checks policy-denied and
 direct-only tools, deferred schemas, and transcript delivery without forcing a
 model tool choice. It reports request bytes, discovery and call counts, schema
@@ -526,8 +484,6 @@ Tool Search should fail closed:
 - if a selected tool becomes unavailable, `tool_call` should fail
 - if policy or approval blocks execution, the call result should report that
   block instead of bypassing it
-- if the code bridge cannot create an isolated runtime, use `mode: "tools"` or
-  disable Tool Search for that deployment
 
 ## Related
 

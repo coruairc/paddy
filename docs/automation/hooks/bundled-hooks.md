@@ -1,5 +1,5 @@
 ---
-summary: "The hooks shipped with OpenClaw and the behavior and options of each"
+summary: "The hooks shipped with Paddy and the behavior and options of each"
 read_when:
   - You want to enable a hook without writing one
   - You need `boot-md`, `bootstrap-extra-files`, `command-logger`, `compaction-notifier`, or `session-memory` behavior
@@ -7,7 +7,7 @@ read_when:
 title: "Bundled hooks"
 ---
 
-The hooks shipped with OpenClaw, and the behavior and options of each. Part of the [Hooks](/automation/hooks) guide.
+The hooks shipped with Paddy, and the behavior and options of each. Part of the [Hooks](/automation/hooks) guide.
 
 ## Bundled hooks
 
@@ -19,7 +19,7 @@ The hooks shipped with OpenClaw, and the behavior and options of each. Part of t
 | `compaction-notifier`   | `session:compact:before`, `session:compact:after`    | Add compaction status notices on supported delivery paths. |
 | `session-memory`        | `command:new`, `command:reset`, `session:auto-reset` | Save recent conversation excerpts to workspace memory.     |
 
-Enable one with `openclaw hooks enable <hook-name>` and verify its side effect.
+Enable one with `paddy hooks enable <hook-name>` and verify its side effect.
 Startup-only hooks such as `boot-md` wait for the next Gateway start.
 
 <a id="boot-md"></a>
@@ -78,7 +78,7 @@ filters. Inspect the actual injected result with `/context detail`; see
 [Context](/concepts/context).
 
 `TOOLS.md` is not a recognized runtime bootstrap basename.
-`openclaw doctor --fix` archives workspace-root `TOOLS.md` and merges customized
+`paddy doctor --fix` archives workspace-root `TOOLS.md` and merges customized
 content into the `## Tools` section of `AGENTS.md`. Other `TOOLS.md` files named
 by patterns are not migrated;
 point those patterns at `AGENTS.md` instead.

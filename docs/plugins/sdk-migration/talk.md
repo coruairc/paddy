@@ -85,7 +85,7 @@ the common Gateway-managed surface for gateway-relay realtime, gateway-relay
 transcription, and managed-room native STT/TTS sessions.
 
 Legacy configs that place realtime selectors beside `talk.provider` /
-`talk.providers` should be repaired with `openclaw doctor --fix`; runtime Talk
+`talk.providers` should be repaired with `paddy doctor --fix`; runtime Talk
 does not reinterpret speech/TTS provider config as realtime provider config.
 
 The supported `talk.session.create` combinations are intentionally small:

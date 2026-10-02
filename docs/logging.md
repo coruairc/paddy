@@ -1,13 +1,13 @@
 ---
 summary: "File logs, console output, CLI tailing, and the Control UI Logs tab"
 read_when:
-  - You need a beginner-friendly overview of OpenClaw logging
+  - You need a beginner-friendly overview of Paddy logging
   - You want to configure log levels, formats, or redaction
   - You are troubleshooting and need to find logs quickly
 title: "Logging"
 ---
 
-OpenClaw has two main log surfaces:
+Paddy has two main log surfaces:
 
 - **File logs** (JSON lines) written by the Gateway.
 - **Console output** in the terminal running the Gateway.
@@ -35,12 +35,12 @@ to stay within filesystem filename limits. An explicit `logging.file` overrides
 these defaults.
 
 The date uses the gateway host's local timezone. When `/tmp/openclaw` is unsafe
-or unavailable (and always on Windows), OpenClaw uses a user-scoped
+or unavailable (and always on Windows), Paddy uses a user-scoped
 `openclaw-<uid>` directory under the OS temp dir instead. Dated log files are
 pruned after 24 hours.
 
 Each file rotates when the next write would exceed `logging.maxFileBytes`
-(default: 100 MB). OpenClaw keeps up to five numbered archives beside the
+(default: 100 MB). Paddy keeps up to five numbered archives beside the
 active file, such as `openclaw-YYYY-MM-DD.1.log` or
 `openclaw-dev-YYYY-MM-DD.1.log`, and keeps writing to a fresh active log instead
 of suppressing diagnostics.
@@ -62,9 +62,9 @@ You can override the path in `~/.openclaw/openclaw.json`:
 Tail the gateway log file via RPC:
 
 ```bash
-openclaw logs --follow
-openclaw --dev logs --follow
-openclaw --profile work logs --follow
+paddy logs --follow
+paddy --dev logs --follow
+paddy --profile work logs --follow
 ```
 
 The root profile selector resolves the same profile-specific file used by the
@@ -105,9 +105,9 @@ In JSON mode, the CLI emits `type`-tagged objects:
 - `error`: gateway connection failures (written to stderr)
 
 If the implicit local loopback Gateway asks for pairing, closes during connect,
-or times out before `logs.tail` answers, `openclaw logs` falls back to the
+or times out before `logs.tail` answers, `paddy logs` falls back to the
 configured Gateway file log automatically. Explicit `--url` targets do not use
-this fallback. `openclaw logs --follow` is stricter: on Linux it uses the active
+this fallback. `paddy logs --follow` is stricter: on Linux it uses the active
 user-systemd Gateway journal by PID when available, and otherwise retries the
 live Gateway with backoff instead of following a potentially stale side-by-side
 file.
@@ -115,7 +115,7 @@ file.
 If the Gateway is unreachable, the CLI prints a short hint to run:
 
 ```bash
-openclaw doctor
+paddy doctor
 ```
 
 ### Control UI (web)
@@ -128,7 +128,7 @@ See [Control UI](/web/control-ui) for how to open it.
 To filter channel activity (WhatsApp/Telegram/etc), use:
 
 ```bash
-openclaw channels logs --channel whatsapp
+paddy channels logs --channel whatsapp
 ```
 
 `--channel` defaults to `all`; `--lines <n>` (default 200) and `--json` are also
@@ -150,7 +150,7 @@ available:
 - `session_id`: active session id/key when the log call carries session context.
 - `channel`: active channel when the log call carries channel context.
 
-OpenClaw preserves the original structured log arguments alongside these fields
+Paddy preserves the original structured log arguments alongside these fields
 so existing parsers that read numbered tslog argument keys keep working.
 
 Talk, realtime voice, and managed-room activity emits bounded lifecycle log
@@ -182,7 +182,7 @@ discard pending diagnostics.
 
 ### Gateway WebSocket logs
 
-`openclaw gateway` also has WebSocket protocol logging for RPC traffic:
+`paddy gateway` also has WebSocket protocol logging for RPC traffic:
 
 - normal mode: only interesting results (errors, parse errors, slow calls)
 - `--verbose`: all request/response traffic
@@ -192,9 +192,9 @@ discard pending diagnostics.
 Examples:
 
 ```bash
-openclaw gateway
-openclaw gateway --verbose --ws-log compact
-openclaw gateway --verbose --ws-log full
+paddy gateway
+paddy gateway --verbose --ws-log compact
+paddy gateway --verbose --ws-log full
 ```
 
 ### Steering and input cancellation
@@ -271,7 +271,7 @@ generic chat copy; inspect the Gateway logs and stored error for diagnosis.
 
 Responses output-identity conflicts record the event type, output position,
 expected and observed item types, and whether a tool call completed, without
-recording item IDs or response content. OpenClaw uses the existing bounded session
+recording item IDs or response content. Paddy uses the existing bounded session
 retry policy when the failing response produced no visible text or completed tool
 calls and its request enabled only client-executed function tools. Continuation
 keeps earlier tool results, so those completed actions are not replayed. Conflicts
@@ -318,7 +318,7 @@ Available flags:
   including bounded activation facts, the final visible surface, and names of
   provider-native tools filtered because code mode owns the tool surface.
 
-These flags log through normal OpenClaw logging, so `openclaw logs --follow`
+These flags log through normal Paddy logging, so `paddy logs --follow`
 and the Control UI Logs tab show them. For backward compatibility,
 `OPENCLAW_DEBUG_CODE_MODE` also promotes general model-transport diagnostics to
 `info`; dedicated code-mode diagnostics are emitted only when that flag is
@@ -346,7 +346,7 @@ for the routes and thresholds that enable clearing.
 ### Trace correlation
 
 File logs are JSONL. When a log call carries a valid diagnostic trace context,
-OpenClaw writes the trace fields as top-level JSON keys (`traceId`, `spanId`,
+Paddy writes the trace fields as top-level JSON keys (`traceId`, `spanId`,
 `parentSpanId`, `traceFlags`) so external log processors can correlate the line
 with OTEL spans and provider `traceparent` propagation.
 
@@ -675,7 +675,7 @@ are elapsed durations, including asynchronous waits, rather than CPU time or
 proof that the main event loop was blocked for the whole interval.
 
 The structured warning also includes `pid`, Node's `threadId`, and `isMainThread`
-for the opener emitting it. Inspect each `openclaw logs --json` event's original
+for the opener emitting it. Inspect each `paddy logs --json` event's original
 `raw` record; warn-level console text also carries these fields as `key=value` pairs.
 An opener on the main thread may have awaited an integrity Worker, so these
 fields do not identify the thread performing every phase. `admissionMode` records
@@ -727,7 +727,7 @@ the thread executing the transaction. Explicit labels take precedence; otherwise
 diagnostics use the native database path and the current Worker operation.
 An in-memory database is `:memory:`, a retired handle is `unavailable`, and a
 caller without operation context is `unlabeled`. Hold warnings also include
-`mode` (`deferred` or `immediate`). Inspect the original `raw` record in `openclaw logs --json` to
+`mode` (`deferred` or `immediate`). Inspect the original `raw` record in `paddy logs --json` to
 distinguish the main thread from Workers sharing the same process. `async: false`
 describes the synchronous transaction helper; it does not identify the thread.
 
@@ -785,7 +785,7 @@ The timing fields separate the elapsed interval into:
 
 These fields are available when the queued callback started and finished;
 `elapsedMs` records the total duration. The warning's console line carries the
-same fields as `key=value` pairs; `openclaw logs --json` shows the original `raw` record.
+same fields as `key=value` pairs; `paddy logs --json` shows the original `raw` record.
 
 Use `operation` to locate the owning code path. It does not identify a specific
 SQL statement, measure CPU time or lock contention, or establish that a nearby
@@ -868,7 +868,7 @@ checkpoint mode or timeout, or archive-retention behavior.
 When a reply spends a long time preparing, inspect the normal Gateway logs:
 
 ```bash
-openclaw logs --follow --plain | rg 'timings|agent turn milestone|liveness warning'
+paddy logs --follow --plain | rg 'timings|agent turn milestone|liveness warning'
 ```
 
 Reply resolver, dispatch, and agent-turn preparation milestones include stage
@@ -929,12 +929,12 @@ OTEL model-call spans/metrics when diagnostics export is enabled.
 
 A third rendering style, `compact` (tighter output, best for long sessions), is
 applied automatically when stdout is not a TTY. It is no longer a settable
-config value; `openclaw doctor --fix` maps a stored `consoleStyle: "compact"`
+config value; `paddy doctor --fix` maps a stored `consoleStyle: "compact"`
 to `"pretty"`.
 
 ### Redaction
 
-OpenClaw can redact sensitive tokens before they hit console output, file logs,
+Paddy can redact sensitive tokens before they hit console output, file logs,
 OTLP log records, persisted session transcript text, or Control UI tool
 event payloads (tool start args, partial/final result payloads, derived
 exec output, and patch summaries):
@@ -954,7 +954,7 @@ so stored history can correlate with live tool events. This exemption applies
 only to protocol metadata; the same values in arguments, results, or nested
 payloads still pass through redaction.
 
-In the OpenClaw harness, finalized tool-result text is masked after middleware,
+In the Paddy harness, finalized tool-result text is masked after middleware,
 before entering live model context. This also covers exec output and tool errors;
 it preserves media bytes and the original arguments used to execute tools.
 Redaction happens when the result is added, keeping later prompt replay stable.
@@ -971,7 +971,7 @@ The built-in defaults cover common API credentials and payment-credential field
 names such as card number, CVC/CVV, shared payment token, and payment credential
 when they appear as JSON fields, URL parameters, CLI flags, or assignments.
 
-OpenClaw also redacts safety-boundary payloads shown to UI clients, support
+Paddy also redacts safety-boundary payloads shown to UI clients, support
 bundles, diagnostics observers, approval prompts, or agent tools. Custom
 `logging.redactPatterns` can add project-specific patterns on those surfaces.
 
@@ -1005,7 +1005,7 @@ For OTLP export to a collector, see [OpenTelemetry export](/gateway/opentelemetr
 
 ## Troubleshooting tips
 
-- **Gateway not reachable?** Run `openclaw doctor` first.
+- **Gateway not reachable?** Run `paddy doctor` first.
 - **Logs empty?** Check that the Gateway is running and writing to the file path
   in `logging.file`.
 - **Need more detail?** Set `logging.level` to `debug` or `trace` and retry.
@@ -1016,4 +1016,4 @@ For OTLP export to a collector, see [OpenTelemetry export](/gateway/opentelemetr
 - [Diagnostics flags](/diagnostics/flags) — targeted debug-log flags
 - [Gateway logging internals](/gateway/logging) — WS log styles, subsystem prefixes, and console capture
 - [Configuration reference](/gateway/config-observability#diagnostics) — full `diagnostics.*` field reference
-- [`openclaw logs`](/cli/logs) — tail Gateway logs over RPC from the CLI
+- [`paddy logs`](/cli/logs) — tail Gateway logs over RPC from the CLI

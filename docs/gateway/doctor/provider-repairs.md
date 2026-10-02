@@ -24,22 +24,22 @@ OAuth TLS prerequisites, and route cleanup.
     readiness or cookie-import availability. It reports the importable cookie
     database count as unavailable, not zero. When a stable Chrome extension copy
     exists, Doctor reports its native-bootstrap status as not inspected;
-    `openclaw doctor --fix` skips native-host registration repair.
+    `paddy doctor --fix` skips native-host registration repair.
 
-    On the machine hosting Chrome, run `openclaw browser extension status --json`
+    On the machine hosting Chrome, run `paddy browser extension status --json`
     to inspect registration explicitly; this may request browser-profile access.
     If an upgrade leaves stale native-host targets, run
-    `openclaw browser extension install --no-store` to repair through the explicit
+    `paddy browser extension install --no-store` to repair through the explicit
     installer without requesting Store installation. The installer refuses to
     overwrite a foreign same-name manifest or launcher. Status distinguishes a
     requested installation, Chrome approval, and native-host registration health;
     it does not prove a live relay connection.
 
-    For initial setup, run `openclaw browser extension install`. On macOS, this
+    For initial setup, run `paddy browser extension install`. On macOS, this
     also requests the official Store installation in Google Chrome; reopen Chrome
-    and approve or enable OpenClaw when prompted. Other browsers and platforms
+    and approve or enable Paddy when prompted. Other browsers and platforms
     need a manual Store install. The unpacked stable path remains a development
-    fallback with `openclaw browser extension install --no-store`. Explicit cookie
+    fallback with `paddy browser extension install --no-store`. Explicit cookie
     import still requires its separate consent.
 
     Doctor also audits the host-local Chrome MCP path when you use `defaultProfile: "user"` or a configured `existing-session` profile:
@@ -78,7 +78,7 @@ OAuth TLS prerequisites, and route cleanup.
   <Accordion title="2g. Session route cleanup">
     Doctor also scans discovered agent session stores for stale auto-created route state after you move configured models or runtime away from a plugin-owned route such as Codex.
 
-    `openclaw doctor --fix` can clear auto-created stale state such as `modelOverrideSource: "auto"` model pins, runtime model metadata, pinned harness ids, CLI session bindings, and auto auth-profile overrides when their owning route is no longer configured. Explicit user or legacy session model choices are reported for manual review and left untouched; switch them with `/model ...`, `/new`, or reset the session when that route is no longer intended.
+    `paddy doctor --fix` can clear auto-created stale state such as `modelOverrideSource: "auto"` model pins, runtime model metadata, pinned harness ids, CLI session bindings, and auto auth-profile overrides when their owning route is no longer configured. Explicit user or legacy session model choices are reported for manual review and left untouched; switch them with `/model ...`, `/new`, or reset the session when that route is no longer intended.
 
   </Accordion>
 </AccordionGroup>

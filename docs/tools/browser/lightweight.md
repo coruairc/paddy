@@ -3,14 +3,14 @@ summary: "Use an externally managed Lightpanda browser for JavaScript and DOM ta
 title: "Lightweight browsers"
 read_when:
   - You want browser tasks to use a lightweight engine instead of Chromium
-  - You run OpenClaw or its browser in Docker
+  - You run Paddy or its browser in Docker
   - You need the limits of the Lightpanda browser profile
 ---
 
 # Lightweight browsers
 
 Lightpanda is an opt-in engine for text and DOM browser tasks. It uses the same
-OpenClaw `browser` tool through an explicitly configured profile. It is not a
+Paddy `browser` tool through an explicitly configured profile. It is not a
 visual-browser replacement: keep a Chromium profile for screenshots, PDF output,
 and applications that require unsupported browser features.
 
@@ -37,7 +37,7 @@ the Lightpanda engine. Existing profiles and engine configuration are unchanged.
 
 ## Licensing and distribution
 
-OpenClaw's adapter remains MIT-licensed. The optional Lightpanda engine is
+Paddy's adapter remains MIT-licensed. The optional Lightpanda engine is
 **AGPL-3.0-or-later**, not MIT: see its
 [pinned source notice](https://github.com/lightpanda-io/browser/blob/614c1640af8065b1972559abef7ca4cea06f8ba3/src/main.zig#L1)
 and [license](https://github.com/lightpanda-io/browser/blob/614c1640af8065b1972559abef7ca4cea06f8ba3/LICENSE).
@@ -45,7 +45,7 @@ The existing Playwright client is Apache-2.0; the existing `ws` client is MIT.
 Their licenses and third-party notices still apply.
 
 These examples connect over CDP to an independently installed, unmodified engine.
-They do not bundle or relicense Lightpanda in OpenClaw's package or image.
+They do not bundle or relicense Lightpanda in Paddy's package or image.
 The engine and its container dependencies are not an MIT-only distribution.
 If your deployment excludes copyleft software, do not select this engine.
 
@@ -60,7 +60,7 @@ for the verified pins and remaining limits.
 ## Alternatives reviewed
 
 The following is a licensing comparison as of **2026-09-21**, not a claim that
-these alternatives have passed OpenClaw integration or cross-platform tests.
+these alternatives have passed Paddy integration or cross-platform tests.
 An MIT-compatible application and an entirely permissive engine distribution
 are different requirements.
 
@@ -101,22 +101,22 @@ before bundling or recommending an integrated deployment.
 
 ## Choose where the engine runs
 
-| OpenClaw location       | Lightpanda location                              | Profile CDP URL        |
+| Paddy location          | Lightpanda location                              | Profile CDP URL        |
 | ----------------------- | ------------------------------------------------ | ---------------------- |
 | Host, including Windows | Docker/Podman with a loopback-published port     | `ws://127.0.0.1:9222`  |
 | Linux or macOS host     | Native binary on the same host                   | `ws://127.0.0.1:9222`  |
 | Docker Compose          | Sidecar in the same Compose project              | `ws://lightpanda:9222` |
 | WSL                     | Native Linux binary in the same WSL distribution | `ws://127.0.0.1:9222`  |
 
-`localhost` inside an OpenClaw container means that container, not the host and
+`localhost` inside a Paddy container means that container, not the host and
 not the Lightpanda sidecar. Use the service name for container-to-container
 connections. On Windows, run Docker Desktop in **Linux container** mode, or run
-both OpenClaw and the Linux engine inside WSL. Lightpanda does not publish a native
+both Paddy and the Linux engine inside WSL. Lightpanda does not publish a native
 Windows binary. macOS and Linux have official x86-64 and ARM64 release binaries;
 the official container image has Linux amd64 and arm64 variants.
 [Upstream installation information](https://github.com/lightpanda-io/browser#install).
 
-## Docker with OpenClaw on the host
+## Docker with Paddy on the host
 
 From the repository root:
 
@@ -140,7 +140,7 @@ To stop and remove only this sample's container and network:
 docker compose -f deploy/lightpanda/compose.yaml -f deploy/lightpanda/compose.host.yaml down
 ```
 
-## Docker Compose with OpenClaw in a container
+## Docker Compose with Paddy in a container
 
 Merge the sidecar into the repository's existing Compose project:
 
@@ -148,14 +148,14 @@ Merge the sidecar into the repository's existing Compose project:
 docker compose -f docker-compose.yml -f deploy/lightpanda/compose.yaml up -d lightpanda
 ```
 
-Configure the OpenClaw Gateway with `cdpUrl: "ws://lightpanda:9222"` in the profile
+Configure the Paddy Gateway with `cdpUrl: "ws://lightpanda:9222"` in the profile
 below. Use the same Compose files and project name when starting the Gateway.
 No browser port is published to the host in this variant. The containers share
 the project's bridge network and retain outbound internet access; the network
 is not declared `internal: true` because that would prevent public-site browsing.
 
-Use your normal OpenClaw Docker setup for its state directory, authentication,
-and Gateway startup. The sidecar does not mount your OpenClaw state, browser
+Use your normal Paddy Docker setup for its state directory, authentication,
+and Gateway startup. The sidecar does not mount your Paddy state, browser
 cookies, or host Docker socket.
 
 For Podman, use an installed Compose provider and verify service-name DNS before
@@ -217,7 +217,7 @@ default. Preserve your Chromium profile and select it explicitly for visual or
 unsupported work. Restore the previous `defaultProfile` to undo the selection.
 
 `engine` declares the capability contract; a CDP endpoint alone does not imply
-Chromium compatibility. `attachOnly` means OpenClaw attaches to the service you
+Chromium compatibility. `attachOnly` means Paddy attaches to the service you
 started instead of launching or taking ownership of a local Chrome process.
 Do not set `executablePath` to Lightpanda: its CLI is not Chrome's launch CLI.
 
@@ -246,16 +246,16 @@ See [browser profiles](/tools/browser/profiles) and
 
 ## Verification and benchmarks
 
-Engine startup, CDP connectivity, task completion, and full OpenClaw integration
+Engine startup, CDP connectivity, task completion, and full Paddy integration
 are separate checks. A running container or a successful `Browser.getVersion`
-does not prove that snapshots, references, and actions work through OpenClaw.
+does not prove that snapshots, references, and actions work through Paddy.
 
 ### Chromium headless shell baseline
 
 For an alternative without Lightpanda's AGPL engine, first test Chromium's
 headless shell through the existing Chromium profile. It retains Chromium's
 third-party license obligations; this is not an MIT-only binary. It does not
-require another automation daemon or an OpenClaw engine adapter.
+require another automation daemon or a Paddy engine adapter.
 
 Use the repository-pinned Playwright installer rather than an unpinned wrapper:
 
@@ -293,11 +293,11 @@ installing development dependencies:
 node --import ./scripts/tsx.mjs extensions/browser/scripts/bench-lightweight.ts --lightpanda /path/to/lightpanda --chromium /path/to/chrome --iterations 10 --output lightweight-benchmark.json
 ```
 
-Any binary flag can be used alone. The script creates isolated OpenClaw
+Any binary flag can be used alone. The script creates isolated Paddy
 state and browser data, serves a local form, then verifies navigation, the default
 efficient AI snapshot, reference-based typing/clicking, exactly one form
 submission, waiting, and text extraction through the browser route dispatcher.
-The Chromium baseline uses OpenClaw's managed headless launch flags and disables
+The Chromium baseline uses Paddy's managed headless launch flags and disables
 the sandbox for this isolated local fixture; it does not change production
 browser configuration. Minimal Linux hosts still need Chromium's shared
 libraries and fonts. A task-local installation can be selected using

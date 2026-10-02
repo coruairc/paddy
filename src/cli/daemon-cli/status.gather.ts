@@ -306,7 +306,8 @@ async function gatherDaemonStatusImpl(
   });
   const { service, state: serviceState } = await readDaemonServiceStatus({
     env: process.env,
-    timeoutMs,
+    timeoutMs:
+      process.platform === "win32" && opts.rpc.timeout === undefined ? undefined : timeoutMs,
   });
   const { command, env: serviceEnv, loadState, runtime } = serviceState;
   const loaded = loadState.status === "loaded";
@@ -404,7 +405,7 @@ async function gatherDaemonStatusImpl(
             deep: true,
           }),
         )
-        .then((services) =>
+        .then(({ services }) =>
           services.filter(
             (extra) =>
               extra.platform !== "linux" ||
@@ -556,7 +557,7 @@ async function gatherDaemonStatusImpl(
               pluginVersionRestartReadiness = {
                 status: "unresolved",
                 reason:
-                  "Gateway service command is unavailable, so the post-restart OpenClaw version is unknown.",
+                  `Gateway service command is unavailable, so the post-restart Paddy version is unknown.`,
                 ...(runningGatewayVersion ? { runningGatewayVersion } : {}),
               };
             } else {
@@ -565,7 +566,7 @@ async function gatherDaemonStatusImpl(
                 pluginVersionRestartReadiness = {
                   status: "unresolved",
                   reason:
-                    "Gateway service package version is unavailable, so the post-restart OpenClaw version is unknown.",
+                    `Gateway service package version is unavailable, so the post-restart Paddy version is unknown.`,
                   ...(runningGatewayVersion ? { runningGatewayVersion } : {}),
                 };
               } else {
@@ -631,7 +632,7 @@ async function gatherDaemonStatusImpl(
       runtime: runtime?.inspectionFailure
         ? {
             ...runtime,
-            detail: `${runtime.detail}; retry with openclaw gateway status --deep`,
+            detail: `${runtime.detail}; retry with paddy gateway status --deep`,
           }
         : runtime,
       configAudit,

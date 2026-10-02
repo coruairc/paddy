@@ -5,7 +5,7 @@ import {
   type OpenClawConfig,
 } from "openclaw/plugin-sdk/account-resolution";
 import { resolveDangerousNameMatchingEnabled } from "openclaw/plugin-sdk/dangerous-name-runtime";
-import { parseStrictInteger } from "openclaw/plugin-sdk/number-runtime";
+import { parseStrictNonNegativeInteger } from "openclaw/plugin-sdk/number-runtime";
 import {
   normalizeOptionalString,
   normalizeStringEntries,
@@ -74,18 +74,10 @@ function parseAllowedUserIds(raw: string | string[] | undefined): string[] {
 }
 
 function normalizeRateLimitPerMinuteValue(raw: unknown): number | undefined {
-  if (typeof raw === "number") {
-    return Number.isSafeInteger(raw) && raw >= 0 ? raw : undefined;
-  }
-  if (typeof raw !== "string") {
+  if (typeof raw === "string" && !/^\d+$/.test(raw.trim())) {
     return undefined;
   }
-  const trimmed = raw.trim();
-  if (!/^\d+$/.test(trimmed)) {
-    return undefined;
-  }
-  const parsed = parseStrictInteger(trimmed);
-  return parsed != null && parsed >= 0 ? parsed : undefined;
+  return parseStrictNonNegativeInteger(raw);
 }
 
 export function resolveAccount(
@@ -105,7 +97,7 @@ export function resolveAccount(
   const envNasHost = normalizeOptionalString(process.env.SYNOLOGY_NAS_HOST) ?? "localhost";
   const envAllowedUserIds = normalizeOptionalString(process.env.SYNOLOGY_ALLOWED_USER_IDS) ?? "";
   const envRateLimitValue = normalizeRateLimitPerMinuteValue(process.env.SYNOLOGY_RATE_LIMIT) ?? 30;
-  const envBotName = normalizeOptionalString(process.env.OPENCLAW_BOT_NAME) ?? "OpenClaw";
+  const envBotName = normalizeOptionalString(process.env.OPENCLAW_BOT_NAME) ?? "Paddy";
   const webhookPathSource = resolveWebhookPathSource({ accountId: id, channelCfg, rawAccount });
   const dangerouslyAllowInheritedWebhookPath =
     rawAccount.dangerouslyAllowInheritedWebhookPath ??

@@ -104,6 +104,11 @@ Owner page: [Gateway authentication](/gateway/authentication) — auth modes, to
 - `AUTH_SCOPE_MISMATCH` means the device token was recognized but does not
   cover the requested role/scopes. Do not present this as a bad token; prompt
   the operator to re-pair or approve the narrower/broader scope contract.
+- `OPERATOR_ACCESS_DENIED` means the person authenticated, but the Gateway's
+  operator access policy (for example, a role bound to an `accessPolicyPlugin`)
+  currently grants no access. This is not a credential problem. Keep reconnecting
+  with backoff so newly granted access applies without user action, and show
+  administrator guidance to assign a role or grant access.
 
 ## Device identity and pairing
 
@@ -119,7 +124,7 @@ Owner page: [Gateway pairing](/gateway/pairing) — the approval flow, device re
   client metadata must authorize that connection; a consumed request alone does
   not grant access.
 - Pairing auto-approval is centered on direct local loopback connects.
-- OpenClaw also has a narrow backend/container-local self-connect path for
+- Paddy also has a narrow backend/container-local self-connect path for
   trusted shared-secret helper flows.
 - Same-host tailnet or LAN connects are still treated as remote for pairing
   and require approval.
@@ -129,7 +134,7 @@ Owner page: [Gateway pairing](/gateway/pairing) — the approval flow, device re
   - direct-loopback `gateway-client` backend RPCs on the reserved internal
     helper path.
 - Omitting device identity has scope consequences. When a device-less
-  operator connection is allowed through an explicit trust path, OpenClaw
+  operator connection is allowed through an explicit trust path, Paddy
   still clears self-declared scopes to an empty set unless that path has a
   named scope-preservation exception. Scope-gated methods then fail with
   `missing scope`.

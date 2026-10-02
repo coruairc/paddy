@@ -1,4 +1,3 @@
-// Nextcloud Talk plugin module implements channel.adapters behavior.
 import { formatAllowFromLowercase } from "openclaw/plugin-sdk/allow-from";
 import {
   adaptScopedAccountAccessor,
@@ -52,7 +51,7 @@ export const nextcloudTalkSecurityAdapter = {
 
 export const nextcloudTalkPairingTextAdapter = {
   idLabel: "nextcloudUserId",
-  message: "OpenClaw: your access has been approved.",
+  message: "Paddy: your access has been approved.",
   normalizeAllowEntry: createPairingPrefixStripper(/^(nextcloud-talk|nc-talk|nc):/i, (entry) =>
     normalizeLowercaseStringOrEmpty(entry),
   ),

@@ -1,3 +1,4 @@
+import { formatErrorMessage as formatError } from "../../infra/errors.js";
 import { BoundedSerialQueue } from "../../shared/bounded-serial-queue.js";
 import { REALTIME_VOICE_AGENT_CONTROL_FAILURE_MESSAGE } from "../../talk/agent-run-control-shared.js";
 import {
@@ -5,7 +6,7 @@ import {
   resolveRealtimeVoiceAgentControlIntent,
   type RealtimeVoiceAgentControlResult,
 } from "../../talk/agent-run-control.js";
-import { formatError } from "../server-utils.js";
+import { PRODUCT_NAME } from "../../brand.js";
 
 const REALTIME_CONTROL_MAX_PENDING = 8;
 
@@ -97,7 +98,7 @@ export function createTalkRealtimeRunControlOwner(params: {
       )
     ) {
       reply(
-        "OpenClaw's voice control queue is full. Please try again after the pending controls finish.",
+        `${PRODUCT_NAME}'s voice control queue is full. Please try again after the pending controls finish.`,
       );
     }
     return "control";

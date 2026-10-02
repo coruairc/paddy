@@ -2,7 +2,7 @@
 summary: "Compact noisy exec and bash tool results with the optional Tokenjuice plugin"
 title: "Tokenjuice"
 read_when:
-  - You want shorter `exec` or `bash` tool results in OpenClaw
+  - You want shorter `exec` or `bash` tool results in Paddy
   - You want to install or enable the Tokenjuice plugin
   - You need to understand what tokenjuice changes and what it leaves raw
 ---
@@ -13,8 +13,8 @@ tool results after the command has already run.
 It changes the returned `tool_result`, not the command itself. Tokenjuice does
 not rewrite shell input, rerun commands, or change exit codes.
 
-Today this applies to OpenClaw embedded runs and OpenClaw dynamic tools in the Codex
-app-server harness. Tokenjuice hooks OpenClaw's tool-result middleware and
+Today this applies to Paddy embedded runs and Paddy dynamic tools in the Codex
+app-server harness. Tokenjuice hooks Paddy's tool-result middleware and
 trims the output before it goes back into the active harness session.
 
 ## Enable the plugin
@@ -28,13 +28,13 @@ openclaw plugins install clawhub:@openclaw/tokenjuice
 Then enable it:
 
 ```bash
-openclaw config set plugins.entries.tokenjuice.enabled true
+paddy config set plugins.entries.tokenjuice.enabled true
 ```
 
 Equivalent:
 
 ```bash
-openclaw plugins enable tokenjuice
+paddy plugins enable tokenjuice
 ```
 
 If you prefer editing config directly:
@@ -68,13 +68,13 @@ If you prefer editing config directly:
 ## Disable the plugin
 
 ```bash
-openclaw config set plugins.entries.tokenjuice.enabled false
+paddy config set plugins.entries.tokenjuice.enabled false
 ```
 
 Or:
 
 ```bash
-openclaw plugins disable tokenjuice
+paddy plugins disable tokenjuice
 ```
 
 ## Related

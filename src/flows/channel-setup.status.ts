@@ -413,26 +413,6 @@ export async function collectChannelStatus(params: {
   };
 }
 
-export async function noteChannelStatus(params: {
-  cfg: OpenClawConfig;
-  prompter: WizardPrompter;
-  options?: SetupChannelsOptions;
-  accountOverrides?: Partial<Record<ChannelChoice, string>>;
-  installedPlugins?: ChannelSetupPlugin[];
-  resolveAdapter?: (channel: ChannelChoice) => ChannelSetupWizardAdapter | undefined;
-}): Promise<void> {
-  const { statusLines } = await collectChannelStatus({
-    cfg: params.cfg,
-    options: params.options,
-    accountOverrides: params.accountOverrides ?? {},
-    installedPlugins: params.installedPlugins,
-    resolveAdapter: params.resolveAdapter,
-  });
-  if (statusLines.length > 0) {
-    await params.prompter.note(statusLines.join("\n"), t("wizard.channels.statusTitle"));
-  }
-}
-
 export async function noteChannelPrimer(
   prompter: WizardPrompter,
   channels: Array<{ id: ChannelChoice; blurb: string; label: string }>,
@@ -452,11 +432,11 @@ export async function noteChannelPrimer(
     [
       t("wizard.channelsPrimer.inboundSafety"),
       t("wizard.channelsPrimer.approveWith", {
-        command: formatCliCommand("openclaw pairing approve <channel> <code>"),
+        command: formatCliCommand("paddy pairing approve <channel> <code>"),
       }),
       t("wizard.channelsPrimer.openDm"),
       t("wizard.channelsPrimer.multiUserDm", {
-        command: formatCliCommand('openclaw config set session.dmScope "per-channel-peer"'),
+        command: formatCliCommand('paddy config set session.dmScope "per-channel-peer"'),
       }),
       t("wizard.channelsPrimer.docs", {
         link: formatDocsLink("/channels/pairing", "channels/pairing"),

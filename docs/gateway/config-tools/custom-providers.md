@@ -13,7 +13,7 @@ Registering custom providers under `models.providers`, what a custom `baseUrl` i
 
 Provider plugins publish their own model catalog rows. Add custom providers via `models.providers` in config or `~/.openclaw/agents/<agentId>/agent/models.json`.
 
-Configuring a custom/local provider `baseUrl` is also the narrow network trust decision for model HTTP requests: OpenClaw allows that exact `scheme://host:port` origin through the guarded fetch path, without adding a separate config option or trusting other private origins.
+Configuring a custom/local provider `baseUrl` is also the narrow network trust decision for model HTTP requests: Paddy allows that exact `scheme://host:port` origin through the guarded fetch path, without adding a separate config option or trusting other private origins.
 
 ```json5
 {
@@ -67,7 +67,7 @@ Configuring a custom/local provider `baseUrl` is also the narrow network trust d
   <Accordion title="Top-level catalog">
     - `models.mode`: provider catalog behavior (`merge` or `replace`).
     - `models.providers`: custom provider map keyed by provider id.
-      - Safe edits: use `openclaw config set models.providers.<id> '<json>' --strict-json --merge` or `openclaw config set models.providers.<id>.models '<json-array>' --strict-json --merge` for additive updates. `config set` refuses destructive replacements unless you pass `--replace`.
+      - Safe edits: use `paddy config set models.providers.<id> '<json>' --strict-json --merge` or `paddy config set models.providers.<id>.models '<json-array>' --strict-json --merge` for additive updates. `config set` refuses destructive replacements unless you pass `--replace`.
 
   </Accordion>
   <Accordion title="Provider connection and auth">
@@ -96,11 +96,11 @@ Configuring a custom/local provider `baseUrl` is also the narrow network trust d
     - `models.providers.*.models`: explicit provider model catalog entries and metadata overrides. In merge mode, these rows do not restrict eligible provider discovery. Use `agents.defaults.modelPolicy.allow` (or a per-agent policy) to restrict selection, or `models.mode: "replace"` to use only configured inventory without discovery.
     - `models.providers.*.models.*.input`: model input modalities. Use `["text"]` for text-only models and `["text", "image"]` for native image/vision models. Image attachments are only injected into agent turns when the selected model is marked image-capable.
     - `models.providers.*.models.*.contextWindow`: native context-window metadata for that model.
-    - `models.providers.*.models.*.contextTokens`: optional active-input cap for that model; use it when you want an effective budget distinct from the model's native `contextWindow`; `openclaw models list` shows both when they differ.
+    - `models.providers.*.models.*.contextTokens`: optional active-input cap for that model; use it when you want an effective budget distinct from the model's native `contextWindow`; `paddy models list` shows both when they differ.
 
     #### Custom provider capability declarations
 
-    Provider catalogs own `compat` for bundled and catalog-known model routes. Do not copy those flags into config: OpenClaw uses the catalog row when the configured `api` and `baseUrl` still identify that route. `openclaw doctor --fix` removes matching legacy overrides and reports divergent values for review.
+    Provider catalogs own `compat` for bundled and catalog-known model routes. Do not copy those flags into config: Paddy uses the catalog row when the configured `api` and `baseUrl` still identify that route. `paddy doctor --fix` removes matching legacy overrides and reports divergent values for review.
 
     A `compat` block remains supported for a genuinely custom provider, custom model, or catalog model routed to a different endpoint. Set only capabilities verified against that endpoint:
 
@@ -119,7 +119,7 @@ Configuring a custom/local provider `baseUrl` is also the narrow network trust d
     | `strictMessageKeys` | Requires outgoing messages to contain only accepted keys. |
     | `visibleReasoningDetailTypes` | Names reasoning detail block types safe to show in transcripts. |
     | `supportedReasoningEfforts` | Lists the endpoint's accepted reasoning labels. |
-    | `reasoningEffortMap` | Maps OpenClaw thinking labels to endpoint-specific labels. |
+    | `reasoningEffortMap` | Maps Paddy thinking labels to endpoint-specific labels. |
     | `maxTokensField` | Selects `max_tokens` or `max_completion_tokens`. |
     | `thinkingFormat` | Selects the endpoint's reasoning payload dialect. |
     | `requiresToolResultName` | Requires a tool name on tool-result messages. |

@@ -19,7 +19,7 @@ describe("formatGatewayAuthFailureMessage", () => {
         reason,
       });
       expect(message).toContain("redaction sentinel");
-      expect(message).toContain("openclaw doctor --fix");
+      expect(message).toContain("paddy doctor --fix");
       expect(truncateCloseReason(message)).toBe(message);
     },
   );

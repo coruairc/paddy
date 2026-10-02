@@ -1,15 +1,15 @@
 ---
-summary: "Index of the OpenClaw Code Mode documentation, one page per reader job"
+summary: "Index of the Paddy Code Mode documentation, one page per reader job"
 title: "Code Mode"
 sidebarTitle: "Code Mode"
 doc-schema-version: 1
 read_when:
-  - You want to enable OpenClaw Code Mode for an agent run
+  - You want to enable Paddy Code Mode for an agent run
   - You need to explain why Code Mode is different from Codex Code Mode
   - You are looking for the Code Mode page that matches your task
 ---
 
-Code mode is an experimental OpenClaw agent-runtime feature. When
+Code mode is an experimental Paddy agent-runtime feature. When
 enabled, the model no longer sees every enabled tool schema. Instead, it sees
 `exec`, `wait`, and any direct-only tool whose structured result cannot cross
 the JSON-only guest bridge. The model writes a small JavaScript
@@ -18,14 +18,14 @@ TypeScript-style signatures describe the available tools; executable cells use
 plain JavaScript without type annotations.
 
 <Note>
-When `tools.codeMode` is absent, OpenClaw uses the `"auto"` tier and engages
+When `tools.codeMode` is absent, Paddy uses the `"auto"` tier and engages
 Code Mode only for models marked as preferred Code Mode performers. An authored
 object without `enabled` remains off, as do `false` and `{ enabled: false }`.
 Agent and model overrides take precedence. Use **Settings → Agents & Tools →
 Labs → Code Mode** to choose the global setting.
 </Note>
 
-This page documents OpenClaw Code Mode, not Codex Code Mode. The two features
+This page documents Paddy Code Mode, not Codex Code Mode. The two features
 share a name and the same control-tool names (`exec`, `wait`), but they are
 separate implementations:
 
@@ -33,7 +33,7 @@ separate implementations:
   freeform-grammar tool: the model writes raw JavaScript source (optionally
   prefixed by a `// @exec: {...}` pragma line for execution options), executed
   in Codex's in-process V8 Code Mode runtime.
-- OpenClaw Code Mode runs in the generic OpenClaw agent runtime and is
+- Paddy Code Mode runs in the generic Paddy agent runtime and is
   enabled through global, agent, or model activation settings. Its `exec`
   tool takes a JSON `{ title, code }` payload, executed by the selected Node or
   QuickJS executor.
@@ -42,7 +42,7 @@ Both are JavaScript execution surfaces, not shell-command surfaces. Treat them
 as independent, differently-implemented features that happen to expose
 identically-named `exec`/`wait` tools.
 
-In OpenClaw Code Mode, `command` is a JavaScript alias for
+In Paddy Code Mode, `command` is a JavaScript alias for
 `code`, not a shell command. For shell or file operations, call the appropriate
 async tool global from guest JavaScript. Recognizable shell
 commands are rejected before guest execution with actionable
@@ -71,7 +71,7 @@ job. Open the page that matches your task.
   cannot survive the guest bridge.
 - `exec` evaluates model-generated JavaScript in the selected executor's worker
   thread.
-- Every catalog-eligible enabled non-MCP tool (OpenClaw core, plugin, client) is
+- Every catalog-eligible enabled non-MCP tool (Paddy core, plugin, client) is
   hidden as a standalone model tool and exposed inside the guest program as an
   async global function. MCP stays under the `MCP` namespace.
 - The `exec` description carries a bounded quick index of final callable names,
@@ -111,7 +111,7 @@ behavior, or model selection.
   conditional logic, and parallel nested tool calls inside one code cell.
 - Fewer model round trips: a declared output contract lets the model call and
   transform a tool result in one `exec`. Unknown outputs remain raw-first.
-- Provider neutral: works for OpenClaw, plugin, MCP, and client tools without
+- Provider neutral: works for Paddy, plugin, MCP, and client tools without
   depending on provider-native code execution.
 - Fails closed: if Code Mode is enabled but the selected executor is
   unavailable, the run fails instead of silently falling back to broad direct

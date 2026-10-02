@@ -34,7 +34,7 @@ import {
 } from "../../context-engine/registry.js";
 import type { ContextEngine } from "../../context-engine/types.js";
 import type { resolveMcpLoopbackScopedTools as resolveLoopbackTools } from "../../gateway/mcp-http.runtime.js";
-import { setActiveNodeContext } from "../../infra/active-node-context.js";
+import { setActiveNodeContexts } from "../../infra/active-node-context.js";
 import {
   claimHeartbeatOutcomeForRun,
   persistHeartbeatOutcome,
@@ -706,7 +706,7 @@ describe("prepareCliRunContext", () => {
   });
 
   afterEach(async () => {
-    setActiveNodeContext(null);
+    setActiveNodeContexts([]);
     cliBackendsTesting.resetDepsForTest();
     resetCliRunnerPrepareTestDeps();
     resetCliAuthEpochTestDeps();
@@ -1490,7 +1490,7 @@ describe("prepareCliRunContext", () => {
       provider: "anthropic",
       agentDir,
     });
-    await expect(preparation).rejects.toThrow("openclaw models auth login --provider anthropic");
+    await expect(preparation).rejects.toThrow("paddy models auth login --provider anthropic");
     expect(prepareExecution).not.toHaveBeenCalled();
   });
 
@@ -1945,7 +1945,7 @@ describe("prepareCliRunContext", () => {
   });
 
   it("prepares side questions without agent-turn context, tools, hooks, or reusable sessions", async () => {
-    setActiveNodeContext({ nodeId: "active-mac" });
+    setActiveNodeContexts([{ nodeId: "active-mac" }]);
     fixture.appendTranscript({
       id: "msg-1",
       parentId: null,
@@ -2365,7 +2365,7 @@ describe("prepareCliRunContext", () => {
         sessionKey: "agent:main:test",
         agentId: "main",
         trigger: "user",
-        prompt: "[OpenClaw room event]",
+        prompt: "[Paddy room event]",
         currentInboundEventKind: "room_event",
         currentInboundContext: {
           text: "Room context:\nAlice: lunch?\n\nCurrent event:\nBob: yes",
@@ -2381,7 +2381,7 @@ describe("prepareCliRunContext", () => {
 
       expect(context.reusableCliSession).toEqual({ mode: "reuse", sessionId: "cli-session" });
       expect(context.params.prompt).toBe(
-        "Current event:\nBob: yes\n\n[OpenClaw room event]\n\nCurrent active computer (latest physical input, not message origin): active_node=unknown",
+        "Current event:\nBob: yes\n\n[OpenClaw room event]\n\nCurrent active computer (latest reported app/system input, not message origin): active_node=unknown active_node_identity=unknown",
       );
       expect(context.openClawHistoryPrompt).toContain("Room context:\nAlice: lunch?");
       expect(context.openClawHistoryPrompt).toContain("Current event:\nBob: yes");
@@ -2558,7 +2558,7 @@ describe("prepareCliRunContext", () => {
     const context = await fixture.prepare({});
 
     expect(context.params.prompt).toBe("latest ask");
-    expect(context.systemPrompt).toContain("You are a personal assistant running inside OpenClaw.");
+    expect(context.systemPrompt).toContain("You are a personal assistant running inside Paddy.");
     expect(context.systemPrompt).toContain("Current model identity: test-cli/test-model.");
     expect(context.systemPrompt).not.toContain("hook exploded");
     expect(hookRunner.runBeforePromptBuild).toHaveBeenCalledOnce();
@@ -3212,6 +3212,31 @@ describe("prepareCliRunContext", () => {
     expect(context.systemPrompt).not.toContain("Telegram rich OFF");
   });
 
+  it("keeps per-run helper session identities out of the reusable system prompt", async () => {
+    const prepareRun = (runId: string, runtimeFactsInTurn?: true) =>
+      fixture.prepare({
+        runId,
+        sessionId: runId,
+        sessionKey: `agent:main:main:active-memory:${runId}`,
+        messageChannel: "webchat",
+        ...(runtimeFactsInTurn ? { runtimeFactsInTurn } : {}),
+      });
+
+    const first = await prepareRun("recall-a", true);
+    const second = await prepareRun("recall-b", true);
+
+    expect(second.systemPrompt).toBe(first.systemPrompt);
+    expect(first.systemPrompt).not.toContain("Runtime: ");
+    expect(first.params.prompt).toContain("session=agent:main:main:active-memory:recall-a");
+    expect(second.params.prompt).toContain("session=agent:main:main:active-memory:recall-b");
+    expect(second.params.prompt).toContain("channel=webchat");
+
+    // Resumable turns keep Runtime facts in the prompt they share across turns.
+    const resumable = await prepareRun("turn-c");
+    expect(resumable.systemPrompt).toContain("session=agent:main:main:active-memory:turn-c");
+    expect(resumable.params.prompt).not.toContain("Runtime: ");
+  });
+
   it.each(["group", "channel"] as const)(
     "uses explicit %s chat type for bundled message-tool etiquette with an opaque session key",
     async (chatType) => {
@@ -3318,7 +3343,7 @@ describe("prepareCliRunContext", () => {
     });
     expect(context.openClawHistoryPrompt).toBeUndefined();
     expect(context.params.prompt).toContain(
-      "OpenClaw resumed this CLI session after prompt content changed.",
+      "Paddy resumed this CLI session after prompt content changed.",
     );
     expect(context.params.prompt).toContain("changed=system-prompt");
     expect(context.params.prompt).toContain("latest ask");
@@ -3342,7 +3367,7 @@ describe("prepareCliRunContext", () => {
       invalidatedReason: "system-prompt",
     });
     expect(context.params.prompt).not.toContain(
-      "OpenClaw resumed this CLI session after prompt content changed.",
+      "Paddy resumed this CLI session after prompt content changed.",
     );
   });
 
@@ -4491,7 +4516,7 @@ describe("prepareCliRunContext", () => {
       toolsAllow: ["read", "web_search"],
     });
     await expect(run).rejects.toThrow(
-      `CLI backend "test-cli" cannot enforce this run's tool cap. Upgrade its plugin and retry; if current, ask its maintainer to add exact-cap support. OpenClaw did not start the run.`,
+      `CLI backend "test-cli" cannot enforce this run's tool cap. Upgrade its plugin and retry; if current, ask its maintainer to add exact-cap support. Paddy did not start the run.`,
     );
 
     expect(getActiveMcpLoopbackRuntime).not.toHaveBeenCalled();
@@ -5013,7 +5038,7 @@ describe("prepareCliRunContext", () => {
     ).rejects.toMatchObject({
       code: "unsupported",
       message:
-        'CLI backend "external-cli" does not support isolated completion; OpenClaw did not start the run.',
+        'CLI backend "external-cli" does not support isolated completion; Paddy did not start the run.',
     });
     expect(cleanup).toHaveBeenCalledOnce();
   });
@@ -5715,7 +5740,7 @@ describe("prepareCliRunContext", () => {
   });
 
   it("preserves a Claude native-control resume when the local transcript is absent", async () => {
-    setActiveNodeContext({ nodeId: "active-mac" });
+    setActiveNodeContexts([{ nodeId: "active-mac" }]);
     setCliBackendForPrepareTest();
     const transcriptCheck = vi.fn(async () => false);
     const orphanCheck = vi.fn(async () => true);
@@ -6903,10 +6928,10 @@ describe("prepareCliRunContext", () => {
       expect(context.openClawHistoryPrompt).toBeDefined();
       expect(context.openClawHistoryPrompt).toContain("RESEED_RETAINED_PREFIX");
       if (testCase.expectsTruncation) {
-        expect(context.openClawHistoryPrompt).toContain("OpenClaw reseed history truncated");
+        expect(context.openClawHistoryPrompt).toContain("Paddy reseed history truncated");
       } else {
         expect(context.openClawHistoryPrompt).toContain(testCase.marker);
-        expect(context.openClawHistoryPrompt).not.toContain("OpenClaw reseed history truncated");
+        expect(context.openClawHistoryPrompt).not.toContain("Paddy reseed history truncated");
       }
     });
   });
@@ -6964,7 +6989,7 @@ describe("prepareCliRunContext", () => {
       expect(context.openClawHistoryPrompt).toBeDefined();
       expect(context.openClawHistoryPrompt).toContain(recentMarker);
       expect(context.openClawHistoryPrompt).toContain("EARLIEST_USER");
-      expect(context.openClawHistoryPrompt).not.toContain("OpenClaw reseed history truncated");
+      expect(context.openClawHistoryPrompt).not.toContain("Paddy reseed history truncated");
     });
   });
 });

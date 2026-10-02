@@ -169,23 +169,21 @@ describe("settingsSearchTextMatches", () => {
 
 describe("formatDocumentTitle", () => {
   it("does not duplicate a context ending in the brand", () => {
-    expect(formatDocumentTitle({ context: "Ask OpenClaw" })).toBe("Ask OpenClaw");
-    expect(formatDocumentTitle({ context: "OpenClaw" })).toBe("OpenClaw");
+    expect(formatDocumentTitle({ context: "Ask Paddy" })).toBe("Ask Paddy");
+    expect(formatDocumentTitle({ context: "OpenClaw" })).toBe("OpenClaw — Paddy");
   });
 
   it("names the disconnected gateway without implying internet loss", () => {
     expect(formatDocumentTitle({ context: "Usage", gatewayDisconnected: true })).toBe(
-      "(Disconnected) Usage — OpenClaw",
+      "(Disconnected) Usage — Paddy",
     );
   });
 
   it("shows attention separately from the disconnected state", () => {
-    expect(formatDocumentTitle({ context: "Usage", attentionCount: 3 })).toBe(
-      "(3) Usage — OpenClaw",
-    );
+    expect(formatDocumentTitle({ context: "Usage", attentionCount: 3 })).toBe("(3) Usage — Paddy");
     expect(
       formatDocumentTitle({ context: "Usage", attentionCount: 3, gatewayDisconnected: true }),
-    ).toBe("(Disconnected) Usage — OpenClaw");
+    ).toBe("(Disconnected) Usage — Paddy");
   });
 });
 
@@ -205,7 +203,7 @@ describe("titleForRoute", () => {
       Object.fromEntries(ALL_ROUTES.map((routeId) => [routeId, titleForRoute(routeId)])),
     ).toEqual({
       chat: "Chat",
-      custodian: "OpenClaw",
+      custodian: "Paddy",
       activity: "Activity",
       meetings: "Meetings",
       apps: "Apps",

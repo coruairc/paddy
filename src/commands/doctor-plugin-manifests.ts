@@ -149,12 +149,8 @@ export function legacyPluginManifestContractMigrationToHealthFinding(
     target: migration.pluginId,
     requirement: "contracts-capability-keys",
     fixHint:
-      "Run `openclaw doctor --fix` to rewrite legacy plugin manifest capability keys under contracts.*.",
+      "Run `paddy doctor --fix` to rewrite legacy plugin manifest capability keys under contracts.*.",
   };
-}
-
-function migrationToManifestJson(migration: LegacyManifestContractMigration): string {
-  return `${JSON.stringify(migration.nextRaw, null, 2)}\n`;
 }
 
 /** Prompts and rewrites legacy plugin manifest contract fields when doctor repair is enabled. */
@@ -167,12 +163,7 @@ export async function maybeRepairLegacyPluginManifestContracts(params: {
   prompter: DoctorPrompter;
   note?: typeof note;
 }): Promise<boolean> {
-  const migrations = collectLegacyPluginManifestContractMigrations({
-    ...(params.config ? { config: params.config } : {}),
-    ...(params.env ? { env: params.env } : {}),
-    ...(params.manifestRoots ? { manifestRoots: params.manifestRoots } : {}),
-    ...(params.workspaceDir ? { workspaceDir: params.workspaceDir } : {}),
-  });
+  const migrations = collectLegacyPluginManifestContractMigrations(params);
   if (migrations.length === 0) {
     return false;
   }
@@ -199,7 +190,11 @@ export async function maybeRepairLegacyPluginManifestContracts(params: {
   const applied: string[] = [];
   for (const migration of migrations) {
     try {
-      fs.writeFileSync(migration.manifestPath, migrationToManifestJson(migration), "utf-8");
+      fs.writeFileSync(
+        migration.manifestPath,
+        `${JSON.stringify(migration.nextRaw, null, 2)}\n`,
+        "utf-8",
+      );
       applied.push(...migration.changeLines);
     } catch (error) {
       params.runtime.error(

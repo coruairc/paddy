@@ -549,7 +549,7 @@ describe("exec approvals CLI", () => {
 
     expect(writtenJson().defaultAction).toBe("deny");
     expect(effectivePolicy()).toEqual({
-      note: "This node enforces a host-native exec policy; OpenClaw approvals-file policy math does not apply.",
+      note: "This node enforces a host-native exec policy; Paddy approvals-file policy math does not apply.",
       scopes: [],
     });
     expect(callGatewayFromCli.mock.calls.map((call) => call[0])).toEqual([
@@ -767,7 +767,7 @@ describe("exec approvals CLI", () => {
       "tools.exec askFallback",
       {
         effective: "deny",
-        source: "OpenClaw default (deny)",
+        source: "Paddy default (deny)",
       },
     );
 
@@ -784,7 +784,7 @@ describe("exec approvals CLI", () => {
     });
     expectFields(requireRecord(agentScope.askFallback, "agent askFallback"), "agent askFallback", {
       effective: "deny",
-      source: "OpenClaw default (deny)",
+      source: "Paddy default (deny)",
     });
   });
 
@@ -845,7 +845,7 @@ describe("exec approvals CLI", () => {
     ).rejects.toThrow("__exit__:1");
 
     expect(runtimeErrors).toStrictEqual([
-      'Unknown agent id "nope-agent". Run openclaw agents list to see configured agents.',
+      'Unknown agent id "nope-agent". Run paddy agents list to see configured agents.',
     ]);
     expect(updateExecApprovals).not.toHaveBeenCalled();
     expect(localSnapshot.file.agents).toEqual({});

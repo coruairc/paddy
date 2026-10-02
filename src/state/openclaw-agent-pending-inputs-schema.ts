@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { runSqliteImmediateTransactionSync } from "../infra/sqlite-transaction.js";
 import { OPENCLAW_AGENT_SCHEMA_SQL } from "./openclaw-agent-schema.js";
 import { ensureColumn, tableHasColumn } from "./openclaw-state-db-schema-helpers.js";
@@ -39,7 +40,7 @@ export function ensureSessionPendingInputsSchema(db: DatabaseSync): void {
     `CREATE TABLE IF NOT EXISTS ${SESSION_PENDING_INPUTS_TABLE} (`,
   );
   if (start < 0) {
-    throw new Error("OpenClaw pending-input schema marker is missing.");
+    throw new Error(`${PRODUCT_NAME} pending-input schema marker is missing.`);
   }
   const nested = db.isTransaction;
   runSqliteImmediateTransactionSync(db, () => {
@@ -68,7 +69,7 @@ export function ensureSessionInputCompletionsSchema(db: DatabaseSync): void {
     "CREATE TABLE IF NOT EXISTS session_input_completions (",
   );
   if (start < 0) {
-    throw new Error("OpenClaw input-completion schema marker is missing.");
+    throw new Error(`${PRODUCT_NAME} input-completion schema marker is missing.`);
   }
   const nested = db.isTransaction;
   runSqliteImmediateTransactionSync(db, () => {

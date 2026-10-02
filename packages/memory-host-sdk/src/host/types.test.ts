@@ -23,7 +23,7 @@ describe("memory search staleness", () => {
       warning:
         "Memory index is stale: embedding request timed out. Search results may be incomplete.",
       action:
-        "Run: openclaw memory status --index --agent main. Rebuilding may call the configured embedding provider and can incur provider cost.",
+        "Run: paddy memory status --index --agent main. Rebuilding may call the configured embedding provider and can incur provider cost.",
     });
   });
 
@@ -66,7 +66,7 @@ describe("memory search staleness", () => {
         warning:
           "Memory index repair failed: HTTP 400: embedding provider unavailable. The existing index was left unchanged.",
         action:
-          "Run: openclaw memory status --deep --agent main. Resolve the reported sync failure before retrying the search.",
+          "Run: paddy memory status --deep --agent main. Resolve the reported sync failure before retrying the search.",
       });
     },
   );
@@ -82,7 +82,7 @@ describe("memory search staleness", () => {
           indexIdentity: {
             status: "mismatched",
             reason:
-              "the index was written by a newer OpenClaw version; upgrade OpenClaw or reindex explicitly",
+              "the index was written by a newer Paddy version; upgrade Paddy or reindex explicitly",
             code,
             owner: "openclaw",
             versionOrder: "newer",
@@ -90,9 +90,9 @@ describe("memory search staleness", () => {
         },
       };
       const result = resolveMemorySearchStaleness(status, "main");
-      expect(result?.warning).toContain("newer OpenClaw version");
+      expect(result?.warning).toContain("newer Paddy version");
       expect(result?.warning).toContain("Previous memory sync failed: HTTP 400");
-      expect(result?.action).toContain("Upgrade OpenClaw or reindex explicitly");
+      expect(result?.action).toContain("Upgrade Paddy or reindex explicitly");
       expect(result?.action).toContain("provider cost");
       expect(status.lastSyncError).toBe("HTTP 400: embedding provider unavailable");
     },
@@ -122,7 +122,7 @@ describe("memory search staleness", () => {
       warning:
         "Memory index is stale: index provenance classifier changed (owner: openclaw, code: provenance_version). Search results may be incomplete.",
       action:
-        "Run: openclaw memory status --index --agent main. Rebuilding may call the configured embedding provider and can incur provider cost.",
+        "Run: paddy memory status --index --agent main. Rebuilding may call the configured embedding provider and can incur provider cost.",
     });
   });
 
@@ -172,7 +172,7 @@ describe("memory search staleness", () => {
       warning:
         "Memory index is stale: index sources changed (owner: configuration, code: sources). Search results may be incomplete.",
       action:
-        "Run: openclaw memory status --index --agent main. Rebuilding uses keyword indexing only and does not call an embedding provider.",
+        "Run: paddy memory status --index --agent main. Rebuilding uses keyword indexing only and does not call an embedding provider.",
     });
   });
 
@@ -195,7 +195,7 @@ describe("memory search staleness", () => {
       ),
     ).toMatchObject({
       action:
-        "Run: openclaw memory status --index --agent main. Rebuilding may call the configured embedding provider and can incur provider cost.",
+        "Run: paddy memory status --index --agent main. Rebuilding may call the configured embedding provider and can incur provider cost.",
     });
   });
 

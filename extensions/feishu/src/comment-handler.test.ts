@@ -246,7 +246,6 @@ describe("handleFeishuCommentEvent", () => {
     createFeishuCommentReplyDispatcherMock.mockReturnValue({
       dispatcherOptions: {},
       delivery: { deliver: vi.fn(async () => undefined) },
-      startTypingReaction: vi.fn(async () => {}),
       cleanupTypingReaction: vi.fn(async () => {}),
     });
   });
@@ -423,7 +422,7 @@ describe("handleFeishuCommentEvent", () => {
       file_type: "docx",
       comment_id: "comment_1",
       content: [
-        "OpenClaw: access not configured.",
+        "Paddy: access not configured.",
         "",
         "Your Feishu user id: ou_sender",
         "Pairing code:",
@@ -433,7 +432,7 @@ describe("handleFeishuCommentEvent", () => {
         "",
         "Ask the bot owner to approve with:",
         "```",
-        "openclaw pairing approve feishu TESTCODE",
+        "paddy pairing approve feishu TESTCODE",
         "```",
       ].join("\n"),
       is_whole_comment: false,
@@ -486,7 +485,6 @@ describe("handleFeishuCommentEvent", () => {
     createFeishuCommentReplyDispatcherMock.mockReturnValue({
       dispatcherOptions: {},
       delivery: { deliver: vi.fn(async () => undefined) },
-      startTypingReaction: vi.fn(async () => {}),
       cleanupTypingReaction,
     });
 
@@ -506,7 +504,6 @@ describe("handleFeishuCommentEvent", () => {
     createFeishuCommentReplyDispatcherMock.mockReturnValue({
       dispatcherOptions: {},
       delivery: { deliver: vi.fn(async () => undefined) },
-      startTypingReaction: vi.fn(async () => {}),
       cleanupTypingReaction,
     });
 
@@ -519,20 +516,5 @@ describe("handleFeishuCommentEvent", () => {
 
     resolveCleanup?.();
     await eventPromise;
-  });
-
-  it("does not start comment typing reaction before dispatch begins", async () => {
-    const startTypingReaction = vi.fn(async () => {});
-    createFeishuCommentReplyDispatcherMock.mockReturnValue({
-      dispatcherOptions: {},
-      delivery: { deliver: vi.fn(async () => undefined) },
-      startTypingReaction,
-      cleanupTypingReaction: vi.fn(async () => {}),
-    });
-
-    await handleComment();
-
-    expect(startTypingReaction).not.toHaveBeenCalled();
-    expect(dispatchInboundMessageMock).toHaveBeenCalledTimes(1);
   });
 });

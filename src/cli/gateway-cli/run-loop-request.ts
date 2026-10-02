@@ -7,6 +7,7 @@ import { formatErrorMessage } from "../../infra/errors.js";
 import type { GatewayRestartIntent } from "../../infra/restart-intent.js";
 import type { SubsystemLogger } from "../../logging/subsystem.js";
 import type { GatewayShutdownTrigger } from "../../process/gateway-work-admission.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import type { createGatewayHostLifecycle } from "./host-lifecycle.js";
 
@@ -53,7 +54,7 @@ export function registerGatewayRunInstallationReplacement(params: {
       params.logger.warn(fact.message);
       if (!params.supervised) {
         params.logger.error(
-          `The foreground Gateway must stop after its installation was replaced. Restart it with: ${formatCliCommand("openclaw gateway run")}`,
+          `The foreground Gateway must stop after its installation was replaced. Restart it with: ${formatCliCommand(`${CLI_NAME} gateway run`)}`,
         );
       }
       params.accept(fact);

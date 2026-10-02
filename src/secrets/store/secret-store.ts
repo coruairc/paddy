@@ -132,7 +132,7 @@ export function assertSecretStoreValue(value: string, kind: SecretStoreKind, nam
   if (isRedactedSecretValue(value)) {
     throw new SecretStoreValidationError(
       "SECRET_STORE_VALUE_REDACTED",
-      `Secret store entry "${name}" contains a redaction placeholder. Supply a real value or leave the field unchanged. Run openclaw doctor --fix to repair a store-backed Gateway token.`,
+      `Secret store entry "${name}" contains a redaction placeholder. Supply a real value or leave the field unchanged. Run paddy doctor --fix to repair a store-backed Gateway token.`,
     );
   }
   const bytes = Buffer.byteLength(value, "utf8");
@@ -334,7 +334,7 @@ export function readSecretStoreExecEnvironment(params: {
           }
           if (isRedactedSecretValue(row.value)) {
             log.warn(
-              `Secret store entry "${row.name}" contains a redaction placeholder; excluded from the exec environment. Replace it with a real value, or run openclaw doctor --fix for a Gateway token.`,
+              `Secret store entry "${row.name}" contains a redaction placeholder; excluded from the exec environment. Replace it with a real value, or run paddy doctor --fix for a Gateway token.`,
             );
             continue;
           }
@@ -460,7 +460,7 @@ function writeSecretStoreEntryInternal(
       if (params.expectedValue !== undefined && previous?.value !== params.expectedValue) {
         throw new SecretStoreValidationError(
           "SECRET_STORE_VALUE_CHANGED",
-          `Secret store entry "${params.name}" changed before repair; its current value was preserved. Run openclaw doctor again.`,
+          `Secret store entry "${params.name}" changed before repair; its current value was preserved. Run paddy doctor again.`,
         );
       }
       executeSqliteQuerySync(

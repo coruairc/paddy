@@ -15,7 +15,7 @@ const {
   createAudioResourceMock,
   resolveAgentRouteMock,
   agentCommandMock,
-  resolveRealtimeBootstrapContextInstructionsMock,
+  resolveRealtimeVoiceAgentContextInstructionsMock,
   resolveVoiceIngressWithParticipantsMock,
   syntheticVoiceAdmissions,
   transcribeAudioFileMock,
@@ -211,9 +211,8 @@ const {
         _runtime?: unknown,
       ): Promise<{ payloads?: Array<{ text?: string }> }> => ({ payloads: [] }),
     ),
-    resolveRealtimeBootstrapContextInstructionsMock: vi.fn<
-      (...args: unknown[]) => Promise<string | undefined>
-    >(async () => undefined),
+    resolveRealtimeVoiceAgentContextInstructionsMock:
+      vi.fn<(...args: unknown[]) => Promise<string>>(),
     resolveVoiceIngressWithParticipantsMock: vi.fn() as Mock,
     transcribeAudioFileMock: vi.fn<PluginRuntime["mediaUnderstanding"]["transcribeAudioFile"]>(
       async () => ({ text: "hello from voice" }),
@@ -267,7 +266,7 @@ const {
       active: false,
       queued: false,
       reason: "no_active_run",
-      message: "There is no active OpenClaw run to steer.",
+      message: "There is no active Paddy run to steer.",
       speak: true,
       show: true,
       suppress: false,
@@ -297,7 +296,7 @@ export const voiceTestMocks = {
   createAudioResourceMock,
   resolveAgentRouteMock,
   agentCommandMock,
-  resolveRealtimeBootstrapContextInstructionsMock,
+  resolveRealtimeVoiceAgentContextInstructionsMock,
   resolveVoiceIngressWithParticipantsMock,
   transcribeAudioFileMock,
   resolveAudioInputBudgetMock,
@@ -387,7 +386,7 @@ vi.mock("openclaw/plugin-sdk/realtime-bootstrap-context", async () => {
   >("openclaw/plugin-sdk/realtime-bootstrap-context");
   return {
     ...actual,
-    resolveRealtimeBootstrapContextInstructions: resolveRealtimeBootstrapContextInstructionsMock,
+    resolveRealtimeVoiceAgentContextInstructions: resolveRealtimeVoiceAgentContextInstructionsMock,
   };
 });
 

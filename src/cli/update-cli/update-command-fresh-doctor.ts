@@ -12,6 +12,7 @@ import { readConfigFileSnapshot } from "../../config/config.js";
 import { resolveConfigPath, resolveStateDir } from "../../config/paths.js";
 import type { ConfigFileSnapshot } from "../../config/types.openclaw.js";
 import { resolveGatewayInstallEntrypoint } from "../../daemon/gateway-entrypoint.js";
+import { readDeferredPluginMigrationsAsync } from "../../infra/deferred-plugin-migrations.js";
 import { runtimeProcessEntrypoints } from "../../infra/runtime-process-entrypoints.js";
 import { resolveAggregateSqliteInspectionTimeoutMs } from "../../infra/sqlite-readonly-worker.js";
 import { collectStateDatabasePaths } from "../../infra/update-candidate-state.js";
@@ -51,6 +52,7 @@ import {
 import { isPlainCommandExitFailure, runExec, type RunExecOptions } from "../../process/exec.js";
 import { defaultRuntime } from "../../runtime.js";
 import { truncateUtf8Prefix, truncateUtf8Suffix } from "../../utils/utf8-truncate.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { parseUpdateTimeoutMs, resolveNodeRunner, type UpdateCommandOptions } from "./shared.js";
 import { createUpdateCommandAuthority } from "./update-command-authority.js";
 import { readUpdateConfigSnapshot } from "./update-command-config-snapshot.js";
@@ -106,7 +108,7 @@ function createPostPluginDoctorExecutionFailure(
       {
         reason,
         message: `Post-update plugin Doctor did not complete: ${reason}`,
-        guidance: ["Run `openclaw update repair` to retry post-update plugin repair."],
+        guidance: [`Run \`${CLI_NAME} update repair\` to retry post-update plugin repair.`],
       },
     ],
   };
@@ -144,7 +146,7 @@ export async function runUpdateFinalizationDoctorInFreshProcess(params: {
   assertCurrent();
   const entryPath = params.entryPath ?? (await resolveGatewayInstallEntrypoint(params.root));
   if (!entryPath) {
-    throw new Error("Updated OpenClaw entrypoint not found for post-plugin doctor");
+    throw new Error(`Updated ${PRODUCT_NAME} entrypoint not found for post-plugin doctor`);
   }
   assertCurrent();
   const args = [
@@ -224,8 +226,7 @@ export async function runUpdateFinalizationDoctorInFreshProcess(params: {
             configInputHash: snapshot.hash,
             repair: true,
             databaseGenerations:
-              params.databaseBackup?.postMigrationGenerations ??
-              params.databaseBackup?.sourceGenerations,
+              params.databaseBackup?.migration?.to ?? params.databaseBackup?.sourceGenerations,
             yes: params.yes,
             workspaceSuggestions: params.workspaceSuggestions === true,
             ...(params.phase === "post-plugin" && process.env[POST_CORE_UPDATE_ENV] === "1"
@@ -356,7 +357,7 @@ export async function runUpdateFinalizationDoctorInFreshProcess(params: {
       return {
         reason: "doctor-advisory",
         message: `Post-update plugin Doctor did not complete${exitCode == null ? "" : ` (exit ${exitCode})`}: ${message}`,
-        guidance: ["Run `openclaw update repair` to retry post-update plugin repair."],
+        guidance: [`Run \`${CLI_NAME} update repair\` to retry post-update plugin repair.`],
       };
     }
     throw new UpdateDoctorError(message, failureFacts, { cause: error, exitCode });
@@ -390,7 +391,7 @@ export async function runUpdateFinalizationDoctorInFreshProcess(params: {
   if (doctorResult?.status === "ok" && doctorResult.maintenanceRefusal) {
     throw new DoctorMaintenanceRefusalError(
       doctorResult.warnings?.[0] ??
-        "Doctor maintenance remains pending; run openclaw doctor --fix.",
+        `Doctor maintenance remains pending; run ${CLI_NAME} doctor --fix.`,
       doctorResult.maintenanceRefusal,
     );
   }
@@ -471,23 +472,16 @@ async function validatePostPluginConfigInFreshProcess(params: {
   }
 }
 
-export async function completePostCorePluginUpdate(params: {
-  root: string;
-  runId?: string;
-  opts?: UpdateCommandOptions;
-  doctorConfigWrites?: true;
-  databaseBackup?: UpdateDatabaseBackup;
-  onDatabaseWriteStep?: (step: UpdateStepResult) => void;
-  pluginUpdate: PostCorePluginUpdateResult;
-  freshDoctorRequired: boolean;
-  yes: boolean;
-  json: boolean;
-  timeoutMs?: number;
-  nodeRunner?: string;
-  beforeDoctor?: () => Promise<void>;
-  onWarnings?: (warnings: string[]) => void;
-  assertCurrent?: () => void;
-}): Promise<{
+export async function completePostCorePluginUpdate(
+  params: Omit<
+    Parameters<typeof runUpdateFinalizationDoctorInFreshProcess>[0],
+    "phase" | "workspaceSuggestions" | "entryPath" | "onAuthorityRefused"
+  > & {
+    pluginUpdate: PostCorePluginUpdateResult;
+    freshDoctorRequired: boolean;
+    beforeDoctor?: () => Promise<void>;
+  },
+): Promise<{
   pluginUpdate: PostCorePluginUpdateResult;
   configSnapshot: ConfigFileSnapshot;
 }> {
@@ -510,9 +504,14 @@ export async function completePostCorePluginUpdate(params: {
       entryPath = await resolveGatewayInstallEntrypoint(params.root);
       assertCurrent();
       if (!entryPath) {
-        throw new Error("Updated OpenClaw entrypoint not found for post-plugin doctor");
+        throw new Error(`Updated ${PRODUCT_NAME} entrypoint not found for post-plugin doctor`);
       }
-      if (params.freshDoctorRequired || hasDeferredUpdateModelRetirement()) {
+      const freshDoctorRequired =
+        params.freshDoctorRequired ||
+        hasDeferredUpdateModelRetirement() ||
+        (await readDeferredPluginMigrationsAsync()).length > 0;
+      assertCurrent();
+      if (freshDoctorRequired) {
         await params.beforeDoctor?.();
         const warning = await runUpdateFinalizationDoctorInFreshProcess({
           ...params,

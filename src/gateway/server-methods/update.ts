@@ -5,6 +5,7 @@ import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { ErrorCodes, errorShape } from "../../../packages/gateway-protocol/src/index.js";
 import { AgentSelectionRequiredError } from "../../agents/agent-scope-config.js";
 import { prepareCommandOwnerAuthority } from "../../auto-reply/command-auth.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { UpdatePreMutationError } from "../../cli/update-cli/shared.js";
 import { formatCommandOwnerHint } from "../../commands/doctor-command-owner.js";
 import { isRestartEnabled } from "../../config/commands.flags.js";
@@ -83,6 +84,7 @@ import {
   recordHandoffFailure,
   resolveGatewayUpdateAdmission,
 } from "./update-admission.js";
+import { recordGatewayUpdateOutcome } from "./update-outcome-observation.js";
 import { updateReportHandler } from "./update-report.js";
 import { updateStatusHandlers } from "./update-status.js";
 
@@ -239,8 +241,8 @@ export const updateHandlers: GatewayRequestHandlers = {
       }
       const message =
         reason === "owner_required"
-          ? `Only the OpenClaw owner can start an update from chat. ${formatCommandOwnerHint({ cfg: currentConfig, channel: requester.channel, id: requester.senderId })}`
-          : "Updates from chat are disabled (commands.restart=false). Use the Control UI or ask the Gateway operator to update OpenClaw.";
+          ? `Only the ${PRODUCT_NAME} owner can start an update from chat. ${formatCommandOwnerHint({ cfg: currentConfig, channel: requester.channel, id: requester.senderId })}`
+          : `Updates from chat are disabled (commands.restart=false). Use the Control UI or ask the Gateway operator to update ${PRODUCT_NAME}.`;
       if (adoptedCampaignId && updateLifecycle.campaign?.getState()?.id === adoptedCampaignId) {
         updateLifecycle.campaign?.clear();
       }
@@ -702,9 +704,7 @@ export const updateHandlers: GatewayRequestHandlers = {
     if ((ackDelivered || ackQueued) && handoff?.status !== "started") {
       await notify(outcomeRun, "finished");
     }
-    context?.logGateway?.info(
-      `update.run completed ${formatControlPlaneActor(actor)} changedPaths=<n/a> restartReason=update.run status=${result.status}`,
-    );
+    recordGatewayUpdateOutcome(result, actor, context?.logGateway);
     respond(
       true,
       {

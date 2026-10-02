@@ -4,13 +4,14 @@ import { defineSingleProviderPluginEntry } from "openclaw/plugin-sdk/provider-en
 import { buildProviderReplayFamilyHooks } from "openclaw/plugin-sdk/provider-model-shared";
 import { buildProviderToolCompatFamilyHooks } from "openclaw/plugin-sdk/provider-tools";
 import manifest from "./openclaw.plugin.json" with { type: "json" };
+import { buildNovitaVideoGenerationProvider } from "./video-generation-provider.js";
 
 const PROVIDER_ID = "novita";
 
 export default defineSingleProviderPluginEntry({
   id: PROVIDER_ID,
   name: "NovitaAI Provider",
-  description: "Official OpenClaw NovitaAI provider plugin",
+  description: "Official Paddy NovitaAI provider plugin",
   manifest,
   provider: {
     label: "NovitaAI",
@@ -35,5 +36,8 @@ export default defineSingleProviderPluginEntry({
       dropReasoningFromHistory: false,
     }),
     ...buildProviderToolCompatFamilyHooks("openai"),
+  },
+  register(api) {
+    api.registerVideoGenerationProvider(buildNovitaVideoGenerationProvider());
   },
 });

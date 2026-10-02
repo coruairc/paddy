@@ -185,7 +185,7 @@ describe("runSystemAgent", () => {
 
     expect(runGatewayRestartCalls).toBe(0);
     expect(onReadyCalls).toBe(0);
-    expect(lines.join("\n")).toContain("[openclaw] planner: openai/gpt-5.5");
+    expect(lines.join("\n")).toContain("[paddy] planner: openai/gpt-5.5");
     expect(lines.join("\n")).toContain("[openclaw] interpreted: restart gateway");
     expect(lines.join("\n")).toContain("Plan: restart the Gateway. Say yes to apply.");
     expect(lines.indexOf("Default model: openai/gpt-5.5")).toBeLessThan(
@@ -494,7 +494,7 @@ describe("runSystemAgent", () => {
 
     expect(runInteractiveTuiCalls).toBe(0);
     expect(lines.join("\n")).toContain(
-      "OpenClaw needs an interactive TTY. Use --message for one command.",
+      "Paddy needs an interactive TTY. Use --message for one command.",
     );
   });
 });

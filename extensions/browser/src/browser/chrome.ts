@@ -44,6 +44,7 @@ import {
   normalizeCdpHttpBaseForJsonEndpoints,
   scopeCdpPolicyToConfiguredEndpoint,
   withCdpSocket,
+  type CdpEndpointPin,
 } from "./cdp.helpers.js";
 import { normalizeCdpWsUrl } from "./cdp.js";
 import {
@@ -796,17 +797,15 @@ function buildOpenClawChromeLaunchArgs(params: {
   return args;
 }
 
-type ChromeCdpEndpointPin = NonNullable<Awaited<ReturnType<typeof assertCdpEndpointAllowed>>>;
-
 export type ChromeWebSocketEndpoint = {
   url: string;
-  lookup?: ChromeCdpEndpointPin["lookup"];
+  lookup?: CdpEndpointPin["lookup"];
 };
 
 async function canOpenWebSocket(
   url: string,
   timeoutMs: number,
-  lookup?: ChromeCdpEndpointPin["lookup"],
+  lookup?: CdpEndpointPin["lookup"],
   signal?: AbortSignal,
 ): Promise<boolean> {
   try {
@@ -1171,22 +1170,22 @@ export async function launchOpenClawChrome(
         downloadDir: DEFAULT_DOWNLOAD_DIR,
         mockKeychain: useMockKeychain,
       });
-      log.info(`🦞 openclaw browser profile decorated (${profile.color})`);
+      log.info(`🦞 paddy browser profile decorated (${profile.color})`);
     } catch (err) {
-      log.warn(`openclaw browser profile decoration failed: ${String(err)}`);
+      log.warn(`paddy browser profile decoration failed: ${String(err)}`);
     }
   }
 
   try {
     ensureProfileNetworkPredictionDisabled(userDataDir);
   } catch (err) {
-    log.warn(`openclaw browser network-prediction prefs failed: ${String(err)}`);
+    log.warn(`paddy browser network-prediction prefs failed: ${String(err)}`);
   }
 
   try {
     ensureProfileCleanExit(userDataDir);
   } catch (err) {
-    log.warn(`openclaw browser clean-exit prefs failed: ${String(err)}`);
+    log.warn(`paddy browser clean-exit prefs failed: ${String(err)}`);
   }
   signal?.throwIfAborted();
 
@@ -1297,7 +1296,7 @@ export async function launchOpenClawChrome(
       signal?.throwIfAborted();
       const pid = spawned.pid;
       log.info(
-        `🦞 openclaw browser started (${exe.kind}) profile "${profile.name}" on 127.0.0.1:${profile.cdpPort} (pid ${pid})`,
+        `🦞 paddy browser started (${exe.kind}) profile "${profile.name}" on 127.0.0.1:${profile.cdpPort} (pid ${pid})`,
       );
 
       return runningForProcess(proc, pid);

@@ -22,6 +22,12 @@ accepted source revision and whether it came from a Gateway write or a file edit
 Later hot-reloadable writes do not erase a committed restart requirement while
 its application is pending.
 
+If a busy state store temporarily refuses the reload's lifecycle lease, the
+Gateway keeps the change pending and retries automatically with a capped backoff.
+No additional config edit is needed. The previous runtime stays active until the
+change applies, and shutdown cancels pending retries. Other reload failures remain
+visible in the Gateway log.
+
 Direct file edits are treated as untrusted until they validate. The source's file adapter waits
 for editor temp-write/rename churn to settle, reads the final file, and rejects
 invalid external edits without rewriting `openclaw.json`. OpenClaw-owned config
@@ -38,17 +44,17 @@ files through the normal startup validation and recovery path; source revision
 numbers are local to the running Gateway.
 
 If you see `config reload skipped (invalid config)` or startup reports `Invalid
-config`, inspect the config, run `openclaw config validate`, then run `openclaw
+config`, inspect the config, run `paddy config validate`, then run `paddy
 doctor --fix` for repair. See [Gateway troubleshooting](/gateway/troubleshooting#gateway-rejected-invalid-config)
 for the checklist.
 
 A live change that selects a workspace with retired setup state is also rejected,
-with an `openclaw doctor --fix` hint. The Gateway keeps its last-good runtime.
+with an `paddy doctor --fix` hint. The Gateway keeps its last-good runtime.
 Gateway-managed writes, including `config.set`, reject the candidate before
 persistence; hand edits and writes from a separate CLI process can remain on disk
 even though the watcher refuses to activate them. Stop the Gateway and, if the
 write was rejected before persistence, save the intended workspace path while
-it is stopped. Then run [`openclaw doctor --fix`](/cli/doctor) and restart.
+it is stopped. Then run [`paddy doctor --fix`](/cli/doctor) and restart.
 Reload never migrates workspace state.
 
 ### Reload modes
@@ -66,7 +72,7 @@ Reload never migrates workspace state.
 }
 ```
 
-The earlier `hot` and `restart` modes are retired; [`openclaw doctor --fix`](/cli/doctor) maps both to `hybrid`. Reload debounce is no longer configurable and runs behind a built-in default.
+The earlier `hot` and `restart` modes are retired; [`paddy doctor --fix`](/cli/doctor) maps both to `hybrid`. Reload debounce is no longer configurable and runs behind a built-in default.
 
 ### What hot-applies vs what needs a restart
 
@@ -92,7 +98,13 @@ stopped accounts; use an explicit channel start to resume those accounts.
 Model runtime selection keeps your authored settings separate from catalog defaults.
 Hot reload and secrets reload preserve that distinction: catalog compatibility
 metadata does not become a custom request override that switches a native runtime
-back to OpenClaw.
+back to Paddy.
+
+Channel transport edits, such as `channels.slack.streaming.mode`, retain prepared
+session rows and model catalogs. Agent rosters, session policy, store topology,
+configured model references, and channel activation still invalidate their affected
+facts. When model or provider authentication inputs change, catalog requests wait
+for the replacement publication instead of reporting that startup is incomplete.
 
 Changing `session.store` does not migrate conversations. Queued notifications
 bound to the previous physical store end with a recorded `store-replaced` outcome.
@@ -182,6 +194,8 @@ pick up the environment label, CLI agent picker, embed preferences, and favicon
 display preference; the Gateway process keeps running. `allowedOrigins` and
 `dangerouslyAllowHostHeaderOriginFallback` also hot-apply: pending handshakes
 recheck the new policy, and browser connections it no longer allows close.
+Removing an admitted browser origin also revokes its accepted runs and delegated
+work, even after the connection has closed; removing an unrelated origin does not.
 Disabling the Control UI stops serving dashboard pages and assets and cancels
 pending asset preparation. Existing Gateway connections and agent runs continue.
 Re-enabling prepares missing dashboard assets in the background; requests return
@@ -217,9 +231,18 @@ Title edits apply to future captures and preserve existing transcript titles.
 Disabling transcript storage stops capture writers without ending their meetings.
 
 Role definitions, proxy trust, identity scopes, Tailscale authentication, and
-trusted-proxy policies apply live. Connections and pending handshakes that retain
-old policy lose authority and reconnect. Accepted policy writes can finish their
-response; other work must pass the current authority checks before writing.
+trusted-proxy policies apply live. Transport policy changes can require a new
+handshake without cancelling accepted runs. Proxy headers, OIDC mapping, device
+auto-approval, and proxy-address changes fence connections but preserve accepted
+work when the owner's grant is unchanged. This includes a requested initial turn
+after `sessions.create` commits its new session. Editing another login's identity scopes
+or reordering the same scopes keeps the connection and its accepted runs active.
+Changing the owner's identity-scope grant, removing that identity from the proxy
+allowlist, or disabling its authentication method revokes retained and delegated
+work, even if the grant is restored afterward. Shared-secret rotation also revokes
+work admitted with the old credential. Role restrictions remain enforced by each
+run's authority. Accepted policy writes can finish their response; subsequent
+requests must reauthenticate under the current transport policy.
 Changing authentication mode or listener topology still requires a Gateway restart.
 
 Node command policy updates connected nodes immediately. Disabling node-published
@@ -247,7 +270,7 @@ changes replace affected managed browser processes when next used; externally
 attached browsers stay running. Browser enablement, evaluation, and SSRF policy
 changes replace only the Browser control service: pending operations cancel and
 owned Chrome processes close before the new policy applies. Attached and remote
-browser processes stay open while OpenClaw disconnects its control sessions.
+browser processes stay open while Paddy disconnects its control sessions.
 When enabled, Browser control starts again on demand; managed tabs from the
 retired process are not kept. Changing extension relay legacy authentication replaces the owned relay generation;
 externally managed relay daemons retain their own lifecycle and policy. Snapshot defaults apply to the next snapshot, and tab-cleanup settings
@@ -278,7 +301,7 @@ The Gateway accepts its configured secret whether the client sends it as a token
 Local onboarding generates a Gateway secret by default (`gateway.auth.mode: "token"`)
 without asking you to choose an auth mechanism. Existing password-mode configs
 are preserved. To choose your own password explicitly, use
-`openclaw onboard --gateway-password <value>` or `--gateway-auth password`.
+`paddy onboard --gateway-password <value>` or `--gateway-auth password`.
 Remote onboarding asks for one Gateway secret and stores it as `gateway.remote.token`.
 See [Onboard](/cli/onboard) for storage choices and connecting without a shared secret.
 
@@ -308,7 +331,7 @@ snapshots. A plugin's narrower reload policy can retain an instance or require a
 Plugin install, update, enable, disable, uninstall, and metadata refresh apply
 through the running Gateway's plugin lifecycle without a Gateway restart.
 Explicit plugin actions also work when passive reload is `off`. Source or
-manifest edits need `openclaw plugins reload <id>`. Changing an agent workspace
+manifest edits need `paddy plugins reload <id>`. Changing an agent workspace
 alone does not refresh plugin discovery; use an explicit metadata refresh. See
 [Apply changes and inspect](/plugins/manage-plugins#apply-changes-and-inspect)
 and [Plugin metadata snapshots](/plugins/architecture#plugin-metadata-snapshot-and-lookup-table).
@@ -328,7 +351,7 @@ their resource ownership; they are never discarded to force a replacement.
 If recovery reaches its deadline or cleanup fails, the operation ends as failed
 and releases channel reload pauses. Detailed [`/ready`](/gateway/health#http-probes)
 reports `plugin-reload` with the affected plugins and recovery instructions.
-Retry `openclaw plugins reload <id>` once the outstanding work settles, or restart
+Retry `paddy plugins reload <id>` once the outstanding work settles, or restart
 the Gateway. See [Plugin lifecycle](/plugins/architecture#plugin-metadata-snapshot-and-lookup-table)
 for cleanup and ownership details.
 
@@ -340,7 +363,7 @@ When replacement ingress reports ready, old paths it did not reclaim are removed
 
 ### Reload planning
 
-When you edit a source file that is referenced through `$include`, OpenClaw plans
+When you edit a source file that is referenced through `$include`, Paddy plans
 the reload from the source-authored layout, not the flattened in-memory view.
 That keeps hot-reload decisions (hot-apply vs restart) predictable even when a
 single top-level section lives in its own included file such as

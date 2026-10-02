@@ -1,21 +1,22 @@
 // Formats CLI command examples with active container/profile hints when they apply.
 import { CLI_NAME } from "./cli-name.js";
 import { normalizeProfileName } from "./profile-utils.js";
+import { quoteCliArg, quotePowerShellArg } from "./quote-cli-arg.js";
 
-const CLI_PREFIX_RE = new RegExp(
-  `^(?:pnpm|npm|bunx|npx)\\s+${CLI_NAME}\\b|^${CLI_NAME}\\b`,
-);
+// Matches both the current binary and the retained `openclaw` alias. Accepting
+// both keeps this working during the rebrand and for anyone still typing the
+// upstream name.
+const CLI_PREFIX_RE = /^(?:pnpm|npm|bunx|npx)\s+(?:paddy|openclaw)\b|^(?:paddy|openclaw)\b/;
 const CONTAINER_FLAG_RE = /(?:^|\s)--container(?:\s|=|$)/;
 const PROFILE_FLAG_RE = /(?:^|\s)--profile(?:\s|=|$)/;
 const DEV_FLAG_RE = /(?:^|\s)--dev(?:\s|$)/;
 const UPDATE_RE = /^(?:\s+--(?:dev|no-color|(?:profile|log-level)[=\s]+\S+))*\s+update(?:\s|$)/;
 const CONTAINER_HINT_RE = /^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,127}$/;
 
-/** Show the installed command name even when a message was written with the upstream binary. */
-export function useProductCli(command: string): string {
-  return command.replace(
-    /^((?:pnpm|npm|bunx|npx)\s+)?(?:openclaw|paddy)\b/,
-    (_match, runner?: string) => `${runner ?? ""}${CLI_NAME}`,
+/** Rewrite an aliased command prefix to the current product name. */
+function brandCliPrefix(command: string): string {
+  return command.replace(CLI_PREFIX_RE, (match) =>
+    match.replace(/\b(?:paddy|openclaw)\b/, CLI_NAME),
   );
 }
 
@@ -24,29 +25,51 @@ export function formatCliCommand(
   command: string,
   env: Record<string, string | undefined> = process.env as Record<string, string | undefined>,
 ): string {
-  command = useProductCli(command);
+  const branded = brandCliPrefix(command);
   const rawContainer = env.OPENCLAW_CONTAINER_HINT?.trim();
   const container = rawContainer && CONTAINER_HINT_RE.test(rawContainer) ? rawContainer : undefined;
   const profile = normalizeProfileName(env.OPENCLAW_PROFILE);
   if (!container && !profile) {
-    return command;
+    return branded;
   }
-  if (!CLI_PREFIX_RE.test(command)) {
-    return command;
+  if (!CLI_PREFIX_RE.test(branded)) {
+    return branded;
   }
   const additions: string[] = [];
   if (
     container &&
-    !CONTAINER_FLAG_RE.test(command) &&
-    !UPDATE_RE.test(command.replace(CLI_PREFIX_RE, ""))
+    !CONTAINER_FLAG_RE.test(branded) &&
+    !UPDATE_RE.test(branded.replace(CLI_PREFIX_RE, ""))
   ) {
     additions.push(`--container ${container}`);
   }
-  if (!container && profile && !PROFILE_FLAG_RE.test(command) && !DEV_FLAG_RE.test(command)) {
+  if (!container && profile && !PROFILE_FLAG_RE.test(branded) && !DEV_FLAG_RE.test(branded)) {
     additions.push(`--profile ${profile}`);
   }
   if (additions.length === 0) {
-    return command;
+    return branded;
   }
-  return command.replace(CLI_PREFIX_RE, (match) => `${match} ${additions.join(" ")}`);
+  return branded.replace(CLI_PREFIX_RE, (match) => `${match} ${additions.join(" ")}`);
+}
+
+/**
+ * Formats a CLI command, then swaps its branded prefix for an absolute Node
+ * launcher. Recovery text must run this install's own script under the selected
+ * runtime, not whatever `openclaw`/`paddy` happens to resolve to on PATH.
+ *
+ * Anchors on CLI_NAME because `brandCliPrefix` has already rewritten the prefix,
+ * so matching the stored `openclaw` literal would silently drop the launcher and
+ * leave a bare command that can re-enter the broken runtime. Container/profile
+ * hints added by `formatCliCommand` are preserved.
+ */
+export function formatCliCommandWithNodeLauncher(
+  command: string,
+  launcherScript: string,
+  env?: Record<string, string | undefined>,
+): string {
+  const quote = process.platform === "win32" ? quotePowerShellArg : quoteCliArg;
+  return formatCliCommand(command, env).replace(
+    new RegExp(`^${CLI_NAME}\\b`),
+    () => `node ${quote(launcherScript)}`,
+  );
 }

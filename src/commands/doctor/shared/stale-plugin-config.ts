@@ -415,7 +415,7 @@ export function maybeRepairStalePluginConfig(
           config: cfg,
           changes: [],
           warnings: [
-            `- Stale plugin cleanup paused: preserving the restrictive plugins.allow policy because active plugin ids alias to other owners (${aliasedOwners.map((plugin) => `${plugin.id} -> ${normalizePluginId(plugin.id)}`).join(", ")}). Choose noncolliding allowed plugin ids, then rerun openclaw doctor --fix.`,
+            `- Stale plugin cleanup paused: preserving the restrictive plugins.allow policy because active plugin ids alias to other owners (${aliasedOwners.map((plugin) => `${plugin.id} -> ${normalizePluginId(plugin.id)}`).join(", ")}). Choose noncolliding allowed plugin ids, then rerun paddy doctor --fix.`,
           ],
         };
       }

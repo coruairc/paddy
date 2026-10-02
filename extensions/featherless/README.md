@@ -1,12 +1,12 @@
-# OpenClaw Featherless AI Provider
+# Paddy Featherless AI Provider
 
-Official OpenClaw provider plugin for Featherless AI's OpenAI-compatible API.
+Official Paddy provider plugin for Featherless AI's OpenAI-compatible API.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/featherless-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/featherless> for setup and configuration.

@@ -1,11 +1,11 @@
-# OpenClaw Microsoft Teams
+# Paddy Microsoft Teams
 
-Official OpenClaw channel plugin for Microsoft Teams bot conversations.
+Official Paddy channel plugin for Microsoft Teams bot conversations.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/msteams
 ```
 
-Configure the Teams bot credentials and trusted service URLs in OpenClaw, then connect the bot to the teams or chats where agents should operate.
+Configure the Teams bot credentials and trusted service URLs in Paddy, then connect the bot to the teams or chats where agents should operate.

@@ -21,18 +21,18 @@ An error naming the **Gateway state database** identifies a storage failure obse
 
 A transcript writer ownership error means the run lost its session write claim. Retry in the current session and inspect Gateway logs if it recurs. Storage failures do not trigger provider credential rotation or automatic replay of the run.
 
-Use `openclaw logs --follow` to correlate the run with storage activity. SQLite can contend between connections or worker threads in one Gateway process; seeing only one process with the database open does not rule out contention. See [database concurrency notes](/reference/database-schemas#integrity-checks). Avoid full database compaction while runs are active.
+Use `paddy logs --follow` to correlate the run with storage activity. SQLite can contend between connections or worker threads in one Gateway process; seeing only one process with the database open does not rule out contention. See [database concurrency notes](/reference/database-schemas#integrity-checks). Avoid full database compaction while runs are active.
 
 ## No replies
 
 If channels are up but nothing answers, check routing and policy before reconnecting anything.
 
 ```bash
-openclaw status
-openclaw channels status --probe
-openclaw pairing list --channel <channel> [--account <id>]
-openclaw config get channels
-openclaw logs --follow
+paddy status
+paddy channels status --probe
+paddy pairing list --channel <channel> [--account <id>]
+paddy config get channels
+paddy logs --follow
 ```
 
 Look for:
@@ -58,11 +58,11 @@ Related:
 When the dashboard/control UI will not connect, validate its URL, authentication, and device identity.
 
 ```bash
-openclaw gateway status
-openclaw status
-openclaw logs --follow
-openclaw doctor
-openclaw gateway status --json
+paddy gateway status
+paddy status
+paddy logs --follow
+paddy doctor
+paddy gateway status --json
 ```
 
 Look for:
@@ -74,12 +74,12 @@ Look for:
 If a local browser cannot connect to `127.0.0.1:18789` after an update, first recover the local Gateway service and confirm it is serving the dashboard:
 
 ```bash
-openclaw gateway restart
+paddy gateway restart
 lsof -i :18789
 curl http://127.0.0.1:18789
 ```
 
-If `curl` returns OpenClaw HTML, the Gateway is working and the remaining issue is likely browser cache, an old deep link, or stale tab state. Open `http://127.0.0.1:18789` directly and navigate from the dashboard. If restart does not leave the service running, run `openclaw gateway start` and recheck `openclaw gateway status`.
+If `curl` returns Paddy HTML, the Gateway is working and the remaining issue is likely browser cache, an old deep link, or stale tab state. Open `http://127.0.0.1:18789` directly and navigate from the dashboard. If restart does not leave the service running, run `paddy gateway start` and recheck `paddy gateway status`.
 
 <AccordionGroup>
   <Accordion title="Connect / auth signatures">
@@ -105,11 +105,11 @@ Use `error.details.code` from the failed `connect` response to pick the next act
 
 | Detail code                  | Meaning                                                                                                                                                                                      | Recommended action                                                                                                                                                                                                                                                                       |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AUTH_TOKEN_MISSING`         | Client did not send a required shared token.                                                                                                                                                 | On the Gateway host, run `openclaw gateway auth-token --show` in an interactive terminal, paste the output into the client, and retry.                                                                                                                                                   |
+| `AUTH_TOKEN_MISSING`         | Client did not send a required shared token.                                                                                                                                                 | On the Gateway host, run `paddy gateway auth-token --show` in an interactive terminal, paste the output into the client, and retry.                                                                                                                                                      |
 | `AUTH_TOKEN_MISMATCH`        | Shared token did not match gateway auth token.                                                                                                                                               | If `canRetryWithDeviceToken=true`, allow one trusted retry. Cached-token retries reuse stored approved scopes; explicit `deviceToken` / `scopes` callers keep requested scopes. If still failing, run the [token drift recovery checklist](/cli/devices#token-drift-recovery-checklist). |
 | `AUTH_DEVICE_TOKEN_MISMATCH` | Cached per-device token is stale or revoked.                                                                                                                                                 | Rotate/re-approve device token using [devices CLI](/cli/devices), then reconnect.                                                                                                                                                                                                        |
 | `AUTH_SCOPE_MISMATCH`        | Device token is valid, but its approved role/scopes do not cover this connect request.                                                                                                       | Re-pair the device or approve the requested scope contract; do not treat this as shared-token drift.                                                                                                                                                                                     |
-| `PAIRING_REQUIRED`           | Device identity needs approval. Check `error.details.reason` for `not-paired`, `scope-upgrade`, `role-upgrade`, or `metadata-upgrade`, and use `requestId` / `remediationHint` when present. | Approve pending request: `openclaw devices list` then `openclaw devices approve <requestId>`. Scope/role upgrades use the same flow after you review the requested access.                                                                                                               |
+| `PAIRING_REQUIRED`           | Device identity needs approval. Check `error.details.reason` for `not-paired`, `scope-upgrade`, `role-upgrade`, or `metadata-upgrade`, and use `requestId` / `remediationHint` when present. | Approve pending request: `paddy devices list` then `paddy devices approve <requestId>`. Scope/role upgrades use the same flow after you review the requested access.                                                                                                                     |
 
 <Note>
 Direct loopback backend RPCs authenticated with the shared gateway token/password should not depend on the CLI's paired-device scope baseline. If subagents or other internal calls still fail with `scope-upgrade`, verify the caller is using `client.id: "gateway-client"` and `client.mode: "backend"` and is not forcing an explicit `deviceIdentity` or device token.
@@ -118,9 +118,9 @@ Direct loopback backend RPCs authenticated with the shared gateway token/passwor
 Device auth v2 migration check:
 
 ```bash
-openclaw --version
-openclaw doctor
-openclaw gateway status
+paddy --version
+paddy doctor
+paddy gateway status
 ```
 
 If logs show nonce/signature errors, update the connecting client and verify it:
@@ -137,10 +137,10 @@ If logs show nonce/signature errors, update the connecting client and verify it:
   </Step>
 </Steps>
 
-If `openclaw devices rotate` / `revoke` / `remove` is denied unexpectedly:
+If `paddy devices rotate` / `revoke` / `remove` is denied unexpectedly:
 
 - Paired-device token sessions can manage only **their own** device unless the caller also has `operator.admin`.
-- `openclaw devices rotate --scope ...` can only request operator scopes that the caller session already holds.
+- `paddy devices rotate --scope ...` can only request operator scopes that the caller session already holds.
 
 Related:
 

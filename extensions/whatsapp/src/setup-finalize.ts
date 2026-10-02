@@ -416,7 +416,7 @@ export async function finalizeWhatsAppSetup(params: {
   } else if (!linked) {
     await params.prompter.note(
       t("wizard.whatsapp.linkLater", {
-        command: formatCliCommand("openclaw channels login"),
+        command: formatCliCommand("paddy channels login"),
       }),
       "WhatsApp",
     );

@@ -398,8 +398,8 @@ export function formatSandboxToolPolicyBlockedMessage(params: {
   }
   const explainCommand =
     runtime.sessionKey && !hasUnsafeControlChars(runtime.sessionKey)
-      ? `openclaw sandbox explain --session ${shellEscapeSingleArg(runtime.sessionKey)} --agent ${runtime.agentId}`
-      : `openclaw sandbox explain --agent ${runtime.agentId}`;
+      ? `paddy sandbox explain --session ${shellEscapeSingleArg(runtime.sessionKey)} --agent ${runtime.agentId}`
+      : `paddy sandbox explain --agent ${runtime.agentId}`;
   lines.push(`- See: ${formatCliCommand(explainCommand)}`);
 
   return lines.join("\n");

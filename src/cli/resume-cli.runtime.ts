@@ -15,21 +15,16 @@ import {
   type ResumeResolution,
   type SessionPickerChoice,
 } from "../tui/tui-session-picker.js";
+import { CLI_NAME } from "./cli-name.js";
 import type { ResumeCliOptions } from "./resume-cli.js";
 import { isTerminalInteractive } from "./terminal-interactivity.js";
 
 const RESUME_INTERACTIVE_TERMINAL_GUIDANCE =
-  "Attaching to a session requires an interactive terminal. Re-run `openclaw resume [query]` from an interactive terminal.";
+  `Attaching to a session requires an interactive terminal. Re-run \`${CLI_NAME} resume [query]\` from an interactive terminal.`;
 const RESUME_HANDOFF_UNRESOLVED =
   "Could not resolve the session handoff. Copy a fresh command from the Control UI.";
 
 const validateHandoffSessionResolveResult = lazyCompile(SessionsResolveResultSchema);
-
-function requireInteractiveResumeTerminal() {
-  if (!isTerminalInteractive()) {
-    throw new Error(RESUME_INTERACTIVE_TERMINAL_GUIDANCE);
-  }
-}
 
 async function formatResumeConnectionError(error: unknown): Promise<Error> {
   const [{ formatTuiErrorMessage }, { resolveGatewayDisconnectState }] = await Promise.all([
@@ -62,18 +57,9 @@ async function connectResumeGateway(opts: ResumeCliOptions, handoffTarget: boole
   });
   try {
     await new Promise<void>((resolve, reject) => {
-      let settled = false;
-      const finish = (complete: () => void) => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        complete();
-      };
-      client.onConnected = () => finish(resolve);
-      client.onConnectError = (error) => finish(() => reject(error));
-      client.onDisconnected = (reason) =>
-        finish(() => reject(new Error(reason || "Gateway connection closed")));
+      client.onConnected = resolve;
+      client.onConnectError = reject;
+      client.onDisconnected = (reason) => reject(new Error(reason || "Gateway connection closed"));
       client.start();
     });
     return client;
@@ -136,7 +122,7 @@ async function promptResumeSession(
   const choices = buildSessionChoices(sessions);
   if (choices.length === 0) {
     throw new Error(
-      "No recent sessions found. Run `openclaw sessions` to inspect sessions or `openclaw tui` to start one.",
+      `No recent sessions found. Run \`${CLI_NAME} sessions\` to inspect sessions or \`${CLI_NAME} tui\` to start one.`,
     );
   }
   const selected = await selectStyled({
@@ -168,7 +154,7 @@ function reportResumeFailure(
   }
   defaultRuntime.error(`No recent session matched ${JSON.stringify(query)}.`);
   defaultRuntime.error(
-    "Run `openclaw resume` to choose from recent sessions or `openclaw sessions` to inspect all sessions.",
+    `Run \`${CLI_NAME} resume\` to choose from recent sessions or \`${CLI_NAME} sessions\` to inspect all sessions.`,
   );
 }
 
@@ -194,7 +180,9 @@ export async function runResumeCommand(query: string | undefined, opts: ResumeCl
     throw new Error("--handoff cannot be combined with a positional query or --url.");
   }
   const handoff = encodedHandoff === undefined ? undefined : decodeResumeHandoff(encodedHandoff);
-  requireInteractiveResumeTerminal();
+  if (!isTerminalInteractive()) {
+    throw new Error(RESUME_INTERACTIVE_TERMINAL_GUIDANCE);
+  }
   const resolvedQuery = query?.trim();
   const explicitGlobalSession = resolveExplicitGlobalSessionKey(resolvedQuery);
   let connection: Awaited<ReturnType<typeof connectResumeGateway>>["connection"];

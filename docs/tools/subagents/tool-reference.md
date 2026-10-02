@@ -24,6 +24,12 @@ replacement for writing a clear task prompt.
 
 ## Tool: `sessions_spawn`
 
+Pass `user` (the requester's verified `requester_profile.id`) to act for a participant. It is required after several
+people have steered the turn, across native, visible, and ACP spawns. The child
+retains that person's authority independently of the parent turn; later revocation
+still stops it. Codex native `spawn_agent` rejects multi-person turns; use
+`sessions_spawn` with `user` instead.
+
 Starts a sub-agent run on the spawning session's sub-agent queue, with
 [per-session concurrency](/tools/subagents/operations#concurrency). Ordinary one-shot runs
 use `deliver: false` and return through an announce step; collectors, quiet
@@ -45,8 +51,8 @@ session to confirm the effective tool list.
 - **Model:** same-agent native sub-agents inherit the caller's active model, including session and one-shot overrides, unless you set `agents.defaults.subagents.model` (or per-agent `agents.entries.*.subagents.model`). The inherited model ID is preserved exactly, even when it contains a provider prefix. Cross-agent spawns use the target agent's configured model. ACP runtime spawns use the same configured subagent model when present; otherwise the ACP harness keeps its own default. An explicit `sessions_spawn.model` still wins.
 - **Thinking:** native sub-agents inherit the caller's active turn, including one-shot thinking overrides, unless you set `agents.defaults.subagents.thinking` (or per-agent `agents.entries.*.subagents.thinking`). ACP runtime spawns also apply the target agent's `thinkingDefault`, then its per-model `agents.entries.*.models["provider/model"].params.thinking` or the shared `agents.defaults.models["provider/model"].params.thinking`. An explicit `sessions_spawn.thinking` still wins.
 - **Fast mode:** with swarm enabled, native sub-agents inherit the requester's setting only when the resolved child provider and model match the requester's active model. A different child model uses its own defaults. Explicit `sessions_spawn.fastMode` values (`true`, `false`, or `"auto"`) take precedence; aliases resolving to the same model preserve inheritance.
-- **Run timeout:** pass `runTimeoutSeconds` to set a timeout for a specific native, ACP, or visible sub-agent run. When omitted, OpenClaw uses `agents.defaults.subagents.runTimeoutSeconds` if configured; otherwise it falls back to `0` (no timeout). An explicit `0` disables the timeout for that run.
-- **Process lifetime:** a detached OpenClaw sub-agent has its own run lifecycle. A background task created inside an external CLI backend is different: it shares the parent CLI subprocess and stops if that parent reaches `agents.defaults.timeoutSeconds`.
+- **Run timeout:** pass `runTimeoutSeconds` to set a timeout for a specific native, ACP, or visible sub-agent run. When omitted, Paddy uses `agents.defaults.subagents.runTimeoutSeconds` if configured; otherwise it falls back to `0` (no timeout). An explicit `0` disables the timeout for that run.
+- **Process lifetime:** a detached Paddy sub-agent has its own run lifecycle. A background task created inside an external CLI backend is different: it shares the parent CLI subprocess and stops if that parent reaches `agents.defaults.timeoutSeconds`.
 - **Task delivery:** hidden and visible native sub-agents receive their delegated task in a `[Subagent Task]` message appended after any forked history. The message identifies the current child assignment and treats inherited conversation as background context. The hidden sub-agent system prompt carries runtime rules and routing context, not a duplicate of the task.
 
 Native sub-agent continuations after a Gateway restart or descendant completion
@@ -112,7 +118,7 @@ Selecting a cloud profile is available only to Gateway-side visible spawns. The 
 
 ### Delegation prompt mode
 
-`agents.defaults.subagents.delegationMode` controls prompt guidance only; it does not change tool policy or enforce delegation. With no explicit setting, OpenClaw uses `prefer` in each agent's main session and `suggest` in every other session.
+`agents.defaults.subagents.delegationMode` controls prompt guidance only; it does not change tool policy or enforce delegation. With no explicit setting, Paddy uses `prefer` in each agent's main session and `suggest` in every other session.
 
 - `suggest`: keep the standard prompt nudge to use sub-agents for larger or slower work.
 - `prefer`: tell the agent to stay responsive and delegate anything more involved than a direct reply through `sessions_spawn`.
@@ -149,7 +155,7 @@ In either mode, internal QA, research, coding, review, and test lanes use ordina
   Optional stable handle for identifying a specific child in later status output. Must match `[a-z][a-z0-9_-]{0,63}` and cannot be a reserved target such as `last` or `all`.
 </ParamField>
 <ParamField path="label" type="string">
-  Optional short task title shown in transcript activity and Tasks views, and in the session sidebar for visible sessions. Name the work being done, not the agent; it is set on the child session at run start.
+  Optional short task title shown in session transcripts, and in the session sidebar for visible sessions. Name the work being done, not the agent; it is set on the child session at run start.
 </ParamField>
 <ParamField path="agentId" type="string">
   Spawn under another configured agent id when allowed by `subagents.allowAgents`.
@@ -193,7 +199,7 @@ In either mode, internal QA, research, coding, review, and test lanes use ordina
   `"delete"` archives the session immediately after announce. The Control UI's **Tasks** inspector can preview the retained transcript under the [post-cleanup access rules](/tools/subagents/announce#announce).
 </ParamField>
 <ParamField path="expectsCompletionMessage" type="boolean" default="true">
-  Set `false` for fire-and-forget children. When the child finishes, OpenClaw skips the completion handoff to the requester (no announce or steer turn), records the delivery as not required, and still runs child cleanup. Inspect such children with `subagents` or `sessions_history`. `collect: true` always uses `false`.
+  Set `false` for fire-and-forget children. When the child finishes, Paddy skips the completion handoff to the requester (no announce or steer turn), records the delivery as not required, and still runs child cleanup. Inspect such children with `subagents` or `sessions_history`. `collect: true` always uses `false`.
 </ParamField>
 <ParamField path="completionTarget" type='"parent"'>
   Return the result in a private requester turn with no automatic channel delivery. The parent may continue work or remain silent. Supported only for hidden native `mode: "run"` children; unavailable with ACP, `collect`, `visible`, `thread`, session mode, or `expectsCompletionMessage: false`. Omit to keep normal completion delivery. See [Private parent completion](/tools/subagents/announce#private-parent-completion).
@@ -231,7 +237,7 @@ their latest assistant turn back to the requester; external delivery stays with
 the parent/requester agent.
 </Warning>
 
-With `visible: true`, `group`, `model`, `cwd`, `projectId`, `projectGitUrl`, and a same-agent `context: "fork"` are supported. Reserve this durable mode for a separate session the user requests or needs to revisit and steer independently; it appears in the sidebar when the web UI is available and still works without it. Internal QA, coding, review, and test lanes stay ordinary subagents even when they produce a PR or report or need isolated source work. A managed worktree is a capability of visible sessions, not a reason to create one for an internal worker. Pass `group` to place the new session in that sidebar group atomically; omitted or blank values leave it ungrouped. A sandboxed target restricts `cwd` to that agent's workspace. Non-admin callers may use `cwd` only inside a configured agent workspace. With `worktree: true`, omitting `cwd`, `projectId`, and `projectGitUrl` inherits the same-agent parent's live managed repository or directly selected registered project and creates a separate worktree. Other spawns use the target agent workspace. For another repository, omit `cwd` and select exactly one of `projectId` or `projectGitUrl`; both reuse the existing New session preparation flow at ordinary write scope. Add `worktree: true` for a separate managed worktree. Project selection does not bypass the target sandbox or grant permission to run worktree setup scripts. Do not replace a rejected persistent spawn with the synchronous `openclaw agent` CLI, whose command deadline defaults to 600 seconds. Thread binding, `mode: "session"`, thinking overrides, `lightContext`, and attachment staging are unavailable on this path because visible sessions are persistent dashboard sessions created through `sessions.create`. The default `mode: "run"`, empty `attachments`, and an empty `attachAs.mountPath` are accepted without changing that behavior. The new dashboard child inherits the requester's effective tool-policy ceiling before its first turn. Session listing and addressing obey `tools.sessions.visibility`; the default `all` scope covers sessions across agents on the Gateway for unsandboxed callers. Cross-agent access is on by default and governed by `tools.agentToAgent`; use `allow` to restrict agent pairs or set `enabled: false` to block ordinary cross-agent access (requester-owned native subagent and ACP child sessions stay reachable under `tree` or `all`). Set `agent` for same-agent-only access, `tree` for current plus spawned scope (main retains its same-agent exception), or `self` for current-session-only access. Sandbox spawned-only clamps still apply. Cross-agent owned children are included by `tree`, not `agent`; preserve explicit `tree` for that workflow. See [Session tools](/concepts/session-tool#visibility) and [Managed worktrees](/concepts/managed-worktrees).
+With `visible: true`, `group`, `model`, `cwd`, `projectId`, `projectGitUrl`, and a same-agent `context: "fork"` are supported. Reserve this durable mode for a separate session the user requests or needs to revisit and steer independently; it appears in the sidebar when the web UI is available and still works without it. Internal QA, coding, review, and test lanes stay ordinary subagents even when they produce a PR or report or need isolated source work. A managed worktree is a capability of visible sessions, not a reason to create one for an internal worker. Pass `group` to place the new session in that sidebar group atomically; omitted or blank values leave it ungrouped. A sandboxed target restricts `cwd` to that agent's workspace. Non-admin callers may use `cwd` only inside a configured agent workspace. With `worktree: true`, omitting `cwd`, `projectId`, and `projectGitUrl` inherits the same-agent parent's live managed repository or directly selected registered project and creates a separate worktree. Other spawns use the target agent workspace. For another repository, omit `cwd` and select exactly one of `projectId` or `projectGitUrl`; both reuse the existing New session preparation flow at ordinary write scope. Add `worktree: true` for a separate managed worktree. Project selection does not bypass the target sandbox or grant permission to run worktree setup scripts. Do not replace a rejected persistent spawn with the synchronous `paddy agent` CLI, whose command deadline defaults to 600 seconds. Thread binding, `mode: "session"`, thinking overrides, `lightContext`, and attachment staging are unavailable on this path because visible sessions are persistent dashboard sessions created through `sessions.create`. The default `mode: "run"`, empty `attachments`, and an empty `attachAs.mountPath` are accepted without changing that behavior. The new dashboard child inherits the requester's effective tool-policy ceiling before its first turn. Session listing and addressing obey `tools.sessions.visibility`; the default `all` scope covers sessions across agents on the Gateway for unsandboxed callers. Cross-agent access is on by default and governed by `tools.agentToAgent`; use `allow` to restrict agent pairs or set `enabled: false` to block ordinary cross-agent access (requester-owned native subagent and ACP child sessions stay reachable under `tree` or `all`). Set `agent` for same-agent-only access, `tree` for current plus spawned scope (main retains its same-agent exception), or `self` for current-session-only access. Sandbox spawned-only clamps still apply. Cross-agent owned children are included by `tree`, not `agent`; preserve explicit `tree` for that workflow. See [Session tools](/concepts/session-tool#visibility) and [Managed worktrees](/concepts/managed-worktrees).
 
 If a call fails with `Parameters require visible=true`, omit the named project, group, or worktree options to keep the hidden or ACP runtime. To create a visible session instead, use `visible: true` with `runtime: "subagent"` and omit `mode`, `thread`, `thinking`, `lightContext`, `attachments`, `attachAs`, swarm options, and the ACP-only `streamTo` and `resumeSessionId`. Worktree names and base refs also require `worktree: true`. Adding `visible: true` alone does not make an ACP call compatible.
 
@@ -259,7 +265,7 @@ because they already have control meanings.
 Ends the current model turn and waits for announced child completion events
 to arrive as the next message. Use it when the requester needs results from
 announcing children before answering. It does not collect Swarm results:
-collectors require `agents_wait`, or an awaited `agents.run()` in OpenClaw
+collectors require `agents_wait`, or an awaited `agents.run()` in Paddy
 Code Mode, and do not send completion notifications.
 
 `sessions_yield` is the waiting primitive for announced completions. Do not replace it with polling
@@ -267,13 +273,13 @@ loops over `subagents`, `sessions_list`, `sessions_history`, shell
 `sleep`, or process polling just to detect child completion.
 
 When an earlier async tool call in the same model response has results the model
-has not received yet, OpenClaw defers `sessions_yield` and keeps the turn active.
+has not received yet, Paddy defers `sessions_yield` and keeps the turn active.
 Finish the model response so the next request can deliver those results, then
 yield only if external work still requires waiting. This applies even when the
 tool has already finished and its result appears in the transcript.
 
 Use the optional `message` field for private context that the resumed turn
-should receive. OpenClaw sends a default waiting reply when an interactive
+should receive. Paddy sends a default waiting reply when an interactive
 parent turn would otherwise end silently; `acknowledgment` overrides its text. It is not sent from
 sub-agent, heartbeat, or silent turns, and it does not replace a reply or
 message already delivered during the turn. This host-owned waiting status
@@ -355,7 +361,7 @@ context is asking for its own audience, so it runs as a separate sibling and
 delivers there instead. The paused run stays resumable, and a later default
 follow-up still continues it.
 
-When active children exist, OpenClaw injects a compact runtime-generated
+When active children exist, Paddy injects a compact runtime-generated
 `Active Subagents` prompt block into normal turns so the requester can see
 the current child sessions, run ids, statuses, labels, tasks, and
 `taskName` aliases without polling. The task and label fields in that
@@ -375,49 +381,26 @@ quoted as data. Reading this context does not acknowledge or retry delivery.
 
 ## Tool: `subagents`
 
-Lists spawned sub-agent runs and background-task records owned by the
-requester session tree. The task rows cover native sub-agents, ACP runs,
-Gateway CLI/media work, and cron executions. It is scoped to the current
-requester; a child can only see its own controlled children.
+Lists native subagent runs owned by the requester session tree. A child can
+only inspect its controlled children. ACP, shell, media, and cron status remain
+with their native owners.
 
-Use `subagents` for on-demand status and debugging. Use `sessions_yield` to
-wait for completion events in a later turn. Use `action: "wait"` when the
-immediate next step needs one or more specific tasks within the current turn.
+Use `subagents` for on-demand status and debugging. Use `sessions_yield` for
+announced completions, or `action: "wait"` with returned `runIds` (1–32 IDs)
+and `timeoutSeconds` (0–60, default 30) when this turn needs a selected result.
+A zero timeout reads a snapshot. `reason` is `completed`, `attention`,
+`unavailable`, or `timeout`; `tasks` contains authorized native run snapshots.
+Waiting does not cancel execution or consume completion delivery.
 
-`action: "wait"` accepts `taskIds` from the task rows returned by `list`
-(1–32 IDs), plus `timeoutSeconds` (0–60, default 30). It returns when any
-selected task completes or needs approval/user input, or a selected task
-becomes unavailable. `reason` identifies `completed`, `attention`,
-`unavailable`, or `timeout`; `tasks` contains the current authorized snapshots.
-A zero timeout reads a snapshot. Waiting does not cancel tasks, consume their
-completion announcements, or change the requester's delivery ownership.
-Cancelling the waiting turn also leaves those tasks running. The task IDs
-remain stable when a yielded child resumes under a new execution run ID.
+List entries include the native `runId`, child `sessionKey`, status, outcome,
+and delivery status. A yielded child remains `waiting` until its continuation.
+For an external wait, its controlling parent can send a continuation with
+`sessions_send`; yielding itself does not schedule external work.
 
-Structured list entries separate `execution` from task outcome and
-`deliveryStatus`. A yielded child remains active even after its last execution
-ended: `execution.wait` identifies the currently pending announcing children,
-or reports `external` when no such child owns the next continuation. External
-means the runtime has no child completion to await; it does not prove that a
-remote job or timer was scheduled. Child dependency lists are bounded to 32
-entries and `pendingCount` retains the total. A finished child with pending
-delivery has produced a result that has not yet reached its requester.
-For an external wait, the controlling parent can send a continuation to the
-listed child session key with `sessions_send`; merely yielding does not schedule
-one. The task owner delivers completion when the resumed child finishes.
-
-Use `action: "cancel"` with a `taskId` returned by `action: "list"` to stop
-a task. Native subagent cancellation requires current controller authority;
-retained task history and completion-recipient read/wait access do not grant
-that control. A leaf sub-agent cannot cancel work owned by another session.
-
-A canonical ACP task's recorded owner retains cancellation of its own exact
-execution after a session-parent change. Core task cancellation refuses retained ACP tasks
-without execution-instance metadata; select the current task or use ACP session
-controls instead. Control over descendants follows the child's current
-spawning session, or its current parent when no spawning session is recorded.
-Moving a normally spawned child's navigation parent does not transfer descendant
-control.
+Use `action: "cancel"` with a returned `runId` to stop that native run and its
+descendants. Cancellation requires current controller authority; read access to
+history or completion results does not grant control. ACP session controls,
+not this tool, own ACP cancellation.
 
 Messages and control have distinct effects. `sessions_send` with
 `mode: "steer"` injects guidance into an active supported run and rejects an

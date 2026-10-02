@@ -194,7 +194,7 @@ describe("checkGatewayHealth", () => {
       config: cfg,
     });
     expect(sharedRuntime.error).not.toHaveBeenCalled();
-    expect(note.mock.calls.map(([, title]) => title)).not.toContain("OpenClaw version mismatch");
+    expect(note.mock.calls.map(([, title]) => title)).not.toContain("Paddy version mismatch");
   });
 
   it.each([
@@ -280,6 +280,21 @@ describe("checkGatewayHealth", () => {
       expect(readServiceCommand).not.toHaveBeenCalled();
     },
   );
+
+  it("reports a deleted Gateway Node path without marking the gateway unhealthy", async () => {
+    const execPath = "/opt/homebrew/Cellar/node@24/24.20.0/bin/node";
+    callGateway
+      .mockResolvedValueOnce({
+        childRuntime: { execPath, available: false },
+      })
+      .mockResolvedValue({});
+    const runtime = { log: vi.fn(), error: vi.fn(), exit: vi.fn() };
+    await expect(checkGatewayHealth({ runtime, cfg })).resolves.toMatchObject({ healthOk: true });
+    expect(note).toHaveBeenCalledWith(
+      `Gateway runtime is stale after Node upgrade: child workers are using ${execPath}, which no longer exists. Restart the Gateway.`,
+      "Gateway runtime",
+    );
+  });
 
   it.each([
     ["startupMigrationWarning", "Startup migration warnings"],
@@ -395,7 +410,7 @@ describe("checkGatewayHealth", () => {
     expect(note).toHaveBeenCalledWith(
       [
         "Channel status probe failed: channel probe timed out",
-        "Retry: openclaw channels status --probe",
+        "Retry: paddy channels status --probe",
       ].join("\n"),
       "Channel warnings",
     );
@@ -564,7 +579,7 @@ describe("checkGatewayHealth", () => {
     expect(message).not.toContain(token);
     expect(message).not.toContain("\u001B");
     expect(message.split("\n")).toHaveLength(2);
-    expect(message).toContain("Retry: openclaw channels status --probe");
+    expect(message).toContain("Retry: paddy channels status --probe");
     expect(sharedRuntime.error).not.toHaveBeenCalled();
   });
 
@@ -588,7 +603,7 @@ describe("checkGatewayHealth", () => {
     const [message, title] = note.mock.calls.at(-1) ?? [];
     expect(title).toBe("Telemetry exporters");
     expect(message).toContain("Exporter diagnostics failed: exporter probe failed");
-    expect(message).toContain("Retry: openclaw gateway stability --type telemetry.exporter");
+    expect(message).toContain("Retry: paddy gateway stability --type telemetry.exporter");
     expect(message).not.toContain(token);
     expect(message).not.toContain("\u001B");
     expect(message.split("\n")).toHaveLength(2);
@@ -607,10 +622,10 @@ describe("checkGatewayHealth", () => {
     });
 
     const mismatchNotes = note.mock.calls
-      .filter(([, title]) => title === "OpenClaw version mismatch")
+      .filter(([, title]) => title === "Paddy version mismatch")
       .map(([message]) => String(message));
     const mismatchOutput = mismatchNotes.join("\n");
-    expect(mismatchOutput).toContain("the running Gateway is OpenClaw 2026.4.23");
+    expect(mismatchOutput).toContain("the running Gateway is Paddy 2026.4.23");
     expect(mismatchOutput).not.toContain("That usually means");
     expect(mismatchOutput).toContain("Check `openclaw --version`, `which openclaw`");
     expect(mismatchOutput).toContain(

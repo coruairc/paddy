@@ -1,12 +1,12 @@
-# OpenClaw Chutes Provider
+# Paddy Chutes Provider
 
-Official OpenClaw provider plugin for Chutes.
+Official Paddy provider plugin for Chutes.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/chutes-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/chutes> for setup and configuration.

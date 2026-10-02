@@ -101,7 +101,7 @@ describe("update triage presentation", () => {
       expect(questions[0]?.[1].message).toContain("2222222222222222222222222222222222222222");
       expect(custodianAlertStore.alert?.question).toContain("Do not retry the update");
       expect(surface.textContent).toContain("build-failed");
-      expect(surface.textContent).toContain("openclaw triage");
+      expect(surface.textContent).toContain("paddy triage");
       if (outcome === "session invalidation") {
         const recovery = request.mock.calls.at(-1)?.[1];
         expect(recovery?.sessionId).not.toBe(questions[0]?.[1].sessionId);
@@ -423,7 +423,7 @@ describe("update triage presentation", () => {
       "Before update: 1111111111111111111111111111111111111111",
     );
     expect(surface.textContent).toContain("Disk is full");
-    expect(surface.textContent).toContain("openclaw triage");
+    expect(surface.textContent).toContain("paddy triage");
     expect(admission.admit).not.toHaveBeenCalled();
     expect(request).not.toHaveBeenCalled();
   });

@@ -13,19 +13,20 @@ import {
   classifyUnsupportedNodeCommand,
   formatUnsupportedNodeDiagnosticWarning,
   isNodeVersionAtLeast,
-  isSupportedOpenClawNodeVersion,
   parseNodeReleaseVersion,
   type NodeReleaseVersion,
 } from "../../node-version.mjs";
+import { PRODUCT_NAME } from "../brand.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { ensureSqliteLibrarySelected } from "./bun-sqlite-library.js";
 import { isSqliteWalResetSafeVersion } from "./sqlite-runtime-version.js";
+
+export { isSupportedOpenClawNodeVersion as isSupportedNodeVersion } from "../../node-version.mjs";
 
 type RuntimeKind = "bun" | "node" | "unknown";
 
 const MINIMUM_BUN_VERSION: NodeReleaseVersion = { major: 1, minor: 4, patch: 0 };
 
-const MINIMUM_ENGINE_RE = /^\s*>=\s*v?(\d+\.\d+\.\d+)\s*$/i;
 const ENGINE_CLAUSE_RE = /^\s*>=\s*v?(\d+\.\d+\.\d+)(?:\s+<\s*v?(\d+(?:\.\d+\.\d+)?))?\s*$/i;
 
 /** Runtime facts included in startup/runtime-version diagnostics. */
@@ -130,26 +131,9 @@ export async function isCurrentRuntimeSupported(): Promise<boolean> {
   return runtimeSatisfies(await detectRuntime());
 }
 
-/** Checks a Node version label against OpenClaw's supported Node version range. */
-export function isSupportedNodeVersion(version: string | null): boolean {
-  return isSupportedOpenClawNodeVersion(version);
-}
-
 /** Checks a Bun version label against OpenClaw's minimum supported release. */
 export function isSupportedBunVersion(version: string | null): boolean {
   return isNodeVersionAtLeast(parseSemver(version), MINIMUM_BUN_VERSION);
-}
-
-/** Parses simple package `engines.node` ranges of the form `>=x.y.z`. */
-function parseMinimumNodeEngine(engine: string | null): NodeReleaseVersion | null {
-  if (!engine) {
-    return null;
-  }
-  const match = engine.match(MINIMUM_ENGINE_RE);
-  if (!match) {
-    return null;
-  }
-  return parseSemver(match[1] ?? null);
 }
 
 /** Returns whether a Node version satisfies a supported engine range, or null if unsupported. */
@@ -157,11 +141,6 @@ export function nodeVersionSatisfiesEngine(
   version: string | null,
   engine: string | null,
 ): boolean | null {
-  const minimum = parseMinimumNodeEngine(engine);
-  if (minimum) {
-    return isNodeVersionAtLeast(parseNodeReleaseVersion(version), minimum);
-  }
-
   if (!engine) {
     return null;
   }
@@ -269,13 +248,13 @@ export async function assertSupportedRuntime(
   }
   const requirement =
     details.kind === "bun"
-      ? "openclaw requires Bun 1.4 or newer with WAL-reset-safe node:sqlite (SQLite 3.51.3+ or a patched 3.50.x/3.44.x release)."
+      ? "paddy requires Bun 1.4 or newer with WAL-reset-safe node:sqlite (SQLite 3.51.3+ or a patched 3.50.x/3.44.x release)."
       : (details.sqliteProbe && nodeRuntimeFailure(details.version, details.sqliteProbe)) ||
-        "openclaw requires Node >=24.16.0 <25, or >=26.1.0.";
+        "paddy requires Node >=24.16.0 <25, or >=26.1.0.";
   const retryHint =
     details.kind === "bun"
-      ? "Upgrade Bun or run OpenClaw with a supported Node release."
-      : "Upgrade Node and re-run openclaw.";
+      ? `Upgrade Bun or run ${PRODUCT_NAME} with a supported Node release.`
+      : "Upgrade Node and re-run paddy.";
 
   runtime.error(
     [

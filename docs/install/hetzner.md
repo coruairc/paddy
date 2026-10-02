@@ -1,14 +1,14 @@
 ---
-summary: "Run OpenClaw Gateway 24/7 on a Hetzner VPS with Docker"
+summary: "Run Paddy Gateway 24/7 on a Hetzner VPS with Docker"
 doc-schema-version: 1
 read_when:
-  - You want OpenClaw running 24/7 on a Hetzner VPS
+  - You want Paddy running 24/7 on a Hetzner VPS
   - You need Hetzner provisioning, firewall, or SSH tunnel guidance
   - You want a persistent Docker Gateway on a cloud VM
 title: "Hetzner"
 ---
 
-Run a persistent OpenClaw Gateway on a Debian or Ubuntu Hetzner VPS. This page
+Run a persistent Paddy Gateway on a Debian or Ubuntu Hetzner VPS. This page
 covers Hetzner provisioning, host security, and access; the shared
 [Docker VM runtime](/install/docker-vm-runtime) page owns container setup,
 persistence, custom binaries, verification, and updates.

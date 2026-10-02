@@ -1,13 +1,13 @@
 ---
-summary: "CLI reference for `openclaw file-transfer` (review and migrate standing file-transfer approvals)"
+summary: "CLI reference for `paddy file-transfer` (review and migrate standing file-transfer approvals)"
 read_when:
   - You upgraded and older file-transfer permissions stopped taking effect
-  - You need the flag surface for `openclaw file-transfer approvals migrate`
+  - You need the flag surface for `paddy file-transfer approvals migrate`
   - You want a scriptable check for unreviewed file-transfer permissions
 title: "File transfers"
 ---
 
-# `openclaw file-transfer`
+# `paddy file-transfer`
 
 Review the standing approvals that the file-transfer plugin stores under
 `plugins.entries.file-transfer.config`. The command group ships with the
@@ -20,9 +20,9 @@ format. Older positive permissions stay inactive until this review finishes.
 Deny rules, size limits, and symlink settings keep applying throughout.
 
 ```bash
-openclaw file-transfer approvals migrate
-openclaw file-transfer approvals migrate --dry-run
-openclaw file-transfer approvals migrate --json
+paddy file-transfer approvals migrate
+paddy file-transfer approvals migrate --dry-run
+paddy file-transfer approvals migrate --json
 ```
 
 | Option      | Effect                                                                          |
@@ -36,7 +36,7 @@ Both options default to off.
 
 Run the command on the Gateway host in an interactive terminal. The command
 updates that host's file-transfer policy, so it refuses to run when
-`gateway.mode` is `remote`. It also refuses when the OpenClaw config is invalid.
+`gateway.mode` is `remote`. It also refuses when the Paddy config is invalid.
 Fix the config first, then rerun.
 
 ### What the interactive run asks
@@ -61,10 +61,10 @@ so when that backup cannot be verified.
 `--json` reports the work without changing anything. Use it in a health check or
 an upgrade script.
 
-| Situation                     | Output                                                                                                        | Exit code |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------- | --------- |
-| Nothing to review             | `{"status":"ok","changed":false,"message":"No legacy permissions need review."}`                              | 0         |
-| Permissions still need review | `{"status":"needs-input","changed":false,"items":[...],"command":"openclaw file-transfer approvals migrate"}` | 2         |
+| Situation                     | Output                                                                                                     | Exit code |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------- | --------- |
+| Nothing to review             | `{"status":"ok","changed":false,"message":"No legacy permissions need review."}`                           | 0         |
+| Permissions still need review | `{"status":"needs-input","changed":false,"items":[...],"command":"paddy file-transfer approvals migrate"}` | 2         |
 
 Without `--json`, the command checks for work first. A non-interactive shell is
 an error only when permissions still need review. The command then tells you to

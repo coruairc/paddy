@@ -948,7 +948,7 @@ describe("memory cli", () => {
             indexIdentity: {
               status: "mismatched",
               reason:
-                "the index was written by a newer OpenClaw version; upgrade OpenClaw or reindex explicitly",
+                "the index was written by a newer Paddy version; upgrade Paddy or reindex explicitly",
               code: "provenance_version",
               owner: "openclaw",
               versionOrder: "newer",
@@ -961,7 +961,7 @@ describe("memory cli", () => {
     const log = spyRuntimeLogs(defaultRuntime);
     await runMemoryCli(["status", "--deep"]);
 
-    expectLogged(log, "upgrade OpenClaw or reindex explicitly");
+    expectLogged(log, "upgrade Paddy or reindex explicitly");
     expectLogged(log, "Vector search: paused");
     expectNotLogged(log, "paused until memory is rebuilt");
     expectLogged(log, "openclaw memory status --index --agent main");
@@ -1196,19 +1196,19 @@ describe("memory cli", () => {
   it("documents memory help examples", () => {
     const helpText = getMemoryHelpText();
 
-    expect(helpText).toContain("openclaw memory status --fix");
+    expect(helpText).toContain("paddy memory status --fix");
     expect(helpText).toContain("Repair stale recall locks and normalize promotion metadata.");
-    expect(helpText).toContain("openclaw memory status --deep");
+    expect(helpText).toContain("paddy memory status --deep");
     expect(helpText).toContain("Probe embedding provider readiness.");
-    expect(helpText).toContain('openclaw memory search "meeting notes"');
+    expect(helpText).toContain('paddy memory search "meeting notes"');
     expect(helpText).toContain("Quick search using positional query.");
-    expect(helpText).toContain('openclaw memory search --query "deployment" --max-results 20');
+    expect(helpText).toContain('paddy memory search --query "deployment" --max-results 20');
     expect(helpText).toContain("Limit results for focused troubleshooting.");
-    expect(helpText).toContain("openclaw memory promote --apply");
+    expect(helpText).toContain("paddy memory promote --apply");
     expect(helpText).toContain("Append top-ranked short-term candidates into MEMORY.md.");
-    expect(helpText).toContain('openclaw memory promote-explain "router vlan"');
+    expect(helpText).toContain('paddy memory promote-explain "router vlan"');
     expect(helpText).toContain("Explain why a specific candidate would or would not promote.");
-    expect(helpText).toContain("openclaw memory rem-harness --json");
+    expect(helpText).toContain("paddy memory rem-harness --json");
     expect(helpText).toContain(
       "Preview REM reflections, candidate truths, and deep promotion output.",
     );
@@ -1776,7 +1776,7 @@ describe("memory cli", () => {
 
       const log = spyRuntimeLogs(defaultRuntime);
       await runMemoryCli(["status"]);
-      expectLogged(log, "Fix: openclaw memory status --fix --agent main");
+      expectLogged(log, "Fix: paddy memory status --fix --agent main");
 
       log.mockClear();
       mockManager({
@@ -1785,7 +1785,7 @@ describe("memory cli", () => {
         close,
       });
       await runMemoryCli(["status", "--fix"]);
-      expectNotLogged(log, "Fix: openclaw memory status --fix --agent main");
+      expectNotLogged(log, "Fix: paddy memory status --fix --agent main");
     });
   });
 

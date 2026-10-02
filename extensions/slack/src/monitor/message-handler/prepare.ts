@@ -50,7 +50,7 @@ import type { ResolvedSlackAccount } from "../../accounts.js";
 import { reactSlackMessage } from "../../actions.js";
 import { normalizeSlackAppContextEntities, isSlackAppContext } from "../../agent-context.js";
 import { formatSlackError } from "../../errors.js";
-import { sendMessageSlack, type SlackSendIdentity } from "../../send.js";
+import { sendMessageSlack } from "../../send.js";
 import { formatSlackTarget } from "../../target-parsing.js";
 import type { SlackFile, SlackMessageEvent } from "../../types.js";
 import { normalizeSlackAllowOwnerEntry } from "../allow-list.js";
@@ -91,7 +91,7 @@ import { resolveSlackThreadContextData } from "./prepare-thread-context.js";
 import { resolveSlackThreadMentionPolicy } from "./prepare-thread-mentions.js";
 import { isSlackSubteamMentionForBot, normalizeSlackId } from "./subteam-mentions.js";
 import { resolveSlackTimestampMs } from "./timestamp.js";
-import type { PreparedSlackMessage } from "./types.js";
+import type { PreparedSlackMessage, SlackMessageSourceOptions } from "./types.js";
 
 const mentionRegexCache = new WeakMap<SlackMonitorContext, Map<string, RegExp[]>>();
 const SLACK_ANY_MENTION_RE = /<@[^>]+>|<!subteam\^[^>]+>/;
@@ -460,7 +460,7 @@ async function authorizeSlackInboundMessage(params: {
       !isBotMessage &&
       message.user
     ) {
-      let subject = "This OpenClaw bot";
+      let subject = "This Paddy bot";
       if (ctx.botUserId) {
         try {
           const botIdentity = await ctx.resolveUserName(ctx.botUserId, params.eventScope);
@@ -477,7 +477,7 @@ async function authorizeSlackInboundMessage(params: {
           token: ctx.botToken,
           channel: message.channel,
           user: message.user,
-          text: `${subject} can’t reply here because this channel isn’t in its OpenClaw channel allowlist. Ask the OpenClaw owner to allow this channel. <${SLACK_CHANNEL_ACCESS_DOCS_URL}|Learn how to configure Slack channel access.>`,
+          text: `${subject} can’t reply here because this channel isn’t in its Paddy channel allowlist. Ask the Paddy owner to allow this channel. <${SLACK_CHANNEL_ACCESS_DOCS_URL}|Learn how to configure Slack channel access.>`,
         });
         params.onVisibleDrop?.();
       } catch (error) {
@@ -541,11 +541,7 @@ export async function prepareSlackMessage(params: {
   ctx: SlackMonitorContext;
   account: ResolvedSlackAccount;
   message: SlackMessageEvent;
-  opts: {
-    source: "message" | "app_mention";
-    wasMentioned?: boolean;
-    relayIdentity?: SlackSendIdentity;
-    eventScope?: SlackEventScope;
+  opts: SlackMessageSourceOptions & {
     /** Handler-owned signal that a gate produced a user-visible terminal outcome. */
     onVisibleDrop?: () => void;
     sourceMessageIds?: readonly string[];
@@ -929,6 +925,7 @@ export async function prepareSlackMessage(params: {
       ctx,
       teamId: opts.eventScope?.teamId ?? ctx.teamId,
       senderId,
+      senderAuthentication: message.user ? opts.senderAuthentication : undefined,
       senderName: senderNameForAuth,
       channelType: conversation.resolvedChannelType ?? "channel",
       channelId: message.channel,

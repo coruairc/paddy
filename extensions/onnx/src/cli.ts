@@ -26,7 +26,7 @@ export function registerOnnxCli(
   const model = (id: string) => {
     const found = findModel(id);
     if (!found) {
-      throw new Error(`Unknown ONNX model '${id}'. Run openclaw onnx models.`);
+      throw new Error(`Unknown ONNX model '${id}'. Run paddy onnx models.`);
     }
     return found;
   };

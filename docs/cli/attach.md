@@ -1,15 +1,15 @@
 ---
-summary: "CLI reference for `openclaw attach` (launch Claude Code with a scoped Gateway MCP grant)"
+summary: "CLI reference for `paddy attach` (launch Claude Code with a scoped Gateway MCP grant)"
 read_when:
-  - You want Claude Code to use OpenClaw Gateway MCP tools
+  - You want Claude Code to use Paddy Gateway MCP tools
   - You need a temporary session-bound MCP grant for an external harness
 title: "Attach CLI"
 ---
 
-`openclaw attach` launches Claude Code with a strict temporary MCP config bound to one Gateway session.
+`paddy attach` launches Claude Code with a strict temporary MCP config bound to one Gateway session.
 
 ```sh
-openclaw attach [target]
+paddy attach [target]
 ```
 
 `target` accepts a Control UI session URL, a compact `host/agent/ref`, a bare
@@ -18,11 +18,11 @@ authoritatively selects that Gateway; a bare reference uses the configured or
 default Gateway.
 
 ```sh
-openclaw attach
-openclaw attach https://gateway.example/dashboard/main/movies-a1166b81
-openclaw attach movies-a1166b81
-openclaw attach --session agent:main:telegram:123 --ttl 600000
-openclaw attach --print-config
+paddy attach
+paddy attach https://gateway.example/dashboard/main/movies-a1166b81
+paddy attach movies-a1166b81
+paddy attach --session agent:main:telegram:123 --ttl 600000
+paddy attach --print-config
 ```
 
 Options:
@@ -50,13 +50,13 @@ sensitive query or fragment parameters such as `token` and `password` are
 rejected.
 
 Target resolution uses the same [session target error matrix](/cli/tui#session-target-errors)
-as `openclaw tui`.
+as `paddy tui`.
 
-The bearer token is passed through environment variables, not argv. OpenClaw launches Claude Code with `--strict-mcp-config --mcp-config <path>` so ambient Claude MCP servers do not join the attached session. Normal launches (without `--print-config`) revoke the grant when the Claude Code process exits.
+The bearer token is passed through environment variables, not argv. Paddy launches Claude Code with `--strict-mcp-config --mcp-config <path>` so ambient Claude MCP servers do not join the attached session. Normal launches (without `--print-config`) revoke the grant when the Claude Code process exits.
 
 If an attached tool asks a structured question, answer it through the question
 controls in the Control UI or native app. An attach grant scopes tools to a
-session but does not identify an active OpenClaw run or its original caller
+session but does not identify an active Paddy run or its original caller
 permissions, so ordinary channel text cannot claim that question. See
 [Ask user](/tools/ask-user).
 

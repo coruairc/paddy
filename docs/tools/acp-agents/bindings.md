@@ -12,14 +12,14 @@ read_when:
 ### Mental model
 
 - **Chat surface** - where people keep talking (Discord channel, Telegram topic, iMessage chat).
-- **ACP session** - the durable Codex/Claude/Gemini runtime state OpenClaw routes to.
+- **ACP session** - the durable Codex/Claude/Gemini runtime state Paddy routes to.
 - **Child thread/topic** - an optional extra messaging surface created only by `--thread ...`.
 - **Runtime workspace** - the filesystem location (`cwd`, repo checkout, backend workspace) where the harness runs. Independent of the chat surface.
 
 ### Current-conversation binds
 
 `/acp spawn <harness> --bind here` pins the current conversation to the
-spawned ACP session - no child thread, same chat surface. OpenClaw keeps
+spawned ACP session - no child thread, same chat surface. Paddy keeps
 owning transport, auth, safety, and delivery. Follow-up messages in that
 conversation route to the same session; `/new` and `/reset` reset the session
 in place; `/acp close` removes the binding.
@@ -38,16 +38,16 @@ Examples:
 <AccordionGroup>
   <Accordion title="Binding rules and exclusivity">
     - `--bind here` and `--thread ...` are mutually exclusive.
-    - `--bind here` only works on channels that advertise current-conversation binding; OpenClaw returns a clear unsupported message otherwise. Bindings persist across gateway restarts.
+    - `--bind here` only works on channels that advertise current-conversation binding; Paddy returns a clear unsupported message otherwise. Bindings persist across gateway restarts.
     - On Discord, `spawnSessions` gates child thread creation for `--thread auto|here` - not `--bind here`.
-    - If you spawn to a different ACP agent without `--cwd`, OpenClaw inherits the **target agent's** workspace by default. Missing inherited paths (`ENOENT`/`ENOTDIR`) fall back to the backend default; other access errors (e.g. `EACCES`) surface as spawn errors.
-    - Gateway management commands stay local in bound conversations - `/acp ...` commands are handled by OpenClaw even when normal follow-up text routes to the bound ACP session; `/status` and `/session` also stay local whenever command handling is enabled for that surface.
+    - If you spawn to a different ACP agent without `--cwd`, Paddy inherits the **target agent's** workspace by default. Missing inherited paths (`ENOENT`/`ENOTDIR`) fall back to the backend default; other access errors (e.g. `EACCES`) surface as spawn errors.
+    - Gateway management commands stay local in bound conversations - `/acp ...` commands are handled by Paddy even when normal follow-up text routes to the bound ACP session; `/status` and `/session` also stay local whenever command handling is enabled for that surface.
 
   </Accordion>
   <Accordion title="Thread-bound sessions">
     When thread bindings are enabled for a channel adapter:
 
-    - OpenClaw binds a thread to a target ACP session.
+    - Paddy binds a thread to a target ACP session.
     - Follow-up messages in that thread route to the bound ACP session.
     - ACP output is delivered back to the same thread.
     - `/session unbind`, close, archive, idle timeout, or max-age expiry removes the binding. `/session unbind` detaches only the current conversation and leaves the ACP session running.
@@ -61,7 +61,7 @@ Examples:
       - Discord/Telegram: `session.threadBindings.spawnSessions=true`
 
     Thread binding support is adapter-specific. If the active channel adapter
-    does not support thread bindings, OpenClaw returns a clear
+    does not support thread bindings, Paddy returns a clear
     unsupported/unavailable message.
 
   </Accordion>
@@ -94,7 +94,7 @@ For non-ephemeral workflows, configure persistent ACP bindings in top-level
 
 </ParamField>
 <ParamField path="bindings[].agentId" type="string">
-  The owning OpenClaw agent id.
+  The owning Paddy agent id.
 </ParamField>
 <ParamField path="bindings[].acp.mode" type='"persistent" | "oneshot"'>
   Optional ACP override.
@@ -128,14 +128,14 @@ Use `agents.entries.*.runtime` to define ACP defaults once per agent:
 Configured bindings also forward the owning agent's explicit model and thinking
 policy. For an agent with `runtime.type: "acp"`, `agents.entries.*.model.primary`
 selects the ACP harness model, even when its value also looks like a native
-`provider/model` reference. OpenClaw-side calls, such as `/btw` and internal
+`provider/model` reference. Paddy-side calls, such as `/btw` and internal
 utilities, use `agents.defaults.model` as their native default. Explicit native
 session overrides and dedicated utility or subagent model settings still apply.
 The selected native provider needs its own credentials; an ACP harness login
-does not authenticate OpenClaw's native calls.
+does not authenticate Paddy's native calls.
 
 For existing configurations, this can change the native provider even when the
-ACP primary is a valid native reference. `openclaw doctor` describes each ACP
+ACP primary is a valid native reference. `paddy doctor` describes each ACP
 agent's harness model and resolved native default without rewriting configuration.
 Choose the native default in `agents.defaults.model`; native session, utility,
 and subagent overrides remain available for their respective operations.
@@ -143,7 +143,7 @@ and subagent overrides remain available for their respective operations.
 For native calls that support model fallback, omitted agent `model.fallbacks`
 inherits `agents.defaults.model.fallbacks`. An explicit native fallback list
 replaces that list, and `fallbacks: []` disables it. These entries must be native
-OpenClaw model references, not harness-only IDs. `/btw` uses its selected native
+Paddy model references, not harness-only IDs. `/btw` uses its selected native
 model without a model fallback chain.
 
 Thinking uses the agent's `thinkingDefault`, then per-model
@@ -156,7 +156,7 @@ before its next turn without replacing the conversation. Each option is saved
 only after the harness accepts it; a rejected option returns an error and keeps
 that option's previous selection. Model and thinking changes are independent,
 not an atomic batch. Removing a default
-uses any remaining configured policy; if none remains, OpenClaw retains the
+uses any remaining configured policy; if none remains, Paddy retains the
 session's last selection. Omission is not a backend reset. To change thinking
 explicitly, use `/acp set thinking <level>` with a level supported by the harness.
 For Codex ACP, `off` only omits a fresh session's startup override. Switching an
@@ -244,10 +244,10 @@ its current reasoning effort or conversation.
 
 ### Behavior
 
-- OpenClaw ensures the configured ACP session exists after channel-specific admission and before use.
+- Paddy ensures the configured ACP session exists after channel-specific admission and before use.
 - Messages in that channel, topic, or chat route to the configured ACP session.
 - Configured ACP bindings own their session route. Channel broadcast fan-out does not replace the configured ACP session for a matched binding.
 - In bound conversations, `/new` and `/reset` reset the same ACP session key in place.
 - Runtime bindings created by thread-bound spawns still apply where present.
-- For cross-agent ACP spawns without an explicit `cwd`, OpenClaw inherits the target agent workspace from agent config.
+- For cross-agent ACP spawns without an explicit `cwd`, Paddy inherits the target agent workspace from agent config.
 - Missing inherited workspace paths fall back to the backend default cwd; non-missing access failures surface as spawn errors.

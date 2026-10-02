@@ -1,16 +1,9 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { MeetingRealtimeAudioFormat } from "./realtime-audio-format.js";
 import { buildMeetingSoxAudioCommands, type MeetingSoxAudioFormat } from "./sox-audio-command.js";
 
 export type MeetingAudioBackend = "blackhole-2ch" | "pipewire-pulse";
 export type MeetingAudioBackendSelection = "auto" | MeetingAudioBackend;
-
-type MeetingAudioCommandConfig = {
-  backend?: MeetingAudioBackendSelection;
-  bufferBytes: number;
-  format: MeetingSoxAudioFormat;
-  inputCommand?: readonly string[];
-  outputCommand?: readonly string[];
-};
 
 export type MeetingAudioRuntime = {
   backend: MeetingAudioBackend;
@@ -28,20 +21,8 @@ export type MeetingAudioCommandResult = {
 const PIPEWIRE_SINK_NAME = "openclaw_meeting_audio";
 const PIPEWIRE_MONITOR_NAME = `${PIPEWIRE_SINK_NAME}.monitor`;
 const PIPEWIRE_SOURCE_NAME = PIPEWIRE_SINK_NAME;
-const PIPEWIRE_MEETING_AUDIO_DEVICE_LABEL = "OpenClaw Meeting Audio";
+const PIPEWIRE_MEETING_AUDIO_DEVICE_LABEL = `${PRODUCT_NAME} Meeting Audio`;
 const BLACKHOLE_MEETING_AUDIO_DEVICE_LABEL = "BlackHole 2ch";
-
-function resolvePulseFormat(config: MeetingAudioCommandConfig["format"]): string {
-  if (config.encoding === "mu-law" && config.bits === 8) {
-    return "ulaw";
-  }
-  if (config.encoding === "signed-integer" && config.bits === 16) {
-    return config.endian === "big" ? "s16be" : "s16le";
-  }
-  throw new Error(
-    `PipeWire-Pulse does not support meeting audio format ${config.encoding}/${config.bits}.`,
-  );
-}
 
 function resolveMeetingAudioBackend(
   selection: MeetingAudioBackendSelection | undefined,
@@ -67,30 +48,43 @@ function resolveMeetingAudioBackend(
   );
 }
 
-function resolveMeetingAudioRuntime(
-  config: MeetingAudioCommandConfig,
-  platform: NodeJS.Platform = process.platform,
-): MeetingAudioRuntime {
-  const backend = resolveMeetingAudioBackend(config.backend, platform);
-  const bytesPerSecond =
-    config.format.sampleRate * config.format.channels * Math.ceil(config.format.bits / 8);
-  const pulseLatencyMs = Math.max(1, Math.ceil((config.bufferBytes / bytesPerSecond) * 1_000));
+export function resolveMeetingAudioRuntimeForFormat(params: {
+  backend?: MeetingAudioBackendSelection;
+  bufferBytes: number;
+  format: MeetingRealtimeAudioFormat;
+  inputCommand?: readonly string[];
+  outputCommand?: readonly string[];
+  platform?: NodeJS.Platform;
+}): MeetingAudioRuntime {
+  const format: MeetingSoxAudioFormat =
+    params.format === "g711-ulaw-8khz"
+      ? { sampleRate: 8_000, channels: 1, encoding: "mu-law", bits: 8 }
+      : {
+          sampleRate: 24_000,
+          channels: 1,
+          encoding: "signed-integer",
+          bits: 16,
+          endian: "little",
+        };
+  const backend = resolveMeetingAudioBackend(params.backend, params.platform);
+  const bytesPerSecond = format.sampleRate * format.channels * Math.ceil(format.bits / 8);
+  const pulseLatencyMs = Math.max(1, Math.ceil((params.bufferBytes / bytesPerSecond) * 1_000));
   const defaults =
     backend === "blackhole-2ch"
       ? buildMeetingSoxAudioCommands({
-          bufferBytes: config.bufferBytes,
+          bufferBytes: params.bufferBytes,
           device: BLACKHOLE_MEETING_AUDIO_DEVICE_LABEL,
           deviceType: "coreaudio",
-          format: config.format,
+          format,
         })
       : {
           inputCommand: [
             "parec",
             "--raw",
             `--device=${PIPEWIRE_SOURCE_NAME}`,
-            `--format=${resolvePulseFormat(config.format)}`,
-            `--rate=${config.format.sampleRate}`,
-            `--channels=${config.format.channels}`,
+            `--format=${format.encoding === "mu-law" ? "ulaw" : "s16le"}`,
+            `--rate=${format.sampleRate}`,
+            `--channels=${format.channels}`,
             `--latency-msec=${pulseLatencyMs}`,
           ],
           outputCommand: [
@@ -98,9 +92,9 @@ function resolveMeetingAudioRuntime(
             "--raw",
             "--playback",
             `--device=${PIPEWIRE_SINK_NAME}`,
-            `--format=${resolvePulseFormat(config.format)}`,
-            `--rate=${config.format.sampleRate}`,
-            `--channels=${config.format.channels}`,
+            `--format=${format.encoding === "mu-law" ? "ulaw" : "s16le"}`,
+            `--rate=${format.sampleRate}`,
+            `--channels=${format.channels}`,
             `--latency-msec=${pulseLatencyMs}`,
           ],
         };
@@ -110,38 +104,9 @@ function resolveMeetingAudioRuntime(
       backend === "blackhole-2ch"
         ? BLACKHOLE_MEETING_AUDIO_DEVICE_LABEL
         : PIPEWIRE_MEETING_AUDIO_DEVICE_LABEL,
-    inputCommand: config.inputCommand ? [...config.inputCommand] : defaults.inputCommand,
-    outputCommand: config.outputCommand ? [...config.outputCommand] : defaults.outputCommand,
+    inputCommand: params.inputCommand ? [...params.inputCommand] : defaults.inputCommand,
+    outputCommand: params.outputCommand ? [...params.outputCommand] : defaults.outputCommand,
   };
-}
-
-export function resolveMeetingAudioRuntimeForFormat(params: {
-  backend?: MeetingAudioBackendSelection;
-  bufferBytes: number;
-  format: MeetingRealtimeAudioFormat;
-  inputCommand?: readonly string[];
-  outputCommand?: readonly string[];
-  platform?: NodeJS.Platform;
-}): MeetingAudioRuntime {
-  return resolveMeetingAudioRuntime(
-    {
-      backend: params.backend,
-      bufferBytes: params.bufferBytes,
-      format:
-        params.format === "g711-ulaw-8khz"
-          ? { sampleRate: 8_000, channels: 1, encoding: "mu-law", bits: 8 }
-          : {
-              sampleRate: 24_000,
-              channels: 1,
-              encoding: "signed-integer",
-              bits: 16,
-              endian: "little",
-            },
-      inputCommand: params.inputCommand,
-      outputCommand: params.outputCommand,
-    },
-    params.platform,
-  );
 }
 
 function commandOutput(result: MeetingAudioCommandResult): string {
@@ -201,7 +166,7 @@ export async function ensureMeetingAudioBackend(params: {
     if (loaded.code !== 0) {
       sinks = await params.run(["pactl", "list", "short", "sinks"], params.timeoutMs);
       if (!pulseListContains(sinks.stdout ?? "", PIPEWIRE_SINK_NAME)) {
-        assertCommandSucceeded(loaded, "Could not create the OpenClaw PipeWire-Pulse sink");
+        assertCommandSucceeded(loaded, `Could not create the ${PRODUCT_NAME} PipeWire-Pulse sink`);
       }
     }
   }
@@ -225,7 +190,7 @@ export async function ensureMeetingAudioBackend(params: {
     if (loaded.code !== 0) {
       sources = await params.run(["pactl", "list", "short", "sources"], params.timeoutMs);
       if (!pulseListContains(sources.stdout ?? "", PIPEWIRE_SOURCE_NAME)) {
-        assertCommandSucceeded(loaded, "Could not create the OpenClaw PipeWire-Pulse source");
+        assertCommandSucceeded(loaded, `Could not create the ${PRODUCT_NAME} PipeWire-Pulse source`);
       }
     }
   }
@@ -235,6 +200,6 @@ export async function ensureMeetingAudioBackend(params: {
     !pulseListContains(sinks.stdout ?? "", PIPEWIRE_SINK_NAME) ||
     !pulseListContains(sources.stdout ?? "", PIPEWIRE_SOURCE_NAME)
   ) {
-    throw new Error("OpenClaw PipeWire-Pulse sink or monitor source was not created.");
+    throw new Error(`${PRODUCT_NAME} PipeWire-Pulse sink or monitor source was not created.`);
   }
 }

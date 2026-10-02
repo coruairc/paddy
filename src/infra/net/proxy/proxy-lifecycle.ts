@@ -277,7 +277,7 @@ function assertManagedProxyAllowsLoopback(url: string, surface: string): void {
   if (isLoopbackProxyUrl(url) && getActiveManagedProxyLoopbackMode() === "block") {
     throw new Error(
       `proxy: ${surface} connections are blocked by proxy.loopbackMode; ` +
-        "run openclaw config set proxy.loopbackMode gateway-only to allow local runtime traffic.",
+        "run paddy config set proxy.loopbackMode gateway-only to allow local runtime traffic.",
     );
   }
 }

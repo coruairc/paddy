@@ -1,23 +1,23 @@
 ---
-summary: "Run OpenClaw in a rootless Podman container"
+summary: "Run Paddy in a rootless Podman container"
 read_when:
   - You want a containerized gateway with Podman instead of Docker
 title: "Podman"
 ---
 
-Run the OpenClaw Gateway in a rootless Podman container, managed by your current non-root user.
+Run the Paddy Gateway in a rootless Podman container, managed by your current non-root user.
 
 The model:
 
 - Podman runs the gateway container.
 - Your host `openclaw` CLI is the control plane.
 - Persistent state lives on the host under `~/.openclaw` by default.
-- Day-to-day management uses `openclaw --container <name> ...` instead of `sudo -u openclaw`, `podman exec`, or a separate service user.
+- Day-to-day management uses `paddy --container <name> ...` instead of `sudo -u paddy`, `podman exec`, or a separate service user.
 
 ## Prerequisites
 
 - **Podman** in rootless mode, with its host init executable (normally `catatonit`) available for the launcher's `--init` flag. On minimal Debian/Ubuntu hosts, install both explicitly: `sudo apt-get install podman catatonit`. For Podman Machine, the helper must be available inside the machine.
-- **OpenClaw CLI** installed on the host
+- **Paddy CLI** installed on the host
 - **Optional:** `systemd --user` if you want Quadlet-managed auto-start
 - **Optional:** `sudo` only if you want `loginctl enable-linger "$(whoami)"` for boot persistence on a headless host
 
@@ -54,7 +54,7 @@ The model:
     ./scripts/run-openclaw-podman.sh launch
     ```
 
-    Starts the container as your current uid/gid with `--userns=keep-id` and bind-mounts your OpenClaw state into the container.
+    Starts the container as your current uid/gid with `--userns=keep-id` and bind-mounts your Paddy state into the container.
 
   </Step>
 
@@ -77,10 +77,10 @@ The model:
     Then normal `openclaw` commands run inside that container automatically:
 
     ```bash
-    openclaw dashboard --no-open
-    openclaw gateway status --deep   # includes extra service scan
-    openclaw doctor
-    openclaw channels login
+    paddy dashboard --no-open
+    paddy gateway status --deep   # includes extra service scan
+    paddy doctor
+    paddy channels login
     ```
 
     On macOS, Podman machine may make the browser appear non-local to the gateway. If the Control UI reports device-auth errors after launch, use the Tailscale guidance in [Podman and Tailscale](#podman-and-tailscale).
@@ -105,7 +105,7 @@ For HTTPS or remote browser access, follow the main Tailscale docs.
 Podman-specific notes:
 
 - Keep the Podman publish host at `127.0.0.1`.
-- Prefer host-managed `tailscale serve` over `openclaw gateway --tailscale serve`.
+- Prefer host-managed `tailscale serve` over `paddy gateway --tailscale serve`.
 - On macOS, if local browser device-auth context is unreliable, use Tailscale access instead of ad hoc local tunnel workarounds.
 
 See [Tailscale](/gateway/tailscale) and [Control UI](/web/control-ui).
@@ -162,11 +162,11 @@ If you use a non-default `OPENCLAW_CONFIG_DIR` or `OPENCLAW_WORKSPACE_DIR`, set 
 ## Upgrading images
 
 After you rebuild or pull a new image, restart the container or Quadlet service.
-On first startup for a new OpenClaw version, the gateway runs safe state and
+On first startup for a new Paddy version, the gateway runs safe state and
 plugin repairs before reporting ready.
 
 If the gateway exits instead of becoming ready, run the same image once with
-`openclaw doctor --fix` against the same mounted state/config, then restart the
+`paddy doctor --fix` against the same mounted state/config, then restart the
 gateway normally:
 
 ```bash
@@ -182,7 +182,7 @@ podman run --rm -it \
   -v "$OPENCLAW_CONFIG_DIR:/home/node/.openclaw:rw" \
   -v "$OPENCLAW_WORKSPACE_DIR:/home/node/.openclaw/workspace:rw" \
   "$OPENCLAW_PODMAN_IMAGE" \
-  openclaw doctor --fix
+  paddy doctor --fix
 ```
 
 On SELinux hosts, add `,Z` to both bind mounts if Podman blocks access to the
@@ -193,25 +193,26 @@ deployment preflight through the container-aware host CLI:
 
 ```bash
 export OPENCLAW_CONTAINER=openclaw
-openclaw doctor --json
+paddy doctor --json
 ```
 
 ## Useful commands
 
-- **Container logs:** `podman logs -f openclaw`
+- **Container logs:** `podman logs -f paddy`
 - **Stop container:** `podman stop openclaw`
-- **Remove container:** `podman rm -f openclaw`
-- **Open dashboard URL from host CLI:** `openclaw dashboard --no-open`
-- **Health/status via host CLI:** `openclaw gateway status --deep` (RPC probe + extra service scan)
+- **Remove container:** `podman rm -f paddy`
+- **Open dashboard URL from host CLI:** `paddy dashboard --no-open`
+- **Health/status via host CLI:** `paddy gateway status --deep` (RPC probe + extra service scan)
 
 ## Troubleshooting
 
+- **Token generation fails:** Setup and launch stop before saving a generated token or starting the container when the selected random source (`openssl`, Python, or `od`) fails. Repair that command and retry.
 - **Init executable missing (`lookup init binary` / `container-init binary not found on the host`):** Install `catatonit` on the Podman engine host or repair its configured `init_path`/`helper_binaries_dir` in `containers.conf`, then retry. Installing the helper inside the Gateway or sandbox image does not repair the engine host. Keep `--init` enabled; see [Host init prerequisite](/gateway/sandboxing/podman-backend#host-init-prerequisite).
 - **Permission denied (EACCES) on config or workspace:** The container runs with `--userns=keep-id` and `--user <your uid>:<your gid>` by default. Ensure the host config/workspace paths are owned by your current user.
 - **Gateway start blocked (missing `gateway.mode=local`):** Ensure `~/.openclaw/openclaw.json` exists and sets `gateway.mode="local"`. `scripts/podman/setup.sh` creates this if missing.
-- **Container restarts after an image update:** Run the one-off `openclaw doctor --fix` command in [Upgrading images](#upgrading-images), then start the gateway again.
+- **Container restarts after an image update:** Run the one-off `paddy doctor --fix` command in [Upgrading images](#upgrading-images), then start the gateway again.
 - **Container CLI commands hit the wrong target:** Use `openclaw --container <name> ...` explicitly, or export `OPENCLAW_CONTAINER=<name>` in your shell.
-- **`openclaw update` fails with `--container`:** Expected. Rebuild/pull the image, then restart the container or the Quadlet service.
+- **`paddy update` fails with `--container`:** Expected. Rebuild/pull the image, then restart the container or the Quadlet service.
 - **Quadlet service does not start:** Run `systemctl --user daemon-reload`, then `systemctl --user start openclaw.service`. On headless systems you may also need `sudo loginctl enable-linger "$(whoami)"`.
 - **SELinux blocks bind mounts:** Leave the default mount behavior alone; the launcher auto-adds `:Z` on Linux when SELinux is enforcing or permissive.
 

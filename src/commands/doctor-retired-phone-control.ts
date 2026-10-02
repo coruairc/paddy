@@ -2,6 +2,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveStateDir } from "../config/paths.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { isMissingPathError } from "../infra/errors.js";
@@ -141,7 +142,7 @@ async function readRetiredArmStates(env: NodeJS.ProcessEnv): Promise<{
   const databasePath = resolveOpenClawStateSqlitePath(env);
   const [legacyInspection, databaseInspection] = await Promise.all([
     inspectStatePath(legacyPath, "retired Phone Control lease state"),
-    inspectStatePath(databasePath, "OpenClaw state database"),
+    inspectStatePath(databasePath, `${PRODUCT_NAME} state database`),
   ]);
   const warnings: string[] = [];
   const inspectionUnsafe =
@@ -352,7 +353,7 @@ export async function finalizeRetiredPhoneControlCleanup(params: {
 
   const databaseInspection = await inspectStatePath(
     resolveOpenClawStateSqlitePath(env),
-    "OpenClaw state database",
+    `${PRODUCT_NAME} state database`,
   );
   if (databaseInspection.status === "unsafe") {
     warnings.push(databaseInspection.warning);

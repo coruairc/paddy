@@ -251,7 +251,7 @@ function startPendingOutboundDeliveryRecovery(params: {
         const legacyFiles = listLegacyDeliveryQueueArtifacts(recoveryContext.stateDir);
         if (remaining > 0 || legacyFiles.length > 0) {
           logRecovery.warn(
-            `${remaining} legacy outbound deliveries and ${legacyFiles.length} legacy queue files need repair. Stop the Gateway and run openclaw doctor --fix.`,
+            `${remaining} legacy outbound deliveries and ${legacyFiles.length} legacy queue files need repair. Stop the Gateway and run paddy doctor --fix.`,
           );
         }
         await recoverPendingDeliveries(

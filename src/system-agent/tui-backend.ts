@@ -4,6 +4,7 @@ import type {
   SessionsPatchParams,
   SessionsPatchResult,
 } from "../../packages/gateway-protocol/src/index.js";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import type { ChannelsAddOptions } from "../commands/channels/add.js";
 import {
   agentSessionKeysMatchByRequestKey,
@@ -116,7 +117,7 @@ function splitModelRef(ref: string | undefined): { provider?: string; model?: st
 }
 
 class SystemAgentTuiBackend implements TuiBackend {
-  readonly connection = { url: "openclaw local" };
+  readonly connection = { url: "paddy local" };
 
   onEvent?: (evt: TuiEvent) => void;
   onConnected?: () => void;
@@ -209,7 +210,7 @@ class SystemAgentTuiBackend implements TuiBackend {
         {
           key: SYSTEM_AGENT_SESSION_KEY,
           sessionId: "openclaw",
-          displayName: "OpenClaw",
+          displayName: `${PRODUCT_NAME}`,
           updatedAt: Date.now(),
           thinkingLevel: this.route.thinkingLevel,
           verboseLevel: "off",
@@ -234,14 +235,14 @@ class SystemAgentTuiBackend implements TuiBackend {
       defaultId: SYSTEM_AGENT_ID,
       mainKey: "main",
       scope: "per-sender",
-      agents: [{ id: SYSTEM_AGENT_ID, kind: "system", name: "OpenClaw" }],
+      agents: [{ id: SYSTEM_AGENT_ID, kind: "system", name: `${PRODUCT_NAME}` }],
     };
   }
 
   async patchSession(opts: SessionsPatchParams): Promise<SessionsPatchResult> {
     if (opts.model !== undefined) {
       throw new Error(
-        "OpenClaw cannot change the model inside its active verified session. Exit and run `openclaw onboard`, then start OpenClaw again.",
+        `${PRODUCT_NAME} cannot change the model inside its active verified session. Exit and run \`${CLI_NAME} onboard\`, then start ${PRODUCT_NAME} again.`,
       );
     }
     return {
@@ -250,7 +251,7 @@ class SystemAgentTuiBackend implements TuiBackend {
       key: SYSTEM_AGENT_SESSION_KEY,
       entry: {
         sessionId: "openclaw",
-        displayName: "OpenClaw",
+        displayName: `${PRODUCT_NAME}`,
         updatedAt: Date.now(),
       },
       resolved: {},
@@ -328,7 +329,7 @@ class SystemAgentTuiBackend implements TuiBackend {
   private emitFinal(runId: string, sessionKey: string, text: string): void {
     const assistant = message(
       "assistant",
-      text || "OpenClaw listened and found nothing to change.",
+      text || `${PRODUCT_NAME} listened and found nothing to change.`,
     );
     this.appendMessage(assistant);
     this.emit("chat", {
@@ -397,7 +398,7 @@ async function runSetupHandoff(
     handoff.target !== "gateway"
   ) {
     runtime.error(
-      "Setup cannot replace the inference route powering OpenClaw. Exit and run `openclaw onboard`, then start OpenClaw again.",
+      `Setup cannot replace the inference route powering ${PRODUCT_NAME}. Exit and run \`${CLI_NAME} onboard\`, then start ${PRODUCT_NAME} again.`,
     );
     return;
   }
@@ -438,7 +439,7 @@ async function runSetupHandoff(
       await runHosted(createClackPrompter(), beforePersistentEffect, runtime);
     }
     if (handoff.target === "gateway") {
-      runtime.log("Done — gateway settings saved. Run `openclaw gateway restart` to apply them.");
+      runtime.log("Done — gateway settings saved. Run `paddy gateway restart` to apply them.");
     }
     return;
   }
@@ -496,7 +497,7 @@ export async function runSystemAgentTui(
         historyLimit: SYSTEM_AGENT_HISTORY_LIMIT,
         backend,
         config: {},
-        title: "openclaw setup",
+        title: "paddy setup",
         ...(initialMessage ? { message: initialMessage } : {}),
       });
     } finally {
@@ -509,7 +510,7 @@ export async function runSystemAgentTui(
     }
     if (handoff.kind === "model-setup") {
       runtime.error(
-        "OpenClaw cannot replace its active inference route. Run `openclaw onboard` outside this session, then start OpenClaw again.",
+        `${PRODUCT_NAME} cannot replace its active inference route. Run \`${CLI_NAME} onboard\` outside this session, then start ${PRODUCT_NAME} again.`,
       );
       return;
     }

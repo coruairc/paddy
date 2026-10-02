@@ -48,7 +48,7 @@ describe("formatCliJsonFailure", () => {
         updaterVersion: "2026.9.2",
         message: expect.stringContaining("Deferral failed: content migration failed"),
         databases,
-        commands: expect.arrayContaining(["openclaw gateway stop", "openclaw doctor --fix"]),
+        commands: expect.arrayContaining(["paddy gateway stop", "paddy doctor --fix"]),
       },
     });
   });
@@ -262,7 +262,7 @@ describe("formatCliFailureLines", () => {
       expect(output).not.toContain("[paddy] Reason:");
       expect(output).not.toContain("OPENCLAW_DEBUG");
       expect(output).not.toContain("Stack:");
-      expect(output).not.toContain("paddy doctor");
+      expect(output).not.toContain("openclaw doctor");
     },
   );
 

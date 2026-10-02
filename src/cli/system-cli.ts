@@ -4,6 +4,7 @@ import type { Command } from "commander";
 import { danger } from "../globals.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import { formatCliJsonFailure, rethrowExpectedCliError } from "./failure-output.js";
 import type { GatewayRpcOpts } from "./gateway-rpc.js";
@@ -82,7 +83,7 @@ export function registerSystemCli(program: Command) {
         const text = normalizeOptionalString(opts.text) ?? "";
         if (!text) {
           throw new Error(
-            `--text is required. Example: ${formatCliCommand('openclaw system event --text "deploy finished"')}.`,
+            `--text is required. Example: ${formatCliCommand(`${CLI_NAME} system event --text "deploy finished"`)}.`,
           );
         }
         const mode = normalizeWakeMode(opts.mode);

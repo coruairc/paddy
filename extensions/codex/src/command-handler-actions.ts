@@ -201,7 +201,7 @@ export async function handleNativeGoal(
     return "Cannot manage the Codex goal because this command has no stable binding identity.";
   }
   if (!binding?.threadId) {
-    return "No Codex thread is attached to this OpenClaw session yet.";
+    return "No Codex thread is attached to this Paddy session yet.";
   }
   const connection = await resolveCodexBindingAppServerConnection({
     binding,
@@ -345,7 +345,6 @@ export async function steerConversationTurn(
 export async function setConversationModel(
   deps: CodexCommandDeps,
   ctx: PluginCommandContext,
-  pluginConfig: unknown,
   args: string[],
 ): Promise<string> {
   if (args.length > 1) {
@@ -387,7 +386,6 @@ export async function setConversationModel(
   return await deps.setCodexConversationModel({
     identity: target.identity,
     bindingStore: deps.bindingStore,
-    pluginConfig,
     model: normalized,
     agentDir: target.agentDir,
     config: ctx.config,
@@ -477,7 +475,7 @@ export async function startThreadAction(
     return `Cannot start Codex ${kind === "compact" ? "compaction" : "review"} because this command did not include a stable binding identity.`;
   }
   if (!binding?.threadId) {
-    return `No Codex thread is attached to this OpenClaw session yet.`;
+    return `No Codex thread is attached to this Paddy session yet.`;
   }
   if (kind === "compact") {
     const sessionTarget = ctx.sessionTarget;
@@ -500,7 +498,7 @@ export async function startThreadAction(
       currentSession?.sessionId !== ctx.sessionId ||
       resolvePersistedSessionRuntimeId(currentSession) !== "codex"
     ) {
-      return "Codex compaction is unavailable because the current OpenClaw session is not using the Codex runtime.";
+      return "Codex compaction is unavailable because the current Paddy session is not using the Codex runtime.";
     }
     if (target.identity.kind === "conversation") {
       if (!isSameCodexAppServerThreadOwner(binding, authority.currentSessionBinding)) {

@@ -7,6 +7,7 @@ import { sanitizeTerminalText } from "../../packages/terminal-core/src/safe-text
 import {
   ARCHIVE_LIMIT_ERROR_CODE,
   ArchiveLimitError,
+  ArchiveSecurityError,
   DEFAULT_MAX_ARCHIVE_BYTES_ZIP,
   DEFAULT_MAX_ENTRIES,
   DEFAULT_MAX_EXTRACTED_BYTES,
@@ -600,36 +601,24 @@ function validateClawHubArchiveMetaJson(params: {
 }
 
 function mapClawHubArchiveReadFailure(error: unknown): ClawHubInstallFailure {
+  let message =
+    "ClawHub archive fallback verification failed while reading the downloaded archive.";
   if (error instanceof ArchiveLimitError) {
-    if (error.code === ARCHIVE_LIMIT_ERROR_CODE.ENTRY_COUNT_EXCEEDS_LIMIT) {
-      return buildClawHubInstallFailure(
+    const messages: Partial<Record<ArchiveLimitError["code"], string>> = {
+      [ARCHIVE_LIMIT_ERROR_CODE.ENTRY_COUNT_EXCEEDS_LIMIT]:
         "ClawHub archive fallback verification exceeded the archive entry limit.",
-        CLAWHUB_INSTALL_ERROR_CODE.ARCHIVE_INTEGRITY_MISMATCH,
-      );
-    }
-    if (error.code === ARCHIVE_LIMIT_ERROR_CODE.ARCHIVE_SIZE_EXCEEDS_LIMIT) {
-      return buildClawHubInstallFailure(
+      [ARCHIVE_LIMIT_ERROR_CODE.ARCHIVE_SIZE_EXCEEDS_LIMIT]:
         "ClawHub archive fallback verification rejected the downloaded archive because it exceeds the ZIP archive size limit.",
-        CLAWHUB_INSTALL_ERROR_CODE.ARCHIVE_INTEGRITY_MISMATCH,
-      );
-    }
-    if (error.code === ARCHIVE_LIMIT_ERROR_CODE.EXTRACTED_SIZE_EXCEEDS_LIMIT) {
-      return buildClawHubInstallFailure(
+      [ARCHIVE_LIMIT_ERROR_CODE.EXTRACTED_SIZE_EXCEEDS_LIMIT]:
         "ClawHub archive fallback verification exceeded the total extracted-size limit.",
-        CLAWHUB_INSTALL_ERROR_CODE.ARCHIVE_INTEGRITY_MISMATCH,
-      );
-    }
-    if (error.code === ARCHIVE_LIMIT_ERROR_CODE.ENTRY_EXTRACTED_SIZE_EXCEEDS_LIMIT) {
-      return buildClawHubInstallFailure(
+      [ARCHIVE_LIMIT_ERROR_CODE.ENTRY_EXTRACTED_SIZE_EXCEEDS_LIMIT]:
         "ClawHub archive fallback verification exceeded the per-file size limit.",
-        CLAWHUB_INSTALL_ERROR_CODE.ARCHIVE_INTEGRITY_MISMATCH,
-      );
-    }
+    };
+    message = messages[error.code] ?? message;
+  } else if (error instanceof ArchiveSecurityError) {
+    message = `ClawHub archive fallback verification rejected the downloaded archive: ${formatErrorMessage(error)}`;
   }
-  return buildClawHubInstallFailure(
-    "ClawHub archive fallback verification failed while reading the downloaded archive.",
-    CLAWHUB_INSTALL_ERROR_CODE.ARCHIVE_INTEGRITY_MISMATCH,
-  );
+  return buildClawHubInstallFailure(message, CLAWHUB_INSTALL_ERROR_CODE.ARCHIVE_INTEGRITY_MISMATCH);
 }
 
 async function verifyClawHubExtractedFiles(params: {
@@ -834,7 +823,7 @@ function validateClawHubPluginPackage(params: {
   if (pkg.family === "skill") {
     const installRef = pkg.ownerHandle ? `@${pkg.ownerHandle}/${pkg.name}` : pkg.name;
     return buildClawHubInstallFailure(
-      `"${pkg.name}" is a skill. Use "openclaw skills install ${installRef}" instead.`,
+      `"${pkg.name}" is a skill. Use "paddy skills install ${installRef}" instead.`,
       CLAWHUB_INSTALL_ERROR_CODE.SKILL_PACKAGE,
     );
   }
@@ -858,7 +847,7 @@ function validateClawHubPluginPackage(params: {
     !satisfiesPluginApiRange(runtimeVersion, compatibility.pluginApiRange)
   ) {
     return buildClawHubInstallFailure(
-      `Plugin "${pkg.name}" requires plugin API ${compatibility.pluginApiRange}, but this OpenClaw runtime exposes ${runtimeVersion}.`,
+      `Plugin "${pkg.name}" requires plugin API ${compatibility.pluginApiRange}, but this Paddy runtime exposes ${runtimeVersion}.`,
       CLAWHUB_INSTALL_ERROR_CODE.INCOMPATIBLE_PLUGIN_API,
     );
   }
@@ -881,12 +870,12 @@ function validateClawHubPluginPackage(params: {
     }
     if (minGatewayVersionCheck.kind === "unknown_host_version") {
       return buildClawHubInstallFailure(
-        `Plugin "${pkg.name}" requires OpenClaw >=${minGatewayVersionCheck.requirement.minimumLabel}, but this host version could not be determined. Re-run from a released build or set OPENCLAW_VERSION and retry.`,
+        `Plugin "${pkg.name}" requires Paddy >=${minGatewayVersionCheck.requirement.minimumLabel}, but this host version could not be determined. Re-run from a released build or set OPENCLAW_VERSION and retry.`,
         CLAWHUB_INSTALL_ERROR_CODE.UNKNOWN_GATEWAY_VERSION,
       );
     }
     return buildClawHubInstallFailure(
-      `Plugin "${pkg.name}" requires OpenClaw >=${minGatewayVersionCheck.requirement.minimumLabel}, but this host is ${minGatewayVersionCheck.currentVersion}.`,
+      `Plugin "${pkg.name}" requires Paddy >=${minGatewayVersionCheck.requirement.minimumLabel}, but this host is ${minGatewayVersionCheck.currentVersion}.`,
       CLAWHUB_INSTALL_ERROR_CODE.INCOMPATIBLE_GATEWAY,
     );
   }

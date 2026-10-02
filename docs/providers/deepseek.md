@@ -2,7 +2,7 @@
 summary: "DeepSeek setup (auth + model selection)"
 title: "DeepSeek"
 read_when:
-  - You want to use DeepSeek with OpenClaw
+  - You want to use DeepSeek with Paddy
   - You need the API key env var or CLI auth choice
 ---
 
@@ -34,7 +34,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
   </Step>
   <Step title="Run onboarding">
     ```bash
-    openclaw onboard --auth-choice deepseek-api-key
+    paddy onboard --auth-choice deepseek-api-key
     ```
 
     Prompts for your API key and sets `deepseek/deepseek-v4-pro` as the default model.
@@ -42,13 +42,13 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
   </Step>
   <Step title="Verify models are available">
     ```bash
-    openclaw models list --provider deepseek
+    paddy models list --provider deepseek
     ```
 
     To inspect the plugin's static catalog without a running Gateway:
 
     ```bash
-    openclaw models list --all --provider deepseek
+    paddy models list --all --provider deepseek
     ```
 
   </Step>
@@ -61,7 +61,7 @@ Onboarding preserves your model entries and leaves generated catalog rows to dis
     For scripted or headless installations, pass all flags directly:
 
     ```bash
-    openclaw onboard --non-interactive \
+    paddy onboard --non-interactive \
       --mode local \
       --auth-choice deepseek-api-key \
       --deepseek-api-key "$DEEPSEEK_API_KEY" \
@@ -93,12 +93,12 @@ DeepSeek retired `deepseek-chat` and `deepseek-reasoner` on July 24, 2026 at
 to `deepseek/deepseek-v4-flash` or `deepseek/deepseek-v4-pro`.
 </Warning>
 
-OpenClaw's local costs are estimates. Canonical Flash uses DeepSeek's peak
+Paddy's local costs are estimates. Canonical Flash uses DeepSeek's peak
 rates: $0.30 per million input tokens, $1.20 per million output tokens, and
 $0.006 per million cached input tokens. Published off-peak rates are half those amounts.
 Legacy rows retain their earlier bundled metadata. DeepSeek still accepts
 `deepseek-v4-flash` and `deepseek-v4-flash-vision-exp`, routes them to V4.1 Flash,
-and bills them at current Flash rates. Existing explicit selections remain valid in OpenClaw.
+and bills them at current Flash rates. Existing explicit selections remain valid in Paddy.
 DeepSeek can change rates; its
 [Models & Pricing](https://api-docs.deepseek.com/quick_start/pricing/) page is
 authoritative for billing.
@@ -110,7 +110,7 @@ PNG, JPEG, GIF, and WebP images through the same API and API key. See
 [DeepSeek vision](https://api-docs.deepseek.com/guides/vision) for image limits.
 
 <Tip>
-Canonical Flash and V4 models support DeepSeek's `thinking` control. OpenClaw also replays
+Canonical Flash and V4 models support DeepSeek's `thinking` control. Paddy also replays
 DeepSeek `reasoning_content` on follow-up turns so thinking sessions with tool
 calls can continue.
 Use `/think xhigh` or `/think max` with DeepSeek V4 models to request DeepSeek's
@@ -121,20 +121,20 @@ maximum `reasoning_effort`; both map to `"max"`.
 
 DeepSeek V4 thinking sessions require replayed assistant messages from a
 thinking-enabled turn to include `reasoning_content` on follow-up requests.
-OpenClaw's DeepSeek plugin backfills that field automatically, so normal
+Paddy's DeepSeek plugin backfills that field automatically, so normal
 multi-turn tool use works on `deepseek/deepseek-flash`, `deepseek/deepseek-v4-flash`,
 `deepseek/deepseek-v4-flash-vision-exp`, and `deepseek/deepseek-v4-pro` even when history came from another
 OpenAI-compatible provider (no native `reasoning_content`) or from a plain
 assistant message. No `/new` required after switching providers mid-session.
 
-When thinking is disabled (including the UI **None** selection), OpenClaw
+When thinking is disabled (including the UI **None** selection), Paddy
 sends `thinking: { type: "disabled" }` and strips replayed `reasoning_content`
 from outgoing history, keeping the session on the non-thinking DeepSeek path.
 
 Fresh onboarding selects `deepseek/deepseek-v4-pro`. To select canonical Flash:
 
 ```bash
-openclaw models set deepseek/deepseek-flash
+paddy models set deepseek/deepseek-flash
 ```
 
 ## Live testing

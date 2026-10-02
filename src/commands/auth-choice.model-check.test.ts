@@ -76,7 +76,7 @@ describe("warnIfModelConfigLooksOff", () => {
       }),
     );
     expect(note).toHaveBeenCalledWith(
-      'No auth configured for provider "openai". The agent may fail until credentials are added. Run `openclaw models auth login --provider openai`, `openclaw configure`, or set an API key env var.',
+      'No auth configured for provider "openai". The agent may fail until credentials are added. Run `paddy models auth login --provider openai`, `paddy configure`, or set an API key env var.',
       "Model check",
     );
   });
@@ -138,7 +138,7 @@ describe("warnIfModelConfigLooksOff", () => {
     });
 
     expect(note).toHaveBeenCalledWith(
-      'No auth configured for provider "anthropic". The agent may fail until credentials are added. Run `openclaw models auth login --provider anthropic`, `openclaw configure`, or set an API key env var.',
+      'No auth configured for provider "anthropic". The agent may fail until credentials are added. Run `paddy models auth login --provider anthropic`, `paddy configure`, or set an API key env var.',
       "Model check",
     );
   });
@@ -205,7 +205,7 @@ describe("warnIfModelConfigLooksOff", () => {
     await warnIfModelConfigLooksOff(config, prompter);
 
     expect(note).toHaveBeenCalledWith(
-      'No auth configured for provider "openai". The agent may fail until credentials are added. Run `openclaw models auth login --provider openai`, `openclaw configure`, or set an API key env var.',
+      'No auth configured for provider "openai". The agent may fail until credentials are added. Run `paddy models auth login --provider openai`, `paddy configure`, or set an API key env var.',
       "Model check",
     );
   });
@@ -227,7 +227,7 @@ describe("warnIfModelConfigLooksOff", () => {
       env: { OPENAI_API_KEY: "api-key" },
     });
     const warning = note.mock.calls.flatMap(([message]) => message).join("\n");
-    expect(warning).toContain("openclaw models auth login --provider openai");
+    expect(warning).toContain("paddy models auth login --provider openai");
     expect(warning).not.toContain("set an API key env var");
 
     const store = createAuthProfileStoreFixture({

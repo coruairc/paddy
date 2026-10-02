@@ -450,7 +450,7 @@ export async function inspectUpdateRecoveryBackups(
           captureStatus: outcome.status,
           status: "forward-resolved" as const,
           terminalOutcome: undefined,
-          nextAction: "openclaw update status --json",
+          nextAction: "paddy update status --json",
           message: `Update recovery set ${ref.manifestPath}: current state repaired forward; failed history and all generations retained.`,
         };
       }
@@ -494,9 +494,7 @@ export async function inspectUpdateRecoveryBackups(
           ? "ambiguous"
           : "unresolved";
       const nextAction =
-        status === "unresolved"
-          ? "npx openclaw@latest doctor --fix"
-          : "openclaw update status --json";
+        status === "unresolved" ? "npx openclaw@latest doctor --fix" : "paddy update status --json";
       const reason = terminalOutcome
         ? `stale: its update already ${terminalOutcome === "committed" ? "succeeded" : "restored state"}`
         : (ambiguity ?? "unresolved after a failed update");

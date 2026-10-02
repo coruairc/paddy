@@ -1,7 +1,7 @@
 ---
-summary: "Use StepFun models with OpenClaw"
+summary: "Use StepFun models with Paddy"
 read_when:
-  - You want StepFun models in OpenClaw
+  - You want StepFun models in Paddy
   - You need StepFun setup guidance
 title: "StepFun"
 ---
@@ -68,25 +68,25 @@ Step Plan (`stepfun-plan`):
       </Step>
       <Step title="Run onboarding">
         ```bash
-        openclaw onboard --auth-choice stepfun-standard-api-key-intl
+        paddy onboard --auth-choice stepfun-standard-api-key-intl
         ```
 
         China endpoint:
 
         ```bash
-        openclaw onboard --auth-choice stepfun-standard-api-key-cn
+        paddy onboard --auth-choice stepfun-standard-api-key-cn
         ```
       </Step>
       <Step title="Non-interactive alternative">
         ```bash
-        openclaw onboard --non-interactive --accept-risk --skip-health \
+        paddy onboard --non-interactive --accept-risk --skip-health \
           --auth-choice stepfun-standard-api-key-intl \
           --stepfun-api-key "$STEPFUN_API_KEY"
         ```
       </Step>
       <Step title="Verify models are available">
         ```bash
-        openclaw models list --provider stepfun
+        paddy models list --provider stepfun
         ```
       </Step>
     </Steps>
@@ -108,25 +108,25 @@ Step Plan (`stepfun-plan`):
       </Step>
       <Step title="Run onboarding">
         ```bash
-        openclaw onboard --auth-choice stepfun-plan-api-key-intl
+        paddy onboard --auth-choice stepfun-plan-api-key-intl
         ```
 
         China endpoint:
 
         ```bash
-        openclaw onboard --auth-choice stepfun-plan-api-key-cn
+        paddy onboard --auth-choice stepfun-plan-api-key-cn
         ```
       </Step>
       <Step title="Non-interactive alternative">
         ```bash
-        openclaw onboard --non-interactive --accept-risk --skip-health \
+        paddy onboard --non-interactive --accept-risk --skip-health \
           --auth-choice stepfun-plan-api-key-intl \
           --stepfun-api-key "$STEPFUN_API_KEY"
         ```
       </Step>
       <Step title="Verify models are available">
         ```bash
-        openclaw models list --provider stepfun-plan
+        paddy models list --provider stepfun-plan
         ```
       </Step>
     </Steps>
@@ -232,10 +232,10 @@ A single auth flow writes region-matched profiles for both `stepfun` and `stepfu
   </Accordion>
 
   <Accordion title="Notes">
-    - `step-3.7-flash` accepts text and image input through OpenClaw. StepFun's API also supports video, which OpenClaw does not declare as an input modality for StepFun models.
+    - `step-3.7-flash` accepts text and image input through Paddy. StepFun's API also supports video, which Paddy does not declare as an input modality for StepFun models.
     - Step 3.7 supports `low`, `medium`, and `high` reasoning effort. Because the model has no non-reasoning mode, `/think off` maps to `low`.
     - `step-3.5-flash-2603` is exposed only on `stepfun-plan`.
-    - Use `openclaw models list` and `openclaw models set <provider/model>` to inspect or switch models.
+    - Use `paddy models list` and `paddy models set <provider/model>` to inspect or switch models.
 
   </Accordion>
 </AccordionGroup>

@@ -1,6 +1,7 @@
 // Tracks image attachments that belong to the current reply turn.
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import type { MediaImageLayout } from "../../agents/embedded-agent-runner/run/prompt-image-metadata.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { logVerbose } from "../../globals.js";
 import { formatErrorMessage } from "../../infra/errors.js";
@@ -156,7 +157,7 @@ export async function resolveCurrentTurnImages(params: {
     const resolvedIndexes = resolved.attachmentIndexes ?? [];
     if (images.length < undescribedImageAttachments.length) {
       logVerbose(
-        `agent-runner: native OpenClaw media resolution produced ${images.length}/${undescribedImageAttachments.length} current image attachment(s); retaining resolved images`,
+        `agent-runner: native ${PRODUCT_NAME} media resolution produced ${images.length}/${undescribedImageAttachments.length} current image attachment(s); retaining resolved images`,
       );
     }
     const imageByResolvedIndex = new Map(

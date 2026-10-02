@@ -10,41 +10,41 @@ read_when:
 ## Local vs remote control
 
 - **Local control (default):** the Gateway starts the loopback control service and can launch a local browser.
-  Targetless actions can launch it (for example, `open`, `navigate`, or `openclaw browser start`). Actions that name a
+  Targetless actions can launch it (for example, `open`, `navigate`, or `paddy browser start`). Actions that name a
   tab by `targetId`, tab id, or label never start a stopped browser, because a new browser cannot
   contain that tab; start the browser or open a new tab, then select a current target.
-- **Remote control (node host):** run a node host (see [Nodes](/nodes) for pairing and [Node host CLI](/cli/node) for `openclaw node run`) on the machine that has the browser; the Gateway proxies browser actions to it.
+- **Remote control (node host):** run a node host (see [Nodes](/nodes) for pairing and [Node host CLI](/cli/node) for `paddy node run`) on the machine that has the browser; the Gateway proxies browser actions to it.
 - **Remote CDP:** set `browser.profiles.<name>.cdpUrl` (or `browser.cdpUrl`) to
-  attach to a remote Chromium-based browser. In this case, OpenClaw will not launch a local browser.
+  attach to a remote Chromium-based browser. In this case, Paddy will not launch a local browser.
 - For externally managed CDP services on loopback (for example Browserless in
   Docker published to `127.0.0.1`), also set `attachOnly: true`. Loopback CDP
-  without `attachOnly` is treated as a local OpenClaw-managed browser profile.
-- `headless` only affects local managed profiles that OpenClaw launches. It does not restart or change existing-session or remote CDP browsers.
+  without `attachOnly` is treated as a local Paddy-managed browser profile.
+- `headless` only affects local managed profiles that Paddy launches. It does not restart or change existing-session or remote CDP browsers.
 - `executablePath` follows the same local managed profile rule. Changing it on a
   running local managed profile marks that profile for restart/reconcile so the
   next launch uses the new binary.
 
 Stopping behavior differs by profile mode:
 
-- local managed profiles: `openclaw browser stop` stops the browser process that
-  OpenClaw launched
-- attach-only and remote CDP profiles: `openclaw browser stop` closes the active
+- local managed profiles: `paddy browser stop` stops the browser process that
+  Paddy launched
+- attach-only and remote CDP profiles: `paddy browser stop` closes the active
   control session and releases Playwright/CDP emulation overrides (viewport,
   color scheme, locale, timezone, offline mode, and similar state), even
-  though no browser process was launched by OpenClaw
+  though no browser process was launched by Paddy
 
 Remote CDP URLs can include auth:
 
 - Query tokens (e.g., `https://provider.example?token=<token>`)
 - HTTP Basic auth (e.g., `https://user:pass@provider.example`)
 
-OpenClaw preserves the auth when calling `/json/*` endpoints and when connecting
+Paddy preserves the auth when calling `/json/*` endpoints and when connecting
 to the CDP WebSocket. Prefer environment variables or secrets managers for
 tokens instead of committing them to config files.
 
 ## Node browser proxy (zero-config default)
 
-If you run a **node host** on the machine that has your browser, OpenClaw can
+If you run a **node host** on the machine that has your browser, Paddy can
 auto-route browser tool calls to that node when the Gateway host has no local
 browser capability. Automatic routing prefers the host, including a stopped
 managed browser whose executable is installed. Explicit `target="node"`, a
@@ -54,12 +54,12 @@ managed browser whose executable is installed. Explicit `target="node"`, a
 The selected host profile owns existing-session, extension, attach-only, and
 remote-CDP connections even when no managed-browser executable is installed.
 Launch failures, invalid executable settings, permission errors, and page-action
-failures stay on that owner; OpenClaw does not replay them on another machine.
+failures stay on that owner; Paddy does not replay them on another machine.
 Automatic host fallback from a selected node is allowed
 only before the selected node handles a request. Once an action reaches the node,
 its follow-up snapshot or settings stay on that node instead of switching browsers.
 
-Standalone runs such as `openclaw agent exec` use the host browser when no
+Standalone runs such as `paddy agent exec` use the host browser when no
 Gateway or node route is selected. They do not need Gateway credentials for
 local browser control. Sandbox routing and host-control restrictions still apply.
 To discover browser nodes through a local Gateway from a standalone run, set
@@ -75,7 +75,7 @@ Notes:
 - Profiles come from the node's own `browser.profiles` config (same as local).
 - The proxy command never allows persistent profile mutations (`create-profile`, `delete-profile`, `reset-profile`) regardless of `allowProfiles`; make those changes on the node directly.
 - `nodeHost.browserProxy.allowProfiles` is optional. Leave it empty for the legacy/default behavior: all configured profiles remain reachable through the proxy.
-- If you set `nodeHost.browserProxy.allowProfiles`, OpenClaw treats it as a least-privilege boundary limiting which profile names the proxy will target.
+- If you set `nodeHost.browserProxy.allowProfiles`, Paddy treats it as a least-privilege boundary limiting which profile names the proxy will target.
 - Requests keep their selected profile while preparing work. The node rechecks proxy and profile access before browser actions, including after startup or upload preparation.
 - Disable if you don't want it:
   - On the node: `nodeHost.browserProxy.enabled=false`
@@ -84,7 +84,7 @@ Notes:
 ## Browserless (hosted remote CDP)
 
 [Browserless](https://browserless.io) is a hosted Chromium service that exposes
-CDP connection URLs over HTTPS and WebSocket. OpenClaw can use either form, but
+CDP connection URLs over HTTPS and WebSocket. Paddy can use either form, but
 for a remote browser profile the simplest option is the direct WebSocket URL
 from Browserless' connection docs.
 
@@ -109,12 +109,12 @@ Notes:
 - Replace `<BROWSERLESS_API_KEY>` with your real Browserless token.
 - Choose the region endpoint that matches your Browserless account (see their docs).
 - If Browserless gives you an HTTPS base URL, you can either convert it to
-  `wss://` for a direct CDP connection or keep the HTTPS URL and let OpenClaw
+  `wss://` for a direct CDP connection or keep the HTTPS URL and let Paddy
   discover `/json/version`.
 
 ### Browserless Docker on the same host
 
-When Browserless is self-hosted in Docker and OpenClaw runs on the host, treat
+When Browserless is self-hosted in Docker and Paddy runs on the host, treat
 Browserless as an externally managed CDP service:
 
 ```json5
@@ -133,44 +133,44 @@ Browserless as an externally managed CDP service:
 ```
 
 The address in `browser.profiles.browserless.cdpUrl` must be reachable from the
-OpenClaw process. Browserless must also advertise a matching reachable endpoint;
-set Browserless `EXTERNAL` to that same public-to-OpenClaw WebSocket base, such
+Paddy process. Browserless must also advertise a matching reachable endpoint;
+set Browserless `EXTERNAL` to that same public-to-Paddy WebSocket base, such
 as `ws://127.0.0.1:3000`, `ws://browserless:3000`, or a stable private Docker
 network address. If `/json/version` returns `webSocketDebuggerUrl` pointing at
-an address OpenClaw cannot reach, CDP HTTP can look healthy while the WebSocket
+an address Paddy cannot reach, CDP HTTP can look healthy while the WebSocket
 attach still fails.
 
 Do not leave `attachOnly` unset for a loopback Browserless profile. Without
-`attachOnly`, OpenClaw treats the loopback port as a local managed browser
-profile and may report that the port is in use but not owned by OpenClaw.
+`attachOnly`, Paddy treats the loopback port as a local managed browser
+profile and may report that the port is in use but not owned by Paddy.
 
 ## Direct WebSocket CDP providers
 
 Some hosted browser services expose a **direct WebSocket** endpoint rather than
-the standard HTTP-based CDP discovery (`/json/version`). OpenClaw accepts three
+the standard HTTP-based CDP discovery (`/json/version`). Paddy accepts three
 CDP URL shapes and picks the right connection strategy automatically:
 
 - **HTTP(S) discovery** - `http://host[:port]` or `https://host[:port]`.
-  OpenClaw calls `/json/version` to discover the WebSocket debugger URL, then
+  Paddy calls `/json/version` to discover the WebSocket debugger URL, then
   connects. No WebSocket fallback.
 - **Direct WebSocket endpoints** - `ws://host[:port]/devtools/<kind>/<id>` or
   `wss://...` with a `/devtools/browser|page|worker|shared_worker|service_worker/<id>`
-  path. OpenClaw connects directly via a WebSocket handshake and skips
+  path. Paddy connects directly via a WebSocket handshake and skips
   `/json/version` entirely.
 - **Bare WebSocket roots** - `ws://host[:port]` or `wss://host[:port]` with no
   `/devtools/...` path (e.g. [Browserless](https://browserless.io),
-  [Browserbase](https://www.browserbase.com)). OpenClaw tries HTTP
+  [Browserbase](https://www.browserbase.com)). Paddy tries HTTP
   `/json/version` discovery first (normalising the scheme to `http`/`https`);
-  if discovery returns a `webSocketDebuggerUrl` it is used, otherwise OpenClaw
+  if discovery returns a `webSocketDebuggerUrl` it is used, otherwise Paddy
   falls back to a direct WebSocket handshake at the bare root. If the advertised
   WebSocket endpoint rejects the CDP handshake but the configured bare root
-  accepts it, OpenClaw falls back to that root as well. This lets a bare `ws://`
+  accepts it, Paddy falls back to that root as well. This lets a bare `ws://`
   pointed at a local Chrome still connect, since Chrome only accepts WebSocket
   upgrades on the specific per-target path from `/json/version`, while hosted
   providers can still use their root WebSocket endpoint when their discovery
   endpoint advertises a short-lived URL that is not suitable for Playwright CDP.
 
-`openclaw browser doctor` uses the same discovery-first, WebSocket-fallback
+`paddy browser doctor` uses the same discovery-first, WebSocket-fallback
 logic as runtime attach, so a bare-root URL that connects successfully is not
 reported as unreachable by diagnostics.
 

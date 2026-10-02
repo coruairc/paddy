@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveOpenClawPackageRootSync } from "../../infra/openclaw-root.js";
 import { DEFAULT_RELAY_TIMEOUT_MS } from "./native-hook-relay-constants.js";
 import type { NativeHookRelayEvent, NativeHookRelayProvider } from "./native-hook-relay-types.js";
@@ -113,5 +114,5 @@ function resolveNativeHookRelayExecutable(): string {
       return resolved;
     }
   }
-  throw new Error("Cannot resolve OpenClaw CLI executable path for native hook relay");
+  throw new Error(`Cannot resolve ${PRODUCT_NAME} CLI executable path for native hook relay`);
 }

@@ -43,7 +43,7 @@ export function assertGatewayAuthNotKnownWeak(
       `Gateway auth ${credentialKind} is a known redaction sentinel, not a credential. ` +
         (credentialKind === "password"
           ? "Replace gateway.auth.password, OPENCLAW_GATEWAY_PASSWORD, or its external secret source with a real password, then restart the Gateway."
-          : "Run `openclaw doctor --fix` to repair the Gateway token or replace the external secret, then restart and re-pair devices."),
+          : "Run `paddy doctor --fix` to repair the Gateway token or replace the external secret, then restart and re-pair devices."),
     );
   }
   const placeholders =
@@ -57,7 +57,7 @@ export function assertGatewayAuthNotKnownWeak(
         "Generate a real secret (for example, `openssl rand -hex 32`) and " +
         (credentialKind === "token"
           ? "update gateway.auth.token or its external source. " +
-            "For blank or undefined/null inline tokens, `openclaw doctor --fix --generate-gateway-token` can generate one."
+            "For blank or undefined/null inline tokens, `paddy doctor --fix --generate-gateway-token` can generate one."
           : "set OPENCLAW_GATEWAY_PASSWORD " +
             "or gateway.auth.password (or its external source) before starting the gateway."),
     );

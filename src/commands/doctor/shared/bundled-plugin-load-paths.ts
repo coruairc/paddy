@@ -3,6 +3,7 @@ import path from "node:path";
 import { asNullableRecord } from "@openclaw/normalization-core/record-coerce";
 import { sanitizeForLog } from "../../../../packages/terminal-core/src/ansi.js";
 import { resolveAgentWorkspaceDir, tryResolveDefaultAgentId } from "../../../agents/agent-scope.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import {
   buildBundledPluginLoadPathAliases,
@@ -93,26 +94,19 @@ export function scanBundledPluginLoadPathMigrations(
     ) {
       continue;
     }
-    const match = bundledPathMap.get(normalized);
+    let match = bundledPathMap.get(normalized);
     if (!match) {
       const oldPackaged = parsePackagedBundledPluginPath(normalized);
       const oldLegacy = oldPackaged ? null : parseLegacyBundledPluginPath(normalized);
       const oldPackageRoot = oldPackaged?.packageRoot ?? oldLegacy?.packageRoot;
       const oldBundledLeaf = oldPackaged?.bundledLeaf ?? oldLegacy?.bundledLeaf;
-      const oldPackageMatch =
+      match =
         // Only rewrite paths rooted in the installed OpenClaw package; user plugin paths stay intact.
         oldPackageRoot && oldBundledLeaf && isOpenClawNodeModulesPackageRoot(oldPackageRoot)
           ? packagedBundledLeafMap.get(normalizeBundledLookupPath(oldBundledLeaf))
           : undefined;
-      if (!oldPackageMatch) {
-        continue;
-      }
-      hits.push({
-        pluginId: oldPackageMatch.pluginId,
-        fromPath: rawPath,
-        toPath: oldPackageMatch.toPath,
-        pathLabel: "plugins.load.paths",
-      });
+    }
+    if (!match) {
       continue;
     }
     hits.push({
@@ -136,7 +130,7 @@ export function collectBundledPluginLoadPathWarnings(params: {
   }
   const lines = params.hits.map(
     (hit) =>
-      `- ${hit.pathLabel}: bundled plugin path "${hit.fromPath}" still aliases ${hit.pluginId}; OpenClaw loads the packaged bundled plugin from "${hit.toPath}".`,
+      `- ${hit.pathLabel}: bundled plugin path "${hit.fromPath}" still aliases ${hit.pluginId}; ${PRODUCT_NAME} loads the packaged bundled plugin from "${hit.toPath}".`,
   );
   lines.push(`- Run "${params.doctorFixCommand}" to remove these redundant bundled plugin paths.`);
   return lines.map((line) => sanitizeForLog(line));
@@ -164,24 +158,15 @@ export function maybeRepairBundledPluginLoadPaths(
   const removable = new Set(
     hits.map((hit) => normalizeBundledLookupPath(resolveUserPath(hit.fromPath, env))),
   );
-  const rewritten: Array<(typeof paths)[number]> = [];
-  for (const entry of paths) {
-    if (typeof entry !== "string") {
-      rewritten.push(entry);
-      continue;
-    }
-    const resolved = normalizeBundledLookupPath(resolveUserPath(entry, env));
-    if (removable.has(resolved)) {
-      continue;
-    }
-    rewritten.push(entry);
-  }
-
   next.plugins = {
     ...next.plugins,
     load: {
       ...next.plugins?.load,
-      paths: rewritten,
+      paths: Array.from(paths).filter(
+        (entry) =>
+          typeof entry !== "string" ||
+          !removable.has(normalizeBundledLookupPath(resolveUserPath(entry, env))),
+      ),
     },
   };
 

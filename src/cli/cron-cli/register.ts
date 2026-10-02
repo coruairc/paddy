@@ -2,6 +2,7 @@
 import type { Command } from "commander";
 import { formatDocsLink } from "../../../packages/terminal-core/src/links.js";
 import { theme } from "../../../packages/terminal-core/src/theme.js";
+import { CLI_NAME } from "../cli-name.js";
 import { inheritOptionFromParent } from "../command-options.js";
 import { addGatewayClientOptions } from "../gateway-rpc.js";
 import { setCommandJsonMode } from "../program/json-mode.js";
@@ -34,7 +35,7 @@ export function registerCronCli(program: Command) {
     .addHelpText(
       "after",
       () =>
-        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/cron", "docs.openclaw.ai/cli/cron")}\n${theme.muted("Upgrade tip:")} run \`openclaw doctor --fix\` to normalize legacy automation storage.\n`,
+        `\n${theme.muted("Docs:")} ${formatDocsLink("/cli/cron", "docs.openclaw.ai/cli/cron")}\n${theme.muted("Upgrade tip:")} run \`${CLI_NAME} doctor --fix\` to normalize legacy automation storage.\n`,
     );
 
   addGatewayClientOptions(cron);

@@ -10,10 +10,10 @@ read_when:
 - `openclaw`: managed, isolated browser (no extension required).
 - `user`: built-in Chrome DevTools MCP attach profile for your **real
   signed-in Chrome** session. Chrome shows a blocking "Allow remote debugging?"
-  prompt the first time OpenClaw attaches, so someone must be at the computer.
+  prompt the first time Paddy attaches, so someone must be at the computer.
 - `chrome`: built-in [Chrome extension](/tools/chrome-extension) profile for
   your **real signed-in Chrome** session. Works from a phone with nobody at the
-  desk because it drives tabs through the OpenClaw browser extension instead of
+  desk because it drives tabs through the Paddy browser extension instead of
   the remote-debugging port, so there is no "Allow remote debugging?" prompt.
 
 For agent browser tool calls:
@@ -35,6 +35,16 @@ that card's browser and tab. This does not change `browser.defaultProfile` or
 another session's selection. Without a session browser target, the panel uses
 the configured default routing.
 
+The chat side panel shows only this session's tabs: tabs its agent or panel
+opened, plus tabs its conversation used. Other sessions' tabs and tabs opened
+outside Paddy stay hidden. The Browser dock outside a chat session lists
+every tab. Tabs opened from a session's panel belong to that session and follow
+the existing session tab cleanup: they close when the session is reset or
+deleted, with idle and per-session limits controlled by `browser.tabCleanup`.
+Tabs opened from a panel before this ownership existed have no recorded
+session, so they stay open but appear only in the Browser dock outside a chat
+session.
+
 The panel streams the active tab live as the page repaints. It falls back to
 screenshots for node-routed browsers, Chrome MCP existing-session profiles,
 missing Playwright, or stream connection failures. Navigation rules apply to
@@ -44,7 +54,7 @@ After an established stream disconnects, the panel refreshes its screenshot
 and retries the stream automatically after a short delay. Annotation and
 inspection keep their captured image until you return to interaction mode.
 
-Preview cards appear only for HTTP(S) page URLs when OpenClaw can identify the
+Preview cards appear only for HTTP(S) page URLs when Paddy can identify the
 browser's route. Blank or internal pages remain ordinary tool results. Tab
 actions without a page URL still update the Browser panel's selection. Sandbox
 browser results remain available to the agent but do not open a host-browser preview.
@@ -65,7 +75,7 @@ preview cards keep their title and URL without a thumbnail when that target
 is unavailable. Click **Start browser** to launch the browser and show its current tabs.
 
 For local `attachOnly` CDP profiles on macOS and Linux, direct preview screenshots
-preserve the active Chrome tab when OpenClaw can verify that the attached browser
+preserve the active Chrome tab when Paddy can verify that the attached browser
 is running with a visible window. Headless browsers and browsers whose mode cannot
 be verified keep the existing activation behavior so screenshots remain reliable.
 Explicit tab-focus actions still activate the requested tab.

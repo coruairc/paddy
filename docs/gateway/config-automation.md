@@ -42,7 +42,7 @@ The `cron` block is strict; `cron.enabled`, `cron.skipMissedJobs`, `cron.trigger
 `cron.webhookSsrfPolicy`, `cron.sessionRetention`, and `cron.failureAlert` are the only accepted keys. The
 retired `cron.webhook` fallback URL is gone: runtime delivery uses per-job
 `delivery.mode = "webhook"` plus `delivery.to`, or `delivery.completionDestination`
-when preserving announce delivery. `openclaw doctor --fix` strips a leftover
+when preserving announce delivery. `paddy doctor --fix` strips a leftover
 `cron.webhook` from existing config files.
 
 ### `cron.failureAlert`
@@ -69,7 +69,7 @@ with an existing failure route are covered by default after 2 consecutive
 execution failures with a 1-hour cooldown; a `cron.failureAlert` object explicitly
 activates/tunes the policy even when no route existed. The retired
 `cron.failureDestination` block is merged into it by
-[`openclaw doctor --fix`](/cli/doctor).
+[`paddy doctor --fix`](/cli/doctor).
 
 - `enabled`: explicitly enable or disable the global policy. `false` disables inherited notifications unless a job has its own `failureAlert` object; `true` explicitly enables globally. Omitting it preserves route-backed defaults.
 - `after`: consecutive failures before an alert fires (positive integer, min: `1`; default: `2`).
@@ -85,7 +85,7 @@ activates/tunes the policy even when no route existed. The retired
 - Required completion-delivery failure (`status: "ok"`, `completionStatus: "failed"`) does not increment execution backoff and may notify immediately only through a resolved alternate failure destination, not the failed primary route.
 - `delivery.failureDestination` is only supported for `sessionTarget="isolated"` jobs unless the job's primary `delivery.mode` is `"webhook"`.
 
-See [Automations](/automation/cron-jobs). Isolated automation runs are tracked as [background tasks](/automation/tasks).
+See [Automations](/automation/cron-jobs). Cron records isolated automation run history.
 
 ## Media model template variables
 

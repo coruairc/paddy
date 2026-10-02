@@ -41,8 +41,10 @@ import {
   readTranscriptFingerprint,
   resolveTargetSqlitePath,
 } from "../infra/session-sqlite-migration-readers.js";
-import { hasOrphanedSqliteSidecars } from "../infra/sqlite-files.js";
-import { createRetainedAgentDatabaseMatcher } from "../state/agent-deletion-discovery.js";
+import {
+  createRetainedAgentDatabaseMatcher,
+  hasSqliteFileFamily,
+} from "../state/agent-deletion-discovery.js";
 import { planSessionJsonlArchiveMove } from "./doctor-session-sqlite-archive.js";
 import { countLegacyTranscript } from "./doctor-session-sqlite-diagnostics.js";
 import {
@@ -78,7 +80,7 @@ export function prepareRetainedSessionImport(
     if (
       disposition &&
       (disposition !== "unavailable" ||
-        hasOrphanedSqliteSidecars(sqlitePath) ||
+        hasSqliteFileFamily(sqlitePath) ||
         hasDeferredPluginSessionImport({
           target: { ...params.target, sqlitePath },
           sqlitePath,
@@ -87,7 +89,7 @@ export function prepareRetainedSessionImport(
     ) {
       issues.push({
         code: "plugin_migration_source_retained",
-        message: `Retained session sources skipped: store held for agent ${params.target.agentId} database ${sqlitePath}. Run openclaw doctor --fix for deletion-history repair and explicit restoration guidance.`,
+        message: `Retained session sources skipped: store held for agent ${params.target.agentId} database ${sqlitePath}. Run paddy doctor --fix for deletion-history repair and explicit restoration guidance.`,
       });
       return undefined;
     }
@@ -114,7 +116,7 @@ export function prepareRetainedSessionImport(
         code: fs.existsSync(params.target.storePath)
           ? "retained_plugin_source_conflict"
           : "historical_transcript_deferred",
-        message: `${artifactPath}: ${reason} Canonical SQLite sessions remain authoritative. Run openclaw doctor --fix to preserve the conflicting input in the migration archive.`,
+        message: `${artifactPath}: ${reason} Canonical SQLite sessions remain authoritative. Run paddy doctor --fix to preserve the conflicting input in the migration archive.`,
       });
     },
   };

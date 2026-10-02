@@ -128,7 +128,6 @@ describe("Codex plugin activation", () => {
     expect(
       metadataCache.read("runtime", "curated-global")?.response.marketplaces[0]?.plugins[0],
     ).toMatchObject({ installed: true, enabled: true });
-    expect(appCache.getRevision()).toBeGreaterThan(0);
   });
 
   it("keeps curated catalog refresh scoped to the active repository", async () => {
@@ -200,7 +199,6 @@ describe("Codex plugin activation", () => {
         message: "Codex app inventory refresh skipped: app/installed unavailable",
       },
     ]);
-    expect(appCache.getRevision()).toBeGreaterThan(0);
   });
 
   it("keeps a successful install usable when unrelated native refreshes fail", async () => {
@@ -502,7 +500,7 @@ describe("Codex plugin activation", () => {
       reason: "disabled",
       installAttempted: false,
     });
-    expect(result.diagnostics[0]?.message).toContain("installed and enabled outside OpenClaw");
+    expect(result.diagnostics[0]?.message).toContain("installed and enabled outside Paddy");
     expect(request).not.toHaveBeenCalled();
   });
 

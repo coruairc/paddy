@@ -6,6 +6,7 @@
  */
 import path from "node:path";
 import { Type } from "typebox";
+import { CLI_NAME, PRODUCT_NAME } from "../../brand.js";
 import { registerSecretValueForRedaction } from "../../logging/secret-redaction-registry.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import {
@@ -191,7 +192,7 @@ const SystemAgentToolSchema = Type.Object({
   sha256: Type.Optional(
     Type.String({
       pattern: "^[a-fA-F0-9]{64}$",
-      description: "Exact SHA256 from openclaw plugins pack for plugin_activate_artifact",
+      description: "Exact SHA256 from paddy plugins pack for plugin_activate_artifact",
     }),
   ),
   value: Type.Optional(Type.String({ description: "Value for config_set (JSON5 or string)" })),
@@ -200,8 +201,7 @@ const SystemAgentToolSchema = Type.Object({
   ),
   secret: Type.Optional(
     Type.String({
-      description:
-        "For config_set_ref: an API key or token the user gave you. OpenClaw stores it in its secret store and points the config key at it.",
+      description: `For config_set_ref: an API key or token the user gave you. ${PRODUCT_NAME} stores it in its secret store and points the config key at it.`,
     }),
   ),
   model: Type.Optional(Type.String({ description: "provider/model ref" })),
@@ -234,8 +234,7 @@ const SystemAgentToolSchema = Type.Object({
   ),
   target: Type.Optional(
     stringEnum(["guided", "classic", "channels", "search", "gateway"], {
-      description:
-        "Setup target for open_setup. channels/search/gateway open masked terminal flows; guided/classic require exiting OpenClaw and running openclaw onboard.",
+      description: `Setup target for open_setup. channels/search/gateway open masked terminal flows; guided/classic require exiting ${PRODUCT_NAME} and running paddy onboard.`,
     }),
   ),
   query: Type.Optional(Type.String({ description: "Search query for plugin_search" })),
@@ -372,7 +371,7 @@ function operationForAction(params: Record<string, unknown>): SystemAgentOperati
         !/^[a-f0-9]{64}$/u.test(sha256)
       ) {
         throw new ToolInputError(
-          "openclaw: plugin_activate_artifact requires an absolute packed .tgz path and its exact SHA256 from openclaw plugins pack",
+          "paddy: plugin_activate_artifact requires an absolute packed .tgz path and its exact SHA256 from paddy plugins pack",
         );
       }
       return { kind: "plugin-activate-artifact", path: artifactPath, sha256 };
@@ -466,7 +465,7 @@ function operationForAction(params: Record<string, unknown>): SystemAgentOperati
 export function createSystemAgentTool(options: SystemAgentToolOptions): AnyAgentTool {
   return {
     name: "openclaw",
-    label: "OpenClaw",
+    label: `${PRODUCT_NAME}`,
     // Setup authority is never discoverable through tool catalogs: the host
     // scopes it to this run and the model must receive it directly.
     catalogMode: "direct-only",
@@ -477,7 +476,7 @@ export function createSystemAgentTool(options: SystemAgentToolOptions): AnyAgent
       "Model providers: configure_model_provider returns Settings → Models sign-in guidance for provider accounts and OAuth. Personal accounts: manage_model_accounts opens the account controls.",
       "Write: setup, set_default_model (agentId optional; live-tested), config_set, config_unset, config_set_ref, create_agent (optional role), create_team, gateway_*, plugin_install, plugin_activate_artifact, plugin_uninstall. Submit the exact proposal first. Direct chat: exact user approval, then approved=true. Delegated requests: host applies session permission policy and returns the final outcome. Host applies after turn; rechecks inference owner.",
       "plugin_install: ClawHub/bundled/official only. Arbitrary source: exit, trusted shell.",
-      "plugin_activate_artifact: for a task-authored plugin built with openclaw plugins pack, pass its absolute archive path and sha256. Copies and reviews exact bytes before proposing; approval includes trusted backend code, declared capabilities, and native UI. No dependency fetching. Backend activation requires Gateway restart. Native UI separately requires enabling Settings > Labs > Custom plugin UI, then Gateway restart and browser reload; artifact approval does not enable Labs.",
+      "plugin_activate_artifact: for a task-authored plugin built with paddy plugins pack, pass its absolute archive path and sha256. Copies and reviews exact bytes before proposing; approval includes trusted backend code, declared capabilities, and native UI. No dependency fetching. Backend activation requires Gateway restart. Native UI separately requires enabling Settings > Labs > Custom plugin UI, then Gateway restart and browser reload; artifact approval does not enable Labs.",
       "Unknown config: config_schema first. Remove a setting with config_unset and path; setting null is not deletion. Config writes are proposed, approved, then checked by the canonical config validator and writer. Validation or write errors return to you; propose one correction for fresh approval. Config writes do not test whether a model route or API key works. API keys and tokens the user gives you: config_set_ref with path and secret saves the value in the secret store and points that key at it (for example models.providers.<id>.apiKey, memory.search.remote.apiKey, or a web search provider's apiKey); config_set_ref with envVar points it at an environment variable instead. Never echo secret values. Memory embeddings are memory.search.* (config_set), not web search. set_default_model is the shortcut for switching the primary model.",
       "No doctor repair. Writes validated, audited. Invalid config: fix now.",
     ].join(" "),
@@ -522,7 +521,7 @@ export function createSystemAgentTool(options: SystemAgentToolOptions): AnyAgent
                             ? `${SYSTEM_AGENT_DIRECTIVE_PREFIX} the host now opens masked terminal web search setup. Tell the user the terminal wizard comes next.`
                             : directive.target === "gateway"
                               ? `${SYSTEM_AGENT_DIRECTIVE_PREFIX} the host now opens masked terminal Gateway setup. Tell the user the terminal wizard comes next.`
-                              : `${SYSTEM_AGENT_DIRECTIVE_PREFIX} ${directive.target} setup cannot run inside OpenClaw because it may change the active inference route. Tell the user to exit OpenClaw and run \`openclaw onboard\`.`,
+                              : `${SYSTEM_AGENT_DIRECTIVE_PREFIX} ${directive.target} setup cannot run inside ${PRODUCT_NAME} because it may change the active inference route. Tell the user to exit ${PRODUCT_NAME} and run \`${CLI_NAME} onboard\`.`,
           {},
         );
       }

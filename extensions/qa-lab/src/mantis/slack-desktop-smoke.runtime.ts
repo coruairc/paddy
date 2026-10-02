@@ -54,7 +54,6 @@ export type MantisSlackDesktopSmokeOptions = MantisCrabboxLeaseOptions & {
   scenarioIds?: string[];
   slackChannelId?: string;
   slackUrl?: string;
-  ttl?: string;
 };
 
 type MantisSlackDesktopHydrateMode = "prehydrated" | "source";
@@ -83,7 +82,6 @@ type MantisSlackDesktopSmokeSummary = MantisCrabboxReportSummary & {
   remoteOutputDir: string;
   slackUrl?: string;
   timings: MantisPhaseTimings;
-  warning?: string;
 };
 
 const DEFAULT_CREDENTIAL_SOURCE = "env";
@@ -117,7 +115,6 @@ const CODEX_APPROVAL_POST_PENDING_BUDGET_MS =
 const CODEX_APPROVAL_SCENARIO_BUDGET_MS =
   CODEX_APPROVAL_PENDING_TIMEOUT_MS + CODEX_APPROVAL_POST_PENDING_BUDGET_MS;
 const DEFAULT_REMOTE_COMMAND_TIMEOUT_SECONDS = 600;
-const CRABBOX_BIN_ENV = "OPENCLAW_MANTIS_CRABBOX_BIN";
 const CRABBOX_MARKET_ENV = "OPENCLAW_MANTIS_CRABBOX_MARKET";
 const HYDRATE_MODE_ENV = "OPENCLAW_MANTIS_HYDRATE_MODE";
 const SLACK_URL_ENV = "OPENCLAW_MANTIS_SLACK_URL";
@@ -411,19 +408,7 @@ if [ -z "$slack_url" ]; then
   slack_url="https://app.slack.com/client"
 fi
 ${renderMantisDesktopRecordingScript("slack-desktop-smoke.mp4", 45)}
-if [ "$setup_gateway" = "1" ]; then
-  nohup "$browser_bin" \
-    --user-data-dir="$profile" \
-    --no-first-run \
-    --no-default-browser-check \
-    --disable-dev-shm-usage \
-    --window-size=1440,1000 \
-    --window-position=0,0 \
-    --class=mantis-slack-desktop-smoke \
-    "$slack_url" </dev/null >"$out/chrome.log" 2>&1 &
-  disown "$!" >/dev/null 2>&1 || true
-else
-  "$browser_bin" \
+browser_args=(
   --user-data-dir="$profile" \
   --no-first-run \
   --no-default-browser-check \
@@ -431,7 +416,13 @@ else
   --window-size=1440,1000 \
   --window-position=0,0 \
   --class=mantis-slack-desktop-smoke \
-  "$slack_url" >"$out/chrome.log" 2>&1 &
+  "$slack_url"
+)
+if [ "$setup_gateway" = "1" ]; then
+  nohup "$browser_bin" "\${browser_args[@]}" </dev/null >"$out/chrome.log" 2>&1 &
+  disown "$!" >/dev/null 2>&1 || true
+else
+  "$browser_bin" "\${browser_args[@]}" >"$out/chrome.log" 2>&1 &
 fi
 chrome_pid=$!
 qa_status=0
@@ -582,14 +573,14 @@ console.log(match[1] + " " + match[2]);
   },
 }
 MANTIS_SLACK_PATCH
-    pnpm openclaw config patch --file "$out/slack.socket.patch.json5" --dry-run
-    pnpm openclaw config patch --file "$out/slack.socket.patch.json5"
-    nohup pnpm openclaw gateway run --dev --allow-unconfigured --port 38973 --cli-backend-logs </dev/null >"$out/openclaw-gateway.log" 2>&1 &
+    pnpm paddy config patch --file "$out/slack.socket.patch.json5" --dry-run
+    pnpm paddy config patch --file "$out/slack.socket.patch.json5"
+    nohup pnpm paddy gateway run --dev --allow-unconfigured --port 38973 --cli-backend-logs </dev/null >"$out/openclaw-gateway.log" 2>&1 &
     gateway_pid="$!"
     echo "$gateway_pid" >"$out/openclaw-gateway.pid"
     sleep 12
     if ! kill -0 "$gateway_pid" >/dev/null 2>&1; then
-      echo "OpenClaw gateway exited during startup." >&2
+      echo "Paddy gateway exited during startup." >&2
       wait "$gateway_pid" || true
       exit 1
     fi
@@ -605,7 +596,7 @@ MANTIS_SLACK_PATCH
         cp -a "$slack_qa_output_dir"/. "$out/slack-qa"/
       fi
     }
-    qa_args=(openclaw qa slack --repo-root . --output-dir "$slack_qa_output_dir" --provider-mode "$provider_mode" --model "$primary_model" --alt-model "$alternate_model" --credential-source "$credential_source" --credential-role "$credential_role")
+    qa_args=(paddy qa slack --repo-root . --output-dir "$slack_qa_output_dir" --provider-mode "$provider_mode" --model "$primary_model" --alt-model "$alternate_model" --credential-source "$credential_source" --credential-role "$credential_role")
     if [ "$fast_mode" = "1" ]; then
       qa_args+=(--fast)
     fi
@@ -811,9 +802,11 @@ await writeJson(path.join(checkpointDir, ".watcher-complete.json"), {
 MANTIS_APPROVAL_WATCHER
       node "$out/approval-checkpoint-watcher.mjs" >"$out/approval-checkpoint-watcher.log" 2>&1 &
       watcher_pid="$!"
-      qa_exit=0
-      pnpm "\${qa_args[@]}" ${scenarioArgs} || qa_exit=$?
-      watcher_exit=0
+    fi
+    qa_exit=0
+    pnpm "\${qa_args[@]}" ${scenarioArgs} || qa_exit=$?
+    watcher_exit=0
+    if [ "$approval_checkpoints" = "1" ]; then
       if [ "$qa_exit" -eq 0 ]; then
         wait "$watcher_pid" || watcher_exit=$?
       elif kill -0 "$watcher_pid" >/dev/null 2>&1; then
@@ -824,20 +817,13 @@ MANTIS_APPROVAL_WATCHER
       else
         wait "$watcher_pid" || watcher_exit=$?
       fi
-      copy_slack_qa_artifacts
-      if [ "$qa_exit" -ne 0 ]; then
-        exit "$qa_exit"
-      fi
-      if [ "$watcher_exit" -ne 0 ]; then
-        exit "$watcher_exit"
-      fi
-    else
-      qa_exit=0
-      pnpm "\${qa_args[@]}" ${scenarioArgs} || qa_exit=$?
-      copy_slack_qa_artifacts
-      if [ "$qa_exit" -ne 0 ]; then
-        exit "$qa_exit"
-      fi
+    fi
+    copy_slack_qa_artifacts
+    if [ "$qa_exit" -ne 0 ]; then
+      exit "$qa_exit"
+    fi
+    if [ "$watcher_exit" -ne 0 ]; then
+      exit "$watcher_exit"
     fi
   fi
 }
@@ -981,7 +967,6 @@ export async function runMantisSlackDesktopSmoke(
   const reportPath = path.join(outputDir, "mantis-slack-desktop-smoke-report.md");
   const crabboxBin = await resolveCrabboxBin({
     env,
-    envName: CRABBOX_BIN_ENV,
     explicit: opts.crabboxBin,
     repoRoot,
   });
@@ -1136,17 +1121,14 @@ export async function runMantisSlackDesktopSmoke(
     const gatewaySetupCompleted =
       gatewaySetup && remoteMetadata?.qaExitCode === 0 && remoteMetadata.gatewayAlive === true;
     const slackQaCompleted = !gatewaySetup && remoteMetadata?.qaExitCode === 0;
-    if (remoteRunError && gatewaySetupCompleted) {
-      timer.updatePhaseStatus("crabbox.remote_run", "accepted");
-    }
-    if (remoteRunError && slackQaCompleted) {
+    if (remoteRunError && (gatewaySetupCompleted || slackQaCompleted)) {
       timer.updatePhaseStatus("crabbox.remote_run", "accepted");
     }
     if (remoteRunError && !gatewaySetupCompleted && !slackQaCompleted) {
       throw toQaError(remoteRunError);
     }
     if (gatewaySetup && !gatewaySetupCompleted) {
-      throw new Error("Slack desktop gateway setup did not report a live OpenClaw gateway.");
+      throw new Error("Slack desktop gateway setup did not report a live Paddy gateway.");
     }
     if (!gatewaySetup && !slackQaCompleted) {
       const detail =

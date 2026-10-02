@@ -1,6 +1,7 @@
 import path from "node:path";
 import { coerceErrorMessage as formatPackageReadFailure } from "@openclaw/normalization-core/error-coercion";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import {
   resolveDefaultPluginExtensionsDir,
@@ -103,9 +104,9 @@ export async function maybeRepairPluginOpenClawHostLinks(
     if (audit.peerLinkIssues.length > 0) {
       note(
         [
-          "Managed npm OpenClaw host peer links need repair:",
+          `Managed npm ${PRODUCT_NAME} host peer links need repair:`,
           ...audit.peerLinkIssues.map((issue) => `- ${issue.packageName}: ${issue.reason}`),
-          `Repair with ${formatCliCommand("openclaw doctor --fix")} to relink managed npm plugin packages.`,
+          `Repair with ${formatCliCommand("paddy doctor --fix")} to relink managed npm plugin packages.`,
         ].join("\n"),
         "Plugin registry",
       );
@@ -135,11 +136,11 @@ export async function maybeRepairPluginOpenClawHostLinks(
     if (audit.registeredPeerLinkIssues.length > 0) {
       note(
         [
-          "Registered plugin OpenClaw host links need repair:",
+          `Registered plugin ${PRODUCT_NAME} host links need repair:`,
           ...audit.registeredPeerLinkIssues.map(
             (issue) => `- ${issue.packageName}: ${issue.reason}`,
           ),
-          `Repair with ${formatCliCommand("openclaw doctor --fix")} to relink registered plugin packages.`,
+          `Repair with ${formatCliCommand("paddy doctor --fix")} to relink registered plugin packages.`,
         ].join("\n"),
         "Plugin registry",
       );
@@ -181,19 +182,19 @@ export async function maybeRepairPluginOpenClawHostLinks(
 
   if (repaired > 0) {
     note(
-      `Repaired OpenClaw host peer link(s) for ${repaired} managed npm plugin package(s).`,
+      `Repaired ${PRODUCT_NAME} host peer link(s) for ${repaired} managed npm plugin package(s).`,
       "Plugin registry",
     );
   }
   if (registeredRepair.repaired > 0) {
     note(
-      `Repaired OpenClaw host peer link(s) for ${registeredRepair.repaired} registered plugin package(s).`,
+      `Repaired ${PRODUCT_NAME} host peer link(s) for ${registeredRepair.repaired} registered plugin package(s).`,
       "Plugin registry",
     );
   }
   if (warnings.length > 0) {
     note(
-      ["Could not repair all managed OpenClaw host peer links:", ...warnings].join("\n"),
+      [`Could not repair all managed ${PRODUCT_NAME} host peer links:`, ...warnings].join("\n"),
       "Plugin registry",
     );
   }

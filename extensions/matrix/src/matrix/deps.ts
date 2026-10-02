@@ -239,6 +239,6 @@ export async function ensureMatrixSdkInstalled(params?: {
     return;
   }
   throw new Error(
-    `Matrix plugin dependencies are missing: ${missing.join(", ")}. Repair this plugin with \`openclaw plugins update matrix\` or run \`openclaw doctor --fix\`.`,
+    `Matrix plugin dependencies are missing: ${missing.join(", ")}. Repair this plugin with \`paddy plugins update matrix\` or run \`paddy doctor --fix\`.`,
   );
 }

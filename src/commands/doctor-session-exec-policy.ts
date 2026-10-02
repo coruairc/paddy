@@ -88,7 +88,7 @@ export function repairLegacySessionExecPolicy(params: {
   // after their transactions commit; failed scans never claim applied changes.
   if (messages.length > 0) {
     if (!params.apply) {
-      messages.push('- Run "openclaw doctor --fix" to migrate legacy session exec policy.');
+      messages.push('- Run "paddy doctor --fix" to migrate legacy session exec policy.');
     }
     note(messages.join("\n"), "Session exec policy");
   }

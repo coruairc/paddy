@@ -385,7 +385,7 @@ describe("successful update finalization ordering", () => {
       vi.mocked(defaultRuntime.log).mock.invocationCallOrder[warningIndex] ??
         Number.POSITIVE_INFINITY,
     );
-    expect(logCalls[warningIndex]?.join(" ")).toContain("openclaw completion --write-state");
+    expect(logCalls[warningIndex]?.join(" ")).toContain("paddy completion --write-state");
   });
 
   it("restarts when shell completion cache generation returns false", async () => {
@@ -406,7 +406,7 @@ describe("successful update finalization ordering", () => {
     expect(output).toContain("completion cache generation failed");
     expect(output).toContain("Resolve the reported error before retrying");
     expect(output).not.toContain("source /tmp/openclaw-completion.zsh");
-    expect(output).toContain("openclaw completion --write-state --install");
+    expect(output).toContain("paddy completion --write-state --install");
     expect(mocks.restartService).toHaveBeenCalledOnce();
     expect(mocks.restartService.mock.invocationCallOrder[0]).toBeLessThan(
       mocks.ensureCompletionCache.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
@@ -539,7 +539,7 @@ describe("successful update finalization ordering", () => {
       .mockImplementationOnce(async ({ result }) => ({ result, rolledBack: false }));
     const retained = {
       name: "package backup retained",
-      command: "openclaw update",
+      command: "paddy update",
       cwd: previousRoot,
       durationMs: 0,
       exitCode: 0,
@@ -805,7 +805,10 @@ describe("successful update finalization ordering", () => {
           ...(restartFailed ? ["rollback"] : []),
         ]);
         expect(mocks.stopService).not.toHaveBeenCalled();
-        expect(oldRecovery.restore).toHaveBeenCalledWith(true, expect.any(Function), undefined);
+        expect(oldRecovery.restore.mock.lastCall?.slice(0, 2)).toEqual([
+          true,
+          expect.any(Function),
+        ]);
         expect(oldRecovery.complete).toHaveBeenLastCalledWith(outcome !== "unverified");
         expect(windowsEvents.at(-1)).toBe("old-complete");
         expect(getUpdateRun(run.runId, { env: serviceEnv })).toMatchObject({

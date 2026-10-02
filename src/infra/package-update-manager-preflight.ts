@@ -75,6 +75,20 @@ export async function validatePnpmIsolatedUpdate(params: {
   if (!owner) {
     return { globalBinDir: null, failedStep: null };
   }
+  const failedStep = (
+    stderrTail: string,
+    command = `inspect ${params.installTarget.globalRoot ?? "pnpm install"}`,
+    cwd = params.installTarget.globalRoot ?? process.cwd(),
+    stdoutTail: string | null = null,
+  ): UpdateStepResult => ({
+    name: "pnpm-isolated-install-preflight",
+    command,
+    cwd,
+    durationMs: 0,
+    exitCode: 1,
+    stdoutTail,
+    stderrTail,
+  });
   const activePackages = await listActivePnpmIsolatedGlobalPackages({
     globalRoot: params.installTarget.globalRoot,
     packageName: params.packageName,
@@ -90,15 +104,9 @@ export async function validatePnpmIsolatedUpdate(params: {
   if (siblingPackages.length > 0) {
     return {
       globalBinDir: null,
-      failedStep: {
-        name: "pnpm-isolated-install-preflight",
-        command: `inspect ${params.installTarget.globalRoot ?? "pnpm install"}`,
-        cwd: params.installTarget.globalRoot ?? process.cwd(),
-        durationMs: 0,
-        exitCode: 1,
-        stdoutTail: null,
-        stderrTail: `OpenClaw shares a pnpm ${owner.layoutVersion} global install group with ${siblingPackages.join(", ")}. Automatic update stopped before mutation; update the group manually to preserve its sibling packages.`,
-      },
+      failedStep: failedStep(
+        `Paddy shares a pnpm ${owner.layoutVersion} global install group with ${siblingPackages.join(", ")}. Automatic update stopped before mutation; update the group manually to preserve its sibling packages.`,
+      ),
     };
   }
 
@@ -113,15 +121,9 @@ export async function validatePnpmIsolatedUpdate(params: {
   if (!invokingPackageRoot || activePackageRoots.length !== 1 || ownerMatchCount !== 1) {
     return {
       globalBinDir: null,
-      failedStep: {
-        name: "pnpm-isolated-install-preflight",
-        command: `inspect ${params.installTarget.globalRoot ?? "pnpm install"}`,
-        cwd: params.installTarget.globalRoot ?? process.cwd(),
-        durationMs: 0,
-        exitCode: 1,
-        stdoutTail: null,
-        stderrTail: `Expected exactly one active pnpm ${owner.layoutVersion} OpenClaw install owned by the invoking project; found ${activePackageRoots.length} active installs and ${ownerMatchCount} owner matches. Automatic update stopped before mutation.`,
-      },
+      failedStep: failedStep(
+        `Expected exactly one active pnpm ${owner.layoutVersion} Paddy install owned by the invoking project; found ${activePackageRoots.length} active installs and ${ownerMatchCount} owner matches. Automatic update stopped before mutation.`,
+      ),
     };
   }
 
@@ -142,15 +144,12 @@ export async function validatePnpmIsolatedUpdate(params: {
   ) {
     return {
       globalBinDir: null,
-      failedStep: {
-        name: "pnpm-isolated-install-preflight",
-        command: `${params.installTarget.command} root -g`,
-        cwd: expectedGlobalRoot ?? process.cwd(),
-        durationMs: 0,
-        exitCode: 1,
-        stdoutTail: rootProbe.result.stdout || null,
-        stderrTail: `The active pnpm command owns ${reportedGlobalRoot || "an unknown global root"}, not the invoking OpenClaw install at ${expectedGlobalRoot ?? "an unknown root"}. Automatic update stopped before mutation.`,
-      },
+      failedStep: failedStep(
+        `The active pnpm command owns ${reportedGlobalRoot || "an unknown global root"}, not the invoking Paddy install at ${expectedGlobalRoot ?? "an unknown root"}. Automatic update stopped before mutation.`,
+        `${params.installTarget.command} root -g`,
+        expectedGlobalRoot ?? process.cwd(),
+        rootProbe.result.stdout || null,
+      ),
     };
   }
 
@@ -161,15 +160,13 @@ export async function validatePnpmIsolatedUpdate(params: {
   if (binProbe.failedStep || !globalBinDir) {
     return {
       globalBinDir: null,
-      failedStep: binProbe.failedStep ?? {
-        name: "pnpm-isolated-install-preflight",
-        command: `${params.installTarget.command} bin -g`,
-        cwd: expectedGlobalRoot,
-        durationMs: 0,
-        exitCode: 1,
-        stdoutTail: null,
-        stderrTail: "The owning pnpm command did not report its global bin directory.",
-      },
+      failedStep:
+        binProbe.failedStep ??
+        failedStep(
+          "The owning pnpm command did not report its global bin directory.",
+          `${params.installTarget.command} bin -g`,
+          expectedGlobalRoot,
+        ),
     };
   }
 
@@ -214,8 +211,8 @@ async function permissionFailure(
       : `owner UID ${stat.uid}${stat.uid === 0 ? " (root)" : ""}, GID ${stat.gid}`;
   const repair =
     process.platform !== "win32" && stat && stat.uid === process.getuid?.()
-      ? `Run \`chmod u+rwx ${quoteCliArg(directory)}\`, then rerun \`openclaw update\`.`
-      : "Run the package update as the directory's owning account, keeping the Gateway's existing state/configuration; or ask that account to grant you write access, then rerun `openclaw update`.";
+      ? `Run \`chmod u+rwx ${quoteCliArg(directory)}\`, then rerun \`paddy update\`.`
+      : "Run the package update as the directory's owning account, keeping the Gateway's existing state/configuration; or ask that account to grant you write access, then rerun `paddy update`.";
   const message = `Package update cannot write ${directory} (${code}; ${owner}). ${repair}`;
   return {
     ...step,

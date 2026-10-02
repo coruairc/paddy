@@ -27,8 +27,8 @@ read_when:
     4. Open the macOS app locally and connect in **Remote over SSH** mode (or direct tailnet) so it registers as a node.
     5. Approve the node:
        ```bash
-       openclaw devices list
-       openclaw devices approve <requestId>
+       paddy devices list
+       paddy devices approve <requestId>
        ```
 
     No separate TCP bridge is required; nodes connect over the Gateway WebSocket.
@@ -43,9 +43,9 @@ read_when:
     Check the basics:
 
     ```bash
-    openclaw gateway status
-    openclaw status
-    openclaw channels status
+    paddy gateway status
+    paddy status
+    paddy channels status
     ```
 
     Then verify auth and routing: if you use Tailscale Serve, confirm `gateway.auth.allowTailscale` is set correctly; if you connect via SSH tunnel, confirm the tunnel is up and points at the right port; confirm your DM/group allowlists include your account.
@@ -54,15 +54,15 @@ read_when:
 
   </Accordion>
 
-  <Accordion title="Can two OpenClaw instances talk to each other (local + VPS)?">
+  <Accordion title="Can two Paddy instances talk to each other (local + VPS)?">
     Yes, though there is no built-in bot-to-bot bridge.
 
     **Simplest**: use a normal chat channel both bots can access (Slack/Telegram/WhatsApp). Have Bot A message Bot B, then let Bot B reply as usual.
 
-    **CLI bridge (generic)**: run a script that calls the other Gateway with `openclaw agent --message ... --deliver`, targeting a chat where the other bot listens. If one bot is on a remote VPS, point your CLI at that remote Gateway via SSH/Tailscale (see [Remote access](/gateway/remote)):
+    **CLI bridge (generic)**: run a script that calls the other Gateway with `paddy agent --message ... --deliver`, targeting a chat where the other bot listens. If one bot is on a remote VPS, point your CLI at that remote Gateway via SSH/Tailscale (see [Remote access](/gateway/remote)):
 
     ```bash
-    openclaw agent --message "Hello from local bot" --deliver --channel telegram --reply-to <chat-id>
+    paddy agent --message "Hello from local bot" --deliver --channel telegram --reply-to <chat-id>
     ```
 
     Add a guardrail so the two bots do not loop endlessly (mention-only, channel allowlists, or a "do not reply to bot messages" rule).
@@ -134,7 +134,7 @@ read_when:
     For the Control UI without SSH, use Tailscale Serve on the VPS:
 
     ```bash
-    openclaw gateway --tailscale serve
+    paddy gateway --tailscale serve
     ```
 
     This keeps the gateway bound to loopback and exposes HTTPS via Tailscale. See [Tailscale](/gateway/tailscale).
@@ -148,8 +148,8 @@ read_when:
     2. Use the macOS app in Remote mode (SSH target can be the tailnet hostname) - it tunnels the Gateway port and connects as a node.
     3. Approve the node:
        ```bash
-       openclaw devices list
-       openclaw devices approve <requestId>
+       paddy devices list
+       paddy devices approve <requestId>
        ```
 
     Docs: [Gateway protocol](/gateway/protocol), [Discovery](/gateway/discovery), [macOS remote mode](/platforms/mac/remote).

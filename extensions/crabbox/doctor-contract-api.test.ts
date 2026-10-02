@@ -218,7 +218,7 @@ describe("Crabbox warm-profile Doctor migration", () => {
     });
     await store.register("cbx_legacy", { machineClass: "tiny" });
     const [lease] = await listCrabboxLegacyWarmLeases(crabboxState, env);
-    const command = `openclaw crabbox warm-images --recover ${lease!.selector} --acknowledge-provider-cleanup`;
+    const command = `paddy crabbox warm-images --recover ${lease!.selector} --acknowledge-provider-cleanup`;
 
     expect((await migration.detectLegacyState(input()))?.preview.join("\n")).toContain(command);
     const result = await migration.migrateLegacyState(input());

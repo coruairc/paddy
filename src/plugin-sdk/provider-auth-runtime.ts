@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { normalizeProviderId } from "@openclaw/model-catalog-core/provider-id";
 import { resolveTimerTimeoutMs } from "@openclaw/normalization-core/number-coercion";
 import { ensureAuthProfileStore } from "../agents/auth-profiles/store-runtime.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { startOAuthLoopbackCallbackServer } from "../infra/oauth-loopback-callback.js";
 import { renderOAuthPage } from "../shared/oauth-page.js";
@@ -39,11 +40,13 @@ export type OAuthCallbackResult = {
 };
 
 type ProviderOAuthLoopbackCallbackResult =
-  | { type: "authorization_code"; code: string; state: string }
+  | { type: "authorization_code"; code: string; state: string; parameters: URLSearchParams }
   | { type: "oauth_error"; error: string; errorDescription?: string };
 
 type ProviderOAuthLoopbackCallbackServer = {
   waitForCallback: () => Promise<ProviderOAuthLoopbackCallbackResult>;
+  /** Flushes a deferred browser result, then closes; closed listeners ignore late completion. */
+  complete: (response: ProviderOAuthLoopbackRenderedResponse & { status: number }) => Promise<void>;
   close: () => Promise<void>;
 };
 
@@ -59,9 +62,15 @@ type ProviderOAuthLoopbackCorsOriginResolver = (
 export async function startProviderOAuthLoopbackCallbackServer(params: {
   redirectUrl: string | URL;
   expectedState: string;
-  timeoutMs: number;
+  /** Optional listener deadline; the caller signal continues to own provider work. */
+  timeoutMs?: number;
   signal?: AbortSignal;
+  /** Additional loopback host; all addresses of the redirect hostname remain bound. */
   bindHostname?: string;
+  /** Exact Node bind host for providers whose existing redirect uses one address family. */
+  bindOnlyHostname?: string;
+  /** Admit callback parameters now, then render the browser outcome through complete(). */
+  deferResponse?: boolean;
   resolveCorsOrigin?: ProviderOAuthLoopbackCorsOriginResolver;
   renderSuccess?: () => ProviderOAuthLoopbackRenderedResponse;
   renderError?: (message: string) => ProviderOAuthLoopbackRenderedResponse;
@@ -235,7 +244,7 @@ export async function waitForLocalOAuthCallback(params: {
       body: renderOAuthPage({
         title: params.successTitle,
         heading: params.successTitle,
-        message: "You can close this window and return to OpenClaw.",
+        message: `You can close this window and return to ${PRODUCT_NAME}.`,
       }),
       contentType: "text/html; charset=utf-8",
     }),

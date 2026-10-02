@@ -6,7 +6,7 @@ read_when:
 title: "Bonjour discovery"
 ---
 
-OpenClaw can use Bonjour (mDNS/DNS-SD) to discover an active gateway (WebSocket endpoint). Multicast `local.` browsing is a **LAN-only convenience**: the bundled `bonjour` plugin owns LAN advertising, auto-starting on macOS hosts and opt-in on Linux, Windows, and containerized gateway deployments. The same beacon can also publish through a configured wide-area DNS-SD domain for cross-network discovery. Discovery is best-effort and does **not** replace SSH or Tailnet-based connectivity.
+Paddy can use Bonjour (mDNS/DNS-SD) to discover an active gateway (WebSocket endpoint). Multicast `local.` browsing is a **LAN-only convenience**: the bundled `bonjour` plugin owns LAN advertising, auto-starting on macOS hosts and opt-in on Linux, Windows, and containerized gateway deployments. The same beacon can also publish through a configured wide-area DNS-SD domain for cross-network discovery. Discovery is best-effort and does **not** replace SSH or Tailnet-based connectivity.
 
 ## Wide-area Bonjour (Unicast DNS-SD) over Tailscale
 
@@ -16,7 +16,7 @@ If the node and gateway are on different networks, multicast mDNS can't cross th
 2. Publish DNS-SD records for `_openclaw-gw._tcp` under a dedicated zone (example: `openclaw.internal.`).
 3. Configure Tailscale **split DNS** so your chosen domain resolves via that DNS server for clients, including iOS.
 
-`openclaw.internal.` above is just an example — OpenClaw supports any discovery domain. iOS/Android nodes browse both `local.` and your configured wide-area domain.
+`openclaw.internal.` above is just an example — Paddy supports any discovery domain. iOS/Android nodes browse both `local.` and your configured wide-area domain.
 
 ### Gateway config
 
@@ -32,7 +32,7 @@ Setting `discovery.wideArea.domain` enables Gateway wide-area publishing. The `O
 ### One-time DNS server setup (gateway host, macOS only)
 
 ```bash
-openclaw dns setup --apply
+paddy dns setup --apply
 ```
 
 This command is macOS-only and requires Homebrew and a running Tailscale connection. It installs CoreDNS (`brew install coredns`) and configures it to:
@@ -118,9 +118,9 @@ The gateway writes a rolling log file (printed on startup as `gateway log file: 
 - `bonjour: suppressing ciao netmask assertion ...`
 - `bonjour: ... name conflict resolved` / `hostname conflict resolved`
 
-OpenClaw starts each Bonjour service once and leaves probing, retry, name-conflict resolution, and interface-change republishing to the mDNS responder. This avoids overlapping publish attempts during normal network churn. Repeated internal self-probe messages are suppressed so they cannot flood the gateway log, as are transient `ENODEV` MDNS socket warnings that occur when a network interface (for example a short-lived Docker bridge) is removed between the responder's interface polls.
+Paddy starts each Bonjour service once and leaves probing, retry, name-conflict resolution, and interface-change republishing to the mDNS responder. This avoids overlapping publish attempts during normal network churn. Repeated internal self-probe messages are suppressed so they cannot flood the gateway log, as are transient `ENODEV` MDNS socket warnings that occur when a network interface (for example a short-lived Docker bridge) is removed between the responder's interface polls.
 
-When multiple OpenClaw gateways advertise from the same host, Bonjour may append suffixes such as `(2)` or `(3)` to keep service instance names unique. Those suffixes are normal conflict resolution.
+When multiple Paddy gateways advertise from the same host, Bonjour may append suffixes such as `(2)` or `(3)` to keep service instance names unique. Those suffixes are normal conflict resolution.
 
 Bonjour uses the system hostname for the advertised `.local` host when it's a valid DNS label. If the system hostname contains spaces, underscores, or another invalid DNS-label character, OpenClaw falls back to `openclaw.local`. Set `OPENCLAW_MDNS_HOSTNAME=<name>` before starting the gateway when you need an explicit host label.
 
@@ -137,7 +137,7 @@ Bonjour auto-starts for empty-config gateway startup on macOS hosts, since the l
 Enable it explicitly when same-LAN auto-discovery is useful on Linux, Windows, or another non-macOS host:
 
 ```bash
-openclaw plugins enable bonjour
+paddy plugins enable bonjour
 ```
 
 When enabled, Bonjour uses `discovery.mdns.mode` to decide how much TXT metadata to publish; the same mode controls optional TXT hints in wide-area DNS-SD records. Modes:
@@ -163,10 +163,10 @@ Use the env override for deployment-scoped problems (safe for Docker images, ser
 OPENCLAW_DISABLE_BONJOUR=1
 ```
 
-Use plugin configuration when you intentionally want to turn off the bundled LAN discovery plugin for that OpenClaw config:
+Use plugin configuration when you intentionally want to turn off the bundled LAN discovery plugin for that Paddy config:
 
 ```bash
-openclaw plugins disable bonjour
+paddy plugins disable bonjour
 ```
 
 ## Docker gotchas
@@ -227,8 +227,8 @@ Bonjour/DNS-SD often escapes bytes in service instance names as decimal `\DDD` s
 
 | Setting                                              | Effect                                                                            |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `openclaw plugins enable bonjour`                    | Enables the bundled LAN discovery plugin on hosts where it isn't default-enabled. |
-| `openclaw plugins disable bonjour`                   | Disables LAN multicast advertising by disabling the bundled plugin.               |
+| `paddy plugins enable bonjour`                       | Enables the bundled LAN discovery plugin on hosts where it isn't default-enabled. |
+| `paddy plugins disable bonjour`                      | Disables LAN multicast advertising by disabling the bundled plugin.               |
 | `OPENCLAW_DISABLE_BONJOUR=1` (or `true`/`yes`/`on`)  | Disables LAN multicast advertising without changing plugin config.                |
 | `OPENCLAW_DISABLE_BONJOUR=0` (or `false`/`no`/`off`) | Forces LAN multicast advertising on, including inside detected containers.        |
 | `discovery.mdns.mode`                                | `off` \| `minimal` (default) \| `full` — see modes above.                         |
@@ -243,4 +243,4 @@ macOS hosts auto-start the bundled LAN discovery plugin by default. When the Bon
 
 - Discovery policy and transport selection: [Discovery](/gateway/discovery)
 - Node pairing + approvals: [Gateway pairing](/gateway/pairing)
-- Wide-area DNS-SD setup helper: [`openclaw dns`](/cli/dns)
+- Wide-area DNS-SD setup helper: [`paddy dns`](/cli/dns)

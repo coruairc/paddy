@@ -6,7 +6,7 @@ read_when:
   - You are deciding whether a change belongs in a doctor check
 ---
 
-This page summarises what `openclaw doctor` does, grouped by area. For the
+This page summarises what `paddy doctor` does, grouped by area. For the
 full behavior and rationale of each numbered check, follow the links under
 [Doctor pages](/gateway/doctor#doctor-pages).
 
@@ -17,9 +17,9 @@ full behavior and rationale of each numbered check, follow the links under
     - Optional pre-flight update for git installs (interactive only).
     - UI protocol freshness check (rebuilds Control UI when the protocol schema is newer).
     - Health check + restart prompt.
-    - Problem-only skill and plugin notes; healthy inventory stays in `openclaw skills check` and `openclaw plugins list`.
+    - Problem-only skill and plugin notes; healthy inventory stays in `paddy skills check` and `paddy plugins list`.
     - Runtime tool schema checks report failing MCP servers and continue with the remaining checks. If subprocess cleanup cannot be confirmed, Doctor retains the server findings and adds a cleanup diagnostic; inspect or stop the affected MCP processes before rerunning Doctor.
-    - During updates, Doctor defers MCP connections and records each enabled server with a follow-up command. Core tool schemas are still checked. Run `openclaw doctor --lint --only core/doctor/runtime-tool-schemas` after the update to inspect MCP tools.
+    - During updates, Doctor defers MCP connections and records each enabled server with a follow-up command. Core tool schemas are still checked. Run `paddy doctor --lint --only core/doctor/runtime-tool-schemas` after the update to inspect MCP tools.
 
   </Accordion>
   <Accordion title="Config and migrations">
@@ -34,11 +34,11 @@ full behavior and rationale of each numbered check, follow the links under
     - Plugin/tool allowlist warnings when `plugins.allow` is restrictive but tool policy still asks for wildcard or plugin-owned tools.
     - Legacy on-disk state migration (sessions/agent dir/WhatsApp auth).
     - Legacy Tailscale provider login migration from user profile email aliases to provider identities.
-    - Merged shared owner profile detection and repair with `openclaw doctor --fix`; restores the owner identity while preserving personal emails, roles, and GitHub identities. Reconnect after repair.
+    - Merged shared owner profile detection and repair with `paddy doctor --fix`; restores the owner identity while preserving personal emails, roles, and GitHub identities. Reconnect after repair.
     - Retired QMD memory config and derived workspace cleanup; see [Migrating from QMD](/concepts/memory-builtin#migrating-from-qmd).
     - Legacy plugin manifest contract key migration (`speechProviders`, `realtimeTranscriptionProviders`, `realtimeVoiceProviders`, `mediaUnderstandingProviders`, `imageGenerationProviders`, `videoGenerationProviders`, `webFetchProviders`, `webSearchProviders` → `contracts`).
     - Legacy cron store migration (`jobId`, `schedule.cron`, top-level delivery/payload fields, payload `provider`, `notify: true` webhook fallback jobs).
-    - Legacy workspace `TOOLS.md` migration into the `## Tools` section of `AGENTS.md`, with the original archived under the state directory before removal.
+    - Legacy workspace `TOOLS.md` migration into the `## Tools` section of `AGENTS.md`, archiving the original before removal. On POSIX, Doctor preserves the existing destination's owner, group, and mode bits. If importing notes would add POSIX readers or ownership cannot be preserved, it keeps both files and reports a warning. These checks do not establish filesystem ACL preservation.
     - Codex CLI runtime pin repair (`agentRuntime.id: "codex-cli"` → `"codex"`) across `agents.defaults`, `agents.entries.*`, and `models.providers.*` (including per-model entries).
     - Stale plugin config cleanup when plugins are enabled; when `plugins.enabled=false`, stale plugin references are preserved as inert containment config.
 
@@ -58,7 +58,7 @@ full behavior and rationale of each numbered check, follow the links under
     - Matrix channel legacy state migration (in `--fix` / `--repair` mode).
     - Gateway runtime checks (service installed but not running; cached launchd label).
     - Channel status warnings (probed from the running gateway).
-    - Channel-specific permission checks live under `openclaw channels capabilities`; for example, Discord voice channel permissions are audited with `openclaw channels capabilities --channel discord --target channel:<channel-id>`.
+    - Channel-specific permission checks live under `paddy channels capabilities`; for example, Discord voice channel permissions are audited with `paddy channels capabilities --channel discord --target channel:<channel-id>`.
     - WhatsApp responsiveness reports Gateway pressure and detected local TUI clients without attributing the pressure to those clients. Inspect [Gateway diagnostics](/gateway/diagnostics) before deciding whether to close clients; Doctor does not stop them.
     - Codex route repair for legacy `openai-codex/*` model refs in primary models, fallbacks, image/video generation models, heartbeat/subagent/compaction overrides, hooks, channel model overrides, and session route pins; `--fix` rewrites them to `openai/*`, migrates `openai-codex:*` auth profiles/order to `openai:*`, removes stale session/whole-agent runtime pins, and lets the repaired effective route determine whether Codex is compatible.
     - Supervisor config audit (launchd/systemd/schtasks) with optional repair.

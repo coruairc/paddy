@@ -1,6 +1,7 @@
+import { PRODUCT_NAME } from "../brand.js";
 export const META_FIELD_HELP: Record<string, string> = {
   meta: "Backward-readable compatibility metadata retained so older binaries can refuse unsafe config downgrades.",
-  "meta.lastTouchedVersion": "OpenClaw version that most recently wrote this config.",
+  "meta.lastTouchedVersion": `${PRODUCT_NAME} version that most recently wrote this config.`,
   "meta.migrations": "Bounded compatibility markers for completed config migrations.",
   "meta.migrations.modelPolicyAllowlist":
     "Records that legacy model-map restrictions were preserved or evaluated.",

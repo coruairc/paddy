@@ -79,7 +79,7 @@ export function resolveSuccessorModelRepair(params: {
       (support.availabilityAuthoritative && support.unavailableReason !== "cooldown"))
   ) {
     params.warn(
-      `Retained ${canonical} for agent "${agentId}": successor "${provider}/${successor}" is not supported by this agent's authentication route. Choose a supported model explicitly and rerun openclaw doctor --fix.`,
+      `Retained ${canonical} for agent "${agentId}": successor "${provider}/${successor}" is not supported by this agent's authentication route. Choose a supported model explicitly and rerun paddy doctor --fix.`,
     );
     return params.validatePolicy(params.preserved);
   }
@@ -99,7 +99,7 @@ export function resolveSuccessorModelRepair(params: {
     : owner.suppression()({ provider, id: successorId, unconditionalOnly: true });
   if (successorRule?.retirement) {
     params.warn(
-      `Retained ${canonical} for agent "${agentId}": successor "${provider}/${successor}" is retired. Choose a supported model explicitly and rerun openclaw doctor --fix.`,
+      `Retained ${canonical} for agent "${agentId}": successor "${provider}/${successor}" is retired. Choose a supported model explicitly and rerun paddy doctor --fix.`,
     );
     return params.validatePolicy(params.preserved);
   }

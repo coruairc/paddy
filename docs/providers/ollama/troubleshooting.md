@@ -1,5 +1,5 @@
 ---
-summary: "Fixes for common Ollama failures in OpenClaw"
+summary: "Fixes for common Ollama failures in Paddy"
 read_when:
   - Ollama is not detected, or no models are available
   - You hit connection refused, garbled output, or timeouts
@@ -23,7 +23,7 @@ sidebarTitle: "Troubleshooting"
     `ollama.service` right after WSL2 startup, and SIGTERM from systemd rather
     than the Linux OOM killer.
 
-    OpenClaw logs a startup warning when it detects WSL2, `ollama.service`
+    Paddy logs a startup warning when it detects WSL2, `ollama.service`
     enabled with `Restart=always`, and visible CUDA markers.
 
     Mitigation:
@@ -88,11 +88,11 @@ sidebarTitle: "Troubleshooting"
 
   </Accordion>
 
-  <Accordion title="Remote host works with curl but not OpenClaw">
+  <Accordion title="Remote host works with curl but not Paddy">
     Verify from the same machine and runtime that runs the Gateway:
 
     ```bash
-    openclaw gateway status --deep
+    paddy gateway status --deep
     curl http://ollama-host:11434/api/tags
     ```
 
@@ -138,8 +138,8 @@ sidebarTitle: "Troubleshooting"
     session and a fallback model:
 
     ```bash
-    openclaw infer model run --model ollama/kimi-k2.5:cloud --prompt "Reply with exactly: ok" --json
-    openclaw models set ollama/gemma4
+    paddy infer model run --model ollama/kimi-k2.5:cloud --prompt "Reply with exactly: ok" --json
+    paddy models set ollama/gemma4
     ```
 
   </Accordion>
@@ -175,7 +175,7 @@ sidebarTitle: "Troubleshooting"
   <Accordion title="Large-context model is too slow or runs out of memory">
     Many models advertise contexts larger than your hardware can run
     comfortably. Native requests forward the effective `contextTokens` unless
-    `params.num_ctx` overrides it. Cap both OpenClaw's budget and Ollama's request
+    `params.num_ctx` overrides it. Cap both Paddy's budget and Ollama's request
     context for predictable first-token latency:
 
     ```json5
@@ -198,7 +198,7 @@ sidebarTitle: "Troubleshooting"
     }
     ```
 
-    Lower the model entry's `contextTokens` if OpenClaw sends too much prompt. Lower
+    Lower the model entry's `contextTokens` if Paddy sends too much prompt. Lower
     `params.num_ctx` if Ollama's runtime context is too large for the machine.
     Lower `maxTokens` if generation runs too long.
 

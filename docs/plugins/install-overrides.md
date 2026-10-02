@@ -12,7 +12,7 @@ Plugin install overrides let maintainers point setup-time plugin installs at
 a specific npm package or local npm-pack tarball instead of the catalog,
 bundled, or default npm source. They exist for E2E and package validation
 only; normal users install plugins with
-[`openclaw plugins install`](/cli/plugins).
+[`paddy plugins install`](/cli/plugins).
 
 <Warning>
 Overrides execute plugin code from the source you provide. Use them only in an
@@ -40,7 +40,7 @@ The override map is JSON keyed by plugin id. Values support:
 
 ## Behavior
 
-When a setup-time flow installs a plugin whose id appears in the map, OpenClaw
+When a setup-time flow installs a plugin whose id appears in the map, Paddy
 uses the override source instead of the catalog, bundled, or default npm
 source. This applies to onboarding and any other flow using the shared
 setup-time plugin installer.
@@ -48,16 +48,16 @@ setup-time plugin installer.
 - Overrides still enforce the expected plugin id: a tarball mapped to `codex`
   must install a plugin whose manifest id is `codex`.
 - Overrides do not inherit official trusted-source status. Even when the
-  catalog entry normally represents an OpenClaw-owned package, an override is
+  catalog entry normally represents a Paddy-owned package, an override is
   treated as operator-supplied test input.
 - Workspace `.env` files cannot enable install overrides; both env vars are on
   the blocked workspace dotenv list. Set them in the trusted shell, CI job, or
-  remote test command that launches OpenClaw.
+  remote test command that launches Paddy.
 
 ## Package E2E
 
 Use an isolated state directory so package installs and install records do not
-touch your normal OpenClaw state:
+touch your normal Paddy state:
 
 ```bash
 npm pack extensions/codex --pack-destination /tmp
@@ -65,7 +65,7 @@ npm pack extensions/codex --pack-destination /tmp
 OPENCLAW_STATE_DIR="$(mktemp -d)" \
 OPENCLAW_ALLOW_PLUGIN_INSTALL_OVERRIDES=1 \
 OPENCLAW_PLUGIN_INSTALL_OVERRIDES='{"codex":"npm-pack:/tmp/openclaw-codex-2026.5.8.tgz"}' \
-pnpm openclaw onboard --mode local
+pnpm paddy onboard --mode local
 ```
 
 Verify the installed package under the state directory:

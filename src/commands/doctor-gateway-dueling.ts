@@ -1,5 +1,6 @@
 /** Doctor repair for a user-scope leftover that duels a system gateway unit. */
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { renderGatewayServiceCleanupHints } from "../daemon/inspect.js";
 import {
   findSystemdGatewayInstallation,
@@ -15,18 +16,8 @@ import {
   resolveServiceRepairPolicy,
 } from "./doctor-service-repair-policy.js";
 
-/**
- * Resolves a `dueling` systemd install (both a user-scope and a system-scope
- * gateway unit present) by removing the redundant user-scope unit after
- * confirmation, keeping the root-installed system-scope unit as authoritative.
- *
- * This is the fix for issue #79375: on Linux the two units bind the same port
- * and SIGTERM each other in an endless restart loop. The canonical units are
- * deliberately excluded from `findExtraGatewayServices`, so this detects the
- * condition directly via `findSystemdGatewayInstallation`. Removing a unit
- * under `$HOME` needs no root; the system-scope unit is never auto-removed
- * (only a `sudo`-flavored hint is offered for that direction).
- */
+// Canonical units are excluded from findExtraGatewayServices. Inspect both scopes
+// directly, and remove only a redundant user unit after verifying the system owner.
 export async function maybeResolveDuelingSystemdGatewayScopes(
   runtime: RuntimeEnv,
   prompter: DoctorPrompter,
@@ -36,7 +27,7 @@ export async function maybeResolveDuelingSystemdGatewayScopes(
   }
   const installation = await findSystemdGatewayInstallation(process.env).catch(() => {
     note(
-      "Could not verify the effective Gateway service identities. Nothing was removed; inspect both units with openclaw gateway status --deep.",
+      "Could not verify the effective Gateway service identities. Nothing was removed; inspect both units with paddy gateway status --deep.",
       "Gateway cleanup needs an owner decision",
     );
     return null;
@@ -47,7 +38,7 @@ export async function maybeResolveDuelingSystemdGatewayScopes(
   const { user, system } = installation;
   note(
     [
-      "Both a user-scope and a system-scope OpenClaw gateway unit are installed:",
+      `Both a user-scope and a system-scope ${PRODUCT_NAME} gateway unit are installed:`,
       `- user:   ${user.unitPath}`,
       `- system: ${system.unitPath}`,
       "They bind the same port and will SIGTERM each other in a restart loop.",
@@ -55,10 +46,7 @@ export async function maybeResolveDuelingSystemdGatewayScopes(
     "Dueling gateway services detected",
   );
 
-  // Ownership guard: delete the user unit only when the system unit is the
-  // live or boot-configured supervisor. A staged/disabled/failed/uncheckable
-  // system unit file with a working user gateway must fail closed to hints,
-  // or doctor would take down the operator's only running gateway.
+  // A staged, disabled, failed, or uncheckable system unit cannot replace a working user Gateway.
   const systemOwnsGateway = await isSystemUnitActiveAndEnabled(process.env, system.unitName).catch(
     () => false,
   );
@@ -158,7 +146,7 @@ export async function maybeResolveDuelingSystemdGatewayScopes(
   const completed = `Cleanup of ${result.unitName} completed.`;
   if (remaining?.kind === "user" || remaining?.kind === "dueling") {
     runtime.log(
-      `${completed} Another user-scope unit remains at ${remaining.user.unitPath}. It was not removed. Run openclaw doctor again to inspect it before removal.`,
+      `${completed} Another user-scope unit remains at ${remaining.user.unitPath}. It was not removed. Run paddy doctor again to inspect it before removal.`,
     );
   } else if (
     remaining?.kind === "system" &&
@@ -168,7 +156,7 @@ export async function maybeResolveDuelingSystemdGatewayScopes(
     runtime.log(`${completed} No other matching installed user-scope unit was found.`);
   } else {
     runtime.log(
-      `${completed} Remaining service ownership could not be verified. Run openclaw gateway status --deep and openclaw doctor before any further cleanup.`,
+      `${completed} Remaining service ownership could not be verified. Run paddy gateway status --deep and paddy doctor before any further cleanup.`,
     );
   }
 }

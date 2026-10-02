@@ -1,4 +1,5 @@
 // Shared execution helpers keep the public dispatcher small and reviewable.
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { getAtPath, parseConfigSetPath } from "../cli/config-cli-path.js";
 import { hashConfigRaw } from "../config/io.read-helpers.js";
 import { ConfigWritePostCommitError } from "../config/io.write-errors.js";
@@ -201,7 +202,7 @@ export function getRegularAgentSetupNotice(
   if (primaryModel || !utilityModel) {
     return undefined;
   }
-  return "Your setup and utility model is ready, but this agent needs a primary model. Choose one in Model Setup or run `openclaw onboard`; you can continue setup here in the meantime.";
+  return "Your setup and utility model is ready, but this agent needs a primary model. Choose one in Model Setup or run `paddy onboard`; you can continue setup here in the meantime.";
 }
 
 export type ExecuteOptions = {
@@ -258,7 +259,7 @@ export async function applyPersistentOperation(params: {
     runtime.log(message);
     return { applied: false, message };
   }
-  runtime.log(`[openclaw] running: ${auditOperation}`);
+  runtime.log(`[paddy] running: ${auditOperation}`);
   const { readConfigFileSnapshot } = await import("../config/config.js");
   const before = await readConfigFileSnapshot();
   const assertPersistentApply = opts.beforePersistentApply;
@@ -286,10 +287,10 @@ export async function applyPersistentOperation(params: {
     // The mutation already committed. Keep success truthful while making the
     // missing audit record visible to every CLI/chat capture surface.
     runtime.error(
-      `${outcome.summary}, but OpenClaw could not record its audit entry: ${formatErrorMessage(error)}`,
+      `${outcome.summary}, but ${PRODUCT_NAME} could not record its audit entry: ${formatErrorMessage(error)}`,
     );
   }
-  runtime.log(`[openclaw] done: ${auditOperation}`);
+  runtime.log(`[paddy] done: ${auditOperation}`);
   return {
     applied: true,
     ...(outcome.bootstrapPending === undefined
@@ -423,14 +424,14 @@ async function verifyCurrentSetupInference(
   const before = await readConfigFileSnapshot();
   if (!before.exists || !before.valid) {
     throw new Error(
-      "OpenClaw setup requires a valid configured inference route. Run `openclaw onboard` on the machine running OpenClaw, then retry.",
+      `${PRODUCT_NAME} setup requires a valid configured inference route. Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}, then retry.`,
     );
   }
   const beforeConfig = before.runtimeConfig ?? before.config;
   const beforeRoute = await projectDefaultInferenceRoute(beforeConfig);
   if (!beforeRoute.route) {
     throw new Error(
-      "OpenClaw setup requires working inference first. Run `openclaw onboard` on the machine running OpenClaw, then retry.",
+      `${PRODUCT_NAME} setup requires working inference first. Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}, then retry.`,
     );
   }
   const verifyInferenceConfig =
@@ -439,7 +440,7 @@ async function verifyCurrentSetupInference(
   const verification = await verifyInferenceConfig({ config: beforeConfig, runtime });
   if (!verification.ok) {
     throw new Error(
-      `OpenClaw setup requires working inference first. The configured route failed a live check: ${verification.error} Run \`openclaw onboard\` on the machine running OpenClaw, then retry.`,
+      `${PRODUCT_NAME} setup requires working inference first. The configured route failed a live check: ${verification.error} Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}, then retry.`,
     );
   }
 
@@ -476,13 +477,13 @@ export async function executeSetup(
   const modelRole = overview.defaultModel ? "default" : "setup";
   if (!setupModel) {
     throw new Error(
-      "OpenClaw setup requires working inference first. Run `openclaw onboard` on the machine running OpenClaw to configure and verify a default model, then start OpenClaw again.",
+      `${PRODUCT_NAME} setup requires working inference first. Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME} to configure and verify a default model, then start ${PRODUCT_NAME} again.`,
     );
   }
   const requestedModel = operation.model?.trim();
   if (requestedModel && requestedModel !== setupModel) {
     throw new Error(
-      `OpenClaw setup will preserve the verified ${modelRole} model ${setupModel}. Staging, live-testing, and saving a different inference route is \`openclaw onboard\` on the machine running OpenClaw.`,
+      `${PRODUCT_NAME} setup will preserve the verified ${modelRole} model ${setupModel}. Staging, live-testing, and saving a different inference route is \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}.`,
     );
   }
   if (!opts.approved) {
@@ -496,7 +497,7 @@ export async function executeSetup(
   const verified = await verifyCurrentSetupInference(runtime, opts.deps);
   if (requestedModel && requestedModel !== verified.modelRef) {
     throw new Error(
-      `The verified default model is now ${verified.modelRef}, not ${requestedModel}. Review the current route, or run \`openclaw onboard\` on the machine running OpenClaw, before retrying setup.`,
+      `The verified default model is now ${verified.modelRef}, not ${requestedModel}. Review the current route, or run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME}, before retrying setup.`,
     );
   }
   return await applyPersistentOperation({
@@ -572,19 +573,18 @@ export async function executeSetDefaultModel(
     opts,
     run: async (ctx) => {
       const { mutateConfigFile, readConfigFileSnapshot } = await import("../config/config.js");
-      const { applySystemAgentModelSelection, createSystemAgentModelSelectionUpdater } =
-        await import("./setup-model-selection.js");
+      const { createSystemAgentModelSelectionUpdater } = await import("./setup-model-selection.js");
       const targetAgentId = operation.agentId;
       const snapshot = await readConfigFileSnapshot();
       // Route projection and the live probes below all take the same optional
       // agent scope, so a per-agent selection is verified against that agent's
       // route with the exact rigor the default route gets.
       const projectRoute = (config: OpenClawConfig) => projectInferenceRoute(config, targetAgentId);
-      const stagedConfig = await applySystemAgentModelSelection({
-        config: snapshot.sourceConfig,
+      const selectModel = await createSystemAgentModelSelectionUpdater({
         model: operation.model,
         ...(targetAgentId ? { targetAgentId } : {}),
       });
+      const stagedConfig = selectModel(snapshot.sourceConfig);
       const beforeRoute = await projectRoute(snapshot.sourceConfig);
       const verifiedRoute = await projectRoute(stagedConfig);
       const verifyInferenceConfig =
@@ -610,10 +610,6 @@ export async function executeSetDefaultModel(
       let persistedVerification = initialVerification;
       let persistedBinding: SystemAgentVerifiedInferenceBinding | undefined;
       let selectedRouteForCommit = verifiedRoute;
-      const selectModel = await createSystemAgentModelSelectionUpdater({
-        model: operation.model,
-        ...(targetAgentId ? { targetAgentId } : {}),
-      });
       const result = await mutateConfigFile({
         base: "source",
         writeOptions: {

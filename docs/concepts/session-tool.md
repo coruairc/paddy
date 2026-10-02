@@ -7,7 +7,15 @@ read_when:
 title: "Session tools"
 ---
 
-OpenClaw gives agents tools to work across sessions, inspect status, and orchestrate sub-agents.
+Paddy gives agents tools to work across sessions, inspect status, and orchestrate sub-agents.
+
+`sessions_list`, `sessions_history`, `sessions_search`, `session_status`,
+`sessions_send`, `sessions`, and `sessions_spawn` accept optional `user` (the requester's verified `requester_profile.id`).
+It is required when several people have steered the turn. The named person's
+authority determines session access and child execution; unknown or revoked
+participants are rejected. Single-person turns can omit it.
+Scheduled jobs and SDK/plugin runs without turn participants retain their existing
+session access rules.
 
 ## Available tools
 
@@ -67,7 +75,7 @@ Transcript-derived fields are opt-in: `includeDerivedTitles`, `includeLastMessag
 
 Use the returned `sessionId` as `expectedSessionId` when the `sessions` tool archives, restores, or deletes a session, so a stale key cannot target a replacement. Delivery routing, detailed runtime settings, cost estimates, and transcript paths remain omitted. Restricted inventories include `visibility` metadata explaining the effective session-tool scope.
 
-`sessions_history` fetches the conversation transcript for a specific session. By default, tool results are excluded; pass `includeTools: true` to see them. Use `limit` for the newest bounded tail. Pass `offset: 0` when you need pagination metadata, then pass returned `nextOffset` values to page backward through older OpenClaw transcript windows without reading raw transcript files. When an eligible bound external CLI transcript contributes messages, history returns a merged snapshot instead of a numeric offset page—even with an explicit `offset`. The Gateway treats these as terminal snapshots (`hasMore: false`); oversized snapshots remain byte-bounded, so terminal does not imply complete. Local offset paging applies when no external import survives. Unanchored reads stay the current reset-relative view. An explicit `messageId` that remains in that current view, including a pre-reset row kept after reset, keeps current-view behavior. An explicit `messageId` for a retained active-path row outside the current view opens that original closed interval and does not mix later post-reset turns; a missing or off-path `messageId` returns empty history rather than the newest messages.
+`sessions_history` fetches the conversation transcript for a specific session. By default, tool results are excluded; pass `includeTools: true` to see them. Use `limit` for the newest bounded tail. Pass `offset: 0` when you need pagination metadata, then pass returned `nextOffset` values to page backward through older Paddy transcript windows without reading raw transcript files. When an eligible bound external CLI transcript contributes messages, history returns a merged snapshot instead of a numeric offset page—even with an explicit `offset`. The Gateway treats these as terminal snapshots (`hasMore: false`); oversized snapshots remain byte-bounded, so terminal does not imply complete. Local offset paging applies when no external import survives. Unanchored reads stay the current reset-relative view. An explicit `messageId` that remains in that current view, including a pre-reset row kept after reset, keeps current-view behavior. An explicit `messageId` for a retained active-path row outside the current view opens that original closed interval and does not mix later post-reset turns; a missing or off-path `messageId` returns empty history rather than the newest messages.
 
 Durably admitted inputs from `sessions_send` or the Gateway `agent` method
 appear separately in `pendingInputs`, not in transcript `messages`. Each row
@@ -104,10 +112,11 @@ Use [`sessions_search`](/concepts/session-search) for exact full-text recall acr
 
 ## Managing session settings and groups
 
-The owner-gated `sessions` tool exposes bounded self-service surfaces:
+The `sessions` tool exposes bounded self-service surfaces. Gateway owners retain the full tool. An admitted non-admin operator with `operator.write` gets archive, restore, and stop controls only for sessions they created or are assigned to as a human owner, subject to existing session access checks. The narrower `operator.sessions.write` scope alone does not expose these agent controls. Other settings, ownership, deletion, and global group actions remain unavailable through that limited tool. Tool discovery never grants access to another session; the Gateway rechecks the requester and target at the action boundary. Revoked authority and replaced session generations cannot be reused.
 
-- `action: "patch"` changes the current session by default, or another visible session selected by `sessionKey`. It can set the label, persistent sidebar `icon`, custom sidebar `group`, pin/archive state, model, and thinking level. Root sessions and ordinary Home-linked dashboard sessions can be pinned; spawned, subagent, and nested-child sessions reject pin requests. Subagent runs appear in transcript activity and Tasks views, outside sidebar navigation. Pass `null` or an empty string to clear `group`; assigning a new name creates the group on first use. The icon accepts one emoji grapheme, one of the named icons `braces`, `book`, `monitor`, `bot`, `kanban`, and `coins`, or custom SVG markup/an SVG data URL; pass an empty string to clear it. SVGs must be self-contained, at most 16 KiB decoded, with no scripts, embedded documents, or external references. Include `xmlns="http://www.w3.org/2000/svg"` and a `viewBox`; SVG data URLs may use percent encoding or base64. The Gateway stores a canonical SVG data URL and the Control UI renders it as an image. The Control UI custom-icon picker accepts the same inputs and shows the macOS (Control-Command-Space) or Windows (Windows-period) system emoji picker shortcut. Archiving or restoring another session requires its `sessions_list` `sessionId` as `expectedSessionId`.
+- `action: "patch"` changes the current session by default, or another visible session selected by `sessionKey`. It can set the label, persistent sidebar `icon`, custom sidebar `group`, pin/archive state, model, and thinking level. Root sessions and ordinary Home-linked dashboard sessions can be pinned; spawned, subagent, and nested-child sessions reject pin requests. Subagent runs appear in session transcripts, outside sidebar navigation. Pass `null` or an empty string to clear `group`; assigning a new name creates the group on first use. The icon accepts one emoji grapheme, one of the named icons `braces`, `book`, `monitor`, `bot`, `kanban`, and `coins`, or custom SVG markup/an SVG data URL; pass an empty string to clear it. SVGs must be self-contained, at most 16 KiB decoded, with no scripts, embedded documents, or external references. Include `xmlns="http://www.w3.org/2000/svg"` and a `viewBox`; SVG data URLs may use percent encoding or base64. The Gateway stores a canonical SVG data URL and the Control UI renders it as an image. The Control UI custom-icon picker accepts the same inputs and shows the macOS (Control-Command-Space) or Windows (Windows-period) system emoji picker shortcut. Archiving or restoring another session requires its `sessions_list` `sessionId` as `expectedSessionId`.
 - `action: "reset"` resets another visible session selected by `sessionKey`.
+- `action: "stop"` stops another authorized session without archiving or deleting it. Include `expectedSessionId` from session discovery to reject a replacement, and optionally `runId` to stop only that exact run. Session-wide stop clears queued follow-ups by default; pass `clearQueued: false` to retain them. Exact-run stop cannot clear unrelated queued follow-ups. To stop the calling session, finish its current reply instead. Non-interactive Swarm collectors do not receive Stop; their existing archive and other session operations are unchanged.
 - `action: "delete"` first archives and then deletes the exact same generation of another visible session selected by `sessionKey`. By default its transcript is retained as a deleted archive; pass `deleteTranscript: false` to leave the transcript state untouched. Resetting or deleting the session currently running the tool is rejected.
 - `action: "assign_owner"` hands session responsibility to a person or agent. Pass `ownerType` (`"human"` or `"agent"`) and `ownerId`; the target is the current session by default, or another visible session via `sessionKey`. Agent owner ids must name a configured agent. The assignment records who reassigned it and when, and the Control UI reflects the new owner immediately. Ownership is display and responsibility, not access control; see [Multi-user mode](/concepts/multi-user).
 - `group_list`, `group_set`, `group_rename`, and `group_delete` manage the global ordered session-group catalog. `group_set` (`names`) declaratively replaces the catalog: array order becomes sidebar order, new names are created, and existing empty groups left out of the list are deleted — reorder by passing the complete current list in the new order, and prefer `group_delete` to remove a single group. `group_set` never moves sessions; use `action: "patch"` with `group` for selected memberships. `group_rename` updates all member categories, and `group_delete` clears them. `group_set` rejects dropping a group that still has member sessions; use `group_delete` first.
@@ -146,7 +155,7 @@ Use `sessions_spawn` with `visible: true` to create a persistent dashboard sessi
 
 If startup or registration fails, cleanup removes only the child created by that spawn. A session reset or replaced meanwhile is preserved. When cleanup cannot be confirmed, the error includes the child session key for inspection before retrying.
 
-An agent-selected model patch stays reversible until that selection completes a successful run. If the selected model is definitively unusable because of authentication, billing, or model-not-found failure, OpenClaw restores the previous model and writes a visible system note. Transient rate-limit, overload, timeout, network, and server failures do not undo the selection.
+An agent-selected model patch stays reversible until that selection completes a successful run. If the selected model is definitively unusable because of authentication, billing, or model-not-found failure, Paddy restores the previous model and writes a visible system note. Transient rate-limit, overload, timeout, network, and server failures do not undo the selection.
 
 ## Sessions versus conversations
 
@@ -162,31 +171,36 @@ In Code Mode, the conversation tools reuse their exact Gateway output contracts.
 
 `sessions_send` runs another session on the same Gateway and optionally waits for the response. Its `sessionKey`, `label`, or `agentId` selects local model context, not an external destination. The resulting reply can still be announced through the established requester or target delivery context; that existing behavior is unchanged. For exact external delivery, use a conversation tool or `message` with an explicit channel and target.
 
-Sessions keep their addresses when execution moves between the Gateway, a paired device, and a cloud worker. An OpenClaw worker can send to an authorized parent, child, or sibling using its exact session key, including a target running on the Gateway. The Gateway validates the current session identities and normal visibility policy before admitting the target turn; target placement does not grant messaging access. Targets outside the configured visibility scope, archived targets, and replaced targets remain denied.
+Sessions keep their addresses when execution moves between the Gateway, a paired device, and a cloud worker. A Paddy worker can send to an authorized parent, child, or sibling using its exact session key, including a target running on the Gateway. The Gateway validates the current session identities and normal visibility policy before admitting the target turn; target placement does not grant messaging access. Targets outside the configured visibility scope, archived targets, and replaced targets remain denied.
 
-During healthy worker provisioning or workspace preparation, accepted input stays queued until the intended worker is ready. It starts once after OpenClaw rechecks the session and placement. Cancellation, failed setup, or a replaced destination does not silently run that input locally or on another worker. Check the retained input and setup error before submitting another message.
+During healthy worker provisioning or workspace preparation, accepted input stays queued until the intended worker is ready. It starts once after Paddy rechecks the session and placement. Cancellation, failed setup, or a replaced destination does not silently run that input locally or on another worker. Check the retained input and setup error before submitting another message.
 
 - **Fire-and-forget:** set `timeoutSeconds: 0` to enqueue and return immediately.
 - **Wait for reply:** set a timeout and get the response inline.
+- **Guide your running child:** with no `mode` and `timeoutSeconds: 0`, a send to your own spawned child steers into its active run and acknowledges queue admission, like `mode: "steer"`, not persistence or model consumption. This admission is not restart-durable. Use `mode: "followup"` for a separate child turn with its own completion. An idle child or one whose run rejects the steer starts a new turn. Explicit modes keep their existing behavior.
 - **Continue a paused child task:** send the continuation without `mode`. When the caller controls a native child paused by `sessions_yield` with task-owned completion, the runtime resumes that task automatically, preserving its identity and original completion recipient. Use `mode: "resume"` to require this behavior explicitly. An explicit `mode: "followup"` starts a separate turn and leaves the paused task intact.
 
-A separate follow-up to your native child is accepted only after its task record
-has been saved. If registration fails, the send returns an error and the child
-does not start. A requested state watch is installed only after successful
-admission.
+A separate follow-up to your native child starts only after Gateway admission
+and input preparation. If admission rejects the turn, the send returns an error
+and the turn does not start. A requested state watch is installed only after
+successful admission.
 
-For core task-receipt-backed native-child followups with in-process one-way result delivery, yielding to
+For native-child followups with in-process one-way result delivery, yielding to
 accepted children keeps the same logical result obligation. Its exact admitted continuation returns
 one final result; an empty yielded predecessor is not a completed `no_reply`.
 A positive wait can transfer to asynchronous delivery without a second consumer.
 This custody is process-local: it does not restore caller authority after a
 Gateway restart, and it closes when that authority or either conversation changes.
+An owner-started follow-up also retains the original channel owner identity for
+its one-way result turn in the same requester conversation. Successful results
+and child failures can therefore continue already authorized work with owner-only
+plugin tools. This does not make the child an owner or treat its text as a user
+instruction. A new user turn, revoked ownership, changed conversation, or Gateway
+restart invalidates the retained authority.
 The original paused child task remains separate from an explicit followup.
-Registered detached task runtimes keep their existing run-scoped reply behavior;
-they are not silently converted into core task receipts.
 
-A retry cannot restart a follow-up whose task record is already terminal.
-Completed input receipts are reconciled before rejecting the retry.
+Retries with the same input ID reconcile retained Gateway admission and reply
+receipts before admitting another execution.
 
 Task resume returns `status: "accepted"`, `mode: "resume"`, the successor `runId`,
 the original `taskRunId`, and `completion: "task"`. The existing task owner delivers
@@ -213,9 +227,13 @@ to keep the receiver's configured budget; bound the CLI wait separately with
 [`gateway call --timeout`](/cli/gateway/query#gateway-call-method).
 
 An accepted result keeps target admission separate from announcement delivery.
-`targetDisposition` is `queued` for a new turn or `steered` for an active turn;
+`targetDisposition` is `queued` for a new turn or `steered` for an active turn, including default sends with no reply wait to your own running child;
 `delivery.status` describes only the later announcement as `pending` or `skipped`.
 Neither field is a target-completion receipt.
+Default zero-wait sends to your own running child acknowledge queue admission,
+like `mode: "steer"`; they do not confirm transcript persistence or model consumption
+and are not restart-durable. They produce no separate completion turn. Use
+`mode: "followup"` when you need that separate child turn and completion.
 
 If an idempotent retry finds that the original admission is still pending, the
 tool returns an error with `sentBeforeError: true` and the existing run ID, without
@@ -223,7 +241,7 @@ installing a watch. Inspect that run before retrying.
 
 Replies come from the completed run's terminal result. When a same-session
 target has already delivered its final reply to the source conversation through
-`message`, OpenClaw skips the duplicate channel announcement. Progress messages
+`message`, Paddy skips the duplicate channel announcement. Progress messages
 and replies stored only in the internal UI do not count as external delivery.
 When a same-session follow-up still has an announcement target, its reply preserves
 the requesting turn's channel, account, recipient, and thread when available.
@@ -258,13 +276,13 @@ completion. A delivery failure does not authorize switching to the operator CLI.
 This check prevents accidental loss of attribution; the environment marker is
 not authentication or isolation from other processes running as the same OS user.
 
-After an independent peer session responds, OpenClaw can run a **reply-back loop** where the agents alternate messages up to the built-in limit. The target agent can reply `REPLY_SKIP` to stop early. Control UI requesters instead receive the target result once; their human-facing response is not fed back into the target session.
+After an independent peer session responds, Paddy can run a **reply-back loop** where the agents alternate messages up to the built-in limit. The target agent can reply `REPLY_SKIP` to stop early. Control UI requesters instead receive the target result once; their human-facing response is not fed back into the target session.
 
 Subagent coordination does not use this loop. A child report goes to its recipient once, without an automatic acknowledgment turn in the child. An explicitly waiting caller can still receive the recipient's reply inline. For a new child turn, the child's reply returns inline or is delivered once after the wait expires; the receiver's response is not sent back to the child.
 
 Isolated scheduled jobs receive no automatic reply turns, including failure notifications. Their peer-target announcements remain unchanged. If such a scheduled job's wait ends before a native child replies, that reply follows the target's existing announcement path without a reciprocal reply exchange.
 
-These reply deliveries apply to new or follow-up turns. `mode: "steer"` returns admission only for guidance added to an active run and leaves completion with that run's existing owner. `mode: "notify"` queues context without starting a turn. Registered task completion and paused-task resume keep their existing completion owner and do not add a second reply delivery.
+These reply deliveries apply to new or follow-up turns. Default sends with no reply wait to your own running child skip separate reply delivery and leave completion with the active run's owner. `mode: "steer"` returns admission only for guidance added to an active run and leaves completion with that run's existing owner. It uses the existing `sessions_send` access checks. For the built-in runtime, a busy tool or model response can delay transcript persistence until the next steering boundary; the send's reply-wait deadline does not withdraw admitted guidance. Acceptance is not proof of transcript persistence or model consumption, and does not make the in-memory steering queue restart-durable. The receiving run retains source authority until the input settles or that exact run ends or aborts; a missing backend settlement callback cannot retain it past the run. Existing explicit cancellation, run-lifecycle, and authorization rules still apply. `mode: "notify"` queues context without starting a turn. Registered task completion and paused-task resume keep their existing completion owner and do not add a second reply delivery.
 
 Child coordination stays in agent context and raw transcripts. The receiving chat hides child reports and automatic coordination replies, while normal task-completion summaries and direct human answers remain visible. Historical messages without source provenance cannot be classified as child traffic.
 
@@ -280,23 +298,23 @@ When route metadata is available, `session_status` also includes a visible `Rout
 
 - `origin` is where the session was created, or the provider inferred from a deliverable session-key prefix when older state lacks stored origin metadata.
 - `active` is the current live-run route. It is only reported for the live or current session being handled now.
-- `deliveryContext` is the persisted delivery route stored on the session, which OpenClaw can reuse for later delivery even when the active surface differs.
+- `deliveryContext` is the persisted delivery route stored on the session, which Paddy can reuse for later delivery even when the active surface differs.
 
 ## Session state changes
 
-OpenClaw keeps a durable signal log of material session state changes (direct human messages to watched sessions, child-run outcomes, goal changes, compaction). `sessions_list` rows and `session_status` expose the session's `stateVersion`, and `session_status` accepts `changesSince: <version>` to return the typed events after that version, with exact `historyGap` signaling when the requested version predates retained history. Watchers — spawn parents automatically, `sessions_send watch: true` explicitly — receive one coalesced stale-state notice when another actor changes a watched session.
+Paddy keeps a durable signal log of material session state changes (direct human messages to watched sessions, child-run outcomes, goal changes, compaction). `sessions_list` rows and `session_status` expose the session's `stateVersion`, and `session_status` accepts `changesSince: <version>` to return the typed events after that version, with exact `historyGap` signaling when the requested version predates retained history. Watchers — spawn parents automatically, `sessions_send watch: true` explicitly — receive one coalesced stale-state notice when another actor changes a watched session.
 
 State-change events omit repeated session/agent IDs and expose only model-useful payload fields (`outcome`, `channel`, or `turns`). The event summary and actor/run identifiers remain available for reconciliation.
 
 See [Session state awareness](/concepts/session-state) for the full model: event kinds, watcher registration, the anti-spam notice protocol, reconciliation flow, and current limits.
 
-`sessions_yield` intentionally ends the current turn so the next message can be an announced child completion event. Use it for announcing sub-agents, not [Swarm collectors](/tools/swarm): collectors require explicit result collection through `agents_wait` or an awaited `agents.run()` in OpenClaw Code Mode, and send no completion notification.
+`sessions_yield` intentionally ends the current turn so the next message can be an announced child completion event. Use it for announcing sub-agents, not [Swarm collectors](/tools/swarm): collectors require explicit result collection through `agents_wait` or an awaited `agents.run()` in Paddy Code Mode, and send no completion notification.
 
-`subagents` is the session-tree view over native sub-agent runs and the shared background-task ledger. `action: "list"` reports active/recent sub-agents plus scoped ACP, CLI/media, and cron tasks. `action: "cancel"` accepts a returned `taskId` and can stop only work inside the caller's controlled session tree; leaf sub-agents cannot cancel another session's task.
+`subagents` lists native subagent runs within the controlled session tree. Use the returned `runId` with `action: "wait"` or `action: "cancel"`; cancellation does not grant access to unrelated sessions. ACP, media, shell processes, and cron retain their own status and cancellation owners.
 
 ## Spawning sub-agents
 
-`sessions_spawn` creates a separate session for a background task. Non-thread spawns start with isolated context by default; thread-bound spawns follow the configured context policy described below. It returns a `runId` and `childSessionKey` when startup is accepted, without waiting for the child task to finish. Spawns from an OpenClaw cloud worker can first wait for child provisioning and node enrollment. Native sub-agent runs receive their delegated task in a `[Subagent Task]` message appended after any forked history; inherited task envelopes are context, not the current child's assignment. The system prompt carries only sub-agent runtime rules and routing context.
+`sessions_spawn` creates a separate session for a background task. Non-thread spawns start with isolated context by default; thread-bound spawns follow the configured context policy described below. It returns a `runId` and `childSessionKey` when startup is accepted, without waiting for the child task to finish. Spawns from a Paddy cloud worker can first wait for child provisioning and node enrollment. Native sub-agent runs receive their delegated task in a `[Subagent Task]` message appended after any forked history; inherited task envelopes are context, not the current child's assignment. The system prompt carries only sub-agent runtime rules and routing context.
 
 Key options:
 
@@ -310,7 +328,7 @@ Key options:
 
 Sub-agents below the default depth limit of `5` receive `sessions_spawn`, `subagents`, `sessions_list`, and `sessions_history` so they can manage their own children. Set a lower `maxSpawnDepth` to turn sessions at that depth into leaves sooner.
 
-Ordinary announcing runs return a completion event to the requester. Follow the accepted receipt for other completion modes: collectors require explicit collection, directly routed thread sessions reply in the bound thread, and quiet runs send no completion notification. Announce delivery preserves bound thread/topic routing when available, and if the completion origin only identifies a channel, OpenClaw can still reuse the requester session's stored route (`lastChannel` / `lastTo`) for direct delivery.
+Ordinary announcing runs return a completion event to the requester. Follow the accepted receipt for other completion modes: collectors require explicit collection, directly routed thread sessions reply in the bound thread, and quiet runs send no completion notification. Announce delivery preserves bound thread/topic routing when available, and if the completion origin only identifies a channel, Paddy can still reuse the requester session's stored route (`lastChannel` / `lastTo`) for direct delivery.
 
 For ACP-specific behavior, see [ACP Agents](/tools/acp-agents).
 

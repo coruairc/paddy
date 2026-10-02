@@ -4,6 +4,7 @@
  * reconstruction.
  */
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { PRODUCT_NAME } from "../brand.js";
 import type {
   CliBackendConfig,
   CliBackendParseJsonlEvent,
@@ -40,8 +41,8 @@ export function formatCliOutputError(
   const sessionId = normalizeCliContextValue(attribution.sessionId);
   const cliSessionId = normalizeCliContextValue(output.sessionId);
   const context = [
-    runId ? `OpenClaw run: ${runId}.` : undefined,
-    sessionId ? `OpenClaw session: ${sessionId}.` : undefined,
+    runId ? `${PRODUCT_NAME} run: ${runId}.` : undefined,
+    sessionId ? `${PRODUCT_NAME} session: ${sessionId}.` : undefined,
     cliSessionId ? `Claude session: ${cliSessionId}.` : undefined,
   ].filter((entry): entry is string => Boolean(entry));
   if (terminalFailure.reason === "max_turns") {

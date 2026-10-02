@@ -3,11 +3,12 @@ import {
   isRecord,
   normalizeOptionalString as readString,
 } from "openclaw/plugin-sdk/string-coerce-runtime";
+import type { QaParitySuiteSummary } from "./agentic-parity-report.js";
 import { escapeTableCell } from "./report.js";
+import type { RuntimeId } from "./runtime-id.js";
 import {
   runtimeParityCellStatus,
   normalizeRuntimePair,
-  type RuntimeId,
   type RuntimeParityDrift,
   type RuntimeParityResult,
 } from "./runtime-parity.js";
@@ -19,19 +20,6 @@ import {
   type QaRuntimeToolExpectedLayer,
 } from "./runtime-tool-metadata.js";
 import type { QaSeedScenarioWithSource } from "./scenario-catalog.js";
-
-type QaToolCoverageSuiteScenario = {
-  name: string;
-  status: "pass" | "fail" | "skip";
-  runtimeParity?: RuntimeParityResult;
-};
-
-export type QaToolCoverageSuiteSummary = {
-  scenarios: QaToolCoverageSuiteScenario[];
-  run?: {
-    runtimePair?: [RuntimeId, RuntimeId] | null;
-  };
-};
 
 type QaToolCoverageStatus = "pass" | "fail" | "skip" | "missing" | "not-run";
 type QaToolCoverageDrift = RuntimeParityDrift | "not-run";
@@ -148,7 +136,7 @@ function readScenarioRuntimeToolName(scenario: QaSeedScenarioWithSource): string
 }
 
 function summaryByScenarioId(
-  summary: QaToolCoverageSuiteSummary | undefined,
+  summary: QaParitySuiteSummary | undefined,
 ): Map<string, RuntimeParityResult> {
   const byScenarioId = new Map<string, RuntimeParityResult>();
   for (const scenario of summary?.scenarios ?? []) {
@@ -246,7 +234,7 @@ function coverageFailureForRow(row: QaToolCoverageRow): string | undefined {
     return `${row.tool} drift=failure-mode${row.details ? ` (${row.details})` : ""}`;
   }
   if (row.runtimeToolName && row.openclawSuccessfulToolCalls === 0) {
-    return `${row.tool} missing successful openclaw tool call/result ${row.runtimeToolName}`;
+    return `${row.tool} missing successful paddy tool call/result ${row.runtimeToolName}`;
   }
   if (row.runtimeToolName && row.codexSuccessfulToolCalls === 0) {
     return `${row.tool} missing successful codex tool call/result ${row.runtimeToolName}`;
@@ -256,7 +244,7 @@ function coverageFailureForRow(row: QaToolCoverageRow): string | undefined {
 
 export function buildQaToolCoverageReport(params: {
   scenarios: readonly QaSeedScenarioWithSource[];
-  summary?: QaToolCoverageSuiteSummary;
+  summary?: QaParitySuiteSummary;
   runtimePair?: [RuntimeId, RuntimeId];
   generatedAt?: string;
 }): QaToolCoverageReport {
@@ -298,7 +286,7 @@ export function buildQaToolCoverageReport(params: {
 
 export function renderQaToolCoverageMarkdownReport(report: QaToolCoverageReport): string {
   const lines = [
-    `# OpenClaw Runtime Tool Coverage — ${report.runtimePair[0]} vs ${report.runtimePair[1]}`,
+    `# Paddy Runtime Tool Coverage — ${report.runtimePair[0]} vs ${report.runtimePair[1]}`,
     "",
     `- Generated at: ${report.generatedAt}`,
     `- Mode: ${report.evaluated ? "runtime summary" : "catalog inventory"}`,
@@ -307,14 +295,14 @@ export function renderQaToolCoverageMarkdownReport(report: QaToolCoverageReport)
     `- Report-only tools: ${report.reportOnlyTools}`,
     `- Tracked issue rows: ${report.trackedTools}`,
     `- Codex-native workspace tools: ${report.nativeWorkspaceTools}`,
-    `- OpenClaw dynamic integration tools: ${report.dynamicIntegrationTools}`,
+    `- Paddy dynamic integration tools: ${report.dynamicIntegrationTools}`,
     `- Searchable/deferred dynamic tools: ${report.searchableDynamicTools}`,
     `- Optional/profile/plugin-dependent tools: ${report.optionalTools}`,
     `- Passing tools: ${report.passingTools}`,
     `- Failing tools: ${report.failingTools}`,
     `- Verdict: ${report.pass ? "pass" : "fail"}`,
     "",
-    "| Tool | Bucket | Expected layer | Capability layer | Required | Fixtures | OpenClaw | Codex | Drift | Codex default impact | QA impact | Action | Tracking |",
+    "| Tool | Bucket | Expected layer | Capability layer | Required | Fixtures | Paddy | Codex | Drift | Codex default impact | QA impact | Action | Tracking |",
     "| --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | --- | --- |",
   ];
 

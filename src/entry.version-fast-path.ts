@@ -1,5 +1,5 @@
 // Handles fast version output before the full CLI graph loads.
-import { CLI_NAME, PRODUCT_NAME } from "./brand.js";
+import { PRODUCT_NAME } from "./brand.js";
 import { isRootVersionInvocation } from "./cli/argv.js";
 import { resolveCliContainerTarget } from "./cli/container-target.js";
 
@@ -29,7 +29,7 @@ export function tryHandleRootVersionFastPath(
     deps.onError ??
     (async (error: unknown) => {
       const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
-      const message = `[${CLI_NAME}] Failed to resolve version: ${detail}\n`;
+      const message = `[openclaw] Failed to resolve version: ${detail}\n`;
       try {
         const [{ loadCliDotEnv }, { formatConsoleDiagnosticBlock }] = await Promise.all([
           import("./cli/dotenv.js"),

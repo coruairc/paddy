@@ -111,7 +111,7 @@ an existing compatibility window.
     runtime-neutral middleware:
 
     ```typescript
-    // OpenClaw runtime tools and Codex runtime dynamic tools (result may be
+    // Paddy runtime tools and Codex runtime dynamic tools (result may be
     // transformed). Codex-native tool results are also relayed for observation,
     // but their transformed output never reaches the model: the Codex
     // PostToolUse hook contract cannot replace a native tool response.

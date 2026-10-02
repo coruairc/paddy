@@ -41,7 +41,7 @@ export function configAuditScrubToHealthFinding(
     message: `${formatEntryCount(result.rewritten)} in config-audit.jsonl still contain pre-redactor argv values.`,
     path: result.auditPath,
     fixHint:
-      "Run `openclaw doctor --fix` to rewrite argv/execArgv fields through the current redactor.",
+      "Run `paddy doctor --fix` to rewrite argv/execArgv fields through the current redactor.",
   };
 }
 
@@ -76,7 +76,7 @@ export async function maybeScrubConfigAuditLog(params: {
       const result = await scrubConfigAuditLog({ env, homedir });
       if (result.aborted) {
         note(
-          "Config audit scrub was aborted because new entries were appended to config-audit.jsonl during the rewrite. No records were modified. Stop the gateway (or wait until it is idle) and rerun `openclaw doctor --fix`.",
+          "Config audit scrub was aborted because new entries were appended to config-audit.jsonl during the rewrite. No records were modified. Stop the gateway (or wait until it is idle) and rerun `paddy doctor --fix`.",
           NOTE_TITLE,
         );
         return;
@@ -92,7 +92,7 @@ export async function maybeScrubConfigAuditLog(params: {
 
     const preview = await scrubConfigAuditLog({ env, homedir, dryRun: true });
     if (preview.rewritten > 0) {
-      const fixCommand = params.doctorFixCommand ?? "openclaw doctor --fix";
+      const fixCommand = params.doctorFixCommand ?? "paddy doctor --fix";
       note(
         `${formatEntryCount(preview.rewritten)} in config-audit.jsonl still contain pre-redactor argv values (likely plaintext credentials at rest). Run \`${fixCommand}\` to rewrite the argv/execArgv fields through the same redactor used for new entries.`,
         NOTE_TITLE,

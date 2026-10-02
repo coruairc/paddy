@@ -1,6 +1,7 @@
 import { isPromiseLike } from "@openclaw/normalization-core/promise-like";
 import { asNonArrayRecord, isRecord } from "@openclaw/normalization-core/record-coerce";
 import type { AgentToolResult } from "../../../packages/agent-core/src/types.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { AgentToolResultMiddlewareEvent } from "../../plugins/agent-tool-result-middleware-types.js";
 import { runWithToolExecutionValidation } from "../agent-tools.execution-validation.js";
 import type { AnyAgentTool } from "../agent-tools.types.js";
@@ -51,7 +52,7 @@ export async function runAgentHarnessToolInvocation<TResult>(params: {
     const tool = params.tool;
     if (!tool) {
       throw new Error(
-        params.unavailableToolMessage ?? `OpenClaw tool is unavailable: ${params.call.toolName}`,
+        params.unavailableToolMessage ?? `${PRODUCT_NAME} tool is unavailable: ${params.call.toolName}`,
       );
     }
     const prepare = tool.prepareArguments;

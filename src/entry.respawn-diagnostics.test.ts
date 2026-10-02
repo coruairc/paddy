@@ -143,7 +143,7 @@ it("names the final executing CLI after startup respawn decisions", async () => 
   await import("./entry.js");
 
   expect(boundary.spawnTitle).toBeUndefined();
-  expect(process.title).toBe("paddy");
+  expect(process.title).toBe("openclaw");
 });
 
 it("runs internal admission with root options before runtime recovery, cache activation, or respawn", async () => {

@@ -1,14 +1,14 @@
 ---
-summary: "Inworld streaming text-to-speech for OpenClaw replies"
+summary: "Inworld streaming text-to-speech for Paddy replies"
 read_when:
   - You want Inworld speech synthesis for outbound replies
   - You need PCM telephony or OGG_OPUS voice-note output from Inworld
 title: "Inworld"
 ---
 
-Inworld is a streaming text-to-speech (TTS) provider. In OpenClaw it synthesizes outbound reply audio (MP3 by default, OGG_OPUS for voice notes) and raw PCM audio for telephony channels such as Voice Call.
+Inworld is a streaming text-to-speech (TTS) provider. In Paddy it synthesizes outbound reply audio (MP3 by default, OGG_OPUS for voice notes) and raw PCM audio for telephony channels such as Voice Call.
 
-OpenClaw posts to Inworld's streaming TTS endpoint, concatenates the returned base64 audio chunks into a single buffer, and hands the result to the standard reply-audio pipeline.
+Paddy posts to Inworld's streaming TTS endpoint, concatenates the returned base64 audio chunks into a single buffer, and hands the result to the standard reply-audio pipeline.
 
 | Property      | Value                                                           |
 | ------------- | --------------------------------------------------------------- |
@@ -60,7 +60,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
     ```
   </Step>
   <Step title="Send a message">
-    Send a reply through any connected channel. OpenClaw synthesizes the audio with Inworld and delivers it as MP3 (or OGG_OPUS when the channel expects a voice note).
+    Send a reply through any connected channel. Paddy synthesizes the audio with Inworld and delivers it as MP3 (or OGG_OPUS when the channel expects a voice note).
   </Step>
 </Steps>
 
@@ -84,7 +84,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
     Supported model ids: `inworld-tts-1.5-max` (default), `inworld-tts-1.5-mini`, `inworld-tts-1-max`, `inworld-tts-1`.
   </Accordion>
   <Accordion title="Audio outputs">
-    Replies use MP3 by default. When the channel target is `voice-note`, OpenClaw asks Inworld for `OGG_OPUS` so the audio plays as a native voice bubble. Telephony synthesis uses raw `PCM` at 22050 Hz to feed the telephony bridge.
+    Replies use MP3 by default. When the channel target is `voice-note`, Paddy asks Inworld for `OGG_OPUS` so the audio plays as a native voice bubble. Telephony synthesis uses raw `PCM` at 22050 Hz to feed the telephony bridge.
   </Accordion>
   <Accordion title="Custom endpoints">
     Override the API host with `tts.providers.inworld.baseUrl`. Trailing slashes are stripped before requests are sent.
@@ -101,7 +101,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
     Full config reference including `tts` settings.
   </Card>
   <Card title="Providers" href="/providers" icon="grid">
-    All supported OpenClaw providers.
+    All supported Paddy providers.
   </Card>
   <Card title="Troubleshooting" href="/help/troubleshooting" icon="wrench">
     Common issues and debugging steps.

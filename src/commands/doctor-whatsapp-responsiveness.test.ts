@@ -84,7 +84,7 @@ describe("doctor WhatsApp responsiveness", () => {
         message:
           "Gateway reports pressure, and local TUI clients were detected. This snapshot does not identify the source of the pressure.",
         fixHint:
-          "Inspect Gateway diagnostics with openclaw gateway diagnostics export before deciding whether to close clients.",
+          "Inspect Gateway diagnostics with paddy gateway diagnostics export before deciding whether to close clients.",
       }),
     ]);
     noteWhatsappResponsivenessHealth(params);

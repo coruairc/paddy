@@ -1,4 +1,5 @@
 // Resolves provider authentication modes for plugin setup prompts.
+import { PRODUCT_NAME } from "../brand.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import type { SecretInputMode } from "./provider-auth-types.js";
 
@@ -30,7 +31,7 @@ export async function resolveSecretInputModeForEnvSelection(params: {
       {
         value: "plaintext",
         label: params.copy?.plaintextLabel ?? "Paste API key now",
-        hint: params.copy?.plaintextHint ?? "Stores the key directly in OpenClaw config",
+        hint: params.copy?.plaintextHint ?? `Stores the key directly in ${PRODUCT_NAME} config`,
       },
       {
         value: "ref",

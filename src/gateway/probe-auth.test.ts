@@ -182,7 +182,7 @@ describe("resolveGatewayProbeAuthSafeWithSecretInputs", () => {
       expect(result.warningCode).toBe("SECRET_REF_REDACTED_VALUE");
       expect(result.warning).toContain("env:default:GATEWAY_SECRET");
       expect(result.warning).toContain("redaction placeholder");
-      expect(result.warning).toContain("openclaw doctor --fix");
+      expect(result.warning).toContain("paddy doctor --fix");
     },
   );
 

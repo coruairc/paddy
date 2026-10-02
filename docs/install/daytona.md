@@ -1,14 +1,14 @@
 ---
-summary: "Run OpenClaw in a Daytona cloud sandbox with SSH access and signed preview URLs"
+summary: "Run Paddy in a Daytona cloud sandbox with SSH access and signed preview URLs"
 read_when:
-  - Running OpenClaw in a Daytona sandbox
-  - You want a cloud sandbox for OpenClaw without managing a VPS
+  - Running Paddy in a Daytona sandbox
+  - You want a cloud sandbox for Paddy without managing a VPS
 title: "Daytona"
 ---
 
-Run a persistent OpenClaw Gateway in a [Daytona](https://www.daytona.io) cloud
+Run a persistent Paddy Gateway in a [Daytona](https://www.daytona.io) cloud
 sandbox: an isolated Linux environment with SSH access and built-in preview
-URLs, no VPS management required. OpenClaw comes pre-installed in the
+URLs, no VPS management required. Paddy comes pre-installed in the
 `daytona-medium` snapshot, so setup starts immediately after SSH.
 
 Keep the Gateway on loopback and reach the dashboard through Daytona's signed
@@ -69,29 +69,29 @@ daytona ssh openclaw
 
 ## Run onboarding
 
-Inside the sandbox, configure OpenClaw in one command:
+Inside the sandbox, configure Paddy in one command:
 
 ```bash
-openclaw onboard --non-interactive --accept-risk \
+paddy onboard --non-interactive --accept-risk \
   --anthropic-api-key YOUR_ANTHROPIC_KEY \
   --skip-daemon --skip-channels --skip-skills --skip-hooks --skip-health
 ```
 
 `--skip-daemon` matters: Daytona sandboxes do not run a service manager, so
 you start the Gateway manually below. Swap the key flag for your provider
-(`--openai-api-key`, `--openrouter-api-key`, and so on); `openclaw onboard
+(`--openai-api-key`, `--openrouter-api-key`, and so on); `paddy onboard
 --help` lists them all. Channels, skills, and hooks are skipped here and
 configured later.
 
-Running `openclaw onboard` without flags starts a conversational setup
+Running `paddy onboard` without flags starts a conversational setup
 assistant instead and requires an interactive terminal;
-`openclaw onboard --classic` runs the older step-by-step wizard.
+`paddy onboard --classic` runs the older step-by-step wizard.
 
 Onboarding configures a gateway auth token. Print it any time from an
 interactive terminal on the sandbox:
 
 ```bash
-openclaw gateway auth-token --show
+paddy gateway auth-token --show
 ```
 
 The command refuses to print the token when stdout is not an interactive
@@ -117,8 +117,8 @@ Copy the URL it prints. Back in the sandbox SSH session, allow that origin and
 trust the in-sandbox preview proxy, replacing the example URL with your own:
 
 ```bash
-openclaw config set gateway.controlUi.allowedOrigins '["PASTE_YOUR_PREVIEW_URL"]'
-openclaw config set gateway.trustedProxies '["127.0.0.1"]'
+paddy config set gateway.controlUi.allowedOrigins '["PASTE_YOUR_PREVIEW_URL"]'
+paddy config set gateway.trustedProxies '["127.0.0.1"]'
 ```
 
 Paste the URL exactly as printed: scheme and host only, with no trailing slash
@@ -130,14 +130,14 @@ trailing slash, so copy from the terminal instead.
 ## Start the Gateway
 
 ```bash
-nohup openclaw gateway run > /tmp/gateway.log 2>&1 &
+nohup paddy gateway run > /tmp/gateway.log 2>&1 &
 ```
 
 The Gateway runs in the background and survives SSH disconnects. Verify it is
 up:
 
 ```bash
-openclaw gateway health
+paddy gateway health
 ```
 
 The command reports the Gateway status, so `OK` means you are good to
@@ -146,8 +146,8 @@ continue.
 To restart the Gateway later (after config changes or updates):
 
 ```bash
-pkill -f "openclaw gateway" || true
-nohup openclaw gateway run > /tmp/gateway.log 2>&1 &
+pkill -f "paddy gateway" || true
+nohup paddy gateway run > /tmp/gateway.log 2>&1 &
 ```
 
 ## Open the dashboard
@@ -163,10 +163,10 @@ sandbox SSH session:
 
 ```bash
 # List pending requests and copy the request id
-openclaw devices list
+paddy devices list
 
 # Approve it
-openclaw devices approve REQUEST_ID
+paddy devices approve REQUEST_ID
 ```
 
 ## Security
@@ -190,11 +190,11 @@ Unknown senders require pairing approval by default; see
 ### Telegram
 
 Create a bot with [@BotFather](https://t.me/botfather) (`/newbot`), copy the
-token, then configure OpenClaw from the sandbox SSH session:
+token, then configure Paddy from the sandbox SSH session:
 
 ```bash
 export TELEGRAM_BOT_TOKEN="<bot-token>"
-openclaw channels add --channel telegram --use-env
+paddy channels add --channel telegram --use-env
 ```
 
 Also store `TELEGRAM_BOT_TOKEN=<bot-token>` in `~/.openclaw/.env` so the
@@ -205,8 +205,8 @@ Restart the Gateway (see above), send your bot a DM, then approve the pairing
 code it reports:
 
 ```bash
-openclaw pairing list telegram
-openclaw pairing approve telegram PAIRING_CODE
+paddy pairing list telegram
+paddy pairing approve telegram PAIRING_CODE
 ```
 
 Pairing codes expire after 1 hour. Full reference: [Telegram](/channels/telegram).
@@ -217,7 +217,7 @@ WhatsApp ships as a separate plugin, so install and enable it first:
 
 ```bash
 openclaw plugins install clawhub:@openclaw/whatsapp
-openclaw plugins enable whatsapp
+paddy plugins enable whatsapp
 ```
 
 Installing does not enable a plugin, so the `enable` step is required;
@@ -228,12 +228,12 @@ plugin from ClawHub or npm instead.
 Then link the account by scanning a QR code from the sandbox SSH session:
 
 ```bash
-openclaw channels login --channel whatsapp
+paddy channels login --channel whatsapp
 ```
 
 On your phone: **Settings → Linked Devices → Link a Device**, then scan the QR
 code shown in the terminal. Restart the Gateway after linking, then message
-yourself on WhatsApp and OpenClaw replies in that chat.
+yourself on WhatsApp and Paddy replies in that chat.
 
 No pairing approval is needed: with no allowlist configured, the linked
 account's own number is allowed by default. Pairing applies to unknown
@@ -242,7 +242,7 @@ personal-number mode, and self-chat details: [WhatsApp](/channels/whatsapp).
 
 ## Updating
 
-The snapshot's global npm tree is owned by root, so plain `openclaw update`
+The snapshot's global npm tree is owned by root, so plain `paddy update`
 cannot write to it. Update from the sandbox SSH session with:
 
 The command below is for npm 12 or npm 11.16+. On npm 11.15 and earlier,
@@ -250,10 +250,10 @@ omit `--allow-scripts=openclaw`.
 
 ```bash
 sudo env "PATH=$PATH" npm install --global openclaw@latest --allow-scripts=openclaw
-openclaw doctor
+paddy doctor
 ```
 
-`openclaw doctor` migrates any older config after the update. Restart the
+`paddy doctor` migrates any older config after the update. Restart the
 Gateway afterwards (see above).
 
 ## Stop and resume the sandbox
@@ -271,7 +271,7 @@ not auto-start. After a resume, reconnect and start it again:
 
 ```bash
 daytona ssh openclaw
-nohup openclaw gateway run > /tmp/gateway.log 2>&1 &
+nohup paddy gateway run > /tmp/gateway.log 2>&1 &
 ```
 
 ## Troubleshooting
@@ -304,7 +304,7 @@ when idle. Resume it with `daytona sandbox start openclaw`.
 Confirm the Gateway is running and listening:
 
 ```bash
-openclaw gateway health
+paddy gateway health
 tail -20 /tmp/gateway.log
 ```
 
@@ -319,4 +319,4 @@ If you changed the Gateway port, pass the same port to `daytona preview-url`.
 
 - [Gateway remote access](/gateway/remote)
 - [Gateway security](/gateway/security)
-- [Updating OpenClaw](/install/updating)
+- [Updating Paddy](/install/updating)

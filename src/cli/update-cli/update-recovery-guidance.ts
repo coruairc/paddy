@@ -11,6 +11,7 @@ import {
   UPDATE_GLOBAL_PERMISSION_REASON,
   UPDATE_FOREIGN_DESTINATION_REASON,
 } from "../../shared/update-outcome.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 
 type UnsafeUpdateRecovery = Extract<
@@ -22,7 +23,7 @@ function resolveUnsafeUpdateRecoveryGuidance(
   reason?: UnsafeUpdateRecovery["reason"],
   env: NodeJS.ProcessEnv = process.env,
 ): string {
-  const triageCommand = formatCliCommand("openclaw triage", env);
+  const triageCommand = formatCliCommand(`${CLI_NAME} triage`, env);
   const guidance = `Run \`${triageCommand}\` on this machine to open a coding agent that can diagnose and repair the installation.`;
   if (reason === "state-migration-started") {
     return `${guidance} Update Doctor may have migrated state; keep the update installed and do not roll back code alone.`;
@@ -42,10 +43,10 @@ export function resolveUpdateResultNextAction(params: {
 }): string | undefined {
   const { result, env } = params;
   if (isUpdateGatewayReadinessPending(result)) {
-    return `The readiness observation ended without confirmation. Leave the Gateway starting and keep recovery backups; check current progress with \`${formatCliCommand("openclaw gateway status --deep", env)}\`.`;
+    return `The readiness observation ended without confirmation. Leave the Gateway starting and keep recovery backups; check current progress with \`${formatCliCommand(`${CLI_NAME} gateway status --deep`, env)}\`.`;
   }
   if (result.reason === "dirty") {
-    return `Local changes prevented this update before installation. Your checkout was preserved. Commit your changes and retry, or run \`${formatCliCommand("openclaw triage", env)}\` for help.`;
+    return `Local changes prevented this update before installation. Your checkout was preserved. Commit your changes and retry, or run \`${formatCliCommand(`${CLI_NAME} triage`, env)}\` for help.`;
   }
   if (
     result.status === "skipped" &&
@@ -56,18 +57,29 @@ export function resolveUpdateResultNextAction(params: {
   }
   if (result.status === "error") {
     if (
+      result.reason === "state-migrated-no-rollback" &&
+      result.steps.some((step) => step.name === "database rollback" && step.exitCode !== 0) &&
+      result.recovery?.serviceRestartSafe === true &&
+      result.recovery.service === "healthy"
+    ) {
+      const refusal =
+        result.rollbackOutcome?.reason ??
+        result.steps.findLast((step) => step.name === "database rollback")?.stderrTail;
+      return `Rollback refused: ${refusal ?? "restoring the backup would discard later writes"}. The Gateway is running on the preserved migrated state. Keep the recovery snapshots and run \`${formatCliCommand("paddy doctor", env)}\` to inspect the remaining repair.`;
+    }
+    if (
       result.reason === "update-failed" &&
       !result.recovery &&
       (result.failedStep?.name === "requested" ||
         result.failedStep?.name === "installation-inspection")
     ) {
-      return `Update stopped before staging. Retry the same update command. If the failure persists, run \`${formatCliCommand("openclaw triage", env)}\` to inspect the recorded failure.`;
+      return `Update stopped before staging. Retry the same update command. If the failure persists, run \`${formatCliCommand(`${CLI_NAME} triage`, env)}\` to inspect the recorded failure.`;
     }
     if (result.reason === UPDATE_ACTIVATION_TIMEOUT_REASON) {
       return formatUpdateActivationTimeoutGuidance((command) => formatCliCommand(command, env));
     }
     if (result.reason === "rollback-project-changed") {
-      return `Other global packages changed after staging; automatic rollback was refused to preserve them. The new installation was left unchanged. Check \`${formatCliCommand("openclaw gateway status --deep", env)}\` before restarting it. ${resolveUnsafeUpdateRecoveryGuidance(undefined, env)}`;
+      return `Other global packages changed after staging; automatic rollback was refused to preserve them. The new installation was left unchanged. Check \`${formatCliCommand(`${CLI_NAME} gateway status --deep`, env)}\` before restarting it. ${resolveUnsafeUpdateRecoveryGuidance(undefined, env)}`;
     }
     const reason =
       result.recovery?.serviceRestartSafe === false ? result.recovery.reason : undefined;
@@ -106,7 +118,7 @@ export function resolveUpdateResultNextAction(params: {
     // Record deployment-specific advice here so CLI output and later reports agree.
     // Keep the recovery constraints: an image change must not roll back migrated state.
     const deployment = containerPackageFailure
-      ? `Detected ${foreignDestination ? "a foreign npm destination" : "package update permission failure"} inside a container. Pull or build an OpenClaw image with the target version, then recreate or redeploy the container with the same state/config mounts. In-container package changes are not durable.`
+      ? `Detected ${foreignDestination ? "a foreign npm destination" : "package update permission failure"} inside a container. Pull or build a ${PRODUCT_NAME} image with the target version, then recreate or redeploy the container with the same state/config mounts. In-container package changes are not durable.`
       : "";
     return [
       detail,
@@ -120,13 +132,13 @@ export function resolveUpdateResultNextAction(params: {
   }
   const command = (value: string) => formatCliCommand(value, env);
   if (result.reason === "not-git-install") {
-    return `This OpenClaw install isn't a git checkout, and the package manager couldn't be detected. Update via your package manager, then run \`${command("openclaw doctor")}\` and \`${command("openclaw gateway restart")}\`. Examples: \`npm i -g openclaw@latest\` or \`pnpm add -g openclaw@latest\`.`;
+    return `This ${PRODUCT_NAME} install isn't a git checkout, and the package manager couldn't be detected. Update via your package manager, then run \`${command(`${CLI_NAME} doctor`)}\` and \`${command(`${CLI_NAME} gateway restart`)}\`. Examples: \`npm i -g openclaw@latest\` or \`pnpm add -g openclaw@latest\`.`;
   }
   if (result.status === "ok") {
     if (params.restart === false && result.postUpdate?.plugins?.changed) {
-      return `Plugins updated; Gateway restart skipped (--no-restart). Run \`${command("openclaw gateway restart")}\` to activate them in the running Gateway.`;
+      return `Plugins updated; Gateway restart skipped (--no-restart). Run \`${command(`${CLI_NAME} gateway restart`)}\` to activate them in the running Gateway.`;
     }
-    return `After verifying your history, preview recovery rollback retirement with ${command("openclaw update cleanup --dry-run")} for state ${params.environment?.stateDir ?? resolveStateDir(env)}. Keep the same state/config overrides.`;
+    return `After verifying your history, preview recovery rollback retirement with ${command(`${CLI_NAME} update cleanup --dry-run`)} for state ${params.environment?.stateDir ?? resolveStateDir(env)}. Keep the same state/config overrides.`;
   }
   return undefined;
 }

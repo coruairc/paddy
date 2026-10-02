@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { StartupMaintenanceRequiredError } from "../infra/startup-maintenance-required.js";
 
 export const LEGACY_SKILL_WORKSHOP_COLLECTION_REVIEWS_INDEX =
@@ -16,7 +17,7 @@ export class OpenClawStateDatabaseSchemaMigrationRequiredError extends StartupMa
   ) {
     super(
       kind,
-      `OpenClaw state database schema migration required (${kind}) at ${pathname}; run openclaw doctor --fix to migrate it.`,
+      `${PRODUCT_NAME} state database schema migration required (${kind}) at ${pathname}; run paddy doctor --fix to migrate it.`,
     );
     this.name = "OpenClawStateDatabaseSchemaMigrationRequiredError";
   }

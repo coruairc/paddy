@@ -12,6 +12,7 @@ import { createConfigIO, replaceConfigFile } from "../../config/config.js";
 import { LEGACY_IMPLICIT_AGENT_ID } from "../../routing/session-key.js";
 import { defaultRuntime } from "../../runtime.js";
 import { resolveUserPath, shortenHomePath } from "../../utils.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 
 const DEV_IDENTITY_NAME = "C3-PO";
 const DEV_IDENTITY_THEME = "protocol droid";
@@ -56,7 +57,7 @@ async function ensureDevWorkspace(dir: string) {
   const [agents, soul, identity, user] = await Promise.all([
     loadDevTemplate(
       "AGENTS.dev.md",
-      `# AGENTS.md - OpenClaw Dev Workspace\n\nDefault dev workspace for openclaw gateway --dev.\n`,
+      `# AGENTS.md - ${PRODUCT_NAME} Dev Workspace\n\nDefault dev workspace for ${CLI_NAME} gateway --dev.\n`,
     ),
     loadDevTemplate(
       "SOUL.dev.md",

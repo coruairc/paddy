@@ -78,6 +78,7 @@ export async function withModelsAccountsGateway<T>(
   const client = new GatewayClient({
     url: bootstrap.url,
     deviceAuthScope: bootstrap.deviceAuthScope,
+    ...(bootstrap.sshTunnel ? { sshTunnel: bootstrap.sshTunnel } : {}),
     token: bootstrap.auth.token,
     password: bootstrap.auth.password,
     edgeAuthHeaders,
@@ -85,7 +86,7 @@ export async function withModelsAccountsGateway<T>(
     preauthHandshakeTimeoutMs: bootstrap.preauthHandshakeTimeoutMs,
     requestTimeoutMs: timeoutMs,
     clientName: GATEWAY_CLIENT_NAMES.CLI,
-    clientDisplayName: "openclaw models accounts",
+    clientDisplayName: "paddy models accounts",
     mode: GATEWAY_CLIENT_MODES.CLI,
     role: "operator",
     scopes: access === "write" ? ["operator.read", "operator.write"] : ["operator.read"],
@@ -140,7 +141,7 @@ export async function withModelsAccountsGateway<T>(
             "Personal model accounts require a signed-in person with access to this Gateway.",
             "Use --url with its Tailscale Serve or trusted-proxy WSS address. Omit shared Gateway token/password credentials when using Tailscale identity.",
             "For proxy client sign-in, see https://docs.openclaw.ai/gateway/remote#gateway-behind-an-identity-aware-proxy. Browser sign-in and device pairing alone do not identify this CLI; ask an administrator if access is denied.",
-            "For shared or agent-local credentials instead, use `openclaw models auth login`.",
+            "For shared or agent-local credentials instead, use `paddy models auth login`.",
           ].join("\n"),
           { cause: error },
         );

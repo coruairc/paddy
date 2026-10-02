@@ -53,7 +53,7 @@ describe("AppSidebar agent roster", () => {
     patchSettings({ theme: "claw" });
     context.theme.refresh();
     await sidebar.updateComplete;
-    expect(header?.querySelector("img")?.getAttribute("src")).toBe("/favicon.svg");
+    expect(header?.querySelector("img")?.getAttribute("src")).toBe("/paddy-icon.jpg");
   });
 
   it.each([undefined, "Studio workspace", "   "])(
@@ -75,7 +75,7 @@ describe("AppSidebar agent roster", () => {
         const header = sidebar.querySelector(".sidebar-workspace-header");
         expect(header?.textContent).toContain(name?.trim() || "OpenClaw");
         expect(header?.querySelector(".sidebar-agent-card__avatar")).toBeNull();
-        expect(header?.querySelector("img")?.getAttribute("src")).toBe("/favicon.svg");
+        expect(header?.querySelector("img")?.getAttribute("src")).toBe("/paddy-icon.jpg");
         expect(sidebar.querySelector("openclaw-sidebar-agent-card")).toBeNull();
         sidebar.querySelector<HTMLButtonElement>(".sidebar-workspace-header__main")?.click();
         await vi.waitFor(() => expect(sidebar.querySelector(".sidebar-agent-menu")).not.toBeNull());
@@ -242,9 +242,7 @@ describe("AppSidebar agent roster", () => {
       if (!group) {
         throw new Error(`Missing session group for ${id}`);
       }
-      await vi.waitFor(() =>
-        expect(sessionKeys(group)).toEqual([`agent:${id}:pinned`, `agent:${id}:recent`]),
-      );
+      await vi.waitFor(() => expect(sessionKeys(group)).toEqual([`agent:${id}:recent`]));
       expect(group?.querySelector(`a[href="/new?agent=${id}"]`)).not.toBeNull();
       expect(group?.querySelector(".sidebar-agent-roster__row")?.getAttribute("href")).toBe(
         `/chat/${id}`,
@@ -558,7 +556,10 @@ describe("AppSidebar agent roster", () => {
     await vi.waitFor(() => expect(agentIds(sidebar)).toHaveLength(3));
     expect(loadSettings().sidebarAgentsMode).toBe("roster");
     sidebar.querySelector<HTMLButtonElement>('[data-agent-collapse="working"]')?.click();
-    await vi.waitFor(() => expect(sessionKeys(sidebar)).not.toContain("agent:working:pinned"));
+    await vi.waitFor(() => expect(sessionKeys(sidebar)).not.toContain("agent:working:recent"));
+    expect(
+      sidebar.querySelector('.sidebar-nav [data-session-key="agent:working:pinned"]'),
+    ).not.toBeNull();
     expect(loadSettings().sidebarCollapsedAgentIds).toEqual(["working"]);
     provider.remove();
     const remounted = await mountRoster();
@@ -570,6 +571,9 @@ describe("AppSidebar agent roster", () => {
         ?.getAttribute("aria-expanded"),
     ).toBe("false");
     expect(sessionKeys(remounted.sidebar)).not.toContain("agent:working:recent");
+    expect(
+      remounted.sidebar.querySelector('.sidebar-nav [data-session-key="agent:working:pinned"]'),
+    ).not.toBeNull();
     expect(sessionKeys(remounted.sidebar)).toContain("agent:recent:recent");
     await toggleRoster(remounted.sidebar);
     await vi.waitFor(() =>
@@ -591,6 +595,7 @@ describe("AppSidebar agent roster", () => {
         "agent:working:pinned",
       ]),
     );
+    expect(sidebar.querySelector(".sidebar-session-empty-hint")).toBeNull();
     await selectFilter(sidebar, "status:archived");
     await vi.waitFor(() =>
       expect(sessionKeys(sidebar)).toEqual([

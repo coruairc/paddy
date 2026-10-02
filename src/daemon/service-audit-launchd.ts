@@ -64,7 +64,7 @@ export async function auditLaunchdDefinition(
     issues.push({
       code: "launchd-env-file-argument",
       message:
-        "LaunchAgent environment-file argument is missing or invalid. Run openclaw gateway install --force to repair the service.",
+        "LaunchAgent environment-file argument is missing or invalid. Run paddy gateway install --force to repair the service.",
       detail: sourcePath,
       level: "recommended",
     });

@@ -204,22 +204,13 @@ function resolveUnimportedAgentCodexAuthMessage(params: {
     return undefined;
   }
   const targetAgentId = params.agentId?.trim() || "<agent-id>";
-  return `A Codex auth file exists at ${authPath}, but agent-scoped Codex runs use OpenClaw's auth store and do not read that file. Preview only that credential import with \`openclaw migrate plan codex --from <codex-home> --agent ${targetAgentId} --include-secrets --item auth:openai\`, then run \`openclaw migrate apply codex --from <codex-home> --agent ${targetAgentId} --include-secrets --item auth:openai --yes\`. If the plan finds no credentials, remove the stale auth file.`;
+  return `A Codex auth file exists at ${authPath}, but agent-scoped Codex runs use Paddy's auth store and do not read that file. Preview only that credential import with \`paddy migrate plan codex --from <codex-home> --agent ${targetAgentId} --include-secrets --item auth:openai\`, then run \`paddy migrate apply codex --from <codex-home> --agent ${targetAgentId} --include-secrets --item auth:openai --yes\`. If the plan finds no credentials, remove the stale auth file.`;
 }
 
 function resolveCodexAppServerAuthProfile(params: CodexAppServerAuthProfileLookup) {
   const agentDir = params.agentDir?.trim() || resolveDefaultAgentDir(params.config ?? {});
-  const store = resolveCodexAppServerAuthProfileStore({
-    agentDir,
-    authProfileId: params.authProfileId,
-    authProfileStore: params.authProfileStore,
-    config: params.config,
-  });
-  const profileId = resolveCodexAppServerAuthProfileId({
-    authProfileId: params.authProfileId,
-    store,
-    config: params.config,
-  });
+  const store = resolveCodexAppServerAuthProfileStore({ ...params, agentDir });
+  const profileId = resolveCodexAppServerAuthProfileId({ ...params, store });
   if (!profileId) {
     return undefined;
   }
@@ -375,10 +366,8 @@ export async function resolveCodexAppServerPreparedAuthHandoff(params: {
   }
 
   const snapshot = await resolveCodexAppServerPreparedAuthProfileSnapshot({
+    ...params,
     authProfileId,
-    authProfileStore: params.authProfileStore,
-    agentDir: params.agentDir,
-    config: params.config,
   });
   if (!snapshot) {
     throw createCodexAppServerAuthError(
@@ -548,7 +537,7 @@ async function reconcileCodexComputerUseStartArtifactsOnce(params: {
     computerUseConfig.enabled && computerUseConfig.autoInstall && ownsIsolatedCodexHome;
   const provisioningAgentDir = shouldProvisionComputerUse ? params.agentDir : undefined;
   if (shouldProvisionComputerUse && !provisioningAgentDir) {
-    throw new Error("Managed Codex Computer Use requires an OpenClaw agent directory");
+    throw new Error("Managed Codex Computer Use requires a Paddy agent directory");
   }
   if (provisioningAgentDir) {
     await ensureOwnedCodexHome(codexHome, provisioningAgentDir);
@@ -732,7 +721,7 @@ export async function applyCodexAppServerAuthProfile(params: {
           });
   if (params.authRequirement === "subscription" && loginParams?.type !== "chatgptAuthTokens") {
     throw createCodexAppServerAuthError(
-      "Codex subscription auth profile could not produce login credentials. Sign in with `openclaw models auth login --provider openai`, select that profile, then retry.",
+      "Codex subscription auth profile could not produce login credentials. Sign in with `paddy models auth login --provider openai`, select that profile, then retry.",
     );
   }
   if (
@@ -788,14 +777,14 @@ async function assertNativeCodexAccountMatchesRoute(
   if (authRequirement === "subscription") {
     if (accountType !== "chatgpt") {
       throw createCodexAppServerAuthError(
-        'Codex subscription route requires ChatGPT auth in the native Codex home. Run `codex login` for that home, or use appServer.homeScope="agent" with an OpenClaw OAuth profile, then retry.',
+        'Codex subscription route requires ChatGPT auth in the native Codex home. Run `codex login` for that home, or use appServer.homeScope="agent" with a Paddy OAuth profile, then retry.',
       );
     }
     return;
   }
   if (accountType === "chatgpt") {
     throw createCodexAppServerAuthError(
-      'Codex Platform route requires an API-key account, but the native Codex home is signed in with a ChatGPT subscription. Sign that home in with `codex login --with-api-key`, or set appServer.homeScope="agent" so OpenClaw can inject its own key.',
+      'Codex Platform route requires an API-key account, but the native Codex home is signed in with a ChatGPT subscription. Sign that home in with `codex login --with-api-key`, or set appServer.homeScope="agent" so Paddy can inject its own key.',
     );
   }
 }
@@ -822,11 +811,7 @@ export async function refreshCodexAppServerAuthTokens(params: {
   }
   if (previousAccountId) {
     const store = resolveCodexAppServerAuthProfileStore(params);
-    const profileId = resolveCodexAppServerAuthProfileId({
-      authProfileId: params.authProfileId,
-      store,
-      config: params.config,
-    });
+    const profileId = resolveCodexAppServerAuthProfileId({ ...params, store });
     const credential = profileId ? store.profiles[profileId] : undefined;
     const selectedAccountId = credential
       ? (resolveExplicitChatgptAccountId(credential) ??
@@ -846,7 +831,7 @@ export async function refreshCodexAppServerAuthTokens(params: {
   });
   if (!loginParams || loginParams.type !== "chatgptAuthTokens") {
     throw new Error(
-      "Codex app-server ChatGPT token refresh requires an OAuth auth profile. Sign in with `openclaw models auth login --provider openai`, select that profile, then retry.",
+      "Codex app-server ChatGPT token refresh requires an OAuth auth profile. Sign in with `paddy models auth login --provider openai`, select that profile, then retry.",
     );
   }
   if (
@@ -873,17 +858,8 @@ async function resolveCodexAppServerAuthProfileLoginParamsInternal(params: {
   forceOAuthRefresh?: boolean;
   config?: AuthProfileOrderConfig;
 }): Promise<CodexLoginAccountParams | undefined> {
-  const store = resolveCodexAppServerAuthProfileStore({
-    agentDir: params.agentDir,
-    authProfileId: params.authProfileId,
-    authProfileStore: params.authProfileStore,
-    config: params.config,
-  });
-  const profileId = resolveCodexAppServerAuthProfileId({
-    authProfileId: params.authProfileId,
-    store,
-    config: params.config,
-  });
+  const store = resolveCodexAppServerAuthProfileStore(params);
+  const profileId = resolveCodexAppServerAuthProfileId({ ...params, store });
   if (!profileId) {
     return undefined;
   }
@@ -895,7 +871,7 @@ async function resolveCodexAppServerAuthProfileLoginParamsInternal(params: {
   }
   if (!isCodexAppServerAuthProvider(credential.provider)) {
     throw new CodexAppServerAuthProfileUnavailableError(
-      `Codex app-server auth profile "${profileId}" must use the canonical OpenAI auth provider; run "openclaw doctor --fix" to migrate legacy provider IDs.`,
+      `Codex app-server auth profile "${profileId}" must use the canonical OpenAI auth provider; run "paddy doctor --fix" to migrate legacy provider IDs.`,
     );
   }
   const loginParams = await resolveLoginParamsForCredential(profileId, credential, {
@@ -975,9 +951,6 @@ async function resolveLoginParamsForCredential(
       ? { type: "apiKey", apiKey: value }
       : buildChatgptAuthTokensParams(profileId, credential, value);
   }
-  if (credential.type !== "oauth") {
-    return undefined;
-  }
   const resolvedCredential = await resolveOAuthCredentialForCodexAppServer(profileId, credential, {
     agentDir: params.agentDir,
     store: params.store,
@@ -1029,7 +1002,7 @@ async function resolveOAuthCredentialForCodexAppServer(
       !isCodexAppServerAuthProvider(persistedCredential.provider))
   ) {
     throw new CodexAppServerAuthProfileUnavailableError(
-      `Codex app-server auth profile "${profileId}" is no longer an OpenAI OAuth credential in its persisted OpenClaw store. Run "openclaw doctor" to inspect credential ownership, or select an existing OpenAI profile.`,
+      `Codex app-server auth profile "${profileId}" is no longer an OpenAI OAuth credential in its persisted Paddy store. Run "paddy doctor" to inspect credential ownership, or select an existing OpenAI profile.`,
     );
   }
   const store = useScopedCredential
@@ -1093,7 +1066,7 @@ async function resolveOAuthCredentialForCodexAppServer(
     });
     if (!refreshedRuntimeCredential?.access?.trim()) {
       throw new Error(
-        `Codex app-server auth profile "${profileId}" could not refresh. Sign in again with OpenClaw, then retry.`,
+        `Codex app-server auth profile "${profileId}" could not refresh. Sign in again with Paddy, then retry.`,
       );
     }
     assertCodexOAuthRefreshWorkspace(profileId, refreshedRuntimeCredential, expectedAccountId);
@@ -1122,7 +1095,7 @@ async function resolveOAuthCredentialForCodexAppServer(
     !resolved.apiKey.trim()
   ) {
     throw new CodexAppServerAuthProfileUnavailableError(
-      `Codex app-server auth profile "${profileId}" could not resolve usable OAuth credentials from its OpenClaw credential store. Run "openclaw doctor" to inspect credential ownership, or select an existing OpenAI profile.`,
+      `Codex app-server auth profile "${profileId}" could not resolve usable OAuth credentials from its Paddy credential store. Run "paddy doctor" to inspect credential ownership, or select an existing OpenAI profile.`,
     );
   }
   const candidate = { ...resolved.credential, access: resolved.apiKey };
@@ -1218,7 +1191,7 @@ async function resolveScopedOAuthCredential(params: {
     const refreshed = await refreshOAuthCredentialForRuntime({ credential, cfg: params.config });
     if (!refreshed?.access?.trim()) {
       throw new Error(
-        `Codex app-server auth profile "${params.profileId}" could not refresh. Sign in again with OpenClaw, then retry.`,
+        `Codex app-server auth profile "${params.profileId}" could not refresh. Sign in again with Paddy, then retry.`,
       );
     }
     assertCodexOAuthRefreshWorkspace(params.profileId, refreshed, params.expectedAccountId);
@@ -1271,10 +1244,6 @@ function shouldClearOpenAiApiKeyForCodexAuthProfile(params: {
   const credential = profileId
     ? params.store.profiles[profileId]
     : params.store.profiles[OPENAI_CODEX_DEFAULT_PROFILE_ID];
-  return isCodexSubscriptionCredential(credential);
-}
-
-function isCodexSubscriptionCredential(credential: AuthProfileCredential | undefined): boolean {
   if (!credential || !isCodexAppServerAuthProvider(credential.provider)) {
     return false;
   }

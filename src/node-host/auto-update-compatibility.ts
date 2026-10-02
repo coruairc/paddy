@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { asNullableRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeNullableString } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { tryReadJson } from "../infra/json-files.js";
 import { openNodeSqliteDatabase } from "../infra/node-sqlite.js";
@@ -22,8 +23,7 @@ import {
 import { OPENCLAW_STATE_SCHEMA_VERSION } from "../state/openclaw-state-db-contract.js";
 import { resolveOpenClawStateSqlitePath } from "../state/openclaw-state-db.paths.js";
 
-const MANUAL_UPDATE_GUIDANCE =
-  "Update OpenClaw manually with openclaw update, then restart the node.";
+const MANUAL_UPDATE_GUIDANCE = `Update ${PRODUCT_NAME} manually with paddy update, then restart the node.`;
 
 export function assertNodeRuntimeSchemaVersions(
   schemaVersions: OpenClawSchemaVersions | undefined,
@@ -50,7 +50,7 @@ export async function readNodeRuntimeUpdateManifest(packageRoot: string): Promis
   );
   const version = normalizeNullableString(manifest?.version);
   if (manifest?.name !== "openclaw" || !version) {
-    throw new Error("Node auto-update candidate has no valid OpenClaw package manifest.");
+    throw new Error(`Node auto-update candidate has no valid ${PRODUCT_NAME} package manifest.`);
   }
   const schemaVersions = parsePackageOpenClawSchemaVersions(manifest);
   assertNodeRuntimeSchemaVersions(schemaVersions);
@@ -89,7 +89,12 @@ export async function assertNodeRuntimeUpdateCompatible(params: {
 }): Promise<void> {
   params.signal?.throwIfAborted();
   const { schemaVersions } = await readNodeRuntimeUpdateManifest(params.packageRoot);
-  const nodeRuntimeFailure = await checkGitCandidateNodeRuntime(params.packageRoot);
+  // A Bun host runs the candidate with the same Bun, so Node engines describe a
+  // runtime that is not involved; the candidate's runtime guard and the
+  // launcher's readiness fallback own that compatibility check.
+  const nodeRuntimeFailure = process.versions.bun
+    ? null
+    : await checkGitCandidateNodeRuntime(params.packageRoot);
   if (nodeRuntimeFailure) {
     throw new Error(
       nodeRuntimeFailure.stderrTail ?? "Node runtime is incompatible with the update.",

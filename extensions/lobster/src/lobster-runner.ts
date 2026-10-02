@@ -1,11 +1,13 @@
-// Lobster plugin module implements lobster runner behavior.
 import { stat } from "node:fs/promises";
 import path from "node:path";
 import { Readable, Writable } from "node:stream";
-import { toErrorObject as toLintErrorObject } from "openclaw/plugin-sdk/error-runtime";
+import {
+  extractErrorCode,
+  toErrorObject as toLintErrorObject,
+} from "openclaw/plugin-sdk/error-runtime";
 import { isPathInside } from "openclaw/plugin-sdk/file-access-runtime";
 
-export type LobsterEnvelope =
+type LobsterEnvelope =
   | {
       ok: true;
       status: "ok" | "needs_approval" | "cancelled";
@@ -120,7 +122,7 @@ function normalizeEnvelope(
     throw new Error(envelope.error?.message ?? "lobster runtime failed");
   }
   if (envelope.status === "needs_input") {
-    throw new Error("Lobster input requests are not supported by the OpenClaw Lobster tool yet");
+    throw new Error("Lobster input requests are not supported by the Paddy Lobster tool yet");
   }
   const normalized: Extract<LobsterEnvelope, { ok: true }> = {
     ok: true,
@@ -146,15 +148,6 @@ function normalizeEnvelope(
   return normalized;
 }
 
-function isMissingPathError(error: unknown) {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: unknown }).code === "ENOENT"
-  );
-}
-
 async function detectWorkflowFile(candidate: string, cwd: string) {
   const trimmed = candidate.trim();
   if (!trimmed || trimmed.includes("|") || !workflowExts.has(path.extname(trimmed).toLowerCase())) {
@@ -167,7 +160,7 @@ async function detectWorkflowFile(candidate: string, cwd: string) {
     }
     return resolved;
   } catch (error) {
-    if (/\s/.test(trimmed) && isMissingPathError(error)) {
+    if (/\s/.test(trimmed) && extractErrorCode(error) === "ENOENT") {
       return null;
     }
     throw error;

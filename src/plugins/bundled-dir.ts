@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizeOptionalLowercaseString } from "@openclaw/normalization-core/string-coerce";
 import { uniqueStrings } from "@openclaw/normalization-core/string-normalization";
+import { PRODUCT_NAME } from "../brand.js";
 import { isTruthyEnvValue, isVitestRuntimeEnv } from "../infra/env.js";
 import { resolveOpenClawPackageRootSync } from "../infra/openclaw-root.js";
 import { isPathInside } from "../infra/path-guards.js";
@@ -129,7 +130,7 @@ export function resolveSourceCheckoutDependencyDiagnostic(
     return {
       source: packageRoot,
       message:
-        "OpenClaw source checkout detected without pnpm workspace dependencies; run `pnpm install` from the repo root so bundled plugins can load package-local dependencies.",
+        `${PRODUCT_NAME} source checkout detected without pnpm workspace dependencies; run \`pnpm install\` from the repo root so bundled plugins can load package-local dependencies.`,
     };
   }
   return null;

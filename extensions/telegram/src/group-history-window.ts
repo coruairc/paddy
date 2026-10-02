@@ -14,7 +14,7 @@ export function buildTelegramSelfSenderName(
     configuredName?.trim() ||
     telegramIdentity?.first_name?.trim() ||
     telegramIdentity?.username?.trim() ||
-    "OpenClaw";
+    "Paddy";
   return `${name}${TELEGRAM_SELF_SENDER_SUFFIX}`;
 }
 

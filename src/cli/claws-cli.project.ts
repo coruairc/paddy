@@ -25,6 +25,7 @@ import {
   logClawAgentConfiguration,
   logClawExperimentalWarning,
 } from "./claws-cli-output.js";
+import { PRODUCT_NAME } from "./cli-name.js";
 import type {
   ClawsBuildOptions,
   ClawsCreateOptions,
@@ -89,7 +90,7 @@ async function prepareDev(projectPath: string, opts: ClawsDevOptions): Promise<P
   if (!configSnapshot.valid) {
     throw new ClawProjectError(
       "config_unavailable",
-      "OpenClaw config is invalid; fix it before previewing a Claw project.",
+      `${PRODUCT_NAME} config is invalid; fix it before previewing a Claw project.`,
     );
   }
   const config = configSnapshot.resolved;

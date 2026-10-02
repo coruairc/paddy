@@ -15,6 +15,7 @@ import { formatErrorMessage as errorMessage } from "../../../infra/errors.js";
 import { resolveOpenClawStateSqlitePath } from "../../../state/openclaw-state-db.paths.js";
 import { shortenHomePath } from "../../../utils.js";
 import type { DoctorPrompter, DoctorOptions } from "../../doctor-prompter.js";
+import { countLabel as pluralize } from "../../doctor-state-integrity-format.js";
 import {
   applyLegacyCronStoreRepair,
   loadLegacyCronRepairState,
@@ -38,10 +39,6 @@ export {
   collectLegacyWhatsAppCrontabHealthWarning,
   noteLegacyWhatsAppCrontabHealthCheck,
 } from "./warnings.js";
-
-function pluralize(count: number, noun: string) {
-  return `${count} ${noun}${count === 1 ? "" : "s"}`;
-}
 
 function readLegacyCronStorePath(cfg: OpenClawConfig): string | undefined {
   return (cfg.cron as (NonNullable<OpenClawConfig["cron"]> & { store?: string }) | undefined)
@@ -149,7 +146,7 @@ function legacyCronStoreFinding(params: {
     requirement: params.requirement,
     fixHint:
       params.fixHint ??
-      `Run ${formatCliCommand("openclaw doctor --fix")} to normalize legacy cron storage.`,
+      `Run ${formatCliCommand("paddy doctor --fix")} to normalize legacy cron storage.`,
   };
 }
 
@@ -168,7 +165,7 @@ export async function collectLegacyCronStoreHealthFindings(params: {
         path: storePath,
         requirement: "cron-store-readable",
         fixHint: [
-          `Fix the file's permissions or contents and re-run ${formatCliCommand("openclaw doctor")}.`,
+          `Fix the file's permissions or contents and re-run ${formatCliCommand("paddy doctor")}.`,
           "Later health checks will continue.",
           `Details: ${errorMessage(err)}`,
         ].join(" "),
@@ -310,7 +307,7 @@ export async function collectLegacyCronStoreHealthFindings(params: {
           message: `${pluralize(names.length, "tool-bearing automation")} ${description}.`,
           path: sqliteStorePath,
           requirement,
-          fixHint: `Review with ${formatCliCommand("openclaw automations list --all")} and reauthorize with ${formatCliCommand("openclaw automations edit <id> --tools <tool,...>")}.`,
+          fixHint: `Review with ${formatCliCommand("paddy automations list --all")} and reauthorize with ${formatCliCommand("paddy automations edit <id> --tools <tool,...>")}.`,
         }),
       );
     }
@@ -323,7 +320,7 @@ export async function collectLegacyCronStoreHealthFindings(params: {
         path: sqliteStorePath,
         requirement: "legacy-gateway-exec-recreation",
         fixHint:
-          "Review the affected jobs with `openclaw automations list --all`, then recreate each one from a fresh authenticated creator turn or explicitly reauthorize its complete tool cap from a trusted operator shell.",
+          "Review the affected jobs with `paddy automations list --all`, then recreate each one from a fresh authenticated creator turn or explicitly reauthorize its complete tool cap from a trusted operator shell.",
       }),
     );
   }
@@ -368,7 +365,7 @@ export async function maybeRepairLegacyCronStore(params: {
       [
         `Unable to read cron job store at ${shortenHomePath(storePath)}.`,
         `- ${reason}`,
-        `Fix the file's permissions or contents and re-run ${formatCliCommand("openclaw doctor")}; later health checks will continue.`,
+        `Fix the file's permissions or contents and re-run ${formatCliCommand("paddy doctor")}; later health checks will continue.`,
       ].join("\n"),
       "Cron",
     );
@@ -414,6 +411,23 @@ export async function maybeRepairLegacyCronStore(params: {
       "Cron",
     );
   }
+  const storagePreviewLines: string[] = [];
+  if (legacyRunLogDetected) {
+    storagePreviewLines.push("- legacy JSON cron run logs will be imported into SQLite");
+  }
+  if (legacyQuarantine) {
+    storagePreviewLines.push("- legacy JSON cron quarantine will be imported into SQLite");
+  }
+  if (invalidConfigRows.length > 0) {
+    storagePreviewLines.push(
+      `- ${pluralize(invalidConfigRows.length, "malformed cron row")} will be quarantined in SQLite`,
+    );
+  }
+  if (revalidatableQuarantineCount > 0) {
+    storagePreviewLines.push(
+      `- ${pluralize(revalidatableQuarantineCount, "quarantined automation")} will be revalidated and restored only if current validation passes`,
+    );
+  }
   if (rawJobs.length === 0) {
     if (
       !legacyStoreDetected &&
@@ -428,22 +442,7 @@ export async function maybeRepairLegacyCronStore(params: {
     if (legacyStoreDetected) {
       previewLines.push("- legacy JSON cron store will be archived after SQLite migration");
     }
-    if (legacyRunLogDetected) {
-      previewLines.push("- legacy JSON cron run logs will be imported into SQLite");
-    }
-    if (legacyQuarantine) {
-      previewLines.push("- legacy JSON cron quarantine will be imported into SQLite");
-    }
-    if (invalidConfigRows.length > 0) {
-      previewLines.push(
-        `- ${pluralize(invalidConfigRows.length, "malformed cron row")} will be quarantined in SQLite`,
-      );
-    }
-    if (revalidatableQuarantineCount > 0) {
-      previewLines.push(
-        `- ${pluralize(revalidatableQuarantineCount, "quarantined automation")} will be revalidated and restored only if current validation passes`,
-      );
-    }
+    previewLines.push(...storagePreviewLines);
     const noteHeading =
       legacyStoreDetected || legacyRunLogDetected || legacyQuarantine
         ? `Legacy cron storage detected at ${shortenHomePath(storePath)}.`
@@ -452,7 +451,7 @@ export async function maybeRepairLegacyCronStore(params: {
       [
         noteHeading,
         ...previewLines,
-        `Repair with ${formatCliCommand("openclaw doctor --fix")} to finish the migration.`,
+        `Repair with ${formatCliCommand("paddy doctor --fix")} to finish the migration.`,
       ].join("\n"),
       "Cron",
     );
@@ -485,7 +484,7 @@ export async function maybeRepairLegacyCronStore(params: {
       [
         `${pluralize(inFlightCount, "automation")} ${inFlightCount === 1 ? "is" : "are"} still marked in-flight (\`state.runningAtMs\` is set).`,
         `- If no gateway is currently executing ${subject}, the marker is left over from an interrupted run; the gateway marks such runs interrupted the next time it starts.`,
-        `- Review with ${formatCliCommand("openclaw automations list --all")} or ${formatCliCommand("openclaw automations show <id>")}.`,
+        `- Review with ${formatCliCommand("paddy automations list --all")} or ${formatCliCommand("paddy automations show <id>")}.`,
       ].join("\n"),
       "Cron",
     );
@@ -497,7 +496,7 @@ export async function maybeRepairLegacyCronStore(params: {
       [
         `${pluralize(chronicFailureCount, "automation")} ${chronicFailureCount === 1 ? "has" : "have"} failed ${CHRONIC_FAILURE_MIN_CONSECUTIVE_ERRORS}+ runs in a row (\`state.consecutiveErrors\`), so the scheduler only re-fires ${chronicFailureCount === 1 ? "it" : "them"} on error backoff.`,
         `- The count resets on the next successful run and also counts runs interrupted by a gateway restart, so a lasting streak means repeated task failures, repeatedly interrupted runs, or a mix. Failure alerts are opt-in, so this may be the only notice.`,
-        `- Review with ${formatCliCommand("openclaw automations list")} or ${formatCliCommand("openclaw automations show <id>")}.`,
+        `- Review with ${formatCliCommand("paddy automations list")} or ${formatCliCommand("paddy automations show <id>")}.`,
       ].join("\n"),
       "Cron",
     );
@@ -510,7 +509,7 @@ export async function maybeRepairLegacyCronStore(params: {
         `${pluralize(autoDisabledJobs.length, "automation")} ${autoDisabledJobs.length === 1 ? "is" : "are"} auto-disabled after repeated failures.`,
         ...autoDisabledJobs.map(
           (job) =>
-            `- ${job.name} (${job.id}): recorded reason \`${job.reason}\` after ${job.consecutiveErrors} consecutive errors. Fix the cause, then re-enable with ${formatCliCommand(`openclaw automations enable ${job.id}`)}.`,
+            `- ${job.name} (${job.id}): recorded reason \`${job.reason}\` after ${job.consecutiveErrors} consecutive errors. Fix the cause, then re-enable with ${formatCliCommand(`paddy automations enable ${job.id}`)}.`,
         ),
       ].join("\n"),
       "Cron",
@@ -606,22 +605,7 @@ export async function maybeRepairLegacyCronStore(params: {
         : "- legacy JSON cron store will be archived after SQLite migration",
     );
   }
-  if (legacyRunLogDetected) {
-    previewLines.push("- legacy JSON cron run logs will be imported into SQLite");
-  }
-  if (legacyQuarantine) {
-    previewLines.push("- legacy JSON cron quarantine will be imported into SQLite");
-  }
-  if (invalidConfigRows.length > 0) {
-    previewLines.push(
-      `- ${pluralize(invalidConfigRows.length, "malformed cron row")} will be quarantined in SQLite`,
-    );
-  }
-  if (revalidatableQuarantineCount > 0) {
-    previewLines.push(
-      `- ${pluralize(revalidatableQuarantineCount, "quarantined automation")} will be revalidated and restored only if current validation passes`,
-    );
-  }
+  previewLines.push(...storagePreviewLines);
   if (notifyCount > 0) {
     previewLines.push(
       `- ${pluralize(notifyCount, "job")} still uses legacy \`notify: true\` webhook fallback`,
@@ -639,7 +623,7 @@ export async function maybeRepairLegacyCronStore(params: {
     [
       noteHeading,
       ...previewLines,
-      `Repair with ${formatCliCommand("openclaw doctor --fix")} to normalize the store before the next scheduler run.`,
+      `Repair with ${formatCliCommand("paddy doctor --fix")} to normalize the store before the next scheduler run.`,
     ].join("\n"),
     "Cron",
   );

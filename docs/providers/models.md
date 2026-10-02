@@ -1,5 +1,5 @@
 ---
-summary: "Model providers (LLMs) supported by OpenClaw"
+summary: "Model providers (LLMs) supported by Paddy"
 read_when:
   - You want to choose a model provider
   - You want quick setup examples for LLM auth + model selection
@@ -10,7 +10,7 @@ Pick a provider, authenticate, then set the default model as `provider/model`.
 
 ## Quick start (two steps)
 
-1. Authenticate with the provider (usually via `openclaw onboard`).
+1. Authenticate with the provider (usually via `paddy onboard`).
 2. Set the default model:
 
 ```json5
@@ -33,6 +33,7 @@ Pick a provider, authenticate, then set the default model as `provider/model`.
 - [DeepInfra](/providers/deepinfra)
 - [fal](/providers/fal)
 - [Fireworks](/providers/fireworks)
+- [Kie AI](/providers/kie)
 - [MiniMax](/providers/minimax)
 - [Mistral](/providers/mistral)
 - [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
@@ -59,7 +60,7 @@ For the full provider catalog and advanced configuration, see
 ## Additional provider variants
 
 - `anthropic-vertex` - install `@openclaw/anthropic-vertex-provider` for implicit Anthropic on Google Vertex support. That support applies when Vertex credentials are available. There is no separate onboarding auth choice.
-- `copilot-proxy` - local VS Code Copilot Proxy bridge. Use `openclaw onboard --auth-choice copilot-proxy`.
+- `copilot-proxy` - local VS Code Copilot Proxy bridge. Use `paddy onboard --auth-choice copilot-proxy`.
 - `google-gemini-cli` - optional explicit runtime for canonical `google/*` models. It requires a local `gemini` install and a supported Google AI Studio API-key profile. New Gemini CLI or Antigravity OAuth setup is not offered.
 
 ## Related

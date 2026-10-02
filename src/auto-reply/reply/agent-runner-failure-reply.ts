@@ -38,6 +38,7 @@ import { isAgentHarnessPreflightError } from "../../agents/harness/errors.js";
 import { isProviderAuthError } from "../../agents/model-auth-runtime-shared.js";
 import { buildProviderAuthRecoveryHint } from "../../agents/provider-auth-recovery-hint.js";
 import type { ReplyCompletion, ReplyExpectation } from "../../agents/reply-completion.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   collectErrorGraphCandidates,
   extractErrorCode,
@@ -159,10 +160,10 @@ function buildCodexAppServerFailureText(message: string): string | null {
     return "⚠️ This Codex session changed before your message could run. Please send it again.";
   }
   if (CODEX_APP_SERVER_CLIENT_CLOSED_BEFORE_REPLY_RE.test(normalizedMessage)) {
-    return "⚠️ Codex app-server connection closed before this turn finished. OpenClaw retried once when the stdio turn was still replay-safe; please try again if this keeps happening.";
+    return `⚠️ Codex app-server connection closed before this turn finished. ${PRODUCT_NAME} retried once when the stdio turn was still replay-safe; please try again if this keeps happening.`;
   }
   if (CODEX_APP_SERVER_TURN_COMPLETION_IDLE_TIMEOUT_RE.test(normalizedMessage)) {
-    return "⚠️ Codex app-server stopped before confirming turn completion. OpenClaw did not replay the turn automatically because it may still be active; try again, or use /new if the session stays stuck.";
+    return `⚠️ Codex app-server stopped before confirming turn completion. ${PRODUCT_NAME} did not replay the turn automatically because it may still be active; try again, or use /new if the session stays stuck.`;
   }
   return null;
 }

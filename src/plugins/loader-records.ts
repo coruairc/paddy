@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { collectErrorGraphCandidates, extractErrorCode, readErrorCause } from "../infra/errors.js";
 import { parseBooleanValue } from "../utils/boolean.js";
 import { VERSION } from "../version.js";
@@ -178,7 +179,7 @@ function resolvePluginImportHint(
   try {
     const text = String(node).replaceAll("\\", "/");
     const seam =
-      /(?:The requested module ['"]openclaw\/|Package subpath ['"]\.\/)(plugin-sdk\/[\w./-]{1,160})['"] (?:does not provide an export named|is not defined by ["']exports["'] in .*\/openclaw\/package\.json)/.exec(
+      /(?:The requested module ['"]paddy\/|Package subpath ['"]\.\/)(plugin-sdk\/[\w./-]{1,160})['"] (?:does not provide an export named|is not defined by ["']exports["'] in .*\/paddy\/package\.json)/.exec(
         text,
       )?.[1];
     if (seam) {
@@ -195,12 +196,12 @@ function resolvePluginImportHint(
       };
       // Plugin ids need not be shell-safe; keep unsafe ids out of copy-paste commands.
       const repair = sdkCompatibility.nestedSdk
-        ? "this plugin bundles an incompatible OpenClaw SDK; update it or contact its author"
+        ? `this plugin bundles an incompatible ${PRODUCT_NAME} SDK; update it or contact its author`
         : /^[a-z0-9_][a-z0-9_.-]*$/i.test(record.id)
-          ? `run \`openclaw plugins update ${record.id}\``
+          ? `run \`paddy plugins update ${record.id}\``
           : "update this plugin or contact its author";
       return {
-        hint: `Plugin ${record.id} cannot import ${sdkCompatibility.seam} (built with OpenClaw ${record.builtWithOpenClawVersion ?? "unknown"}; running core ${VERSION}); ${repair}`,
+        hint: `Plugin ${record.id} cannot import ${sdkCompatibility.seam} (built with ${PRODUCT_NAME} ${record.builtWithOpenClawVersion ?? "unknown"}; running core ${VERSION}); ${repair}`,
         sdkCompatibility,
       };
     }
@@ -342,18 +343,20 @@ export function recordBundleDiagnostics(params: {
   registry: PluginRegistry;
   inspectMcp: typeof import("./bundle-mcp.js").inspectBundleMcpRuntimeSupport;
 }): void {
+  const warn = (message: string) =>
+    params.registry.diagnostics.push({
+      level: "warn",
+      pluginId: params.record.id,
+      source: params.record.source,
+      message,
+    });
   const unsupportedCapabilities = (params.record.bundleCapabilities ?? []).filter(
     (capability) =>
       !params.record.bundleFormat ||
       !isBundleCapabilitySupported(params.record.bundleFormat, capability),
   );
   for (const capability of unsupportedCapabilities) {
-    params.registry.diagnostics.push({
-      level: "warn",
-      pluginId: params.record.id,
-      source: params.record.source,
-      message: `bundle capability detected but not wired into OpenClaw yet: ${capability}`,
-    });
+    warn(`bundle capability detected but not wired into Paddy yet: ${capability}`);
   }
   if (
     params.record.enabled &&
@@ -367,22 +370,13 @@ export function recordBundleDiagnostics(params: {
       bundleFormat: params.record.bundleFormat,
     });
     for (const message of runtimeSupport.diagnostics) {
-      params.registry.diagnostics.push({
-        level: "warn",
-        pluginId: params.record.id,
-        source: params.record.source,
-        message,
-      });
+      warn(message);
     }
     if (runtimeSupport.unsupportedServerNames.length > 0) {
-      params.registry.diagnostics.push({
-        level: "warn",
-        pluginId: params.record.id,
-        source: params.record.source,
-        message:
-          "bundle MCP servers use unsupported transports or incomplete configs " +
+      warn(
+        "bundle MCP servers use unsupported transports or incomplete configs " +
           `(${runtimeSupport.unsupportedServerNames.join(", ")})`,
-      });
+      );
     }
   }
   params.registry.plugins.push(params.record);

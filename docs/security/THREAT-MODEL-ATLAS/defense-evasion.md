@@ -1,8 +1,8 @@
 ---
-summary: "OpenClaw defense evasion threats (AML.TA0007): T-EVADE-001, T-EVADE-002"
+summary: "Paddy defense evasion threats (AML.TA0007): T-EVADE-001, T-EVADE-002"
 title: "Defense evasion (AML.TA0007)"
 read_when:
-  - Reviewing defense evasion threats against an OpenClaw deployment
+  - Reviewing defense evasion threats against a Paddy deployment
   - Working on mitigations for T-EVADE-001, T-EVADE-002
 ---
 

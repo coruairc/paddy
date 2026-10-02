@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
 import { isPluginInPackageBundledRoots } from "../plugins/bundled-dir.js";
@@ -76,7 +77,7 @@ export async function completeUpdateCandidatePluginRehearsal(params: {
   const candidateRoot =
     params.candidateRoot ?? resolveOpenClawPackageRootSync({ moduleUrl: import.meta.url });
   if (!candidateRoot) {
-    throw new Error("Cannot locate the staged OpenClaw installation for plugin setup");
+    throw new Error(`Cannot locate the staged ${PRODUCT_NAME} installation for plugin setup`);
   }
   const discovery = discoverConfiguredPluginLoadPaths({
     loadPaths: [...sources],

@@ -1314,7 +1314,7 @@ describe("registerMatrixMonitorEvents verification routing", () => {
     });
     expect(logger.warn).toHaveBeenNthCalledWith(
       2,
-      "matrix: failed to decrypt a message from this same Matrix user. This usually means another Matrix device did not share the room key, or another OpenClaw runtime is using the same account. Check 'openclaw matrix verify status --verbose --account ops' and 'openclaw matrix devices list --account ops'.",
+      "matrix: failed to decrypt a message from this same Matrix user. This usually means another Matrix device did not share the room key, or another Paddy runtime is using the same account. Check 'paddy matrix verify status --verbose --account ops' and 'paddy matrix devices list --account ops'.",
       {
         roomId: "!room:example.org",
         eventId: "$enc-self",
@@ -1398,7 +1398,7 @@ describe("registerMatrixMonitorEvents verification routing", () => {
       expectWarnContextFields(
         logger,
         4,
-        "matrix: repeated fresh encrypted messages are still failing to decrypt after Matrix resumed healthy sync. This device may still be missing new room keys. Check 'openclaw matrix verify status --verbose --account ops' and 'openclaw matrix devices list --account ops'.",
+        "matrix: repeated fresh encrypted messages are still failing to decrypt after Matrix resumed healthy sync. This device may still be missing new room keys. Check 'paddy matrix verify status --verbose --account ops' and 'paddy matrix devices list --account ops'.",
         {
           failureCount: 3,
           roomCount: 3,
@@ -1500,7 +1500,7 @@ describe("registerMatrixMonitorEvents verification routing", () => {
       expectWarnContextFields(
         logger,
         4,
-        "matrix: repeated fresh encrypted messages are still failing to decrypt after Matrix resumed healthy sync. This device may still be missing new room keys. Check 'openclaw matrix verify status --verbose --account ops' and 'openclaw matrix devices list --account ops'.",
+        "matrix: repeated fresh encrypted messages are still failing to decrypt after Matrix resumed healthy sync. This device may still be missing new room keys. Check 'paddy matrix verify status --verbose --account ops' and 'paddy matrix devices list --account ops'.",
         {
           sampleEventIds: ["$enc-wave-1-1", "$enc-wave-1-2", "$enc-wave-1-3"],
         },
@@ -1508,7 +1508,7 @@ describe("registerMatrixMonitorEvents verification routing", () => {
       expectWarnContextFields(
         logger,
         8,
-        "matrix: repeated fresh encrypted messages are still failing to decrypt after Matrix resumed healthy sync. This device may still be missing new room keys. Check 'openclaw matrix verify status --verbose --account ops' and 'openclaw matrix devices list --account ops'.",
+        "matrix: repeated fresh encrypted messages are still failing to decrypt after Matrix resumed healthy sync. This device may still be missing new room keys. Check 'paddy matrix verify status --verbose --account ops' and 'paddy matrix devices list --account ops'.",
         {
           sampleEventIds: ["$enc-wave-2-1", "$enc-wave-2-2", "$enc-wave-2-3"],
         },
@@ -1578,7 +1578,7 @@ describe("registerMatrixMonitorEvents verification routing", () => {
       expectWarnContextFields(
         logger,
         8,
-        "matrix: repeated fresh encrypted messages are still failing to decrypt after Matrix resumed healthy sync. This device may still be missing new room keys. Check 'openclaw matrix verify status --verbose --account ops' and 'openclaw matrix devices list --account ops'.",
+        "matrix: repeated fresh encrypted messages are still failing to decrypt after Matrix resumed healthy sync. This device may still be missing new room keys. Check 'paddy matrix verify status --verbose --account ops' and 'paddy matrix devices list --account ops'.",
         {
           sampleEventIds: ["$enc-second-1", "$enc-second-2", "$enc-second-3"],
         },

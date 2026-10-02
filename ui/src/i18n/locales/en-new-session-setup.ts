@@ -16,6 +16,7 @@ const enNewSessionSetup = {
       "The {runtime} runtime cannot use this cloud worker. Choose a compatible cloud worker or run locally.",
     deviceRuntimeUnsupported: "This runtime does not support paired devices",
     placementStartFailed: "The session was created, but startup needs attention: {error}",
+    placementCreateFailed: "Couldn't prepare session recovery. Your draft has been kept.",
     placementStillStarting:
       "Worker setup is still in progress. Retry to check the existing worker; your message has not been sent.",
     placementCompletionUnconfirmed:
@@ -109,7 +110,7 @@ const enNewSessionSetup = {
     created: "Session created",
     startInTerminal: "Start in terminal",
     nativeTerminalHint:
-      "Start the native CLI on the selected machine using its own account and configuration. This does not create an OpenClaw Chat.",
+      "Start the native CLI on the selected machine using its own account and configuration. This does not create a Paddy Chat.",
     chooseNativeHost: "Choose a native CLI host",
     nativeHostsUnavailable:
       "No native CLI is available. Install it on the Gateway or connect a machine with CLI access, then reconnect to the Gateway.",
@@ -131,6 +132,7 @@ const enNewSessionSetup = {
     checkout: "Checkout",
     checkoutCurrent: "Current checkout",
     checkoutWorktree: "New worktree",
+    checkoutWorktreeNamed: "Worktree · {name}",
     checkoutWorktreeSub: "Isolated copy of the repo",
     checkoutWorktreeFrom: "New worktree from {branch}",
     checkoutCloud: "Starting branch",
@@ -180,12 +182,12 @@ const enNewSessionSetup = {
       "Native CLI host unavailable. Check that the CLI is installed and the node is connected with its fresh-start command approved, then retry the catalog.",
     terminalDisabled: "Enable CLI agents and terminals in Gateway settings to start a native CLI.",
     terminalPlacementUnsupported:
-      "Native CLI sessions use a specific host, not OpenClaw worker placement. Reset this draft and choose a native host.",
+      "Native CLI sessions use a specific host, not Paddy worker placement. Reset this draft and choose a native host.",
     terminalNeedsFolder: "Pick a folder before starting in a terminal.",
     noSessionHosts: "No session hosts are paired. Connect a machine with session hosting enabled.",
     deviceUnavailable: "Device unavailable. Reconnect it and try again.",
     sessionHostingDisabled:
-      "Session hosting is disabled. Run openclaw connect --service --session-host on the device.",
+      "Session hosting is disabled. Run paddy connect --service --session-host on the device.",
     deviceCapacityUnavailable:
       "Worker capacity is unavailable. Restart the device session host and try again.",
     deviceNoSlots: "No worker slots are available. Wait for a slot or pick another device.",

@@ -18,6 +18,7 @@ import {
   type PluginInstallLogger,
 } from "./install-types.js";
 import type { OpenClawPackageManifest } from "./manifest.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 export function isNpmPackageNotFoundMessage(error: string): boolean {
   const normalized = error.trim();
@@ -56,38 +57,27 @@ export async function resolveTrustedOfficialPrereleaseResolution(params: {
     .filter((value) => !isPrereleaseSemverVersion(value))
     .toSorted(comparePackageUpdateVersions)
     .at(-1);
+  let version = stableVersion;
   if (!stableVersion) {
     const prereleaseVersion = semverVersions
       .filter(isPrereleaseSemverVersion)
       .toSorted(comparePackageUpdateVersions)
       .at(-1);
-    if (prereleaseVersion && semverVersions.every(isPrereleaseSemverVersion)) {
-      if (prereleaseVersion !== params.resolvedPrereleaseVersion) {
-        const prereleaseSpec = `${params.spec.name}@${prereleaseVersion}`;
-        const metadataResult = await resolveNpmSpecMetadata({
-          spec: prereleaseSpec,
-          timeoutMs: params.timeoutMs,
-          signal: params.signal,
-        });
-        if (!metadataResult.ok) {
-          return null;
-        }
-        params.logger?.warn?.(
-          `Resolved ${params.spec.raw} to prerelease version ${params.resolvedPrereleaseVersion}; using newest prerelease ${prereleaseSpec} because this trusted official OpenClaw package has no stable npm versions yet.`,
-        );
-        return { kind: "prerelease-only", resolution: metadataResult.metadata };
-      }
+    if (!prereleaseVersion || !semverVersions.every(isPrereleaseSemverVersion)) {
+      return null;
+    }
+    if (prereleaseVersion === params.resolvedPrereleaseVersion) {
       params.logger?.warn?.(
-        `Resolved ${params.spec.raw} to prerelease version ${params.resolvedPrereleaseVersion}; allowing it because this trusted official OpenClaw package has no stable npm versions yet.`,
+        `Resolved ${params.spec.raw} to prerelease version ${params.resolvedPrereleaseVersion}; allowing it because this trusted official ${PRODUCT_NAME} package has no stable npm versions yet.`,
       );
       return { kind: "allow-prerelease-only" };
     }
-    return null;
+    version = prereleaseVersion;
   }
 
-  const stableSpec = `${params.spec.name}@${stableVersion}`;
+  const spec = `${params.spec.name}@${version}`;
   const metadataResult = await resolveNpmSpecMetadata({
-    spec: stableSpec,
+    spec,
     timeoutMs: params.timeoutMs,
     signal: params.signal,
   });
@@ -95,9 +85,14 @@ export async function resolveTrustedOfficialPrereleaseResolution(params: {
     return null;
   }
   params.logger?.warn?.(
-    `Resolved ${params.spec.raw} to prerelease version ${params.resolvedPrereleaseVersion}; falling back to stable ${stableSpec} for this trusted official OpenClaw install.`,
+    stableVersion
+      ? `Resolved ${params.spec.raw} to prerelease version ${params.resolvedPrereleaseVersion}; falling back to stable ${spec} for this trusted official OpenClaw install.`
+      : `Resolved ${params.spec.raw} to prerelease version ${params.resolvedPrereleaseVersion}; using newest prerelease ${spec} because this trusted official OpenClaw package has no stable npm versions yet.`,
   );
-  return { kind: "stable", resolution: metadataResult.metadata };
+  return {
+    kind: stableVersion ? "stable" : "prerelease-only",
+    resolution: metadataResult.metadata,
+  };
 }
 
 function shouldResolveLatestCompatibleNpmVersion(spec: ParsedRegistryNpmSpec): boolean {
@@ -214,7 +209,7 @@ export async function resolveLatestCompatibleNpmResolution(params: {
     });
     if (!compatibilityError) {
       params.logger.warn?.(
-        `Resolved ${params.parsedSpec.raw} to ${params.currentResolution.resolvedSpec ?? currentVersion}, but that version is incompatible with this OpenClaw runtime; using newest compatible ${metadataResult.metadata.resolvedSpec ?? spec}.`,
+        `Resolved ${params.parsedSpec.raw} to ${params.currentResolution.resolvedSpec ?? currentVersion}, but that version is incompatible with this ${PRODUCT_NAME} runtime; using newest compatible ${metadataResult.metadata.resolvedSpec ?? spec}.`,
       );
       return metadataResult.metadata;
     }

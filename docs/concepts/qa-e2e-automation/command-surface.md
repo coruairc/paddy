@@ -1,6 +1,6 @@
 ---
 doc-schema-version: 1
-summary: "The `pnpm openclaw qa` subcommand table and the profile-backed `qa run` selector."
+summary: "The `pnpm paddy qa` subcommand table and the profile-backed `qa run` selector."
 read_when:
   - You need to pick the right qa subcommand
   - You are choosing a QA profile for `qa run`
@@ -9,7 +9,7 @@ title: "Command surface"
 
 ## Command surface
 
-Every QA flow runs under `pnpm openclaw qa <subcommand>`. Many have `pnpm qa:*`
+Every QA flow runs under `pnpm paddy qa <subcommand>`. Many have `pnpm qa:*`
 script aliases; both forms work.
 
 | Command                                             | Purpose                                                                                                                                                                                                                                                             |
@@ -17,7 +17,7 @@ script aliases; both forms work.
 | `qa run`                                            | Bundled QA self-check without `--qa-profile`; taxonomy-backed maturity profile runner with `--qa-profile smoke-ci`, `--qa-profile release`, or `--qa-profile all`.                                                                                                  |
 | `qa suite`                                          | Run repo-backed scenarios against the QA gateway lane. `--runner multipass` uses a disposable Linux VM instead of the host.                                                                                                                                         |
 | `qa coverage`                                       | Print the YAML scenario-coverage inventory (`--json` for machine output; `--match <query>` to find scenarios for a touched behavior; `--tools` for runtime tool fixture coverage).                                                                                  |
-| `qa parity-report`                                  | Compare two `qa-suite-summary.json` files for a model-axis parity gate, or use `--runtime-axis --token-efficiency` to write Codex-vs-OpenClaw runtime parity and token-efficiency reports.                                                                          |
+| `qa parity-report`                                  | Compare two `qa-suite-summary.json` files for a model-axis parity gate, or use `--runtime-axis --token-efficiency` to write Codex-vs-Paddy runtime parity and token-efficiency reports.                                                                             |
 | `qa confidence-report`                              | Classify QA proof artifacts against a manifest into a zero-unknown confidence report.                                                                                                                                                                               |
 | `qa confidence-self-test`                           | Write seeded negative-control canaries proving the confidence gate detects drift.                                                                                                                                                                                   |
 | `qa jsonl-replay`                                   | Replay curated JSONL transcripts through the runtime parity replay harness.                                                                                                                                                                                         |
@@ -65,7 +65,7 @@ Slim evidence omits per-entry `execution` and sets `evidenceMode: "slim"`;
 `smoke-ci` defaults to slim, and `--evidence-mode full` restores full entries:
 
 ```bash
-pnpm openclaw qa run \
+pnpm paddy qa run \
   --qa-profile smoke-ci \
   --category channels.conversation-routing-and-delivery \
   --provider-mode mock-openai \
@@ -77,9 +77,9 @@ Crabline local provider servers. Use `release` for Stable/LTS proof against
 live channels. Use `all` only for explicit full-taxonomy evidence runs; it
 selects every active maturity category and can be dispatched through the `QA
 Profile Evidence` GitHub Actions workflow with `qa_profile=all`. When a
-command also needs an OpenClaw root profile, put the root profile before the
+command also needs a Paddy root profile, put the root profile before the
 QA command:
 
 ```bash
-pnpm openclaw --profile work qa run --qa-profile smoke-ci
+pnpm paddy --profile work qa run --qa-profile smoke-ci
 ```

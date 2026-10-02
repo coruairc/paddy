@@ -646,7 +646,7 @@ describe("openclaw tool", () => {
       action: "open_setup",
       target: "guided",
     });
-    expect(toolText(guidedSetup)).toContain("cannot run inside OpenClaw");
+    expect(toolText(guidedSetup)).toContain("cannot run inside Paddy");
     expect(toolText(guidedSetup)).toContain("openclaw onboard");
     expect(directiveRef.current).toEqual({ kind: "open-setup", target: "guided" });
 

@@ -7,6 +7,7 @@
  * pure data + tiny pure functions: a value import of server config/runtime
  * modules here drags the whole gateway graph into the ui build and breaks it.
  */
+import { PRODUCT_NAME } from "../brand.js";
 import {
   AGENTS_WAIT_TOOL_DISPLAY_SUMMARY,
   ASK_USER_TOOL_DISPLAY_SUMMARY,
@@ -171,6 +172,13 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
     description: "Edit the requesting user’s personal instructions",
     sectionId: "memory",
     profiles: ["coding", "messaging"],
+    includeInOpenClawGroup: true,
+  },
+  {
+    id: "presence",
+    description: "Online people, connected devices, recent activity, and connection location",
+    sectionId: "sessions",
+    profiles: ["minimal", "coding", "messaging"],
     includeInOpenClawGroup: true,
   },
   {
@@ -370,7 +378,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
   },
   {
     id: "gateway",
-    description: "Update OpenClaw; read Gateway config/schema when permitted",
+    description: `Update ${PRODUCT_NAME}; read Gateway config/schema when permitted`,
     sectionId: "automation",
     profiles: ["minimal", "coding", "messaging"],
     includeInOpenClawGroup: true,
@@ -384,7 +392,7 @@ const CORE_TOOL_DEFINITIONS: CoreToolDefinition[] = [
   },
   {
     id: "openclaw",
-    description: "Delegate OpenClaw setup and repair",
+    description: `Delegate ${PRODUCT_NAME} setup and repair`,
     sectionId: "automation",
     profiles: [],
     includeInOpenClawGroup: true,

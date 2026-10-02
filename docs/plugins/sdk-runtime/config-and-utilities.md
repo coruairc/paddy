@@ -1,7 +1,7 @@
 ---
 summary: "Runtime config reads and writes, plus the shared process, error, and model-picker utilities"
 read_when:
-  - You are reading or writing OpenClaw config from plugin code
+  - You are reading or writing Paddy config from plugin code
   - You need a shared process, error, or timing utility instead of a host import
   - You are wiring model-picker persistence or bot-loop protection
 title: "Plugin runtime config and utilities"
@@ -46,7 +46,7 @@ preserve their file snapshot's references even when the active runtime uses a di
 The direct SDK `updateConfig` helper returns the config produced by its mutator.
 Its disk write restores environment references using the original read snapshot.
 
-Internal OpenClaw runtime code follows the same direction: load config once at the CLI, gateway, or process boundary, then pass that value through. Successful mutation writes refresh the process runtime snapshot and advance its internal revision; long-lived caches should key off the runtime-owned cache key instead of serializing config locally. Long-lived runtime modules have a zero-tolerance scanner for ambient `loadConfig()` calls; use a passed `cfg`, a request `context.getRuntimeConfig()`, or `getRuntimeConfig()` at an explicit process boundary.
+Internal Paddy runtime code follows the same direction: load config once at the CLI, gateway, or process boundary, then pass that value through. Successful mutation writes refresh the process runtime snapshot and advance its internal revision; long-lived caches should key off the runtime-owned cache key instead of serializing config locally. Long-lived runtime modules have a zero-tolerance scanner for ambient `loadConfig()` calls; use a passed `cfg`, a request `context.getRuntimeConfig()`, or `getRuntimeConfig()` at an explicit process boundary.
 
 Provider and channel execution paths must use the active runtime config snapshot, not a file snapshot returned for config readback or editing. File snapshots preserve source values such as SecretRef markers for UI and writes; provider callbacks need the resolved runtime view. When a helper may be called with either the active source snapshot or the active runtime snapshot, route through `selectApplicableRuntimeConfig()` before reading credentials. The selector replaces a distinct supplied config only when it matches the runtime snapshot's paired source, including resolution provenance. A pinned snapshot without that source cannot override an explicit config, including a command-scoped config whose secrets have already been resolved. With no supplied config, the selector returns the runtime snapshot.
 
@@ -71,6 +71,15 @@ cannot suppress a sibling's reload. A narrower `reload.configPrefixes` entry can
 retain restart behavior under a broader no-op prefix.
 
 ## Reusable runtime utilities
+
+For libraries that accept a Node HTTP agent, use `createNodeProxyAgent` from
+`openclaw/plugin-sdk/fetch-runtime`. With `mode: "env"`, supply `targetUrl` for
+a fixed destination, or omit it when the library selects destinations itself
+(for example, media upload hosts). The reusable form snapshots the proxy
+environment and evaluates `NO_PROXY` for every request, including redirects.
+Managed proxy CA trust applies only to the matching proxy connection. Call
+`agent?.destroy()` when the owning connection closes. Undici dispatchers from
+the same SDK entrypoint belong in fetch's `dispatcher` option, not Node's `agent`.
 
 Import `execPolicy` from `openclaw/plugin-sdk/agent-harness-runtime` for the
 host's exec mode algebra. `execPolicy.resolveExecModePolicy({ mode, security, ask })`
@@ -101,7 +110,13 @@ binary when the host runs under Bun, skipping Bun's `node` shim. An unavailable
 Node runtime returns `undefined`; the caller reports the missing requirement.
 
 Interactive process adapters can use `spawnTerminalPty` from the same subpath.
-It owns platform-specific terminal creation, including the Node helper on Bun.
+It owns platform-specific terminal creation. On macOS and Linux, Bun uses its
+native PTY without Node only on builds providing `Bun.Terminal.pause()` and
+`resume()`, such as the Paddy Bun fork builds that also carry the macOS
+child-exit fix. Other Bun releases use the Node helper and require an installed
+Node runtime; Paddy skips Bun's `node` shim when selecting it. Node and
+Windows keep `node-pty`. See
+[Bun compatibility](/install/bun-compatibility#known-limitations).
 Pass the caller's construction signal and current-authority check through its
 second argument. The caller owns output subscriptions, termination, and waiting
 for the terminal's exit before releasing its backend resources.

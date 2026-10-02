@@ -6,7 +6,7 @@ read_when:
 title: "Platforms"
 ---
 
-OpenClaw core is written in TypeScript. **Node is the primary, default, and
+Paddy core is written in TypeScript. **Node is the primary, default, and
 recommended runtime**. Bun 1.4+ builds with WAL-reset-safe `node:sqlite` can run
 the CLI, Gateway, and managed node host as an explicit opt-in; see
 [Bun](/install/bun).
@@ -43,16 +43,16 @@ Linux-compatible Gateway runtime.
 - Windows Hub: [Windows](/platforms/windows)
 - Gateway runbook: [Gateway](/gateway)
 - Gateway configuration: [Configuration](/gateway/configuration)
-- Service status: `openclaw gateway status`
+- Service status: `paddy gateway status`
 
 ## Gateway service install (CLI)
 
 Use one of these (all supported):
 
-- Wizard (recommended): `openclaw onboard --install-daemon`
-- Direct: `openclaw gateway install`
-- Configure flow: `openclaw configure` → select **Gateway service**
-- Repair/migrate: `openclaw doctor` (offers to install or fix the service)
+- Wizard (recommended): `paddy onboard --install-daemon`
+- Direct: `paddy gateway install`
+- Configure flow: `paddy configure` → select **Gateway service**
+- Repair/migrate: `paddy doctor` (offers to install or fix the service)
 
 The service target depends on OS:
 

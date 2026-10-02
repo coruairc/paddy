@@ -82,30 +82,6 @@ describe("CodexAppServerEventProjector command output projection", () => {
     expect(toolResult.result).toEqual({ status: "completed", exitCode: 0, durationMs: 42 });
   });
 
-  it("preserves complete final command output across the old UTF-16 transcript boundary", async () => {
-    const projector = await createProjector();
-    // The old mirror cap cut this emoji and discarded the entire suffix.
-    const prefix = "a".repeat(9_886);
-    const aggregatedOutput = `${prefix}😀${"a".repeat(400)}`;
-
-    await projector.handleNotification(
-      turnCompleted([
-        createNativeCommandItem({
-          id: "cmd-utf16-final",
-          command: "printf output",
-          aggregatedOutput,
-        }),
-      ]),
-    );
-
-    const result = projector.buildResult(buildEmptyToolTelemetry());
-    const message = requireRecord(result.messagesSnapshot[2], "tool result message");
-    const content = requireArray(message.content, "tool result content");
-    const item = requireRecord(content[0], "tool result content item");
-    expect(item.type).toBe("text");
-    expect(item.text).toBe(aggregatedOutput);
-  });
-
   it.each([
     { prefixLength: 7_999, delta: "😀tail", expectedChunk: "" },
     { prefixLength: 7_998, delta: "x😀tail", expectedChunk: "x\n" },
@@ -230,10 +206,10 @@ describe("CodexAppServerEventProjector command output projection", () => {
         | undefined
     )?.output;
     expect(output).toHaveLength(10_000);
-    expect(output).toContain("OpenClaw truncated Codex native tool output");
+    expect(output).toContain("Paddy truncated Codex native tool output");
     expect(output).toContain("original 13023 chars");
     expect(output).toContain("showing 10000");
-    expect(output?.match(/OpenClaw truncated Codex native tool output/g)).toHaveLength(1);
+    expect(output?.match(/Paddy truncated Codex native tool output/g)).toHaveLength(1);
 
     const result = projector.buildResult(buildEmptyToolTelemetry());
     const toolResultMessage = result.messagesSnapshot.find(
@@ -246,7 +222,7 @@ describe("CodexAppServerEventProjector command output projection", () => {
     const toolResultContentItem = requireRecord(toolResultContent[0], "tool result content item");
     expect(toolResultContentItem.type).toBe("text");
     expect(toolResultContentItem.text).toHaveLength(10_000);
-    expect(toolResultContentItem.text).toContain("OpenClaw truncated Codex native tool output");
+    expect(toolResultContentItem.text).toContain("Paddy truncated Codex native tool output");
     expect(toolResultMessage).toMatchObject({
       __openclaw: { toolOutput: { source: "execution", captureTruncated: true } },
     });

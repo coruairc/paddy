@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { DoctorUnreadableStateDatabaseError } from "../infra/state-repair-message.js";
 import { DoctorMaintenanceRefusalError } from "../infra/update-doctor-result.js";
 import { createUpdateFailureFact } from "../infra/update-failure-facts.js";
@@ -9,7 +10,7 @@ function createDoctorAgentLeaseRefusal(
   cause?: unknown,
 ): DoctorMaintenanceRefusalError {
   const message =
-    "Doctor could not enter maintenance. An agent database is in use. Stop other OpenClaw processes using this state, then retry the update.";
+    `Doctor could not enter maintenance. An agent database is in use. Stop other ${PRODUCT_NAME} processes using this state, then retry the update.`;
   return new DoctorMaintenanceRefusalError(
     message,
     { kind: "deferred", reason: "agent-database-in-use" },

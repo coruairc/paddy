@@ -97,7 +97,7 @@ export async function runDoctorProcess(runtime: RuntimeEnv): Promise<void> {
     signal?.throwIfAborted();
     if (truncated) {
       runtime.error(
-        "Doctor output was truncated after 1 MiB. Run `openclaw doctor --non-interactive` on this host for the complete report.",
+        "Doctor output was truncated after 1 MiB. Run `paddy doctor --non-interactive` on this host for the complete report.",
       );
     }
     if (result.outputErrorStream) {

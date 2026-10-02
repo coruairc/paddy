@@ -76,7 +76,7 @@ In webhook mode, both `channels.feishu.webhookPath` and
 beginning with `/`, such as `/feishu/events`. An optional query string is
 supported and must match exactly. Full URLs, relative paths, URL fragments, dot
 segments, and unencoded spaces or Unicode are rejected. If an existing
-configuration contains a noncanonical path, run `openclaw doctor --fix` to
+configuration contains a noncanonical path, run `paddy doctor --fix` to
 repair it before starting the gateway.
 
 ## Gateway webhook route
@@ -103,22 +103,34 @@ to the same plugin route and signature verifier. Set
 An omitted object `host` binds to `127.0.0.1`; explicit hosts, including wildcard
 addresses, are preserved. Account entries inherit the root setting, and
 `accounts.<id>.legacyWebhook: false` disables forwarding for that account.
-A shared legacy socket stays open while another account still uses that endpoint.
+On supported 2026.9.6 hosts that predate Gateway-owned forwarding, Feishu keeps
+an account-owned compatibility listener at that endpoint, using the same
+signature checks and dispatch path. Those hosts require distinct legacy endpoints
+for separate accounts. Newer hosts keep listener ownership in the Gateway, where
+a shared legacy socket stays open while another account still uses that endpoint.
 On account shutdown, authenticated responses may finish for up to five seconds,
 matching the previous listener's close grace period. Unfinished responses close
 at that deadline; other accounts keep their routes and listeners.
 During that grace period, correctly signed callbacks for the stopping account
 receive a retryable `503` unless a live successor already accepts their signature.
 
-On update, the plugin's Doctor migration moves `webhookPort` and `webhookHost`
+The plugin's Doctor migration moves `webhookPort` and `webhookHost`
 into `legacyWebhook: { port, host }`, preserving the effective old defaults when
-only one key was set. Doctor's normal config backup protects the original
+only one key was set. The normal config backup protects the original
 settings. Existing canonical `legacyWebhook` settings, including `false`, win.
 An install that omitted both old settings keeps receiving traffic on port `3000`.
 
+When updating from a 2026.9.6 host with these old keys, first update Paddy core
+to a release containing the [plugin-update migration repair](https://github.com/openclaw/openclaw/pull/160682).
+Then explicitly update any pinned Feishu package to your chosen release. The core
+updater preserves explicit plugin version pins. The updated installer applies
+Feishu's migration before activating the replacement package; the published
+2026.9.6 installer rejects the new schema before it can run that repair. A refused
+plugin-only update leaves the previous installation and settings intact.
+
 The deprecated TypeScript `webhookPort` and `webhookHost` input fields remain
 source-compatible until the next Plugin SDK major. Runtime config uses
-`legacyWebhook`; run `openclaw doctor --fix` to migrate the old keys.
+`legacyWebhook`; run `paddy doctor --fix` to migrate the old keys.
 
 To use only the Gateway port, update the Feishu callback URL or reverse-proxy
 upstream to the Gateway port and `webhookPath`, verify delivery, then set
@@ -126,7 +138,7 @@ upstream to the Gateway port and `webhookPath`, verify delivery, then set
 endpoint. Startup and Doctor print the destination and disable instruction.
 Doctor presents healthy endpoint guidance as information and path conflicts as
 warnings; disabled accounts and WebSocket accounts receive no webhook notes.
-OpenClaw cannot update callback URLs stored in the Feishu console.
+Paddy cannot update callback URLs stored in the Feishu console.
 
 The exact Gateway probe paths (`/health`, `/healthz`, `/ready`, `/readyz`,
 `/startup`, and `/startupz`, including query strings) cannot receive Feishu

@@ -48,7 +48,7 @@ log_file="${log_dir}/$(date +%Y%m%d-%H%M%S).log"
 exec > >(tee "$log_file") 2>&1
 
 gateway_call() {
-  openclaw gateway call "$@" --json --timeout 30000
+  paddy gateway call "$@" --json --timeout 30000
 }
 
 read_status() {
@@ -229,8 +229,8 @@ printf '%s\n' "$status_json"
 require_yes "Did the agent stop speaking promptly when interrupted?"
 
 echo
-echo "The script can now hang up through OpenClaw."
-read -r -p "Hang up the active FaceTime call through OpenClaw? [Y/n] " hangup_answer
+echo "The script can now hang up through Paddy."
+read -r -p "Hang up the active FaceTime call through Paddy? [Y/n] " hangup_answer
 case "$hangup_answer" in
   ""|y|Y|yes|YES)
     echo
@@ -265,9 +265,6 @@ if pgrep -fl 'facetime-audio-capture|caffeinate -d -i -w'; then
   exit 1
 fi
 
-echo
-echo "== Final running tasks =="
-openclaw tasks list --status running
 
 echo
 echo "Acceptance log saved to $log_file"

@@ -465,7 +465,7 @@ describe("runSystemAgentTurn", () => {
     expect((failure as SystemAgentInferenceUnavailableError).failures).toEqual([
       expect.objectContaining({
         message: expect.stringContaining(
-          "CLI backend google-gemini-cli cannot enforce OpenClaw's exact tool availability",
+          "CLI backend google-gemini-cli cannot enforce Paddy's exact tool availability",
         ),
       }),
     ]);

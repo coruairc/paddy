@@ -263,12 +263,12 @@ describe("openclaw-mcp-servers-card", () => {
   });
 
   it.each([
-    { name: "missing method", methods: [], text: "openclaw mcp login docs" },
-    { name: "non-admin", admin: false, text: "openclaw mcp login docs" },
+    { name: "missing method", methods: [], text: "paddy mcp login docs" },
+    { name: "non-admin", admin: false, text: "paddy mcp login docs" },
     {
       name: "disabled",
       server: { ...oauthServer, enabled: false },
-      text: "openclaw mcp login docs",
+      text: "paddy mcp login docs",
     },
     {
       name: "requester-owned",
@@ -351,7 +351,7 @@ describe("openclaw-mcp-servers-card", () => {
         await card.updateComplete;
       }
       if (change === "disconnect" || change === "capability drop") {
-        expect(card.textContent).toContain("openclaw mcp login docs");
+        expect(card.textContent).toContain("paddy mcp login docs");
         expect(
           [...card.querySelectorAll("button")].some(
             (button) => button.textContent?.trim() === "Sign in",
@@ -396,7 +396,7 @@ describe("openclaw-mcp-servers-card", () => {
     const docs = expectDefined(card.querySelector('[data-mcp-name="docs"]'), "docs row");
     expect(docs.textContent).toContain("https://mcp.example.com/mcp?keep=visible&token=***");
     expect(docs.textContent).toContain("sse · oauth · tool filter · TLS verify off");
-    expect(docs.textContent).toContain("openclaw mcp login docs");
+    expect(docs.textContent).toContain("paddy mcp login docs");
     expect(docs.textContent).not.toContain("test-token");
 
     const local = expectDefined(card.querySelector('[data-mcp-name="local"]'), "local row");

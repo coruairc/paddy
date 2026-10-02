@@ -32,7 +32,7 @@ export async function withLegacyMigrationStateLock(
   } catch (error) {
     const detail = options.formatAcquireError?.(error) ?? formatGatewayLockFailure(error);
     const guidance =
-      options.retryGuidance ?? "Resolve the lock failure, then run `openclaw doctor --fix` again.";
+      options.retryGuidance ?? "Resolve the lock failure, then run `paddy doctor --fix` again.";
     return {
       changes: [],
       warnings: [`Failed migrating ${options.label}: ${detail}. ${guidance}`],
@@ -48,14 +48,12 @@ export async function withLegacyMigrationStateLock(
   let result: MigrationMessages = { changes: [], warnings: [] };
   let releaseError: unknown;
   try {
-    try {
-      result = await lock.run(() => options.run(env));
-    } catch (error) {
-      if (!options.errorLabel) {
-        throw error;
-      }
-      result.warnings.push(`${options.errorLabel}: ${String(error)}`);
+    result = await lock.run(() => options.run(env));
+  } catch (error) {
+    if (!options.errorLabel) {
+      throw error;
     }
+    result.warnings.push(`${options.errorLabel}: ${String(error)}`);
   } finally {
     try {
       await lock.run(() => options.beforeRelease?.());

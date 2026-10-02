@@ -12,6 +12,7 @@ import {
   type ReasoningLevel,
   type VerboseLevel,
 } from "../auto-reply/thinking.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.js";
 
 const VERBOSE_LEVELS = ["on", "off", "full"] satisfies VerboseLevel[];
@@ -118,7 +119,7 @@ const TUI_COMMAND_ROWS = [
   ["agents", "Open agent picker"],
   [
     "openclaw",
-    "Return to OpenClaw",
+    `Return to ${PRODUCT_NAME}`,
     "/openclaw [request]",
     undefined,
     { aliases: [{ name: "crestodian", hidden: true }] },

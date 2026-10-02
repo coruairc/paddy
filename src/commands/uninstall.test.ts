@@ -161,7 +161,7 @@ describe("uninstallCommand", () => {
 
     expect(
       cleanupCommandLogMessages(runtime).some((message) =>
-        message.includes("openclaw backup create"),
+        message.includes("paddy backup create"),
       ),
     ).toBe(true);
   });
@@ -174,7 +174,7 @@ describe("uninstallCommand", () => {
 
     expect(
       cleanupCommandLogMessages(runtime).some((message) =>
-        message.includes("openclaw backup create"),
+        message.includes("paddy backup create"),
       ),
     ).toBe(false);
   });

@@ -53,7 +53,7 @@ async function collectRetiredStateWarnings(params: MigrationInput): Promise<stri
   }
   return sources.map(
     (source) =>
-      `Preserved retired Telegram JSON state at ${source}. Run openclaw doctor --fix on 2026.9.5 before upgrading to latest: https://docs.openclaw.ai/install/updating#upgrading-very-old-versions`,
+      `Preserved retired Telegram JSON state at ${source}. Run paddy doctor --fix on 2026.9.5 before upgrading to latest: https://docs.openclaw.ai/install/updating#upgrading-very-old-versions`,
   );
 }
 

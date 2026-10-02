@@ -1,10 +1,11 @@
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 
 type SystemAgentInferenceStage = "agent-turn" | "planner" | "conversation";
 
 const INFERENCE_UNAVAILABLE_MESSAGE =
-  "OpenClaw could not reach working inference. Run `openclaw onboard` on the machine running OpenClaw to reconnect — it live-tests the route before saving it. Then try again.";
+  `${PRODUCT_NAME} could not reach working inference. Run \`${CLI_NAME} onboard\` on the machine running ${PRODUCT_NAME} to reconnect — it live-tests the route before saving it. Then try again.`;
 const INFERENCE_FAILURE_SUMMARY_MAX_CHARS = 300;
 
 function inferenceUnavailableMessage(failures: readonly unknown[]): string {

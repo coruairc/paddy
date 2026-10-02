@@ -1,5 +1,5 @@
 ---
-summary: "Setup guide for developers working on the OpenClaw macOS app"
+summary: "Setup guide for developers working on the Paddy macOS app"
 read_when:
   - Setting up the macOS development environment
 title: "macOS dev setup"
@@ -7,7 +7,7 @@ title: "macOS dev setup"
 
 # macOS developer setup
 
-Build and run the OpenClaw macOS application from source.
+Build and run the Paddy macOS application from source.
 
 The packaged app requires macOS 15.0 or later. The build host must also meet
 the Xcode requirements below.
@@ -132,6 +132,13 @@ windows, and WebKit starts helper processes. A temporary `HOME`, `TMPDIR`, or
 named app profile alone is not a sandbox: fixed preferences domains and
 Keychain access can still reach macOS services outside those directories.
 
+The native test bundle links `OpenClawWebKitTestSupport`, which suppresses WebKit
+Screen Time observation for every `WKWebView` in the test process. WebKit removes
+its KVO observer on the main thread during deallocation while ScreenTime delivers
+configuration on a private queue. Tearing down a windowed HTTP(S) web view right
+after its first commit can hit this race and abort the process with
+`NSInternalInconsistencyException`. Product builds keep Screen Time.
+
 The `macos-swift` GitHub CI job builds the tests with the runner's normal
 SwiftPM caches, then runs the built suite through `scripts/test-macos-native.mts`.
 Each invocation selects private `HOME` and `CFFIXED_USER_HOME`,
@@ -140,7 +147,7 @@ bundle loads. Tools honoring `TMPDIR` use that launcher-owned directory;
 Foundation uses Darwin's per-user temp directory, owned and discarded by the
 disposable OS worker. The full suite explicitly selects the default profile, preserving
 its local Gateway lifecycle contracts. AppState lifecycle tests and the interactive
-XCTest chat fixture run separately with a unique named profile; no test is run twice. The child environment excludes
+chat fixture run separately with a unique named profile; no test is run twice. The child environment excludes
 inherited app settings and credentials while retaining toolchain and runtime
 loader paths. Before Swift starts, the launcher creates an empty-password test
 Keychain under its private `HOME/Library/Keychains`, unlocks it, disables automatic
@@ -172,7 +179,8 @@ CPU count, capped at 12. It runs three disjoint partitions sequentially with cov
 instrumentation: the default-profile suite, rendered Quick Chat in a fresh default-profile
 process, and named-profile fixtures. The rendered partition preserves catalog, disclosure,
 and shortcut order without sharing process-wide executor changes from other tests.
-It starts an AppKit-owned run loop before exercising native menus. Historical targets
+Both interactive fixtures use Swift Testing and start an AppKit-owned run loop before
+exercising native menus, so XCTest does not have to regain its outer wait loop afterward. Historical targets
 with the launcher keep their original default- and named-profile partitions.
 Local `scripts/prepush-ci.sh` runs Swift lint/format checks and a release
 build, but does not run native tests. For native changes it exits nonzero with a
@@ -235,7 +243,7 @@ mlx-swift Metal compilation errors non-deterministically (a different `.metal`
 file each run, `Could not read serialized diagnostics file` then a nonzero
 `metal` exit), because the beta `metal` compiler and its separately downloaded
 Metal Toolchain are still unstable. This is an upstream toolchain issue, not an
-OpenClaw one.
+Paddy one.
 
 If you do not need on-device MLX voice, skip the helper:
 
@@ -267,8 +275,8 @@ If the app crashes when you try to allow **Speech Recognition** or
 Check whether a zombie process holds the port:
 
 ```bash
-openclaw gateway status
-openclaw gateway stop
+paddy gateway status
+paddy gateway stop
 
 # If you're not using a LaunchAgent (dev mode / manual runs), find the listener:
 lsof -nP -iTCP:18789 -sTCP:LISTEN

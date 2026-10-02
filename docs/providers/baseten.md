@@ -2,11 +2,11 @@
 summary: "Baseten setup for Inkling and hosted Model APIs"
 title: "Baseten"
 read_when:
-  - You want to run Thinking Machines Lab's Inkling in OpenClaw
+  - You want to run Thinking Machines Lab's Inkling in Paddy
   - You want one OpenAI-compatible API for Baseten's hosted models
 ---
 
-[Baseten Model APIs](https://docs.baseten.co/inference/model-apis/overview) provide hosted, OpenAI-compatible access to frontier models. The official external plugin uses authenticated discovery, so OpenClaw follows the complete model set enabled for your Baseten account. Its offline fallback contains the curated models listed below.
+[Baseten Model APIs](https://docs.baseten.co/inference/model-apis/overview) provide hosted, OpenAI-compatible access to frontier models. The official external plugin uses authenticated discovery, so Paddy follows the complete model set enabled for your Baseten account. Its offline fallback contains the curated models listed below.
 
 | Property        | Value                                                    |
 | --------------- | -------------------------------------------------------- |
@@ -38,11 +38,11 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
     <CodeGroup>
 
 ```bash Onboarding
-openclaw onboard --auth-choice baseten-api-key
+paddy onboard --auth-choice baseten-api-key
 ```
 
 ```bash Direct flag
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --auth-choice baseten-api-key \
   --baseten-api-key "$BASETEN_API_KEY"
 ```
@@ -58,7 +58,7 @@ export BASETEN_API_KEY=...
   </Step>
   <Step title="Verify the live catalog">
     ```bash
-    openclaw models list --provider baseten
+    paddy models list --provider baseten
     ```
 
     With usable auth, the plugin requests `GET /v1/models` and lists every model returned for the account. Without auth, it stays offline and uses the bundled fallback.
@@ -68,7 +68,7 @@ export BASETEN_API_KEY=...
 
 ## Inkling
 
-[Thinking Machines Lab's Inkling](https://thinkingmachines.ai/news/introducing-inkling/) is the default model. In OpenClaw it supports text and image input, tool calling, and structured tool schemas. It also supports configurable reasoning effort, a 1.048M-token context window, and up to 32k output tokens:
+[Thinking Machines Lab's Inkling](https://thinkingmachines.ai/news/introducing-inkling/) is the default model. In Paddy it supports text and image input, tool calling, and structured tool schemas. It also supports configurable reasoning effort, a 1.048M-token context window, and up to 32k output tokens:
 
 ```json5
 {
@@ -81,7 +81,7 @@ export BASETEN_API_KEY=...
 ```
 
 Use `/model baseten/thinkingmachines/inkling -s` to switch the current session.
-Inkling accepts `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, and `max` thinking levels. OpenClaw sends `off` as `reasoning_effort: "none"`; the other levels retain their names, including `max`. See [Baseten's reasoning controls](https://docs.baseten.co/inference/model-apis/reasoning).
+Inkling accepts `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, and `max` thinking levels. Paddy sends `off` as `reasoning_effort: "none"`; the other levels retain their names, including `max`. See [Baseten's reasoning controls](https://docs.baseten.co/inference/model-apis/reasoning).
 
 ## Bundled fallback catalog
 
@@ -99,12 +99,12 @@ The authenticated live catalog is authoritative. These rows keep setup and model
 | `baseten/zai-org/GLM-5.2`                          | text        |    524k |       262k |
 | `baseten/zai-org/GLM-5.2-Fast`                     | text        |    524k |       262k |
 
-All bundled models support tool calling and reasoning. OpenClaw maps its thinking levels to models with native `reasoning_effort`. Baseten's opt-in GLM, Kimi, and Nemotron models default to thinking off. Most expose a binary off/on control. GLM 5.2 exposes off, high, and max. OpenClaw sends these choices through Baseten's `chat_template_args.enable_thinking` control and, for GLM 5.2, the validated top-level `reasoning_effort` parameter.
+All bundled models support tool calling and reasoning. Paddy maps its thinking levels to models with native `reasoning_effort`. Baseten's opt-in GLM, Kimi, and Nemotron models default to thinking off. Most expose a binary off/on control. GLM 5.2 exposes off, high, and max. Paddy sends these choices through Baseten's `chat_template_args.enable_thinking` control and, for GLM 5.2, the validated top-level `reasoning_effort` parameter.
 
 The same thinking controls apply to agent turns and standalone model completions. DeepSeek V4 Pro replay also preserves reasoning metadata while thinking is enabled and removes it for explicit `off` requests.
 
 <Note>
-Baseten can add, remove, or change Model APIs independently of OpenClaw releases. The plugin refreshes model ids, context limits, output limits, and input, cached-input, and output pricing from the authenticated API. It retains model-specific OpenClaw transport policy.
+Baseten can add, remove, or change Model APIs independently of Paddy releases. The plugin refreshes model ids, context limits, output limits, and input, cached-input, and output pricing from the authenticated API. It retains model-specific Paddy transport policy.
 </Note>
 
 ## Manual config
@@ -153,7 +153,7 @@ If the Gateway runs as a daemon (launchd, systemd, Docker), make sure `BASETEN_A
     Choosing providers, model refs, and failover behavior.
   </Card>
   <Card title="Thinking modes" href="/tools/thinking" icon="brain">
-    Select OpenClaw reasoning effort levels.
+    Select Paddy reasoning effort levels.
   </Card>
   <Card title="Models CLI" href="/cli/models" icon="terminal">
     List, inspect, and select discovered models.

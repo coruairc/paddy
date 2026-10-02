@@ -13,21 +13,11 @@ const LEGACY_WEB_SEARCH_RULES: LegacyConfigRule[] = [
   {
     path: ["tools", "web", "search"],
     message:
-      'tools.web.search provider-owned config moved to plugins.entries.<plugin>.config.webSearch. Run "openclaw doctor --fix".',
+      'tools.web.search provider-owned config moved to plugins.entries.<plugin>.config.webSearch. Run "paddy doctor --fix".',
     match: (_value, root) => listLegacyWebSearchConfigPaths(root).length > 0,
     requireSourceLiteral: true,
   },
 ];
-
-function replaceRootRecord(
-  target: Record<string, unknown>,
-  replacement: Record<string, unknown>,
-): void {
-  for (const key of Object.keys(target)) {
-    delete target[key];
-  }
-  Object.assign(target, replacement);
-}
 
 /** Legacy config migration specs for web-search provider config. */
 export const LEGACY_CONFIG_MIGRATIONS_WEB_SEARCH: LegacyConfigMigrationSpec[] = [
@@ -41,7 +31,10 @@ export const LEGACY_CONFIG_MIGRATIONS_WEB_SEARCH: LegacyConfigMigrationSpec[] = 
       if (migrated.changes.length === 0) {
         return;
       }
-      replaceRootRecord(raw, migrated.config);
+      for (const key of Object.keys(raw)) {
+        delete raw[key];
+      }
+      Object.assign(raw, migrated.config);
       changes.push(...migrated.changes);
     },
   }),

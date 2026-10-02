@@ -3,22 +3,22 @@ doc-schema-version: 1
 summary: "Automations: scheduled jobs, webhooks, and Gmail PubSub triggers for the Gateway scheduler"
 read_when:
   - Scheduling background jobs or wakeups
-  - Wiring external triggers (webhooks, Gmail) into OpenClaw
+  - Wiring external triggers (webhooks, Gmail) into Paddy
   - Deciding between heartbeat and automations for scheduled work
 title: "Automations"
 sidebarTitle: "Automations"
 ---
 
-Automations are OpenClaw's built-in scheduler. The scheduler persists jobs, wakes the agent at the right time, and can deliver output to a chat channel, a webhook, or nowhere.
+Automations are Paddy's built-in scheduler. The scheduler persists jobs, wakes the agent at the right time, and can deliver output to a chat channel, a webhook, or nowhere.
 
-Manage automations with the `openclaw automations` CLI; `openclaw cron` remains an alias for the same commands.
+Manage automations with the `paddy automations` CLI; `paddy cron` remains an alias for the same commands.
 
 ## Quick start
 
 <Steps>
   <Step title="Add a one-shot reminder">
     ```bash
-    openclaw automations create "2027-02-01T16:00:00Z" \
+    paddy automations create "2027-02-01T16:00:00Z" \
       --name "Reminder" \
       --session main \
       --system-event "Reminder: check the automations docs draft" \
@@ -28,14 +28,14 @@ Manage automations with the `openclaw automations` CLI; `openclaw cron` remains 
   </Step>
   <Step title="Check your jobs">
     ```bash
-    openclaw automations list
-    openclaw automations get <job-id>
-    openclaw automations show <job-id>
+    paddy automations list
+    paddy automations get <job-id>
+    paddy automations show <job-id>
     ```
   </Step>
   <Step title="See run history">
     ```bash
-    openclaw automations runs <job-id>
+    paddy automations runs <job-id>
     ```
   </Step>
 </Steps>
@@ -50,7 +50,7 @@ This page is an index. Each section below moved to a child page, and every ancho
 
 - <a id="how-automations-work"></a>[How automations work](/automation/cron-jobs/how-it-works#how-automations-work)
 - <a id="isolated-run-hardening"></a>[Isolated run hardening](/automation/cron-jobs/how-it-works#isolated-run-hardening)
-- <a id="task-reconciliation"></a>[Task reconciliation](/automation/cron-jobs/how-it-works#task-reconciliation)
+- <a id="task-reconciliation"></a>[Run reconciliation](/automation/cron-jobs/how-it-works#task-reconciliation)
 - <a id="promoting-a-repeated-job-into-an-automation"></a>[Promoting a repeated job into an automation](/automation/cron-jobs/how-it-works#promoting-a-repeated-job-into-an-automation)
 
 ### Schedule and trigger sections
@@ -157,7 +157,6 @@ This page is an index. Each section below moved to a child page, and every ancho
 ## Related
 
 - [Automation](/automation) — all automation mechanisms at a glance
-- [Background Tasks](/automation/tasks) — task ledger for automation runs
 - [Heartbeat](/gateway/heartbeat) — periodic main-session turns
 - [Standing intents](/concepts/standing-intents) — event-triggered work instead of a schedule
 - [Standing orders](/automation/standing-orders) — the operating authority a scheduled run acts under

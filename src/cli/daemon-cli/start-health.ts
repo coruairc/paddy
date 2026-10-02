@@ -2,6 +2,7 @@ import { resolveGatewayStartupTiming } from "../../commands/gateway-startup-timi
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import type { GatewayService } from "../../daemon/service.js";
 import { withCommandProcessScope } from "../../process/exec-spawn.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { createGatewayRestartDeadline } from "./restart-health-deadline.js";
 import {
@@ -64,13 +65,16 @@ export async function verifyGatewayStartReadiness(params: {
         port,
         defaultTimeoutSeconds: Math.round(deadlineMs / 1000),
       }).failMessage,
-      [formatCliCommand("openclaw gateway status --deep")],
+      [formatCliCommand(`${CLI_NAME} gateway status --deep`)],
       "still-starting",
     );
     return;
   }
   params.fail(
     `Gateway start timed out after ${Math.round(deadlineMs / 1000)}s waiting for /healthz and /readyz.`,
-    [formatCliCommand("openclaw gateway status --deep"), formatCliCommand("openclaw doctor")],
+    [
+      formatCliCommand(`${CLI_NAME} gateway status --deep`),
+      formatCliCommand(`${CLI_NAME} doctor`),
+    ],
   );
 }

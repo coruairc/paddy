@@ -1,5 +1,5 @@
 ---
-summary: "How OpenClaw manages conversation sessions"
+summary: "How Paddy manages conversation sessions"
 read_when:
   - You want to understand session routing and isolation
   - You want to configure DM scope for multi-user setups
@@ -7,7 +7,7 @@ read_when:
 title: "Session management"
 ---
 
-OpenClaw routes every inbound message to a **session** based on where it came
+Paddy routes every inbound message to a **session** based on where it came
 from: DMs, group chats, cron jobs, etc. All session state is owned by the
 **gateway**; UI clients query the gateway for session data.
 
@@ -74,7 +74,7 @@ If the same person contacts you from multiple channels, use
 they share a session.
 </Tip>
 
-Verify your setup with `openclaw security audit`.
+Verify your setup with `paddy security audit`.
 
 ## Retired channel docking
 
@@ -122,13 +122,13 @@ context, and replies to the source room remain unchanged.
 
 ## Incognito sessions
 
-Incognito sessions are available only from the Control UI's **New thread** screen. Turn on **Incognito** before starting the thread to keep its session entry, transcript, and compaction state in process memory instead of on disk. The thread expires 24 hours after creation or when the Gateway restarts, whichever comes first. Activity does not extend its lifetime. Expiry stops active work and deletes the session and transcript without an archive. Incognito does not run OpenClaw's automatic memory flush, and does not create a transcript archive when you reset or delete it. Codex-backed runs also start their harness thread in ephemeral mode, so Codex writes no rollout or local session-state files; other model providers use HTTP APIs and keep no local provider transcript in OpenClaw.
+Incognito sessions are available only from the Control UI's **New thread** screen. Turn on **Incognito** before starting the thread to keep its session entry, transcript, and compaction state in process memory instead of on disk. The thread expires 24 hours after creation or when the Gateway restarts, whichever comes first. Activity does not extend its lifetime. Expiry stops active work and deletes the session and transcript without an archive. Incognito does not run Paddy's automatic memory flush, and does not create a transcript archive when you reset or delete it. Codex-backed runs also start their harness thread in ephemeral mode, so Codex writes no rollout or local session-state files; other model providers use HTTP APIs and keep no local provider transcript in Paddy.
 
-Agent RPC runs and delegated tasks keep content-free task records for lifecycle, cancellation, and completion tracking. Their prompts, labels, progress summaries, results, and free-form errors are not saved in those records. Live task activity and completion delivery remain available.
+Delegated work uses its native execution and completion owners. Live subagent activity and completion delivery remain available.
 
-The `incognito-` segment is reserved for dashboard, subagent, and hidden internal session keys; `openclaw doctor --fix` renames any colliding legacy durable keys.
+The `incognito-` segment is reserved for dashboard, subagent, and hidden internal session keys; `paddy doctor --fix` renames any colliding legacy durable keys.
 
-Incognito does not restrict the agent's normal tools. An explicit request to save information, or any tool-driven file write, can still persist data outside the incognito session store. Your configured model provider still processes the messages you send. Incognito content is excluded from ordinary Gateway output, delivery and response diagnostics, WebSocket event previews, raw-stream, cache-trace, and Anthropic payload logs. Live replies remain available, and OpenClaw still records operational diagnostics and content-free audit metadata such as HMAC references.
+Incognito does not restrict the agent's normal tools. An explicit request to save information, or any tool-driven file write, can still persist data outside the incognito session store. Your configured model provider still processes the messages you send. Incognito content is excluded from ordinary Gateway output, delivery and response diagnostics, WebSocket event previews, raw-stream, cache-trace, and Anthropic payload logs. Live replies remain available, and Paddy still records operational diagnostics and content-free audit metadata such as HMAC references.
 
 On multi-user gateways, incognito threads are visible only to admin-scope connections and never appear through another session's agent session tools or transcript search. This protects them from storage and other gateway-mediated users, not from the gateway owner or process operator, who can always observe live sessions.
 
@@ -202,7 +202,7 @@ Opt into automatic resets globally, then override them per chat type or channel:
 
 ## Gateway restart recovery
 
-When a Gateway restart interrupts an active turn, OpenClaw tries to continue
+When a Gateway restart interrupts an active turn, Paddy tries to continue
 the existing session automatically. Three attempts that fail to start a backend
 turn exhaust the recovery budget. Once a real backend turn starts,
 the budget refreshes, so a later Gateway restart does not consume the old allowance.
@@ -239,20 +239,20 @@ timestamps:
 
 To import legacy `sessions.json` rows and hot transcript JSONL history from an
 older installation, stop the Gateway, back up its state, and run
-`openclaw doctor --fix` before restarting it. Gateway and local CLI startup use
+`paddy doctor --fix` before restarting it. Gateway and local CLI startup use
 SQLite without importing, restoring, or rewriting legacy session files.
 If startup finds a legacy store, it refuses readiness and prints the Doctor
 command for the active profile instead of silently starting with empty history.
 During Doctor import, rows without `sessionStartedAt` are resolved from the
 legacy transcript JSONL session header when available. If an older row also
 lacks `lastInteractionAt`, idle freshness falls back to that session start time,
-not to later bookkeeping writes. Use `openclaw doctor --session-sqlite inspect
+not to later bookkeeping writes. Use `paddy doctor --session-sqlite inspect
 --session-sqlite-all-agents` and the [Doctor migration
 sequence](/cli/doctor#session-sqlite-migration) for inspection and validation.
 
 ## Session maintenance
 
-OpenClaw bounds session storage over time via `session.maintenance`, defaults
+Paddy bounds session storage over time via `session.maintenance`, defaults
 shown:
 
 ```json5
@@ -273,7 +273,7 @@ For production-sized `maxEntries` limits, Gateway runtime writes use a small
 high-water buffer and clean back down to the configured cap in batches.
 Session store reads do not prune or cap entries during Gateway startup, so
 startup and isolated cron sessions do not pay for a full store cleanup.
-`openclaw sessions cleanup --enforce` applies the cap immediately.
+`paddy sessions cleanup --enforce` applies the cap immediately.
 
 Ordinary entry writes also arm background maintenance at the next age boundary,
 with a periodic recheck every 30 minutes while the store remains open. This lets
@@ -301,7 +301,7 @@ therefore remain above the cap when protected rows alone exceed it.
 Root sessions and sessions auto-parented to the agent's Home root can be pinned;
 genuine child sessions and subagent runs reject pin requests. Persistent child
 sessions retain their sidebar nesting; subagent runs appear in transcript activity
-and Tasks views. Existing child pins disappear and no longer protect the session
+and session transcripts. Existing child pins disappear and no longer protect the session
 from maintenance.
 
 Gateway model-run probe sessions are short-lived by default. Rows matching
@@ -347,11 +347,11 @@ eligible history and the store remains over budget, automatic checks back off
 for 30 minutes and log one warning until the pressure clears or the budget changes.
 The warning recommends raising `session.maintenance.maxDiskBytes` or exporting
 and deleting unneeded sessions. Checks resume on subsequent activity;
-`openclaw sessions cleanup --enforce` remains available immediately.
+`paddy sessions cleanup --enforce` remains available immediately.
 
 Cleanup first tries to truncate the WAL without waiting for readers. If readers
-prevent truncation, a complete PASSIVE checkpoint is sufficient: every observed
-frame must have reached the main database, even if the WAL file remains allocated.
+prevent truncation, a complete PASSIVE checkpoint is sufficient: frames relevant
+to cleanup must have reached the main database, even if the WAL file remains allocated.
 Retained WAL bytes still count toward the physical budget. Successful cleanup
 logs one outcome with the before/after bytes and removal counts.
 
@@ -359,10 +359,13 @@ An incomplete SQLite WAL checkpoint is a separate deferral. Cleanup preserves
 archives and history instead of deleting more data behind the blocked checkpoint.
 The result records `deferredReason: "checkpoint-incomplete"`, WAL bytes before and
 after, and the checkpoint outcome. Automatic and manual budget passes remain
-deferred until the checkpoint owner observes a completed checkpoint; elapsed time
-or a budget change alone does not retry pruning. Normal periodic checkpointing
-continues, and subsequent activity can resume cleanup after recovery, including
-after a system clock correction.
+deferred until the checkpoint owner records completion after the pending cleanup
+work. Newer frames from concurrent writes do not erase that completion. Each SQLite cleanup
+deletion or vacuum commit requires a new completion before further pruning, so a
+reader pinning those changes still defers cleanup. Ordering uses monotonic time;
+elapsed time, a budget change, or a system clock correction cannot release the gate.
+Normal periodic checkpointing continues, and subsequent activity can resume cleanup
+after recovery.
 
 Look for `session history disk budget deferred until a completed WAL checkpoint is observed`
 in the Gateway log. Its checkpoint fields include bounded operation names for
@@ -374,20 +377,20 @@ can remain unidentified. No transcript contents, SQL text, or bound values are i
 
 If you previously used DM isolation and later returned `session.dmScope` to
 `main`, preview stale peer-keyed DM rows with
-`openclaw sessions cleanup --dry-run --fix-dm-scope`. Applying the same flag
+`paddy sessions cleanup --dry-run --fix-dm-scope`. Applying the same flag
 retires those old direct-DM rows and keeps their transcripts as deleted
 archives.
 
-Preview any maintenance run with `openclaw sessions cleanup --dry-run`.
+Preview any maintenance run with `paddy sessions cleanup --dry-run`.
 
 ## Inspecting sessions
 
-| Command                    | Shows                                           |
-| -------------------------- | ----------------------------------------------- |
-| `openclaw status`          | Session store path and recent activity          |
-| `openclaw sessions --json` | All sessions (filter with `--active <minutes>`) |
-| `/status` in chat          | Context usage, model, and toggles               |
-| `/context list`            | What is in the system prompt                    |
+| Command                 | Shows                                           |
+| ----------------------- | ----------------------------------------------- |
+| `paddy status`          | Session store path and recent activity          |
+| `paddy sessions --json` | All sessions (filter with `--active <minutes>`) |
+| `/status` in chat       | Context usage, model, and toggles               |
+| `/context list`         | What is in the system prompt                    |
 
 <a id="further-reading" />
 
@@ -403,5 +406,4 @@ Preview any maintenance run with `openclaw sessions cleanup --dry-run`.
 - [Multi-agent sandbox and tools](/tools/multi-agent-sandbox-tools) - per-agent sandbox and tool restrictions, including session visibility
 - [Transcript hygiene](/reference/transcript-hygiene) - in-memory, provider-specific transcript sanitization applied before a run
 - [Command queue](/concepts/queue)
-- [Background Tasks](/automation/tasks) - how detached work creates task records with session references
 - [Channel routing](/channels/channel-routing) - how inbound messages are routed to sessions

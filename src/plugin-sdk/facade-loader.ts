@@ -1,6 +1,7 @@
 // Facade loader helpers resolve plugin public API modules from source, dist, or installed roots.
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveBundledPluginsDir } from "../plugins/bundled-dir.js";
 import { shouldRejectHardlinkedPluginFiles } from "../plugins/hardlink-policy.js";
 import {
@@ -239,7 +240,7 @@ function resolveFacadeBoundaryOpenParams(boundaryRoot: string): {
     return checked;
   }
   if (isPathAtOrInside(boundaryRoot, getOpenClawPackageRoot())) {
-    return { boundaryLabel: "OpenClaw package root", rejectHardlinks: false };
+    return { boundaryLabel: `${PRODUCT_NAME} package root`, rejectHardlinks: false };
   }
   const bundledDir = resolveBundledPluginsDir();
   if (bundledDir && isPathAtOrInside(boundaryRoot, bundledDir)) {

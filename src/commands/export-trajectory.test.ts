@@ -90,7 +90,7 @@ describe("exportTrajectoryCommand", () => {
     await expectTrajectoryFailure(
       exportTrajectoryCommand({}, runtime),
       runtime,
-      "--session-key is required. Run openclaw sessions to choose a session.",
+      "--session-key is required. Run paddy sessions to choose a session.",
     );
     expect(mocks.resolveStorePath).not.toHaveBeenCalled();
     expect(mocks.loadSessionEntryReadOnly).not.toHaveBeenCalled();
@@ -176,7 +176,7 @@ describe("exportTrajectoryCommand", () => {
     [
       "unknown",
       "nope-agent",
-      'Unknown agent id "nope-agent". Run openclaw agents list to see configured agents.',
+      'Unknown agent id "nope-agent". Run paddy agents list to see configured agents.',
     ],
     ["whitespace-only", "   ", "--agent must not be blank"],
   ])("rejects an %s explicit agent before reading a session", async (_label, agent, message) => {
@@ -365,7 +365,7 @@ describe("exportTrajectoryCommand", () => {
     await expectTrajectoryFailure(
       exportTrajectoryCommand({ sessionKey: "agent:main:telegram:direct:123" }, runtime),
       runtime,
-      "Session not found: agent:main:telegram:direct:123. Run openclaw sessions to see available sessions.",
+      "Session not found: agent:main:telegram:direct:123. Run paddy sessions to see available sessions.",
     );
 
     expect(mocks.resolveSessionTranscriptReadTarget).not.toHaveBeenCalled();

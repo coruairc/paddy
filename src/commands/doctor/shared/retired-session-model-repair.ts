@@ -38,7 +38,7 @@ export function repairRetiredSessionModelRef(
     entry.authProfileOverride &&
     (entry.authProfileOverrideSource === "user" || entry.authProfileOverrideSource === "user-link")
   ) {
-    const warning = `Retained retired ${decision.modelRef} for agent "${agentId}": clearing this session override would still select it with the same pinned account. Choose a supported default or an allowed model override, then rerun openclaw doctor --fix.`;
+    const warning = `Retained retired ${decision.modelRef} for agent "${agentId}": clearing this session override would still select it with the same pinned account. Choose a supported default or an allowed model override, then rerun paddy doctor --fix.`;
     if (!warnings.includes(warning)) {
       warnings.push(warning);
     }

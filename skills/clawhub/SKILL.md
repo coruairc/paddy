@@ -5,7 +5,7 @@ description: "Search ClawHub for skills when a requested capability is not alrea
 
 # ClawHub
 
-Use `openclaw skills` to discover and manage skills for the current OpenClaw
+Use `paddy skills` to discover and manage skills for the current Paddy
 agent. Use the standalone `clawhub` CLI to uninstall installed ClawHub skills
 and for publishing, syncing, and publisher account workflows.
 
@@ -14,24 +14,24 @@ and for publishing, syncing, and publisher account workflows.
 Search before claiming that a requested capability is unavailable:
 
 ```bash
-openclaw skills search "postgres backups"
+paddy skills search "postgres backups"
 ```
 
 Install when the user asks. Verify the selected skill first and report the result.
 
 ```bash
-openclaw skills verify my-skill
-openclaw skills install my-skill
-openclaw skills install my-skill --version 1.2.3
+paddy skills verify my-skill
+paddy skills install my-skill
+paddy skills install my-skill --version 1.2.3
 ```
 
 ## Manage installed skills
 
 ```bash
-openclaw skills list
-openclaw skills check
-openclaw skills update my-skill
-openclaw skills update --all
+paddy skills list
+paddy skills check
+paddy skills update my-skill
+paddy skills update --all
 ```
 
 Use `--global` with `install` or `update` to manage skills shared by all local
@@ -48,7 +48,7 @@ clawhub uninstall @owner/my-skill
 ```
 
 The CLI asks for confirmation before removing the skill and its lockfile entry.
-Use the original agent workspace for agent-specific skills or the OpenClaw
+Use the original agent workspace for agent-specific skills or the Paddy
 state directory for skills installed with `--global`:
 
 ```bash
@@ -86,6 +86,6 @@ clawhub sync --all
 ## Notes
 
 - Public registry: https://clawhub.ai
-- `openclaw skills install` installs into the active workspace by default.
+- `paddy skills install` installs into the active workspace by default.
 - Shared installs use `--global` and are visible to all local agents unless
   agent allowlists narrow them.

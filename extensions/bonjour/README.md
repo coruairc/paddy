@@ -1,6 +1,6 @@
 # Bonjour Gateway Discovery
 
-Help nearby OpenClaw apps and devices find your Gateway on the local network.
+Help nearby Paddy apps and devices find your Gateway on the local network.
 This plugin advertises the Gateway using Bonjour/mDNS. Discovery provides a
 connection hint; the Gateway still needs a reachable address and authentication.
 
@@ -9,7 +9,7 @@ connection hint; the Gateway still needs a reachable address and authentication.
 Bonjour is enabled by default on macOS. To enable it on another host, run:
 
 ```bash
-openclaw plugins enable bonjour
+paddy plugins enable bonjour
 ```
 
 Devices must be on a network that permits multicast discovery. Server and

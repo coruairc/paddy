@@ -1,4 +1,5 @@
 import { uniqueStrings } from "@openclaw/normalization-core/string-normalization";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import type { PluginRuntime } from "../plugins/runtime/types.js";
@@ -55,7 +56,7 @@ export function createMeetingRuntimeSetup<Config extends MeetingPluginConfig, Mo
         ok: true,
         message: params.config.chrome.browserProfile
           ? `Chrome node profile configured: ${params.config.chrome.browserProfile}`
-          : "Local Chrome uses the configured OpenClaw browser profile",
+          : `Local Chrome uses the configured ${PRODUCT_NAME} browser profile`,
       },
       { id: "guest-join", ...guestJoin },
       { id: "captions", ok: true, message: options.captionsMessage(mode) },

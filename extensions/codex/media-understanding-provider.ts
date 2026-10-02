@@ -29,27 +29,11 @@ export function buildCodexMediaUnderstandingProvider(
     id: CODEX_MEDIA_PROVIDER_ID,
     capabilities: ["image"],
     defaultModels: { image: DEFAULT_CODEX_IMAGE_MODEL },
-    describeImage: async (req) =>
+    describeImage: async ({ buffer, fileName, mime, ...req }) =>
       describeCodexImages(
         {
-          images: [
-            {
-              buffer: req.buffer,
-              fileName: req.fileName,
-              mime: req.mime,
-            },
-          ],
-          provider: req.provider,
-          model: req.model,
-          prompt: req.prompt,
-          maxTokens: req.maxTokens,
-          timeoutMs: req.timeoutMs,
-          ...(req.signal ? { signal: req.signal } : {}),
-          profile: req.profile,
-          preferredProfile: req.preferredProfile,
-          authStore: req.authStore,
-          agentDir: req.agentDir,
-          cfg: req.cfg,
+          ...req,
+          images: [{ buffer, fileName, mime }],
         },
         options,
       ),
@@ -81,7 +65,7 @@ async function describeCodexImages(
     options,
     taskLabel: "image understanding",
     developerInstructions:
-      "You are OpenClaw's bounded image-understanding worker. Describe only the provided image content. Do not call tools, edit files, or ask follow-up questions.",
+      "You are Paddy's bounded image-understanding worker. Describe only the provided image content. Do not call tools, edit files, or ask follow-up questions.",
     input: [
       { type: "text", text: buildCodexImagePrompt(req), text_elements: [] },
       ...req.images.map((image) => ({
@@ -128,7 +112,7 @@ async function extractCodexStructured(
     options,
     taskLabel: "structured extraction",
     developerInstructions:
-      "You are OpenClaw's bounded structured-extraction worker. Return only the requested extraction. Do not call tools, edit files, ask follow-up questions, or include secrets.",
+      "You are Paddy's bounded structured-extraction worker. Return only the requested extraction. Do not call tools, edit files, ask follow-up questions, or include secrets.",
     input: buildCodexStructuredInput(req),
     requiredModalities: ["text", "image"],
     isolation: "configured-transport",

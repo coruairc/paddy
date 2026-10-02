@@ -1,6 +1,7 @@
 // Reconciles configured plugin installs after the core package update has completed.
 import path from "node:path";
 import { PLUGIN_CAPABILITY_CONSENT_REQUIRED } from "../../../../packages/gateway-protocol/src/capability-consent-error-details.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import type { PluginInstallRecord } from "../../../config/types.plugins.js";
 import {
@@ -63,9 +64,9 @@ type PostCoreConvergenceResult = {
   installRecords: Record<string, PluginInstallRecord>;
 };
 
-const REPAIR_GUIDANCE = "Run `openclaw update repair` to retry plugin repair.";
+const REPAIR_GUIDANCE = "Run `paddy update repair` to retry plugin repair.";
 const inspectGuidance = (pluginId: string) =>
-  `Run \`openclaw plugins inspect ${pluginId} --runtime --json\` for details.`;
+  `Run \`paddy plugins inspect ${pluginId} --runtime --json\` for details.`;
 
 function smokeFailureGuidance(failure: PluginPayloadSmokeFailure): string[] {
   if (failure.reason !== "unreadable-package-json") {
@@ -75,7 +76,7 @@ function smokeFailureGuidance(failure: PluginPayloadSmokeFailure): string[] {
     ? path.join(failure.installPath, "package.json")
     : "the plugin package.json";
   return [
-    `Fix file access for ${packageJsonPath} so it is readable by the user running OpenClaw. For EACCES or EPERM, correct its ownership or permissions; otherwise resolve the reported filesystem I/O error, then retry.`,
+    `Fix file access for ${packageJsonPath} so it is readable by the user running ${PRODUCT_NAME}. For EACCES or EPERM, correct its ownership or permissions; otherwise resolve the reported filesystem I/O error, then retry.`,
     inspectGuidance(failure.pluginId),
   ];
 }
@@ -144,11 +145,13 @@ async function repairInstalledOpenClawHostLinks(params: {
     return {
       changes: [
         ...(repaired > 0
-          ? [`Repaired OpenClaw host peer link(s) for ${repaired} managed npm plugin package(s).`]
+          ? [
+              `Repaired ${PRODUCT_NAME} host peer link(s) for ${repaired} managed npm plugin package(s).`,
+            ]
           : []),
         ...(registeredRepair.repaired > 0
           ? [
-              `Repaired OpenClaw host peer link(s) for ${registeredRepair.repaired} registered plugin package(s).`,
+              `Repaired ${PRODUCT_NAME} host peer link(s) for ${registeredRepair.repaired} registered plugin package(s).`,
             ]
           : []),
       ],
@@ -160,23 +163,16 @@ async function repairInstalledOpenClawHostLinks(params: {
       throw effectFailure.error;
     }
     beforePersistentEffect?.();
-    const message = `Failed to repair installed OpenClaw host peer links: ${err instanceof Error ? err.message : String(err)}`;
     return {
       changes: [],
-      warnings: [
-        {
-          reason: message,
-          message,
-          guidance: [REPAIR_GUIDANCE],
-        },
-      ],
+      warnings: [formatPeerLinkPackageReadWarning({ error: err })],
       packageReadFailures,
     };
   }
 }
 
 function formatPeerLinkPackageReadWarning(failure: { error: unknown }): PostCoreConvergenceWarning {
-  const message = `Failed to repair installed OpenClaw host peer links: ${failure.error instanceof Error ? failure.error.message : String(failure.error)}`;
+  const message = `Failed to repair installed ${PRODUCT_NAME} host peer links: ${failure.error instanceof Error ? failure.error.message : String(failure.error)}`;
   return {
     reason: message,
     message,

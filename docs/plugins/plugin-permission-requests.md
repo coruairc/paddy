@@ -21,13 +21,13 @@ review.
 
 Pick the gate that matches the decision point you need:
 
-| Gate                             | Use it when                                                              | What it controls                                                                                                  |
-| -------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-| Optional tools                   | A tool should not be visible to the model until the user opts in.        | Tool exposure through `tools.allow`.                                                                              |
-| Plugin permission requests       | A plugin hook or plugin-owned operation must ask before one action runs. | Runtime approval through `plugin.approval.*`.                                                                     |
-| Exec approvals                   | A host command or shell-like tool needs operator approval.               | Host exec policy and durable exec allowlists.                                                                     |
-| Codex native permission requests | Codex asks before native shell, file, MCP, or app-server actions.        | Codex app-server or native hook approval handling, routed through plugin approvals when OpenClaw owns the prompt. |
-| MCP approval elicitations        | A Codex MCP server requests approval for a tool call.                    | MCP approval responses bridged through OpenClaw plugin approvals.                                                 |
+| Gate                             | Use it when                                                              | What it controls                                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Optional tools                   | A tool should not be visible to the model until the user opts in.        | Tool exposure through `tools.allow`.                                                                           |
+| Plugin permission requests       | A plugin hook or plugin-owned operation must ask before one action runs. | Runtime approval through `plugin.approval.*`.                                                                  |
+| Exec approvals                   | A host command or shell-like tool needs operator approval.               | Host exec policy and durable exec allowlists.                                                                  |
+| Codex native permission requests | Codex asks before native shell, file, MCP, or app-server actions.        | Codex app-server or native hook approval handling, routed through plugin approvals when Paddy owns the prompt. |
+| MCP approval elicitations        | A Codex MCP server requests approval for a tool call.                    | MCP approval responses bridged through Paddy plugin approvals.                                                 |
 
 Optional tools are a discovery-time gate. Plugin permission requests are a
 per-call gate. Use both when a sensitive tool should require explicit opt-in
@@ -36,7 +36,7 @@ before the model can see it and approval before the action runs.
 ## Request approval before a tool call
 
 Most plugin-authored prompts should start in a `before_tool_call` hook. The hook
-runs after the model selects a tool and before OpenClaw executes it:
+runs after the model selects a tool and before Paddy executes it:
 
 ```typescript
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
@@ -144,12 +144,12 @@ Message audiences can be `internal` or `external`. External-post visibility can
 be `public` or `restricted`. Recipient previews contain at most five identities.
 All strings are sanitized and bounded before display: targets and recipient
 identities are limited to 128 characters, payment amounts to 40, and currencies
-to 12. If sanitization would exceed a bound, OpenClaw omits the scope while
+to 12. If sanitization would exceed a bound, Paddy omits the scope while
 preserving the normal approval prompt.
 
 ## Decision behavior
 
-OpenClaw creates a pending approval with a `plugin:` ID, delivers it to the
+Paddy creates a pending approval with a `plugin:` ID, delivers it to the
 available approval surfaces, and waits for a decision.
 
 | Decision          | Result                                                                    |
@@ -168,12 +168,12 @@ plugin compatibility but is deprecated and ignored. Do not set it in new hooks.
 
 `allow-always` is only durable when the requesting plugin or runtime implements
 that persistence. For ordinary `before_tool_call.requireApproval` hooks,
-OpenClaw treats `allow-once` and `allow-always` as approval decisions for the
+Paddy treats `allow-once` and `allow-always` as approval decisions for the
 current call and passes the resolved value to `onResolution`. If your plugin
 offers `allow-always`, document and implement exactly what future calls it
 trusts.
 
-If the hook also returns `params`, OpenClaw snapshots the base parameters and
+If the hook also returns `params`, Paddy snapshots the base parameters and
 those overrides when approval is requested, then applies the overrides only
 after approval succeeds. A lower-priority hook can still block, but cannot
 rewrite the parameters covered by the pending approval.
@@ -204,6 +204,67 @@ targets, configure `approvals.plugin`:
 forwarding does not route plugin approval prompts, and enabling plugin approval
 forwarding does not change host exec policy.
 
+For Slack decisions, `approvals.plugin.slack` can restrict reviewers without
+changing the bot's message access list. The default `approvers` list applies to
+all plugin approvals. A `plugins` entry overrides it for one selected native
+tool plugin. A tool entry overrides that plugin's
+list for one exact tool:
+
+```json5
+{
+  approvals: {
+    plugin: {
+      slack: {
+        approvers: ["team:T12345678:user:U12345678"],
+        plugins: {
+          "catalog-tools": {
+            approvers: ["team:T12345678:user:U23456789"],
+            tools: {
+              "create%20issue": {
+                approvers: ["team:T12345678:user:U34567890"],
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+For native Paddy tools, use the tool registration's plugin ID and a tool key
+of `encodeURIComponent(rawToolName)`. Only the exact matching list applies:
+tool, then plugin, then default. Slack reviewers accept raw `U…`/`W…` user IDs
+within the selected Slack account, or workspace-qualified IDs as shown above.
+Decisions are bound to the bot's authenticated workspace; qualified reviewers
+from a different workspace do not receive approval DMs. An explicit empty list denies
+Slack decisions at that level. If the default `approvers` field is omitted,
+requests with a known selected owner and no matching override retain the existing
+Slack account `allowFrom` or `defaultTo` authorization. A missing selected owner
+denies Slack decisions when plugin overrides exist. These lists authorize Slack
+card buttons and `/approve`, while authenticated Gateway approval clients still
+use their own scopes. The card buttons work for a listed reviewer even without
+ordinary bot DM access; typed `/approve` still requires that access. A tool
+card can show the plugin-provided request title and description even when the
+reviewer cannot read the source DM or private channel; choose reviewers with
+that visibility in mind. A tool override requires an exact selected tool match;
+the request cannot inherit a broader reviewer list when that identity is unavailable.
+An effective nonempty reviewer list enables native Slack delivery for that
+request, independently of native exec approvals and plugin forwarding. Native
+tool lists apply only when a policy or hook requests approval for that tool;
+setting reviewers does not itself prompt for approval.
+When a Slack reviewer list is selected, Slack delivers the card only through
+native reviewer DMs. Generic `approvals.plugin.targets` Slack forwarding cannot
+enforce that recipient list, even when the target names a reviewer. If the
+native Slack handler is unavailable, generic forwarding will not send a card;
+connect the bot or an approval-capable Gateway client and retry.
+
+Reviewer lists are checked when routing a new request and again when accepting
+an approval decision. Changing the list does not retract existing cards or
+cancel messages already queued for delivery. A former reviewer may still see
+such a card, but cannot approve it after losing access. Cards for expired or
+cancelled requests cannot authorize an action.
+
 When a prompt includes manual approval text, resolve it with one of the offered
 decisions:
 
@@ -222,7 +283,7 @@ delivery, and channel-specific approver rules.
 Codex native permission prompts can also travel through plugin approvals, but
 they have different ownership than plugin-authored hooks.
 
-- Codex app-server approval requests route through OpenClaw after Codex review.
+- Codex app-server approval requests route through Paddy after Codex review.
 - The native hook `permission_request` relay can ask through
   `plugin.approval.request` when that relay is enabled.
 - MCP tool approval elicitations route through plugin approvals when Codex marks

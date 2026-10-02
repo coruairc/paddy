@@ -4,6 +4,8 @@
 import { redactSensitiveUrlLikeString } from "@openclaw/net-policy/redact-sensitive-url";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { sanitizeTerminalText } from "../../../packages/terminal-core/src/safe-text.js";
+import { PRODUCT_NAME } from "../../brand.js";
+import type { ChannelStatusIssue } from "../../channels/plugins/types.core.js";
 import type { ProgressReporter } from "../../cli/progress.js";
 import { formatConfigIssueLine } from "../../config/issue-format.js";
 import {
@@ -29,6 +31,7 @@ import {
 import { dedupeByKey } from "../../shared/dedupe-by-key.js";
 import type { buildWorkspaceSkillReadiness } from "../../skills/discovery/status.js";
 import { formatDeliveryQueueHealthLine } from "../health-format.js";
+import { countActiveStatusAgents } from "../status-overview-values.js";
 import type {
   resolveStatusGatewayHealthSafe,
   StatusGatewayDiagnosticsResult,
@@ -53,14 +56,6 @@ type ConfigSnapshotLike = {
 
 type PortUsageLike = Pick<PortUsage, "listeners" | "port" | "status" | "hints">;
 
-type ChannelIssueLike = {
-  channel: string;
-  accountId: string;
-  kind: string;
-  message: string;
-  fix?: string;
-};
-
 type DeliveryDiagnosticsLike = {
   summary?: {
     byType?: Record<string, number>;
@@ -83,12 +78,6 @@ type AgentStatusLike = {
 };
 
 const AGENT_ACTIVITY_SOFT_WARNING_MS = 30 * 60_000;
-
-function countRecentAgentSessions(agentStatus: AgentStatusLike, thresholdMs: number): number {
-  return agentStatus.agents.filter(
-    (agent) => agent.lastActiveAgeMs != null && agent.lastActiveAgeMs <= thresholdMs,
-  ).length;
-}
 
 function countGatewayListenerPids(portUsage: PortUsageLike): number {
   const pids = new Set<number>();
@@ -131,7 +120,6 @@ function latestDeliveryEventAgeMs(snapshot: DeliveryDiagnosticsLike): number | n
   return latestTs > 0 ? Date.now() - latestTs : null;
 }
 
-/** Appends config, gateway, channel, delivery, and log diagnostics to the status-all report. */
 export async function appendStatusAllDiagnosis(params: {
   lines: string[];
   progress: ProgressReporter;
@@ -153,7 +141,7 @@ export async function appendStatusAllDiagnosis(params: {
   skillReadiness: ReturnType<typeof buildWorkspaceSkillReadiness> | null;
   pluginCompatibility: PluginCompatibilityNotice[];
   channelsStatus: unknown;
-  channelIssues: ChannelIssueLike[];
+  channelIssues: ChannelStatusIssue[];
   deliveryDiagnostics: StatusGatewayDiagnosticsResult | null;
   exporterDiagnostics: StatusGatewayDiagnosticsResult | null;
   agentStatus?: AgentStatusLike;
@@ -267,7 +255,7 @@ export async function appendStatusAllDiagnosis(params: {
       const gatewayPidCount = countGatewayListenerPids(params.portUsage);
       if (gatewayPidCount > 1) {
         lines.push(
-          `  ${muted(`${gatewayPidCount} OpenClaw gateway processes appear to be listening on port ${params.port}; stop stale gateway processes before trusting channel health.`)}`,
+          `  ${muted(`${gatewayPidCount} ${PRODUCT_NAME} gateway processes appear to be listening on port ${params.port}; stop stale gateway processes before trusting channel health.`)}`,
         );
       }
       for (const line of formatPortDiagnostics(params.portUsage)) {
@@ -278,7 +266,7 @@ export async function appendStatusAllDiagnosis(params: {
         `  ${muted("Detected dual-stack loopback listeners (127.0.0.1 + ::1) for one gateway process.")}`,
       );
     } else if (expectedGatewayListeners) {
-      lines.push(`  ${muted("Detected OpenClaw Gateway listener on the configured port.")}`);
+      lines.push(`  ${muted(`Detected ${PRODUCT_NAME} Gateway listener on the configured port.`)}`);
     }
   }
 
@@ -311,10 +299,10 @@ export async function appendStatusAllDiagnosis(params: {
   }
 
   if (params.agentStatus) {
-    const recentSessions = countRecentAgentSessions(
-      params.agentStatus,
-      AGENT_ACTIVITY_SOFT_WARNING_MS,
-    );
+    const recentSessions = countActiveStatusAgents({
+      agentStatus: params.agentStatus,
+      activeThresholdMs: AGENT_ACTIVITY_SOFT_WARNING_MS,
+    });
     const hasKnownSessions = params.agentStatus.totalSessions > 0;
     const shouldWarn = hasKnownSessions && recentSessions === 0;
     emitCheck(
@@ -341,7 +329,7 @@ export async function appendStatusAllDiagnosis(params: {
       emitUnavailableDiagnostics({
         label: "Telemetry exporters",
         detail: `Exporter diagnostics failed: ${params.exporterDiagnostics.error}`,
-        retry: "openclaw gateway stability --type telemetry.exporter",
+        retry: "paddy gateway stability --type telemetry.exporter",
       });
     }
   }
@@ -389,7 +377,7 @@ export async function appendStatusAllDiagnosis(params: {
       emitUnavailableDiagnostics({
         label: "Inbound delivery telemetry",
         detail: "Delivery diagnostics returned an invalid response.",
-        retry: "openclaw gateway stability",
+        retry: "paddy gateway stability",
       });
     }
   } else if (
@@ -400,7 +388,7 @@ export async function appendStatusAllDiagnosis(params: {
     emitUnavailableDiagnostics({
       label: "Inbound delivery telemetry",
       detail: `Delivery diagnostics failed: ${params.deliveryDiagnostics.error}`,
-      retry: "openclaw gateway stability",
+      retry: "paddy gateway stability",
     });
   }
 

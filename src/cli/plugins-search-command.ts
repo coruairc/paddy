@@ -25,7 +25,7 @@ function formatPackageSearchLine(entry: ClawHubPackageSearchResult): string {
     pkg.latestVersion ? formatVersionLabel(pkg.latestVersion) : undefined,
   ].filter(Boolean);
   const summary = pkg.summary ? theme.muted(` — ${pkg.summary}`) : "";
-  return `${pkg.name}  ${theme.muted(flags.join(" | "))}${summary}\n  ${theme.muted(`Install: ${formatCliCommand(`openclaw plugins install clawhub:${pkg.name}`)}`)}`;
+  return `${pkg.name}  ${theme.muted(flags.join(" | "))}${summary}\n  ${theme.muted(`Install: ${formatCliCommand(`${CLI_NAME} plugins install clawhub:${pkg.name}`)}`)}`;
 }
 
 /** Search ClawHub for installable plugins and write JSON or terminal output. */

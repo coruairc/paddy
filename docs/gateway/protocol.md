@@ -9,7 +9,7 @@ doc-schema-version: 1
 ---
 
 The Gateway WS protocol is the single control plane and node transport for
-OpenClaw. Operator and node clients (CLI, web UI, macOS app, iOS/Android nodes,
+Paddy. Operator and node clients (CLI, web UI, macOS app, iOS/Android nodes,
 headless nodes) connect over WebSocket and declare a **role** and **scope** at
 handshake time.
 
@@ -31,7 +31,7 @@ the TypeBox schemas re-exported from `packages/gateway-protocol/src/schema.ts`.
 - [Handshake and roles](/gateway/protocol/handshake) — connect frame, hello-ok payload, client capabilities, roles, and scopes.
 - [Presence and events](/gateway/protocol/presence) — presence snapshots, node host stats, and broadcast event scoping.
 - [RPC methods](/gateway/protocol/rpc-methods) — RPC method families, discovery, session list bootstrap, and event families.
-- [Ledger RPCs](/gateway/protocol/ledgers) — audit ledger and task ledger RPCs, their scopes, cursors, and payloads.
+- [Ledger RPCs](/gateway/protocol/ledgers) — audit ledger RPCs, their scopes, cursors, and payloads.
 - [Operator methods](/gateway/protocol/operator-methods) — operator helper methods, exec approvals, and agent delivery fallback.
 - [Versioning](/gateway/protocol/versioning) — protocol version constants, the N-1 node window, and client defaults.
 - [Auth and device identity](/gateway/protocol/auth) — handshake auth paths, device identity, pairing signatures, and TLS pinning.
@@ -75,7 +75,6 @@ Every section heading from the previous single-page version keeps its anchor her
 - <a id="node-helper-methods" />[Node helper methods](/gateway/protocol/rpc-methods#node-helper-methods)
 - <a id="node-exec-lifecycle-events" />[Node exec lifecycle events](/gateway/protocol/rpc-methods#node-exec-lifecycle-events)
 - <a id="audit-ledger-rpc" />[Audit ledger RPC](/gateway/protocol/ledgers#audit-ledger-rpc)
-- <a id="task-ledger-rpcs" />[Task ledger RPCs](/gateway/protocol/ledgers#task-ledger-rpcs)
 - <a id="operator-helper-methods" />[Operator helper methods](/gateway/protocol/operator-methods#operator-helper-methods)
 - <a id="models.list-views" />[`models.list` views](/gateway/protocol/operator-methods#models.list-views)
 - <a id="models-list-views" />[`models.list` views](/gateway/protocol/operator-methods#models-list-views)
@@ -91,7 +90,7 @@ Every section heading from the previous single-page version keeps its anchor her
 ## Related
 
 - [Building a Gateway client](/gateway/clients)
-- [Embedding OpenClaw](/gateway/embedding)
+- [Embedding Paddy](/gateway/embedding)
 - [Gateway runbook](/gateway)
 - [Operator scopes](/gateway/operator-scopes) — the scopes protocol methods are authorized against
 - [Audit history](/gateway/audit) — metadata-only activity history and decision receipts

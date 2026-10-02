@@ -45,10 +45,10 @@ plugin. OAuth MCP servers are not supported by this node-hosted v1 path.
 
 Current node hosts declare the built-in `mcp.tools.call.v1` command family during
 their initial pairing even when no MCP server is configured. A node paired on an
-older OpenClaw version may request a one-time command-surface upgrade after the
+older Paddy version may request a one-time command-surface upgrade after the
 node host is updated. Adding, removing, or filtering servers after that does not
 require re-pairing because the approved command family is unchanged. Restart
-`openclaw node run` or `openclaw node restart` to apply node MCP config changes;
+`paddy node run` or `paddy node restart` to apply node MCP config changes;
 the node host does not watch this config.
 
 Server-advertised tool-list changes apply live and replace the published node
@@ -64,11 +64,11 @@ including node-hosted MCP tools, with
 
 ## Node-hosted skills
 
-Install skills under the node machine's active OpenClaw skills directory,
+Install skills under the node machine's active Paddy skills directory,
 `~/.openclaw/skills` by default. `OPENCLAW_HOME`, `OPENCLAW_STATE_DIR`, and
 `OPENCLAW_CONFIG_PATH` move that active profile. `OPENCLAW_STATE_DIR` takes
 precedence for skills; otherwise, `skills/` is beside the path printed by
-`openclaw config file`. The headless node host publishes valid `SKILL.md` files
+`paddy config file`. The headless node host publishes valid `SKILL.md` files
 after it connects, and the Gateway adds them to agent skill snapshots only while
 that node remains connected. Each skill directory name must match the `name`
 frontmatter field so the abstract node locator maps to one entry without adding
@@ -76,7 +76,7 @@ another protocol field.
 
 The initial node-role pairing approves skill publication. Adding, removing, or
 changing skills does not require another pairing or Gateway configuration
-change. Restart `openclaw node run` or `openclaw node restart` after changing
+change. Restart `paddy node run` or `paddy node restart` after changing
 node skill files; the node host does not watch the skills directory.
 
 Node-hosted skill entries identify their node and carry their execution
@@ -87,7 +87,7 @@ not node skill locators; runtimes without the normal read tool can instead run
 `cat SKILL.md` through `exec host=node node=<node-id>` with the advertised
 `node://.../skills/<name>` directory as `workdir`. Referenced files and binaries
 use the same exec target and workdir. The node host resolves that locator against
-its active OpenClaw state directory, so relative paths resolve on the node rather
+its active Paddy state directory, so relative paths resolve on the node rather
 than the Gateway machine. The publishing node must have approved `system.run`,
 and the agent's exec policy must allow `host=node`; otherwise the skill stays
 out of that agent's snapshot.

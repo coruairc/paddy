@@ -8,25 +8,36 @@ title: "Manage the Gateway service"
 sidebarTitle: "Service"
 ---
 
-Native service lifecycle, recovery, wrappers, and the managed-service option reference. Part of the [`openclaw gateway`](/cli/gateway) reference.
+Native service lifecycle, recovery, wrappers, and the managed-service option reference. Part of the [`paddy gateway`](/cli/gateway) reference.
 
 ## Manage the Gateway service
 
 ```bash
-openclaw gateway install
-openclaw gateway start
-openclaw gateway stop
-openclaw gateway restart
-openclaw gateway uninstall
+paddy gateway install
+paddy gateway start
+paddy gateway stop
+paddy gateway restart
+paddy gateway uninstall
 ```
 
 `gateway stop` remains available when plugin configuration needs Doctor migration.
 It still validates core configuration and refuses configuration written by a newer
-OpenClaw binary. Start and restart continue to validate plugin configuration.
+Paddy binary. Start and restart continue to validate plugin configuration.
+
+On Windows, Scheduled Task stop and restart first ask the verified Gateway to drain
+and exit. Older or unresponsive Gateways fall back to termination of the captured
+process tree; a replacement instance is preserved. Transient SQLite sharing errors
+after confirmed process exit are retried; if inspection remains unavailable, the
+command warns and checks that the Gateway port is free before continuing with restart.
+
+If task settlement inspection remains unavailable
+within the stop budget, restart still attempts the captured task after confirming
+the Gateway exited, then reports that restart is unverified. An observed replacement
+is preserved and the restart is refused.
 
 If `gateway start` reaches its readiness deadline while the managed Gateway is
 still starting, it reports `still-starting` and exits with code `2`. The service
-keeps running; check `openclaw gateway status --deep` again before restarting it.
+keeps running; check `paddy gateway status --deep` again before restarting it.
 A crashed service or a foreign listener still produces a failure. Port ownership
 alone does not prove readiness or rule out warm-up.
 
@@ -35,17 +46,17 @@ alone does not prove readiness or rule out warm-up.
 If installation or a managed update reports `SERVICE_DEFINITION_UNKNOWN`, first
 restore access to the service files and native service manager. `--force` does not
 bypass unknown service facts. Inspect the selected service with
-`openclaw gateway status --deep` from the account and profile that own it.
+`paddy gateway status --deep` from the account and profile that own it.
 
 For a malformed definition or unsupported environment syntax, privately back up
 the service files and any values stored only in its environment. Correct unresolved
-or unsupported values before reinstalling; OpenClaw cannot infer their intended
+or unsupported values before reinstalling; Paddy cannot infer their intended
 values. Then, from an external shell using the same account and profile:
 
 ```bash
-openclaw gateway uninstall
-openclaw gateway install
-openclaw gateway health
+paddy gateway uninstall
+paddy gateway install
+paddy gateway health
 ```
 
 Uninstall removes the native registration and launcher, preserving configuration,
@@ -57,7 +68,7 @@ of deleting state or bypassing inspection.
 
 ### Lifecycle requests from Gateway chat
 
-Gateway-hosted OpenClaw chat controls the exact Gateway serving that session.
+Gateway-hosted Paddy chat controls the exact Gateway serving that session.
 An approved start request reports **Gateway already running** without discovering
 or starting another service. Restart keeps the safe local restart behavior.
 
@@ -98,21 +109,31 @@ If systemd definitively refuses a stop after teardown and the same native instan
 remains active with no pending job, the host logs the failed stop and starts a fresh
 Gateway generation in the same process. An uncertain native result is recorded as
 a failed shutdown, without claiming success or starting an in-process replacement.
-After an unexpected disconnect, check `openclaw gateway status` and the native
+After an unexpected disconnect, check `paddy gateway status` and the native
 service logs from an external shell before retrying. Standalone CLI lifecycle
 commands retain their service-management behavior.
 
 ### Pin the service runtime
 
-Forced reinstall retains a supported Node executable recorded in the service.
-Doctor also retains it when no runtime migration is needed. An explicit
-`--runtime node` requests automatic selection again.
+When no runtime option is supplied, forced reinstall retains a supported Node or
+Bun executable recorded in an unpinned service without a wrapper. Update refresh
+does the same without creating a pin. Doctor also defaults to the recorded runtime
+when no runtime migration is needed, including an existing but unloaded service.
+A missing, non-executable, or unsupported recorded Bun falls back to automatic
+Node selection. An explicit `--runtime node` or `--runtime bun` requests automatic
+selection of that runtime.
+
+Configure and advanced onboarding suggest the supported recorded runtime first.
+Without one, their runtime picker suggests the running supported Bun when no
+supported Node is available, otherwise Node. A picker choice is explicit: choosing
+Node on a Bun-only host reports that Node is unavailable before replacing the
+service. Quickstart keeps automatic selection without creating a runtime pin.
 
 Use `--runtime-path` to keep the service on an operator-selected Node or Bun
 executable instead of automatic runtime selection:
 
 ```bash
-openclaw gateway install --runtime-path "/absolute/path/to/node" --force
+paddy gateway install --runtime-path "/absolute/path/to/node" --force
 ```
 
 The path must be absolute, executable, and match `--runtime` when that option is
@@ -123,7 +144,7 @@ The pin is saved in machine-state metadata for this managed service.
 Forced reinstall, update, and definition repair preserve it. A missing or
 unsupported pin fails with a diagnostic rather than silently switching runtimes.
 To replace it, supply another `--runtime-path`; to return to automatic selection,
-run `openclaw gateway install --runtime node --force` without `--runtime-path`.
+run `paddy gateway install --runtime node --force` without `--runtime-path`.
 An explicit wrapper still controls the executable and takes precedence over a pin.
 Installation starts the service and may restart an existing Gateway.
 
@@ -132,15 +153,15 @@ Installation starts the service and may restart an existing Gateway.
 On macOS, the generated LaunchAgent starts a shell wrapper with the generated
 environment file followed by the Gateway command. If `gateway status` reports a
 missing environment-file argument, or the service log reports **Invalid LaunchAgent
-environment file**, run `openclaw gateway install --force` from the owning account
-and profile, then check `openclaw gateway status` and `openclaw health`.
+environment file**, run `paddy gateway install --force` from the owning account
+and profile, then check `paddy gateway status` and `paddy health`.
 
 Back up the plist and private service environment file before repairing a malformed
 definition. If its runtime argument was also changed, select the intended executable
 explicitly with `--runtime-path` as shown above. A recorded runtime pin whose service
 definition has changed must be explicitly selected again. Keep service-only
 environment values available to the reinstall; malformed wrapper arguments can
-prevent OpenClaw from reading the previous environment file.
+prevent Paddy from reading the previous environment file.
 
 ### Install with a wrapper
 
@@ -150,50 +171,51 @@ Use `--wrapper` when the managed service must start through another executable, 
 cat > ~/.local/bin/openclaw-doppler <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-exec doppler run --project my-project --config production -- openclaw "$@"
+exec doppler run --project my-project --config production -- paddy "$@"
 EOF
 chmod +x ~/.local/bin/openclaw-doppler
 
-openclaw gateway install --wrapper ~/.local/bin/openclaw-doppler --force
-openclaw gateway restart
+paddy gateway install --wrapper ~/.local/bin/paddy-doppler --force
+paddy gateway restart
 ```
 
 You can also set the wrapper through the environment. `gateway install` validates that the path is an executable file, writes the wrapper into the service `ProgramArguments`, and persists `OPENCLAW_WRAPPER` in the service environment for later forced reinstalls, updates, and doctor repairs.
 
 ```bash
 OPENCLAW_WRAPPER="$HOME/.local/bin/openclaw-doppler" openclaw gateway install --force
-openclaw doctor
+paddy doctor
 ```
 
 To remove a persisted wrapper, clear `OPENCLAW_WRAPPER` while reinstalling:
 
 ```bash
 OPENCLAW_WRAPPER= openclaw gateway install --force
-openclaw gateway restart
+paddy gateway restart
 ```
 
 <AccordionGroup>
   <Accordion title="Command options">
     - `gateway status`: `--url`, `--port`, `--token`, `--password`, `--timeout`, `--no-probe`, `--require-rpc`, `--deep`, `--json`
-    - `gateway install`: `--port`, `--runtime <node|bun>` (default: `node`), `--runtime-path <path>`, `--token`, `--wrapper <path>`, `--force`, `--json`
+    - `gateway install`: `--port`, `--runtime <node|bun>` (fresh-install default: `node`), `--runtime-path <path>`, `--token`, `--wrapper <path>`, `--force`, `--json`
     - `gateway restart`: `--safe`, `--skip-deferral`, `--force`, `--wait <duration>`, `--preserve-definition`, `--json`
     - `gateway uninstall|start`: `--json`
     - `gateway stop`: `--disable`, `--force`, `--json`
 
   </Accordion>
   <Accordion title="Service runtime">
-    - Node is the primary, default, and recommended managed Gateway runtime.
+    - Node is the primary and recommended managed Gateway runtime and the default for fresh installations; with no explicit runtime, pin, or wrapper, an install running under supported Bun uses that executable without creating a pin if no supported Node is found. Implicit reinstalls retain a supported recorded Node or Bun runtime as described above.
     - For unpinned services, `gateway install` checks the Node executable recorded in the managed service. If it is missing, non-executable, or unsupported, installation refreshes the service without requiring `--force` and reports the replacement path. This also applies when an installer or update refreshes the service. Repair prefers the current CLI's supported Node, retaining stable Homebrew paths, then checks supported system installations. Custom wrappers keep control of their runtime; protected service definitions still require their deployment owner to repair them.
     - Bun 1.4+ with WAL-reset-safe `node:sqlite` is available as an explicit opt-in with `gateway install --runtime bun`.
 
   </Accordion>
   <Accordion title="Lifecycle behavior">
     - `gateway start` is idempotent: when the managed service is already running, it reports the running process and leaves it untouched. A loaded but stopped service is started as before.
+    - On Windows, an explicit `gateway start` re-enables a disabled Scheduled Task after verifying its selected profile and command. It preserves the registered launcher and trigger settings. If enablement succeeds but launch fails, the Task may remain enabled; inspect the same profile with `gateway status --deep` before retrying. `update repair` leaves a Gateway that was already stopped offline; run `gateway start` afterward when you intend to bring it online.
     - If no managed service is installed, `gateway start` prints install hints and exits nonzero. `gateway restart` can first recover an installed-but-unloaded LaunchAgent or a verified unmanaged Gateway; if neither a managed service nor recovery handles the action, it prints the same hints and exits nonzero. Stopping an absent service remains a successful no-op.
-    - If `gateway start` or `gateway restart` needs to repair a stale service definition, the command refuses when the invoking shell resolves a different state directory, config path, or port than the installed service. Match or unset the conflicting environment overrides, or use `openclaw gateway install --force` to retarget the service intentionally.
+    - If `gateway start` or `gateway restart` needs to repair a stale service definition, the command refuses when the invoking shell resolves a different state directory, config path, or port than the installed service. Match or unset the conflicting environment overrides, or use `paddy gateway install --force` to retarget the service intentionally.
     - On Linux, `gateway start` and `gateway restart` also refuse ineffective repairs when an operator-owned systemd drop-in overrides the command or working directory. Inspect the effective unit with `systemctl --user cat <unit>.service`, then update or remove that drop-in. `gateway install --force` rewrites only the managed base unit and warns if the override remains; `Environment=` drop-ins remain supported.
     - `gateway restart --preserve-definition` restarts only an inspectable native service, skips automatic definition repair, and checks health at the installed launcher's port. It does not recover an unmanaged listener and cannot be combined with `--safe` or external supervision. On macOS it can bootstrap an unloaded readable plist without rewriting the plist, environment, wrapper, or permissions; denied native activation fails without file repair. On Windows it also retains existing Startup entries. The `daemon restart` alias accepts the same option.
-    - During writable Linux service installs or refreshes, keep the unit and state directories stationary and avoid concurrent manual edits. OpenClaw serializes its own writers and aborts on detected changes, but cannot coordinate arbitrary filesystem edits. Moving or replacing a parent directory mid-publication can leave a temporary file inside the moved directory; inspect it before retrying.
+    - During writable Linux service installs or refreshes, keep the unit and state directories stationary and avoid concurrent manual edits. Paddy serializes its own writers and aborts on detected changes, but cannot coordinate arbitrary filesystem edits. Moving or replacing a parent directory mid-publication can leave a temporary file inside the moved directory; inspect it before retrying.
     - On macOS, rollback of a failed LaunchAgent replacement restores the previous plist bytes and permission bits, including binary plists. If restoration cannot finish, the command reports the failure.
     - Use `gateway restart` to restart a managed service. Do not chain `gateway stop` and `gateway start` as a restart substitute.
     - The running Gateway records its process identity, listener mode, and supervisor in shared state. Restart preserves a verified live owner while it boots, even before its listener opens; a health timeout does not make that owner stale. A recorded foreground owner receives a targeted restart even when a native service is installed. Scheduled Task cleanup preserves external supervisors and other tasks, identifying their owner in the error. Older Gateways without a recorded identity remain terminable when their arguments exactly match the installed task command. Without that attribution, a held coordinator leaves the process running and asks you to retry after startup. Unverified listeners are reported instead of being killed.
@@ -210,7 +232,7 @@ openclaw gateway restart
     - Examples: 32 GiB capacity selects 8 GiB old space; 64 GiB selects 16 GiB; 128 GiB selects 32 GiB. Old space is only part of V8's total heap, and neither is a limit on total process memory (RSS). Raising the ceiling does not preallocate that memory.
     - Existing managed service heap controls are preserved across forced reinstalls and doctor repairs, including absolute old-space, percentage old-space, and total-heap flags. Only heap flags survive managed `NODE_OPTIONS` sanitization; arbitrary preload/debug flags do not. Put intentional preload/debug settings in an operator-owned systemd `Environment=` drop-in, or set them inside an [installed wrapper](#install-with-a-wrapper) before it launches Node. Do not edit the generated service environment for those settings. Existing stored numbers are preserved even when they resemble an older automatic default or exceed the new recommendation.
     - When an operator-owned service override controls `NODE_OPTIONS` (including an empty value or reset), regeneration does not add a new automatic heap argument. Operator values and drop-in files stay separate from the managed base. Existing managed argv controls remain: Node's argv wins over `NODE_OPTIONS` for the same option, and percentage old-space sizing takes precedence over absolute old-space sizing. Inspect both surfaces before changing a cap.
-    - Ambient installer `NODE_OPTIONS` and the installer's own Node arguments are not saved as Gateway heap settings. The budget is chosen at installation and takes effect when the service process starts; it is not recalculated while the Gateway runs. Upgrading OpenClaw alone does not resize a running Gateway, and foreground launches do not replace themselves to apply this policy.
+    - Ambient installer `NODE_OPTIONS` and the installer's own Node arguments are not saved as Gateway heap settings. The budget is chosen at installation and takes effect when the service process starts; it is not recalculated while the Gateway runs. Upgrading Paddy alone does not resize a running Gateway, and foreground launches do not replace themselves to apply this policy.
     - The installer's memory constraints can differ from the future service's constraints. Node/libuv reporting is platform-dependent and does not guarantee detection of every ancestor cgroup limit; inspect the actual service or container limits before increasing a budget.
     - This policy applies to managed Node Gateway launches, not foreground `gateway run`, custom supervisors, Docker runtime commands, Bun, or node-host services. Those retain their own runtime configuration. See [memory troubleshooting](/gateway/troubleshooting#gateway-exits-during-high-memory-use) for explicit native Node settings.
 

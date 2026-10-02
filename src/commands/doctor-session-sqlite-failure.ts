@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { PRODUCT_NAME } from "../brand.js";
 import { prepareGithubIssue } from "../infra/github-issue.js";
 import type { DoctorSessionSqliteIssue } from "../infra/session-sqlite-migration-issues.js";
 import {
@@ -43,7 +44,7 @@ export function writeSessionSqliteMigrationFailureReports(
     generatedAt: new Date().toISOString(),
     manifestPath: sanitizeFailureReportText(shortenFailureReportPath(manifestPath)),
     reason: params.reason,
-    recoveryCommand: "openclaw doctor --session-sqlite recover --github-issue",
+    recoveryCommand: "paddy doctor --session-sqlite recover --github-issue",
     restoreStatus: manifest?.restore?.status ?? "not_attempted",
     runId: manifest?.runId ?? path.basename(manifestPath, ".json"),
     targets: targets.map((target) => {
@@ -65,9 +66,6 @@ export function writeSessionSqliteMigrationFailureReports(
   fs.writeFileSync(markdownPath, renderFailureMarkdown(payload), { mode: 0o600 });
   if (manifest) {
     manifest.failureReports = {
-      ...(manifest.failureReports?.githubIssue
-        ? { githubIssue: manifest.failureReports.githubIssue }
-        : {}),
       jsonPath,
       markdownPath,
     };
@@ -131,7 +129,7 @@ export function createSessionSqliteMigrationFailureIssue(
       generatedAt: new Date().toISOString(),
       manifestPath: sanitizeFailureReportText(shortenFailureReportPath(manifestPath)),
       reason: "session SQLite migration failed",
-      recoveryCommand: "openclaw doctor --session-sqlite recover --github-issue",
+      recoveryCommand: "paddy doctor --session-sqlite recover --github-issue",
       restoreStatus: manifest.restore?.status ?? "not_attempted",
       runId: manifest.runId,
       targets: targets.map((target) => ({
@@ -149,7 +147,7 @@ export function createSessionSqliteMigrationFailureIssue(
       version: VERSION,
     });
   const body = [
-    "OpenClaw doctor generated this sanitized report from a local session SQLite migration recovery.",
+    `${PRODUCT_NAME} doctor generated this sanitized report from a local session SQLite migration recovery.`,
     "",
     reportBody,
   ].join("\n");
@@ -265,7 +263,7 @@ function renderFailureMarkdown(payload: {
     `- Run: ${payload.runId}`,
     `- Failed: ${payload.failedAt ?? "not recorded"}`,
     `- Generated: ${payload.generatedAt}`,
-    `- OpenClaw version: ${payload.version}`,
+    `- ${PRODUCT_NAME} version: ${payload.version}`,
     `- Reason: ${sanitizeFailureReportText(payload.reason)}`,
     `- Restore status: ${payload.restoreStatus}`,
     `- Recovery command: \`${payload.recoveryCommand}\``,

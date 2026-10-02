@@ -116,8 +116,6 @@ export function getStatusOverviewRowValue(
 }
 
 const baseStatusSummary = {
-  tasks: { total: 3, active: 1, failures: 0, byStatus: { queued: 1, running: 1 } },
-  taskAudit: { errors: 1, warnings: 0 },
   heartbeat: {
     defaultAgentId: "main",
     agents: [{ agentId: "main", enabled: true, everyMs: 60_000, every: "1m" }],
@@ -138,7 +136,7 @@ const baseStatusSummary = {
         configuredModel: "openai/gpt-5.5",
         selectedModel: "openai/gpt-5.5",
         modelSelectionReason: null,
-        runtime: "OpenClaw Default",
+        runtime: "Paddy Default",
         totalTokens: 12_000,
         totalTokensFresh: true,
         remainingTokens: 4_000,

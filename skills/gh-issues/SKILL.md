@@ -154,7 +154,7 @@ Push to PUSH_REMOTE.
 Open PR against SOURCE_REPO BASE_BRANCH.
 PR body: What Problem This Solves + Why This Change Was Made + User Impact + Evidence + visible Fixes SOURCE_REPO#<n>.
 Report PR URL or failure reason.
-Send completion/failure with openclaw message send if route provided.
+Send completion/failure with paddy message send if route provided.
 ```
 
 Use `coding-agent` launch rules when available.

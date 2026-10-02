@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../../../brand.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import type { PluginInstallRecord } from "../../../config/types.plugins.js";
 import type { HealthFinding, HealthRepairEffect } from "../../../flows/health-checks.js";
@@ -14,7 +15,7 @@ import {
   collectConfiguredPluginIds,
 } from "./missing-configured-plugin-install.ids.js";
 import { resolveRecordInstallPath } from "./missing-configured-plugin-install.install.js";
-import { isTrustedOfficialInstallRecordForCandidate } from "./missing-configured-plugin-install.records.js";
+import { resolveConfiguredPluginCandidateRepair } from "./missing-configured-plugin-install.targets.js";
 import { shouldDeferConfiguredPluginInstallRepair } from "./update-phase.js";
 
 const CONFIGURED_PLUGIN_INSTALLS_CHECK_ID = "core/doctor/configured-plugin-installs";
@@ -93,6 +94,14 @@ export async function detectConfiguredPluginInstallHealthIssues(params: {
   const pluginIds = collectConfiguredPluginIds(params.cfg, env);
   const channelIds = collectConfiguredChannelIds(params.cfg, env);
   const blockedPluginIds = collectBlockedPluginIds(params.cfg);
+  const context = await resolveConfiguredPluginInstallContext({
+    cfg: params.cfg,
+    env,
+    configuredPluginIds: pluginIds,
+    configuredChannelIds: channelIds,
+    blockedPluginIds,
+    baselineRecords: params.baselineRecords,
+  });
   const {
     knownIds,
     configuredChannelOwnerPluginIds,
@@ -105,14 +114,7 @@ export async function detectConfiguredPluginInstallHealthIssues(params: {
     installedPluginIdsWithRepairablePackages: repairableInstalledPluginIds,
     installedPluginMissingRequiredDependencies,
     officialReplacementPluginIds,
-  } = await resolveConfiguredPluginInstallContext({
-    cfg: params.cfg,
-    env,
-    configuredPluginIds: pluginIds,
-    configuredChannelIds: channelIds,
-    blockedPluginIds,
-    baselineRecords: params.baselineRecords,
-  });
+  } = context;
   const deferredPluginIds = new Set<string>();
   const reportedPluginIds = new Set<string>();
   const issues: ConfiguredPluginInstallHealthIssue[] = [];
@@ -228,34 +230,16 @@ export async function detectConfiguredPluginInstallHealthIssues(params: {
       ...operatorManagedPluginIds,
     ]),
   })) {
-    if (bundledPluginsById.has(candidate.pluginId)) {
-      continue;
-    }
     if (reportedPluginIds.has(candidate.pluginId)) {
       continue;
     }
-    const shouldReplaceBrokenOfficialInstall = officialReplacementPluginIds.has(candidate.pluginId);
-    if (shouldReplaceBrokenOfficialInstall && !candidate.trustedSourceLinkedOfficialInstall) {
+    const repair = resolveConfiguredPluginCandidateRepair({ candidate, records, env, context });
+    if (!repair) {
       continue;
     }
     const record = records[candidate.pluginId];
-    if (
-      shouldReplaceBrokenOfficialInstall &&
-      !isTrustedOfficialInstallRecordForCandidate({ record, candidate })
-    ) {
-      continue;
-    }
-    const hasRecord = Object.hasOwn(records, candidate.pluginId);
-    const hasUsableRecord =
-      hasRecord && !isPayloadMissing(env, records[candidate.pluginId]?.installPath);
-    if (
-      !shouldReplaceBrokenOfficialInstall &&
-      (hasUsableRecord || (knownIds.has(candidate.pluginId) && !hasRecord))
-    ) {
-      continue;
-    }
     const installSpec = resolvePluginInstallSources(candidate)[0]?.spec;
-    if (shouldReplaceBrokenOfficialInstall) {
+    if (repair.shouldReplaceBrokenOfficialInstall) {
       const installPath = resolveRecordInstallPath(record, env);
       issues.push({
         kind: staleVersionBoundRuntimePluginIds.has(candidate.pluginId)
@@ -317,22 +301,22 @@ const CONFIGURED_PLUGIN_INSTALL_ISSUE_DETAILS = {
   },
   "stale-version-bound-runtime": {
     message: (pluginId: string) =>
-      `Configured runtime plugin ${pluginId} is older than this OpenClaw version.`,
-    fixHint: "Run `openclaw doctor --fix` to refresh the configured runtime plugin.",
+      `Configured runtime plugin ${pluginId} is older than this ${PRODUCT_NAME} version.`,
+    fixHint: "Run `paddy doctor --fix` to refresh the configured runtime plugin.",
     action: "would-refresh-configured-runtime-plugin",
     dryRunSafe: false,
   },
   "stale-channel-config-descriptor": {
     message: (pluginId: string) =>
       `Configured plugin ${pluginId} has stale channel config metadata.`,
-    fixHint: "Run `openclaw doctor --fix` to repair the configured plugin install metadata.",
+    fixHint: "Run `paddy doctor --fix` to repair the configured plugin install metadata.",
     action: "would-repair-configured-plugin-install",
     dryRunSafe: false,
   },
   "deferred-package-manager-repair": {
     message: (pluginId: string) =>
       `Configured plugin ${pluginId} package repair is deferred until the package update finishes.`,
-    fixHint: "Rerun `openclaw doctor --fix` after the package update completes.",
+    fixHint: "Rerun `paddy doctor --fix` after the package update completes.",
     action: "would-defer-configured-plugin-install-repair",
     dryRunSafe: true,
   },
@@ -363,11 +347,11 @@ export function configuredPluginInstallIssueToHealthFinding(
     ...("installPath" in issue && issue.installPath ? { path: issue.installPath } : {}),
     fixHint:
       issue.kind === "missing-install-record"
-        ? `Run \`openclaw doctor --fix\` to install ${issue.installSpec}.`
+        ? `Run \`paddy doctor --fix\` to install ${issue.installSpec}.`
         : (detail.fixHint ??
           (installSpec
-            ? `Run \`openclaw plugins install ${installSpec} --force\` to reinstall the configured plugin package.`
-            : "Run `openclaw doctor --fix` to repair the configured plugin install. An exact reinstall command is unavailable because the install record has no package spec.")),
+            ? `Run \`paddy plugins install ${installSpec} --force\` to reinstall the configured plugin package.`
+            : "Run `paddy doctor --fix` to repair the configured plugin install. An exact reinstall command is unavailable because the install record has no package spec.")),
   };
 }
 

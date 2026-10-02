@@ -32,7 +32,7 @@ describe("runDaemonInstall", () => {
     expect(installDaemonServiceAndEmitMock).toHaveBeenCalledWith(
       expect.objectContaining({
         successMessage: expect.stringMatching(
-          /readiness has not been checked.*paddy gateway status.*paddy health/,
+          /readiness has not been checked.*openclaw gateway status.*openclaw health/,
         ),
         onVerified: expect.any(Function),
       }),

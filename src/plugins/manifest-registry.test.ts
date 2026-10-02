@@ -2515,7 +2515,7 @@ describe("loadPluginManifestRegistry", () => {
     });
 
     expect(registry.plugins.map((plugin) => plugin.id)).toContain("codex");
-    expectNoRegistryDiagnosticContains(registry, "requires OpenClaw");
+    expectNoRegistryDiagnosticContains(registry, "requires Paddy");
   });
 
   it("skips installed plugins whose package plugin API range is newer than the current host", () => {

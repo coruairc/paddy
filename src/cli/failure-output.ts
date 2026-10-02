@@ -216,15 +216,15 @@ export function formatCliFailureLines(options: FormatCliFailureOptions): string[
     lines.push(`[${CLI_NAME}] Debug: set OPENCLAW_DEBUG=1 to include the stack trace.`);
   }
 
-  // Doctor needs the same coordinators; inspect wrappers without loading the SQLite runtime.
+  // Doctor needs the same state owner; inspect wrappers without loading the SQLite runtime.
   if (
     options.includeDoctorHint !== false &&
     !collectNestedErrorCandidates(options.error).some(
-      (error) => error instanceof Error && error.name === "StateDatabaseCoordinatorContentionError",
+      (error) => error instanceof Error && error.name === "GatewayStateOwnerContentionError",
     )
   ) {
-    lines.push(`[${CLI_NAME}] Try: ${formatCliCommand("openclaw doctor", env)}`);
+    lines.push(`[${CLI_NAME}] Try: ${formatCliCommand(`${CLI_NAME} doctor`, env)}`);
   }
-  lines.push(`[${CLI_NAME}] Help: ${formatCliCommand("openclaw --help", env)}`);
+  lines.push(`[${CLI_NAME}] Help: ${formatCliCommand(`${CLI_NAME} --help`, env)}`);
   return lines;
 }

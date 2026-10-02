@@ -1,19 +1,19 @@
 import { expectDefined } from "@openclaw/normalization-core";
-// The Control UI lobster pet has a CLI cousin: on roughly one day in sixteen
-// the interactive banner gains a tiny ASCII lobster. The day comes from the
-// shared lobster-day hash (the sidebar pet dresses up on the same days), so
-// every surface agrees on the calendar and tests can pin dates.
+// On roughly one day in sixteen the interactive banner adds a small drawing:
+// a four-leaf clover, or a pint. The day still comes from the shared
+// lobster-day hash (the sidebar pet uses the same calendar), so every surface
+// agrees on the date and tests can pin it.
 import { isLobsterDay, lobsterDayHash } from "../shared/lobster-day.js";
 
 const LOBSTER_ARTS: readonly string[] = [
-  // Claws up, saying hi.
-  ["  (\\/)  (\\/)", "   \\_\\  /_/", "    ( o.o )", "    /|__|\\"].join("\n"),
-  // Just the eyestalks, watching from below the waterline.
-  ["     o   o", "     )   (", "  ~~~~~~~~~~~"].join("\n"),
+  // Four-leaf clover. The day still comes from the shared calendar hash.
+  ["    (@@) (@@)", "   (@@@@@@@@)", "    (@@) (@@)", "       ||"].join("\n"),
+  // Pint. Same calendar, the other drawing.
+  ["    .~~~~.", "    |    |", "    |    |", "    `----'"].join("\n"),
 ] as const;
 
 /**
- * Return the ASCII lobster for `now`'s calendar day, or null on non-lobster
+ * Return the clover or pint for `now`'s calendar day, or null on ordinary
  * days and in CI/test environments (banner tests assert exact bytes).
  */
 export function pickCliLobsterArt(now: Date, env: NodeJS.ProcessEnv = process.env): string | null {

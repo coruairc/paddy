@@ -191,7 +191,9 @@ describe("buildSlackProgressCardBlocks", () => {
         title: "Implementing",
         lines: [toolLine("run tests")],
         diffStat: { files: 2, added: 1, removed: 1 },
-        sessionUrl: "https://team.openclaw.ai/openclaw/chat/main",
+        sessionLinks: [
+          { url: "https://team.openclaw.ai/openclaw/chat/main", text: "Open in OpenClaw" },
+        ],
       });
 
       expect(blocks[0]).toEqual({
@@ -209,7 +211,7 @@ describe("buildSlackProgressCardBlocks", () => {
           {
             type: "button",
             action_id: "openclaw:session_link",
-            text: { type: "plain_text", text: "Open in OpenClaw" },
+            text: { type: "plain_text", text: "Open in Paddy" },
             url: "https://team.openclaw.ai/openclaw/chat/main",
           },
         ],

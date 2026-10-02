@@ -29,7 +29,7 @@ export function formatSessionSqliteMigrationWarnings(
         `${target.storePath}: Deferred ${historicalCount} historical transcript claim(s); ` +
           `showing ${HISTORICAL_WARNING_EXAMPLES} example(s), ${historicalCount - HISTORICAL_WARNING_EXAMPLES} omitted. ` +
           "Available originals and migration manifests remain protected. " +
-          `Inspect all findings with "${formatCliCommand("openclaw doctor --session-sqlite dry-run --session-sqlite-all-agents --json", env)}".`,
+          `Inspect all findings with "${formatCliCommand("paddy doctor --session-sqlite dry-run --session-sqlite-all-agents --json", env)}".`,
       );
     }
     return warnings;

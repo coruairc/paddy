@@ -44,7 +44,7 @@ describe("config CLI rejections", () => {
           expect(output).toContain("Config change declined. No settings were saved.");
           expect(output).toContain(issue);
           expect(output).toContain("Correct the setting above and retry.");
-          expect(output).toContain("openclaw config schema");
+          expect(output).toContain("paddy config schema");
           expect(output).not.toMatch(/Stack:|Debug:|CLI failed|\bat .*\.ts:\d/);
           expect(registeredRuntimeLogs).toEqual([]);
           expect(fs.readFileSync(configPath, "utf8")).toBe(raw);

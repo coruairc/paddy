@@ -1,16 +1,16 @@
 ---
-summary: "CLI reference for `openclaw directory` (self, peers, groups)"
+summary: "CLI reference for `paddy directory` (self, peers, groups)"
 read_when:
   - You want to look up contacts/groups/self ids for a channel
   - You are developing a channel directory adapter
 title: "Directory"
 ---
 
-# `openclaw directory`
+# `paddy directory`
 
 Directory lookups for channels that support them: contacts/peers, groups, and "me" (self).
 
-Results are meant to be pasted into other commands, especially `openclaw message send --target ...`.
+Results are meant to be pasted into other commands, especially `paddy message send --target ...`.
 
 ## Common flags
 
@@ -38,15 +38,15 @@ JSON mode.
 ## Notes
 
 - For many channels, results are config-backed (allowlists / configured groups) rather than a live provider directory.
-- Before a live lookup, OpenClaw resolves configured SecretRefs only for the selected channel and account. Resolved credentials remain runtime-only. Plugin installation and auto-enable writes preserve the authored references without persisting runtime defaults.
+- Before a live lookup, Paddy resolves configured SecretRefs only for the selected channel and account. Resolved credentials remain runtime-only. Plugin installation and auto-enable writes preserve the authored references without persisting runtime defaults.
 - WhatsApp group listing is live. Gateway lookups reuse its owned connection. A standalone command opens the linked session only when no other process owns that account. Otherwise it reports that live groups are unavailable.
 - An already-installed channel plugin can lack directory support. In that case the command reports the unsupported operation. It does not try to reinstall or upgrade the plugin to add support.
 
 ## Using results with `message send`
 
 ```bash
-openclaw directory peers list --channel slack --query "U0"
-openclaw message send --channel slack --target user:U012ABCDEF --message "hello"
+paddy directory peers list --channel slack --query "U0"
+paddy message send --channel slack --target user:U012ABCDEF --message "hello"
 ```
 
 ## ID formats by channel
@@ -66,7 +66,7 @@ openclaw message send --channel slack --target user:U012ABCDEF --message "hello"
 ## Self ("me")
 
 ```bash
-openclaw directory self --channel zalouser
+paddy directory self --channel zalouser
 ```
 
 A channel may legitimately return no self identity. This is a successful empty result (exit code
@@ -98,17 +98,17 @@ that case by its reason:
 ## Peers (contacts/users)
 
 ```bash
-openclaw directory peers list --channel zalouser
-openclaw directory peers list --channel zalouser --query "name"
-openclaw directory peers list --channel zalouser --limit 50
+paddy directory peers list --channel zalouser
+paddy directory peers list --channel zalouser --query "name"
+paddy directory peers list --channel zalouser --limit 50
 ```
 
 ## Groups
 
 ```bash
-openclaw directory groups list --channel zalouser
-openclaw directory groups list --channel zalouser --query "work"
-openclaw directory groups members --channel zalouser --group-id <id>
+paddy directory groups list --channel zalouser
+paddy directory groups list --channel zalouser --query "work"
+paddy directory groups members --channel zalouser --group-id <id>
 ```
 
 `groups members` requires a non-blank `--group-id`. Empty or whitespace-only IDs fail before plugin setup or lookup.

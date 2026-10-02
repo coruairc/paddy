@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/string-coerce";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import { UPDATE_RUNNER_TIMEOUT_MS } from "../infra/update-run-timeouts.js";
@@ -61,13 +62,13 @@ export async function maybeOfferUpdateBeforeDoctor(params: {
   if (git === "git") {
     if (isServiceRepairDeferred()) {
       note(
-        "Update through the external supervisor's stop/update/finalize/restart workflow. Continuing Doctor without updating OpenClaw.",
+        `Update through the external supervisor's stop/update/finalize/restart workflow. Continuing Doctor without updating ${PRODUCT_NAME}.`,
         "Update",
       );
       return { updated: false };
     }
     const shouldUpdate = await params.confirm({
-      message: "Update OpenClaw from git before running doctor?",
+      message: `Update ${PRODUCT_NAME} from git before running doctor?`,
       initialValue: true,
     });
     if (!shouldUpdate) {
@@ -91,7 +92,7 @@ export async function maybeOfferUpdateBeforeDoctor(params: {
     if (handled) {
       params.outro(
         readinessReason
-          ? "OpenClaw installed; Gateway readiness remains unverified. Keep recovery backups and check `openclaw gateway status --deep`."
+          ? `${PRODUCT_NAME} installed; Gateway readiness remains unverified. Keep recovery backups and check \`${CLI_NAME} gateway status --deep\`.`
           : "Update completed (doctor already ran as part of the update).",
       );
     }
@@ -106,7 +107,7 @@ export async function maybeOfferUpdateBeforeDoctor(params: {
     note(
       [
         "This install is not a git checkout.",
-        `Run \`${formatCliCommand("openclaw update")}\` to update via your package manager (npm/pnpm), then rerun doctor.`,
+        `Run \`${formatCliCommand("paddy update")}\` to update via your package manager (npm/pnpm), then rerun doctor.`,
       ].join("\n"),
       "Update",
     );

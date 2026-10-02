@@ -1,5 +1,5 @@
 ---
-summary: "Use Synthetic's Anthropic-compatible API in OpenClaw"
+summary: "Use Synthetic's Anthropic-compatible API in Paddy"
 read_when:
   - You want to use Synthetic as a model provider
   - You need a Synthetic API key or base URL setup
@@ -35,7 +35,7 @@ plugin and uses the Anthropic Messages API.
   </Step>
   <Step title="Run onboarding">
     ```bash
-    openclaw onboard --auth-choice synthetic-api-key
+    paddy onboard --auth-choice synthetic-api-key
     ```
   </Step>
   <Step title="Verify the default model">
@@ -43,14 +43,14 @@ plugin and uses the Anthropic Messages API.
     Confirm it is registered:
 
     ```bash
-    openclaw models list --provider synthetic
+    paddy models list --provider synthetic
     ```
 
   </Step>
 </Steps>
 
 <Warning>
-OpenClaw's Anthropic client appends `/v1` to the base URL automatically, so use
+Paddy's Anthropic client appends `/v1` to the base URL automatically, so use
 `https://api.synthetic.new/anthropic` (not `/anthropic/v1`). If Synthetic
 changes its base URL, override `models.providers.synthetic.baseUrl`.
 </Warning>
@@ -92,10 +92,10 @@ changes its base URL, override `models.providers.synthetic.baseUrl`.
 
 ## Model discovery
 
-With a Synthetic credential, OpenClaw discovers current text models from
+With a Synthetic credential, Paddy discovers current text models from
 Synthetic's [`/openai/v1/models` API](https://dev.synthetic.new/docs/openai/models).
 Inference still uses the Anthropic Messages API. Newly advertised models, including
-small models and `syn:` aliases, do not need an OpenClaw catalog update.
+small models and `syn:` aliases, do not need a Paddy catalog update.
 
 The live catalog supplies context and output limits, image input, reasoning,
 tool support, and usage-based token prices. Those prices are estimates, not a
@@ -104,12 +104,12 @@ for availability and its recommended aliases.
 
 Offline catalog generation and unavailable or unusable discovery responses use
 the bundled seed models. Your selected model is not changed automatically.
-When you override the inference base URL, OpenClaw skips Synthetic's fixed
+When you override the inference base URL, Paddy skips Synthetic's fixed
 discovery URL so a proxy credential is not sent to Synthetic.
 
 <Tip>
 Model refs use the form `synthetic/<modelId>`. Use
-`openclaw models list --provider synthetic` to inspect your configured models.
+`paddy models list --provider synthetic` to inspect your configured models.
 </Tip>
 
 <AccordionGroup>
@@ -134,7 +134,7 @@ Model refs use the form `synthetic/<modelId>`. Use
     }
     ```
 
-    OpenClaw still appends `/v1` automatically.
+    Paddy still appends `/v1` automatically.
 
   </Accordion>
 </AccordionGroup>

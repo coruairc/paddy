@@ -49,11 +49,11 @@ function createErrorHandlerRegistry(globalKey: symbol, failureMessage: string) {
 
 const rejectionRegistry = createErrorHandlerRegistry(
   HANDLERS_GLOBAL_KEY,
-  "[openclaw] Unhandled rejection handler failed:",
+  "[paddy] Unhandled rejection handler failed:",
 );
 const exceptionRegistry = createErrorHandlerRegistry(
   EXCEPTION_HANDLERS_GLOBAL_KEY,
-  "[openclaw] Uncaught exception handler failed:",
+  "[paddy] Uncaught exception handler failed:",
 );
 
 const FATAL_ERROR_CODES = new Set([
@@ -340,7 +340,7 @@ export function installUnhandledRejectionHandler(): void {
     exitCode = 1,
   ) => {
     for (const message of runFatalErrorHooks({ reason: hookReason, error })) {
-      console.error("[openclaw]", message);
+      console.error("[paddy]", message);
     }
     restoreRuntimeTerminalState(reason, { resumeStdinIfPaused: false });
     process.exit(exitCode);
@@ -353,18 +353,18 @@ export function installUnhandledRejectionHandler(): void {
 
     // Cancellation during shutdown is expected.
     if (isAbortError(reason)) {
-      console.warn("[openclaw] Suppressed AbortError:", formatUncaughtError(reason));
+      console.warn("[paddy] Suppressed AbortError:", formatUncaughtError(reason));
       return;
     }
 
     if (isFatalError(reason)) {
-      console.error("[openclaw] FATAL unhandled rejection:", formatUncaughtError(reason));
+      console.error("[paddy] FATAL unhandled rejection:", formatUncaughtError(reason));
       exitWithTerminalRestore("fatal unhandled rejection", reason, "fatal_unhandled_rejection");
       return;
     }
 
     if (isConfigError(reason)) {
-      console.error("[openclaw] CONFIGURATION ERROR - requires fix:", formatUncaughtError(reason));
+      console.error("[paddy] CONFIGURATION ERROR - requires fix:", formatUncaughtError(reason));
       const exitCode =
         extractErrorCodeWithCause(reason) === INVALID_CONFIG_ERROR_CODE ? EXIT_CONFIG_ERROR : 1;
       exitWithTerminalRestore("configuration error", reason, "configuration_error", exitCode);
@@ -373,13 +373,13 @@ export function installUnhandledRejectionHandler(): void {
 
     if (isTransientUnhandledRejectionError(reason)) {
       console.warn(
-        "[openclaw] Non-fatal unhandled rejection (continuing):",
+        "[paddy] Non-fatal unhandled rejection (continuing):",
         formatUncaughtError(reason),
       );
       return;
     }
 
-    console.error("[openclaw] Unhandled promise rejection:", formatUncaughtError(reason));
+    console.error("[paddy] Unhandled promise rejection:", formatUncaughtError(reason));
     exitWithTerminalRestore("unhandled rejection", reason, "unhandled_rejection");
   });
 }

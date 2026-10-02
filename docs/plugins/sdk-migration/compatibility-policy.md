@@ -23,7 +23,7 @@ External-plugin compatibility work follows this order:
 
 ### Retained helper contracts
 
-Discord and llama.cpp retain their declared OpenClaw 2026.9.2 host support.
+Discord and llama.cpp retain their declared Paddy 2026.9.2 host support.
 They use the newer prepared-expiry, DM-policy refinement, and live-catalog outcome
 helpers when those exports are available, with plugin-local fallbacks for the
 2026.9.2 SDK. The fallbacks preserve Discord's timestamp validation, idle-first
@@ -52,7 +52,7 @@ executable CLI invocation retains the backing resources until its actual work
 and cleanup finish. Finish calls using those providers before the host closes;
 keeping the array does not authorize use after host retirement. A released
 inspection stays retired, and a new lookup through that inspection is refused.
-Callers outside an OpenClaw host retain the standalone process lifetime of this
+Callers outside a Paddy host retain the standalone process lifetime of this
 SDK contract; process exit does not guarantee asynchronous plugin disposal.
 
 Inspection release relinquishes the inspection's own claim. If an SDK host
@@ -66,10 +66,18 @@ offsets for `isInsideCode`. Regions returned by `findCodeRegions` additionally
 include parser-owned `block` metadata; callers supplying their own ranges do not
 need to provide it.
 
+### WebSocket options and constructors
+
+`websocket-runtime` retains the `ws.ClientOptions` alias and `WebSocket`
+constructor signatures shipped in Paddy 2026.9.6. Host-internal TLS type
+corrections must not change plugin callback typing or constructor overloads.
+A source-incompatible correction to this public contract requires an approved,
+versioned SDK migration.
+
 ### Gateway worker environment creation
 
 `GatewayRequestHandlerOptions` from `core` and `gateway-runtime` retains the
-worker-environment creation contract shipped in OpenClaw 2026.9.5. When
+worker-environment creation contract shipped in Paddy 2026.9.5. When
 `context.workerEnvironmentService` is available, its `create` method accepts
 positional arguments in this order: `profileId`, `idempotencyKey`, `machineClass?`,
 `executionMode?`, `projectPath?`, `signal?`, `os?`, and `runSetupScript?`.
@@ -79,7 +87,7 @@ migration.
 
 ### Harness attempt result migration
 
-In OpenClaw 2026.8.1, `EmbeddedRunAttemptResult` from
+In Paddy 2026.8.1, `EmbeddedRunAttemptResult` from
 `openclaw/plugin-sdk/agent-harness-runtime` requires the canonical `terminal`
 field. Source written against the 2026.7 direct alias must migrate when it
 constructs results with legacy fields such as `aborted`, `timedOut`, and
@@ -132,7 +140,7 @@ Provider plugins can publish native login presence through `prepareSyntheticAuth
 with `nativeAuth: { runtime, mode }`, where `mode` is `api-key`, `oauth`, or
 `token`. These facts apply only to the named runtime in the prepared generation.
 They do not supply a provider bearer credential or authorize importing one into
-an OpenClaw profile. The optional `pluginRoot` context comes from the plugin
+a Paddy profile. The optional `pluginRoot` context comes from the plugin
 loader; use it to resolve the declared dependency from that plugin's installation.
 
 ### Memory read missing results
@@ -232,7 +240,7 @@ The setup-entry `legacyStateMigrations` option and feature flag,
 `BundledChannelLegacyStateMigrationDetector`, and
 `ChannelPlugin.lifecycle.detectLegacyStateMigrations` remain supported through
 one doctor-pipeline adapter for external plugins, but are deprecated. Removal
-plan: remove that adapter after OpenClaw 2027.1 only when a published-plugin
+plan: remove that adapter after Paddy 2027.1 only when a published-plugin
 reader sweep finds no remaining users.
 
 ### AuthStorage SQLite migration
@@ -301,7 +309,7 @@ permanently. Channel-specific fields remain typed in a deprecated compatibility
 tier so existing external plugins still compile while plugin authors move those
 fields into plugin-local setup input types.
 
-OpenClaw does not ship major releases. A registry sweep on 2026-07-22 inspected
+Paddy does not ship major releases. A registry sweep on 2026-07-22 inspected
 426 published out-of-tree channel plugins and removed 21 fields with no readers.
 The 22 retained fields each have a known published reader. Each further field is
 deleted as soon as no published plugin reads it; the retained set shrinks as

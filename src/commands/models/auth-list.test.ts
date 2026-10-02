@@ -156,7 +156,7 @@ describe("modelsAuthListCommand", () => {
     await modelsAuthListCommand({}, textRuntime);
     expect(textRuntime.logs.at(-1)).toContain("cooldown:session_expired");
     expect(textRuntime.logs.at(-1)).toContain(
-      "claude auth login && openclaw models auth login --provider anthropic --method cli",
+      "claude auth login && paddy models auth login --provider anthropic --method cli",
     );
 
     const jsonRuntime = createRuntime();
@@ -167,7 +167,7 @@ describe("modelsAuthListCommand", () => {
           id: "anthropic:claude-cli",
           cooldownReason: "session_expired",
           recoveryHint:
-            "Re-authenticate with `claude auth login && openclaw models auth login --provider anthropic --method cli --profile-id 'anthropic:claude-cli'`.",
+            "Re-authenticate with `claude auth login && paddy models auth login --provider anthropic --method cli --profile-id 'anthropic:claude-cli'`.",
         }),
       ],
     });

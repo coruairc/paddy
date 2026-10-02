@@ -13,7 +13,7 @@ Worked `models.providers` configurations. For what each field means, see [Custom
 
 <AccordionGroup>
   <Accordion title="Cerebras (GLM 4.7 / GPT OSS)">
-    The official external `cerebras` provider plugin can configure this via `openclaw onboard --auth-choice cerebras-api-key`. Use explicit provider config only when overriding defaults.
+    The official external `cerebras` provider plugin can configure this via `paddy onboard --auth-choice cerebras-api-key`. Use explicit provider config only when overriding defaults.
 
     ```json5
     {
@@ -63,7 +63,7 @@ Worked `models.providers` configurations. For what each field means, see [Custom
     }
     ```
 
-    Anthropic-compatible, built-in provider. Shortcut: `openclaw onboard --auth-choice kimi-code-api-key`.
+    Anthropic-compatible, built-in provider. Shortcut: `paddy onboard --auth-choice kimi-code-api-key`.
 
   </Accordion>
   <Accordion title="Local models (llama.cpp / llama-server)">
@@ -142,7 +142,7 @@ Worked `models.providers` configurations. For what each field means, see [Custom
     }
     ```
 
-    Set `MINIMAX_API_KEY`. Shortcuts: `openclaw onboard --auth-choice minimax-global-api` or `openclaw onboard --auth-choice minimax-cn-api`. The model catalog defaults to M3 and also includes the M2.7 variants. On the Anthropic-compatible streaming path, OpenClaw disables MiniMax M2.x thinking by default unless you explicitly set `thinking` yourself; MiniMax-M3 (and M3.x) stays on the provider's omitted/adaptive thinking path by default. `/fast on` or `params.fastMode: true` rewrites `MiniMax-M2.7` to `MiniMax-M2.7-highspeed`.
+    Set `MINIMAX_API_KEY`. Shortcuts: `paddy onboard --auth-choice minimax-global-api` or `paddy onboard --auth-choice minimax-cn-api`. The model catalog defaults to M3 and also includes the M2.7 variants. On the Anthropic-compatible streaming path, Paddy disables MiniMax M2.x thinking by default unless you explicitly set `thinking` yourself; MiniMax-M3 (and M3.x) stays on the provider's omitted/adaptive thinking path by default. `/fast on` or `params.fastMode: true` rewrites `MiniMax-M2.7` to `MiniMax-M2.7-highspeed`.
 
   </Accordion>
   <Accordion title="Moonshot AI (Kimi)">
@@ -179,9 +179,9 @@ Worked `models.providers` configurations. For what each field means, see [Custom
     }
     ```
 
-    For the China endpoint: `baseUrl: "https://api.moonshot.cn/v1"` or `openclaw onboard --auth-choice moonshot-api-key-cn`.
+    For the China endpoint: `baseUrl: "https://api.moonshot.cn/v1"` or `paddy onboard --auth-choice moonshot-api-key-cn`.
 
-    Native Moonshot endpoints advertise streaming usage compatibility on the shared `openai-completions` transport, and OpenClaw keys that off endpoint capabilities rather than the built-in provider id alone.
+    Native Moonshot endpoints advertise streaming usage compatibility on the shared `openai-completions` transport, and Paddy keys that off endpoint capabilities rather than the built-in provider id alone.
 
   </Accordion>
   <Accordion title="OpenCode">
@@ -196,7 +196,7 @@ Worked `models.providers` configurations. For what each field means, see [Custom
     }
     ```
 
-    Set `OPENCODE_API_KEY` (or `OPENCODE_ZEN_API_KEY`). Use `opencode/...` refs for the Zen catalog or `opencode-go/...` refs for the Go catalog. Shortcut: `openclaw onboard --auth-choice opencode-zen` or `openclaw onboard --auth-choice opencode-go`.
+    Set `OPENCODE_API_KEY` (or `OPENCODE_ZEN_API_KEY`). Use `opencode/...` refs for the Zen catalog or `opencode-go/...` refs for the Go catalog. Shortcut: `paddy onboard --auth-choice opencode-zen` or `paddy onboard --auth-choice opencode-go`.
 
   </Accordion>
   <Accordion title="Synthetic (Anthropic-compatible)">
@@ -233,7 +233,7 @@ Worked `models.providers` configurations. For what each field means, see [Custom
     }
     ```
 
-    Base URL should omit `/v1` (Anthropic client appends it). Shortcut: `openclaw onboard --auth-choice synthetic-api-key`.
+    Base URL should omit `/v1` (Anthropic client appends it). Shortcut: `paddy onboard --auth-choice synthetic-api-key`.
 
   </Accordion>
   <Accordion title="Z.AI (GLM-4.7)">
@@ -248,7 +248,7 @@ Worked `models.providers` configurations. For what each field means, see [Custom
     }
     ```
 
-    Set `ZAI_API_KEY`. Model refs use the canonical `zai/*` provider ID. Shortcut: `openclaw onboard --auth-choice zai-api-key`.
+    Set `ZAI_API_KEY`. Model refs use the canonical `zai/*` provider ID. Shortcut: `paddy onboard --auth-choice zai-api-key`.
 
     - General endpoint: `https://api.z.ai/api/paas/v4`
     - Coding endpoint: `https://api.z.ai/api/coding/paas/v4`

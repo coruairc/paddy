@@ -197,6 +197,31 @@ describe("login gate failure recovery", () => {
     expect(failure?.querySelector(".login-gate__failure-raw")?.textContent).toBe(error);
   });
 
+  it("explains operator access denial without credential or network recovery", async () => {
+    const element = await mountFailure(
+      "Gateway access is not active for this account; ask a Gateway administrator to grant or restore access.",
+      ConnectErrorDetailCodes.OPERATOR_ACCESS_DENIED,
+    );
+    const failure = element.querySelector(".login-gate__failure");
+
+    expect(failure?.getAttribute("data-kind")).toBe("access-denied");
+    expect(failure?.getAttribute("data-tone")).toBe("warn");
+    expect(failure?.querySelector(".login-gate__failure-title")?.textContent).toBe(
+      "No access to this Gateway",
+    );
+    expect(failure?.textContent).not.toMatch(/openclaw gateway run|Gateway unreachable/u);
+    const steps = failure?.querySelector(".login-gate__failure-steps");
+    expect(steps?.textContent).toContain(
+      "Ask a Gateway administrator to assign your profile a role",
+    );
+    expect(steps?.textContent).toContain("This page reconnects on its own once access is granted.");
+    expect(steps?.textContent).not.toMatch(/Gateway is running|Gateway URL|token|password/iu);
+    expect(steps?.querySelector("code")?.textContent).toBe("paddy users list --json");
+    expect(failure?.querySelector(".login-gate__failure-docs")?.getAttribute("href")).toBe(
+      "https://docs.openclaw.ai/gateway/operator-scopes#named-operator-roles",
+    );
+  });
+
   it("renders every auth recovery command exactly once", async () => {
     const element = await mountFailure(
       "unauthorized: gateway token required",
@@ -208,6 +233,28 @@ describe("login gate failure recovery", () => {
         entry.textContent?.trim(),
       ),
     ).toEqual(["openclaw gateway auth-token --show", "openclaw doctor --generate-gateway-token"]);
+  });
+
+  it("recovers an invalid one-time pairing link without blaming the Gateway secret", async () => {
+    const element = await mountFailure(
+      "unauthorized: bootstrap token invalid",
+      ConnectErrorDetailCodes.AUTH_BOOTSTRAP_TOKEN_INVALID,
+    );
+    const failure = element.querySelector(".login-gate__failure");
+    expect(failure?.querySelector(".login-gate__failure-title")?.textContent?.trim()).toBe(
+      "Pairing link is no longer valid",
+    );
+    expect(failure?.querySelector(".login-gate__failure-summary")?.textContent).toMatch(
+      /expired|already been used/,
+    );
+    expect(failure?.querySelector(".login-gate__command--hero code")?.textContent?.trim()).toBe(
+      "paddy dashboard",
+    );
+    const steps = failure?.querySelector(".login-gate__failure-steps");
+    expect(steps?.textContent).toContain("browserUrl");
+    expect(steps?.querySelector("code")?.textContent?.trim()).toBe("paddy dashboard --json");
+    expect(failure?.textContent).not.toMatch(/Gateway secret rejected|Replace the Gateway secret/);
+    expect(element.props.onConnect).not.toHaveBeenCalled();
   });
 
   it("edits and reveals one Gateway secret without choosing a credential type", async () => {
@@ -369,7 +416,7 @@ describe("login gate failure recovery", () => {
       "Approve this browser",
     );
     expect(failure?.querySelector(".login-gate__command--hero code")?.textContent?.trim()).toBe(
-      "openclaw devices approve --latest",
+      "paddy devices approve --latest",
     );
     const steps = Array.from(
       element.querySelectorAll<HTMLElement>(".login-gate__failure-steps li"),
@@ -377,7 +424,7 @@ describe("login gate failure recovery", () => {
     );
     expect(steps).toHaveLength(3);
     expect(steps[0]).toContain("prints the exact approve command");
-    expect(steps[1]).toContain("Prefer a link? Run openclaw dashboard");
+    expect(steps[1]).toContain("Prefer a link? Run paddy dashboard");
     expect(steps[1]).toContain("on the Gateway host and open the one-time URL");
     expect(steps[2]).toBe("Once approved, click Connect.");
     // The form stays reachable but folded; its summary names the target without a credential.
@@ -425,7 +472,7 @@ describe("login gate failure recovery", () => {
       "Approve the new access level",
     );
     expect(safe.querySelector(".login-gate__command--hero code")?.textContent?.trim()).toBe(
-      "openclaw devices approve req-123",
+      "paddy devices approve req-123",
     );
     expect(safe.querySelectorAll(".login-gate__failure-steps li")).toHaveLength(2);
     safe.remove();
@@ -436,7 +483,7 @@ describe("login gate failure recovery", () => {
     );
 
     expect(unsafe.querySelector(".login-gate__command--hero code")?.textContent?.trim()).toBe(
-      "openclaw devices approve --latest",
+      "paddy devices approve --latest",
     );
     // Only the redacted raw-error disclosure may echo the rejected id.
     expect(unsafe.querySelector(".login-gate__hero")?.textContent).not.toContain("touch-owned");
@@ -453,7 +500,7 @@ describe("login gate failure recovery", () => {
       Array.from(element.querySelectorAll(".login-gate__failure-steps code"), (entry) =>
         entry.textContent?.trim(),
       ),
-    ).toEqual(["openclaw status", "openclaw gateway run", "openclaw dashboard --no-open"]);
+    ).toEqual(["openclaw status", "openclaw gateway run", "paddy dashboard --no-open"]);
   });
 
   it("offers only supported recovery for an insecure browser context", async () => {

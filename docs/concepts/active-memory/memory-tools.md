@@ -87,7 +87,7 @@ configuration above when LanceDB is the active memory provider.
 ### Lossless Claw
 
 [Lossless Claw](https://github.com/martian-engineering/lossless-claw) is an
-external context-engine plugin (`openclaw plugins install
+external context-engine plugin (`paddy plugins install
 @martian-engineering/lossless-claw`) with its own recall tools. Set it up as
 a context engine first; see [Context engine](/concepts/context-engine). Then
 grant its recall tools to the parent agent and point Active Memory at them.

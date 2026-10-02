@@ -11,8 +11,9 @@ import { createStatusGatewayProbeBudget } from "../status.gateway-probe-budget.j
 import { baseStatusGatewaySnapshot, baseStatusOverviewSurface } from "../status.test-support.ts";
 
 const mocks = vi.hoisted(() => ({
-  listUpdateRuns: vi.fn<() => UpdateRunRecord[]>(() => []),
-  findActiveUpdateRun: vi.fn<() => UpdateRunRecord | undefined>(),
+  history: vi.fn<typeof import("../../infra/update-run-reader.js").getUpdateRunHistoryStatusAsync>(
+    async () => ({}),
+  ),
   getUpdateRun: vi.fn<(runId: string) => UpdateRunRecord | undefined>(),
   readRestartSentinelReadOnly: vi.fn<() => Promise<{ payload: RestartSentinelPayload } | null>>(
     async () => null,
@@ -53,10 +54,12 @@ vi.mock("../../infra/exec-approvals.js", () => ({
   loadExecApprovalsReadOnly: mocks.loadExecApprovalsReadOnly,
 }));
 vi.mock("../../infra/update-run-ledger.js", () => ({
-  findActiveUpdateRun: mocks.findActiveUpdateRun,
   getUpdateRun: mocks.getUpdateRun,
-  listUpdateRuns: mocks.listUpdateRuns,
-  reconcileAbandonedUpdateRuns: () => [],
+  getUpdateRunAsync: async (runId: string) => mocks.getUpdateRun(runId),
+  reconcileAbandonedUpdateRunsAsync: async () => [],
+}));
+vi.mock("../../infra/update-run-reader.js", () => ({
+  getUpdateRunHistoryStatusAsync: mocks.history,
 }));
 vi.mock("../../infra/restart-sentinel.js", () => ({
   readRestartSentinelReadOnly: mocks.readRestartSentinelReadOnly,
@@ -110,8 +113,7 @@ describe("buildStatusAllReportData", () => {
       missing: 0,
     });
     vi.spyOn(performance, "now").mockReturnValue(0);
-    mocks.listUpdateRuns.mockReturnValue([]);
-    mocks.findActiveUpdateRun.mockReturnValue(undefined);
+    mocks.history.mockResolvedValue({});
     mocks.getUpdateRun.mockReturnValue(undefined);
     mocks.readRestartSentinelReadOnly.mockResolvedValue(null);
     mocks.resolveStatusGatewayDiagnosticsSafe.mockResolvedValue({ ok: true, value: {} });
@@ -168,14 +170,13 @@ describe("buildStatusAllReportData", () => {
         "generic-sentinel",
       ].includes(history);
       if (hasRun) {
-        mocks.listUpdateRuns.mockReturnValue([completed]);
+        mocks.history.mockResolvedValue({ lastRun: completed });
         mocks.getUpdateRun.mockReturnValue(completed);
       }
       if (history === "active") {
-        mocks.findActiveUpdateRun.mockReturnValue({
-          ...completed,
-          status: "running",
-          phase: "verifying",
+        mocks.history.mockResolvedValue({
+          lastRun: completed,
+          activeRun: { ...completed, status: "running", phase: "verifying" },
         });
       }
       if (hasSentinel) {
@@ -236,7 +237,7 @@ describe("buildStatusAllReportData", () => {
         "npm update 9999.1.1",
       );
       expect(report.overviewRows.find((row) => row.Item === "Update")?.Value).toContain("behind 2");
-      const success = "✅ OpenClaw updated to 2026.9.2 (from 2026.9.1).";
+      const success = "✅ Paddy updated to 2026.9.2 (from 2026.9.1).";
       expect(
         report.overviewRows.filter((row) => ["Update run", "Update restart"].includes(row.Item)),
       ).toEqual([
@@ -245,7 +246,7 @@ describe("buildStatusAllReportData", () => {
               {
                 Item: "Update run",
                 Value:
-                  history === "active" ? "⬆️ OpenClaw update in progress: verifying." : success,
+                  history === "active" ? "⬆️ Paddy update in progress: verifying." : success,
               },
             ]
           : []),
@@ -255,7 +256,7 @@ describe("buildStatusAllReportData", () => {
                 Item: "Update restart",
                 Value:
                   history === "mixed-sentinel"
-                    ? "⚠️ OpenClaw update failed: restart-unhealthy."
+                    ? "⚠️ Paddy update failed: restart-unhealthy."
                     : success,
               },
             ]

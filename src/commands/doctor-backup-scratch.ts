@@ -21,7 +21,7 @@ export async function noteBackupScratchHealth(
   const lines = [
     ...report.unchecked.map(
       (directory) =>
-        `Backup scratch awaiting lifecycle check: ${directory}. Run \`openclaw doctor --fix\` to remove it if abandoned.`,
+        `Backup scratch awaiting lifecycle check: ${directory}. Run \`paddy doctor --fix\` to remove it if abandoned.`,
     ),
     ...report.reclaimed.map((directory) => `Removed abandoned backup scratch: ${directory}`),
     ...report.alreadyReclaimed.map((directory) => `Backup scratch already reclaimed: ${directory}`),

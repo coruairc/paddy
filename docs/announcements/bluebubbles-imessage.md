@@ -1,8 +1,8 @@
 ---
-summary: "BlueBubbles support was removed from OpenClaw. Use the official iMessage plugin with imsg for new and migrated iMessage setups."
+summary: "BlueBubbles support was removed from Paddy. Use the official iMessage plugin with imsg for new and migrated iMessage setups."
 read_when:
   - You used the old BlueBubbles channel and need to move to iMessage
-  - You are choosing the supported OpenClaw iMessage setup
+  - You are choosing the supported Paddy iMessage setup
   - You need a short explanation of the BlueBubbles removal
 title: "BlueBubbles removal and the imsg iMessage path"
 ---
@@ -16,7 +16,7 @@ If your config still contains `channels.bluebubbles`, migrate it to `channels.im
 ## What changed
 
 - The supported iMessage path has no BlueBubbles HTTP server, webhook route, REST password, or BlueBubbles plugin runtime.
-- OpenClaw reads and watches Messages through `imsg` on the Mac where Messages.app is signed in.
+- Paddy reads and watches Messages through `imsg` on the Mac where Messages.app is signed in.
 - Basic send, receive, history, and media use the normal `imsg` surfaces and macOS permissions.
 - Advanced actions (threaded replies, tapbacks, edit, unsend, effects, read receipts, typing indicators, group management) need the private API bridge: run `imsg launch`, which requires SIP disabled.
 - Linux and Windows gateways can still use iMessage by pointing `channels.imessage.cliPath` at an SSH wrapper that runs `imsg` on the signed-in Mac.
@@ -38,7 +38,7 @@ If your config still contains `channels.bluebubbles`, migrate it to `channels.im
    imsg rpc --help
    ```
 
-3. Grant Full Disk Access and Automation permissions to the process context that runs `imsg` and OpenClaw.
+3. Grant Full Disk Access and Automation permissions to the process context that runs `imsg` and Paddy.
 
 4. Translate the old config:
 
@@ -64,7 +64,7 @@ If your config still contains `channels.bluebubbles`, migrate it to `channels.im
 5. Restart the Gateway and verify:
 
    ```bash
-   openclaw channels status --probe
+   paddy channels status --probe
    ```
 
 6. Test DMs, groups, attachments, and any private API actions you depend on before deleting your old BlueBubbles server.

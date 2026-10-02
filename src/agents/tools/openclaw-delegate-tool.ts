@@ -1,6 +1,7 @@
 /** Regular-agent client for the OpenClaw system agent. */
 import { randomUUID } from "node:crypto";
 import { Type } from "typebox";
+import { PRODUCT_NAME } from "../../brand.js";
 import { sha256Hex } from "../../infra/crypto-digest.js";
 import { SYSTEM_AGENT_ID } from "../../system-agent/agent-id.js";
 import {
@@ -15,7 +16,7 @@ import { callInProcessGatewayTool } from "./in-process-gateway.js";
 
 const OpenClawDelegateSchema = Type.Object({
   message: Type.String({ description: "What system must do." }),
-  sessionId: Type.Optional(Type.String({ description: "Continue prior OpenClaw talk." })),
+  sessionId: Type.Optional(Type.String({ description: `Continue prior ${PRODUCT_NAME} talk.` })),
 });
 
 const OpenClawDelegateOutputSchema = Type.Object(
@@ -83,17 +84,17 @@ export function createOpenClawDelegateToolsForRun(
     normalizeMessageChannel(options.agentChannel) ?? "",
   )
     ? "in this chat (approval buttons or `/approve`)"
-    : "in the Control UI or OpenClaw apps";
+    : `in the Control UI or ${PRODUCT_NAME} apps`;
   const tool: AnyAgentTool = {
     name: "openclaw",
-    label: "OpenClaw",
+    label: `${PRODUCT_NAME}`,
     // Keep human approval in one model tool call; a yielded cell can outlive its turn.
     catalogMode: "direct-only",
     description:
       "Delegate system setup or repair to a separate model turn. " +
       "Prefer your available tools for routine status and session/workspace checks. " +
       "Gateway restart, config, channels, plugins, agents, models/providers, API keys. " +
-      "Setup flows use masked entry, which keeps keys out of model context; if the user already gave a key or token in chat, pass it along and OpenClaw stores it without echoing it. " +
+      `Setup flows use masked entry, which keeps keys out of model context; if the user already gave a key or token in chat, pass it along and ${PRODUCT_NAME} stores it without echoing it. ` +
       (fullPermission
         ? "Full Access applies permitted changes without asking for approval."
         : `Changes wait for the user to approve ${approvalLocation} and return the final outcome.`),

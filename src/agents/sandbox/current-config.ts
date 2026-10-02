@@ -9,7 +9,7 @@ function formatSandboxRecreateHint(params: {
   sessionKey: string;
   browser?: boolean;
 }) {
-  const command = `openclaw sandbox recreate${params.browser ? " --browser" : ""}`;
+  const command = `paddy sandbox recreate${params.browser ? " --browser" : ""}`;
   if (params.scope === "session") {
     return formatCliCommand(`${command} --session ${params.sessionKey}`);
   }

@@ -17,7 +17,7 @@ Use [`defineToolPlugin`](/plugins/tool-plugins) for simple tool-only plugins
 with fixed tool names. Use `api.registerTool(...)` directly for mixed plugins
 or fully dynamic tool registration.
 
-When OpenClaw invokes a plugin tool with an `AbortSignal` inside a managed
+When Paddy invokes a plugin tool with an `AbortSignal` inside a managed
 operation, cancellation callbacks retain the executing plugin's runtime context
 and the original cancellation reason. The tool can return a result before
 already-started SDK work finishes; that work remains owned until its cleanup
@@ -26,12 +26,12 @@ plugin or operation has closed. Return or join background work your tool starts
 outside SDK-managed operations. Direct programmatic callers without a managed
 operation continue to own their signal and work lifetime.
 
-| Method                                   | What it registers                                                                                                                        |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `api.registerTool(tool, opts?)`          | Agent tool (required or `{ optional: true }`)                                                                                            |
-| `api.registerCommand(def)`               | Custom command (bypasses the LLM)                                                                                                        |
-| `api.registerNodeHostCommand(command)`   | Command handled by `openclaw node run`; optional `agentTool` metadata can expose it as an agent-visible tool while the node is connected |
-| `api.registerWidgetPresenter(presenter)` | Explicit or current-channel destination behind the core `show_widget` tool                                                               |
+| Method                                   | What it registers                                                                                                                     |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `api.registerTool(tool, opts?)`          | Agent tool (required or `{ optional: true }`)                                                                                         |
+| `api.registerCommand(def)`               | Custom command (bypasses the LLM)                                                                                                     |
+| `api.registerNodeHostCommand(command)`   | Command handled by `paddy node run`; optional `agentTool` metadata can expose it as an agent-visible tool while the node is connected |
+| `api.registerWidgetPresenter(presenter)` | Explicit or current-channel destination behind the core `show_widget` tool                                                            |
 
 Explicit widget presenters declare a unique model-visible target such as `node_panel`. Current-channel presenters use `target: "current_channel"`, provide a synchronous `match(context)` predicate over trusted delivery facts, and declare supported source kinds and delivery limits. Multiple transport presenters may coexist, but core selects an implicit route only when exactly one matches.
 
@@ -88,7 +88,7 @@ api.registerCommand({
   description: "Demo command",
   agentPromptGuidance: [
     "Global command hint.",
-    { text: "Only show this in the main OpenClaw prompt.", surfaces: ["openclaw_main"] },
+    { text: "Only show this in the main Paddy prompt.", surfaces: ["openclaw_main"] },
   ],
   handler: async () => ({ text: "ok" }),
 });
@@ -135,4 +135,4 @@ also runs for unavailable commands because availability can change while work is
 still retained. Keep teardown in the command's existing lifecycle, such as
 `onDisconnect`, and report idle only after that work settles. `onDisconnect` alone
 does not establish idleness. Update older plugins to add the hook or use
-`openclaw update` and an operator-controlled node restart.
+`paddy update` and an operator-controlled node restart.

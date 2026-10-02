@@ -1,5 +1,5 @@
 ---
-summary: "Run multiple OpenClaw Gateways on one host (isolation, ports, and profiles)"
+summary: "Run multiple Paddy Gateways on one host (isolation, ports, and profiles)"
 read_when:
   - Running more than one Gateway on the same machine
   - You need isolated config/state/ports per Gateway
@@ -21,13 +21,13 @@ This keeps the rescue bot able to debug or apply config changes if the primary b
 
 ```bash
 # Rescue bot (separate Telegram bot, separate profile, port 19789)
-openclaw --profile rescue onboard
-openclaw --profile rescue gateway install --port 19789
+paddy --profile rescue onboard
+paddy --profile rescue gateway install --port 19789
 ```
 
 If your main bot is already running, that's usually all you need. If onboarding already installed the rescue service, skip the final `gateway install`.
 
-During `openclaw --profile rescue onboard`:
+During `paddy --profile rescue onboard`:
 
 - Use a separate Telegram bot token, dedicated to the rescue account. It is easy to keep operator-only, it stays independent from the main bot's channel and app install, and it gives a simple DM-based recovery path.
 - Keep the `rescue` profile name.
@@ -51,33 +51,33 @@ Prompts are otherwise identical to normal onboarding.
 
 The same isolation pattern works for any pair or group of Gateways on one host. Give each extra Gateway its own named profile and base port.
 
-`openclaw setup` runs onboarding on a profile that is not configured yet. It does the same first-run job as the `onboard` command used for the rescue bot above. Use `onboard` when you want the onboarding flow on a profile that is already configured.
+`paddy setup` runs onboarding on a profile that is not configured yet. It does the same first-run job as the `onboard` command used for the rescue bot above. Use `onboard` when you want the onboarding flow on a profile that is already configured.
 
 ```bash
 # main (default profile)
-openclaw setup
-openclaw gateway --port 18789
+paddy setup
+paddy gateway --port 18789
 
 # extra gateway
-openclaw --profile ops setup
-openclaw --profile ops gateway --port 19789
+paddy --profile ops setup
+paddy --profile ops gateway --port 19789
 ```
 
 Named profiles on both sides also work:
 
 ```bash
-openclaw --profile main setup
-openclaw --profile main gateway --port 18789
+paddy --profile main setup
+paddy --profile main gateway --port 18789
 
-openclaw --profile ops setup
-openclaw --profile ops gateway --port 19789
+paddy --profile ops setup
+paddy --profile ops gateway --port 19789
 ```
 
 Services follow the same pattern:
 
 ```bash
-openclaw gateway install
-openclaw --profile ops gateway install --port 19789
+paddy gateway install
+paddy --profile ops gateway install --port 19789
 ```
 
 Use the rescue-bot quickstart for a fallback operator lane. Use the general profile pattern for multiple long-lived Gateways across different channels, tenants, workspaces, or operational roles.
@@ -95,8 +95,8 @@ Keep these unique per Gateway instance:
 | Derived browser/CDP ports    | See below                            |
 
 Sharing any of these causes config, state, or port conflicts. Gateway startup
-enforces unique state-directory ownership even when
-`OPENCLAW_ALLOW_MULTI_GATEWAY=1` skips the per-config singleton.
+enforces unique state-directory ownership, including when
+`OPENCLAW_ALLOW_MULTI_GATEWAY=1` is set.
 
 <Warning>
 `OPENCLAW_STATE_DIR` alone does not isolate a managed Gateway service. Service names follow the profile, not the state directory. For onboarding or service-install tests, use a dedicated named profile and unique ports, or an isolated machine. Do not install or restart the default service against a temporary state directory.
@@ -124,26 +124,27 @@ Override any of these in config or env and you must keep them unique per instanc
 ```bash
 OPENCLAW_CONFIG_PATH=~/.openclaw/main.json \
 OPENCLAW_STATE_DIR=~/.openclaw \
-openclaw gateway --port 18789
+paddy gateway --port 18789
 
 OPENCLAW_CONFIG_PATH=~/.openclaw/rescue.json \
 OPENCLAW_STATE_DIR=~/.openclaw-rescue \
-openclaw gateway --port 19789
+paddy gateway --port 19789
 ```
 
 ## Quick checks
 
 ```bash
-openclaw gateway status --deep
-openclaw --profile rescue gateway status --deep
-openclaw --profile rescue gateway probe
-openclaw status
-openclaw --profile rescue status
-openclaw --profile rescue browser status
+paddy gateway status --deep
+paddy --profile rescue gateway status --deep
+paddy --profile rescue gateway probe
+paddy status
+paddy --profile rescue status
+paddy --profile rescue browser status
 ```
 
 - `gateway status --deep` catches stale launchd/systemd/schtasks services from older installs.
-- `gateway probe` warning text such as `multiple reachable gateway identities detected` is expected in two cases. You intentionally run more than one isolated gateway, or OpenClaw cannot prove that reachable probe targets are the same gateway. An SSH tunnel, proxy URL, or configured remote URL to the same gateway is one gateway with multiple transports, even when transport ports differ.
+- `doctor --deep` also reports when a recognizable service definition or native service manager could not be inspected. Restore inspection access and rerun Doctor; an incomplete scan does not prove that no other service exists. Inspection warnings never authorize service cleanup.
+- `gateway probe` warning text such as `multiple reachable gateway identities detected` is expected in two cases. You intentionally run more than one isolated gateway, or Paddy cannot prove that reachable probe targets are the same gateway. An SSH tunnel, proxy URL, or configured remote URL to the same gateway is one gateway with multiple transports, even when transport ports differ.
 
 ## Related
 

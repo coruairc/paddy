@@ -1100,7 +1100,7 @@ describe("doctor config flow", () => {
       expect(result.cfg.agents).toEqual(config.agents);
       expect(result.shouldWriteConfig).toBe(false);
       expect(terminalNoteMock).toHaveBeenCalledWith(
-        expect.stringContaining("openclaw config set agents.defaults.systemAgent.agentId <id>"),
+        expect.stringContaining("paddy config set agents.defaults.systemAgent.agentId <id>"),
         "Agent ownership",
       );
     },
@@ -1628,7 +1628,7 @@ describe("doctor config flow", () => {
       previewNotes.mock.calls.some(
         ([message, title]) =>
           title === "Doctor" &&
-          message.includes("openclaw doctor --fix") &&
+          message.includes("paddy doctor --fix") &&
           message.includes("rotate hooks.token"),
       ),
     ).toBe(true);

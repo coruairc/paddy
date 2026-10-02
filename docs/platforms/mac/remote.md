@@ -1,12 +1,12 @@
 ---
-summary: "macOS app flow for controlling a remote OpenClaw Gateway"
+summary: "macOS app flow for controlling a remote Paddy Gateway"
 read_when:
   - Setting up or debugging remote mac control
   - Signing in to a Gateway from the Mac app or opening it from a website
 title: "Remote control"
 ---
 
-This flow lets the macOS app act as a full remote control for an OpenClaw Gateway running on another host (desktop/server). The app connects directly to trusted LAN/Tailnet Gateway URLs, or manages an SSH tunnel when the remote Gateway is loopback-only. Health checks, Voice Wake forwarding, and WebChat reuse the same remote configuration from the native **Connection** window.
+This flow lets the macOS app act as a full remote control for a Paddy Gateway running on another host (desktop/server). The app connects directly to trusted LAN/Tailnet Gateway URLs, or manages an SSH tunnel when the remote Gateway is loopback-only. Health checks, Voice Wake forwarding, and WebChat reuse the same remote configuration from the native **Connection** window.
 
 ## Connect with your browser
 
@@ -28,7 +28,7 @@ Mac node capabilities and Talk Mode.
    The recovery action launches your default browser normally, allowing the
    browser to select its profile instead of reusing an invisible automation
    process. Check the account shown in the browser before approving sign-in.
-4. Return to OpenClaw. The saved Gateway's dashboard opens; check the account
+4. Return to Paddy. The saved Gateway's dashboard opens; check the account
    name in its sidebar footer. You can open more windows from
    **File → New Gateway Window…** or the **Gateways** menu. The app reopens your selected Gateway after
    restart, including when a separate primary Gateway supplies Mac capabilities.
@@ -49,6 +49,9 @@ not supported by this flow. Existing private-network `ws://` and secure
 A signed-in native operator device may still need a one-time approval on the
 Gateway. The Gateway's existing [automatic device approval policy](/gateway/trusted-proxy-auth#automatic-device-approval)
 determines whether verified proxy identities can enroll automatically.
+
+While Paddy is active and you are present, it automatically renews browser sign-in for saved Gateways in use during the last quarter of the session lifetime (at least 15 minutes, up to 7 days); a failed attempt retries after half that window, at most daily. The default browser may open to finish sign-in.
+Renewing the same account quietly reconnects the native connection and keeps the current dashboard in place; a failed automatic attempt leaves the existing session usable until it expires.
 
 When the browser session expires, opening the saved Gateway shows a sign-in
 page and starts sign-in in your browser. A window restored at launch waits for
@@ -81,7 +84,7 @@ also allows a new request.
 
 In the browser dashboard, open **Get the apps** from the account menu, then
 choose **Open in Mac app** on the macOS card. The link uses the connected
-Gateway's HTTPS address. OpenClaw shows **Add Gateway** with that address filled
+Gateway's HTTPS address. Paddy shows **Add Gateway** with that address filled
 in; review it and click **Connect** to complete the same sign-in flow.
 
 Websites can launch this editor with the registered `openclaw` URL scheme:
@@ -103,7 +106,7 @@ the primary connection.
 ## Modes
 
 - **Local (this Mac)**: everything runs on the laptop; no SSH involved.
-- **Remote over SSH (default)**: OpenClaw commands run on the remote host. The app opens an SSH connection with `-o BatchMode`, your chosen identity/key, and a local port-forward.
+- **Remote over SSH (default)**: Paddy commands run on the remote host. The app opens an SSH connection with `-o BatchMode`, your chosen identity/key, and a local port-forward.
 - **Remote direct (ws/wss)**: no SSH tunnel; the app connects to the Gateway URL directly (LAN, Tailscale, Tailscale Serve, or a public HTTPS reverse proxy).
 
 ## Remote transports
@@ -155,7 +158,7 @@ use its own credentials and the port shown in Connection:
 ```bash
 OPENCLAW_GATEWAY_URL=ws://127.0.0.1:18789 \
 OPENCLAW_GATEWAY_TOKEN="<local-gateway-token>" \
-openclaw health
+paddy health
 ```
 
 Use `wss://` when local Gateway TLS is enabled. The app provisions missing local
@@ -375,7 +378,7 @@ produce a missing-local-port warning.
 
 ## WhatsApp login flow (remote)
 
-- Run `openclaw channels login --channel whatsapp --verbose` **on the remote host**. Scan the QR with WhatsApp on your phone.
+- Run `paddy channels login --channel whatsapp --verbose` **on the remote host**. Scan the QR with WhatsApp on your phone.
 - Re-run login on that host if auth expires. The health check surfaces link problems.
 
 ## Troubleshooting
@@ -387,7 +390,7 @@ On sign-in, loading, startup-recovery, signed-out, and connection-error screens,
 | Symptom                                          | Cause / fix                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `exit 127` / not found                           | `openclaw` is not on PATH for non-login shells. Add it to `/etc/paths`, your shell rc, or symlink into `/usr/local/bin`/`/opt/homebrew/bin`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Health probe failed                              | Check SSH reachability, PATH, and that the WhatsApp channel is logged in (`openclaw status --json`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Health probe failed                              | Check SSH reachability, PATH, and that the WhatsApp channel is logged in (`paddy status --json`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | WebChat stuck                                    | Confirm the Gateway is running on the remote host and the forwarded port matches the Gateway WS port; the UI requires a healthy WS connection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | Node IP shows `127.0.0.1`                        | Expected with the SSH tunnel. Choose **Change connection…**, then **Gateway address or setup code**, and save a trusted direct URL if you want the Gateway to see the real client IP.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Dashboard works but Mac capabilities are offline | The operator/control connection is healthy, but the companion node connection is not connected or is missing its command surface. Open the menu bar device section and check whether the Mac is `paired · disconnected`. Direct `wss://` operator and node connections use the same configured or stored certificate policy. For trusted `wss://*.ts.net` Tailscale Serve endpoints, stale stored leaf pins are replaced after certificate rotation and retried automatically. Configured pins never rotate automatically; update `gateway.remote.tlsFingerprint` after reviewing the new certificate, or switch to **Remote over SSH**. |
@@ -395,10 +398,10 @@ On sign-in, loading, startup-recovery, signed-out, and connection-error screens,
 
 ## Notification sounds
 
-Pick sounds per notification from scripts with `openclaw nodes notify`, for example:
+Pick sounds per notification from scripts with `paddy nodes notify`, for example:
 
 ```bash
-openclaw nodes notify --node <id> --title "Ping" --body "Remote gateway ready" --sound Glass
+paddy nodes notify --node <id> --title "Ping" --body "Remote gateway ready" --sound Glass
 ```
 
 There is no global default-sound toggle in the app; callers choose a sound (or none) per request.

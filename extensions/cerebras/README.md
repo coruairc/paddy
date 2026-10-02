@@ -1,12 +1,12 @@
-# OpenClaw Cerebras Provider
+# Paddy Cerebras Provider
 
-Official OpenClaw provider plugin for Cerebras.
+Official Paddy provider plugin for Cerebras.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/cerebras-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/cerebras> for setup and configuration.

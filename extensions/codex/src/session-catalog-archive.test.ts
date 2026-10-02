@@ -229,7 +229,7 @@ describe("Codex supervision actions", () => {
     const control = createEligibleControl();
 
     await expect(archiveTestSession({ bindingStore, control })).rejects.toThrow(
-      "attached to an OpenClaw session",
+      "attached to a Paddy session",
     );
     expect(control.requireEligibleThread).toHaveBeenCalledWith("thread-1");
     expect(control.archiveThread).not.toHaveBeenCalled();
@@ -260,7 +260,7 @@ describe("Codex supervision actions", () => {
       });
 
       await expect(archiveTestSession({ bindingStore, control })).rejects.toThrow(
-        "spawned descendant is owned by an OpenClaw session",
+        "spawned descendant is owned by a Paddy session",
       );
       expect(control.listDescendantPage).toHaveBeenCalledWith({
         ancestorThreadId: "thread-1",

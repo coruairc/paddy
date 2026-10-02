@@ -1,9 +1,11 @@
 import { PLUGIN_CAPABILITY_CONSENT_REQUIRED } from "../../packages/gateway-protocol/src/capability-consent-error-details.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
 import { resolveNpmSpecMetadata } from "../infra/install-source-utils.js";
 import { parseRegistryNpmSpec } from "../infra/npm-registry-spec.js";
 import {
+  comparePackageUpdateVersions,
   readInstalledPackageManifest,
   readInstalledPackageVersion,
 } from "../infra/package-update-utils.js";
@@ -69,7 +71,6 @@ import {
 } from "./update-duplicate-aliases.js";
 import {
   expectedIntegrityForNpmUpdate,
-  isBundledVersionNewer,
   isNpmMetadataCompatibleWithCurrentHost,
   isPluginInstallRecordUpdateSource,
   isTrustedSourceLinkedOfficialNpmUpdate,
@@ -301,7 +302,7 @@ async function runInstalledPluginUpdate(
       if (
         bundledSource?.version &&
         record.version &&
-        isBundledVersionNewer(bundledSource.version, record.version)
+        comparePackageUpdateVersions(bundledSource.version, record.version) > 0
       ) {
         logger.warn?.(
           `Skipping "${pluginId}" update: bundled version ${bundledSource.version} is newer than the installed ${record.source} version ${record.version}. ` +
@@ -383,7 +384,7 @@ async function runInstalledPluginUpdate(
       if (retainOnUnavailable && installedPayloadRunnable) {
         const retainedMessage =
           `Retained "${pluginId}" at ${currentVersion}: target ${effectiveSpec}` +
-          `${params.coreVersion ? ` for OpenClaw ${params.coreVersion}` : ""} is unavailable. ${message} ` +
+          `${params.coreVersion ? ` for ${PRODUCT_NAME} ${params.coreVersion}` : ""} is unavailable. ${message} ` +
           `Retry "${formatCliCommand(`openclaw plugins update ${pluginId}`)}" after the target is published or registry access recovers.`;
         logger.warn?.(retainedMessage);
         outcomes.push({

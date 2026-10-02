@@ -153,7 +153,7 @@ describe("SystemAgentChatEngine wizard", () => {
     const reply = await engine.handle("connect telegram");
 
     expect(reply.text).toContain("Sensitive input is not accepted");
-    expect(reply.text).toContain("openclaw channels add --channel telegram");
+    expect(reply.text).toContain("paddy channels add --channel telegram");
     expect(reply.sensitive).toBeUndefined();
 
     const handoff = await engine.handle("open channel wizard");
@@ -219,9 +219,9 @@ describe("SystemAgentChatEngine wizard", () => {
     // rather than sending the reader to a terminal they may not have.
     expect(gatewayReply.text).toContain("Settings");
     expect(gatewayReply.text).toContain("change providers from a shell");
-    expect(gatewayReply.text).toContain("machine running OpenClaw");
+    expect(gatewayReply.text).toContain("machine running Paddy");
     expect(gatewayReply.text).not.toContain("does the same job");
-    expect(gatewayReply.text).not.toContain("Exit OpenClaw");
+    expect(gatewayReply.text).not.toContain("Exit Paddy");
   });
 
   it("keeps hosted-wizard validation errors on the current prompt", async () => {

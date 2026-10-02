@@ -1,6 +1,6 @@
 ---
 doc-schema-version: 1
-summary: "OpenClaw release channels, version numbers, validation, and published assets"
+summary: "Paddy release channels, version numbers, validation, and published assets"
 title: "Release policy"
 read_when:
   - Choosing a release channel
@@ -8,7 +8,7 @@ read_when:
   - Checking which packages and apps have been published
 ---
 
-OpenClaw offers stable releases for everyday use, beta releases for testing,
+Paddy offers stable releases for everyday use, beta releases for testing,
 and extended-stable releases for users who prefer an older Gateway maintenance
 line. This page explains those choices and what a release has been checked for.
 For switching channels, see [Release channels](/install/development-channels).
@@ -27,9 +27,6 @@ It does not include native apps or ClawHub publication, and it does not change
 the regular stable channel. Its GitHub release is not marked Latest. A monthly
 line retires when it falls outside the two supported completed months.
 
-Alpha builds are a separate internal testing track, not a recommended user
-channel.
-
 ## Version naming
 
 | Release            | Version example                                                       |
@@ -44,7 +41,8 @@ number within the month, not a day of the month. Regular releases use patches
 below `33`; extended-stable starts at `33`. Git tags add `v`, as in `v2026.9.6`.
 
 Published npm versions and release tags are never replaced. A fix receives a
-new version. Alpha-only versions do not advance the regular release number.
+new version. Historical alpha-only versions do not advance the regular release
+number; alpha releases are retired.
 
 ## Release cadence
 
@@ -107,7 +105,7 @@ To consume a release lock:
    that publish in the same release. The report counts these entries in
    `packagesWithOmittedWorkspaceDependencies`.
 3. Verify that `dependency-evidence/dependency-evidence-manifest.json`'s
-   `releaseSha`, the report's `sourceSha`, and the OpenClaw commit you pin all
+   `releaseSha`, the report's `sourceSha`, and the Paddy commit you pin all
    match. The report also records the source `pnpm-lock.yaml` SHA-256.
 4. Serialize `entry.lock` as `package-lock.json` using two-space JSON indentation
    and a trailing newline, then verify its SHA-256 against `entry.lockSha256`.
@@ -119,6 +117,12 @@ To consume a release lock:
 The companion `npm-package-locks.md` includes counts and a package table. Each
 entry records `bundleRuntimeDependencies` and direct dependency counts so
 packagers can identify lockless packages that need an external lock.
+Each entry also records a path-sorted `bundledDependencies` array with `path`,
+`name`, `version`, and `parent`. These dependencies carry `inBundle: true` in the
+npm lock; `parent` identifies the nearest enclosing non-bundled package whose
+`resolved` and `integrity` verify the tarball carrying their bytes. The report
+rejects missing or unverifiable carriers and preserves the lock payload. The
+Markdown table counts bundled dependencies per package and includes their total.
 
 ## Maintainer procedures
 

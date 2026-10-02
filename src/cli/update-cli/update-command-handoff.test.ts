@@ -196,7 +196,7 @@ describe("gatewayMaintenanceBlock", () => {
     expect(message).toContain("inside the gateway process tree");
     expect(message).toContain("from a shell outside the gateway service");
     expect(message).not.toContain("stop the gateway service first");
-    expect(message).not.toContain("openclaw update");
+    expect(message).not.toContain("paddy update");
   });
 
   it("allows a caller with verified external ancestry and native membership", () => {

@@ -1,23 +1,23 @@
 ---
-summary: "CLI reference for `openclaw completion` (generate/install shell completion scripts)"
+summary: "CLI reference for `paddy completion` (generate/install shell completion scripts)"
 read_when:
   - You want shell completions for zsh/bash/fish/PowerShell
-  - You need to cache completion scripts under OpenClaw state
+  - You need to cache completion scripts under Paddy state
 title: "Completion"
 ---
 
-# `openclaw completion`
+# `paddy completion`
 
-Generate shell completion scripts, cache them under OpenClaw state, and optionally install them into your shell profile.
+Generate shell completion scripts, cache them under Paddy state, and optionally install them into your shell profile.
 
 ## Usage
 
 ```bash
-openclaw completion                          # print the detected shell's script
-openclaw completion --shell fish             # print fish script
-openclaw completion --write-state            # cache scripts for all shells
-openclaw completion --write-state --install  # cache, then install in one step
-openclaw completion --shell bash --write-state
+paddy completion                          # print the detected shell's script
+paddy completion --shell fish             # print fish script
+paddy completion --write-state            # cache scripts for all shells
+paddy completion --write-state --install  # cache, then install in one step
+paddy completion --shell bash --write-state
 ```
 
 ## Options
@@ -29,9 +29,9 @@ openclaw completion --shell bash --write-state
 
 ## Install flow
 
-`--install` points your profile at the cached script, so the cache must exist first. If the cache is missing, the command fails and tells you to run `openclaw completion --write-state`. Combine `--write-state --install` to do both in one step. Without `--shell`, the command preserves a recognized `$SHELL`. When `$SHELL` is missing or unrecognized, it defaults to PowerShell on Windows and zsh elsewhere.
+`--install` points your profile at the cached script, so the cache must exist first. If the cache is missing, the command fails and tells you to run `paddy completion --write-state`. Combine `--write-state --install` to do both in one step. Without `--shell`, the command preserves a recognized `$SHELL`. When `$SHELL` is missing or unrecognized, it defaults to PowerShell on Windows and zsh elsewhere.
 
-The install writes a small `# OpenClaw Completion` block into your shell profile and replaces any older slow `source <(openclaw completion ...)` lines with the cached source line:
+The install writes a small `# Paddy Completion` block into your shell profile and replaces any older slow `source <(paddy completion ...)` lines with the cached source line:
 
 | Shell      | Profile                                                                                                                                                                                    |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -42,7 +42,7 @@ The install writes a small `# OpenClaw Completion` block into your shell profile
 
 Profile changes are staged beside the destination and atomically replace it only after a complete durable write. A failed install leaves an existing profile unchanged.
 
-Installed source lines preserve literal cache paths, including spaces, quotes, dollar signs, and backslashes. Reinstalling replaces OpenClaw's previous source line after the state directory changes.
+Installed source lines preserve literal cache paths, including spaces, quotes, dollar signs, and backslashes. Reinstalling replaces Paddy's previous source line after the state directory changes.
 
 A user-managed portable hook for the same cached script (for example `[[ -f "${HOME}/.openclaw/completions/openclaw.bash" ]] && source "${HOME}/.openclaw/completions/openclaw.bash"`, as a dotfile manager would write) is recognized as completion being configured. Doctor and `completion --install` leave such managed lines byte-for-byte untouched instead of appending a duplicate literal-path block.
 
@@ -54,7 +54,7 @@ command to load that cache in your current matching shell session. Run the compl
 command as printed. This does not install completion for future shell sessions.
 
 For persistent installation, resolve the reported permission or read-only error
-before retrying `openclaw completion --install`. The failure location may be a
+before retrying `paddy completion --install`. The failure location may be a
 staging directory or a symlink target, not the profile itself. Atomic replacement
 also needs write access to the destination directory. The installer uses the
 profile selected in the table above. It has no profile-file destination option.
@@ -67,7 +67,7 @@ profile selected in the table above. It has no profile-file destination option.
 - Bash completion supports both `--flag value` and `--flag=value`, including named profiles before nested commands and single-quoted, double-quoted, or backslash-escaped value prefixes.
 - After an option terminator (`--`), Bash completes command names but does not suggest options or option values.
 - PowerShell completes commands and option values at the cursor, including when later arguments are already present.
-- `openclaw update` refreshes the completion cache automatically after a successful update. `openclaw doctor` can repair missing or stale completion setups.
+- `paddy update` refreshes the core completion cache automatically without loading plugin CLI commands. Run `paddy completion --write-state` to include plugin commands. `paddy doctor` can repair missing or stale completion setups.
 
 ## Related
 

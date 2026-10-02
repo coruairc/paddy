@@ -4,7 +4,7 @@ import { existsSync } from "node:fs";
 // Package executable entrypoint that forwards to the CLI bootstrap.
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { CLI_NAME, PRODUCT_NAME } from "./brand.js";
+import { PRODUCT_NAME } from "./brand.js";
 import { resolveCliArgvInvocation } from "./cli/argv-invocation.js";
 import { tryRunUpdateAdmissionBeforeStartup } from "./cli/run-main-update-admission.js";
 import { isMainModule } from "./infra/is-main.js";
@@ -26,7 +26,7 @@ if (
     await completePendingPackageLifecycle({ packageRoot: fileURLToPath(packageRootUrl) });
   } catch (error) {
     throw new Error(
-      `Paddy package lifecycle is incomplete. Reinstall with package scripts enabled, then retry. ${error instanceof Error ? error.message : String(error)}`,
+      `${PRODUCT_NAME} package lifecycle is incomplete. Reinstall with package scripts enabled, then retry. ${error instanceof Error ? error.message : String(error)}`,
       { cause: error },
     );
   }
@@ -151,7 +151,7 @@ if (isMain && !handledRootVersion && !handledAdmission) {
     }
     if (isBenignUncaughtExceptionError(error)) {
       console.warn(
-        `[${CLI_NAME}] Non-fatal uncaught exception (continuing):`,
+        "[openclaw] Non-fatal uncaught exception (continuing):",
         formatUncaughtError(error),
       );
       return;
@@ -167,7 +167,7 @@ if (isMain && !handledRootVersion && !handledAdmission) {
       console.error(line);
     }
     for (const message of runFatalErrorHooks({ reason: "uncaught_exception", error })) {
-      console.error(`[${CLI_NAME}]`, message);
+      console.error("[openclaw]", message);
     }
     restoreRuntimeTerminalState("uncaught exception", { resumeStdinIfPaused: false });
     process.exit(1);
@@ -194,7 +194,7 @@ if (isMain && !handledRootVersion && !handledAdmission) {
       }
       if (!isExpectedCliError(err)) {
         for (const message of runFatalErrorHooks({ reason: "legacy_cli_failure", error: err })) {
-          console.error(`[${CLI_NAME}]`, message);
+          console.error("[openclaw]", message);
         }
       }
       restoreRuntimeTerminalState("legacy cli failure", { resumeStdinIfPaused: false });

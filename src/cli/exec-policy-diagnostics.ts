@@ -15,6 +15,7 @@ import { sanitizeExecApprovalDisplayText } from "../infra/exec-approval-text-san
 import { SESSION_EXEC_OVERRIDES_NOTE } from "../infra/exec-approvals-effective.js";
 import { normalizeAgentId, parseAgentSessionKey } from "../routing/session-key.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { callGatewayFromCliWithTransport, type GatewayRpcOpts } from "./gateway-rpc.js";
 
 const TERMINAL_TOOLS = ["exec", "process"] as const;
@@ -300,7 +301,7 @@ export function renderExecPolicyToolAccess(params: {
     );
   } else {
     lines.push("Inspect an existing session's tool preview:");
-    lines.push("  openclaw exec-policy show --session <session-key>");
+    lines.push(`  ${CLI_NAME} exec-policy show --session <session-key>`);
     lines.push("Verify execution in a run; command approvals still apply.");
   }
   if (preview && missingFromPreview && excluded.length > 0) {

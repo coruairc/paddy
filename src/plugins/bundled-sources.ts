@@ -180,5 +180,5 @@ export function resolveBundledPluginInstallCommandHint(params: {
   if (!bundledSource?.localPath) {
     return null;
   }
-  return `openclaw plugins install ${bundledSource.localPath}`;
+  return `paddy plugins install ${bundledSource.localPath}`;
 }

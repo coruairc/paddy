@@ -1,4 +1,5 @@
 import { html, type TemplateResult } from "lit";
+import { shellLayoutTraits } from "../../app/shell-layout-traits.ts";
 import {
   renderLearnMoreLink,
   renderSettingsRow,
@@ -28,7 +29,7 @@ export function renderMcp(props: McpViewProps) {
   const rows = summarizeMcpServers(props.configObject) ?? [];
   return html`
     <section class="mcp-page">
-      <div class="settings-page">
+      <div class="settings-page" ${shellLayoutTraits({ settingsPage: true })}>
         <section class="settings-section mcp-page__summary">
           <div class="settings-section__header">
             <h2 class="settings-section__heading">${t("mcpPage.servers")}</h2>
@@ -55,10 +56,10 @@ export function renderMcp(props: McpViewProps) {
           <div class="settings-group">
             <div class="settings-row settings-row--stacked">
               <div class="mcp-command-card__grid">
-                <code>openclaw mcp status --verbose</code>
-                <code>openclaw mcp doctor --probe</code>
-                <code>openclaw mcp login &lt;name&gt;</code>
-                <code>openclaw mcp reload</code>
+                <code>paddy mcp status --verbose</code>
+                <code>paddy mcp doctor --probe</code>
+                <code>paddy mcp login &lt;name&gt;</code>
+                <code>paddy mcp reload</code>
               </div>
             </div>
           </div>

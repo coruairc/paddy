@@ -1,5 +1,4 @@
 import { homedir } from "node:os";
-/** Main doctor config flow: preflight, migrations, previews, repairs, and final write decision. */
 import { note } from "../../packages/terminal-core/src/note.js";
 import {
   listAgentEntries,
@@ -7,6 +6,7 @@ import {
   tryResolveSoleAgentId,
 } from "../agents/agent-scope-config.js";
 import { resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { withProgress } from "../cli/progress.js";
 import { configIncludeOwnsAgentRoster } from "../config/agent-roster-provenance.js";
@@ -70,12 +70,6 @@ async function refreshGatewayAuthStateAfterAuthProfileRepair(): Promise<void> {
   }
 }
 
-/**
- * Loads config, runs doctor migrations/repairs, and returns the config write plan.
- *
- * This is the config-side orchestration boundary for doctor; it keeps preview notes, repair
- * mutations, gateway auth refreshes, and final write confirmation in one ordered flow.
- */
 export async function loadAndMaybeMigrateDoctorConfig(params: {
   options: DoctorOptions;
   agentDatabaseMigrationDiscovery?: PreparedAgentDatabaseMigrationDiscovery;
@@ -86,7 +80,7 @@ export async function loadAndMaybeMigrateDoctorConfig(params: {
   const shouldRepair = params.options.repair === true || params.options.yes === true;
   let preflight = await withProgress(
     {
-      label: "Checking OpenClaw state…",
+      label: `Checking ${PRODUCT_NAME} state…`,
       enabled: params.options.nonInteractive !== true && params.options.json !== true,
       delayMs: 200,
     },
@@ -174,7 +168,7 @@ export async function loadAndMaybeMigrateDoctorConfig(params: {
   let openAICodexAuthProfileIdMap: ReadonlyMap<string, string> | undefined;
   let modelRetirementRepairRan = false;
   let retiredModelRefConfig: Pick<OpenClawConfig, "agents" | "models"> | undefined;
-  const doctorFixCommand = formatCliCommand("openclaw doctor --fix");
+  const doctorFixCommand = formatCliCommand("paddy doctor --fix");
   const changesPanelSink = createDoctorChangesPanelSink(shouldRepair);
   const configRepairWarnings: string[] = [];
   const applyConfigMutation = (
@@ -582,16 +576,16 @@ export async function loadAndMaybeMigrateDoctorConfig(params: {
     }
   } else {
     const { collectDoctorPreviewNotes } = await import("./doctor/shared/preview-warnings.js");
-    const collectPreviewNotes = async () =>
-      await collectDoctorPreviewNotes({
+    const previewNotes = await runWithCurrentPluginMetadata(state.candidate, () =>
+      collectDoctorPreviewNotes({
         cfg: state.candidate,
         activationSourceConfig: pluginActivationSourceConfig,
         doctorFixCommand,
         env: process.env,
         allowExec: params.options.allowExec === true,
         blockedCodexProviderPlan,
-      });
-    const previewNotes = await runWithCurrentPluginMetadata(state.candidate, collectPreviewNotes);
+      }),
+    );
     emitDoctorNotes({
       note,
       infoNotes: previewNotes.infoNotes,

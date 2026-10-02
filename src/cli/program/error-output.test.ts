@@ -383,7 +383,7 @@ describe("formatCliParseErrorOutput", () => {
 
           expect(error).toBeInstanceOf(CommanderError);
           expect((error as CommanderError).exitCode).toBe(0);
-          expect(stdout).toContain("Usage: openclaw cron get");
+          expect(stdout).toContain("Usage: paddy cron get");
           expect(isJsonOutputModeActive(process.argv)).toBe(false);
         },
         { machineOutput: true, restoreChanges: true },
@@ -622,7 +622,7 @@ describe("formatCliParseErrorOutput", () => {
     expect(error.code).toBe("commander.helpDisplayed");
     expect(error.exitCode).toBe(0);
     expect(output).toBe("");
-    expect(stdout).toContain("Usage: openclaw sessions list [options]");
+    expect(stdout).toContain("Usage: paddy sessions list [options]");
   });
 
   it("suggests aliases from the live child command tree", async () => {

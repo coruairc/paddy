@@ -41,6 +41,36 @@ export class ConfigWritePostCommitError extends Error {
   }
 }
 
+export async function recoverConfigWriteFailure(params: {
+  configPath: string;
+  cause: unknown;
+  publication?: "complete" | "partial";
+  restoreFile: () => Promise<boolean | undefined>;
+  restoreEffects?: () => void;
+}): Promise<never> {
+  let rollbackStatus: ConfigWriteRollbackStatus = "unknown";
+  let cause = params.cause;
+  try {
+    const restored = await params.restoreFile();
+    rollbackStatus = restored ? "restored" : "not-restored";
+    if (restored) {
+      params.restoreEffects?.();
+    }
+  } catch (rollbackError) {
+    cause = new AggregateError(
+      [params.cause, rollbackError],
+      `${formatErrorMessage(params.cause)} Recovery failed: ${formatErrorMessage(rollbackError)}`,
+      { cause: rollbackError },
+    );
+  }
+  throw new ConfigWritePostCommitError({
+    configPath: params.configPath,
+    rollbackStatus,
+    cause,
+    publication: params.publication,
+  });
+}
+
 /**
  * Typed write refusal for a candidate that fails schema validation, so doctor
  * can render "config left unchanged" plus the offending paths instead of crashing.
@@ -105,9 +135,9 @@ function formatConfigValidationFailure(pathLabel: string, issueMessage: string):
     `Configuration mismatch: ${policyPath} is "open", but ${allowPath} does not include "*".`,
     "",
     "Fix with:",
-    `  openclaw config set ${allowPath} '["*"]'`,
+    `  paddy config set ${allowPath} '["*"]'`,
     "",
     "Or switch policy:",
-    `  openclaw config set ${policyPath} "pairing"`,
+    `  paddy config set ${policyPath} "pairing"`,
   ].join("\n");
 }

@@ -8,6 +8,7 @@ import type {
 import { request as requestHttp } from "node:http";
 import net from "node:net";
 import type { Duplex } from "node:stream";
+import { PRODUCT_NAME } from "../../brand.js";
 import { createLoopbackConnectOptions } from "../../infra/loopback-connect.js";
 
 const PORTAL_AUTH_NAME = "openclaw_portal";
@@ -217,7 +218,7 @@ function htmlResponse(
 function respondPortalUnauthorized(req: IncomingMessage, res: ServerResponse): void {
   const html =
     "<!doctype html><meta charset=utf-8><title>Private portal</title>" +
-    "<p>This portal is private. Open it from the OpenClaw Control UI.</p>";
+    `<p>This portal is private. Open it from the ${PRODUCT_NAME} Control UI.</p>`;
   htmlResponse(res, 401, html, req.method === "HEAD");
 }
 

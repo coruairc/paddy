@@ -44,7 +44,7 @@ describe("system-agent TUI operations", () => {
       });
       expect(result).toEqual({ applied: false });
       expect(isPersistentSystemAgentOperation({ kind: "doctor-fix" })).toBe(false);
-      expect(lines.join("\n")).toContain("with OpenClaw stopped");
+      expect(lines.join("\n")).toContain("with Paddy stopped");
       expect(lines.join("\n")).toContain("openclaw doctor --fix");
       expect(lines.join("\n")).not.toContain("[openclaw] running: doctor.fix");
       await expect(

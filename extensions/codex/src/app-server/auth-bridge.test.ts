@@ -418,7 +418,7 @@ describe("bridgeCodexAppServerStartOptions", () => {
         ).rejects.toMatchObject({
           name: "AgentHarnessPreflightError",
           message: expect.stringContaining(
-            "openclaw migrate apply codex --from <codex-home> --agent research --include-secrets --item auth:openai --yes",
+            "paddy migrate apply codex --from <codex-home> --agent research --include-secrets --item auth:openai --yes",
           ),
         });
       });

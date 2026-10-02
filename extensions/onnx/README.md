@@ -1,15 +1,15 @@
 # @openclaw/onnx
 
-Official local ONNX decision-model plugin for OpenClaw. It evaluates Choice,
+Official local ONNX decision-model plugin for Paddy. It evaluates Choice,
 Score, and Boolean rubrics with GLiClass, GLiNER2.5, and DeBERTa classifiers in a
 persistent CPU inference process.
 
 ## Setup
 
-Released OpenClaw `2026.9.5` lacks the decision-provider API. Packaged installs
+Released Paddy `2026.9.5` lacks the decision-provider API. Packaged installs
 require a host and plugin API of at least `2026.9.6`.
 
-For development, use an OpenClaw checkout containing both the decision-provider
+For development, use a Paddy checkout containing both the decision-provider
 API and this plugin. Run `pnpm install --frozen-lockfile` and `pnpm build`, enable
 `plugins.entries.onnx`, and run these commands from the checkout:
 
@@ -25,7 +25,7 @@ sizes, and SHA256 hashes. Large models may need preloading to meet the host's
 30-second decision deadline.
 
 On a compatible packaged host, install the local candidate with
-`openclaw plugins install npm-pack:/path/to/openclaw-onnx.tgz`. A development
+`paddy plugins install npm-pack:/path/to/paddy-onnx.tgz`. A development
 checkout's co-versioned source loading does not grant compatibility to an older
 packaged host.
 

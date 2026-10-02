@@ -9,7 +9,7 @@ read_when:
 
 ## Declared output contracts
 
-OpenClaw tools can declare `outputSchema` for the structured value placed in
+Paddy tools can declare `outputSchema` for the structured value placed in
 `AgentToolResult.details`. This is useful for Code Mode and Tool Search; it is
 not a provider-native tool response schema and does not change direct tool
 exposure.
@@ -125,7 +125,7 @@ The contract rules are strict:
 - Close object layers with `{ additionalProperties: false }` for a complete
   quick-index hint. Open, oversized, or otherwise partial schemas stay
   available through handle `describe()` but do not enable one-turn field use.
-- OpenClaw compiles the schema before running the tool, then validates final
+- Paddy compiles the schema before running the tool, then validates final
   `details` after normal tool hooks and before a catalog call returns. An
   invalid schema cannot run the tool; a mismatch fails without printing the
   value.
@@ -224,7 +224,7 @@ operations instead return their native MCP shapes: `resources.list()` returns
 `prompts`, and `prompts.get()` returns `messages` with an optional `description`.
 
 Declaration files are virtual, not written under the workspace or state
-directory. For each code-mode `exec` call, OpenClaw builds the run-scoped tool
+directory. For each code-mode `exec` call, Paddy builds the run-scoped tool
 catalog, keeps the visible MCP entries, renders `mcp/index.d.ts` plus one
 `mcp/<server>.d.ts` per visible server, and injects that small read-only table
 into the selected executor's worker. Guest code sees only the `API` object:
@@ -361,13 +361,13 @@ Output order matches guest calls. Cumulative guest output and the final value
 or failure diagnostic still share one `maxOutputBytes` serialized UTF-8 budget
 across all waits. Oversized errors retain their leading cause and end with
 `[error truncated]`; truncation does not turn a failure into success. For
-successful emitted or returned output that exceeds this budget, OpenClaw returns a bounded value
+successful emitted or returned output that exceeds this budget, Paddy returns a bounded value
 with `truncated: true`, a UTF-8-safe `prefix`, `omittedBytes`, and guidance to
 rerun with narrower arguments. Treat that marker as a successful partial result:
 reduce the search scope, paginate, select fewer files, or return a smaller
 projection. Non-serializable values are converted to plain strings or errors;
 binary values are not supported. Images and files travel through ordinary
-OpenClaw tools, not through the code-mode bridge.
+Paddy tools, not through the code-mode bridge.
 
 When later cells need the full data, return `await results.save(value)` instead
 of emitting the value. The bounded reference preview is separate from the
@@ -395,7 +395,7 @@ new output or a changed final-value/error reservation can produce a replacement
 summary of that same original output.
 
 Model-facing `exec` and `wait` results also fit the effective model's per-result
-context and persistence limits. OpenClaw reserves the complete result envelope,
+context and persistence limits. Paddy reserves the complete result envelope,
 including status, continuation, diagnostics, telemetry, and JSON formatting,
 using the same compact representation for budget fitting and delivery before
 projecting output from its retained original source. Network-derived

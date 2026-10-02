@@ -131,6 +131,7 @@ function buildApproveParams(
     SenderId?: string;
     GatewayClientScopes?: string[];
     AccountId?: string;
+    GroupSpace?: string;
   },
 ): HandleCommandsParams {
   const provider = ctxOverrides?.Provider ?? "whatsapp";
@@ -143,6 +144,7 @@ function buildApproveParams(
       SenderId: ctxOverrides?.SenderId,
       GatewayClientScopes: ctxOverrides?.GatewayClientScopes,
       AccountId: ctxOverrides?.AccountId,
+      GroupSpace: ctxOverrides?.GroupSpace,
     },
     command: {
       commandBodyNormalized,
@@ -310,6 +312,52 @@ describe("handleApproveCommand", () => {
     expect(result?.shouldContinue).toBe(false);
     expect(result?.reply?.text).toContain("Approval allow-once submitted");
     expectApprovalResolverCall({ method, id });
+  });
+
+  it("passes workspace-qualified Slack plugin reviewers to Gateway without changing exec identity", async () => {
+    const slackPlugin = {
+      ...slackApproveTestPlugin,
+      approvalCapability: {
+        ...createApprovalCapability("Slack"),
+        resolveReviewerSenderId: ({
+          senderId,
+          spaceId,
+        }: {
+          senderId?: string | null;
+          spaceId?: string | null;
+        }) => `team:${spaceId}:user:${senderId}`,
+      },
+    };
+    setActivePluginRegistry(
+      createTestRegistry([{ pluginId: "slack", plugin: slackPlugin, source: "test" }]),
+    );
+    const cfg = withApprovalPolicy(
+      { commands: { text: true }, channels: { slack: { allowFrom: ["*"] } } } as OpenClawConfig,
+      {
+        plugin: { authorizedSenders: ["team:T11111111:user:U12345678"] },
+        exec: { authorizedSenders: [] },
+      },
+    );
+    const ctx = {
+      Provider: "slack",
+      Surface: "slack",
+      SenderId: "U12345678",
+      GroupSpace: "T11111111",
+    };
+    resolveApprovalOverGatewayMock.mockResolvedValue(undefined);
+
+    const plugin = buildApproveParams("/approve plugin:abc allow-once", cfg, ctx);
+    plugin.command.isAuthorizedSender = false;
+    await handleApproveCommand(plugin, true);
+    expect(approvalResolverRequest(0).senderId).toBe("team:T11111111:user:U12345678");
+
+    resolveApprovalOverGatewayMock.mockClear();
+    withApprovalPolicy(cfg, {
+      plugin: { authorizedSenders: [] },
+      exec: { authorizedSenders: ["U12345678"] },
+    });
+    await handleApproveCommand(buildApproveParams("/approve exec:abc allow-once", cfg, ctx), true);
+    expect(approvalResolverRequest(0).senderId).toBe("U12345678");
   });
 
   it("honors the configured default account for omitted-account /approve auth", async () => {
@@ -499,7 +547,7 @@ describe("handleApproveCommand", () => {
     it("rejects a command-authorized non-owner before any canonical decision", async () => {
       const result = await approveOnSlack({ senderIsOwner: false });
 
-      expect(result?.reply?.text).toContain("Only the owner can approve OpenClaw changes");
+      expect(result?.reply?.text).toContain("Only the owner can approve Paddy changes");
       const canonicalCalls = resolveApprovalOverGatewayMock.mock.calls.filter(
         ([request]) => (request as { approvalKind?: string }).approvalKind === "system-agent",
       );

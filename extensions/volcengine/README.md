@@ -1,13 +1,13 @@
-# OpenClaw Volcengine Provider
+# Paddy Volcengine Provider
 
-Official OpenClaw provider plugin for Volcengine models, the Volcengine coding
+Official Paddy provider plugin for Volcengine models, the Volcengine coding
 plan, and Volcengine Speech text-to-speech.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/volcengine-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/volcengine> for model and speech setup.

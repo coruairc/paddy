@@ -14,6 +14,7 @@ import {
   resolveDefaultSecretProviderAlias,
   upsertAuthProfileWithLock,
 } from "openclaw/plugin-sdk/provider-auth";
+import { resolveAgentModelPrimaryValue } from "openclaw/plugin-sdk/provider-onboard";
 import { resolveFirstGithubToken } from "./auth.js";
 import {
   normalizeGithubCopilotDomain,
@@ -47,18 +48,8 @@ async function loadGithubCopilotRuntime() {
   return await import("./register.runtime.js");
 }
 
-function resolveCopilotConfiguredPrimary(cfg: OpenClawConfig): string {
-  const defaults = cfg.agents?.defaults;
-  const existingModel = defaults?.model;
-  return typeof existingModel === "string"
-    ? existingModel.trim()
-    : typeof existingModel === "object" && typeof existingModel?.primary === "string"
-      ? existingModel.primary.trim()
-      : "";
-}
-
 function applyCopilotDefaultModel(cfg: OpenClawConfig, modelRef: string): OpenClawConfig {
-  if (resolveCopilotConfiguredPrimary(cfg)) {
+  if (resolveAgentModelPrimaryValue(cfg.agents?.defaults?.model)) {
     return cfg;
   }
   const defaults = cfg.agents?.defaults;
@@ -297,7 +288,7 @@ async function runGitHubCopilotNonInteractiveAuth(
   );
 
   let starterModel: string | undefined;
-  if (!resolveCopilotConfiguredPrimary(configWithDomain)) {
+  if (!resolveAgentModelPrimaryValue(configWithDomain.agents?.defaults?.model)) {
     const { resolveCopilotStarterModel } = await loadGithubCopilotRuntime();
     starterModel = await resolveCopilotStarterModel({
       githubToken,
@@ -557,7 +548,7 @@ export default definePluginEntry({
         ...(starter.notes ?? []),
         ...(persistInline
           ? [
-              "Plaintext secret input mode was selected, so the GitHub Copilot token will remain inline in the auth profile and openclaw secrets audit --check will report it.",
+              "Plaintext secret input mode was selected, so the GitHub Copilot token will remain inline in the auth profile and paddy secrets audit --check will report it.",
             ]
           : []),
       ];

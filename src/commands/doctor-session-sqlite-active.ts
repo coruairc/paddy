@@ -115,7 +115,7 @@ export async function prepareActiveSqliteTranscriptSettlement(params: {
       params.report.issues.push({
         code: "active_sqlite_transcript_verification_failed",
         sessionKey: source.sessionKey,
-        message: `${source.transcriptPath}: ${formatErrorMessage(error)}. Original retained. Compare the named events with a verified backup, restore a corrected JSONL at this path, then rerun openclaw doctor --session-sqlite recover.`,
+        message: `${source.transcriptPath}: ${formatErrorMessage(error)}. Original retained. Compare the named events with a verified backup, restore a corrected JSONL at this path, then rerun paddy doctor --session-sqlite recover.`,
       });
     }
   }

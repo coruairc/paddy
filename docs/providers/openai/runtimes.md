@@ -1,7 +1,7 @@
 ---
 summary: "Which runtime runs an openai/* turn, and how native Codex resolves auth"
 read_when:
-  - You need to know whether a turn runs on OpenClaw or the native Codex harness
+  - You need to know whether a turn runs on Paddy or the native Codex harness
   - You are mapping the openai, codex, and agentRuntime names to layers
   - You are debugging native Codex app-server account selection
 title: "OpenAI runtimes and Codex auth"
@@ -27,10 +27,10 @@ endpoint and adapter:
 | Effective route facts                                                                                                                                                           | Implicit runtime      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
 | Exact official Platform HTTPS endpoint with `openai-responses`, or exact official ChatGPT HTTPS endpoint with `openai-chatgpt-responses`; no authored provider request override | Codex may be selected |
-| Authored `openai-completions` adapter                                                                                                                                           | OpenClaw              |
-| Custom endpoint                                                                                                                                                                 | OpenClaw              |
+| Authored `openai-completions` adapter                                                                                                                                           | Paddy                 |
+| Custom endpoint                                                                                                                                                                 | Paddy                 |
 | Explicit exact official endpoint using HTTP                                                                                                                                     | Rejected              |
-| Route with an authored provider/model request override                                                                                                                          | OpenClaw              |
+| Route with an authored provider/model request override                                                                                                                          | Paddy                 |
 
 Valid model-scoped `params.fastMode` / `params.fast_mode`, cutoff, and `thinking`
 values are typed agent-runtime controls, not authored provider request params.
@@ -39,9 +39,9 @@ Codex selection. See [Runtime selection](/concepts/agent-runtimes#runtime-select
 for the supported capability values and the request overrides that remain protected.
 
 An explicit `agentRuntime.id: "openclaw"` keeps a Codex-eligible route on
-OpenClaw. Explicit `agentRuntime.id: "codex"` requires a registered Codex harness;
+Paddy. Explicit `agentRuntime.id: "codex"` requires a registered Codex harness;
 unsupported routes/auth fail closed, except that authored request overrides may
-use Codex's declared exact-request OpenClaw fallback before execution. Inspect
+use Codex's declared exact-request Paddy fallback before execution. Inspect
 the completed result's actual harness when a recipe depends on native execution.
 Runtime compatibility does not establish credential type or billing: Platform API-key
 auth and ChatGPT/Codex subscription auth remain distinct.
@@ -53,14 +53,14 @@ subscription route. That preference does not change the implicit runtime or
 require installing Codex for an API-only configuration. A literal provider
 `apiKey` without an `auth` override remains a fallback after eligible profiles.
 Required profile bindings, provider auth settings, configured secret references,
-and explicit auth order still take precedence. An authored OpenClaw runtime choice
+and explicit auth order still take precedence. An authored Paddy runtime choice
 prefers the API route when both kinds are eligible; runtime compatibility is
 checked independently. Unpinned heartbeat and subagent models inherit their
 default model's route intent. Doctor reports a resolved billing-route change
 after saving a model-reference migration, including the consumer and old/new
 models, routes, and profiles.
 
-`openclaw doctor --fix` migrates legacy `codex/*` and `openai-codex/*` model
+`paddy doctor --fix` migrates legacy `codex/*` and `openai-codex/*` model
 refs, legacy Codex auth profile ids, and legacy Codex auth-order entries to the
 canonical `openai` route. Migrated model refs receive model-scoped
 `agentRuntime.id: "codex"`; use `auth.order.openai` for new auth-order config.
@@ -117,7 +117,7 @@ by the earlier in-provider prototype once when switching to this package.
 A restricted API key needs Agents and Responses read/write plus Models read
 permission so the service can retrieve the selected model when creating a session.
 
-Agents API owns the persistent agent session and workspace. OpenClaw stores
+Agents API owns the persistent agent session and workspace. Paddy stores
 the session binding in plugin SQLite state and mirrors assistant commentary,
 reasoning summaries, native tool calls and results, and final text into its
 normal transcript. Follow-up messages reuse the agent session; input during
@@ -126,13 +126,13 @@ and `/reset` start a fresh session on the next message. Reset and local session
 deletion retire the binding; the Agents API retains the remote history and
 workspace, which can be managed through its API.
 
-When creating a session, OpenClaw uses the same workspace preparation as Codex
+When creating a session, Paddy uses the same workspace preparation as Codex
 to supply bounded `AGENTS.md`, `SOUL.md`, `IDENTITY.md`, shared `USER.md`, and
 the selected person's `users/<profile-id>/USER.md` overlay. Eligible
 `BOOTSTRAP.md`, `MEMORY.md`, and bootstrap-hook files are included as supporting
 context. Existing bootstrap budgets, session privacy rules, and lightweight
 mode still apply. When enabled memory tools target the configured workspace,
-OpenClaw supplies memory references and the active memory plugin's recall
+Paddy supplies memory references and the active memory plugin's recall
 guidance instead of embedding root `MEMORY.md` contents.
 
 These are instruction snapshots from the Gateway, not files copied into the
@@ -141,7 +141,7 @@ changed personal-user selection, or this behavior in an existing session.
 Preparation failure occurs before remote session creation and binding so the
 next attempt can retry.
 
-The harness reuses OpenClaw's tool-aware delegation, Skill Workshop, UI,
+The harness reuses Paddy's tool-aware delegation, Skill Workshop, UI,
 credential, Git coauthor, and extra system guidance where applicable. Each turn
 also receives current date/timezone, active-computer, visible-reply, permission
 notice, and watched-session context through the existing input carrier.
@@ -200,16 +200,16 @@ New Agents API sessions enable built-in web search in live mode. Sessions
 created before web search was enabled need `/new` or `/reset` to pick it up.
 
 The harness supports text, built-in web search, native hosted-workspace commands, and host-authorized
-OpenClaw and plugin functions. Gateway functions retain the normal tool policy,
+Paddy and plugin functions. Gateway functions retain the normal tool policy,
 hooks, current-run authority, and delivery receipts; shell and file operations
 remain in the hosted VM. Tools such as memory search are available when their
 existing plugin and configuration enable them.
-OpenClaw records host function calls, arguments, results, and error status in
+Paddy records host function calls, arguments, results, and error status in
 its normal transcript before acknowledging the result to the native session.
 
 Admitted file attachments are copied into `/workspace/inputs` in the hosted VM.
 Follow-up attachments upload into the same connected environment. Completed
-native artifacts under `/workspace/outputs` are copied into OpenClaw's managed
+native artifacts under `/workspace/outputs` are copied into Paddy's managed
 outbound media and attached to the final reply. Limits are 5 MiB per file,
 10 MiB total, and 50 files per turn in each direction. Model text cannot select a
 Gateway file path for transfer.
@@ -225,68 +225,68 @@ Confirm that the attachment is present before treating the transfer as complete.
 Apps, connectors, image generation, custom context engines, and self-hosted
 executors are outside this prototype's scope. Admitted turns are marked unsafe
 for replay because hosted commands or Gateway functions may already have run.
-OpenClaw can continue the existing session after a transient provider failure.
+Paddy can continue the existing session after a transient provider failure.
 
 ## Native Codex app-server auth
 
 The native Codex app-server harness uses `openai/*` model refs when an eligible
 exact official HTTPS route selects it implicitly, or when provider/model
 `agentRuntime.id: "codex"` selects it explicitly. Its auth is still
-account-based. OpenClaw selects auth in this order:
+account-based. Paddy selects auth in this order:
 
 1. Ordered OpenAI auth profiles for the agent, preferably under
-   `auth.order.openai`. Run `openclaw doctor --fix` to migrate older legacy
+   `auth.order.openai`. Run `paddy doctor --fix` to migrate older legacy
    Codex auth profile ids and auth order.
 2. The native Codex account, only with an explicit `appServer.homeScope: "user"`
    opt-in and when no host credential or account selection owns the route.
-   Ordinary OpenClaw sessions default to the isolated agent home, even when
-   Codex is already signed in. Prepared OpenClaw credentials stay in that home;
-   OpenClaw never logs them into the native user home.
+   Ordinary Paddy sessions default to the isolated agent home, even when
+   Codex is already signed in. Prepared Paddy credentials stay in that home;
+   Paddy never logs them into the native user home.
 3. For local stdio app-server launches only, and only when the app-server
    reports no account: `CODEX_API_KEY`, then `OPENAI_API_KEY`.
 
 With the user-home opt-in, status and catalog reads ask Codex about its native
-login without importing credentials into an OpenClaw profile. A fresh auth refresh observes native login
+login without importing credentials into a Paddy profile. A fresh auth refresh observes native login
 and logout. Native API-key and subscription accounts select their matching
 routes. Model runtime choices use the same route and account as thinking
 metadata; an unavailable runtime cannot be selected. Explicit auth import
-remains available when you want an OpenClaw-owned profile.
+remains available when you want a Paddy-owned profile.
 
 If you previously relied on automatic use of a native Codex login, sign in with
-`openclaw models auth login --provider openai` and select the resulting OpenClaw
-profile. Selecting detected Codex in Model Setup reuses eligible OpenClaw credentials
+`paddy models auth login --provider openai` and select the resulting Paddy
+profile. Selecting detected Codex in Model Setup reuses eligible Paddy credentials
 or opens the supported OpenAI sign-in flow before testing the connection. A cancelled
 or failed sign-in does not promote the route. If verification fails after sign-in,
 choose the saved sign-in to retry without logging in again. Setup no longer enables
 user-home sharing merely because a native login exists. Existing explicit `homeScope: "user"` settings remain opt-ins; remove that
 setting to use isolated sessions. Native session adoption and supervision are
 unchanged. Existing personal Codex history is not moved or deleted, and ordinary
-OpenClaw sessions remain durable in the per-agent Codex home.
+Paddy sessions remain durable in the per-agent Codex home.
 
 The default per-agent `codex-home/auth.json` is not a runtime auth store. If
 you copied or mounted Codex CLI credentials there, import them into the agent's
-OpenClaw auth store before starting a native Codex turn. Replace `<agent-id>`
+Paddy auth store before starting a native Codex turn. Replace `<agent-id>`
 with the configured agent that owns this Codex home:
 
 ```bash
-openclaw migrate plan codex --from <codex-home> --agent <agent-id> --include-secrets --item auth:openai
-openclaw migrate apply codex --from <codex-home> --agent <agent-id> --include-secrets --item auth:openai --yes
+paddy migrate plan codex --from <codex-home> --agent <agent-id> --include-secrets --item auth:openai
+paddy migrate apply codex --from <codex-home> --agent <agent-id> --include-secrets --item auth:openai --yes
 ```
 
 A local ChatGPT/Codex subscription sign-in is not replaced just because the
 gateway process also has `OPENAI_API_KEY` for direct OpenAI models or
 embeddings. The env API-key fallback applies only to the local stdio no-account
 path; it is never sent over WebSocket app-server connections. When a
-subscription-style Codex profile is selected, OpenClaw also keeps
+subscription-style Codex profile is selected, Paddy also keeps
 `CODEX_API_KEY` and `OPENAI_API_KEY` out of the spawned stdio app-server child
 and sends the selected credentials through the app-server login RPC instead.
 
-When that subscription profile is blocked by a Codex usage limit, OpenClaw
+When that subscription profile is blocked by a Codex usage limit, Paddy
 marks the profile blocked until Codex's advertised reset time and lets auth
 ordering rotate to the next `openai:*` profile, without changing the selected
 model or dropping out of the Codex harness. Once the reset time passes, the
 subscription profile is eligible again.
 
 Chat `/status` reports the authentication mode from the selected runtime's current
-prepared account. A native login stays distinct from an OpenClaw profile; it does
+prepared account. A native login stays distinct from a Paddy profile; it does
 not satisfy an unavailable explicit profile pin.

@@ -26,6 +26,12 @@ The shared catalog and tool bridge retain policy ownership. Executors
 own JavaScript execution and continuation state. Node's `node:vm` is trusted
 execution, not a sandbox security boundary.
 
+Rebuilding `before_tool_call` hooks must retain the surrounding execution
+wrappers in their original order. Caller authority, cancellation, activity, and
+run-lifetime checks enclose preparation and result finalization as well as the
+tool body. Execution wrappers register their rebuild function when copying tool
+metadata; schema-only copies preserve that registration.
+
 ## Validation checklist
 
 Code mode coverage should prove:
@@ -47,7 +53,7 @@ Code mode coverage should prove:
 - direct-only tools stay model-visible and do not appear in `catalog`
 - denied tools have no global or catalog handle
 - bare globals, callable `catalog.search` results, `catalog.all`, and handle
-  `describe()` work for OpenClaw and client tools without exposing exact ids
+  `describe()` work for Paddy and client tools without exposing exact ids
 - `API.list("mcp")` and `API.read("mcp/<server>.d.ts")` expose TypeScript-style
   MCP declarations without a bridge/tool call
 - MCP namespace `$api()` remains available as an inline fallback for schemas
@@ -84,13 +90,13 @@ Run these against both executors when changing the runtime:
 2. Send an agent turn with a small direct tool set.
 3. Assert the model-visible tools are unchanged.
 4. Restart with `tools.codeMode.enabled: true`.
-5. Send an agent turn with OpenClaw, plugin, MCP, and client test tools.
+5. Send an agent turn with Paddy, plugin, MCP, and client test tools.
 6. Assert the model-visible tool list is `exec`, `wait`, plus only configured
    direct-only tools.
 7. In `exec`, call safe bare globals and assert normalized, reserved, and
    colliding names match the quick index.
 8. Search `catalog`, inspect handle metadata/`describe()`, and call
-   OpenClaw/plugin/client handles without observing exact ids.
+   Paddy/plugin/client handles without observing exact ids.
 9. In `exec`, call `API.list("mcp")` and `API.read("mcp/<server>.d.ts")` and
    assert the declaration files describe visible MCP tools.
 10. In `exec`, search by task intent across native and MCP tools, inspect the

@@ -452,7 +452,7 @@ describe("parseSystemAgentOperation", () => {
           },
         },
       ),
-    ).rejects.toThrow("`openclaw onboard` on the machine running OpenClaw");
+    ).rejects.toThrow("`paddy onboard` on the machine running Paddy");
 
     expect(applySetup).not.toHaveBeenCalled();
   });

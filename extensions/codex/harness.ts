@@ -34,7 +34,7 @@ function requireCodexCompactionCapabilities<T extends AgentHarnessCompactParams>
     typeof capabilities.retainSourceAuthority !== "function"
   ) {
     throw new Error(
-      "This host did not provide compaction source authority. Update OpenClaw before compacting this session.",
+      "This host did not provide compaction source authority. Update Paddy before compacting this session.",
     );
   }
   capabilities.assertActive();
@@ -191,26 +191,6 @@ export function createCodexAppServerAgentHarness(
           },
         }
       : {}),
-    taskHistory: {
-      taskKinds: ["codex-native"],
-      read: async (params) => {
-        const { readCodexNativeSubagentHistory } =
-          await import("./src/app-server/native-subagent-history.js");
-        const assertCurrent = () => {
-          params.assertCurrent();
-          if (disposed) {
-            throw new Error("Agent harness is disposed");
-          }
-        };
-        return readCodexNativeSubagentHistory(
-          { ...params, assertCurrent },
-          {
-            bindingStore: options.bindingStore,
-            pluginConfig: resolveAttemptPluginConfig(params.cfg),
-          },
-        );
-      },
-    },
     authBinding: {
       fingerprint: async (params) => {
         const { fingerprintCodexAppServerAuthBinding } =

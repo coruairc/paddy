@@ -1,5 +1,5 @@
 ---
-summary: "`openclaw update status` plus the durable run ledger, reports, and artifacts every update writes"
+summary: "`paddy update status` plus the durable run ledger, reports, and artifacts every update writes"
 read_when:
   - You want to check whether an update is available before applying one
   - You are inspecting a past update run, its reports, or its artifacts
@@ -7,14 +7,14 @@ title: "Update status and run history"
 sidebarTitle: "Status and history"
 ---
 
-Availability checks and the durable record every update leaves behind. Part of the [`openclaw update`](/cli/update) reference.
+Availability checks and the durable record every update leaves behind. Part of the [`paddy update`](/cli/update) reference.
 
 ## `update status`
 
 Show the active update channel, git tag/branch/SHA (source checkouts only),
 update availability, and the active or most recent update report.
 While an update is active, the table shows its phase instead of advertising another
-update, and the final line points to `openclaw update status`. JSON still includes
+update, and the final line points to `paddy update status`. JSON still includes
 registry/Git `availability` separately from `activeRun`.
 
 Git availability checks, including the Gateway's background check after startup,
@@ -42,8 +42,8 @@ This observation does not establish remote target freshness, candidate validatio
 The version prefers recorded build metadata and falls back to the package version when the build has no version, following the CLI's version precedence.
 
 If an update hands work to a background helper, the command has not finished the
-update. Follow its final `openclaw update status` command to check progress and the
-outcome. `openclaw gateway status --deep` checks Gateway health, not update progress.
+update. Follow its final `paddy update status` command to check progress and the
+outcome. `paddy gateway status --deep` checks Gateway health, not update progress.
 
 Status also shows unfinished plugin data/settings upgrades and their repair commands,
 including when an older updater did not record those warnings in its run history.
@@ -66,9 +66,9 @@ This is historical information, not a current health verdict or an update run;
 a manual package-manager replacement does not create updater history.
 
 ```bash
-openclaw update status
-openclaw update status --json
-openclaw update status --timeout 10
+paddy update status
+paddy update status --json
+paddy update status --timeout 10
 ```
 
 | Flag                  | Default | Description                         |
@@ -120,7 +120,7 @@ and a redacted diagnostic in the run history as well as the Gateway log. Status
 and the bounded run report show the cause after the campaign clears. This requires
 the updated Gateway; older runs cannot recover a cause that was never recorded.
 
-An admitted `openclaw update --json` includes `runId` and the `run` record. `openclaw update status --json`
+An admitted `paddy update --json` includes `runId` and the `run` record. `paddy update status --json`
 includes `activeRun` when a run is active and `lastRun` when history exists.
 An automatic-update campaign stops showing as applying when its own admitted run
 finishes, including when a managed handoff fails before restarting the Gateway.
@@ -148,10 +148,10 @@ row stays in `activeRun` until the Gateway or explicit repair commits the outcom
 Identityless rows outside the legacy-expiry shape are not reconciled automatically.
 For those stale identityless rows, JSON includes
 `staleRun` with `runId` and `guidance`; human status and Doctor preflight report
-"no activity since &lt;time&gt;; if no update is running, run `openclaw update repair`
-or start a new `openclaw update`".
+"no activity since &lt;time&gt;; if no update is running, run `paddy update repair`
+or start a new `paddy update`".
 
-An explicit new `openclaw update` (including `--dry-run`) supersedes the old row
+An explicit new `paddy update` (including `--dry-run`) supersedes the old row
 only when it is the sole active run, has no recorded driver identity, and has
 had no activity for more than 30 minutes. Admission atomically finishes that
 row as `failed` with reason `superseded` and a retained `reconcile:superseded`
@@ -160,13 +160,13 @@ are preserved. Inherited update continuations and automatic campaigns do not
 supersede legacy history. Configuration writes remain suspended until the
 active row is reconciled.
 
-OpenClaw 2026.9.2 can admit a new CLI update while an older row remains running;
+Paddy 2026.9.2 can admit a new CLI update while an older row remains running;
 the stale row does not block updater admission. Upgrade normally, then run
-`openclaw update repair` from the updated installation if status still shows the
+`paddy update repair` from the updated installation if status still shows the
 old run. See [Updating](/install/updating#stale-update-history).
 
 Human output, chat completion notices, the Control UI update view, and the
-`openclaw status` update line use the same report, including on success. The report shows recorded facts; an absent verification fact
+`paddy status` update line use the same report, including on success. The report shows recorded facts; an absent verification fact
 means that check has not been observed.
 
 An unsuccessful identity check is reported as a version or build mismatch only
@@ -206,7 +206,7 @@ When a managed-service handoff cannot start or transfer ownership, the Gateway
 records the refusal on the failed `requested` step. Status includes the recorded
 diagnostic after the reason code; chat and failure reports use the same facts.
 Public reports preserve recognized handoff diagnostics, including the instruction
-to run `openclaw doctor` when the installed updater cannot be found. This applies
+to run `paddy doctor` when the installed updater cannot be found. This applies
 once the Gateway runs the updated code; older reports cannot recover missing facts.
 
 Failed finalization steps record their reason code before failure reporting starts.
@@ -240,8 +240,8 @@ Activation has an enclosing deadline derived from the update's existing phase
 budget. If it expires, the updater cancels owned work and waits within that budget
 for its child processes to settle, then records `update-activation-timeout` as a
 failed outcome. A child that has not stopped retains its ownership and recovery
-state. Inspect `openclaw update status` and `openclaw doctor`, and wait for the
-owning updater and its children to stop before running `openclaw update repair`.
+state. Inspect `paddy update status` and `paddy doctor`, and wait for the
+owning updater and its children to stop before running `paddy update repair`.
 The timeout does not authorize rollback or removal of retained update state.
 If migration or pending recovery prevents a safe history write, the updater
 reports the timeout and preserves that state for its owning runtime to reconcile.
@@ -256,8 +256,8 @@ obsolete backups; unresolved recovery material is not eligible for this cleanup.
 Gateway clients with `operator.admin` can inspect history:
 
 ```bash
-openclaw gateway call update.runs.list --params '{"limit":10}'
-openclaw gateway call update.runs.get --params '{"runId":"<run-id>"}'
+paddy gateway call update.runs.list --params '{"limit":10}'
+paddy gateway call update.runs.get --params '{"runId":"<run-id>"}'
 ```
 
 `update.runs.list` returns `{ runs }`; `limit` defaults to 20 and is capped at 100. `update.runs.get` returns `{ run }`, with `run: null` when the ID is unknown. `update.status` retains its existing
@@ -298,7 +298,7 @@ installation completed, readiness was not confirmed, and recovery backups were
 retained. `finishedAtMs` records when observation ended; `confirmedAtMs` remains
 `null`. The warning log preserves the elapsed allowance and last service/HTTP
 observation. No background readiness continuation is promised. Check current
-health with `openclaw gateway status --deep`; later health does not rewrite this
+health with `paddy gateway status --deep`; later health does not rewrite this
 historical outcome. A Gateway that becomes ready within the allowance records
 `succeeded` and `confirmedAtMs` when readiness is reached.
 
@@ -350,16 +350,16 @@ record that skip. No fresh service-status read can permanently exclude a managed
 If native probe cleanup is still pending at the deadline, completion remains
 unknown. Later cleanup confirmation preserves the original timeout; cleanup
 failure records both facts and names the failure in the report and warning log.
-Unknown cleanup never records success. Inspect `openclaw update status` before
+Unknown cleanup never records success. Inspect `paddy update status` before
 recovery; repeated diagnostics do not extend the abandonment timer.
 
 Older interrupted runs may lack the target build identity needed for that check.
 Doctor names the abandoned run and explains why it cannot settle it; a matching
 version number alone is insufficient. Inspect the run's recorded steps and use
-[`openclaw update repair`](/cli/update/repair-and-recovery) when recovery is needed.
+[`paddy update repair`](/cli/update/repair-and-recovery) when recovery is needed.
 
 Historical identityless rows outside the legacy-expiry shape require explicit
-`update repair` or a new operator-started `openclaw update`.
+`update repair` or a new operator-started `paddy update`.
 An old `requested` row alone does not prove that its updater exited: the 2026.9.2
 updater can still be waiting on package-manager or registry preflight before it
 records its first staging step. Stop an unrecorded old updater before explicitly

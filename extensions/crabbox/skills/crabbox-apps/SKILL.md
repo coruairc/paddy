@@ -59,7 +59,7 @@ inside the lease making its own API calls needs a separate protected route.
 For an exclusively owned coordinator-backed Linux lease, use the host CLI:
 
 ```sh
-openclaw crabbox run --id <lease-id> --model <provider/model> -- <command> <args>
+paddy crabbox run --id <lease-id> --model <provider/model> -- <command> <args>
 ```
 
 Run from the credential-owning host and the local project directory that owns

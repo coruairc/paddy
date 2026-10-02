@@ -41,11 +41,9 @@ import type {
   GatewayService,
   GatewayServiceControlArgs,
   GatewayServiceEnv,
-  GatewayServiceEnvArgs,
   GatewayServiceInstallArgs,
   GatewayServiceManageArgs,
   GatewayServiceRestartResult,
-  GatewayServiceStartRepairIssue,
   GatewayServiceStartResult,
   GatewayServiceState,
 } from "./service-types.js";
@@ -86,26 +84,13 @@ function ignoreServiceWriteResult<TArgs extends GatewayServiceInstallArgs>(
   };
 }
 
-/** Reads the installed service and reports definition drift that must be repaired before launch. */
-export async function inspectGatewayServiceStartRepair(
-  service: GatewayService,
-  args: GatewayServiceEnvArgs,
-  expectedPort?: number,
-): Promise<{ state: GatewayServiceState; issues: GatewayServiceStartRepairIssue[] }> {
-  const state = await readGatewayServiceState(service, args);
-  return { state, issues: collectGatewayServiceStartRepairIssues(state, expectedPort) };
-}
-
 export async function startGatewayService(
   service: GatewayService,
   args: GatewayServiceControlArgs,
   expectedPort?: number,
 ): Promise<GatewayServiceStartResult> {
-  const { state, issues: repairIssues } = await inspectGatewayServiceStartRepair(
-    service,
-    { env: args.env },
-    expectedPort,
-  );
+  const state = await readGatewayServiceState(service, { env: args.env });
+  const repairIssues = collectGatewayServiceStartRepairIssues(state, expectedPort);
   if (state.loadState.status === "unknown") {
     throw new Error(`Service status inspection failed: ${state.loadState.detail}`);
   }
@@ -201,14 +186,14 @@ function describeUnsupportedGatewayService(kind: ServiceKind): string {
     if (kind === "node") {
       return (
         "Node service management is not supported by this CLI on FreeBSD. " +
-        "Run `openclaw node run` for a foreground node host connected to your Gateway."
+        "Run `paddy node run` for a foreground node host connected to your Gateway."
       );
     }
     return (
       "Gateway service management is not supported by this CLI on FreeBSD. " +
       'For a pkg install, set openclaw_user to your onboarding account and openclaw_enable="YES" in /etc/rc.conf, ' +
       "then use `service openclaw start` (or stop/restart/status) as root. " +
-      "For a foreground Gateway, run `openclaw gateway run` as your onboarding account."
+      "For a foreground Gateway, run `paddy gateway run` as your onboarding account."
     );
   }
   return `Gateway service install not supported on ${process.platform}`;

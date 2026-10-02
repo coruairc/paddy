@@ -14,7 +14,7 @@ import { listNodePairing, projectNodePairing } from "../../infra/device-pairing-
 import { listDevicePairing } from "../../infra/device-pairing.js";
 import { formatErrorMessage } from "../../infra/errors.js";
 import {
-  formatNodeRunnerUpdateRequired,
+  formatNodeRunnerInventoryIssue,
   NODE_RUNNER_UPDATE_REQUIRED_ISSUE,
   NODE_WORKER_SUPERVISOR_PROTOCOL_FEATURE,
   parseNodeRunnerInventoryDeclaration,
@@ -360,7 +360,7 @@ export const nodeReadHandlers: GatewayRequestHandlers = {
         undefined,
         errorShape(
           ErrorCodes.INVALID_REQUEST,
-          formatNodeRunnerUpdateRequired(nodeId, NODE_RUNNER_UPDATE_REQUIRED_ISSUE),
+          formatNodeRunnerInventoryIssue(nodeId, NODE_RUNNER_UPDATE_REQUIRED_ISSUE),
         ),
       );
       return;
@@ -381,7 +381,7 @@ export const nodeReadHandlers: GatewayRequestHandlers = {
       respondRunnerInventoryRetry(
         respond,
         pendingSurface
-          ? `node capability surface is awaiting operator approval; run \`openclaw nodes approve ${pendingSurface.requestId}\` (see \`openclaw nodes pending\`), then this node retries automatically`
+          ? `node capability surface is awaiting operator approval; run \`paddy nodes approve ${pendingSurface.requestId}\` (see \`paddy nodes pending\`), then this node retries automatically`
           : "node runner inventory publication is not current; retry after pairing completes",
       );
       return;

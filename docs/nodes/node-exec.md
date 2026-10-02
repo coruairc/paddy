@@ -13,8 +13,8 @@ sidebarTitle: "Node exec"
 Exec approvals are **per node host**. Add allowlist entries from the gateway:
 
 ```bash
-openclaw approvals allowlist add --node <id|name|ip> "/usr/bin/uname"
-openclaw approvals allowlist add --node <id|name|ip> "/usr/bin/sw_vers"
+paddy approvals allowlist add --node <id|name|ip> "/usr/bin/uname"
+paddy approvals allowlist add --node <id|name|ip> "/usr/bin/sw_vers"
 ```
 
 Approvals live on the node host in
@@ -25,9 +25,9 @@ Approvals live on the node host in
 Configure defaults (gateway config):
 
 ```bash
-openclaw config set tools.exec.host node
-openclaw config set tools.exec.mode allowlist
-openclaw config set tools.exec.node "<id-or-name>"
+paddy config set tools.exec.host node
+paddy config set tools.exec.mode allowlist
+paddy config set tools.exec.node "<id-or-name>"
 ```
 
 Or per session:
@@ -51,7 +51,7 @@ Related:
 Low-level (raw RPC):
 
 ```bash
-openclaw nodes invoke --node <idOrNameOrIp> --command device.info --params '{}'
+paddy nodes invoke --node <idOrNameOrIp> --command device.info --params '{}'
 ```
 
 `nodes invoke` blocks `system.run` and `system.run.prepare`; those commands only run through the `exec` tool with `host=node` (see above). Higher-level helpers exist for the common "give the agent a MEDIA attachment" workflows (camera, screen, location: see [Node device commands](/nodes/device-commands)).
@@ -68,6 +68,32 @@ state. Caller cancellation emits `node.invoke.cancel` with the published
 `NodeInvokeCancelEvent` payload (`invokeId` and `nodeId`); the node host then
 terminates the matching process tree. Existing request/response commands are unchanged.
 
+## Codex sessions on a node
+
+A session host using the Codex runtime also needs the `codex` plugin installed and
+enabled in the **node host's** Paddy configuration. `--session-host` alone does not
+install or enable this plugin. On the node, install it if missing, then enable it:
+
+```bash
+openclaw plugins install @openclaw/codex
+paddy plugins enable codex
+paddy node restart
+```
+
+If you run `paddy node run` in the foreground, stop and restart that process
+instead. Approve the node's updated command surface after it reconnects. The Gateway
+must also allow `codex.exec-server.stdio.v1` in `gateway.nodes.commands.allow` without
+a matching deny entry. Codex execution keeps its separate placement approval; enabling
+the plugin does not grant that approval.
+
+`environments.list` with `runtimeId: "codex"` reports a `requiredNodeCommand` state and
+an actionable `message` when the node does not advertise the command, awaits pairing
+approval, or is blocked by Gateway policy. A missing node advertisement requires
+installing and enabling the plugin on the node; changing the Gateway allowlist alone
+cannot add it. See [Install plugins](/cli/plugins/install) for installation sources.
+
+See [Codex paired-device placement](/plugins/codex-harness/placement#run-codex-on-a-paired-device).
+
 ## Exec node binding
 
 With no node target set, `exec host=node` selects the sole paired, connected node that supports `system.run`. Other paired devices do not make the selection ambiguous. If multiple executable nodes are connected, choose a target per call or bind exec to a specific node; the active Canvas target does not select the exec host. A bound or explicit target that is offline or cannot execute commands is rejected rather than redirected to another node.
@@ -77,19 +103,19 @@ A binding sets the default node for `exec host=node` and can be overridden per a
 Global default:
 
 ```bash
-openclaw config set tools.exec.node "node-id-or-name"
+paddy config set tools.exec.node "node-id-or-name"
 ```
 
 Per-agent override:
 
 ```bash
-openclaw config get agents.entries
-openclaw config set 'agents.entries.main.tools.exec.node' "node-id-or-name"
+paddy config get agents.entries
+paddy config set 'agents.entries.main.tools.exec.node' "node-id-or-name"
 ```
 
 Unset the binding to use the sole eligible node, or choose a target per call when multiple eligible nodes are connected:
 
 ```bash
-openclaw config unset tools.exec.node
-openclaw config unset 'agents.entries.main.tools.exec.node'
+paddy config unset tools.exec.node
+paddy config unset 'agents.entries.main.tools.exec.node'
 ```

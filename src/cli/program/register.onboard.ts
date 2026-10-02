@@ -15,6 +15,7 @@ import type {
 } from "../../commands/onboard-types.js";
 import { resolveProviderOnboardAuthFlags } from "../../plugins/provider-auth-choices.js";
 import type { RuntimeEnv } from "../../runtime.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { runCommandWithRuntime } from "../cli-utils.js";
 import { formatCliCommand } from "../command-format.js";
 import { inheritOptionFromParent, listExplicitOptionFlagsExcept } from "../command-options.js";
@@ -295,7 +296,7 @@ export function registerOnboardCommand(program: Command): void {
     )
     .option("--reset-scope <scope>", "Reset scope: config|config+creds+sessions|full")
     .option("--non-interactive", "Run without prompts", false)
-    .option("--modern", "Open inference-gated OpenClaw (kept for compatibility)", false)
+    .option("--modern", `Open inference-gated ${PRODUCT_NAME} (kept for compatibility)`, false)
     .option("--classic", "Use the classic multi-step setup wizard", false)
     .option("--tui", "Use the terminal hatch instead of the browser handoff", false)
     .option(
@@ -396,7 +397,7 @@ export function registerOnboardCommand(program: Command): void {
           rejectOption(
             [
               `--modern cannot be combined with: ${unsupportedOptions.join(", ")}.`,
-              "Run those setup options without --modern, or remove them to open OpenClaw.",
+              `Run those setup options without --modern, or remove them to open ${PRODUCT_NAME}.`,
             ].join("\n"),
           );
           return;
@@ -406,7 +407,7 @@ export function registerOnboardCommand(program: Command): void {
             [
               "Non-interactive setup requires explicit risk acknowledgement.",
               "Read: https://docs.openclaw.ai/security",
-              `Re-run with: ${formatCliCommand("openclaw onboard --modern --non-interactive --accept-risk ...")}`,
+              `Re-run with: ${formatCliCommand(`${CLI_NAME} onboard --modern --non-interactive --accept-risk ...`)}`,
             ].join("\n"),
           );
           return;

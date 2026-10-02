@@ -10,6 +10,7 @@ import { normalizeCliModel } from "../agents/cli-runner/helpers.js";
 import type { EmbeddedAgentRunResult } from "../agents/embedded-agent.js";
 import { SessionManager } from "../agents/sessions/index.js";
 import { resolveAgentTimeoutMs } from "../agents/timeout.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveStateDir } from "../config/paths.js";
 import type { CliSessionBinding } from "../config/sessions.js";
 import { CommandLane } from "../process/lanes.js";
@@ -189,7 +190,7 @@ function resolveSystemAgentCliToolAvailability(
     return { native: [], openClaw: [SYSTEM_AGENT_TOOL_NAME] };
   }
   const backendId = backend?.id ?? "unknown";
-  throw new Error(`CLI backend ${backendId} cannot enforce OpenClaw's exact tool availability`);
+  throw new Error(`CLI backend ${backendId} cannot enforce ${PRODUCT_NAME}'s exact tool availability`);
 }
 
 /**

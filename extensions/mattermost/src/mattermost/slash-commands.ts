@@ -223,7 +223,7 @@ export async function registerSlashCommands(params: {
     );
     if (ownedCommands.length === 0 && existingForTrigger.length > 0) {
       log?.(
-        `mattermost: trigger /${spec.trigger} already used by non-OpenClaw command(s); skipping to avoid mutating external integrations`,
+        `mattermost: trigger /${spec.trigger} already used by non-Paddy command(s); skipping to avoid mutating external integrations`,
       );
       continue;
     }

@@ -1,4 +1,5 @@
 // Implements maintenance commands for OpenClaw-backed session cleanup.
+import { PRODUCT_NAME } from "../../brand.js";
 import { readChannelContextGatewayContextResolver } from "../../channels/message-access/admission-evidence.js";
 import { logVerbose } from "../../globals.js";
 import { getPluginRuntimeGatewayRequestScope } from "../../plugins/runtime/gateway-request-scope.js";
@@ -43,7 +44,7 @@ export const handleSystemAgentCommand: CommandHandler = async (params, allowText
                 }),
             },
           },
-        })) ?? "OpenClaw did not find a rescue request.",
+        })) ?? `${PRODUCT_NAME} did not find a rescue request.`,
     },
   };
 };

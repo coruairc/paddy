@@ -8,6 +8,7 @@ import { redactSupportString } from "../../logging/diagnostic-support-redaction.
 import { isConfiguredPluginPathDiagnosticCode } from "../../plugins/discovery-availability.js";
 import { formatCommandOutput, formatCommandResult } from "../../process/command-error.js";
 import { runUtf8CommandWithTimeout } from "../../process/exec.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { resolveNodeRunner } from "./shared.js";
 import type { PostCorePluginUpdateResult } from "./update-command-plugins.js";
 import {
@@ -28,7 +29,7 @@ function readinessWarning(
     ...(finding.errorCode ? { errorCode: finding.errorCode } : {}),
     guidance: [
       finding.fixHint ??
-        `Resolve this finding, then rerun \`openclaw doctor --lint --only ${finding.checkId}\`.`,
+        `Resolve this finding, then rerun \`${CLI_NAME} doctor --lint --only ${finding.checkId}\`.`,
     ],
     ...(finding.source
       ? pathReason
@@ -51,7 +52,7 @@ function createPostPluginReadinessExecutionFailure(
       {
         reason,
         message: "Updated plugin readiness checks could not be completed before restart.",
-        guidance: ["Run `openclaw update repair` to retry post-update readiness checks."],
+        guidance: [`Run \`${CLI_NAME} update repair\` to retry post-update readiness checks.`],
       },
     ],
   };
@@ -75,7 +76,7 @@ export async function applyPostPluginUpdateReadiness(params: {
   if (!entryPath) {
     return createPostPluginReadinessExecutionFailure(
       params.pluginUpdate,
-      "Updated OpenClaw entrypoint not found for post-plugin readiness checks",
+      `Updated ${PRODUCT_NAME} entrypoint not found for post-plugin readiness checks`,
     );
   }
   const args = [entryPath, "doctor", "--lint", "--json", "--severity-min", "error"];

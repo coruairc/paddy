@@ -2,7 +2,7 @@
 summary: "Shared-state compaction plus targeted session SQLite inspection, import, and recovery"
 title: "SQLite maintenance and session migration"
 read_when:
-  - You are compacting or verifying an OpenClaw SQLite database
+  - You are compacting or verifying a Paddy SQLite database
   - You are importing, validating, or recovering legacy session history
 ---
 
@@ -19,11 +19,11 @@ help even when the Gateway itself runs as a user service.
 
 See [Database schemas](/reference/database-schemas) for schema versioning, integrity checks, and downgrade recovery.
 
-`openclaw doctor --state-sqlite compact` is explicit offline maintenance for
+`paddy doctor --state-sqlite compact` is explicit offline maintenance for
 the canonical shared state database at
 `<state-dir>/state/openclaw.sqlite`. It does not accept an arbitrary database
 path, is never invoked by normal Gateway operation, and is not part of
-`openclaw doctor --fix`. The command acquires the same state ownership lock as
+`paddy doctor --fix`. The command acquires the same state ownership lock as
 Gateway startup and holds it through validation, checkpointing, `VACUUM`, and
 the final integrity checks. It refuses to run while a Gateway or another
 SQLite maintenance command owns that lock. The state lock remains active when
@@ -34,10 +34,10 @@ maintenance to detect it.
 Stop the Gateway and create a verified backup first:
 
 ```bash
-openclaw gateway stop
-openclaw backup create --verify
-openclaw doctor --state-sqlite compact --json
-openclaw gateway start
+paddy gateway stop
+paddy backup create --verify
+paddy doctor --state-sqlite compact --json
+paddy gateway start
 ```
 
 The command:
@@ -46,7 +46,7 @@ The command:
    database is reported as `skipped` and exits successfully.
 2. Validates the current supported schema version and
    `schema_meta.role = "global"` before checkpointing or changing the file.
-3. Requires a non-busy `wal_checkpoint(TRUNCATE)`. Stop any remaining OpenClaw
+3. Requires a non-busy `wal_checkpoint(TRUNCATE)`. Stop any remaining Paddy
    process and retry if the checkpoint is busy.
 4. Sets `auto_vacuum` to `INCREMENTAL`, runs a full `VACUUM`, and checkpoints
    again.
@@ -60,9 +60,9 @@ fail-closed and has no separate success field. SQLite reports `auto_vacuum` as
 `0` for none, `1` for full, and `2` for incremental.
 
 Compaction fails without mutation when the schema is old, newer than the
-running OpenClaw build, or belongs to an agent database. Run
-`openclaw doctor --fix` first for an older shared-state schema. Restore a
-compatible backup or upgrade OpenClaw for a newer schema.
+running Paddy build, or belongs to an agent database. Run
+`paddy doctor --fix` first for an older shared-state schema. Restore a
+compatible backup or upgrade Paddy for a newer schema.
 
 ## Session SQLite migration
 
@@ -75,9 +75,9 @@ so repeated startups refuse readiness and print the active profile's
 `doctor --fix` command until the source is repaired.
 
 To upgrade history from an older file-backed installation, stop the Gateway
-(`openclaw gateway stop`), back up its state (`openclaw backup create --verify`),
-and run `openclaw doctor --fix` before restarting it with
-`openclaw gateway start`.
+(`paddy gateway stop`), back up its state (`paddy backup create --verify`),
+and run `paddy doctor --fix` before restarting it with
+`paddy gateway start`.
 
 Doctor migrates existing databases at every configured `agents.entries.<id>.agentDir`,
 including custom paths outside the default agent tree and databases absent from the
@@ -85,7 +85,7 @@ registry. Configured session stores and retained legacy databases are also check
 If a configured database still needs a schema migration after `--fix`, Doctor reports
 its path and exits non-zero instead of printing `Doctor complete`.
 
-`openclaw doctor --session-sqlite <mode>` provides targeted inspection,
+`paddy doctor --session-sqlite <mode>` provides targeted inspection,
 import, validation, and SQLite maintenance. Legacy `sessions.json` files are
 migration sources. Hot transcript JSONL files are imported and archived after
 successful import; archive-tier JSONL files remain support artifacts, not
@@ -93,8 +93,11 @@ runtime fallbacks.
 
 When a plugin migration is deferred, the verified import receipt also captures
 unreferenced JSONL inputs. Completing the plugin migration archives those originals
-with the same identity and byte checks as indexed transcripts. Files created after
-capture and changed originals are verified separately before settlement.
+with the same identity and byte checks as indexed transcripts. A transcript's
+`.trajectory-path.json` pointer moves with it. If an earlier settlement archived the
+transcript but left its receipt-verified pointer behind, the next `doctor --fix`
+archives the pointer too. Files created after capture and changed originals are
+verified separately before settlement.
 File-era session path repair preserves those originals until their verified import
 receipts finish archival, even after the pending plugin migration records clear.
 Retries and read-only checks reuse the verified receipt, including transcripts
@@ -126,6 +129,15 @@ without recreating `sessions.json` or replaying session metadata. Hash-matching
 sources continue through import; changed or unverifiable sources remain protected
 and are listed by path. Preserve those files for inspection.
 
+A session directory does not need a legacy `sessions.json` to recover its history.
+Doctor derives session ownership from verified transcript headers and SQLite. For
+a configured agent with a pending plugin migration, it records a source index in
+the existing import receipt without creating a new JSON index. For unconfigured
+agents, it imports valid conversations and moves the original history into the
+protected migration archive, recording each move. Trajectory-only directories are
+preserved there too, without creating an empty agent database. Pending migrations
+for other agents do not block this archival.
+
 A restored copy with the recorded SHA-256 and size remains valid even when its
 inode or modification time differs. `--session-sqlite recover` records its current
 identity in the existing receipt, including when no failed migration manifest exists.
@@ -139,7 +151,10 @@ migration archive with their validation error and recovery path in the report.
 For changed indexes, Doctor compares session keys and IDs with canonical SQLite and
 names differing metadata fields in per-session warnings. This comparison does not
 authorize replaying old values or accepting changed bytes as the original import.
-Snapshot-path repair leaves these historical inputs unchanged.
+Snapshot, model-route, and integrity repairs leave these historical inputs unchanged,
+including after the plugin obligation completes while its source receipt remains.
+Canonical SQLite repairs continue. A new index appearing after an indexless import
+is preserved as conflicting input; it cannot inherit the earlier receipt's authority.
 
 A retained plugin source conflict does not prevent Gateway readiness after the
 core import completed. Doctor owns the repair and the Gateway keeps serving SQLite.
@@ -177,12 +192,12 @@ manifest. `--session-sqlite recover` also settles these archives even when the
 latest failed run moved no files. Copies with different bytes stay protected and
 are named in the warning; retained historical conflicts do not block update's
 post-session plugin repair. Preserve the originals and migration manifests while
-resolving those conflicts, then rerun `openclaw doctor --fix`.
+resolving those conflicts, then rerun `paddy doctor --fix`.
 
-Normal Doctor output and `openclaw update status` show at most five
+Normal Doctor output and `paddy update status` show at most five
 `historical_transcript_deferred` examples per session store. Larger groups include
 the total and omitted counts; other warning types remain visible. For every
-finding, run `openclaw doctor --session-sqlite dry-run --session-sqlite-all-agents --json`.
+finding, run `paddy doctor --session-sqlite dry-run --session-sqlite-all-agents --json`.
 This summary does not retire recovery references or make missing archives eligible
 for cleanup. Preserve the remaining originals and migration manifests for recovery.
 
@@ -202,7 +217,7 @@ Doctor skips historical transcript import for that store and retains the origina
 This warning alone does not indicate SQLite corruption or require a rollback.
 If all expected conversations are visible, no action is needed. You can inspect
 current SQLite state with
-`openclaw doctor --session-sqlite inspect --session-sqlite-all-agents`.
+`paddy doctor --session-sqlite inspect --session-sqlite-all-agents`.
 
 If history is missing, preserve the named archive and
 `<state-dir>/session-sqlite-migration-runs/`, make a verified backup, and seek
@@ -222,7 +237,7 @@ copy and a rewritten intermediate file.
 
 For large histories, plan space for the original JSON/JSONL files, the temporary
 SQLite spool, and the destination database and WAL at the same time. Keep free
-space on both the system temporary volume and the volume holding OpenClaw state;
+space on both the system temporary volume and the volume holding Paddy state;
 the resulting SQLite database can be larger than the original JSONL. Streaming
 reduces whole-history memory pressure, but individual records are still parsed
 in memory and SQLite also uses native memory. Do not size a host from the JSONL
@@ -239,8 +254,8 @@ and leaves its contents unchanged. Databases without auto-vacuum still need a
 full `VACUUM` to enable it. Incremental cleanup frees unused pages but does not repack partially filled
 pages; explicit session and shared-state `compact` modes still run a full `VACUUM`.
 
-The regular `openclaw doctor` pass also reports canonical SQLite transcripts
-whose initial session header was never persisted. `openclaw doctor --fix`
+The regular `paddy doctor` pass also reports canonical SQLite transcripts
+whose initial session header was never persisted. `paddy doctor --fix`
 prepends a current header and rebuilds the transcript indexes in one
 transaction while preserving existing event IDs, parent links, row timestamps,
 and session-list recency. Headerless legacy or malformed transcripts remain
@@ -277,10 +292,10 @@ With the Gateway stopped and its state backed up, inspect and import legacy
 history:
 
 ```bash
-openclaw doctor --session-sqlite inspect --session-sqlite-all-agents
-openclaw doctor --session-sqlite dry-run --session-sqlite-all-agents --json
-openclaw doctor --session-sqlite import --session-sqlite-all-agents
-openclaw doctor --session-sqlite inspect --session-sqlite-all-agents --json
+paddy doctor --session-sqlite inspect --session-sqlite-all-agents
+paddy doctor --session-sqlite dry-run --session-sqlite-all-agents --json
+paddy doctor --session-sqlite import --session-sqlite-all-agents
+paddy doctor --session-sqlite inspect --session-sqlite-all-agents --json
 ```
 
 `import` validates rows and transcript event counts before archiving its
@@ -295,7 +310,7 @@ expected target count; a nonexistent legacy source selects no targets for
 
 SQLite deletes reclaim pages inside the database first; they do not necessarily
 shrink the database file immediately. After deleting or archiving large
-transcripts, run `openclaw doctor --session-sqlite compact --session-sqlite-all-agents`
+transcripts, run `paddy doctor --session-sqlite compact --session-sqlite-all-agents`
 to checkpoint WAL files, run `VACUUM`, and report before/after database and WAL
 sizes. Compaction requires a regular file with the current agent schema, its
 durable database owner metadata, and no open handle in the doctor
@@ -319,7 +334,7 @@ If an explicit import fails after artifacts moved, keep the Gateway stopped and
 run recovery:
 
 ```bash
-openclaw doctor --session-sqlite recover --github-issue
+paddy doctor --session-sqlite recover --github-issue
 ```
 
 Use `--yes` to authorize issue creation during noninteractive recovery. Without
@@ -398,9 +413,9 @@ stores keep their existing restore/import admission outside the state directory;
 that does not make their files eligible for automatic recovery cleanup.
 
 After verifying the migration and current history, use
-`openclaw update cleanup --dry-run` to inspect retained recovery data without
-stopping the Gateway. Apply with `openclaw update cleanup` or
-`openclaw update cleanup --yes --json` only after stopping the Gateway, other
+`paddy update cleanup --dry-run` to inspect retained recovery data without
+stopping the Gateway. Apply with `paddy update cleanup` or
+`paddy update cleanup --yes --json` only after stopping the Gateway, other
 SQLite maintenance, and database readers for the same profile/state directory.
 Keep session-listing watchers stopped until cleanup exits: even read-only
 connections can change WAL/SHM sidecars and invalidate verification. This permanently
@@ -427,7 +442,7 @@ copy preserves the snapshot's contents without needing to find its other paths.
 
 If an earlier migration was interrupted or the reported path is an archived
 recovery artifact, preserve the files and manifests. Run
-`openclaw doctor --session-sqlite recover` with the same profile and legacy-source
+`paddy doctor --session-sqlite recover` with the same profile and legacy-source
 selectors first. Recorded artifacts depend on their original identities;
 replacing them with copies can prevent restoration. If recovery still refuses
 the artifact, retain that evidence for support instead of replacing it.
@@ -435,12 +450,12 @@ the artifact, retain that evidence for support instead of replacing it.
 ### Downgrading after session SQLite migration
 
 Follow [Downgrade](/install/updating#downgrade) before starting an older release.
-With writers stopped, `openclaw doctor --session-sqlite restore
+With writers stopped, `paddy doctor --session-sqlite restore
 --session-sqlite-all-agents` restores manifest-recorded legacy transcript
 artifacts to their original paths. This supports recovery from retained originals;
 it does not reverse SQLite schema migrations or replace a pre-update backup.
 
-Run recovery before `openclaw update cleanup` retires those originals. After
+Run recovery before `paddy update cleanup` retires those originals. After
 cleanup, restore reports intentional disposal and cannot recreate them.
 Shared-state discovery uses private read-only snapshots, including for custom
 stores, so a refused restore leaves the shared database and its WAL unchanged.

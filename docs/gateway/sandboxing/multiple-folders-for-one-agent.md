@@ -4,7 +4,7 @@ title: "Multiple folders for one agent"
 read_when: "One sandboxed agent needs more than its primary workspace."
 ---
 
-Giving a sandboxed agent extra host folders through bind mounts, how bind modes relate to workspace access, and the sources OpenClaw blocks by default.
+Giving a sandboxed agent extra host folders through bind mounts, how bind modes relate to workspace access, and the sources Paddy blocks by default.
 
 ## Multiple folders for one agent
 
@@ -68,12 +68,12 @@ Workspace-only writes, edits, listing, and patches use the container workspace
 boundary even when an explicit bind replaces its host folder. Additional mount
 read exceptions do not grant writes outside that boundary.
 
-Bind mounts are the supported multi-folder boundary because Docker constructs the container's filesystem view with mount isolation, and the `ro`/`rw` mode applies to every process in the sandbox. That boundary covers `exec`, filesystem tools, child processes, and libraries without duplicating path-authorization checks across each OpenClaw code path. A host-side path allowlist cannot provide the same complete boundary when an allowed shell or dependency can access files directly.
+Bind mounts are the supported multi-folder boundary because Docker constructs the container's filesystem view with mount isolation, and the `ro`/`rw` mode applies to every process in the sandbox. That boundary covers `exec`, filesystem tools, child processes, and libraries without duplicating path-authorization checks across each Paddy code path. A host-side path allowlist cannot provide the same complete boundary when an allowed shell or dependency can access files directly.
 
-The opt-in `dangerouslyAllowExternalBindSources` only permits sources outside the workspace roots. It does not disable OpenClaw's blocked system, credential, Docker socket, symlink-parent, or reserved-target checks. Prefer the smallest folder, use `ro` unless writes are required, and recreate the sandbox after changing mounts:
+The opt-in `dangerouslyAllowExternalBindSources` only permits sources outside the workspace roots. It does not disable Paddy's blocked system, credential, Docker socket, symlink-parent, or reserved-target checks. Prefer the smallest folder, use `ro` unless writes are required, and recreate the sandbox after changing mounts:
 
 ```bash
-openclaw sandbox recreate --agent research
+paddy sandbox recreate --agent research
 ```
 
 ### Other bind behavior
@@ -110,7 +110,7 @@ openclaw sandbox recreate --agent research
 **Bind security**
 
 - Binds bypass the sandbox filesystem: they expose host paths with whatever mode you set (`:ro` or `:rw`).
-- OpenClaw blocks dangerous bind sources by default: system paths (`/etc`, `/proc`, `/sys`, `/dev`, `/root`, `/boot`), Docker socket directories (`/run`, `/var/run`, and their `docker.sock` variants), and common home-directory credential roots (`~/.aws`, `~/.cargo`, `~/.config`, `~/.docker`, `~/.gnupg`, `~/.netrc`, `~/.npm`, `~/.ssh`).
+- Paddy blocks dangerous bind sources by default: system paths (`/etc`, `/proc`, `/sys`, `/dev`, `/root`, `/boot`), Docker socket directories (`/run`, `/var/run`, and their `docker.sock` variants), and common home-directory credential roots (`~/.aws`, `~/.cargo`, `~/.config`, `~/.docker`, `~/.gnupg`, `~/.netrc`, `~/.npm`, `~/.ssh`).
 - Validation normalizes the source path, then resolves it again through the deepest existing ancestor before re-checking blocked paths and allowed roots, so symlink-parent escapes fail closed even when the final leaf doesn't exist yet (e.g. `/workspace/run-link/new-file` still resolves as `/var/run/...` if `run-link` points there).
 - Bind targets that shadow the reserved container mount points (`/workspace`, `/agent`) are also blocked by default; override with `agents.defaults.sandbox.docker.dangerouslyAllowReservedContainerTargets: true`.
 - Bind sources outside the workspace/agent-workspace allowlisted roots are blocked by default; override with `agents.defaults.sandbox.docker.dangerouslyAllowExternalBindSources: true`. Allowed roots are canonicalized the same way, so a path that only looks inside the allowlist before symlink resolution is still rejected as outside allowed roots.

@@ -1,7 +1,7 @@
 ---
-summary: "How OpenClaw validates update paths, package migrations, and plugin install/update behavior"
+summary: "How Paddy validates update paths, package migrations, and plugin install/update behavior"
 read_when:
-  - Changing OpenClaw update, doctor, package acceptance, or plugin install behavior
+  - Changing Paddy update, doctor, package acceptance, or plugin install behavior
   - Preparing or approving a release candidate
   - Debugging package update, plugin dependency cleanup, or plugin install regressions
 title: "Testing: updates and plugins"
@@ -34,7 +34,7 @@ keys and network-touching suites, see [Testing live](/help/testing-live).
 - A user can move from an older published package to the candidate package
   without losing config, agents, sessions, workspaces, plugin allowlists, or
   channel config.
-- `openclaw doctor --fix --non-interactive` owns legacy migrations and repairs,
+- `paddy doctor --fix --non-interactive` owns legacy migrations and repairs,
   including genuinely dangling plugin-runtime aliases. Package postinstall owns
   package-local dependency debris; both preserve valid shared runtime roots that
   another installation or profile may use. Startup should not grow hidden
@@ -118,6 +118,8 @@ runs the published `openclaw@2026.9.4` updater against the candidate.
 A legacy-plugin case returns from its command while a child keeps running,
 then proves that a missing idle-work callback blocks activation both during
 that work and after the child finishes.
+A default-plugin node, with no plugin restriction or node command allowlist,
+must activate the prepared update while idle.
 
 Use a new artifact directory outside the source checkout for every run, or omit
 it to create a fresh temporary directory. The scenario retains `observations.json`
@@ -159,19 +161,19 @@ Important lanes:
   explicit upgrade, explicit downgrade, and uninstall after deleting the plugin
   code. It logs RSS and CPU metrics per phase.
 - `test:docker:plugin-update` validates that an unchanged installed plugin does
-  not reinstall or lose install metadata during `openclaw plugins update`.
+  not reinstall or lose install metadata during `paddy plugins update`.
 - `test:docker:upgrade-survivor` installs the candidate tarball over a dirty
   old-user fixture, runs package update plus non-interactive doctor, then starts
   a loopback Gateway and checks state preservation.
 - `test:docker:published-upgrade-survivor` first installs the latest stable release,
-  configures it through a baked `openclaw config set` recipe, updates it to the
+  configures it through a baked `paddy config set` recipe, updates it to the
   candidate tarball, runs doctor, checks legacy cleanup, starts the Gateway, and
   probes `/healthz`, `/readyz`, and RPC status. The baseline recipe configures
   Anthropic, Google Gemini, and OpenAI through env-referenced API keys, keeping
   OpenAI as the agents' primary model.
 - `test:docker:update-restart-auth` installs the candidate package, starts a
   managed token-auth Gateway, unsets caller gateway auth env for
-  `openclaw update --yes --json`, and requires the candidate update command to
+  `paddy update --yes --json`, and requires the candidate update command to
   restart the Gateway before the normal probes.
 - `test:docker:update-migration` is the cleanup-heavy published-update lane. It
   installs the latest stable release by default, starts from a configured
@@ -181,7 +183,7 @@ Important lanes:
   the shared runtime roots.
 
 Set `OPENCLAW_UPGRADE_SURVIVOR_LIVE_MODELS` to a whitespace-separated list of
-model refs to run one `openclaw agent --local` marker turn per model after the
+model refs to run one `paddy agent --local` marker turn per model after the
 update. Anthropic uses `ANTHROPIC_API_KEY`, Google uses `GEMINI_API_KEY`, and
 OpenAI uses `OPENAI_API_KEY`; missing selected keys fail the lane. Docker forwards
 only selected provider keys. Each turn has its own session and
@@ -260,7 +262,7 @@ Those default release runs pin this scenario to the published 2026.9.4 driver,
 including when the source candidate still reports version 2026.9.4; other
 scenarios retain their existing baseline selection.
 
-The opt-in `projects-doctor`, `projects-startup-migration`, and `taskflow-restoration` scenarios require the exact
+The opt-in `projects-doctor` and `projects-startup-migration` scenarios require the exact
 published `openclaw@2026.9.4` baseline and a frozen candidate tarball. They use
 isolated state, manual restart, and no live providers or registry companion fixtures;
 none runs through `reported-issues` or `far-reaching`. They verify the original
@@ -289,12 +291,6 @@ candidate `commit`, `agentSchema`, and `operations.prepare`/`operations.open`
 triples of compiled basename, exact export symbol, and SHA-256. The snapshot
 preparer and SQLite opener must match the installed candidate payload; the file
 is mounted read-only. This scenario uses no remote repository or model turn.
-`taskflow-restoration` preserves three terminal tasks and two flows, starts a fresh
-candidate Gateway, exercises awaited task SDK reads through a synthetic local plugin,
-and reads two task pages on the same Gateway connection. Complete task, delivery,
-and flow records are checked again after Gateway shutdown. The taskflow cell covers
-terminal persisted state; it does not exercise active task recovery or provider work.
-
 The opt-in `channel-owner-policy` scenario uses the same pinned `openclaw@2026.9.4`
 published-driver and candidate-package checks. It seeds an existing
 `operator.channelPolicy` JSON specimen in the published database's machine-state

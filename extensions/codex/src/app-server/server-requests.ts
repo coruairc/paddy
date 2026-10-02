@@ -175,7 +175,7 @@ function defaultServerRequestResponse(
       contentItems: [
         {
           type: "inputText",
-          text: "OpenClaw did not register a handler for this app-server tool call.",
+          text: "Paddy did not register a handler for this app-server tool call.",
         },
       ],
       success: false,
@@ -197,7 +197,7 @@ function defaultServerRequestResponse(
   }
   if (request.method === "mcpServer/elicitation/request") {
     return createCodexElicitationResponse("decline", null, {
-      message: "OpenClaw has no interactive handler for this elicitation.",
+      message: "Paddy has no interactive handler for this elicitation.",
     });
   }
   return {};
@@ -208,7 +208,7 @@ function timeoutServerRequestResponse(timeoutMs: number): JsonValue {
     contentItems: [
       {
         type: "inputText",
-        text: `OpenClaw dynamic tool call timed out after ${timeoutMs}ms before sending a response to Codex.`,
+        text: `Paddy dynamic tool call timed out after ${timeoutMs}ms before sending a response to Codex.`,
       },
     ],
     success: false,

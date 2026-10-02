@@ -21,9 +21,9 @@ import { createAgentForAddCommandTest } from "./agents.add.test-fixtures.js";
 import { committedConfigFiles as configFiles } from "./committed-config.test-support.js";
 import { baseConfigSnapshot, createTestRuntime } from "./test-runtime-config-helpers.js";
 
-type SetupChannels = typeof import("./onboard-channels.js").setupChannels;
+type SetupChannels = typeof import("../flows/channel-setup.js").setupChannels;
 type EnsureWorkspaceAndSessions = typeof import("./onboard-helpers.js").ensureWorkspaceAndSessions;
-type PrepareAuthChoice = typeof import("./auth-choice.js").prepareAuthChoice;
+type PrepareAuthChoice = typeof import("./auth-choice.apply.js").prepareAuthChoice;
 
 const readConfigFileSnapshotMock = vi.hoisted(() => vi.fn());
 const writeConfigFileMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
@@ -161,8 +161,11 @@ vi.mock("../cli/terminal-interactivity.js", async (importOriginal) => ({
   isTerminalInteractive: terminalMocks.isTerminalInteractive,
 }));
 
-vi.mock("./auth-choice.js", () => ({
+vi.mock("./auth-choice.apply.js", () => ({
   prepareAuthChoice: authChoiceMocks.prepareAuthChoice,
+}));
+
+vi.mock("./auth-choice.model-check.js", () => ({
   warnIfModelConfigLooksOff: authChoiceMocks.warnIfModelConfigLooksOff,
 }));
 
@@ -174,7 +177,8 @@ vi.mock("../agents/auth-profiles/upsert-with-lock.js", () => ({
   persistAuthProfileBatch: authProfileMocks.persistBatch,
 }));
 
-vi.mock("./onboard-channels.js", () => ({
+vi.mock("../flows/channel-setup.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../flows/channel-setup.js")>()),
   setupChannels: onboardChannelsMocks.setupChannels,
 }));
 
@@ -429,7 +433,7 @@ describe("agents add command", () => {
       });
 
       const message =
-        "Agent creation needs an interactive TTY. Use `openclaw agents add <id> --non-interactive --workspace <dir>` for automation.";
+        "Agent creation needs an interactive TTY. Use `paddy agents add <id> --non-interactive --workspace <dir>` for automation.";
       await expect(agentsAddCommand({ json }, runtime)).rejects.toMatchObject({
         name: "ExpectedCliError",
         message,
@@ -464,7 +468,7 @@ describe("agents add command", () => {
     expect(terminalMocks.isTerminalInteractive).toHaveBeenCalledOnce();
     expect(terminalMocks.isTerminalInteractive).toHaveBeenCalledWith(process.stdout);
     expect(wizardMocks.createClackPrompter).toHaveBeenCalledWith(process.stdout);
-    expect(prompter.intro).toHaveBeenCalledWith("Add OpenClaw agent");
+    expect(prompter.intro).toHaveBeenCalledWith("Add Paddy agent");
     expect(authChoiceMocks.warnIfModelConfigLooksOff).toHaveBeenCalledOnce();
     expect(authChoiceMocks.warnIfModelConfigLooksOff).toHaveBeenCalledWith(
       expect.objectContaining({ agents: expect.any(Object) }),

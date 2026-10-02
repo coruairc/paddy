@@ -20,7 +20,7 @@ export function buildCredentialSafetyPrompt(
     "For user-requested login or pairing in a group, deliver short-lived codes and verification URLs only to the requesting user in private, then acknowledge in the group without them.",
     ...(knownAvailability && input.controlToolsAvailable === false
       ? [
-          "Channel, provider, and credential setup: terminal `openclaw channels add <channel>` or `openclaw configure` masks secrets.",
+          "Channel, provider, and credential setup: terminal `paddy channels add <channel>` or `paddy configure` masks secrets.",
         ]
       : []),
   ].join("\n");

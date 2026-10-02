@@ -251,7 +251,7 @@ export function renderAgentIdentityAvatar(
     }
     return html`<img
       class=${`identity-avatar--agent ${className}`}
-      src=${inferControlUiPublicAssetPath("favicon.svg")}
+      src=${inferControlUiPublicAssetPath("paddy-icon.jpg")}
       alt=${agent.name ?? ""}
       aria-hidden=${agent.name ? nothing : "true"}
     />`;

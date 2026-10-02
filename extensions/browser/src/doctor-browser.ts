@@ -65,14 +65,6 @@ function collectBrowserDoctorProfiles(cfg: OpenClawConfig) {
   };
 }
 
-function resolveManagedBrowserProfileDir(configDir: string, profileName: string): string {
-  return path.join(configDir, "browser", profileName);
-}
-
-function resolveManagedBrowserUserDataDir(configDir: string, profileName: string): string {
-  return path.join(resolveManagedBrowserProfileDir(configDir, profileName), "user-data");
-}
-
 function isLegacyClawdProfileConfigured(cfg: OpenClawConfig, legacyProfileDir: string): boolean {
   const browser = asNullableRecord(cfg.browser);
   if (!browser) {
@@ -105,14 +97,8 @@ export function detectLegacyClawdBrowserProfileResidue(
   deps?: BrowserDoctorFilesystemDeps,
 ): LegacyClawdBrowserProfileResidue | null {
   const configDir = deps?.configDir ?? CONFIG_DIR;
-  const legacyProfileDir = resolveManagedBrowserProfileDir(
-    configDir,
-    LEGACY_CLAWD_BROWSER_PROFILE_NAME,
-  );
-  const legacyUserDataDir = resolveManagedBrowserUserDataDir(
-    configDir,
-    LEGACY_CLAWD_BROWSER_PROFILE_NAME,
-  );
+  const legacyProfileDir = path.join(configDir, "browser", LEGACY_CLAWD_BROWSER_PROFILE_NAME);
+  const legacyUserDataDir = path.join(legacyProfileDir, "user-data");
   const pathExists = deps?.pathExists ?? fs.existsSync;
   if (!pathExists(legacyProfileDir) && !pathExists(legacyUserDataDir)) {
     return null;
@@ -134,9 +120,11 @@ export function detectLegacyClawdBrowserProfileResidue(
   return {
     legacyProfileDir,
     legacyUserDataDir,
-    canonicalUserDataDir: resolveManagedBrowserUserDataDir(
+    canonicalUserDataDir: path.join(
       configDir,
+      "browser",
       DEFAULT_OPENCLAW_BROWSER_PROFILE_NAME,
+      "user-data",
     ),
   };
 }
@@ -146,8 +134,8 @@ function formatLegacyClawdBrowserProfileResidueNote(
 ): string {
   return [
     `- Legacy managed browser profile residue was found at ${residue.legacyProfileDir}.`,
-    `- The canonical OpenClaw-managed browser profile is ${residue.canonicalUserDataDir}.`,
-    `- If no browser is using the legacy profile, run ${formatCliCommand("openclaw doctor --fix")} to archive it safely instead of deleting it in place.`,
+    `- The canonical Paddy-managed browser profile is ${residue.canonicalUserDataDir}.`,
+    `- If no browser is using the legacy profile, run ${formatCliCommand("paddy doctor --fix")} to archive it safely instead of deleting it in place.`,
   ].join("\n");
 }
 
@@ -195,8 +183,8 @@ export async function noteChromeMcpBrowserReadiness(
     noteFn(
       [
         "- Chrome extension native bootstrap was not inspected; registration status is unavailable in Doctor.",
-        `- Run ${formatCliCommand("openclaw browser extension status --json")} to inspect it explicitly; this may request browser profile access.`,
-        `- Run ${formatCliCommand("openclaw browser extension install")} if setup or repair is needed.`,
+        `- Run ${formatCliCommand("paddy browser extension status --json")} to inspect it explicitly; this may request browser profile access.`,
+        `- Run ${formatCliCommand("paddy browser extension install")} if setup or repair is needed.`,
       ].join("\n"),
       "Browser extension bootstrap",
     );
@@ -233,8 +221,8 @@ export async function noteChromeMcpBrowserReadiness(
   if (!browserExecutable && managedProfiles.length > 0) {
     noteFn(
       [
-        `- OpenClaw-managed browser profile(s) are configured: ${managedProfileLabel}.`,
-        "- No Chromium-based browser executable was found on this host for OpenClaw-managed launch.",
+        `- Paddy-managed browser profile(s) are configured: ${managedProfileLabel}.`,
+        "- No Chromium-based browser executable was found on this host for Paddy-managed launch.",
         "- Install Chrome, Chromium, Brave, Edge, or set browser.executablePath explicitly.",
       ].join("\n"),
       "Browser",
@@ -242,7 +230,7 @@ export async function noteChromeMcpBrowserReadiness(
   }
 
   if (missingDisplay || shouldWarnRootNoSandbox) {
-    const lines = [`- OpenClaw-managed browser profile(s) are configured: ${managedProfileLabel}.`];
+    const lines = [`- Paddy-managed browser profile(s) are configured: ${managedProfileLabel}.`];
     if (missingDisplay) {
       lines.push(
         "- No DISPLAY or WAYLAND_DISPLAY is set, and browser.headless is false. Managed browser launch needs a desktop session, Xvfb, or browser.headless: true.",
@@ -271,7 +259,7 @@ export async function noteChromeMcpBrowserReadiness(
         "- These profiles use an explicit Chromium user data directory instead of Chrome's default auto-connect path.",
         `- Verify the matching Chromium-based browser is version ${CHROME_MCP_MIN_MAJOR}+ on the same host as the Gateway or node.`,
         `- Enable remote debugging in that browser's inspect page (${REMOTE_DEBUGGING_PAGES}).`,
-        "- Keep the browser running and accept the attach consent prompt the first time OpenClaw connects.",
+        "- Keep the browser running and accept the attach consent prompt the first time Paddy connects.",
       ].join("\n"),
       "Browser",
     );
@@ -284,10 +272,10 @@ export async function noteChromeMcpBrowserReadiness(
   if (!chrome) {
     const lines = [
       `- Chrome MCP existing-session is configured for profile(s): ${profileLabel}.`,
-      `- Google Chrome was not found on this host for auto-connect profile(s): ${autoProfileLabel}. OpenClaw does not bundle Chrome.`,
+      `- Google Chrome was not found on this host for auto-connect profile(s): ${autoProfileLabel}. Paddy does not bundle Chrome.`,
       `- Install Google Chrome ${CHROME_MCP_MIN_MAJOR}+ on the same host as the Gateway or node, or set browser.profiles.<name>.userDataDir for a different Chromium-based browser.`,
       `- Enable remote debugging in the browser inspect page (${REMOTE_DEBUGGING_PAGES}).`,
-      "- Keep the browser running and accept the attach consent prompt the first time OpenClaw connects.",
+      "- Keep the browser running and accept the attach consent prompt the first time Paddy connects.",
       "- Docker, headless, and sandbox browser flows stay on raw CDP; this check only applies to host-local Chrome MCP attach.",
     ];
     if (explicitProfiles.length > 0) {
@@ -322,7 +310,7 @@ export async function noteChromeMcpBrowserReadiness(
 
   lines.push(`- Enable remote debugging in the browser inspect page (${REMOTE_DEBUGGING_PAGES}).`);
   lines.push(
-    "- Keep the browser running and accept the attach consent prompt the first time OpenClaw connects.",
+    "- Keep the browser running and accept the attach consent prompt the first time Paddy connects.",
   );
   if (explicitProfiles.length > 0) {
     lines.push(
@@ -347,7 +335,7 @@ export async function maybeRepairOwnedChromeExtensionNativeHosts(): Promise<{
     reason: "Doctor does not inspect personal browser profiles",
     changes: [],
     warnings: [
-      `Chrome extension native-host repair skipped: Doctor does not inspect personal browser profiles. Run ${formatCliCommand("openclaw browser extension install")} to repair explicitly.`,
+      `Chrome extension native-host repair skipped: Doctor does not inspect personal browser profiles. Run ${formatCliCommand("paddy browser extension install")} to repair explicitly.`,
     ],
   };
 }

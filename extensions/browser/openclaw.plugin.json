@@ -5,7 +5,7 @@
   "cliCommands": [
     {
       "name": "browser",
-      "description": "Manage OpenClaw's dedicated browser (Chrome/Chromium)",
+      "description": "Manage Paddy's dedicated browser (Chrome/Chromium)",
       "hasSubcommands": true
     }
   ],

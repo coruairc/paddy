@@ -10,10 +10,7 @@ import { noteSessionTranscriptHealth } from "../commands/doctor-session-transcri
 import { resolveSqliteTargetFromSessionStorePath } from "../config/sessions/session-sqlite-target.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { acquireGatewayLock } from "../infra/gateway-lock.js";
-import {
-  resolveStateDatabaseCoordinatorPath,
-  resolveStateLifecycleRuntimeDirectory,
-} from "../infra/state-database-coordinator.js";
+import { resolveGatewayStateOwnerPath } from "../infra/gateway-state-owner.js";
 import { migrateLegacyMediaPersistence } from "../infra/state-migrations.media-persistence.js";
 import {
   detectLegacyWorkspaceState,
@@ -90,13 +87,9 @@ describe("runDoctorHealthFlow", () => {
         const sourceBefore = fs.readFileSync(sourcePath);
         const configBefore = fs.readFileSync(state.configPath);
         const databasePath = resolveOpenClawStateSqlitePath(state.env);
-        const coordinatorPath = resolveStateDatabaseCoordinatorPath({
-          databasePath,
-          runtimeDirectory: resolveStateLifecycleRuntimeDirectory(),
-          uid: process.getuid?.(),
-        });
+        const ownerPath = resolveGatewayStateOwnerPath(databasePath);
         expect(fs.existsSync(databasePath)).toBe(false);
-        expect(fs.existsSync(coordinatorPath)).toBe(false);
+        expect(fs.existsSync(ownerPath)).toBe(false);
 
         const foreign = kind.startsWith("foreign") || windows;
         const foreignRoot = state.path("foreign-install");
@@ -119,6 +112,7 @@ describe("runDoctorHealthFlow", () => {
             return kind.startsWith("absent")
               ? null
               : {
+                  ...(windows ? { sourcePath: state.path("foreign-state", "gateway.cmd") } : {}),
                   programArguments: [process.execPath, entrypoint, "gateway"],
                   environment: {
                     OPENCLAW_STATE_DIR: foreign ? state.path("foreign-state") : state.stateDir,
@@ -226,7 +220,7 @@ describe("runDoctorHealthFlow", () => {
           expect(fs.readFileSync(sourcePath)).toEqual(sourceBefore);
           expect(fs.readFileSync(state.configPath)).toEqual(configBefore);
           expect(fs.existsSync(databasePath)).toBe(false);
-          expect(fs.existsSync(coordinatorPath)).toBe(false);
+          expect(fs.existsSync(ownerPath)).toBe(false);
           expect(mocks.outro).not.toHaveBeenCalledWith("Doctor complete.");
         }
         if (kind === "absent" || kind === "absent-busy-port" || kind === "absent-unknown-port") {
@@ -243,6 +237,67 @@ describe("runDoctorHealthFlow", () => {
         }
         expect(stop).not.toHaveBeenCalled();
         expect(restart).not.toHaveBeenCalled();
+      });
+    },
+  );
+
+  it.each([false, true])(
+    "leaves a split-root Bun Gateway running before Doctor repair (update=%s)",
+    async (update) => {
+      vi.stubEnv("OPENCLAW_UPDATE_IN_PROGRESS", update ? "1" : undefined);
+      vi.stubEnv("OPENCLAW_UPDATE_PARENT_ALLOWS_GATEWAY_ACTIVATION", undefined);
+      await withOpenClawTestState({ scenario: "minimal" }, async (state) => {
+        await state.writeConfig({});
+        const activeRoot = state.path("cli-install");
+        const serviceRoot = state.path("bun-install");
+        for (const root of [activeRoot, serviceRoot]) {
+          fs.mkdirSync(root);
+          fs.writeFileSync(
+            path.join(root, "package.json"),
+            JSON.stringify({ name: "openclaw", version: "2026.9.6" }),
+          );
+        }
+        const command = {
+          programArguments: [
+            state.path("runtime", "bun"),
+            path.join(serviceRoot, "openclaw.mjs"),
+            "gateway",
+          ],
+          environment: {
+            OPENCLAW_STATE_DIR: state.stateDir,
+            OPENCLAW_CONFIG_PATH: state.configPath,
+          },
+        };
+        let running = true;
+        const service = {
+          readCommand: async () => command,
+          readRuntime: async () => ({
+            status: running ? "running" : "stopped",
+            ...(running ? { pid: 4200 } : {}),
+            systemd: { managerUid: process.getuid?.() ?? 2001 },
+          }),
+          isLoaded: async () => true,
+          stop: vi.fn(async () => {
+            running = false;
+          }),
+          restart: vi.fn(),
+          install: vi.fn(),
+        };
+        mocks.packageRoot.mockReturnValue(activeRoot);
+        mocks.service.mockReturnValue(service);
+        mocks.resident.mockImplementation(() => (running ? { pid: 4200 } : undefined));
+        const configBefore = fs.readFileSync(state.configPath);
+        const runtime = { log: vi.fn(), error: vi.fn(), exit: vi.fn() };
+        await expect(
+          runDoctorHealthFlow(runtime, { repair: true, nonInteractive: true }),
+        ).rejects.toThrow("different OpenClaw installation");
+        expect(service.stop).not.toHaveBeenCalled();
+        expect(service.restart).not.toHaveBeenCalled();
+        expect(service.install).not.toHaveBeenCalled();
+        expect(await service.readRuntime()).toMatchObject({ status: "running", pid: 4200 });
+        expect(await service.readCommand()).toEqual(command);
+        expect(fs.readFileSync(state.configPath)).toEqual(configBefore);
+        expect(mocks.runContributions).not.toHaveBeenCalled();
       });
     },
   );
@@ -287,7 +342,7 @@ describe("runDoctorHealthFlow", () => {
           );
           expect(runtime.exit).toHaveBeenCalledExactlyOnceWith(1);
           expect(runtime.error).toHaveBeenCalledWith(
-            "Doctor could not enter maintenance. An agent database is in use. Stop other OpenClaw processes using this state, then retry the update.",
+            "Doctor could not enter maintenance. An agent database is in use. Stop other Paddy processes using this state, then retry the update.",
           );
           expect(maintenanceOutcome()).toEqual({ outcome: "startup_failed" });
           expect(mocks.writeUpdatePostInstallDoctorResult).toHaveBeenCalledWith({
@@ -300,7 +355,7 @@ describe("runDoctorHealthFlow", () => {
                   check: "doctor",
                   code: "agent-database-lease-active",
                   message:
-                    "Doctor could not enter maintenance. An agent database is in use. Stop other OpenClaw processes using this state, then retry the update.",
+                    "Doctor could not enter maintenance. An agent database is in use. Stop other Paddy processes using this state, then retry the update.",
                 },
               ],
             },
@@ -379,8 +434,8 @@ describe("runDoctorHealthFlow", () => {
         expect(runtime.error).toHaveBeenCalledWith(
           [
             "Doctor could not complete repair because persisted database readiness could not be verified:",
-            `agent ${initial.path}: OpenClaw agent database ${initial.path} uses schema version 17; run openclaw doctor --fix before compacting it.`,
-            "Stop OpenClaw processes, then restore the affected database from a verified backup.",
+            `agent ${initial.path}: Paddy agent database ${initial.path} uses schema version 17; run openclaw doctor --fix before compacting it.`,
+            "Stop Paddy processes, then restore the affected database from a verified backup.",
           ].join("\n"),
         );
         expect(mocks.outro).not.toHaveBeenCalledWith("Doctor complete.");
@@ -448,7 +503,7 @@ describe("runDoctorHealthFlow", () => {
     },
   );
 
-  it("fails public repair after the Gateway lock skips session import", async () => {
+  it("refuses public repair before session import while the Gateway owns state", async () => {
     await withOpenClawTestState({ scenario: "minimal" }, async (state) => {
       const storePath = await state.writeText(
         "agents/main/sessions/sessions.json",
@@ -484,8 +539,9 @@ describe("runDoctorHealthFlow", () => {
 
       expect(runtime.exit).toHaveBeenCalledExactlyOnceWith(1);
       expect(runtime.error).toHaveBeenCalledWith(
-        expect.stringContaining("Legacy session store requires migration"),
+        expect.stringContaining("Doctor could not enter maintenance"),
       );
+      expect(mocks.runContributions).not.toHaveBeenCalled();
       expect(mocks.outro).not.toHaveBeenCalledWith("Doctor complete.");
       expect(fs.readFileSync(storePath)).toEqual(before);
     });

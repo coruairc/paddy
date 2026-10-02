@@ -1,39 +1,39 @@
 ---
-summary: "CLI reference for `openclaw qr` (generate mobile pairing QR + setup code)"
+summary: "CLI reference for `paddy qr` (generate mobile pairing QR + setup code)"
 read_when:
   - You want to pair a mobile node app with a gateway quickly
   - You need setup-code output for remote/manual sharing
 title: "QR"
 ---
 
-# `openclaw qr`
+# `paddy qr`
 
 Generate a mobile pairing QR and setup code from your current Gateway configuration.
 
-The legacy [`openclaw clawbot qr`](/cli/clawbot) alias accepts every flag below.
+The legacy [`paddy clawbot qr`](/cli/clawbot) alias accepts every flag below.
 
 ```bash
-openclaw qr
-openclaw qr --setup-code-only
-openclaw qr --json
-openclaw qr --remote
-openclaw qr --limited
-openclaw qr --voice-node
-openclaw qr --url wss://gateway.example/ws
+paddy qr
+paddy qr --setup-code-only
+paddy qr --json
+paddy qr --remote
+paddy qr --limited
+paddy qr --voice-node
+paddy qr --url wss://gateway.example/ws
 ```
 
-Official OpenClaw iOS and Android apps connect automatically when their
+Official Paddy iOS and Android apps connect automatically when their
 setup-code metadata matches. If a request remains pending (for example, for a
 non-official client or mismatched metadata), review and approve it:
 
 ```bash
-openclaw devices list
-openclaw devices approve <requestId>
+paddy devices list
+paddy devices approve <requestId>
 ```
 
 ## Options
 
-- `--remote`: prefer `gateway.remote.url`; falls back to `gateway.tailscale.mode=serve|funnel` if that URL is unset. Ignores `device-pair` plugin `publicUrl`.
+- `--remote`: prefer `gateway.remote.url` and remote credentials; fall back to Tailscale Serve/Funnel when the remote URL is unset. Ignores `device-pair` plugin `publicUrl`; explicit `--url` or `--public-url` still takes precedence.
 - `--url <url>`: override the gateway URL used in the payload
 - `--public-url <url>`: override the public URL used in the payload
 - `--token <token>`: override the gateway token the bootstrap flow authenticates against
@@ -57,7 +57,7 @@ Use `--limited` to keep the same node token while omitting `operator.admin` from
 
 Use `--voice-node` for an embedded or room voice client. It keeps the node token and hands off a separate operator token limited to `operator.read` and `operator.talk`; it cannot send messages, mutate configuration, or invoke general write-scoped Gateway methods.
 
-Plaintext LAN `ws://` setup remains available, but OpenClaw automatically uses
+Plaintext LAN `ws://` setup remains available, but Paddy automatically uses
 the limited profile because a network observer could capture and race the bearer
 bootstrap token. Configure `wss://` or Tailscale Serve, then generate a new code
 to get full access.
@@ -66,17 +66,31 @@ to get full access.
 
 Mobile pairing fails closed for Tailscale/public `ws://` gateway URLs: use Tailscale Serve/Funnel or a `wss://` gateway URL for those. Private LAN addresses and `.local` Bonjour hosts remain supported over plain `ws://`, with limited operator access as described above.
 
-The QR command advertises Tailscale URLs only when OpenClaw owns the route through `gateway.tailscale.mode=serve|funnel`. Legacy external Serve routes that target the ordinary Gateway listener are not advertised because that listener rejects Tailscale-shaped proxy ingress.
+The QR command advertises Tailscale URLs only when Paddy owns the route through `gateway.tailscale.mode=serve|funnel`. Legacy external Serve routes that target the ordinary Gateway listener are not advertised because that listener rejects Tailscale-shaped proxy ingress.
 
 If an older setup used `gateway.bind=lan` with a persistent default HTTPS Serve
-route, run `openclaw doctor` to inspect it. Doctor does not migrate or clear the
+route, run `paddy doctor` to inspect it. Doctor does not migrate or clear the
 route because its status cannot prove who owns it, even with `--fix`; if you
 confirm it is stale, clear only its root handler, configure
 `gateway.bind=loopback` plus `gateway.tailscale.mode=serve` manually, and restart
 the Gateway. Custom Serve ports and retired named-Service routes require the
 same manual cleanup; Doctor prints the relevant guidance.
 
-With `--remote`, one of `gateway.remote.url` or `gateway.tailscale.mode=serve|funnel` is required.
+Unless `--url` or `--public-url` is supplied, `--remote` requires either
+`gateway.remote.url` or `gateway.tailscale.mode=serve|funnel` before URL resolution
+runs. `gateway.publicOrigin` alone does not satisfy that prerequisite.
+
+URL selection preserves existing routes: an explicit pairing override, a
+preferred remote URL, Tailscale Serve/Funnel, a non-preferred remote URL, then
+bind-derived addresses. For local QR setup, `gateway.publicOrigin` is the final
+fallback before the loopback-only error. Without `--remote`, the configured
+`plugins.entries.device-pair.config.publicUrl` supplies the override.
+Unlike QR setup, [cloud enrollment](/gateway/cloud-workers) explicitly asks the
+same resolver to prefer public ingress over discovery for fresh cloud workers.
+
+QR setup, join codes, and cloud enrollment preserve context paths in fully
+qualified URLs. The device-pair plugin's `/pair` command retains its historical
+origin-only URLs, including when the configured `publicUrl` contains a path.
 
 ## Auth resolution (no `--remote`)
 

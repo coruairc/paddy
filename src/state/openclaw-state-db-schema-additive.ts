@@ -2,7 +2,7 @@ import path from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { safeParseJsonRecord } from "@openclaw/normalization-core/json-coercion";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
-import { deferSqlitePostCommitPublication } from "../infra/sqlite-post-commit.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { assertSqliteSchemaContains } from "../infra/sqlite-schema-contract.js";
 import { extractSqliteTableSchema } from "../infra/sqlite-schema-sql.js";
 import {
@@ -16,49 +16,16 @@ import {
   backfillCronRunLogEntryJson,
   backfillDeliveryQueueEntriesFromEntryJson,
   ensureOperatorApprovalResolutionRefs,
-  repairLegacyTaskAgentAttribution,
-  repairLegacyTaskDeliveryStatuses,
   repairLegacySubagentExecutionPayloads,
   repairLegacySubagentRetainedResults,
   repairLegacySubagentSuspensionReasons,
-  repairLegacySubagentTaskBindings,
 } from "./openclaw-state-db-legacy-backfills.js";
-import {
-  ensureColumn,
-  tableExists,
-  tableHasColumn,
-  tableHasColumns,
-} from "./openclaw-state-db-schema-helpers.js";
-import { repairLegacyTaskIdentifiers } from "./openclaw-state-db-task-identifiers.js";
+import { ensureColumn, tableExists, tableHasColumn } from "./openclaw-state-db-schema-helpers.js";
 import { OPENCLAW_STATE_SCHEMA_SQL } from "./openclaw-state-schema.js";
 
 const repositoryWorkspacePendingSchemas = new WeakSet<DatabaseSync>();
-const taskExecutionOwnerSchemas = new WeakSet<DatabaseSync>();
 
-export function ensureTaskExecutionOwnerSchema(database: DatabaseSync): void {
-  if (taskExecutionOwnerSchemas.has(database)) {
-    return;
-  }
-  const ownerColumns = [
-    "execution_owner_host",
-    "execution_owner_pid",
-    "execution_owner_start_identity",
-  ];
-  if (!tableHasColumns(database, "task_runs", ownerColumns)) {
-    ensureColumn(database, "task_runs", "execution_owner_host TEXT");
-    ensureColumn(database, "task_runs", "execution_owner_pid INTEGER");
-    ensureColumn(database, "task_runs", "execution_owner_start_identity INTEGER");
-  }
-  const rememberSchema = () => taskExecutionOwnerSchemas.add(database);
-  if (database.isTransaction) {
-    // An outer transaction can still roll back its first-use DDL.
-    deferSqlitePostCommitPublication(database, rememberSchema);
-  } else {
-    rememberSchema();
-  }
-}
-
-export function hasRepositoryWorkspacePendingResultSchema(database: DatabaseSync): boolean {
+function hasRepositoryWorkspacePendingResultSchema(database: DatabaseSync): boolean {
   if (repositoryWorkspacePendingSchemas.has(database)) {
     return true;
   }
@@ -113,7 +80,7 @@ export function ensureSecretStoreSchema(database: DatabaseSync): void {
     extractSqliteTableSchema(OPENCLAW_STATE_SCHEMA_SQL, "secret_store_entries", {
       endMarker:
         "ON secret_store_entries (scope_kind, scope_id, name) WHERE deleted_at_ms IS NULL;",
-      errorMessage: "OpenClaw secret store schema marker is missing.",
+      errorMessage: `${PRODUCT_NAME} secret store schema marker is missing.`,
     }),
   ); // sqlite-allow-raw -- Canonical additive DDL only.
   ensureColumn(database, "secret_store_entries", "allowed_hosts TEXT");
@@ -123,7 +90,7 @@ export function ensureSecretStoreSchema(database: DatabaseSync): void {
 export function ensureMcpOAuthPendingSchema(database: DatabaseSync): void {
   database.exec(
     extractSqliteTableSchema(OPENCLAW_STATE_SCHEMA_SQL, "mcp_oauth_pending_authorizations", {
-      errorMessage: "OpenClaw MCP OAuth pending schema marker is missing.",
+      errorMessage: `${PRODUCT_NAME} MCP OAuth pending schema marker is missing.`,
     }),
   ); // sqlite-allow-raw -- Canonical additive DDL only.
 }
@@ -132,7 +99,7 @@ export function ensureMcpOAuthPendingSchema(database: DatabaseSync): void {
 export function ensureDevicePairingJoinCodeSchema(database: DatabaseSync): void {
   database.exec(
     extractSqliteTableSchema(OPENCLAW_STATE_SCHEMA_SQL, "device_pairing_join_codes", {
-      errorMessage: "OpenClaw device pairing join-code schema marker is missing.",
+      errorMessage: `${PRODUCT_NAME} device pairing join-code schema marker is missing.`,
     }),
   ); // sqlite-allow-raw -- Canonical additive DDL only.
 }
@@ -141,7 +108,7 @@ export function ensureDevicePairingJoinCodeSchema(database: DatabaseSync): void 
 export function ensureConfigRevisionKeySchema(database: DatabaseSync): void {
   database.exec(
     extractSqliteTableSchema(OPENCLAW_STATE_SCHEMA_SQL, "config_revision_keys", {
-      errorMessage: "OpenClaw config revision key schema marker is missing.",
+      errorMessage: `${PRODUCT_NAME} config revision key schema marker is missing.`,
     }),
   ); // sqlite-allow-raw -- Canonical additive DDL only; key rows use Kysely.
 }
@@ -149,7 +116,7 @@ export function ensureConfigRevisionKeySchema(database: DatabaseSync): void {
 export function assertAgentDeletionJournalAvailable(database: DatabaseSync): void {
   if (!tableHasColumn(database, "agent_deletion_journal", "agent_id")) {
     throw new Error(
-      "Agent deletion journal missing; run openclaw doctor --fix to reconstruct it before restoring or deleting agents.",
+      "Agent deletion journal missing; run paddy doctor --fix to reconstruct it before restoring or deleting agents.",
     );
   }
 }
@@ -383,19 +350,12 @@ export function ensureAdditiveStateColumns(db: DatabaseSync, scope: "runtime" | 
     backfillLegacyManagedImageRoots(db);
   }
   ensureColumns(db, columns.beforeTaskAttribution);
-  const addedTaskRequesterAgentId = ensureColumn(db, ...columns.taskRequester[0]);
-  if (addedTaskRequesterAgentId) {
-    repairLegacyTaskAgentAttribution(db);
-  }
-  if (repairHistoricalRows) {
-    repairLegacyTaskDeliveryStatuses(db);
-  }
+  // Keep the released physical layout without repairing retired Task attribution or bindings.
+  ensureColumns(db, columns.taskRequester);
   ensureColumns(db, columns.taskRunDetails);
   if (repairHistoricalRows) {
     repairLegacySubagentSuspensionReasons(db);
     repairLegacySubagentExecutionPayloads(db);
-    repairLegacyTaskIdentifiers(db);
-    repairLegacySubagentTaskBindings(db);
     repairLegacySubagentRetainedResults(db);
   }
   ensureColumns(db, columns.workerEnvironments);

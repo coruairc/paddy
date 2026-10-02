@@ -146,7 +146,7 @@ export function createAppleFmNative(pluginRoot: string) {
     options.signal?.throwIfAborted();
     if (developerTools.code !== 0) {
       throw new Error(
-        "Install Apple's developer tools with the macOS 27 SDK, then rerun Apple Foundation Models setup. OpenClaw does not install developer tools automatically.",
+        "Install Apple's developer tools with the macOS 27 SDK, then rerun Apple Foundation Models setup. Paddy does not install developer tools automatically.",
       );
     }
     const result = await runCommandBuffered(

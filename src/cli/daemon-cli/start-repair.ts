@@ -30,6 +30,7 @@ import { formatGatewayServiceStartRepairIssues } from "../../daemon/service.js";
 import { assertGatewayServiceMutationAllowed } from "../../infra/gateway-supervision.js";
 import { parseTcpPortFromArgs } from "../../infra/tcp-port.js";
 import { defaultRuntime } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import { mergeInstallInvocationEnv } from "./install.js";
 
 type GatewayServiceRepairParams = {
@@ -92,7 +93,7 @@ function assertGatewayRepairTargetMatches(params: {
     installedEnv.USERPROFILE?.trim();
   if (!installedStateOverride && !installedHome) {
     throw new Error(
-      `Refusing to repair the managed Gateway service because its installed state directory cannot be determined from the service definition. Run \`openclaw gateway install --force\` to replace it intentionally.`,
+      `Refusing to repair the managed Gateway service because its installed state directory cannot be determined from the service definition. Run \`${CLI_NAME} gateway install --force\` to replace it intentionally.`,
     );
   }
   const installedStateDir = resolveStateDir(installedEnv);
@@ -133,7 +134,7 @@ function assertGatewayRepairTargetMatches(params: {
     )
     .join("\n");
   throw new Error(
-    `Refusing to repair the managed Gateway service because the current invocation targets a different Gateway:\n${details}\nRun \`openclaw gateway ${params.action}\` with the installed state directory, config path, and port (or unset conflicting environment overrides). To retarget intentionally, run \`openclaw gateway install --force\`.`,
+    `Refusing to repair the managed Gateway service because the current invocation targets a different Gateway:\n${details}\nRun \`${CLI_NAME} gateway ${params.action}\` with the installed state directory, config path, and port (or unset conflicting environment overrides). To retarget intentionally, run \`${CLI_NAME} gateway install --force\`.`,
   );
 }
 
@@ -272,7 +273,7 @@ export async function repairLoadedGatewayServiceForStart(
     message:
       params.action === "restart"
         ? "Gateway service definition repaired and restarted."
-        : "Gateway service definition repaired and started. Reopen the Control UI with `openclaw dashboard` or copy a fresh auth URL with `openclaw dashboard --no-open`.",
+        : `Gateway service definition repaired and started. Reopen the Control UI with \`${CLI_NAME} dashboard\` or copy a fresh auth URL with \`${CLI_NAME} dashboard --no-open\`.`,
     warnings: warnings.length ? warnings : undefined,
     loaded,
   };

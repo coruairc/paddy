@@ -97,7 +97,7 @@ describe("requireValidConfig", () => {
     const runtime = createTestRuntime();
     expect(await requireValidConfigForWrite(runtime)).toBeNull();
     expect(runtime.exit).toHaveBeenCalledWith(1);
-    expect(runtime.error).toHaveBeenCalledWith("Fix: openclaw doctor --fix");
+    expect(runtime.error).toHaveBeenCalledWith("Fix: paddy doctor --fix");
   });
 
   it("returns config without emitting compatibility advice by default", async () => {
@@ -152,7 +152,7 @@ describe("requireValidConfig", () => {
       [
         "Plugin compatibility: 1 notice.",
         "- legacy-plugin is hook-only. This remains a supported compatibility path, but it has not migrated to explicit capability registration yet.",
-        "Review: openclaw doctor",
+        "Review: paddy doctor",
       ].join("\n"),
     );
   });
@@ -175,7 +175,7 @@ describe("requireValidConfig", () => {
     });
 
     expect(config).toBeNull();
-    expect(runtime.error).toHaveBeenCalledWith("Fix: openclaw doctor --fix");
+    expect(runtime.error).toHaveBeenCalledWith("Fix: paddy doctor --fix");
     expect(runtime.exit).toHaveBeenCalledWith(1);
     expect(runtime.log).not.toHaveBeenCalled();
   });
@@ -213,7 +213,7 @@ describe("requireValidConfig", () => {
     expect(runtime.error).toHaveBeenCalledWith(
       "Fix: This is a plugin packaging issue, not a local config problem.\nUpdate or reinstall the plugin after the publisher ships compiled JavaScript, or disable/uninstall the plugin until then.",
     );
-    expect(runtime.error).not.toHaveBeenCalledWith("Fix: openclaw doctor --fix");
+    expect(runtime.error).not.toHaveBeenCalledWith("Fix: paddy doctor --fix");
     expect(runtime.exit).toHaveBeenCalledWith(1);
   });
 });

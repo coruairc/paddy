@@ -1,6 +1,7 @@
 // Checks install policy constraints for package and plugin operations.
 import fs from "node:fs/promises";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig, SecurityConfig } from "../config/types.openclaw.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { runCommandWithTimeout } from "../process/exec.js";
@@ -452,7 +453,7 @@ export async function runInstallPolicy(params: {
       const { getRuntimeConfig } = await import("../config/io.js");
       config = getRuntimeConfig({ skipPluginValidation: true });
     } catch (err) {
-      return failClosed(`could not load OpenClaw config (${formatErrorMessage(err)})`);
+      return failClosed(`could not load ${PRODUCT_NAME} config (${formatErrorMessage(err)})`);
     }
   }
 

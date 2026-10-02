@@ -32,7 +32,7 @@ describe("entry run-main boundary", () => {
         }),
       });
       expect(process.exitCode).toBe(1);
-      expect(errorSpy).toHaveBeenCalledWith("[paddy] The CLI command failed.");
+      expect(errorSpy).toHaveBeenCalledWith("[openclaw] The CLI command failed.");
       expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining("Could not start the CLI"));
     } finally {
       errorSpy.mockRestore();
@@ -51,7 +51,7 @@ describe("entry run-main boundary", () => {
         },
       });
       expect(process.exitCode).toBe(1);
-      expect(errorSpy).toHaveBeenCalledWith("[paddy] Could not start the CLI.");
+      expect(errorSpy).toHaveBeenCalledWith("[openclaw] Could not start the CLI.");
       expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining("The CLI command failed"));
     } finally {
       errorSpy.mockRestore();

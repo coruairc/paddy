@@ -31,8 +31,47 @@ title: "Agent schema history"
 | 21      | Incremental canonical-session validation with transactional node, window, and main-key invalidation                                                                                                                                                    | Unreleased                                      |
 | 22      | Exact transcript FTS row ownership for session-local deletion and reconciliation ([#153834](https://github.com/openclaw/openclaw/pull/153834))                                                                                                         | Unreleased                                      |
 | 23      | Selective transcript compression, binary memory embeddings, and stable memory full-text index identities                                                                                                                                               | Unreleased                                      |
+| 24      | Canonical session hot facts separated from keyed diff, skills, and system-prompt snapshots                                                                                                                                                             | Unreleased                                      |
 
 Version 3 was an unshipped development step folded into version 4.
+
+### Session hot facts and snapshots
+
+Agent schema **24** keeps exact hot session facts in `session_nodes.entry_json`
+and moves `sessionDiffBaseline`, `skillsSnapshot`, and `systemPromptReport` into
+`session_entry_snapshots`, keyed by session key and field. Existing indexed
+columns remain query projections; they do not replace canonical values such as
+the distinct `interrupted` status. Full entry consumers select hot facts and
+requested snapshot columns in one SQLite statement. List and resident projection
+readers select only hot facts. Public full-entry reads retain their existing shape.
+
+The entry writer retains policy, lifecycle, and publication ownership. It writes
+only changed snapshot values, in the same transaction as the hot entry. Snapshot
+table triggers advance the node's `snapshot_revision`, including raw SQL changes;
+prepared mutations compare that revision before reusing their original snapshot.
+Rollback restores both data and revision. Existing cache revisions and foreign
+commit checks remain authoritative. Cached hot facts are immutable; internal
+borrowers share them while public mutable readers receive detached values.
+
+The existing startup/Doctor schema owner extracts the three fields in bounded
+keyed batches and commits the representation change with both schema markers.
+Malformed or identity-mismatched entries remain unchanged for Doctor repair.
+Snapshot JSON retains JavaScript parsing semantics, including values beyond
+SQLite's JSON nesting limit. Transcript bytes, pending inputs, progress cards,
+retention, and permissions are unchanged. Deleting a logical node cascades its
+snapshots; clearing an entry while retaining transcript windows clears its
+snapshots too. Doctor repair/import and full-entry copy consumers preserve the
+selected entry's snapshots.
+
+This is a versioned representation change under the
+[material-change checkpoint](/reference/database-schemas/storage-changes#review-checkpoint-for-material-changes).
+The accepted storage split and migration are recorded in
+[#160358](https://github.com/openclaw/openclaw/pull/160358).
+Use the existing verified backup and candidate Doctor update flow, including the
+[published updater migration rules](/reference/database-schemas/versioning#schema-bumps-and-older-updaters).
+Interrupted extraction rolls back. Older builds refuse schema 24; rollback
+requires the pre-upgrade database backup and matching build, not lower version
+markers. Freed SQLite pages remain available for reuse under existing maintenance.
 
 ### Compact agent payload storage
 
@@ -120,7 +159,7 @@ with their FTS rows.
 
 Both schema version markers advance through the existing maintenance owner in
 the same transaction. Stop writers and take a verified WAL-aware backup before
-running the compatible build's `openclaw doctor --fix`. Older builds refuse
+running the compatible build's `paddy doctor --fix`. Older builds refuse
 schema 22 because their writes cannot maintain row ownership. Rollback requires
 the pre-migration backup and matching build; lowering version markers is unsafe.
 The existing [older-updater contract](/reference/database-schemas/versioning#schema-bumps-and-older-updaters)
@@ -232,7 +271,7 @@ downgrade.
 After an interrupted update, the agent database maintenance lease can remain
 valid for up to 60 seconds. If Doctor reports a maintenance lease timeout,
 keep writers stopped, allow that lease to expire, then run
-[`openclaw update repair`](/cli/update/repair-and-recovery#update-repair)
+[`paddy update repair`](/cli/update/repair-and-recovery#update-repair)
 from the compatible installation. The package may already have been replaced
 even when the schema transaction rolled back. Do not delete lease records or
 change schema markers to bypass recovery.
@@ -248,7 +287,7 @@ Agent schema **19** and shared-state schema **14** add a source discriminator to
 
 Historical human creators stamped directly by `operator` or `run` creation become `profile`; channel creation becomes `channel`. Origin-losing cron, inherited spawn or Talk, legacy `createdBy`, and missing-source history remain `unknown`. The migration preserves IDs, attribution, creation times, content, and existing sandbox restrictions. A UUID, profile lookup, participant, current route, or required sandbox never supplies missing creator authority. Recovery from incomplete physical projections also produces unknown human attribution.
 
-Before upgrading, stop the Gateway and all other writers, then [create and verify a WAL-aware backup](/cli/backup). Run `openclaw doctor --fix` with the new build. The agent migration retains the stopped-writer maintenance gate and runs after the schema-18 participant migration, without rebuilding already migrated participant rows. Canonical data and both schema markers commit in the owning database transaction. Shared-state and agent databases are separate transactions; if one fails, keep writers stopped and rerun Doctor before starting the Gateway.
+Before upgrading, stop the Gateway and all other writers, then [create and verify a WAL-aware backup](/cli/backup). Run `paddy doctor --fix` with the new build. The agent migration retains the stopped-writer maintenance gate and runs after the schema-18 participant migration, without rebuilding already migrated participant rows. Canonical data and both schema markers commit in the owning database transaction. Shared-state and agent databases are separate transactions; if one fails, keep writers stopped and rerun Doctor before starting the Gateway.
 
 Older builds refuse the new versions. For rollback, stop all writers and restore the verified pre-upgrade backups with their matching older build. Do not decrement either schema marker: an older writer cannot maintain the creator-source contract. Unknown historical provenance is irrecoverable from the stored ID alone. Administrators retain sharing management access; assigning responsibility does not restore an implicit creator grant.
 
@@ -258,7 +297,7 @@ Required sandbox resources keep their existing keys for proven profile creators.
 
 Agent schema 18 rebuilds `session_participants` with the unique key `(session_key, identity_namespace, actor_id)`. The raw actor ID remains separate from its namespace. This replaces the old `(session_key, actor_type, actor_id)` key; it is not a same-version additive change. Both schema markers advance together. No companion table or per-input ledger is added.
 
-Before upgrading existing data, take a verified, WAL-aware backup and stop the Gateway and other agent-database writers. Run `openclaw doctor --fix` with the new build. The migration uses the existing maintenance lease to reject active writers and fence new claims. Ordinary runtime opens refuse the old participant schema rather than migrating it behind active readers. Earlier structural and media migrations run in their historical order before participant convergence. Explicit Doctor repair exits nonzero if an existing configured, default-layout, or registered database still fails runtime schema readiness, including when a live writer or an unknown table dependency blocks this migration. Readiness uses the same target discovery as migration without registering, pruning, or creating stores. Archive migration warnings remain advisory when required database schemas are ready.
+Before upgrading existing data, take a verified, WAL-aware backup and stop the Gateway and other agent-database writers. Run `paddy doctor --fix` with the new build. The migration uses the existing maintenance lease to reject active writers and fence new claims. Ordinary runtime opens refuse the old participant schema rather than migrating it behind active readers. Earlier structural and media migrations run in their historical order before participant convergence. Explicit Doctor repair exits nonzero if an existing configured, default-layout, or registered database still fails runtime schema readiness, including when a live writer or an unknown table dependency blocks this migration. Readiness uses the same target discovery as migration without registering, pruning, or creating stores. Archive migration warnings remain advisory when required database schemas are ready.
 
 Membership and recorded contribution aggregates survive. Historical profile timestamps are unknown because earlier source promotion could contaminate them even when a contribution count was present. Supported agent and channel-only observation times remain; an unresolved historical channel domain stays unresolved. Migration does not invent missing channel rows or inspect transcripts to reconstruct identities. New observations do not turn an unknown first input time into a claimed first-ever time.
 

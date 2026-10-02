@@ -1,8 +1,10 @@
 import { stat } from "node:fs/promises";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { createPluginCache, withPluginCache } from "../plugins/plugin-cache.js";
 import { runOutsidePluginRuntimeGenerationScope } from "../plugins/runtime/generation-scope.js";
 import { defaultRuntime, type RuntimeEnv } from "../runtime.js";
+import { createLazyRuntimeModule } from "../shared/lazy-runtime.js";
 import type { WizardPrompter } from "../wizard/prompts.js";
 import type {
   MemoryImportProviderOutcome,
@@ -10,12 +12,7 @@ import type {
 } from "../wizard/setup.memory-import.js";
 import { appendSystemAgentAuditEntry } from "./audit.js";
 
-type SetupSharedModule = typeof import("../wizard/setup.shared.js");
-let setupSharedPromise: Promise<SetupSharedModule> | undefined;
-
-function loadSetupShared(): Promise<SetupSharedModule> {
-  return (setupSharedPromise ??= import("../wizard/setup.shared.js"));
-}
+const loadSetupShared = createLazyRuntimeModule(() => import("../wizard/setup.shared.js"));
 
 export const GATEWAY_WRITE_POLICY = {
   mode: "none",
@@ -33,7 +30,7 @@ export function requireLocalGateway(config: OpenClawConfig): void {
     return;
   }
   throw new Error(
-    "Hosted Gateway setup manages only a local Gateway. Use `openclaw onboard` for fresh setup or `openclaw configure` for the mode question, then retry after selecting local mode.",
+    "Hosted Gateway setup manages only a local Gateway. Use `paddy onboard` for fresh setup or `paddy configure` for the mode question, then retry after selecting local mode.",
   );
 }
 
@@ -66,7 +63,7 @@ export async function runHostedSetup(params: {
       const snapshot = await readSetupConfigFileSnapshot();
       if (!snapshot.exists || !snapshot.valid || !snapshot.hash) {
         throw new Error(
-          `${params.label} requires a valid saved config snapshot. On the machine running OpenClaw, run \`openclaw doctor --fix\` and resolve any remaining validation errors; then retry.`,
+          `${params.label} requires a valid saved config snapshot. On the machine running ${PRODUCT_NAME}, run \`${CLI_NAME} doctor --fix\` and resolve any remaining validation errors; then retry.`,
         );
       }
       const baseConfig = snapshot.sourceConfig ?? snapshot.config;
@@ -94,8 +91,7 @@ export async function runHostedChannelSetup(
   runtime?: RuntimeEnv,
   assertPersistentEffectCurrent?: () => void,
 ): Promise<HostedSetupCompletion> {
-  const { createChannelSetupHooks, setupChannels } =
-    await import("../commands/onboard-channels.js");
+  const { createChannelSetupHooks, setupChannels } = await import("../flows/channel-setup.js");
   return await runHostedSetup({
     label: "Channel setup",
     runtime,
@@ -229,7 +225,7 @@ export async function runHostedMemoryImport(
   const snapshot = await readSetupConfigFileSnapshot();
   if (!snapshot.exists || !snapshot.valid || !snapshot.hash) {
     throw new Error(
-      "Memory import requires a valid saved config. Run `openclaw doctor --fix`, then retry.",
+      "Memory import requires a valid saved config. Run `paddy doctor --fix`, then retry.",
     );
   }
   const baseHash = snapshot.hash;
@@ -344,7 +340,7 @@ export async function renderMemoryImport(
   if (outcome.status === "workspace-missing") {
     return [
       `Memory import is unavailable because the default agent workspace does not exist at ${outcome.workspace}.`,
-      "Finish onboarding first with `openclaw onboard`, then retry.",
+      "Finish onboarding first with `paddy onboard`, then retry.",
     ].join("\n");
   }
   if (outcome.status === "nothing-to-import") {

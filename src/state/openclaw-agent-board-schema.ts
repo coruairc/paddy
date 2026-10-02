@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { extractSqliteTableSchema } from "../infra/sqlite-schema-sql.js";
 import { OPENCLAW_AGENT_SCHEMA_SQL } from "./openclaw-agent-schema.js";
 
@@ -15,7 +16,7 @@ const OPENCLAW_AGENT_BOARD_SCHEMA_SQL = extractSqliteTableSchema(
   {
     endMarker: "CREATE TABLE IF NOT EXISTS session_progress_cards (",
     includeEndMarker: false,
-    errorMessage: "OpenClaw agent board schema markers are missing from the canonical schema.",
+    errorMessage: `${PRODUCT_NAME} agent board schema markers are missing from the canonical schema.`,
   },
 );
 export const AGENT_V14_BOARD_SCHEMA_SQL = OPENCLAW_AGENT_BOARD_SCHEMA_SQL;
@@ -28,7 +29,7 @@ function canonicalBoardWidgetsCreateSql(): string {
   return extractSqliteTableSchema(OPENCLAW_AGENT_BOARD_SCHEMA_SQL, "board_widgets", {
     endMarker: "CREATE INDEX IF NOT EXISTS idx_agent_board_widgets_tab_position",
     includeEndMarker: false,
-    errorMessage: "OpenClaw agent board widget schema markers are missing.",
+    errorMessage: `${PRODUCT_NAME} agent board widget schema markers are missing.`,
   }).trim();
 }
 
@@ -38,7 +39,7 @@ function legacyBoardWidgetsCreateSql(): string {
     .replace(PLUGIN_CONTENT_KIND_CLAUSE_PATTERN, "content_kind IN ('html', 'mcp-app')")
     .replace(PLUGIN_PAYLOAD_BRANCH_PATTERN, "");
   if (legacy === canonical) {
-    throw new Error("OpenClaw agent board widget legacy schema derivation failed.");
+    throw new Error(`${PRODUCT_NAME} agent board widget legacy schema derivation failed.`);
   }
   return legacy;
 }
@@ -64,7 +65,7 @@ export function ensureOpenClawAgentBoardSchemaInTransaction(db: DatabaseSync): v
     .prepare("SELECT sql FROM sqlite_schema WHERE type = 'table' AND name = 'board_widgets'")
     .get() as { sql?: unknown } | undefined;
   if (typeof row?.sql !== "string") {
-    throw new Error("OpenClaw agent board widget schema is missing after ensure.");
+    throw new Error(`${PRODUCT_NAME} agent board widget schema is missing after ensure.`);
   }
   const normalizedSchema = normalizeBoardWidgetsCreateSql(row.sql);
   if (normalizedSchema === normalizeBoardWidgetsCreateSql(canonicalBoardWidgetsCreateSql())) {
@@ -72,7 +73,7 @@ export function ensureOpenClawAgentBoardSchemaInTransaction(db: DatabaseSync): v
   }
   if (normalizedSchema !== normalizeBoardWidgetsCreateSql(legacyBoardWidgetsCreateSql())) {
     throw new Error(
-      "OpenClaw agent board widget schema has an unsupported content-kind constraint.",
+      `${PRODUCT_NAME} agent board widget schema has an unsupported content-kind constraint.`,
     );
   }
   const existingMigrationTable = db // sqlite-allow-raw -- Fail closed if an abandoned migration table exists.
@@ -80,7 +81,7 @@ export function ensureOpenClawAgentBoardSchemaInTransaction(db: DatabaseSync): v
     .get(BOARD_WIDGETS_MIGRATION_TABLE);
   if (existingMigrationTable) {
     throw new Error(
-      `OpenClaw agent board migration table already exists: ${BOARD_WIDGETS_MIGRATION_TABLE}`,
+      `${PRODUCT_NAME} agent board migration table already exists: ${BOARD_WIDGETS_MIGRATION_TABLE}`,
     );
   }
   const migrationCreateSql = canonicalBoardWidgetsCreateSql().replace(

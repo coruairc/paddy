@@ -7,7 +7,7 @@ read_when:
   - Reviewing what diagnostics data is recorded or redacted
 ---
 
-OpenClaw can build a local diagnostics `.zip` for bug reports: sanitized Gateway
+Paddy can build a local diagnostics `.zip` for bug reports: sanitized Gateway
 status, health, logs, config shape, and recent payload-free stability events.
 
 Treat diagnostics bundles like secrets until reviewed. Payloads and credentials
@@ -17,19 +17,19 @@ host-level runtime state.
 ## Quick start
 
 ```bash
-openclaw gateway diagnostics export
+paddy gateway diagnostics export
 ```
 
 Prints the written zip path. Choose an output path:
 
 ```bash
-openclaw gateway diagnostics export --output openclaw-diagnostics.zip
+paddy gateway diagnostics export --output paddy-diagnostics.zip
 ```
 
 For automation:
 
 ```bash
-openclaw gateway diagnostics export --json
+paddy gateway diagnostics export --json
 ```
 
 ## Chat command
@@ -38,13 +38,13 @@ Owners can run `/diagnostics [note]` in any conversation to request a local
 Gateway export as one copy-pasteable support report:
 
 1. Send `/diagnostics`, optionally with a short note (`/diagnostics bad tool choice`).
-2. OpenClaw sends a preamble and asks for one explicit exec approval, which runs
-   `openclaw gateway diagnostics export --json`. Do not approve diagnostics via
+2. Paddy sends a preamble and asks for one explicit exec approval, which runs
+   `paddy gateway diagnostics export --json`. Do not approve diagnostics via
    an allow-all rule.
-3. After approval, OpenClaw replies with the local bundle path, manifest
+3. After approval, Paddy replies with the local bundle path, manifest
    summary, privacy notes, and relevant session ids.
 
-In group chats, an owner can still run `/diagnostics`, but OpenClaw sends the
+In group chats, an owner can still run `/diagnostics`, but Paddy sends the
 export result, approval prompts, and Codex session/thread breakdown to the
 owner privately. The group sees only a short status notice: approval pending,
 private delivery confirmed, delivery pending, or delivery suppressed. Pending
@@ -52,11 +52,11 @@ delivery does not trigger another private send. If no private owner route exists
 the command asks the owner to run it from a DM.
 
 When the active session uses the native OpenAI Codex harness, the same exec
-approval also covers an OpenAI feedback upload for the Codex threads OpenClaw
+approval also covers an OpenAI feedback upload for the Codex threads Paddy
 knows about. That upload is separate from the local Gateway zip and only
 happens for Codex harness sessions. The approval prompt states that approving
 also sends Codex feedback, without listing Codex session or thread ids. After
-approval, the reply lists channels, OpenClaw session ids, Codex thread ids, and
+approval, the reply lists channels, Paddy session ids, Codex thread ids, and
 local resume commands for the threads that were sent to OpenAI. Denying or
 ignoring the approval skips the export, the Codex feedback upload, and the
 Codex id list.
@@ -170,6 +170,14 @@ keys. Repeated stage visits contribute to the counts and totals. Parallel and
 nested stages can overlap, so their totals are neither an exclusive breakdown
 of request time nor CPU measurements.
 
+Session collaboration reads emit queued `diagnostic.phase.completed` events to
+interested diagnostic listeners. `session.members.list` and
+`session.members.listEvidence` separate `profiles`, `evidence`, and `projection`
+waits; `session.discussion.info` and `session.discussion.open` report `provider`
+time, including remote provider requests. Phase names use the method as their
+prefix and contain no session keys or response data. Membership evidence uses
+the existing projection worker lane so full transcript reads do not block it.
+
 With diagnostics and warning logs enabled, `sessions.create` calls lasting at
 least one second emit `slow session create`. Its `elapsedMs` and
 `phaseDurationsMs` separate request preparation, admission, target discovery,
@@ -217,22 +225,22 @@ embedded run active.
 Inspect the live recorder:
 
 ```bash
-openclaw gateway stability
-openclaw gateway stability --type payload.large
-openclaw gateway stability --json
+paddy gateway stability
+paddy gateway stability --type payload.large
+paddy gateway stability --json
 ```
 
 Inspect the newest persisted bundle after a fatal exit, shutdown timeout, or
 restart startup failure:
 
 ```bash
-openclaw gateway stability --bundle latest
+paddy gateway stability --bundle latest
 ```
 
 Create a diagnostics zip from the newest persisted bundle:
 
 ```bash
-openclaw gateway stability --bundle latest --export
+paddy gateway stability --bundle latest --export
 ```
 
 Persisted bundles live under `~/.openclaw/logs/stability/` when events exist.
@@ -243,7 +251,7 @@ An operator with `operator.admin` can request one in-memory profile of the Gatew
 main JavaScript isolate:
 
 ```bash
-openclaw gateway call diagnostics.cpuProfile --params '{}' --timeout 30000 --json
+paddy gateway call diagnostics.cpuProfile --params '{}' --timeout 30000 --json
 ```
 
 This Node-only RPC requests five seconds of sampling at a 10 ms interval. It opens
@@ -255,7 +263,7 @@ The result contains `profile` in V8 CPU-profile format, `requestedDurationMs`,
 `actualDurationMs`, `startBlockedMs`, `samplingIntervalMicros`, `redactedNodeCount`, and
 `sampleLossCount: null` because V8 does not expose an explicit lost-sample count.
 The complete result is limited to 1 MiB; larger profiles fail without truncating
-nodes or samples. Code locations inside the OpenClaw package use `openclaw:` paths;
+nodes or samples. Code locations inside the Paddy package use `paddy:` paths;
 Node builtin locations use `node:` paths. External paths, eval labels, and other
 unrecognized names are redacted. Bounded code-symbol names at recognized locations
 are retained; their syntax does not prove that a computed name is public. Review
@@ -269,7 +277,8 @@ samples describe this isolate, not all process threads, and are not exact
 per-function CPU accounting.
 
 Starting a CPU profile synchronously scans V8's heap to build its code map. On a
-large Gateway this can block the main event loop for seconds on every capture,
+large Gateway this can block the main event loop for seconds on every capture
+(about 3.5 seconds has been observed with a 3 GB heap),
 before regular sampling begins. Keeping the inspector domain enabled or sending
 the request from a Worker does not avoid that main-isolate work.
 `startBlockedMs` measures the synchronous start call with a monotonic clock,
@@ -287,24 +296,80 @@ do not run it alongside another debugger, profiler, tracer, or coverage owner. A
 response names the reason and whether cleanup failed. If cleanup remains uncertain,
 further captures are refused; the RPC never restarts the Gateway automatically.
 
+## Full heap snapshot
+
+An operator with `operator.admin` can explicitly capture the Gateway's main V8
+isolate, including objects allocated before the request:
+
+```bash
+paddy gateway call diagnostics.heapSnapshot --params '{"reason":"retention baseline"}' --timeout 180000 --json
+```
+
+This Node-only RPC accepts only an optional `reason` (at most 256 characters),
+recorded in the warning before capture. No configuration switch is needed. It
+writes `<state>/diagnostics/heap-<timestamp>.heapsnapshot` with owner-only file
+permissions and returns `path`, `sizeBytes`, `heapUsedBefore`, `heapUsedAfter`
+(bytes), and `elapsedMs` (native capture wall time). Snapshot contents never travel
+over the WebSocket or enter the diagnostics export. Worker isolates are excluded.
+
+**Take snapshots in a quiet window.** A 3 GB heap snapshot can block the main
+thread for tens of seconds. V8 may need roughly twice the heap's memory while
+capturing; sufficient memory and disk headroom remain the operator's responsibility.
+The RPC refuses heaps above 6 GiB, overlapping captures, and another capture within
+60 seconds of a native attempt finishing. These admission guards do not impose a
+hard duration, output-size, or memory limit: synchronous `writeHeapSnapshot()`
+cannot be interrupted by a timeout, disconnection, or shutdown once started.
+A client timeout does not mean capture stopped; inspect the host directory before
+retrying. Failed captures remove partial files when possible; `cleanupFailed`
+reports whether removal failed.
+
+Snapshots are **unredacted** and can contain credentials, prompts, and private
+messages. Keep them on the host, review any transfer separately, and delete them
+manually after analysis. Successful snapshots are retained until removed; there
+is no automatic snapshot collection or retention job.
+
+Capture two points in the same process, then compare them from a source checkout:
+
+```bash
+node scripts/heap-snapshot-diff.mjs before.heapsnapshot after.heapsnapshot
+```
+
+The tool reports retained bytes by constructor/class and the largest changes by
+dominator (the object through which all strong root paths pass). It streams input
+and analyzes snapshots sequentially, but still needs memory proportional to the
+object graph; run large diffs on a separate analysis host with enough memory.
+Weak and shortcut edges are excluded. Class totals count nested instances of the
+same class once; totals across different classes can overlap. Object IDs match
+only within the same isolate/process. Use Chrome DevTools for interactive retaining
+paths and V8-specific weak/ephemeron semantics; the script is a strong-edge graph
+summary. `--json` produces machine-readable output. Treat diff output as sensitive
+too: it contains unredacted heap names.
+
 ## Sampling heap profile
 
 An operator with `operator.admin` can sample allocations in the Gateway's main
 JavaScript isolate without taking a whole-heap snapshot:
 
 ```bash
-openclaw gateway call diagnostics.heapProfile --params '{}' --timeout 30000 --json
-openclaw gateway call diagnostics.heapProfile --params '{"durationMs":10000,"samplingIntervalBytes":32768}' --timeout 45000 --json
+paddy gateway call diagnostics.heapProfile --params '{}' --timeout 30000 --json
+paddy gateway call diagnostics.heapProfile --params '{"durationMs":10000,"samplingIntervalBytes":32768}' --timeout 45000 --json
+paddy gateway call diagnostics.heapProfile --params '{"includeObjectsCollectedByMajorGC":true,"includeObjectsCollectedByMinorGC":true}' --timeout 30000 --json
 ```
 
 The Node-only RPC defaults to five seconds and an average sampling interval of
-32 KiB. Parameters must be positive integers. Durations above 30 seconds are
+32 KiB. `durationMs` and `samplingIntervalBytes` must be positive integers. Durations above 30 seconds are
 clamped to 30 seconds; intervals below 4 KiB are clamped to 4 KiB. Smaller intervals
 collect more samples at greater CPU and memory cost. Choose a CLI timeout longer
 than the requested capture. The critical-memory warning points to this RPC;
 pressure never starts a capture automatically.
 
+The optional booleans `includeObjectsCollectedByMajorGC` and
+`includeObjectsCollectedByMinorGC` both default to `false`. Enable both to retain
+samples of objects collected during the window and attribute transient allocation
+churn. Retaining collected samples can increase profiler memory use.
+
 The result includes actual elapsed `durationMs`, `samplingIntervalBytes`,
+`includeObjectsCollectedByMajorGC`, `includeObjectsCollectedByMinorGC`,
 `heapUsedBefore`, `heapUsedAfter`, `rssBefore`, `rssAfter` (all memory values in
 bytes), `redactedNodeCount`, `unattributedSampleCount`, `unattributedSampleBytes`,
 and `truncated`. When present, `profile` contains the sanitized V8 sampling tree
@@ -328,8 +393,9 @@ overlap across callers, so do not add them together. Start with large `selfBytes
 and inspect the stack to identify the allocating code.
 
 Sampling is cheaper than a whole-heap snapshot but is still approximate. V8's
-default sampling mode excludes objects collected before capture ends; this is not
-an inventory of every transient allocation or objects allocated before capture.
+default sampling mode excludes objects collected before capture ends; enable both
+collection flags to include those samples. Neither mode is an exact inventory of
+every allocation or includes objects allocated before capture.
 Native allocations, external buffers, other isolates, and other process threads
 are not attributed, so sampled bytes need not explain the full RSS change.
 
@@ -342,7 +408,7 @@ V8's internal sampling memory. Review retained code-symbol names before sharing.
 ## Useful options
 
 ```bash
-openclaw gateway diagnostics export \
+paddy gateway diagnostics export \
   --output openclaw-diagnostics.zip \
   --log-lines 5000 \
   --log-bytes 1000000

@@ -1,45 +1,45 @@
 ---
 summary: "Dynamic tools, web search, image loading, turn liveness, and runtime boundaries"
 read_when:
-  - You want to know which OpenClaw tools reach a Codex turn
+  - You want to know which Paddy tools reach a Codex turn
   - You are debugging turn liveness or parallel chats
-  - You need the ownership split between OpenClaw and Codex
+  - You need the ownership split between Paddy and Codex
 title: "Codex runtime behavior"
 sidebarTitle: "Runtime behavior"
 ---
 
-What the Codex harness owns during a turn, and what stays with OpenClaw. Part of the [Codex harness](/plugins/codex-harness) guide; [Where each section moved](/plugins/codex-harness#where-each-section-moved) lists every section.
+What the Codex harness owns during a turn, and what stays with Paddy. Part of the [Codex harness](/plugins/codex-harness) guide; [Where each section moved](/plugins/codex-harness#where-each-section-moved) lists every section.
 
 ## Dynamic tools and web search
 
-Codex dynamic tools default to `searchable` loading. OpenClaw normally does
+Codex dynamic tools default to `searchable` loading. Paddy normally does
 not expose dynamic tools that duplicate Codex-native workspace operations:
 `read`, `write`, `edit`, `apply_patch`, `exec`, `process`,
 `get_goal`, `create_goal`, `update_goal`, `tool_call`, `tool_describe`,
-`tool_search`, and `tool_search_code`. Goal operations stay native to Codex,
-so OpenClaw does not project a second goal store into Codex turns. Most
-remaining OpenClaw integration tools, such as messaging, media, cron,
+and `tool_search`. Goal operations stay native to Codex,
+so Paddy does not project a second goal store into Codex turns. Most
+remaining Paddy integration tools, such as messaging, media, cron,
 browser, nodes, gateway, `progress_card`, and `heartbeat_respond` are available through
 Codex tool search under the `openclaw` namespace, keeping the initial model
 context smaller. The restricted-turn shell fallback is the exception for
 `exec` and `process` when a finite allowlist disables native Code Mode;
 runtime allowlists and `codexDynamicToolsExclude` still apply.
 When native shell remains active and Gateway access is policy-eligible,
-OpenClaw instead publishes the distinct `gateway_exec` and `gateway_process`
-names so native shell and the OpenClaw-managed environment path cannot be
+Paddy instead publishes the distinct `gateway_exec` and `gateway_process`
+names so native shell and the Paddy-managed environment path cannot be
 confused.
 
-Tools marked `catalogMode: "direct-only"`, including the OpenClaw `computer`
+Tools marked `catalogMode: "direct-only"`, including the Paddy `computer`
 tool, use the `openclaw_direct` namespace instead. Codex treats that namespace
 as `DirectModelOnly`, so those tools stay directly model-visible in normal and
 code-mode-only threads rather than crossing nested Code Mode `tools.*` calls.
 
 Web search uses Codex's hosted `web_search` tool by default when search is
 enabled and no managed provider is selected. Native hosted search and
-OpenClaw's managed `web_search` dynamic tool are mutually exclusive so
-managed search cannot bypass native domain restrictions. OpenClaw uses the
+Paddy's managed `web_search` dynamic tool are mutually exclusive so
+managed search cannot bypass native domain restrictions. Paddy uses the
 managed tool when hosted search is unavailable, explicitly disabled, or
-replaced by a selected managed provider. OpenClaw keeps Codex's standalone
+replaced by a selected managed provider. Paddy keeps Codex's standalone
 `web.run` extension disabled because production app-server traffic rejects
 its user-defined `web` namespace. `tools.web.search.enabled: false`
 disables both paths, as do tool-disabled LLM-only runs. Codex treats
@@ -53,8 +53,8 @@ restricted thread and preserve the existing binding for later resume.
 `sessions_yield`, `sessions_spawn`, and message-tool-only source replies stay
 direct because they are turn-control or delegation contracts. Guidance still
 prefers Codex's native `spawn_agent` as the primary Codex subagent surface,
-while explicit OpenClaw or ACP delegation remains directly callable through
-`sessions_spawn`. In Codex Code Mode, generic OpenClaw
+while explicit Paddy or ACP delegation remains directly callable through
+`sessions_spawn`. In Codex Code Mode, generic Paddy
 dynamic-tool results are JSON text rather than JavaScript objects, so parse
 JSON-looking results before reading fields. Codex also serializes nested
 dynamic calls; submit several `sessions_spawn` calls in a bounded loop rather
@@ -78,20 +78,20 @@ Tool-output inspection requests the supported maximum of 2,000,000 characters pe
 text field; a result that remains capped is explicitly marked unavailable.
 A preview limit does not mean Codex truncated the model's input.
 
-OpenClaw preserves the complete tool-response text exposed by Codex's
+Paddy preserves the complete tool-response text exposed by Codex's
 `rawResponseItem/completed` notification, including whitespace and Codex's own
 truncation notices. Structured responses retain their text blocks as JSON;
 non-text payloads are marked omitted rather than copied into the text inspector.
-OpenClaw associates the response with its tool-call ID before checkpointing the result. If only an execution event is available, the result is
+Paddy associates the response with its tool-call ID before checkpointing the result. If only an execution event is available, the result is
 labeled as execution output instead. Code-mode response IDs are distinct from
 nested command IDs.
 
 Neither event proves the exact final model input. Codex can apply additional
 history truncation and context normalization after constructing the response;
-its app-server does not expose that final request representation here. OpenClaw
+its app-server does not expose that final request representation here. Paddy
 labels this limitation rather than treating raw stdout as model-visible output.
 
-Older records with the `OpenClaw truncated Codex native tool output` notice lost
+Older records with the `Paddy truncated Codex native tool output` notice lost
 the omitted text before persistence. They explicitly show that the full output
 is unavailable. The same limitation applies when only a bounded execution
 stream was received and no complete response or completion output arrived.
@@ -110,7 +110,7 @@ Private completions support directly executable launchers and Node script
 wrappers. Inline shell/eval commands and ambiguous launcher arguments fail with
 an isolation error; use a directly executable wrapper for those custom launches.
 
-User-home mode retains the native Codex account, even when an OpenClaw auth
+User-home mode retains the native Codex account, even when a Paddy auth
 profile also exists. Stdio proxies and remote transports retain their configured
 server. These connections keep their existing restricted completion behavior
 and reject managed hooks when their isolation cannot be verified. Managed
@@ -119,13 +119,13 @@ requirements that force a conflicting tool capability still reject the completio
 ## Image loader ownership
 
 For image-capable models with Codex native tools enabled, Codex owns
-`view_image` and OpenClaw suppresses its duplicate loader. The native Codex
+`view_image` and Paddy suppresses its duplicate loader. The native Codex
 schema accepts one local filesystem `path`. For text-only models, or when the
-native tool surface is disabled, OpenClaw supplies `view_image` with its
+native tool surface is disabled, Paddy supplies `view_image` with its
 `path`/`paths` schema and delegated vision route. Callers must use the schema
 advertised for the active run.
 
-When OpenClaw restores conversation history into a Codex thread, saved images
+When Paddy restores conversation history into a Codex thread, saved images
 stay beside their original messages inside the quoted history. The current
 request and its attachments follow that history, so a later text or voice turn
 does not present old screenshots as newly attached images. If context limits
@@ -133,20 +133,20 @@ remove an image's original message, its image input is omitted too; the saved
 transcript and attachment remain unchanged.
 
 Sending another attachment does not suppress generated images from the final
-reply. OpenClaw omits a generated image only when it can match confirmed delivery
+reply. Paddy omits a generated image only when it can match confirmed delivery
 of that image to the reply destination. A partial delivery with uncertain
 attachment outcomes can leave a duplicate image rather than lose an unsent one.
 
 ## Turn liveness and timeouts
 
-Codex owns provider-stream liveness and native turn completion. OpenClaw waits
+Codex owns provider-stream liveness and native turn completion. Paddy waits
 for the exact `turn/completed` outcome rather than interrupting a quiet turn or
 treating assistant output as completion. Malformed completion payloads do not end
-the run: OpenClaw waits for a valid native outcome instead of inventing missing
+the run: Paddy waits for a valid native outcome instead of inventing missing
 items, tool arguments, or completion states. The existing
 `agents.defaults.timeoutSeconds` limit is an elapsed execution budget per
 attempt: progress does not reset it, and `0` means unlimited execution.
-OpenClaw still bounds its own requests, dynamic tools, cancellation, and local
+Paddy still bounds its own requests, dynamic tools, cancellation, and local
 settlement. See [Timeouts](/plugins/codex-harness-reference#timeouts) for those
 budgets, Stop and replay behavior, and Doctor migration of retired idle settings.
 
@@ -156,7 +156,7 @@ that registration and closes any late child. Cleanup can extend beyond the
 startup deadline. A canceled caller leaves startup running when another caller
 still owns it.
 
-OpenClaw preserves assistant text supplied with the initial native item and
+Paddy preserves assistant text supplied with the initial native item and
 reasoning supplied with a completed item, even when Codex sends no text deltas.
 Completed items, including empty messages, reconcile the transcript with Codex's
 final content. Raw provider copies cannot restore text that Codex removed. Messages
@@ -168,7 +168,7 @@ Codex repeats them in the turn-completion summary.
 The Control UI shows a notice above the composer when Codex reports cyber
 safety buffering, a cyber-policy refusal, or a provider model reroute for
 high-risk cyber activity. These notices use structured app-server events;
-OpenClaw does not infer classifier activity from the assistant's wording.
+Paddy does not infer classifier activity from the assistant's wording.
 
 Buffering means the provider is still processing the request. Its notice clears
 when assistant output starts or the turn ends. A blocked notice remains until
@@ -186,7 +186,7 @@ can use it.
 
 OpenAI declines some defensive-cyber work on its general models and directs
 approved workspaces to a Daybreak model instead. When a turn ends in a
-cyber-policy refusal, OpenClaw retries it once on the configured Daybreak model
+cyber-policy refusal, Paddy retries it once on the configured Daybreak model
 so the refused work reaches the tier allowed to answer it. This is on by
 default and is configured under
 `plugins.entries.codex.config.appServer.cyberFailover`.
@@ -208,7 +208,7 @@ work that was actually refused:
 - The retry does not mirror the prompt into the transcript a second time. The
   refused attempt's own terminal row is discarded with its result rather than
   staged, so a successful escalation returns the Daybreak answer; the refused
-  turn still exists upstream in the native Codex thread, which OpenClaw does not
+  turn still exists upstream in the native Codex thread, which Paddy does not
   rewrite.
 - Only OpenAI's own cyber refusal on the current attempt escalates. Another
   provider's refusal, another category, and a refusal inherited from an earlier
@@ -220,10 +220,10 @@ work that was actually refused:
 Authorization stays server-owned. `model/list` advertises Daybreak to every
 client, so catalog presence does not prove entitlement: an unentitled workspace
 still receives `401`/`403` on use, and each such attempt costs the transport's
-full reconnect ladder. OpenClaw therefore treats the retry itself as the only
+full reconnect ladder. Paddy therefore treats the retry itself as the only
 evidence and reports an `unavailable` notice rather than a silent block. If the
 fallback target is denied without tool activity, side effects, native
-continuation, or interruption, OpenClaw keeps the original refusal even when
+continuation, or interruption, Paddy keeps the original refusal even when
 the fallback produced no assistant message. Otherwise, its result is preserved
 so those facts reach the runner.
 
@@ -239,7 +239,7 @@ each pay the reconnect ladder before the first result lands.
 
 Independent chats can share a Codex app-server and run concurrently. Resuming
 an idle chat does not require unrelated chats, model discovery, or tool-catalog
-reads to finish. OpenClaw coordinates its own lifecycle operations for each
+reads to finish. Paddy coordinates its own lifecycle operations for each
 native thread and preserves that thread's identity across ordinary resumes.
 A closed, replaced, or retired client still cannot complete a stale handoff.
 
@@ -272,21 +272,21 @@ without credentials or model content. Native Codex keeps control of retries and
 HTTPS fallback. Provider HTTP failures retain their original status and body.
 
 After a completed provider failure, you can continue in the same chat with its
-existing configuration. OpenClaw retains the configured native thread, including
+existing configuration. Paddy retains the configured native thread, including
 for `/codex resume` of that chat's already-bound thread. Native provider policy refusals
-end the current attempt without a native retry. OpenClaw's configured cyber
+end the current attempt without a native retry. Paddy's configured cyber
 fallback described above is a separate attempt. A later user message is a
 separate turn; it does not supply a native policy override or user confirmation.
 
 With Codex app-server `0.153.4`, first-time adoption or changed configuration of a
-loaded failed thread still requires native unloading. OpenClaw preserves the
+loaded failed thread still requires native unloading. Paddy preserves the
 thread and reports missing configuration confirmation instead of assuming the
 changes took effect. Existing active-turn and parent-controlled-thread checks
 still apply.
 
 This coordination does not make native configuration replacement atomic against
 Codex-internal controllers. Native subagent reloads or another native controller
-can operate outside OpenClaw's thread queue. Avoid concurrently reconfiguring the
+can operate outside Paddy's thread queue. Avoid concurrently reconfiguring the
 same native thread through multiple controllers; observing native teardown alone
 does not reserve it against a subsequent native reload.
 
@@ -294,24 +294,24 @@ does not reserve it against a subsequent native reload.
 
 The Codex harness changes the low-level embedded agent executor only.
 
-- OpenClaw dynamic tools are supported. Codex asks OpenClaw to execute
-  those tools, so OpenClaw remains in the execution path.
+- Paddy dynamic tools are supported. Codex asks Paddy to execute
+  those tools, so Paddy remains in the execution path.
 - Codex-native shell, patch, MCP, and native app tools are owned by Codex.
-  OpenClaw can observe or block selected native events through the
+  Paddy can observe or block selected native events through the
   supported relay, but it does not rewrite native tool arguments.
-- `gateway_exec` and `gateway_process` are OpenClaw-owned dynamic tools. They
+- `gateway_exec` and `gateway_process` are Paddy-owned dynamic tools. They
   deliberately re-enter Gateway exec preparation for agent-readable Secret
   Store environment and protected egress; those values never flow into Codex
   native shell.
-- Codex owns native compaction. OpenClaw keeps a transcript mirror for
+- Codex owns native compaction. Paddy keeps a transcript mirror for
   channel history, search, `/new`, `/reset`, and future model or harness
-  switching, but does not replace Codex compaction with an OpenClaw or
+  switching, but does not replace Codex compaction with a Paddy or
   context-engine summarizer.
   Completed commentary and tool activity are saved during the turn rather than
   waiting for its final answer, preserving completed work across Gateway interruption.
 - Media generation, media understanding, TTS, approvals, and messaging-tool
-  output continue through the matching OpenClaw provider/model settings.
-- `tool_result_persist` applies to OpenClaw-owned transcript tool results,
+  output continue through the matching Paddy provider/model settings.
+- `tool_result_persist` applies to Paddy-owned transcript tool results,
   not Codex-native tool result records.
 
 For hook layers, supported V1 surfaces, native permission handling, queue

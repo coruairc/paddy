@@ -3,7 +3,7 @@ name: sherpa-onnx-tts
 description: "Local text-to-speech via sherpa-onnx (offline, no cloud)"
 metadata:
   {
-    "openclaw":
+    "paddy":
       {
         "emoji": "🔉",
         "os": ["darwin", "linux", "win32"],
@@ -75,7 +75,7 @@ Resolve the active state directory first:
 STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
 ```
 
-Then write those resolved paths into the active OpenClaw config file (`$OPENCLAW_CONFIG_PATH`, default `~/.openclaw/openclaw.json`):
+Then write those resolved paths into the active Paddy config file (`$OPENCLAW_CONFIG_PATH`, default `~/.openclaw/openclaw.json`):
 
 ```json5
 {

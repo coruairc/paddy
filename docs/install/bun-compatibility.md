@@ -6,13 +6,13 @@ read_when:
   - You need to select a SQLite library for Bun on macOS
 ---
 
-Bun is an explicit opt-in runtime for OpenClaw's CLI, Gateway, and managed node host. Node remains the primary and recommended runtime. This reference covers Bun requirements and compatibility; see [Bun](/install/bun) for installation and opt-in steps, or [Node.js compatibility](/install/node-compatibility) for Node requirements.
+Bun is an explicit opt-in runtime for Paddy's CLI, Gateway, and managed node host. Node remains the primary and recommended runtime. This reference covers Bun requirements and compatibility; see [Bun](/install/bun) for installation and opt-in steps, or [Node.js compatibility](/install/node-compatibility) for Node requirements.
 
 ## Requirements
 
-OpenClaw requires **Bun 1.4.0+**, an available **`node:sqlite`** API, and the same [WAL-safe SQLite floor as Node](/install/node-compatibility#why-the-floors-exist).
+Paddy requires **Bun 1.4.0+**, an available **`node:sqlite`** API, and the same [WAL-safe SQLite floor as Node](/install/node-compatibility#why-the-floors-exist).
 
-| Platform | SQLite library Bun uses                       | Extension loading              | What OpenClaw does                                   |
+| Platform | SQLite library Bun uses                       | Extension loading              | What Paddy does                                      |
 | -------- | --------------------------------------------- | ------------------------------ | ---------------------------------------------------- |
 | Linux    | Statically linked SQLite; 3.53.2 in Bun 1.4.2 | Supported                      | No additional library setup needed.                  |
 | macOS    | Apple system SQLite by default                | Unavailable in Apple's library | Automatically selects a suitable library; see below. |
@@ -30,7 +30,7 @@ Install Homebrew SQLite for native `sqlite-vec` KNN memory queries:
 brew install sqlite
 ```
 
-Before opening databases, OpenClaw selects a library in this order:
+Before opening databases, Paddy selects a library in this order:
 
 1. An explicit library path supplied internally, otherwise `OPENCLAW_SQLITE_LIBRARY`.
 2. `$HOMEBREW_PREFIX/opt/sqlite/lib/libsqlite3.dylib`.
@@ -56,9 +56,9 @@ An invalid override fails with:
 Cannot use SQLite library <path>: <reason>. Fix or unset OPENCLAW_SQLITE_LIBRARY; install a supported library with brew install sqlite.
 ```
 
-Node and non-macOS Bun ignore this override, with a warning in Gateway startup logs. When a library is selected, Gateway startup logs `SQLite: using <path> (<version>, extension loading enabled)`. `openclaw doctor` reports the selection for the doctor process.
+Node and non-macOS Bun ignore this override, with a warning in Gateway startup logs. When a library is selected, Gateway startup logs `SQLite: using <path> (<version>, extension loading enabled)`. `paddy doctor` reports the selection for the doctor process.
 
-Daemon install, `openclaw gateway start` repair, `openclaw doctor`, and service audits probe candidate Bun executables through the same selection, so they judge and report the library the Gateway will actually open rather than Bun's runtime SQLite. An invalid override fails those probes with the message above instead of advising a Bun upgrade or switching the service to Node.
+Daemon install, `paddy gateway start` repair, `paddy doctor`, and service audits probe candidate Bun executables through the same selection, so they judge and report the library the Gateway will actually open rather than Bun's runtime SQLite. An invalid override fails those probes with the message above instead of advising a Bun upgrade or switching the service to Node.
 
 If you previously used a preload that calls `Database.setCustomSQLite()`, remove it and set `OPENCLAW_SQLITE_LIBRARY` to the same path instead. The hook is one-shot: keeping the preload causes `SQLite already loaded`, even if both selections name the same library. OpenClaw's override also forwards the path to the KNN child.
 
@@ -68,21 +68,67 @@ When the KNN child cannot load extensions, memory search falls back to a batched
 
 ## Browser subprocesses
 
-The browser plugin starts its helper processes with the Bun executable that runs OpenClaw, so browser automation needs no separate Node installation:
+The browser plugin starts its helper processes with the Bun executable that runs Paddy, so browser automation needs no separate Node installation:
 
 - **Chrome MCP:** [existing-session profiles](/tools/browser/existing-session) start the packaged Chrome DevTools MCP server on Bun for `--autoConnect`, `browserUrl`, and `wsEndpoint` attaches. Actions, snapshots, screenshots, coordinate clicks, waits across cross-site navigations, and cleanup of the server process tree behave as on Node. A custom `mcpCommand` runs as configured.
-- **Chrome extension:** on macOS and Linux, the native messaging host and the relay daemon it starts use the runtime that ran `openclaw browser extension install`.
+- **Chrome extension:** on macOS and Linux, the native messaging host and the relay daemon it starts use the runtime that ran `paddy browser extension install`.
+
+## Bun-only installs
+
+Pin the Gateway service to your Bun executable so updates and Doctor retain it. Without Node, the `openclaw` launcher cannot start, so run the package entry point with Bun:
+
+```sh
+<bun> <package-root>/openclaw.mjs gateway install --runtime bun --runtime-path <bun> --force
+```
+
+Update, repair, and Doctor maintenance children use the running Bun executable.
+Bun package-manager probes and installs use an explicit executable: the verified
+service Bun when updating its root, otherwise `process.execPath` when the updater
+runs under Bun, then bare `bun` from PATH as the final fallback. This preserves
+the selected Bun even when PATH has no Bun or contains a different build.
+
+When an owned managed Bun Gateway serves a different package root from the CLI,
+`paddy update` advances the Gateway installation in place and leaves the
+invoking CLI installation unchanged. The updater validates that service's actual
+Bun for Bun 1.4+ and WAL-safe `node:sqlite`, without comparing its emulated Node
+version to `engines.node`. If the updater runs on Node, that Node must also meet
+the target package's Node and SQLite requirements because finalization uses it.
+The existing service install/restart path retains the recorded Bun pin. Node split-root routing is unchanged, and a path under
+`~/.openclaw` alone does not establish Bun global-install ownership.
+
+Doctor and `paddy update repair` from another installation leave this Bun
+Gateway at its own root. Explicit repair reports the installation drift and
+refuses maintenance before stopping the service. Use
+`<bun> <service-root>/openclaw.mjs update repair` or
+`<bun> <service-root>/openclaw.mjs doctor --fix` for repair from the service's
+installation.
+
+First installs and updater staging without a persistent Node require `OPENCLAW_PACKAGE_BUN_LAUNCHER` set to the absolute Bun executable that launches the CLI. The updater sets it automatically when running under Bun; an app must set it for its first `bun add -g --trust openclaw@<version>`. Preinstall validates that launcher as Bun 1.4+. Without the marker, preinstall still requires a persistent Node; a Node found on PATH must satisfy the package's Node requirements even when the marker is set.
+
+Published updaters through 2026.9.6 cannot update a Bun-only install. They do not set this marker, so the new package's preinstall stops staging (`global-install-failed`). If the caller sets the marker, their own bare `node` probe fails to start instead (`update-executor-settlement-failed`). Both refusals happen before the Gateway stops, and it keeps running. A fixed version must drive the update; installing a fixed candidate cannot change the updater already running.
+
+The installed updater runs first. In a Linux split-root fixture, published
+2026.9.6 refused early with `ENOENT` when Bun was absent from PATH, leaving the
+Gateway and both installations unchanged. With the fork Bun on PATH, the same
+published driver updated the Gateway installation in place and restarted it
+healthy while leaving the invoking CLI unchanged. The routing and explicit
+Bun selection described above apply from the first updater containing the fix;
+a newer candidate cannot change the installed updater's first-hop behavior.
+
+Npm-sourced plugins use Paddy's bundled npm 11.20.0 CLI under Bun and do not require a separate Node or npm installation.
 
 ## Known limitations
 
-- **Desktop WebSockets:** OpenClaw uses the installed `ws` transport for desktop observers and paired-node desktop/portal streams. Bun 1.4.2's built-in `ws` server adapter lacks pause/resume and the Duplex stream bridge; the installed transport preserves backpressure, payload limits, and cleanup when a desktop disconnects.
+- **Desktop WebSockets:** Paddy uses the installed `ws` transport for desktop observers and paired-node desktop/portal streams. Bun 1.4.2's built-in `ws` server adapter lacks pause/resume and the Duplex stream bridge; the installed transport preserves backpressure, payload limits, and cleanup when a desktop disconnects.
 - **Lifecycle scripts:** Bun blocks dependency lifecycle scripts unless explicitly trusted with `bun pm trust`.
 - **Package scripts:** Some scripts hardcode pnpm, so `bun run` still invokes pnpm internally.
-- **PTY terminals:** macOS and Linux require an installed Node runtime for terminal I/O. OpenClaw skips Bun's `node` shim when selecting that runtime, including under `bun --bun`.
-- **Windows browser extension:** native messaging registration accepts only `node.exe` as the host interpreter. Run `openclaw browser extension install` with Node on Windows.
+- **PTY terminals:** macOS and Linux use Bun's native PTY without a Node runtime only on builds providing `Bun.Terminal.pause()` and `Bun.Terminal.resume()`, such as the OpenClaw Bun fork builds that also carry the [macOS child-exit fix](https://github.com/openclaw/bun/pull/11). Other Bun releases use the Node helper and require an installed Node runtime for terminal I/O. OpenClaw skips Bun's `node` shim when selecting that runtime, including under `bun --bun`. Windows keeps `node-pty`.
+- **Windows browser extension:** native messaging registration accepts only `node.exe` as the host interpreter. Run `paddy browser extension install` with Node on Windows.
 - **Launched desktop apps:** Node marks inherited descriptors close-on-exec at startup and Bun 1.4.2 does not, so an app that Gateway computer control launches inherits the helper's standard streams. The Gateway's 30-second cleanup timeout then stops the app when its execution closes. OpenClaw's Bun fork adopts Node's behavior in [openclaw/bun#12](https://github.com/openclaw/bun/pull/12).
-- **SQLite handles:** Bun 1.4.2 can retain statement handles and WAL/shared-memory files after `DatabaseSync.close()` or `Symbol.dispose()`; OpenClaw cannot finalize them through Bun's public `node:sqlite` API. See the [upstream close fix](https://github.com/oven-sh/bun/pull/40005); use Node when prompt file release matters.
+- **SQLite handles:** Bun 1.4.2 can retain statement handles and WAL/shared-memory files after `DatabaseSync.close()` or `Symbol.dispose()`; Paddy cannot finalize them through Bun's public `node:sqlite` API. See the [upstream close fix](https://github.com/oven-sh/bun/pull/40005); use Node when prompt file release matters.
+- **Shared-state reads:** Successful reads reuse their worker and native reader. Closing or replacing a reader still waits for worker exit on Bun, including host-requested cleanup. Idle readers retire with their worker after 30 minutes; transcript discovery still retires its worker before releasing captured database aliases.
 - **SQLite storage workers:** Bun uses one worker per distinct database and can use up to 64 dedicated workers within the host's 64-client cap. Clients of the same database share its worker. Closing the last client waits for worker exit to release native handles; capacity exhaustion rejects new work without interrupting existing stores. Node multiplexes databases across four shared workers. Bun's dedicated layout can be revisited after the upstream close fix ships and repeated close/reopen tests prove native handles and locks are released.
+- **Headless node updates on Windows:** a node host running on Bun still prepares updates with npm because Bun's Windows binary launchers cannot be staged. A Windows Bun-only host logs that failure at each hourly check and keeps running its current version.
 - **Workspace installation:** `bun install` cannot resolve this repository's pnpm workspace layout. Use `pnpm install`.
 
 See [Bun](/install/bun) for the workflow and lifecycle trust commands.
@@ -91,8 +137,16 @@ See [Bun](/install/bun) for the workflow and lifecycle trust commands.
 
 | Release                            | Change                                                                                                                                                                                               |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unreleased (main)                  | Headless node updates on macOS and Linux fetch and verify registry archives in-process and prepare private runtimes with Bun, without Node or npm. Windows preparation still requires npm. #160575   |
+| Unreleased (main)                  | Updates owned split-root Bun Gateway installations in place, retains their runtime pins, and uses explicit Bun executables for package-manager probes and installs.                                  |
+| Unreleased (main)                  | Keeps Bun maintenance children and service runtime selection, and adds `OPENCLAW_PACKAGE_BUN_LAUNCHER` for preinstall validation of Bun-only installs and updater staging.                           |
+| Unreleased (main)                  | Headless node update checks read the npm registry in-process under Bun instead of running `npm view`. #160154                                                                                        |
+| Unreleased (main)                  | Runs the bundled npm 11.20.0 CLI under Bun for npm-sourced plugin installs, updates, and removal without a separate Node or npm installation.                                                        |
+| Unreleased (main)                  | Implicit Gateway and managed node host reinstalls, update refresh, and Doctor's unloaded-service reinstall retain a supported recorded Bun executable without creating a runtime pin.                |
+| Unreleased (main)                  | Tool Search code mode (`tool_search_code`) is retired; structured Tool Search needs no Node under Bun.                                                                                               |
 | Unreleased (main)                  | Starts the packaged Chrome DevTools MCP server with the current runtime, so existing-session browser profiles no longer require a Node installation under Bun.                                       |
 | Unreleased (main)                  | Gateway computer control runs its host worker on the Gateway's own runtime, so a Bun Gateway controls its managed desktop without an installed Node.                                                 |
+| Unreleased (main)                  | Uses native PTYs without Node on macOS/Linux with `Terminal.pause()`/`resume()` (Paddy fork with macOS exit fix); other Bun builds keep the Node helper. Windows keeps `node-pty`.                   |
 | Unreleased (main)                  | Expands Bun SQLite storage from four databases to up to 64 dedicated workers within the existing 64-client cap while retaining worker-exit cleanup.                                                  |
 | Unreleased (main)                  | Managed Bun services on macOS persist OPENCLAW_SQLITE_LIBRARY and HOMEBREW_PREFIX from the installing shell.                                                                                         |
 | Unreleased (main)                  | Daemon install, repair, doctor, and service audits probe Bun executables through the same SQLite library selection as Gateway startup, with a minimal probe environment. #142186                     |

@@ -19,6 +19,7 @@ import {
   isSubagentSessionKey,
   resolveAgentIdFromSessionKey,
 } from "../routing/session-key.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 type GatewayCaller = typeof defaultCallGateway;
 
@@ -288,34 +289,32 @@ export function classifyLookupFailure(error: unknown): LookupFailureKind {
 
 export function lookupFailedDenialSuffix(kind: LookupFailureKind): string {
   if (kind === "transient") {
-    return "spawned-session ownership lookup failed (transient); retry once, then ask the operator to inspect OpenClaw logs.";
+    return `spawned-session ownership lookup failed (transient); retry once, then ask the operator to inspect ${PRODUCT_NAME} logs.`;
   }
   if (kind === "credentials") {
     return "spawned-session ownership lookup failed; ask the operator to check gateway configuration and credentials.";
   }
-  return "spawned-session ownership lookup failed; ask the operator to inspect OpenClaw logs.";
+  return `spawned-session ownership lookup failed; ask the operator to inspect ${PRODUCT_NAME} logs.`;
 }
 
 export function lookupFailedDenialMessage(
   action: "history" | "send" | "status" | "list" | "search",
   kind: LookupFailureKind,
 ): string {
-  const label = action === "list" ? "Session list" : `Session ${action}`;
-  return `${label} denied because ${lookupFailedDenialSuffix(kind)}`;
+  return `${actionPrefix(action)} denied because ${lookupFailedDenialSuffix(kind)}`;
 }
 
 export function lookupFailedOperationMessage(
   action: "history" | "send" | "status" | "list" | "search",
   kind: LookupFailureKind,
 ): string {
-  const label = action === "list" ? "Session list" : `Session ${action}`;
   const guidance =
     kind === "transient"
-      ? "retry once, then ask the operator to inspect OpenClaw logs"
+      ? `retry once, then ask the operator to inspect ${PRODUCT_NAME} logs`
       : kind === "credentials"
         ? "ask the operator to check gateway configuration and credentials"
-        : "ask the operator to inspect OpenClaw logs";
-  return `${label} failed because session lookup failed${kind === "transient" ? " (transient)" : ""}; ${guidance}.`;
+        : `ask the operator to inspect ${PRODUCT_NAME} logs`;
+  return `${actionPrefix(action)} failed because session lookup failed${kind === "transient" ? " (transient)" : ""}; ${guidance}.`;
 }
 
 export type SessionOwnershipLookupFailure = {

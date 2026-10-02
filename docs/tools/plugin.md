@@ -1,5 +1,5 @@
 ---
-summary: "Install, configure, and manage OpenClaw plugins"
+summary: "Install, configure, and manage Paddy plugins"
 read_when:
   - Installing or configuring plugins
   - Understanding plugin discovery and load rules
@@ -9,7 +9,7 @@ sidebarTitle: "Getting Started"
 doc-schema-version: 1
 ---
 
-Plugins extend OpenClaw with channels, model providers, agent harnesses, tools,
+Plugins extend Paddy with channels, model providers, agent harnesses, tools,
 skills, speech, realtime transcription, voice, media understanding, generation,
 web fetch, web search, and other runtime capabilities.
 
@@ -21,7 +21,7 @@ bundled, official external, and source-only plugins, see
 
 ## Requirements
 
-- an OpenClaw checkout or installation with the `openclaw` CLI available
+- a Paddy checkout or installation with the `paddy` CLI available
 - network access to the selected source (ClawHub, npm, or a git host)
 - any plugin-specific credentials, config keys, or OS tools named by that
   plugin's setup docs
@@ -34,7 +34,7 @@ bundled, official external, and source-only plugins, see
     Search [ClawHub](/clawhub) for public plugin packages:
 
     ```bash
-    openclaw plugins search "calendar"
+    paddy plugins search "calendar"
     ```
 
     ClawHub is the primary discovery surface for community plugins. Ordinary
@@ -48,21 +48,21 @@ bundled, official external, and source-only plugins, see
   <Step title="Install the plugin">
     ```bash
     # From ClawHub.
-    openclaw plugins install clawhub:<package>
+    paddy plugins install clawhub:<package>
 
     # From npm.
-    openclaw plugins install npm:<package>
+    paddy plugins install npm:<package>
 
     # From git.
-    openclaw plugins install git:github.com/<owner>/<repo>@<ref>
+    paddy plugins install git:github.com/<owner>/<repo>@<ref>
 
     # From a local development checkout.
-    openclaw plugins install ./my-plugin
-    openclaw plugins install --link ./my-plugin
+    paddy plugins install ./my-plugin
+    paddy plugins install --link ./my-plugin
     ```
 
     Treat plugin installs like running code. Prefer pinned versions for
-    reproducible production installs. ClawHub packages and OpenClaw's
+    reproducible production installs. ClawHub packages and Paddy's
     bundled/official catalog are trusted sources. New arbitrary npm, git,
     local path/archive, `npm-pack:`, or marketplace sources require
     `--force` in noninteractive installs after you
@@ -75,11 +75,11 @@ bundled, official external, and source-only plugins, see
     Enable the plugin if it is not already enabled:
 
     ```bash
-    openclaw plugins enable <plugin-id>
+    paddy plugins enable <plugin-id>
     ```
 
     If `plugins.allow` is set, the installed plugin id must be in that list
-    before the plugin can load. `openclaw plugins install` adds the installed
+    before the plugin can load. `paddy plugins install` adds the installed
     id to an existing `plugins.allow` list and removes the same id from
     `plugins.deny` so the explicit install can load.
 
@@ -101,7 +101,7 @@ bundled, official external, and source-only plugins, see
 
   <Step title="Verify runtime registration">
     ```bash
-    openclaw plugins inspect <plugin-id> --runtime --json
+    paddy plugins inspect <plugin-id> --runtime --json
     ```
 
     `--runtime` loads the plugin in the inspecting CLI process and reports
@@ -117,13 +117,13 @@ bundled, official external, and source-only plugins, see
 
 ### Choose an install source
 
-| Source      | Use when                                                                       | Example                                                        |
-| ----------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| ClawHub     | You want OpenClaw-native discovery, scans, version metadata, and install hints | `openclaw plugins install clawhub:<package>`                   |
-| npm         | You need direct npm registry or dist-tag workflows                             | `openclaw plugins install npm:<package>`                       |
-| git         | You need a branch, tag, or commit from a repository                            | `openclaw plugins install git:github.com/<owner>/<repo>@<ref>` |
-| local path  | You are developing or testing a plugin on the same machine                     | `openclaw plugins install --link ./my-plugin`                  |
-| marketplace | You are installing a Claude-compatible marketplace plugin                      | `openclaw plugins install <plugin> --marketplace <source>`     |
+| Source      | Use when                                                                    | Example                                                     |
+| ----------- | --------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| ClawHub     | You want Paddy-native discovery, scans, version metadata, and install hints | `paddy plugins install clawhub:<package>`                   |
+| npm         | You need direct npm registry or dist-tag workflows                          | `paddy plugins install npm:<package>`                       |
+| git         | You need a branch, tag, or commit from a repository                         | `paddy plugins install git:github.com/<owner>/<repo>@<ref>` |
+| local path  | You are developing or testing a plugin on the same machine                  | `paddy plugins install --link ./my-plugin`                  |
+| marketplace | You are installing a Claude-compatible marketplace plugin                   | `paddy plugins install <plugin> --marketplace <source>`     |
 
 Bare package specs have special compatibility behavior: a bare name that
 matches a bundled plugin id uses that bundled source; a bare name that matches
@@ -133,12 +133,12 @@ specs that match bundled plugins also resolve to the bundled copy before npm
 fallback. Use `npm:@openclaw/<plugin>@<version>` to deliberately install the
 external npm package instead of the bundled copy. Use `clawhub:`, `npm:`,
 `git:`, or `npm-pack:` for deterministic source selection. See
-[`openclaw plugins`](/cli/plugins#install) for the full command contract.
+[`paddy plugins`](/cli/plugins#install) for the full command contract.
 
 For npm installs, unpinned specs and `@latest` choose the newest stable
-package that advertises compatibility with this OpenClaw build. If npm's
+package that advertises compatibility with this Paddy build. If npm's
 current latest release declares a newer `openclaw.compat.pluginApi` or
-`openclaw.install.minHostVersion` than this build supports, OpenClaw scans
+`openclaw.install.minHostVersion` than this build supports, Paddy scans
 older stable versions and installs the newest one that fits. Exact versions
 and explicit channel tags such as `@beta` stay pinned to the selected package
 and fail when incompatible.
@@ -165,7 +165,7 @@ exists, use that command to review and approve the warning. Otherwise, change
 the managed flow. Neither `--force` nor the deprecated plugin
 install/update flag `--dangerously-force-unsafe-install` approves a policy
 warning. Plugin
-`before_install` hooks run later, and only in OpenClaw processes where plugin
+`before_install` hooks run later, and only in Paddy processes where plugin
 hooks are loaded, so use `security.installPolicy` for operator-owned install
 decisions instead. The flag does not override a block or policy failure.
 It also does not bypass `before_install` hook blocks.
@@ -228,15 +228,15 @@ When `plugins.allow` is unset and non-bundled plugins are auto-discovered from
 the workspace or global plugin roots, startup logs
 `plugins.allow is empty; discovered non-bundled plugins may auto-load: ...`
 with the discovered plugin ids and, for short lists, a minimal `plugins.allow`
-snippet. Run [`openclaw plugins list --enabled --verbose`](/cli/plugins#list)
-or [`openclaw plugins inspect <id>`](/cli/plugins#inspect) on the listed
+snippet. Run [`paddy plugins list --enabled --verbose`](/cli/plugins#list)
+or [`paddy plugins inspect <id>`](/cli/plugins#inspect) on the listed
 plugin id before copying trusted plugins into `openclaw.json`. The same
 trust-pinning applies when diagnostics say a plugin loaded
 `without install/load-path provenance`: inspect that plugin id, then pin it in
-`plugins.allow` or reinstall from a trusted source so OpenClaw records install
+`plugins.allow` or reinstall from a trusted source so Paddy records install
 provenance.
 
-Run `openclaw doctor` or `openclaw doctor --fix` when config validation
+Run `paddy doctor` or `paddy doctor --fix` when config validation
 reports stale plugin ids, allowlist/tool mismatches, or legacy bundled plugin
 paths. If removing stale ids empties a restrictive `plugins.allow` list, Doctor
 retains already enabled channels and selected plugins as explicit allowed IDs.
@@ -246,15 +246,15 @@ see [config migrations](/gateway/doctor/config-migrations).
 
 ## Understand plugin formats
 
-OpenClaw recognizes two plugin formats:
+Paddy recognizes two plugin formats:
 
-| Format                 | How it loads                                                                                | Use when                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Native OpenClaw plugin | `openclaw.plugin.json` plus a runtime module loaded in process                              | You are installing or building OpenClaw-specific runtime capabilities  |
-| Compatible bundle      | Agent Plugins, Codex, Claude, or Cursor plugin layout mapped into OpenClaw plugin inventory | You are reusing compatible skills, commands, hooks, or bundle metadata |
+| Format              | How it loads                                                                             | Use when                                                               |
+| ------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Native Paddy plugin | `openclaw.plugin.json` plus a runtime module loaded in process                           | You are installing or building OpenClaw-specific runtime capabilities  |
+| Compatible bundle   | Agent Plugins, Codex, Claude, or Cursor plugin layout mapped into Paddy plugin inventory | You are reusing compatible skills, commands, hooks, or bundle metadata |
 
-Both formats appear in `openclaw plugins list`, `openclaw plugins inspect`,
-`openclaw plugins enable`, and `openclaw plugins disable`. See
+Both formats appear in `paddy plugins list`, `paddy plugins inspect`,
+`paddy plugins enable`, and `paddy plugins disable`. See
 [Plugin bundles](/plugins/bundles) for the bundle compatibility boundary and
 [Building plugins](/plugins/building-plugins) for native plugin authoring.
 
@@ -274,8 +274,8 @@ block/cancel behavior, use typed hooks. If it just reacts to `command:new`,
 `command:reset`, `message:sent`, or similar coarse events, `api.registerHook`
 is fine.
 
-Plugin-managed internal hooks show up in `openclaw hooks list` with
-`plugin:<id>`. You cannot enable or disable them through `openclaw hooks`;
+Plugin-managed internal hooks show up in `paddy hooks list` with
+`plugin:<id>`. You cannot enable or disable them through `paddy hooks`;
 enable or disable the plugin instead.
 
 Hook registration also depends on Gateway startup selection. For a hook-only
@@ -287,25 +287,25 @@ bypass global disable, deny, or per-plugin enablement policy.
 An explicit hook policy is also startup intent. For example,
 `plugins.entries.<id>.hooks.allowConversationAccess: true` both authorizes
 non-bundled conversation hooks and selects that configured plugin for Gateway
-startup; normal plugin policy still applies. Run `openclaw plugins reload <id>`
+startup; normal plugin policy still applies. Run `paddy plugins reload <id>`
 after changing the plugin manifest or source. With the default hybrid reload
 mode, hook policy changes hot-reload the plugin runtime. Inspect registration with
-`openclaw plugins inspect <id> --runtime --json`, then trigger an event to verify
+`paddy plugins inspect <id> --runtime --json`, then trigger an event to verify
 the running process. See [Plugin hooks](/plugins/hooks#quick-start) for a complete
 example.
 
 ## Verify the active Gateway
 
-`openclaw plugins list` and plain `openclaw plugins inspect` read cold config,
+`paddy plugins list` and plain `paddy plugins inspect` read cold config,
 manifest, and registry state. They do not prove that an already-running
 Gateway has imported the same plugin code.
 
 When a plugin appears installed but live chat traffic does not use it:
 
 ```bash
-openclaw gateway status --deep --require-rpc
-openclaw plugins inspect <plugin-id> --runtime --json
-openclaw plugins reload <plugin-id>
+paddy gateway status --deep --require-rpc
+paddy plugins inspect <plugin-id> --runtime --json
+paddy plugins reload <plugin-id>
 ```
 
 Plugin Reload refreshes the selected plugin in the running Gateway. Use it after
@@ -316,39 +316,39 @@ compiled bundled code and cleanup limitations.
 
 ## Troubleshooting
 
-| Symptom                                                        | Check                                                                                                                                      | Fix                                                                                                                              |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| Plugin appears in `plugins list` but runtime hooks do not run  | Use `openclaw plugins inspect <id> --runtime --json` and confirm the active Gateway with `gateway status --deep --require-rpc`             | Check activation errors; reload after source edits or repairs. For config changes, check reload mode and plugin restart prefixes |
-| Duplicate channel or tool ownership diagnostics appear         | Run `openclaw plugins list --enabled --verbose`, inspect each suspected plugin with `--runtime --json`, and compare channel/tool ownership | Disable one owner, remove stale installs, or use manifest `preferOver` for intentional replacement                               |
-| Config says a plugin is missing                                | Check [Plugin inventory](/plugins/plugin-inventory) for whether it is bundled, official external, or source-only                           | Install the external package, enable the bundled plugin, or remove stale config                                                  |
-| Config is invalid during install                               | Read the validation message and run `openclaw doctor --fix` if it points to stale plugin state                                             | Doctor can quarantine invalid plugin config by disabling the entry and removing the invalid payload                              |
-| Plugin path is blocked for suspicious ownership or permissions | Inspect the diagnostic before the config error                                                                                             | Fix filesystem ownership/permissions, then run `openclaw plugins registry --refresh`                                             |
-| `OPENCLAW_NIX_MODE=1` blocks lifecycle commands                | Confirm the install is managed by Nix                                                                                                      | Change plugin selection in the Nix source instead of using plugin mutator commands                                               |
-| Dependency import fails at runtime                             | Check whether the plugin was installed through npm/git/ClawHub or loaded from a local path                                                 | Run `openclaw plugins update <id>`, reinstall the source, or install local plugin dependencies yourself                          |
+| Symptom                                                        | Check                                                                                                                                   | Fix                                                                                                                              |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Plugin appears in `plugins list` but runtime hooks do not run  | Use `paddy plugins inspect <id> --runtime --json` and confirm the active Gateway with `gateway status --deep --require-rpc`             | Check activation errors; reload after source edits or repairs. For config changes, check reload mode and plugin restart prefixes |
+| Duplicate channel or tool ownership diagnostics appear         | Run `paddy plugins list --enabled --verbose`, inspect each suspected plugin with `--runtime --json`, and compare channel/tool ownership | Disable one owner, remove stale installs, or use manifest `preferOver` for intentional replacement                               |
+| Config says a plugin is missing                                | Check [Plugin inventory](/plugins/plugin-inventory) for whether it is bundled, official external, or source-only                        | Install the external package, enable the bundled plugin, or remove stale config                                                  |
+| Config is invalid during install                               | Read the validation message and run `paddy doctor --fix` if it points to stale plugin state                                             | Doctor can quarantine invalid plugin config by disabling the entry and removing the invalid payload                              |
+| Plugin path is blocked for suspicious ownership or permissions | Inspect the diagnostic before the config error                                                                                          | Fix filesystem ownership/permissions, then run `paddy plugins registry --refresh`                                                |
+| `OPENCLAW_NIX_MODE=1` blocks lifecycle commands                | Confirm the install is managed by Nix                                                                                                   | Change plugin selection in the Nix source instead of using plugin mutator commands                                               |
+| Dependency import fails at runtime                             | Check whether the plugin was installed through npm/git/ClawHub or loaded from a local path                                              | Run `paddy plugins update <id>`, reinstall the source, or install local plugin dependencies yourself                             |
 
 When an enabled managed plugin fails payload verification during Gateway
-startup, OpenClaw quarantines that exact installed plugin root for the boot and
-continues serving other plugins. `openclaw status --all`, `openclaw health`,
-and `openclaw doctor` report it as `configured-unavailable`. Fix or reinstall
+startup, Paddy quarantines that exact installed plugin root for the boot and
+continues serving other plugins. `paddy status --all`, `paddy health`,
+and `paddy doctor` report it as `configured-unavailable`. Fix or reinstall
 the plugin, then restart the Gateway. A healthy explicit `plugins.load.paths`
 override with the same plugin id is not quarantined by a stale broken install.
 
 When stale plugin config still names a no-longer-discoverable channel plugin,
 config validation downgrades that channel key to a warning instead of a hard
 failure, so Gateway startup can still serve every other channel. Run
-`openclaw doctor --fix` to remove stale plugin and channel entries. Unknown
+`paddy doctor --fix` to remove stale plugin and channel entries. Unknown
 channel keys without stale-plugin evidence still fail validation so typos
 stay visible.
 
 For intentional channel replacement, the preferred plugin should declare
 `channelConfigs.<channel-id>.preferOver` with the legacy or lower-priority
-plugin id. If both plugins are explicitly enabled, OpenClaw keeps that request
+plugin id. If both plugins are explicitly enabled, Paddy keeps that request
 and reports duplicate channel/tool diagnostics instead of silently choosing
 one owner.
 
 If an installed package reports that it `requires compiled runtime output for
 TypeScript entry ...`, the package was published without the JavaScript files
-OpenClaw needs at runtime. Update or reinstall after the publisher ships
+Paddy needs at runtime. Update or reinstall after the publisher ships
 compiled JavaScript, or disable/uninstall the plugin until then.
 
 ### Trusted plugin state refused
@@ -357,8 +357,8 @@ If a plugin fails with `openKeyedStore is only available for trusted plugins`,
 compare the error's `registryPath` with `plugin.trust.registryPath` from:
 
 ```bash
-openclaw plugins inspect <plugin-id> --runtime --json
-openclaw doctor
+paddy plugins inspect <plugin-id> --runtime --json
+paddy doctor
 ```
 
 Inspection and the Gateway report the trust decision recorded during plugin
@@ -368,14 +368,14 @@ registry databases. Inspection loads into the CLI process, so compare both paths
 Doctor also checks the installed service environment when a local Gateway is
 unreachable; if that environment cannot be verified, it says so.
 
-| Reason                  | Remedy                                                                                                                                                                                                               |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `record-missing`        | Align CLI and Gateway state paths if they differ; otherwise reinstall through `openclaw plugins install` so the install is recorded.                                                                                 |
-| `provenance-missing`    | Run `openclaw doctor --fix` with the Gateway's state/config paths. Doctor repairs catalog-proven legacy ClawHub records; unverifiable records require reinstalling from the official npm package or ClawHub listing. |
-| `origin-path`           | Replace the local path/archive install with the official npm package or ClawHub listing.                                                                                                                             |
-| `install-path-mismatch` | Reinstall the intended package and remove load paths that select another copy.                                                                                                                                       |
-| `owner-ambiguous`       | Refresh the registry and resolve conflicting package ownership before reinstalling.                                                                                                                                  |
-| `provenance-invalid`    | Reinstall from the official source; conflicting or partial provenance is not automatically trusted.                                                                                                                  |
+| Reason                  | Remedy                                                                                                                                                                                                            |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `record-missing`        | Align CLI and Gateway state paths if they differ; otherwise reinstall through `paddy plugins install` so the install is recorded.                                                                                 |
+| `provenance-missing`    | Run `paddy doctor --fix` with the Gateway's state/config paths. Doctor repairs catalog-proven legacy ClawHub records; unverifiable records require reinstalling from the official npm package or ClawHub listing. |
+| `origin-path`           | Replace the local path/archive install with the official npm package or ClawHub listing.                                                                                                                          |
+| `install-path-mismatch` | Reinstall the intended package and remove load paths that select another copy.                                                                                                                                    |
+| `owner-ambiguous`       | Refresh the registry and resolve conflicting package ownership before reinstalling.                                                                                                                               |
+| `provenance-invalid`    | Reinstall from the official source; conflicting or partial provenance is not automatically trusted.                                                                                                               |
 
 `bundled` and `trusted-official` identify accepted sources. Legacy npm records
 with a consistent official package spec remain valid without extra resolution
@@ -386,28 +386,28 @@ does not fall back to trusting package-authored metadata.
 
 If diagnostics say
 `blocked plugin candidate: suspicious ownership (... uid=1000, expected uid=0 or root)`
-and validation follows with `plugin present but blocked`, OpenClaw found
+and validation follows with `plugin present but blocked`, Paddy found
 plugin files owned by a different Unix user than the process loading them.
-Keep the plugin config in place; fix the filesystem ownership or run OpenClaw
+Keep the plugin config in place; fix the filesystem ownership or run Paddy
 as the same user that owns the state directory.
 
 For Docker installs, the official image runs as `node` (uid `1000`), so the
-host bind-mounted OpenClaw config and workspace directories should normally be
+host bind-mounted Paddy config and workspace directories should normally be
 owned by uid `1000`:
 
 ```bash
 sudo chown -R 1000:1000 /path/to/openclaw-config /path/to/openclaw-workspace
 ```
 
-If you intentionally run OpenClaw as root, repair the managed plugin root to
+If you intentionally run Paddy as root, repair the managed plugin root to
 root ownership instead:
 
 ```bash
 sudo chown -R root:root /path/to/openclaw-config/npm
 ```
 
-After fixing ownership, rerun `openclaw doctor --fix` or
-`openclaw plugins registry --refresh` so the persisted plugin registry
+After fixing ownership, rerun `paddy doctor --fix` or
+`paddy plugins registry --refresh` so the persisted plugin registry
 matches the repaired files.
 
 ### Slow plugin tool setup
@@ -416,8 +416,8 @@ If agent turns appear to stall while preparing tools, enable trace logging
 and check for plugin tool factory timing lines:
 
 ```bash
-openclaw config set logging.level trace
-openclaw logs --follow
+paddy config set logging.level trace
+paddy logs --follow
 ```
 
 Look for:
@@ -431,7 +431,7 @@ including plugin id, declared tool names, result shape, and whether the tool
 is optional. Slow lines are promoted to warnings when a single factory takes
 at least 1s or total plugin tool factory prep takes at least 5s.
 
-OpenClaw caches successful plugin tool factory results for repeated
+Paddy caches successful plugin tool factory results for repeated
 resolutions with the same effective request context. The cache key includes
 the effective runtime config, workspace and agent id, sandbox policy, browser
 settings, delivery context, requester identity, and ownership state, so
@@ -442,7 +442,7 @@ returning its tool definitions.
 If one plugin dominates the timing, inspect its runtime registrations:
 
 ```bash
-openclaw plugins inspect <plugin-id> --runtime --json
+paddy plugins inspect <plugin-id> --runtime --json
 ```
 
 Then update, reinstall, or disable that plugin. Plugin authors should move
@@ -456,7 +456,7 @@ reload behavior, and legacy cleanup, see
 ## Related
 
 - [Manage plugins](/plugins/manage-plugins) - command examples for list, install, update, uninstall, and publish
-- [`openclaw plugins`](/cli/plugins) - full CLI reference
+- [`paddy plugins`](/cli/plugins) - full CLI reference
 - [Plugin inventory](/plugins/plugin-inventory) - generated bundled and external plugin list
 - [Plugin reference](/plugins/reference) - generated per-plugin reference pages
 - [Community plugins](/plugins/community) - ClawHub discovery and docs PR policy

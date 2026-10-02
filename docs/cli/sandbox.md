@@ -7,11 +7,11 @@ status: active
 
 Manage sandbox runtimes for isolated agent execution: Docker/Podman containers, SSH targets, or OpenShell backends.
 
-[`openclaw agent exec`](/cli/agent#agent-exec) preserves a sandbox selected by the inherited config or `--config`, including its execution routing. Without a configured sandbox, its defaults allow full Gateway-host execution and restrict filesystem tools to `--cwd`. `--isolated` and `--auth-env-only` skip config inheritance and use those defaults.
+[`paddy agent exec`](/cli/agent#agent-exec) preserves a sandbox selected by the inherited config or `--config`, including its execution routing. Without a configured sandbox, its defaults allow full Gateway-host execution and restrict filesystem tools to `--cwd`. `--isolated` and `--auth-env-only` skip config inheritance and use those defaults.
 
 ## Commands
 
-### `openclaw sandbox list`
+### `paddy sandbox list`
 
 List sandbox runtimes with status, backend, config match, age, idle time, and associated session/agent.
 
@@ -20,21 +20,21 @@ owning backend plugin before checking live runtime status. Browser-only
 operations do not require backend plugin activation.
 
 ```bash
-openclaw sandbox list
-openclaw sandbox list --browser  # browser containers only
-openclaw sandbox list --json
+paddy sandbox list
+paddy sandbox list --browser  # browser containers only
+paddy sandbox list --json
 ```
 
-### `openclaw sandbox recreate`
+### `paddy sandbox recreate`
 
 Remove sandbox runtimes to force recreation with current config. Runtimes are recreated automatically the next time the agent is used.
 
 ```bash
-openclaw sandbox recreate --all
-openclaw sandbox recreate --agent mybot        # includes agent:mybot:* sub-sessions
-openclaw sandbox recreate --session "agent:main:main"
-openclaw sandbox recreate --browser --all      # only browser containers
-openclaw sandbox recreate --all --force        # skip confirmation
+paddy sandbox recreate --all
+paddy sandbox recreate --agent mybot        # includes agent:mybot:* sub-sessions
+paddy sandbox recreate --session "agent:main:main"
+paddy sandbox recreate --browser --all      # only browser containers
+paddy sandbox recreate --all --force        # skip confirmation
 ```
 
 Options:
@@ -61,17 +61,17 @@ broaden to `--all`, or rewrite its recorded target to bypass validation.
 
 For `ssh` and OpenShell `remote`, recreate matters more than with Docker: the remote workspace is canonical after the initial seed, `recreate` deletes that canonical remote workspace for the selected scope, and the next run reseeds it from the current local workspace.
 
-### `openclaw sandbox explain`
+### `paddy sandbox explain`
 
 Inspect the effective sandbox mode/scope/workspace access, sandbox tool policy, and elevated-tool gates (with fix-it config key paths).
 
 The report keeps `workspaceRoot` as the configured sandbox root and separately shows the effective host workspace, backend runtime workdir, and Docker mount table. For `workspaceAccess: "rw"`, the effective host workspace is the agent workspace rather than a directory below `workspaceRoot`.
 
 ```bash
-openclaw sandbox explain
-openclaw sandbox explain --session agent:main:main
-openclaw sandbox explain --agent work
-openclaw sandbox explain --json
+paddy sandbox explain
+paddy sandbox explain --session agent:main:main
+paddy sandbox explain --agent work
+paddy sandbox explain --json
 ```
 
 Unlike `recreate --session`, this accepts short session names (for example `main`) and expands them against the resolved agent.
@@ -79,15 +79,15 @@ An explicit `--agent` is sufficient for multi-agent fleets with no implicit owne
 
 ## Why recreate is needed
 
-Updating sandbox config does not affect running containers: existing runtimes keep their old settings, and idle runtimes are only pruned after `prune.idleHours` (default 24h). Regularly used agents can keep stale runtimes alive indefinitely. `openclaw sandbox recreate` removes the old runtime so the next use rebuilds it from current config.
+Updating sandbox config does not affect running containers: existing runtimes keep their old settings, and idle runtimes are only pruned after `prune.idleHours` (default 24h). Regularly used agents can keep stale runtimes alive indefinitely. `paddy sandbox recreate` removes the old runtime so the next use rebuilds it from current config.
 
 <Tip>
-Prefer `openclaw sandbox recreate` over manual backend-specific cleanup. It uses the Gateway's runtime registry and avoids mismatches when scope or session keys change.
+Prefer `paddy sandbox recreate` over manual backend-specific cleanup. It uses the Gateway's runtime registry and avoids mismatches when scope or session keys change.
 </Tip>
 
 ## Common triggers
 
-Run `openclaw sandbox recreate --all` after any of these changes:
+Run `paddy sandbox recreate --all` after any of these changes:
 
 - Container sandbox image update: `agents.defaults.sandbox.docker.image`
 - Sandbox config: `agents.defaults.sandbox.*`
@@ -107,7 +107,7 @@ Sandbox runtime metadata lives in the shared SQLite state database. Older instal
 - `~/.openclaw/sandbox/browsers.json`
 - one JSON shard per container/browser under `~/.openclaw/sandbox/containers/` or `~/.openclaw/sandbox/browsers/`
 
-Run `openclaw doctor --fix` to migrate valid legacy entries into SQLite. Invalid legacy files are quarantined so a corrupt old registry cannot hide current runtime entries.
+Run `paddy doctor --fix` to migrate valid legacy entries into SQLite. Invalid legacy files are quarantined so a corrupt old registry cannot hide current runtime entries.
 
 ## Configuration
 

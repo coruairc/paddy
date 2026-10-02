@@ -11,6 +11,7 @@ import {
   resolveAmbientOwnerAgentId,
   toAgentEntriesRecord,
 } from "../agents/agent-scope-config.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import {
   configIncludeOwnsAgentRoster,
@@ -52,12 +53,14 @@ export async function setupCommand(
         import("../config/issue-format.js"),
       ]);
       writeRuntimeJson(runtime, {
-        ...formatCliJsonFailure(`OpenClaw config is invalid: ${shortenHomePath(configPath)}`),
+        ...formatCliJsonFailure(
+          `${PRODUCT_NAME} config is invalid: ${shortenHomePath(configPath)}`,
+        ),
         issues: normalizeConfigIssues(snapshot.issues),
       });
     }
     runtime.error(
-      `Config invalid at ${(await loadConfigLoggingModule()).formatConfigFilePath(configPath)}. Run \`${formatCliCommand("openclaw doctor --fix")}\` to apply supported repairs, then re-run setup.`,
+      `Config invalid at ${(await loadConfigLoggingModule()).formatConfigFilePath(configPath)}. Run \`${formatCliCommand("paddy doctor --fix")}\` to apply supported repairs, then re-run setup.`,
     );
     runtime.exit(1);
     return;
@@ -136,33 +139,27 @@ export async function setupCommand(
       agents: { ...agents, entries: toAgentEntriesRecord(listAgentEntries(cfg)) },
     };
   }
-  if (shouldWriteWorkspace) {
-    if (!writeInheritedWorkspaceOverride) {
-      const roster = structuredClone(listAgentEntries(next));
-      if (!snapshot.exists || Boolean(defaultEntryWorkspace)) {
-        for (const entry of roster) {
-          if (
-            snapshot.exists &&
-            defaultEntryWorkspace &&
-            normalizeAgentId(entry.id) === selectedAgentId
-          ) {
-            // An explicit workspace follows the resolved setup owner. Fresh and inherited
-            // workspaces stay in defaults so setup does not duplicate them into the roster.
-            entry.workspace = workspace;
-          }
+  if (shouldWriteWorkspace && !writeInheritedWorkspaceOverride) {
+    const roster = structuredClone(listAgentEntries(next));
+    if (snapshot.exists && defaultEntryWorkspace) {
+      for (const entry of roster) {
+        if (normalizeAgentId(entry.id) === selectedAgentId) {
+          // An explicit workspace follows the resolved setup owner. Fresh and inherited
+          // workspaces stay in defaults so setup does not duplicate them into the roster.
+          entry.workspace = workspace;
         }
       }
-      const entries = roster.length > 0 ? toAgentEntriesRecord(roster) : undefined;
-      const { list: _legacyList, ...agents } = next.agents ?? {};
-      next = {
-        ...next,
-        agents: {
-          ...agents,
-          defaults: { ...agents.defaults, workspace },
-          ...(entries ? { entries } : {}),
-        },
-      };
     }
+    const entries = roster.length > 0 ? toAgentEntriesRecord(roster) : undefined;
+    const { list: _legacyList, ...agents } = next.agents ?? {};
+    next = {
+      ...next,
+      agents: {
+        ...agents,
+        defaults: { ...agents.defaults, workspace },
+        ...(entries ? { entries } : {}),
+      },
+    };
   }
   if (shouldWriteGatewayMode && !writeInheritedGatewayModeOverride) {
     next = { ...next, gateway: { ...next.gateway, mode: "local" } };
@@ -290,9 +287,9 @@ export async function setupCommand(
   runtime.log(`Sessions OK: ${shortenHomePath(sessionsDir)}`);
   runtime.log("");
   runtime.log("Setup complete: config, workspace, and session directories are ready.");
-  runtime.log(`Next guided path: ${formatCliCommand("openclaw onboard")}.`);
+  runtime.log(`Next guided path: ${formatCliCommand("paddy onboard")}.`);
   runtime.log(
-    `Next targeted changes: ${formatCliCommand("openclaw configure")} for models, channels, Gateway, plugins, skills, and health checks.`,
+    `Next targeted changes: ${formatCliCommand("paddy configure")} for models, channels, Gateway, plugins, skills, and health checks.`,
   );
-  runtime.log(`Add a chat channel later: ${formatCliCommand("openclaw channels add")}.`);
+  runtime.log(`Add a chat channel later: ${formatCliCommand("paddy channels add")}.`);
 }

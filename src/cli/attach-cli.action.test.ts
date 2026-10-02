@@ -172,7 +172,7 @@ describe("openclaw attach (action)", () => {
         [
           "Session reference is ambiguous:",
           ...expectedLines,
-          "Pass a longer reference. Run `openclaw sessions list` to choose a full session key.",
+          "Pass a longer reference. Run `paddy sessions list` to choose a full session key.",
         ].join("\n"),
       );
       expect(Buffer.from(error.message, "utf8").toString("utf8")).toBe(error.message);

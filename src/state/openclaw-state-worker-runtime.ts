@@ -1,3 +1,4 @@
+import { executeAcpSessionMutationInWorker } from "../acp/runtime/session-meta-write.worker.js";
 import {
   readAuthProfileRows,
   SHARED_AUTH_STORE_STATE_KEY,
@@ -89,6 +90,7 @@ import {
   readTelemetryStateInWorker,
 } from "../infra/telemetry-store.kernel.js";
 import { persistInterruptedUpdateObservation } from "../infra/update-run-interruption-store.js";
+import { reconcileUpdateRunCandidatesInWorker } from "../infra/update-run-reconciliation.worker.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { readRemoteModelCatalog } from "../model-catalog/remote-store.js";
 import { isNodeWorkerJournalCommand } from "../node-host/node-worker-journal.worker-contract.js";
@@ -118,8 +120,6 @@ import {
   executeSkillUploadCommand,
 } from "../skills/lifecycle/upload-store.worker.js";
 import * as skillWorkshop from "../skills/workshop/store.worker.js";
-import { isTaskRegistryWorkerCommand } from "../tasks/task-registry.worker-contract.js";
-import { executeTaskRegistryCommand } from "../tasks/task-registry.worker.js";
 import { executeTranscriptRead } from "../transcripts/store-worker-read.js";
 import {
   executeTranscriptWrite,
@@ -134,6 +134,10 @@ import { ensureAgentProvenanceSchema } from "./agent-provenance.schema.js";
 import { recordBackupRunInDatabase } from "./backup-run-records.kernel.js";
 import { writeConfigMachineState } from "./config-machine-state-write.js";
 import { readConfigMachineState } from "./config-machine-state.js";
+import {
+  deletePersonalGitHubSessionReceiptsInDatabase,
+  readSessionReceiptDeletionIdentitiesInDatabase,
+} from "./github-personal-publication-lifecycle.js";
 import { isOnboardingRecommendationWriteCommand } from "./onboarding-recommendations.contract.js";
 import { executeOnboardingRecommendationCommand } from "./onboarding-recommendations.kernel.js";
 import type { OpenClawStateDatabase } from "./openclaw-state-db-contract.js";
@@ -146,18 +150,16 @@ import {
 } from "./openclaw-state-db-readonly.js";
 import { runOpenClawStateWriteTransaction } from "./openclaw-state-db.js";
 import type {
-  OpenClawStateWorkerOperations,
+  OpenClawStateWorkerBackend,
   OpenClawStateWorkerRuntimeCommand,
-  OpenClawStateWorkerInspectionOperations,
-  OpenClawStateWorkerCleanupOperations,
 } from "./openclaw-state-worker-contract.js";
+import {
+  executeRepositoryWorkspaceCommand,
+  isRepositoryWorkspaceCommand,
+} from "./session-repository-workspaces.worker.js";
 import { readUserModelAuthProfile } from "./user-model-accounts.js";
 import { executeUserPreferenceCommand } from "./user-preferences.worker.js";
 import { executeUserProfileCommand, isUserProfileCommand } from "./user-profiles.worker.js";
-
-type Operations = OpenClawStateWorkerOperations &
-  OpenClawStateWorkerInspectionOperations &
-  OpenClawStateWorkerCleanupOperations;
 
 const log = createSubsystemLogger("state/worker");
 
@@ -179,7 +181,7 @@ export function executeSharedStateCommand(
   command: OpenClawStateWorkerRuntimeCommand,
   context: { databasePath: string },
   open: () => OpenClawStateDatabase,
-): Operations[keyof Operations]["output"] {
+): ReturnType<OpenClawStateWorkerBackend["execute"]> {
   // Dispatch preparation has loaded this module; do not open or observe token state.
   if (command.type === "deviceAuth.prepare") {
     return undefined;
@@ -294,9 +296,6 @@ export function executeSharedStateCommand(
       stateOptions(),
     );
   }
-  if (isTaskRegistryWorkerCommand(command)) {
-    return executeTaskRegistryCommand(command, stateOptions(), open);
-  }
   if (command.type === "doctor.workshopMigrationRecords.read") {
     return withExistingOpenClawStateDatabaseArtifactPreservingReadOnly(
       ({ db }) => readWorkshopMigrationRecordsInDatabase(db, command.input.includeEvents),
@@ -309,6 +308,9 @@ export function executeSharedStateCommand(
       ? withArtifactPreservingStateReads(read)
       : read();
   }
+  if (command.type === "acp.prepareMutation" || command.type === "acp.commitMutation") {
+    return executeAcpSessionMutationInWorker(open(), command);
+  }
   if (command.type === "plugins.conversationBindingApprovals.read") {
     return readPluginBindingApprovalsInDatabase(open().db);
   }
@@ -317,6 +319,11 @@ export function executeSharedStateCommand(
     return runOpenClawStateWriteTransaction(
       ({ db }) => upsertPluginBindingApprovalInDatabase(db, command.input),
       { database, path: context.databasePath, env: getSqliteWorkerStateContext().environment },
+    );
+  }
+  if (command.type === "updateRuns.reconcile") {
+    return reconcileUpdateRunCandidatesInWorker(command.input, stateOptions(), (stage) =>
+      requestSqliteWorkerOperationAdmission({ stage, facts: undefined }),
     );
   }
   if (command.type === "updateRuns.reconcileInterrupted") {
@@ -357,6 +364,9 @@ export function executeSharedStateCommand(
       database: open(),
       ...stateOptions(),
     });
+  }
+  if (isRepositoryWorkspaceCommand(command)) {
+    return executeRepositoryWorkspaceCommand(command, open());
   }
   if (isUserProfileCommand(command)) {
     return executeUserProfileCommand(command, {
@@ -401,6 +411,12 @@ export function executeSharedStateCommand(
       : read(open().db);
   }
   const database = open();
+  if (command.type === "githubPublication.prepareSessionReceiptDeletion") {
+    return readSessionReceiptDeletionIdentitiesInDatabase(database, command.input);
+  }
+  if (command.type === "githubPublication.deleteSessionReceipts") {
+    return deletePersonalGitHubSessionReceiptsInDatabase(database, command.input);
+  }
   if (command.type === "githubRepository.personalPending") {
     return readPendingRepositoryGitHubPublicationInDatabase(database.db, command.input);
   }

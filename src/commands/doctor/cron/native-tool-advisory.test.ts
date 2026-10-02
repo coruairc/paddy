@@ -114,7 +114,7 @@ describe("Doctor cron native-tool advisory", () => {
       expect(advisories).toHaveLength(2);
       expect(advisories[0]).toContain('Automation "old-default"');
       expect(advisories[1]).toContain('Automation "empty-default"');
-      expect(advisories[0]).toContain('openclaw cron edit <id> --tools "<complete list>" --json');
+      expect(advisories[0]).toContain('paddy cron edit <id> --tools "<complete list>" --json');
       expect(advisories[0]).toContain("deliberately restricted jobs can be left as is");
       expect(advisories[0]).toContain("Doctor --fix does not add missing native tools");
       expect(projectNativeToolAuthority).not.toHaveBeenCalled();

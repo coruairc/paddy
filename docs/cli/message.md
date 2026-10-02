@@ -1,19 +1,19 @@
 ---
-summary: "CLI reference for `openclaw message` (send + channel actions)"
+summary: "CLI reference for `paddy message` (send + channel actions)"
 read_when:
   - Adding or modifying message CLI actions
   - Changing outbound channel behavior
 title: "Message"
 ---
 
-# `openclaw message`
+# `paddy message`
 
 Single outbound command for sending messages and channel actions across
 Discord, Google Chat, iMessage, Matrix, Mattermost (plugin), Microsoft Teams,
 Signal, Slack, Telegram, and WhatsApp.
 
 ```bash
-openclaw message <subcommand> [flags]
+paddy message <subcommand> [flags]
 ```
 
 ## Channel selection
@@ -32,17 +32,17 @@ discovery retain local config and plugin preparation.
 
 ## Agent ownership
 
-`openclaw message` uses the configured
+`paddy message` uses the configured
 [System Agent](/gateway/config-agents/heartbeat-compaction-and-streaming#agents.defaults.systemagent)
 as its agent owner, falling back to a retained legacy owner or the sole configured
 agent when the System Agent is unset.
 
 In an explicit multi-agent configuration without an owner, the command stops
-before sending. Choose an existing agent ID from `openclaw agents list`, set it
+before sending. Choose an existing agent ID from `paddy agents list`, set it
 as the System Agent, then retry:
 
 ```bash
-openclaw config set agents.defaults.systemAgent.agentId <id>
+paddy config set agents.defaults.systemAgent.agentId <id>
 ```
 
 This setting also selects the owner for other ambient system work. The message
@@ -92,7 +92,7 @@ the action's exit status. `message read` skips these shutdown hooks.
 
 ## SecretRef resolution
 
-`openclaw message` resolves channel SecretRefs before running the action,
+`paddy message` resolves channel SecretRefs before running the action,
 scoped as narrowly as possible:
 
 - channel-scoped when `--channel` is set (or inferred from a prefixed target)
@@ -134,17 +134,17 @@ Teams requires the Graph `<team-id>/<channel-id>` form because the CLI has no
 current conversation. Provider access and membership checks still apply.
 
 ```bash
-openclaw message member info --channel matrix \
+paddy message member info --channel matrix \
   --channel-id '!room:example.org' --user-id '@member:example.org'
 
-openclaw message member info --channel msteams \
+paddy message member info --channel msteams \
   --channel-id '<team-id>/<channel-id>' --user-id '<aad-object-id>'
 ```
 
 ### Send
 
 ```bash
-openclaw message send --channel discord \
+paddy message send --channel discord \
   --target channel:123 --message "hi" --reply-to 456
 ```
 
@@ -171,13 +171,13 @@ confirmed message ID. JSON failures include `ok: false`, `deliveryStatus`, and
 `error`; successful JSON responses retain their existing shape.
 
 ```bash
-openclaw message send --channel discord \
+paddy message send --channel discord \
   --target channel:123 --message "Choose:" \
   --presentation '{"blocks":[{"type":"buttons","buttons":[{"label":"Approve","value":"approve","style":"success"},{"label":"Decline","value":"decline","style":"danger"}]}]}'
 ```
 
 ```bash
-openclaw message send --channel telegram --target @mychat --message "Choose:" \
+paddy message send --channel telegram --target @mychat --message "Choose:" \
   --presentation '{"blocks":[{"type":"buttons","buttons":[{"label":"Yes","value":"cmd:yes"},{"label":"No","value":"cmd:no"}]}]}'
 ```
 
@@ -185,7 +185,7 @@ Slack renders supported chart blocks natively; other channels receive the same
 data as readable text:
 
 ```bash
-openclaw message send --channel slack --target channel:C123 \
+paddy message send --channel slack --target channel:C123 \
   --presentation '{"blocks":[{"type":"chart","chartType":"bar","title":"Quarterly revenue","categories":["Q1","Q2"],"series":[{"name":"Revenue","values":[120,145]}],"xLabel":"Quarter"}]}'
 ```
 
@@ -193,7 +193,7 @@ Slack also renders explicit table blocks natively. Other channels receive the
 caption and every row as deterministic text:
 
 ```bash
-openclaw message send --channel slack --target channel:C123 \
+paddy message send --channel slack --target channel:C123 \
   --presentation '{"title":"Pipeline report","blocks":[{"type":"table","caption":"Open pipeline","headers":["Account","Stage","ARR"],"rows":[["Acme","Won",125000],["Globex","Review",82000]],"rowHeaderColumnIndex":0}]}'
 ```
 
@@ -201,22 +201,22 @@ Telegram Mini App buttons use `webApp` (`web_app` still parses for legacy
 JSON) and only render in private chats between a user and the bot:
 
 ```bash
-openclaw message send --channel telegram --target 123456789 --message "Open app:" \
+paddy message send --channel telegram --target 123456789 --message "Open app:" \
   --presentation '{"blocks":[{"type":"buttons","buttons":[{"label":"Launch","webApp":{"url":"https://example.com/app"}}]}]}'
 ```
 
 ```bash
-openclaw message send --channel telegram --target @mychat \
+paddy message send --channel telegram --target @mychat \
   --media ./diagram.png --force-document
 ```
 
 ```bash
-openclaw message send --channel telegram --target @mychat \
+paddy message send --channel telegram --target @mychat \
   --message "Trip photos" --media ./photo-1.jpg --media ./photo-2.jpg
 ```
 
 ```bash
-openclaw message send --channel msteams \
+paddy message send --channel msteams \
   --target conversation:19:abc@thread.tacv2 \
   --presentation '{"title":"Status update","blocks":[{"type":"text","text":"Build completed"}]}'
 ```
@@ -224,7 +224,7 @@ openclaw message send --channel msteams \
 ### Poll
 
 ```bash
-openclaw message poll --channel discord \
+paddy message poll --channel discord \
   --target channel:123 \
   --poll-question "Snack?" \
   --poll-option Pizza --poll-option Sushi \
@@ -238,7 +238,7 @@ openclaw message poll --channel discord \
   `--poll-anonymous` / `--poll-public`, `--thread-id`.
 
 ```bash
-openclaw message poll --channel telegram \
+paddy message poll --channel telegram \
   --target @mychat \
   --poll-question "Lunch?" \
   --poll-option Pizza --poll-option Sushi \
@@ -246,7 +246,7 @@ openclaw message poll --channel telegram \
 ```
 
 ```bash
-openclaw message poll --channel msteams \
+paddy message poll --channel msteams \
   --target conversation:19:abc@thread.tacv2 \
   --poll-question "Lunch?" \
   --poll-option Pizza --poll-option Sushi
@@ -296,7 +296,7 @@ openclaw message poll --channel msteams \
 ### Broadcast
 
 ```bash
-openclaw message broadcast --targets <target...> [--channel all] [--message <text>] [--media <url>] [--dry-run]
+paddy message broadcast --targets <target...> [--channel all] [--message <text>] [--media <url>] [--dry-run]
 ```
 
 Sends one payload to multiple targets. `--targets` takes a space-separated

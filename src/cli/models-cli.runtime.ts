@@ -1,6 +1,7 @@
 // Runtime helpers for model CLI commands and shared agent option handling.
 import type { Command } from "commander";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { resolveOptionFromCommand, runCommandWithRuntime } from "./cli-utils.js";
 import { formatCliCommand } from "./command-format.js";
 
@@ -42,6 +43,6 @@ export function rejectAgentScopedModelCommand(
     return;
   }
   throw new Error(
-    `openclaw models ${commandName} does not support --agent; it is global and never agent-scoped. Remove --agent, or run ${formatCliCommand("openclaw agents list")} and set the per-agent model in agent config.`,
+    `${CLI_NAME} models ${commandName} does not support --agent; it is global and never agent-scoped. Remove --agent, or run ${formatCliCommand(`${CLI_NAME} agents list`)} and set the per-agent model in agent config.`,
   );
 }

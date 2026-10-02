@@ -6,6 +6,7 @@ import type {
   SkillsLibraryReceipt,
 } from "../../packages/gateway-protocol/src/index.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { runCommandWithRuntime } from "./cli-utils.js";
 import { inheritOptionFromParent } from "./command-options.js";
 import {
@@ -56,7 +57,7 @@ export function registerSkillsLibraryCli(skills: Command): void {
     .option("--json", "Output as JSON", false)
     .addHelpText(
       "after",
-      "\nCreate: openclaw skills library create ./my-skill --slug my-skill\nRead:   openclaw skills library read <skill-id> --json\nUpdate: openclaw skills library update <skill-id> ./SKILL.md --expected-revision <hash>\nPersonal libraries require a signed-in Gateway profile. Workspace installs remain under skills install.\n",
+      `\nCreate: ${CLI_NAME} skills library create ./my-skill --slug my-skill\nRead:   ${CLI_NAME} skills library read <skill-id> --json\nUpdate: ${CLI_NAME} skills library update <skill-id> ./SKILL.md --expected-revision <hash>\nPersonal libraries require a signed-in Gateway profile. Workspace installs remain under skills install.\n`,
     );
   const leaf = (name: string, description: string) =>
     addGatewayClientOptions(library.command(name).description(description)).option(

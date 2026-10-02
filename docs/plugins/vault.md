@@ -1,7 +1,7 @@
 ---
 summary: "Use the bundled Vault plugin to resolve SecretRefs from HashiCorp Vault"
 read_when:
-  - You want OpenClaw to read API keys from HashiCorp Vault
+  - You want Paddy to read API keys from HashiCorp Vault
   - You are setting up SecretRefs on a local machine or server
   - You need to configure Vault-backed model provider credentials
 title: "Vault SecretRefs"
@@ -9,23 +9,23 @@ title: "Vault SecretRefs"
 
 # Vault SecretRefs
 
-The bundled Vault plugin lets OpenClaw resolve `exec` SecretRefs from
-HashiCorp Vault at Gateway startup and reload time. OpenClaw stores Vault
+The bundled Vault plugin lets Paddy resolve `exec` SecretRefs from
+HashiCorp Vault at Gateway startup and reload time. Paddy stores Vault
 references in config, keeps resolved values in the in-memory secrets snapshot,
 and does not write the resolved API keys back to `openclaw.json`.
 
 Use this when you already run Vault or want model provider keys to live outside
-OpenClaw config files. For the SecretRef runtime model, see
+Paddy config files. For the SecretRef runtime model, see
 [Secrets management](/gateway/secrets).
 
 ## Before you begin
 
 You need:
 
-- OpenClaw with the bundled `vault` plugin available
+- Paddy with the bundled `vault` plugin available
 - a reachable Vault server
 - Vault auth that can produce a client token with read access to the secret
-  paths OpenClaw should resolve
+  paths Paddy should resolve
 - the environment that starts the Gateway must include `VAULT_ADDR` and either
   `VAULT_TOKEN`, `OPENCLAW_VAULT_AUTH_METHOD=token_file` with `VAULT_TOKEN_FILE`,
   or a configured JWT/Kubernetes login
@@ -33,17 +33,17 @@ You need:
 The resolver talks to Vault over HTTP from Node. The Gateway does not need the
 Vault CLI to resolve SecretRefs.
 
-Enable the bundled plugin before running the `openclaw vault` commands:
+Enable the bundled plugin before running the `paddy vault` commands:
 
 ```bash
-openclaw plugins enable vault
+paddy plugins enable vault
 ```
 
 ## Store a provider key in Vault
 
-OpenClaw defaults to KV v2 mounted at `secret`, matching Vault dev-server
+Paddy defaults to KV v2 mounted at `secret`, matching Vault dev-server
 examples. For production Vault, set `OPENCLAW_VAULT_KV_MOUNT` to your actual KV
-mount path before creating SecretRef ids. With the OpenClaw defaults, this
+mount path before creating SecretRef ids. With the Paddy defaults, this
 SecretRef id:
 
 ```text
@@ -63,7 +63,7 @@ export OPENROUTER_API_KEY=<openrouter-api-key>
 vault kv put secret/providers/openrouter apiKey="$OPENROUTER_API_KEY"
 ```
 
-Use a scoped client token for OpenClaw, not a root token. For the default KV v2
+Use a scoped client token for Paddy, not a root token. For the default KV v2
 layout, a minimal policy for model provider keys looks like:
 
 ```hcl
@@ -75,7 +75,7 @@ path "secret/data/providers/*" {
 ## Make Vault visible to the Gateway
 
 For an uncontainerized local Gateway, export Vault settings in the same shell
-that starts OpenClaw. The default auth method reads a Vault client token from
+that starts Paddy. The default auth method reads a Vault client token from
 `VAULT_TOKEN`:
 
 ```bash
@@ -104,7 +104,7 @@ Or provide a PEM bundle directly:
 export NODE_EXTRA_CA_CERTS=/path/to/vault-ca.pem
 ```
 
-These variables must be present when OpenClaw starts. The Vault plugin forwards
+These variables must be present when Paddy starts. The Vault plugin forwards
 them to its resolver process.
 
 For non-interactive JWT auth, use a workload JWT file and a Vault role of type
@@ -148,17 +148,17 @@ export OPENCLAW_VAULT_KV_VERSION=2
 Check what the current shell can see:
 
 ```bash
-openclaw vault status
+paddy vault status
 ```
 
 When more than one Vault-backed secret provider is configured, select one by
 alias:
 
 ```bash
-openclaw vault status --provider-alias corp-vault
+paddy vault status --provider-alias corp-vault
 ```
 
-`openclaw vault status` never prints `VAULT_TOKEN`; it reports only whether the
+`paddy vault status` never prints `VAULT_TOKEN`; it reports only whether the
 token, token file, and JWT file are set.
 
 <Warning>
@@ -173,7 +173,7 @@ already-running Gateway.
 Create a plan that maps OpenRouter's model provider API key to Vault:
 
 ```bash
-openclaw vault setup \
+paddy vault setup \
   --plan-out ./vault-secrets-plan.json \
   --openrouter-id providers/openrouter/apiKey
 ```
@@ -181,32 +181,32 @@ openclaw vault setup \
 Apply and verify the plan:
 
 ```bash
-openclaw secrets apply --from ./vault-secrets-plan.json --dry-run --allow-exec
-openclaw secrets apply --from ./vault-secrets-plan.json --allow-exec
-openclaw secrets audit --check --allow-exec
-openclaw secrets reload
+paddy secrets apply --from ./vault-secrets-plan.json --dry-run --allow-exec
+paddy secrets apply --from ./vault-secrets-plan.json --allow-exec
+paddy secrets audit --check --allow-exec
+paddy secrets reload
 ```
 
-Use `--allow-exec` because the Vault plugin resolves through an OpenClaw-managed
+Use `--allow-exec` because the Vault plugin resolves through a Paddy-managed
 exec SecretRef provider.
 
 If the Gateway is not running yet, start it normally after applying the plan
-instead of running `openclaw secrets reload`.
+instead of running `paddy secrets reload`.
 
 ## Configure more provider keys
 
 Built-in shortcuts:
 
 ```bash
-openclaw vault setup --openai-id providers/openai/apiKey
-openclaw vault setup --anthropic-id providers/anthropic/apiKey
-openclaw vault setup --openrouter-id providers/openrouter/apiKey
+paddy vault setup --openai-id providers/openai/apiKey
+paddy vault setup --anthropic-id providers/anthropic/apiKey
+paddy vault setup --openrouter-id providers/openrouter/apiKey
 ```
 
 Multiple provider keys in one plan:
 
 ```bash
-openclaw vault setup \
+paddy vault setup \
   --plan-out ./vault-secrets-plan.json \
   --openai-id providers/openai/apiKey \
   --anthropic-id providers/anthropic/apiKey \
@@ -217,7 +217,7 @@ Bundled providers without shortcuts, or already-configured OpenAI-compatible and
 custom model providers, use `--provider-key`:
 
 ```bash
-openclaw vault setup \
+paddy vault setup \
   --plan-out ./vault-secrets-plan.json \
   --provider-key local-openai=providers/local-openai/apiKey \
   --provider-key groq=providers/groq/apiKey
@@ -230,7 +230,7 @@ the provider's `baseUrl`, `api`, or `models` settings; configure those first.
 Use `--target <path=id>` for any known SecretRef target path:
 
 ```bash
-openclaw vault setup \
+paddy vault setup \
   --target channels.telegram.botToken=channels/telegram/botToken \
   --target models.providers.openai.headers.x-api-key=providers/openai/proxyKey \
   --target auth-profiles:main:profiles.openai.key=providers/openai/apiKey
@@ -238,9 +238,9 @@ openclaw vault setup \
 
 Bare target paths apply to `openclaw.json`. Use
 `auth-profiles:<agentId>:<path>` for existing SQLite auth-profile targets.
-The target path must be a registered OpenClaw SecretRef target. The setup
-command does not create arbitrary named secrets in OpenClaw; Vault remains the
-secret store, and OpenClaw stores SecretRefs only on supported config fields.
+The target path must be a registered Paddy SecretRef target. The setup
+command does not create arbitrary named secrets in Paddy; Vault remains the
+secret store, and Paddy stores SecretRefs only on supported config fields.
 
 ## SecretRef id format
 
@@ -272,7 +272,7 @@ Then `providers/openrouter/apiKey` reads:
 secret/providers/openrouter -> apiKey
 ```
 
-## What OpenClaw stores
+## What Paddy stores
 
 Applying a Vault setup plan stores a plugin-managed provider:
 
@@ -318,7 +318,7 @@ token in a Kubernetes Secret. Vault Agent sidecar or injector deployments can
 use `token_file` instead.
 
 For multi-tenant Vault setups, keep tenant routing in Vault policy and
-deployment config. OpenClaw does not require a fixed mount, role, or path: each
+deployment config. Paddy does not require a fixed mount, role, or path: each
 Gateway environment can set its own `OPENCLAW_VAULT_KV_MOUNT`,
 `OPENCLAW_VAULT_AUTH_ROLE`, and SecretRef ids. If one shared Gateway must resolve
 different Vault users at the same time, use manually configured exec providers
@@ -328,5 +328,5 @@ environments with separate Vault env.
 ## Related
 
 - [Secrets management](/gateway/secrets)
-- [`openclaw secrets`](/cli/secrets)
+- [`paddy secrets`](/cli/secrets)
 - [Plugin inventory](/plugins/plugin-inventory)

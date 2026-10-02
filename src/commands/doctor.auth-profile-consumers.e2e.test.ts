@@ -102,7 +102,7 @@ async function runInteractiveDoctor(env: NodeJS.ProcessEnv, expectImport: boolea
         }
         child.write("y");
       } else if (
-        /^(?:Rebuild stale Control UI assets now|Build Control UI assets now|Update OpenClaw from git before running doctor|Migrate generated provider model catalogs into agent SQLite now|Repair model credentials in agent SQLite now|Tighten permissions on .+ to (?:700|600)|Disable \d+ unavailable skills in config|Enable \w+ shell completion for openclaw|Create .+ at .+)\?$/.test(
+        /^(?:Rebuild stale Control UI assets now|Build Control UI assets now|Update Paddy from git before running doctor|Migrate generated provider model catalogs into agent SQLite now|Repair model credentials in agent SQLite now|Tighten permissions on .+ to (?:700|600)|Disable \d+ unavailable skills in config|Enable \w+ shell completion for paddy|Create .+ at .+)\?$/.test(
           question,
         )
       ) {
@@ -177,6 +177,8 @@ describe("doctor auth-profile consumers", () => {
           prefix: "openclaw-doctor-auth-consumers-",
           scenario: "external-service",
           env: {
+            DBUS_SESSION_BUS_ADDRESS: undefined,
+            DBUS_SYSTEM_BUS_ADDRESS: undefined,
             OPENCLAW_BUNDLED_PLUGINS_DIR: fileURLToPath(
               new URL("../../extensions", import.meta.url),
             ),

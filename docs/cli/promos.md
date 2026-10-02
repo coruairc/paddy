@@ -1,12 +1,12 @@
 ---
-summary: "CLI reference for `openclaw promos` (list and claim promotional model offers)"
+summary: "CLI reference for `paddy promos` (list and claim promotional model offers)"
 read_when:
   - You want to try a free promotional model offer from ClawHub
   - You are configuring a provider through a promotion instead of onboarding
 title: "Promos"
 ---
 
-# `openclaw promos`
+# `paddy promos`
 
 Discover and claim promotional model offers published on ClawHub. Claiming a
 promotion configures the provider (auth and plugin, when needed) and registers
@@ -21,30 +21,30 @@ Related:
 ## Commands
 
 ```bash
-openclaw promos list
-openclaw promos claim <slug>
-openclaw promos claim <slug> --api-key <key> --set-default
+paddy promos list
+paddy promos claim <slug>
+paddy promos claim <slug> --api-key <key> --set-default
 ```
 
-## `openclaw promos list`
+## `paddy promos list`
 
 Lists promotions that are currently live, with their models, the suggested
 default, time remaining, and the exact claim command. `--json` prints the raw
 payload.
 
-## `openclaw promos claim <slug>`
+## `paddy promos claim <slug>`
 
 Claims a live promotion:
 
 1. Fetches the promotion from ClawHub and verifies it is inside its window.
 2. Validates the promotion's provider, auth choice, and declared plugin packages
-   against your installed OpenClaw version. Unknown ids or package mismatches are
+   against your installed Paddy version. Unknown ids or package mismatches are
    refused — a promotion can never make the CLI run anything it does not already
    know how to do.
 3. Reuses your existing provider credentials when you have them. Otherwise it
    walks the provider's normal auth flow (printing the promotion's signup URL
    for a free key first). `--api-key <key>` completes API-key auth without
-   prompts, matching the `openclaw onboard` non-interactive flags; to keep the
+   prompts, matching the `paddy onboard` non-interactive flags; to keep the
    key off the command line, export the provider's environment variable
    instead (for example `OPENROUTER_API_KEY`) — existing env credentials are
    detected automatically and no flag is needed.
@@ -56,14 +56,14 @@ Claims a live promotion:
 
 When the promotion's window ends, the provider stops serving the free models;
 your configuration and credentials are untouched. Switch back anytime with
-`openclaw models set <model>`.
+`paddy models set <model>`.
 
 <a id="passive-discovery-in-models-list" />
 
 ## Model inventory and offers
 
-Run `openclaw promos list` to discover current offers and their claim commands.
-Ordinary `openclaw models list` reads the model catalog without refreshing the
+Run `paddy promos list` to discover current offers and their claim commands.
+Ordinary `paddy models list` reads the model catalog without refreshing the
 promotions feed, adding promotion notices, or changing notification state.
 Existing claimed-model configuration and credentials remain available.
 
@@ -73,4 +73,4 @@ is refused even when an older cached copy still shows it.
 ## Related
 
 - [CLI reference](/cli)
-- [`openclaw models`](/cli/models) — the models these promotions apply to
+- [`paddy models`](/cli/models) — the models these promotions apply to

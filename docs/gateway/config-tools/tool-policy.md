@@ -47,7 +47,7 @@ selection, including optional tools from enabled plugins. Plugin configuration,
 availability, and independent policy restrictions still apply.
 
 The `minimal`, `coding`, and `messaging` profiles include `gateway` with only the
-`update.run` action. This lets owners request an OpenClaw update through the
+`update.run` action. This lets owners request a Paddy update through the
 existing tool without granting configuration reads. Updates use the same Gateway
 handler as `/update` and the Control UI. External-chat updates require current
 owner authorization and `commands.restart`; Control UI updates retain their
@@ -70,29 +70,29 @@ whether the tool is available. Subagent and non-owner restrictions still apply.
 | `group:memory`     | `memory_search`, `memory_get`                                                                                                                                                                                                                            |
 | `group:web`        | `web_search`, `x_search`, `web_fetch`                                                                                                                                                                                                                    |
 | `group:ui`         | `browser`, `screen`, `theme`, `dashboard`, `terminal`, `portal`, `canvas`, `show_widget`                                                                                                                                                                 |
-| `group:automation` | `heartbeat_respond`, `automations` (`cron` alias), `gateway`, `plugins`, `openclaw`                                                                                                                                                                      |
+| `group:automation` | `heartbeat_respond`, `automations` (`cron` alias), `gateway`, `plugins`, `paddy`                                                                                                                                                                         |
 | `group:messaging`  | `message`                                                                                                                                                                                                                                                |
 | `group:nodes`      | `nodes`, `computer`                                                                                                                                                                                                                                      |
 | `group:agents`     | `agents_list`, `get_goal`, `create_goal`, `update_goal`, `progress_card`, `ask_user`, `skill_workshop`                                                                                                                                                   |
 | `group:media`      | `view_image`, `image_generate`, `music_generate`, `video_generate`, `tts`, `pdf`                                                                                                                                                                         |
-| `group:openclaw`   | All built-in tools above except `read`/`write`/`edit`/`apply_patch`/`exec`/`process`/`canvas` (excludes plugin tools)                                                                                                                                    |
+| `group:paddy`      | All built-in tools above except `read`/`write`/`edit`/`apply_patch`/`exec`/`process`/`canvas` (excludes plugin tools)                                                                                                                                    |
 | `group:plugins`    | Tools owned by loaded plugins, including configured MCP servers exposed through `bundle-mcp`                                                                                                                                                             |
 
 `suggest_task` lets an agent propose confirmed follow-up work without starting it. The working directory must be absolute, but does not need to be a Git checkout. Local debugging and non-code tasks are supported. The Control UI shows the title and summary as an actionable chip; a Gateway-backed TUI shows an equivalent interactive prompt. **Start in a new session** opens a normal session in that directory and sends the full task prompt. The new session is instructed to ask the user before creating or switching to a worktree if isolation becomes necessary. There is no up-front worktree or execution-destination choice. `dismiss_task` withdraws a still-pending suggestion by the ephemeral `task_id` returned from `suggest_task`.
 
 The tools are offered only when the initiating operator surface can receive and action Gateway task-suggestion events. Channel sessions and local/embedded TUI sessions do not receive them; channel transports need a portable typed task action before they can safely expose this flow. Suggestions are process-local and disappear when the Gateway restarts. Both tools remain in the `coding` profile and `group:sessions`, so normal `tools.allow` and `tools.deny` policy configures them automatically when the surface supports them.
 
-`openclaw` delegates OpenClaw setup and repair. It belongs to both
-`group:automation` and `group:openclaw`, so existing group allows and denies now
-include this helper. Group denies override an explicit `openclaw` allow. The
+`paddy` delegates Paddy setup and repair. It belongs to both
+`group:automation` and `group:paddy`, so existing group allows and denies now
+include this helper. Group denies override an explicit `paddy` allow. The
 helper is not added to `minimal`, `coding`, or `messaging`; use `tools.alsoAllow`
 to select it with a restricted profile. Catalog discovery does not bypass its
 owner, sandbox, direct-call, or execution permission checks.
 
-`pdf` belongs to both `group:media` and `group:openclaw`. Group denies also cover PDF and override an explicit `pdf` allow entry. If an existing configuration should keep PDF access, remove or narrow the conflicting group deny. Group grants do not bypass [PDF model and authentication requirements](/tools/pdf).
+`pdf` belongs to both `group:media` and `group:paddy`. Group denies also cover PDF and override an explicit `pdf` allow entry. If an existing configuration should keep PDF access, remove or narrow the conflicting group deny. Group grants do not bypass [PDF model and authentication requirements](/tools/pdf).
 
 `transcripts` appears in the Media section of the catalog but is not a member of
-`group:media` or `group:openclaw`, preserving existing group grants and denies.
+`group:media` or `group:paddy`, preserving existing group grants and denies.
 Select it explicitly by name or through the full profile; restricted profiles can
 use `tools.alsoAllow`. The current caller and capture access checks still apply.
 
@@ -100,7 +100,7 @@ use `tools.alsoAllow`. The current caller and capture access checks still apply.
 
 Configured MCP servers are exposed as plugin-owned tools under the `bundle-mcp` plugin id. Normal tool profiles can allow them, but `tools.sandbox.tools` is an additional gate for sandboxed sessions. If sandbox mode is `"all"` or `"non-main"`, include one of these entries in the sandbox tool allowlist when MCP/plugin tools should be visible:
 
-- `bundle-mcp` for OpenClaw-managed MCP servers from `mcp.servers`
+- `bundle-mcp` for Paddy-managed MCP servers from `mcp.servers`
 - the plugin id for a specific native plugin
 - `group:plugins` for all loaded plugin-owned tools
 - exact MCP server tool names or server globs such as `outlook__send_mail` or `outlook__*` when you only want one server
@@ -127,12 +127,12 @@ Per-run `toolsAllow` caps also accept globs such as `outlook*` or `out*graph*` f
 }
 ```
 
-Without that sandbox-layer entry, the MCP server can still load successfully while its tools are filtered before the provider request. Use `openclaw doctor` to catch this shape for OpenClaw-managed servers in `mcp.servers`. MCP servers loaded from bundled plugin manifests or Claude `.mcp.json` use the same sandbox gate, but this diagnostic does not enumerate those sources yet; use the same allowlist entries if their tools disappear in sandboxed turns.
+Without that sandbox-layer entry, the MCP server can still load successfully while its tools are filtered before the provider request. Use `paddy doctor` to catch this shape for Paddy-managed servers in `mcp.servers`. MCP servers loaded from bundled plugin manifests or Claude `.mcp.json` use the same sandbox gate, but this diagnostic does not enumerate those sources yet; use the same allowlist entries if their tools disappear in sandboxed turns.
 
 ## `tools.codeMode`
 
-`tools.codeMode` gates the generic OpenClaw code-mode surface. When engaged
-for a run with tools, normal OpenClaw tools move behind the guest
+`tools.codeMode` gates the generic Paddy code-mode surface. When engaged
+for a run with tools, normal Paddy tools move behind the guest
 catalog bridge, and MCP tools are available through the generated `MCP`
 namespace. The model normally sees `exec` and `wait`; tools such as `computer`
 whose structured results cannot cross the JSON-only bridge stay direct.
@@ -199,7 +199,7 @@ Global tool allow/deny policy (deny wins). Case-insensitive, supports `*` wildca
 </Note>
 
 The image inspection tool is `view_image`. If an older config still names
-`image` in an allow, `alsoAllow`, or deny list, run `openclaw doctor --fix` to
+`image` in an allow, `alsoAllow`, or deny list, run `paddy doctor --fix` to
 rewrite supported global, per-agent, provider, sandbox, sender, channel, and
 Gateway policy surfaces. Doctor preserves patterns such as `image*` that may
 still match other tools and adds `view_image` when the pattern no longer covers
@@ -238,7 +238,7 @@ Restricts tools for the current turn's originating requester. This is defense-in
 }
 ```
 
-Keys use explicit prefixes: `channel:<channelId>:<senderId>`, `id:<senderId>`, `e164:<phone>`, `username:<handle>`, `name:<displayName>`, or `"*"`. Channel ids are canonical OpenClaw ids; aliases such as `teams` normalize to `msteams`. Legacy unprefixed keys are accepted as `id:` only. Matching order is channel+id, id, e164, username, name, then wildcard.
+Keys use explicit prefixes: `channel:<channelId>:<senderId>`, `id:<senderId>`, `e164:<phone>`, `username:<handle>`, `name:<displayName>`, or `"*"`. Channel ids are canonical Paddy ids; aliases such as `teams` normalize to `msteams`. Legacy unprefixed keys are accepted as `id:` only. Matching order is channel+id, id, e164, username, name, then wildcard.
 
 Per-agent `agents.entries.*.tools.toolsBySender` overrides the global sender match when it matches, even with an empty `{}` policy.
 

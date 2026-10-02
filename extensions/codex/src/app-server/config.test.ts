@@ -2163,7 +2163,7 @@ describe("Codex app-server config", () => {
       name: "AgentHarnessPreflightError",
       scope: "harness",
       message: expect.stringContaining(
-        "inspect them with `openclaw approvals get --gateway` and update that same target with `openclaw approvals set --gateway --stdin`",
+        "inspect them with `paddy approvals get --gateway` and update that same target with `paddy approvals set --gateway --stdin`",
       ),
     });
     expect((error as Error).message).not.toContain("--node");
@@ -2407,7 +2407,7 @@ describe("Codex app-server config", () => {
         appServer: { approvalPolicy: "untrusted" },
       }),
     ).toThrow(
-      'plugins.entries.codex.config.appServer.approvalPolicy="untrusted" is retired; run "openclaw doctor --fix" to migrate it to "on-request".',
+      'plugins.entries.codex.config.appServer.approvalPolicy="untrusted" is retired; run "paddy doctor --fix" to migrate it to "on-request".',
     );
     expect(() =>
       resolveRuntimeForTest({
@@ -2415,7 +2415,7 @@ describe("Codex app-server config", () => {
         env: { OPENCLAW_CODEX_APP_SERVER_APPROVAL_POLICY: "untrusted" },
       }),
     ).toThrow(
-      'Codex app-server approval policy "untrusted" is retired; run "openclaw doctor --fix" and use "on-request".',
+      'Codex app-server approval policy "untrusted" is retired; run "paddy doctor --fix" and use "on-request".',
     );
   });
 

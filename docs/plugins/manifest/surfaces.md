@@ -23,10 +23,10 @@ installation cards. Compact tool calls use separate
 [inline activity icons](#inline-activity-icons), so improving a chat glyph does
 not change the plugin's branding elsewhere.
 
-OpenClaw adopts this fixed package path as its icon convention, matching the path proposed in
-Agent Plugins spec proposal [agent-plugins-spec#66](https://github.com/agentplugins/agent-plugins-spec/pull/66). OpenClaw itself implements Agent Plugins 1.0.0. Other Agent Plugins
+Paddy adopts this fixed package path as its icon convention, matching the path proposed in
+Agent Plugins spec proposal [agent-plugins-spec#66](https://github.com/agentplugins/agent-plugins-spec/pull/66). Paddy itself implements Agent Plugins 1.0.0. Other Agent Plugins
 consumers may not discover it unless that proposal is adopted. The fixed path keeps packages
-portable and inspectable, avoids manifest path indirection and precedence rules, and lets OpenClaw
+portable and inspectable, avoids manifest path indirection and precedence rules, and lets Paddy
 render the icon without a runtime network request. Top-level plugin-branding icon URLs are not
 loaded; provider-auth artwork remains server-owned catalog metadata.
 
@@ -34,8 +34,8 @@ Prefer top-level `sessionRouteStateOwners` for static doctor ownership. The
 older `doctorContract.sessionRouteStateOwners: true` declaration plus a
 `sessionRouteStateOwners` export from `doctor-contract-api` remains supported
 for external plugins, but is deprecated. When the manifest field is present,
-OpenClaw uses it without loading the doctor-contract module. Removal plan:
-remove the module fallback in OpenClaw 2027.1 after the external-plugin
+Paddy uses it without loading the doctor-contract module. Removal plan:
+remove the module fallback in Paddy 2027.1 after the external-plugin
 migration window.
 
 Set `doctorContract.configRepair: true` when the doctor-contract module exports
@@ -91,7 +91,7 @@ Codex health registration without preventing other checks; a declared but
 missing or broken API remains an error. This does not grant plugin capabilities
 or replace upgrade consent.
 
-Channel plugins maintained in the OpenClaw source tree also expose these config
+Channel plugins maintained in the Paddy source tree also expose these config
 exports through a pure `config-doctor-api.ts` entrypoint. The core package retains
 that entrypoint alongside its channel schemas when the plugin runtime is
 distributed separately. This lets `doctor --fix` migrate older configuration
@@ -141,13 +141,13 @@ example:
 </svg>
 ```
 
-OpenClaw validates the SVG and rasterizes it before using it as an activity
+Paddy validates the SVG and rasterizes it before using it as an activity
 mask; it never inserts package SVG markup into the chat DOM. Missing or invalid
 artwork falls back to the existing tool glyph, without showing the packaged
 brand image. The plugin remains usable.
 
 Include both `assets/activity.svg` and `assets/activity/*.svg` in the published
-package's `files` list when used. OpenClaw's bundled metadata copier and plugin
+package's `files` list when used. Paddy's bundled metadata copier and plugin
 runtime package builder include these paths automatically. Asset discovery
 uses the Gateway's prepared plugin metadata; restart or explicitly reload the
 plugin after changing its artwork.
@@ -217,7 +217,7 @@ Hats overlay the avatar's full square; place the hat near the top of the SVG
 viewBox and leave the lower area transparent.
 
 Include the definition JSON and every declared SVG in the published package's
-`files` list. OpenClaw's bundled metadata copier and runtime package builder
+`files` list. Paddy's bundled metadata copier and runtime package builder
 include these declared paths automatically. An unreadable or invalid SVG omits
 the whole theme from the catalog with a plugin warning diagnostic; other plugin
 capabilities remain available.
@@ -244,10 +244,10 @@ These fields count toward the same 4096-byte normalized definition limit and are
 Definitions carry IDs only, never SVG markup or URLs. Personal themes imported
 through the agent's `theme` tool remain limited to built-in artwork IDs.
 
-Only enabled plugins contribute themes. OpenClaw retains validated definitions
+Only enabled plugins contribute themes. Paddy retains validated definitions
 and artwork bytes with the current plugin inventory. After editing a source,
 artwork file, or manifest, run
-`openclaw plugins reload starship` or choose **Reload** in the plugin's Lifecycle
+`paddy plugins reload starship` or choose **Reload** in the plugin's Lifecycle
 settings. Reload publishes the new palette and refreshes connected clients
 without restarting the Gateway. Artwork URLs include a content hash so changed
 images bypass the page's artwork cache. Serving artwork reads the captured
@@ -292,12 +292,12 @@ source edits preserve configured fields when metadata is unavailable.
 ## backupResources reference
 
 Use `backupResources` to declare plugin-owned durable data that backups must
-include, or generated data that OpenClaw can safely omit and regenerate after
+include, or generated data that Paddy can safely omit and regenerate after
 restore. The backup planner reads this metadata without loading plugin runtime
 or modifying plugin files. Only effectively activated, loadable plugins
 contribute resources; disabled or unloadable plugins cannot exclude data.
 
-An `include` declaration also asks OpenClaw to manage SQLite backups for that
+An `include` declaration also asks Paddy to manage SQLite backups for that
 resource. SQLite files at or below the declared path receive verified online
 snapshots and offline compaction, with their committed write-ahead log (WAL)
 content included and sidecars omitted. Creation refuses a declared database
@@ -305,7 +305,7 @@ when its required SQLite capabilities are unavailable. Declare every hardlink
 alias within these resources so backup can identify its journal owner.
 
 Other plugin SQLite files remain opaque byte copies, including their sidecars,
-unless they alias a canonical OpenClaw database. Backup reports each opaque
+unless they alias a canonical Paddy database. Backup reports each opaque
 SQLite file and sidecar in `warnings`; verification and restore preserve its bytes
 without applying SQLite validation or compaction. Merely placing a database
 under the state or agent directory does not opt it into managed snapshots.
@@ -350,7 +350,7 @@ resource declarations, only an explicit nested `include` protects a descendant
 and keeps its excluded ancestors traversable. Explicit config, credentials,
 workspace, and nested agent paths also remain protected. Omit only data the
 plugin can recreate.
-`openclaw backup create --only-config` does not inspect plugin backup metadata.
+`paddy backup create --only-config` does not inspect plugin backup metadata.
 
 ## MCP server reference
 
@@ -368,12 +368,12 @@ plugin can recreate.
 }
 ```
 
-OpenClaw includes these servers only while the owning plugin is enabled. Relative `command`, `args`, `cwd`, and `workingDirectory` paths resolve from the plugin root. User configuration remains authoritative: `mcp.servers.<name>` can replace a plugin default or set `enabled: false` to omit it. MCP App rendering and server-tool calls still require the normal MCP Apps setting and effective tool policy; declaring a server does not bypass either boundary.
+Paddy includes these servers only while the owning plugin is enabled. Relative `command`, `args`, `cwd`, and `workingDirectory` paths resolve from the plugin root. User configuration remains authoritative: `mcp.servers.<name>` can replace a plugin default or set `enabled: false` to omit it. MCP App rendering and server-tool calls still require the normal MCP Apps setting and effective tool policy; declaring a server does not bypass either boundary.
 
 ## UI capabilities
 
 Declare `uiCapabilities` in `openclaw.plugin.json` to describe what the plugin adds
-to the OpenClaw interface. The plugin detail page shows these kinds in its
+to the Paddy interface. The plugin detail page shows these kinds in its
 **Capabilities** section before installation and while the plugin is disabled or
 enabled. Display reads static manifest or catalog metadata without executing
 plugin code.
@@ -396,9 +396,9 @@ plugin code.
 | `link-reader` | A reader or preview for supported links.             |
 
 The field is optional. Omission means unspecified; `[]` explicitly declares no
-UI contributions. OpenClaw ignores an invalid declaration (unknown values or a
+UI contributions. Paddy ignores an invalid declaration (unknown values or a
 non-array value) and reports a plugin warning; the plugin still loads. Older
-OpenClaw versions ignored this field, so malformed display metadata does not
+Paddy versions ignored this field, so malformed display metadata does not
 break existing installs after an update. Duplicates are removed, and values use
 the order above. Declare kinds only,
 not instance counts or live availability. Conditional registrations may be absent
@@ -413,7 +413,7 @@ explicit declaration; omission skips that comparison. These diagnostics do not
 block activation.
 
 For a catalog listing, publish the same metadata with the selected plugin
-version. If the catalog omits it, OpenClaw leaves the UI contribution kinds
+version. If the catalog omits it, Paddy leaves the UI contribution kinds
 unspecified rather than loading the plugin to infer them. For native browser
 modules, explicit UI reload reads the updated declaration and creates a new
 revision even when browser code is unchanged.
@@ -443,7 +443,7 @@ plugin's backend APIs or the sandboxed dashboard bindings below.
 ```
 
 Use `package.json.openclaw.controlUi` for the source entry and let
-`openclaw plugins build` generate this declaration. Native UI executes with the
+`paddy plugins build` generate this declaration. Native UI executes with the
 browser application's trust; it is distinct from the scoped dashboard widget
 bindings below. See [Feature plugins](/plugins/feature-plugins) for authoring,
 replacements, reload, and activation receipts.
@@ -480,7 +480,7 @@ replacements, reload, and activation receipts.
 }
 ```
 
-The manifest ids are plugin-local. Widget grants use `<plugin-id>.<id>`, such as `example.items.list` and `example.refresh`. To keep the persisted grant namespace unambiguous, OpenClaw escapes `%` and `.` in the plugin-id segment as `%25` and `%2E`; ordinary plugin ids keep the natural form. `paramShape` is an optional JSON Schema applied to the action params object before OpenClaw invokes the plugin RPC.
+The manifest ids are plugin-local. Widget grants use `<plugin-id>.<id>`, such as `example.items.list` and `example.refresh`. To keep the persisted grant namespace unambiguous, Paddy escapes `%` and `.` in the plugin-id segment as `%25` and `%2E`; ordinary plugin ids keep the natural form. `paramShape` is an optional JSON Schema applied to the action params object before Paddy invokes the plugin RPC.
 
 ## catalog reference
 
@@ -516,13 +516,13 @@ Declare every plugin-owned root command in `cliCommands` so root help and comman
 }
 ```
 
-The manifest row is the canonical help text. Register the same command at runtime with `api.registerCli(..., { descriptors: [...] })`; runtime descriptors may additionally provide `machineOutput`. Nested commands such as `openclaw nodes <feature>` are not root commands and do not belong in `cliCommands`.
+The manifest row is the canonical help text. Register the same command at runtime with `api.registerCli(..., { descriptors: [...] })`; runtime descriptors may additionally provide `machineOutput`. Nested commands such as `paddy nodes <feature>` are not root commands and do not belong in `cliCommands`.
 
 ## commandAliases reference
 
-Use `commandAliases` when a plugin owns a runtime command name that users may mistakenly put in `plugins.allow` or try to run as a root CLI command. OpenClaw uses this metadata for diagnostics without importing plugin runtime code.
+Use `commandAliases` when a plugin owns a runtime command name that users may mistakenly put in `plugins.allow` or try to run as a root CLI command. Paddy uses this metadata for diagnostics without importing plugin runtime code.
 
-If a plugin fails to load, invoking its declared `runtime-slash` command in chat returns the plugin name, a short failure reason, and recovery guidance (`openclaw doctor` and gateway logs). Unknown commands and commands belonging to intentionally disabled plugins keep their normal handling; manifest ownership alone does not make a command executable.
+If a plugin fails to load, invoking its declared `runtime-slash` command in chat returns the plugin name, a short failure reason, and recovery guidance (`paddy doctor` and gateway logs). Unknown commands and commands belonging to intentionally disabled plugins keep their normal handling; manifest ownership alone does not make a command executable.
 
 ```json
 {
@@ -545,7 +545,7 @@ If a plugin fails to load, invoking its declared `runtime-slash` command in chat
 ## qaRunners reference
 
 Use `qaRunners` when a plugin contributes one or more transport runners beneath
-the shared `openclaw qa` root. Keep this metadata cheap and static; the plugin
+the shared `paddy qa` root. Keep this metadata cheap and static; the plugin
 runtime still owns actual CLI registration through a lightweight
 `qa-runner-api.ts` surface that exports matching `qaRunnerCliRegistrations`. For
 plugins using the shipped `runtime-api.ts` contract, that legacy surface remains
@@ -571,7 +571,7 @@ from implementations that do not declare support.
 
 | Field         | Required | Type     | What it means                                                      |
 | ------------- | -------- | -------- | ------------------------------------------------------------------ |
-| `commandName` | Yes      | `string` | Subcommand mounted beneath `openclaw qa`, for example `matrix`.    |
+| `commandName` | Yes      | `string` | Subcommand mounted beneath `paddy qa`, for example `matrix`.       |
 | `description` | No       | `string` | Fallback help text used when the shared host needs a stub command. |
 
 The `adapterFactory` id must match `commandName`. Do not export registrations
@@ -614,14 +614,14 @@ for the SDK contract.
 
 Use `channelConfigs` when a channel plugin needs cheap config metadata before runtime loads. Read-only channel setup/status discovery can use this metadata directly for configured external channels when no setup entry is available, or when `setup.requiresRuntime: false` declares setup runtime unnecessary.
 
-`channelConfigs` is plugin manifest metadata, not a new top-level user config section. Users still configure channel instances under `channels.<channel-id>`. OpenClaw reads manifest metadata to decide which plugin owns that configured channel before plugin runtime code executes.
+`channelConfigs` is plugin manifest metadata, not a new top-level user config section. Users still configure channel instances under `channels.<channel-id>`. Paddy reads manifest metadata to decide which plugin owns that configured channel before plugin runtime code executes.
 
 For a channel plugin, `configSchema` and `channelConfigs` describe different paths:
 
 - `configSchema` validates `plugins.entries.<plugin-id>.config`
 - `channelConfigs.<channel-id>.schema` validates `channels.<channel-id>`
 
-Non-bundled plugins that declare `channels[]` should also declare matching `channelConfigs` entries. Without them, OpenClaw can still load the plugin, but cold-path config schema, setup, and Control UI surfaces cannot know the channel-owned option shape or display-only UI hints until plugin runtime executes.
+Non-bundled plugins that declare `channels[]` should also declare matching `channelConfigs` entries. Without them, Paddy can still load the plugin, but cold-path config schema, setup, and Control UI surfaces cannot know the channel-owned option shape or display-only UI hints until plugin runtime executes.
 
 `channelConfigs.<channel-id>.commands.nativeCommandsAutoEnabled` and `nativeSkillsAutoEnabled` can declare static `auto` defaults for command config checks that run before channel runtime loads. Bundled channels can also publish the same defaults through `package.json#openclaw.channel.commands` alongside their other package-owned channel catalog metadata.
 
@@ -688,6 +688,6 @@ Use `preferOver` when your plugin is the preferred owner for a channel id that a
 }
 ```
 
-When `channels.chat` is configured, OpenClaw considers both the channel id and the preferred plugin id. If the lower-priority plugin was only selected because it is bundled or enabled by default, OpenClaw disables it in the effective runtime config so one plugin owns the channel and its tools. Explicit user selection still wins: if the user explicitly enables both plugins (via `plugins.allow` or a material `plugins.entries` config), OpenClaw preserves that choice and reports duplicate channel/tool diagnostics instead of silently changing the requested plugin set.
+When `channels.chat` is configured, Paddy considers both the channel id and the preferred plugin id. If the lower-priority plugin was only selected because it is bundled or enabled by default, Paddy disables it in the effective runtime config so one plugin owns the channel and its tools. Explicit user selection still wins: if the user explicitly enables both plugins (via `plugins.allow` or a material `plugins.entries` config), Paddy preserves that choice and reports duplicate channel/tool diagnostics instead of silently changing the requested plugin set.
 
 Keep `preferOver` scoped to plugin ids that can really provide the same channel. It is not a general priority field and it does not rename user config keys.

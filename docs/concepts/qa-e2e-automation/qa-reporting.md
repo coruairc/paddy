@@ -18,9 +18,9 @@ The report should answer:
 - What follow-up scenarios are worth adding
 
 For the inventory of available scenarios - useful when sizing follow-up work
-or wiring a new transport - run `pnpm openclaw qa coverage` (add `--json`
+or wiring a new transport - run `pnpm paddy qa coverage` (add `--json`
 for machine-readable output). When choosing focused proof for a touched
-behavior or file path, run `pnpm openclaw qa coverage --match <query>`. The
+behavior or file path, run `pnpm paddy qa coverage --match <query>`. The
 match report searches scenario metadata, docs refs, code refs, coverage IDs,
 plugins, and provider requirements, then prints matching `qa suite
 --scenario ...` targets. Generated commands preserve declared channel-driver
@@ -121,7 +121,7 @@ For character and style checks, run the same scenario across multiple live
 model refs and write a judged Markdown report:
 
 ```bash
-pnpm openclaw qa character-eval \
+pnpm paddy qa character-eval \
   --model openai/gpt-5.6-luna,thinking=medium,fast \
   --model openai/gpt-5.2,thinking=xhigh \
   --model openai/gpt-5,thinking=xhigh \

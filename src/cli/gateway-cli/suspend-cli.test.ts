@@ -39,7 +39,7 @@ describe("gateway suspend CLI", () => {
     expect(runtime.log).toHaveBeenCalledWith(
       `Expires: 2026-08-11T12:00:00.000Z (${readyResult.expiresAtMs} ms)`,
     );
-    expect(runtime.log).toHaveBeenCalledWith("Resume with: openclaw gateway resume suspension-1");
+    expect(runtime.log).toHaveBeenCalledWith("Resume with: paddy gateway resume suspension-1");
   });
 
   it("rejects whitespace-only wait before acquiring a lease", async () => {

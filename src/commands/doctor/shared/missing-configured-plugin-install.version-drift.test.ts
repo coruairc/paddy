@@ -270,7 +270,7 @@ describe("Doctor official plugin version repair", () => {
     });
     expect(result.changes).toEqual([
       'Repaired missing dependencies for installed plugin "discord".',
-      "If the Gateway is not restarted by Doctor, run openclaw gateway restart to load the updated plugins.",
+      "If the Gateway is not restarted by Doctor, run paddy gateway restart to load the updated plugins.",
     ]);
     expect(result.warnings).toEqual([]);
     expect(readPersistedInstalledPluginIndexInstallRecords({ env })).toEqual(result.records);
@@ -497,7 +497,7 @@ describe("Doctor official plugin version repair", () => {
 
     expect(result.records).toEqual(records);
     expect(result.warnings).toEqual([
-      expect.stringContaining("openclaw plugins update @openclaw/fish-audio-speech@2026.9.5"),
+      expect.stringContaining("paddy plugins update @openclaw/fish-audio-speech@2026.9.5"),
     ]);
     expect(mocks.installPluginFromNpmSpec).not.toHaveBeenCalled();
     expect(readPersistedInstalledPluginIndexInstallRecords({ env })).toEqual(records);

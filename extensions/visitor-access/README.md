@@ -1,6 +1,6 @@
 # Visitor Access
 
-Visitor Access is an internal OpenClaw plugin for granting individual people
+Visitor Access is an internal Paddy plugin for granting individual people
 access to <https://team.openclaw.ai>. It manages one dedicated Cloudflare Access
 allow policy containing email addresses. Grants expire after 14 days by default;
 administrators and designated owners can refresh or revoke them with agent tools.
@@ -11,7 +11,7 @@ visitor grant's expiry.
 The existing GitHub organization policy remains unchanged. Access allow policies
 combine with OR semantics, so adding a visitor does not change maintainer access.
 This package is private, built from source for the team deployment, and excluded
-from the OpenClaw npm release.
+from the Paddy npm release.
 
 ## Configure the plugin
 
@@ -38,7 +38,8 @@ account. Enable the plugin in the source-built Gateway configuration:
 }
 ```
 
-Restart the Gateway after enabling the plugin or changing its configuration.
+Enabling the plugin or changing its configuration applies through plugin hot reload;
+no Gateway restart is required.
 Do not retarget `accountId`, `appId`, or `policyName` while grants exist: the
 durable records belong to that policy, and changing targets could leave the old
 policy granting access without expiry sweeps. Revoke grants before retargeting.

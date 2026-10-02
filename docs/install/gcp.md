@@ -1,14 +1,14 @@
 ---
-summary: "Run OpenClaw Gateway 24/7 on a GCP Compute Engine VM with Docker"
+summary: "Run Paddy Gateway 24/7 on a GCP Compute Engine VM with Docker"
 doc-schema-version: 1
 read_when:
-  - You want OpenClaw running 24/7 on GCP
+  - You want Paddy running 24/7 on GCP
   - You want a persistent Gateway on a Compute Engine VM
   - You need GCP provisioning, firewall, or SSH tunnel guidance
 title: "GCP"
 ---
 
-Run a persistent OpenClaw Gateway on a Debian Compute Engine VM. This page
+Run a persistent Paddy Gateway on a Debian Compute Engine VM. This page
 covers GCP provisioning, network access, and machine operations; the shared
 [Docker VM runtime](/install/docker-vm-runtime) page owns container setup,
 persistence, custom binaries, verification, and updates.

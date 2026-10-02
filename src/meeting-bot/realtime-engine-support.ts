@@ -1,4 +1,5 @@
 import { normalizeOptionalString as readLogString } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { RuntimeLogger } from "../plugins/runtime/types.js";
 import type {
@@ -118,7 +119,7 @@ export function resolveMeetingRealtimeTranscriptionProvider(params: {
 
 export function buildMeetingSpeakExactUserMessage(text: string): string {
   return [
-    "Speak this exact OpenClaw answer to the meeting, without adding, removing, or rephrasing words.",
+    `Speak this exact ${PRODUCT_NAME} answer to the meeting, without adding, removing, or rephrasing words.`,
     `Answer: ${JSON.stringify(text)}`,
   ].join("\n");
 }
@@ -153,13 +154,7 @@ export function formatMeetingRealtimeVoiceModelLog(params: {
   return [
     `${params.logScope} realtime voice bridge starting: strategy=${formatLogValue(params.strategy)}`,
     `provider=${formatLogValue(params.provider.id)}`,
-    `model=${formatLogValue(
-      resolveProviderModelForLog({
-        provider: params.provider,
-        providerConfig: params.providerConfig,
-        fallbackModel: params.fallbackModel,
-      }),
-    )}`,
+    `model=${formatLogValue(resolveProviderModelForLog(params))}`,
     `audioFormat=${formatLogValue(params.audioFormat)}`,
   ].join(" ");
 }
@@ -174,12 +169,7 @@ export function formatMeetingAgentAudioModelLog(params: {
     `${params.logScope} agent audio bridge starting: transcriptionProvider=${formatLogValue(
       params.provider.id,
     )}`,
-    `transcriptionModel=${formatLogValue(
-      resolveProviderModelForLog({
-        provider: params.provider,
-        providerConfig: params.providerConfig,
-      }),
-    )}`,
+    `transcriptionModel=${formatLogValue(resolveProviderModelForLog(params))}`,
     "tts=telephony",
     `audioFormat=${formatLogValue(params.audioFormat)}`,
   ].join(" ");

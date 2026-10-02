@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { PRODUCT_NAME } from "../brand.js";
 import { OAUTH_PAGE_CSP } from "../infra/oauth-page-csp.js";
 import type { ProviderAuthContext } from "../plugins/provider-authentication.types.js";
 import { getGatewayRestartDrainSignal } from "../process/gateway-work-admission.js";
@@ -192,7 +193,7 @@ function respond(res: ServerResponse, status: number, message: string): void {
     renderOAuthPage({
       title: "Provider sign-in",
       heading: message,
-      message: "Return to OpenClaw for the sign-in result.",
+      message: `Return to ${PRODUCT_NAME} for the sign-in result.`,
     }),
   );
 }

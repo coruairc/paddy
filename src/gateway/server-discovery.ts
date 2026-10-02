@@ -2,6 +2,7 @@
 // Provides Bonjour CLI metadata and optional Tailscale DNS hints.
 import fs from "node:fs";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { getTailnetHostname } from "../infra/tailscale.js";
 import { runExec } from "../process/exec.js";
 
@@ -17,12 +18,12 @@ type ResolveBonjourCliPathOptions = {
 export function formatBonjourInstanceName(displayName: string) {
   const trimmed = displayName.trim();
   if (!trimmed) {
-    return "OpenClaw";
+    return `${PRODUCT_NAME}`;
   }
   if (/openclaw/i.test(trimmed)) {
     return trimmed;
   }
-  return `${trimmed} (OpenClaw)`;
+  return `${trimmed} (${PRODUCT_NAME})`;
 }
 
 /** Resolves the CLI path advertised to Bonjour clients, preferring explicit env config. */

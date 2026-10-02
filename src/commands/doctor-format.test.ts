@@ -13,7 +13,7 @@ describe("buildGatewayRuntimeHints", () => {
     );
 
     expect(hints.join("\n")).toContain("logged-in macOS GUI session");
-    expect(hints.join("\n")).toContain("openclaw --profile work gateway restart");
+    expect(hints.join("\n")).toContain("paddy --profile work gateway restart");
   });
 
   it.each(["user", "system"] as const)("inspects the %s systemd cgroup", (scope) => {
@@ -37,7 +37,7 @@ describe("buildGatewayRuntimeHints", () => {
       "This usually means old helper or browser processes may still be attached to the gateway service.",
       `Run: systemctl --${scope} show openclaw-gateway.service -p KillMode -p TasksCurrent -p MemoryCurrent -p MainPID`,
       `Run: systemd-cgls ${scope === "system" ? "--unit" : "--user-unit"} openclaw-gateway.service`,
-      "After reviewing service settings, run: openclaw gateway restart",
+      "After reviewing service settings, run: paddy gateway restart",
     ]);
   });
 
@@ -86,15 +86,15 @@ describe("buildGatewayRuntimeHints", () => {
   it.each([
     {
       env: { OPENCLAW_PROFILE: "blue" },
-      command: "openclaw --profile blue gateway",
+      command: "paddy --profile blue gateway",
     },
     {
       env: { OPENCLAW_CONTAINER_HINT: "sandbox" },
-      command: "openclaw --container sandbox gateway",
+      command: "paddy --container sandbox gateway",
     },
     {
       env: { OPENCLAW_PROFILE: "blue", OPENCLAW_CONTAINER_HINT: "sandbox" },
-      command: "openclaw --container sandbox gateway",
+      command: "paddy --container sandbox gateway",
     },
   ])("preserves the active target in systemd recovery commands: $command", ({ env, command }) => {
     const hints = buildGatewayRuntimeHints(
@@ -124,7 +124,7 @@ describe("buildGatewayRuntimeHints", () => {
     ).join("\n");
 
     expect(text).toContain("systemd stopped restarting the gateway after repeated crashes");
-    expect(text).toContain("openclaw gateway restart");
+    expect(text).toContain("paddy gateway restart");
     expect(text).not.toContain("likely exited immediately");
   });
 

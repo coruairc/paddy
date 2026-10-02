@@ -11,9 +11,9 @@ This page covers lint output, check selection, and post-upgrade probes.
 
 ## Lint mode
 
-Bare `openclaw doctor --json` is read-only and non-interactive: no prompts, repairs, or config/state rewrites. It emits the same default findings as lint mode, but exits `0` after a report is produced so output formatting does not change ordinary Doctor's advisory success contract. Read the payload's `ok` and `findings` fields to determine health.
+Bare `paddy doctor --json` is read-only and non-interactive: no prompts, repairs, or config/state rewrites. It emits the same default findings as lint mode, but exits `0` after a report is produced so output formatting does not change ordinary Doctor's advisory success contract. Read the payload's `ok` and `findings` fields to determine health.
 
-Explicit `openclaw doctor --lint` is the deployment-preflight posture. Add `--json` for machine-readable output without changing lint's threshold-based exit code. Policy findings reported here are documented in [`openclaw policy`](/cli/policy).
+Explicit `paddy doctor --lint` is the deployment-preflight posture. Add `--json` for machine-readable output without changing lint's threshold-based exit code. Policy findings reported here are documented in [`paddy policy`](/cli/policy).
 
 Full reports reuse a private shared-state snapshot for ordinary reads within the
 report, preserving the live database and its WAL files. Each new report reads a
@@ -25,16 +25,20 @@ snapshots. A cleanup failure preserves completed findings and check counts;
 updater runs report failed temporary-file removal as a warning. If database
 retirement fails, Doctor reports the error and leaves the private snapshot in place.
 
+Plugin source captures use the original profile's temporary storage, outside these
+database snapshots. Their plugin-cache owner retains them until plugin inspection
+finishes, so later channel setup checks can reuse admitted native files safely.
+
 ```bash
-openclaw doctor --json
-openclaw doctor --lint
-openclaw doctor --lint --severity-min warning
-openclaw doctor --lint --json
-openclaw doctor --lint --all
-openclaw doctor --lint --allow-exec
-openclaw doctor --lint --only core/doctor/gateway-config --json
-openclaw doctor --lint --only core/doctor/local-audio-acceleration --severity-min info
-openclaw doctor --lint --only memory-core/managed-local-embedding-setup --severity-min error --json
+paddy doctor --json
+paddy doctor --lint
+paddy doctor --lint --severity-min warning
+paddy doctor --lint --json
+paddy doctor --lint --all
+paddy doctor --lint --allow-exec
+paddy doctor --lint --only core/doctor/gateway-config --json
+paddy doctor --lint --only core/doctor/local-audio-acceleration --severity-min info
+paddy doctor --lint --only memory-core/managed-local-embedding-setup --severity-min error --json
 ```
 
 The managed local embedding setup check is a scoped, non-mutating pre-cutover gate for existing
@@ -48,7 +52,7 @@ Human output is compact:
 ```text
 doctor --lint: ran 6 check(s), 1 finding(s)
   [warning] core/doctor/gateway-config gateway.mode - gateway.mode is unset; gateway start will be blocked.
-    fix: Run `openclaw configure` and set Gateway mode (local/remote), or `openclaw config set gateway.mode local`.
+    fix: Run `paddy configure` and set Gateway mode (local/remote), or `paddy config set gateway.mode local`.
 ```
 
 JSON output is the scripting surface:
@@ -65,7 +69,7 @@ JSON output is the scripting surface:
       "severity": "warning",
       "message": "gateway.mode is unset; gateway start will be blocked.",
       "path": "gateway.mode",
-      "fixHint": "Run `openclaw configure` and set Gateway mode (local/remote), or `openclaw config set gateway.mode local`."
+      "fixHint": "Run `paddy configure` and set Gateway mode (local/remote), or `paddy config set gateway.mode local`."
     }
   ]
 }
@@ -79,9 +83,9 @@ Explicit lint exit codes:
 | `1`  | At least one finding meets the selected threshold.       |
 | `2`  | Command/runtime failure before health checks complete.   |
 
-`--severity-min` controls both which findings print and the exit threshold: `openclaw doctor --lint --severity-min error` can print nothing and exit `0` even when lower-severity `info`/`warning` findings exist.
+`--severity-min` controls both which findings print and the exit threshold: `paddy doctor --lint --severity-min error` can print nothing and exit `0` even when lower-severity `info`/`warning` findings exist.
 
-When the updater runs lint, warning-severity findings below its error threshold are retained in a separate JSON `warnings` array. They do not change the lint exit code. The updater records these advisories in its run history, including intentional open channel policies, so they remain available in `openclaw update status`. Ordinary standalone lint keeps the selected output threshold.
+When the updater runs lint, warning-severity findings below its error threshold are retained in a separate JSON `warnings` array. They do not change the lint exit code. The updater records these advisories in its run history, including intentional open channel policies, so they remain available in `paddy update status`. Ordinary standalone lint keeps the selected output threshold.
 
 If a caller cancels state-lease acquisition before an inspection starts, Doctor records
 an informational diagnostic with `errorCode: OPENCLAW_STATE_LEASE_ABORTED`, the elapsed
@@ -91,9 +95,9 @@ was not performed. Cancellation after acquisition and other inspection failures 
 
 During updates, optional inspections and policy advisories are warnings, including intentional open DM policies. Required configuration, state, and startup checks remain blocking. The saved report retains every finding with an individually bounded reason; update history keeps severity counts, deciding errors, and an explicit omission count when its diagnostic bound is reached.
 
-Security findings retain their specific check identifier and remediation in update reports. Secret migration commands appear before long field lists so bounded diagnostics keep the `openclaw secrets configure` and `openclaw secrets apply` next steps.
+Security findings retain their specific check identifier and remediation in update reports. Secret migration commands appear before long field lists so bounded diagnostics keep the `paddy secrets configure` and `paddy secrets apply` next steps.
 
-`PLAINTEXT_FOUND`, `REF_SHADOWED`, and `LEGACY_RESIDUE` are findings from the separate `openclaw secrets audit` command. They describe hardening or retained recovery material, not database corruption. Standalone `secrets audit --check` can exit nonzero for these findings; that result alone does not identify a failing candidate Doctor check. Use the candidate's recorded lint findings, not a truncated stderr tail, to identify the update failure.
+`PLAINTEXT_FOUND`, `REF_SHADOWED`, and `LEGACY_RESIDUE` are findings from the separate `paddy secrets audit` command. They describe hardening or retained recovery material, not database corruption. Standalone `secrets audit --check` can exit nonzero for these findings; that result alone does not identify a failing candidate Doctor check. Use the candidate's recorded lint findings, not a truncated stderr tail, to identify the update failure.
 
 A configured Codex plugin that is missing or whose advertised health API cannot be
 verified produces an availability warning under `core/doctor/codex-session-routes`,
@@ -111,7 +115,7 @@ and error message, and provide a recovery hint for the affected path.
 The updater retains the warning and continues. Doctor preserves settings whose
 plugin owner could not be inspected; see [Plugin repair warnings](/install/update-troubleshooting#plugin-repair-warnings).
 
-Bare `openclaw doctor --json` exits `0` once it emits a findings payload, including when `ok` is `false`. Argument errors remain nonzero. If the lint runner fails before producing a report, Doctor exits `2` and emits one redacted JSON document with `ok: false`, `checksRun: 0`, and an error finding under `core/doctor/lint-inspection`. It retains the `error: { type: "cli_error", message }` field for existing consumers. This readiness shape is accepted by published updaters, including 2026.9.5, without treating an inspection failure as a successful check.
+Bare `paddy doctor --json` exits `0` once it emits a findings payload, including when `ok` is `false`. Argument errors remain nonzero. If the lint runner fails before producing a report, Doctor exits `2` and emits one redacted JSON document with `ok: false`, `checksRun: 0`, and an error finding under `core/doctor/lint-inspection`. It retains the `error: { type: "cli_error", message }` field for existing consumers. This readiness shape is accepted by published updaters, including 2026.9.5, without treating an inspection failure as a successful check.
 
 `--all` controls which checks are selected before severity filtering. The default lint run excludes checks that are deep, historical, or more likely to surface repairable legacy residue; use `--all` for the complete inventory. `--only <id>` is the most precise selector and can run any registered check by id.
 
@@ -124,7 +128,7 @@ catalog. Historical snapshot paths do not require cleanup or a session reset.
 
 `core/doctor/skill-workshop-relocation` distinguishes pending legacy collection
 backup roots from roots preserved for review. Eligible proposals or backup roots
-receive `openclaw doctor --fix` guidance, not a guarantee that every backup will
+receive `paddy doctor --fix` guidance, not a guarantee that every backup will
 be retired. Preserved roots require manual review of workspace ownership, backup
 manifests, and workspace migration blockers. If both kinds remain, Doctor reports
 both next steps. Do not delete preserved backups to clear the warning.
@@ -135,13 +139,13 @@ not need relocation merely because lint uses a temporary directory.
 ## Check selection
 
 ```bash
-openclaw doctor --lint --only core/doctor/gateway-config --json
-openclaw doctor --lint --skip core/doctor/skills-readiness
+paddy doctor --lint --only core/doctor/gateway-config --json
+paddy doctor --lint --skip core/doctor/skills-readiness
 ```
 
 `--only` and `--skip` accept full check ids and may be repeated. An unregistered `--only` id emits a `core/doctor/lint-selection` error finding; valid selected checks still run. Use `checksRun`/`checksSkipped` in the output to confirm a focused gate selects the checks you expect.
 
-To check model credentials, run `openclaw doctor --lint --only core/doctor/auth-profiles --json`.
+To check model credentials, run `paddy doctor --lint --only core/doctor/auth-profiles --json`.
 This opt-in check inspects shared credentials and each configured agent's local
 auth store, including fleets without a default agent. Shared credential problems
 are reported once; agent-specific cooldowns remain attributed to their local store.
@@ -150,25 +154,25 @@ are reported once; agent-specific cooldowns remain attributed to their local sto
 Doctor reports, including triage and update checks. A probe can rotate a refresh token
 at the external server even when local state writes go to a disposable snapshot.
 Doctor reports this deferral at informational severity; use `--severity-min info` to
-display it. For servers in `mcp.servers`, run `openclaw mcp probe <name>` against the
+display it. For servers in `mcp.servers`, run `paddy mcp probe <name>` against the
 serving configuration. Validate plugin-provided servers or agent-local auth profiles
 from an authenticated serving-agent turn so refreshed credentials persist with their
 owner. Non-OAuth MCP schema checks still run.
 
 ## Post-upgrade mode
 
-`openclaw doctor --post-upgrade` runs plugin compatibility probes for chaining after a build or upgrade. Findings go to stdout; exit code is 1 if any finding has `level: "error"`. Add `--json` for a machine-readable envelope (`{ probesRun, findings }`), suitable for CI, the community `fork-upgrade` skill, and other post-upgrade smoke tooling. If the installed plugin index is missing or malformed, JSON mode still emits the envelope with a `plugin.index_unavailable` error finding.
+`paddy doctor --post-upgrade` runs plugin compatibility probes for chaining after a build or upgrade. Findings go to stdout; exit code is 1 if any finding has `level: "error"`. Add `--json` for a machine-readable envelope (`{ probesRun, findings }`), suitable for CI, the community `fork-upgrade` skill, and other post-upgrade smoke tooling. If the installed plugin index is missing or malformed, JSON mode still emits the envelope with a `plugin.index_unavailable` error finding.
 
 The probes also warn with `plugin.version_drift` when an enabled official plugin
 in the installed index belongs to a different release cohort than the upgraded
-OpenClaw CLI. Follow the reported plugin update command, then restart the
+Paddy CLI. Follow the reported plugin update command, then restart the
 Gateway. Exact npm pins receive an update command only after the registry
 confirms that target exists. Independently versioned community plugins and
 disabled plugins are excluded; version drift alone does not change the exit code.
 
 Container image startup is the exception to the usual "run doctor after
-updating" flow. When `openclaw gateway run` starts on a new OpenClaw version, it
+updating" flow. When `paddy gateway run` starts on a new Paddy version, it
 runs safe state and plugin repairs before reporting ready. If repair cannot
 finish safely, startup exits and tells you to run the same image once with
-`openclaw doctor --fix` against the same mounted state/config before restarting
+`paddy doctor --fix` against the same mounted state/config before restarting
 the container normally.

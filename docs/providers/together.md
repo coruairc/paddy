@@ -2,13 +2,13 @@
 summary: "Together AI setup (auth + model selection)"
 title: "Together AI"
 read_when:
-  - You want to use Together AI with OpenClaw
+  - You want to use Together AI with Paddy
   - You need the API key env var or CLI auth choice
 ---
 
 [Together AI](https://together.ai) provides access to leading open-source
 models including Llama, DeepSeek, Kimi, and more through a unified API.
-OpenClaw bundles it as the `together` provider.
+Paddy bundles it as the `together` provider.
 
 | Property | Value                         |
 | -------- | ----------------------------- |
@@ -26,7 +26,7 @@ OpenClaw bundles it as the `together` provider.
   </Step>
   <Step title="Run onboarding">
     ```bash
-    openclaw onboard --auth-choice together-api-key
+    paddy onboard --auth-choice together-api-key
     ```
   </Step>
   <Step title="Set a default model">
@@ -47,7 +47,7 @@ OpenClaw bundles it as the `together` provider.
 ### Non-interactive example
 
 ```bash
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --mode local \
   --auth-choice together-api-key \
   --together-api-key "$TOGETHER_API_KEY"
@@ -118,7 +118,7 @@ provider selection, and failover behavior.
   </Accordion>
 
   <Accordion title="Troubleshooting">
-    - Verify your key works: `openclaw models list --provider together`
+    - Verify your key works: `paddy models list --provider together`
     - If models are not appearing, confirm the API key is set in the correct
       environment for your Gateway process.
     - Model refs use the form `together/<model-id>`.

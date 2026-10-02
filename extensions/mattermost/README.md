@@ -1,6 +1,6 @@
-# Mattermost OpenClaw channel
+# Mattermost Paddy channel
 
-Official OpenClaw channel plugin for Mattermost.
+Official Paddy channel plugin for Mattermost.
 
 ## Install
 

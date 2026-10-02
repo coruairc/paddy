@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { sleepWithAbort } from "@openclaw/retry";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { createConfigIO } from "../config/io.js";
 import { resolveStateDir } from "../config/paths.js";
@@ -16,6 +17,7 @@ import {
   compareSemverStrings,
   resolveNpmChannelTag,
   resolveUpdateInstallKind,
+  resolveUpdateRegistryTarget,
 } from "../infra/update-check.js";
 import { redactSensitiveText } from "../logging/redact.js";
 import { runCommandWithTimeout } from "../process/exec.js";
@@ -63,7 +65,7 @@ export function startNodeHostAutoUpdate(params: {
     const snapshot = await configIO.readConfigFileSnapshot();
     signal.throwIfAborted();
     if (!snapshot.valid) {
-      throw new Error("Node auto-update deferred: fix the invalid OpenClaw configuration first.");
+      throw new Error(`Node auto-update deferred: fix the invalid ${PRODUCT_NAME} configuration first.`);
     }
     const channel = resolveEffectiveUpdateChannel({
       configChannel: snapshot.config.update?.channel,
@@ -153,10 +155,16 @@ export function startNodeHostAutoUpdate(params: {
       }
       return await tryActivate();
     }
+    // Bun-only installs have no npm to spawn; read the registry in-process there,
+    // as `openclaw update` does for installs npm does not manage.
     const available = await resolveNpmChannelTag({
       channel: policy.channel,
       env,
-      runCommand: (argv, options) => runCommandWithTimeout(argv, { ...options, signal }),
+      signal,
+      ...(process.versions.bun ? resolveUpdateRegistryTarget({ env }) : {}),
+      runCommand: process.versions.bun
+        ? undefined
+        : (argv, options) => runCommandWithTimeout(argv, { ...options, signal }),
     });
     signal.throwIfAborted();
     if (available.error) {

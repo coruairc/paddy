@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { openNodeSqliteDatabase } from "../infra/node-sqlite.js";
 import { readAgentDatabaseAdmissionRefusal } from "../state/agent-database-admission.js";
@@ -74,7 +75,7 @@ function inspectAgentMemoryRecallMetadataMigration(
 ): MemoryRecallMetadataMigrationState | null {
   const stat = fs.lstatSync(pathname);
   if (!stat.isFile()) {
-    throw new Error(`OpenClaw agent database is not a regular file: ${pathname}`);
+    throw new Error(`${PRODUCT_NAME} agent database is not a regular file: ${pathname}`);
   }
   const database = openNodeSqliteDatabase(pathname, { readOnly: true });
   try {

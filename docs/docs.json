@@ -1,5 +1,5 @@
 {
-  "name": "OpenClaw",
+  "name": "Paddy",
   "description": "Self-hosted gateway that connects Discord, Google Chat, iMessage, Matrix, Microsoft Teams, Signal, Slack, Telegram, WhatsApp, Zalo, and more to AI coding agents. Run one Gateway process on your own machine and message your AI assistant from anywhere.",
   "redirects": [
     {
@@ -100,7 +100,7 @@
     },
     {
       "source": "/cli/crestodian",
-      "destination": "/cli/openclaw"
+      "destination": "/cli/paddy"
     },
     {
       "source": "/channels/bluebubbles",
@@ -168,7 +168,7 @@
     },
     {
       "source": "/pi-dev",
-      "destination": "/openclaw-agent-runtime"
+      "destination": "/paddy-agent-runtime"
     },
     {
       "source": "/providers/modelstudio",
@@ -500,15 +500,15 @@
     },
     {
       "source": "/clawd",
-      "destination": "/start/openclaw"
+      "destination": "/start/paddy"
     },
     {
       "source": "/start/clawd",
-      "destination": "/start/openclaw"
+      "destination": "/start/paddy"
     },
     {
       "source": "/start/clawd/",
-      "destination": "/start/openclaw"
+      "destination": "/start/paddy"
     },
     {
       "source": "/start/pairing",
@@ -1063,10 +1063,6 @@
       "destination": "/gateway/trusted-proxy-auth"
     },
     {
-      "source": "/automation/clawflow",
-      "destination": "/automation/taskflow"
-    },
-    {
       "source": "/automation/poll",
       "destination": "/cli/message"
     },
@@ -1089,10 +1085,6 @@
     {
       "source": "/automation/gmail-pubsub",
       "destination": "/automation/cron-jobs#gmail-pubsub-integration"
-    },
-    {
-      "source": "/cli/flows",
-      "destination": "/cli/tasks#flow"
     },
     {
       "source": "/concepts/memory-qmd",
@@ -1285,6 +1277,46 @@
     {
       "source": "/ci/runner-backend-modes",
       "destination": "/ci/runners#runner-backend-modes"
+    },
+    {
+      "source": "/automation/tasks",
+      "destination": "/automation#background-execution-and-workflows"
+    },
+    {
+      "source": "/automation/taskflow",
+      "destination": "/tools/lobster"
+    },
+    {
+      "source": "/cli/tasks",
+      "destination": "/automation#background-execution-and-workflows"
+    },
+    {
+      "source": "/plugins/webhooks",
+      "destination": "/automation#background-execution-and-workflows"
+    },
+    {
+      "source": "/cli/openclaw",
+      "destination": "/cli/paddy"
+    },
+    {
+      "source": "/start/openclaw",
+      "destination": "/start/paddy"
+    },
+    {
+      "source": "/openclaw-agent-runtime",
+      "destination": "/paddy-agent-runtime"
+    },
+    {
+      "source": "/start/why-openclaw",
+      "destination": "/start/why-paddy"
+    },
+    {
+      "source": "/help/faq/what-is-openclaw",
+      "destination": "/help/faq/what-is-paddy"
+    },
+    {
+      "source": "/start/why-openclaw/openclaw-and-hermes-agent",
+      "destination": "/start/why-paddy/paddy-and-hermes-agent"
     }
   ],
   "navigation": {
@@ -1299,14 +1331,14 @@
                 "group": "Overview",
                 "pages": [
                   "index",
-                  "start/why-openclaw",
-                  "start/why-openclaw/the-trust-boundary",
-                  "start/why-openclaw/policy-as-code",
-                  "start/why-openclaw/identity-and-roles",
-                  "start/why-openclaw/secrets",
-                  "start/why-openclaw/versioned-state-guarded-upgrades",
-                  "start/why-openclaw/provenance",
-                  "start/why-openclaw/openclaw-and-hermes-agent",
+                  "start/why-paddy",
+                  "start/why-paddy/the-trust-boundary",
+                  "start/why-paddy/policy-as-code",
+                  "start/why-paddy/identity-and-roles",
+                  "start/why-paddy/secrets",
+                  "start/why-paddy/versioned-state-guarded-upgrades",
+                  "start/why-paddy/provenance",
+                  "start/why-paddy/paddy-and-hermes-agent",
                   "concepts/features",
                   "start/hubs",
                   "start/docs-directory"
@@ -1324,7 +1356,7 @@
               {
                 "group": "Setup guides and reference",
                 "pages": [
-                  "start/openclaw",
+                  "start/paddy",
                   "start/teams",
                   "start/wizard-cli-reference",
                   "start/wizard-cli-automation"
@@ -1774,6 +1806,7 @@
                         ]
                       },
                       "plugins/teams-meetings",
+                      "plugins/slack-huddles",
                       "plugins/voice-call",
                       {
                         "group": "Voice call",
@@ -1912,8 +1945,6 @@
                     ]
                   },
                   "automation/imap",
-                  "automation/tasks",
-                  "automation/taskflow",
                   "automation/standing-orders",
                   "automation/hooks",
                   {
@@ -2245,6 +2276,7 @@
                     "pages": [
                       "providers/comfy",
                       "providers/fal",
+                      "providers/kie",
                       "providers/pixverse",
                       "providers/runway",
                       "providers/vydra"
@@ -2745,7 +2777,7 @@
                       "cli/backup",
                       "cli/migrate",
                       "cli/onboard",
-                      "cli/openclaw",
+                      "cli/paddy",
                       "cli/reset",
                       "cli/setup",
                       "cli/uninstall",
@@ -2792,7 +2824,6 @@
                       "cli/models",
                       "cli/promos",
                       "cli/sessions",
-                      "cli/tasks",
                       "cli/transcripts",
                       "cli/wiki"
                     ]
@@ -2813,6 +2844,7 @@
                       "cli/directory",
                       "cli/pairing",
                       "cli/qr",
+                      "cli/users",
                       "cli/voicecall"
                     ]
                   },
@@ -3101,7 +3133,7 @@
                 "group": "Technical reference",
                 "pages": [
                   "agent-runtime-architecture",
-                  "openclaw-agent-runtime",
+                  "paddy-agent-runtime",
                   "reference/openclaw-ai",
                   "reference/token-use",
                   "reference/api-usage-costs",
@@ -3322,7 +3354,7 @@
                   {
                     "group": "FAQ topics",
                     "pages": [
-                      "help/faq/what-is-openclaw",
+                      "help/faq/what-is-paddy",
                       "help/faq/skills-and-automation",
                       "help/faq/sandboxing-and-memory",
                       "help/faq/where-things-live-on-disk",

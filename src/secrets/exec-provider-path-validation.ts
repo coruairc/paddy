@@ -1,5 +1,6 @@
 import { isPathInside } from "@openclaw/fs-safe/path";
 import { inspectPathPermissions, safeStat } from "@openclaw/fs-safe/permissions";
+import { PRODUCT_NAME } from "../brand.js";
 import { FsSafeError } from "../infra/fs-safe.js";
 import { resolveUserPath } from "../infra/home-dir.js";
 
@@ -47,7 +48,7 @@ export async function assertSecureExecCommandPath(params: {
     // A plain Error would lose the Windows recovery diagnostic.
     throw new FsSafeError(
       "permission-unverified",
-      `${params.label} ACL verification unavailable on Windows for ${commandPath}. Move the command to a path whose ACLs OpenClaw can verify; there is no provider-level bypass.`,
+      `${params.label} ACL verification unavailable on Windows for ${commandPath}. Move the command to a path whose ACLs ${PRODUCT_NAME} can verify; there is no provider-level bypass.`,
     );
   }
 

@@ -1,5 +1,6 @@
 // Hook status helpers summarize configured, installed, and plugin-provided hooks.
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { evaluateEntryRequirementsForCurrentPlatform } from "../shared/entry-status.js";
 import type { RequirementConfigCheck, Requirements } from "../shared/requirements.js";
@@ -64,7 +65,7 @@ function normalizeInstallOptions(entry: HookEntry): HookInstallOption[] {
 
     if (!label) {
       if (spec.kind === "bundled") {
-        label = "Bundled with OpenClaw";
+        label = `Bundled with ${PRODUCT_NAME}`;
       } else if (spec.kind === "npm" && spec.package) {
         label = `Install ${spec.package} (npm)`;
       } else if (spec.kind === "git" && spec.repository) {

@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { createDedupeCache } from "../infra/dedupe.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { applyPrivateModeSync } from "../infra/private-mode.js";
@@ -33,16 +34,22 @@ function bestEffortChmodSync(target: string, mode: number): void {
   stateDbLog.warn(`skipped permission hardening for ${target}: ${String(result.error)}`);
 }
 
-export function ensureOpenClawStatePermissions(pathname: string, env: NodeJS.ProcessEnv): void {
+export function ensureOpenClawStatePermissions(
+  pathname: string,
+  env: NodeJS.ProcessEnv,
+  options: { createDirectory?: boolean } = {},
+): void {
   const dir = path.dirname(pathname);
   const defaultDir = resolveOpenClawStateSqliteDir(env);
   const isDefaultStateDatabase =
     path.resolve(pathname) === path.resolve(resolveOpenClawStateSqlitePath(env));
   if (isDefaultStateDatabase && dir !== defaultDir) {
-    throw new Error(`OpenClaw state database path resolved outside its state dir: ${pathname}`);
+    throw new Error(`${PRODUCT_NAME} state database path resolved outside its state dir: ${pathname}`);
   }
   const dirExisted = existsSync(dir);
-  mkdirSync(dir, { recursive: true, mode: OPENCLAW_STATE_DIR_MODE });
+  if (options.createDirectory) {
+    mkdirSync(dir, { recursive: true, mode: OPENCLAW_STATE_DIR_MODE });
+  }
   // Default state contains credentials-adjacent metadata; custom existing dirs keep caller modes.
   if (isDefaultStateDatabase || !dirExisted) {
     bestEffortChmodSync(dir, OPENCLAW_STATE_DIR_MODE);

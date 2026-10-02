@@ -1,12 +1,12 @@
 ---
-summary: "Deploy OpenClaw on Railway with one-click template"
+summary: "Deploy Paddy on Railway with one-click template"
 read_when:
-  - Deploying OpenClaw to Railway
+  - Deploying Paddy to Railway
   - You want a one-click cloud deploy with browser-based Control UI
 title: "Railway"
 ---
 
-Deploy OpenClaw on Railway with a one-click template and access it through the web Control UI. This is the easiest "no terminal on the server" path: Railway runs the Gateway for you.
+Deploy Paddy on Railway with a one-click template and access it through the web Control UI. This is the easiest "no terminal on the server" path: Railway runs the Gateway for you.
 
 ## One-click deploy
 
@@ -48,17 +48,17 @@ Deploy OpenClaw on Railway with a one-click template and access it through the w
 From the Railway shell, run the read-only deployment preflight:
 
 ```bash
-openclaw doctor --json
+paddy doctor --json
 ```
 
 ## What you get
 
-- Hosted OpenClaw Gateway + Control UI
+- Hosted Paddy Gateway + Control UI
 - Persistent storage via the Railway Volume (`/data`), so `openclaw.json`, shared and per-agent SQLite auth stores, channel/provider state, sessions, and workspace survive redeploys
 
 ## Connect a channel
 
-Use the Control UI at `/openclaw` or run `openclaw onboard` via Railway's shell for channel setup instructions:
+Use the Control UI at `/paddy` or run `paddy onboard` via Railway's shell for channel setup instructions:
 
 - [Discord](/channels/discord)
 - [Telegram](/channels/telegram) (fastest -- just a bot token)
@@ -69,8 +69,8 @@ Use the Control UI at `/openclaw` or run `openclaw onboard` via Railway's shell 
 Export your state, config, auth profiles, and workspace:
 
 ```bash
-openclaw backup create
-openclaw backup restore <archive.tar.gz> --target <fresh-directory>
+paddy backup create
+paddy backup restore <archive.tar.gz> --target <fresh-directory>
 ```
 
 Restore verifies and extracts into a fresh staging directory; activation is a
@@ -81,4 +81,4 @@ for the rollback warnings and activation sequence.
 
 - Set up messaging channels: [Channels](/channels)
 - Configure the Gateway: [Gateway configuration](/gateway/configuration)
-- Keep OpenClaw up to date: [Updating](/install/updating)
+- Keep Paddy up to date: [Updating](/install/updating)

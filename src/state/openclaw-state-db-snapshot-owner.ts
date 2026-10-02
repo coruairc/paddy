@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { registerLiveSqliteSnapshotOwner } from "../infra/sqlite-live-snapshot.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 import type { OpenClawStateDatabase } from "./openclaw-state-db-contract.js";
@@ -18,7 +19,7 @@ function createOpenClawStateSnapshotOwnerRegistry() {
           owner: "openclaw-state",
           assertCurrent: () => {
             if (getCurrent() !== database || !database.db.isOpen) {
-              throw new Error("OpenClaw state snapshot owner is no longer current");
+              throw new Error(`${PRODUCT_NAME} state snapshot owner is no longer current`);
             }
           },
         }),

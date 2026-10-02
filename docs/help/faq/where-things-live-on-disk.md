@@ -2,15 +2,15 @@
 summary: "Data locations, AGENTS.md and SOUL.md placement, backups, and uninstalling"
 title: "Where things live on disk"
 read_when:
-  - You need to find, back up, or move OpenClaw data
+  - You need to find, back up, or move Paddy data
   - You are deciding where agent instruction files belong
 ---
 
 ## Where things live on disk
 
 <AccordionGroup>
-  <Accordion title="Is all data used with OpenClaw saved locally?">
-    No: **OpenClaw's own state is local**, but **external services still see what you send them**.
+  <Accordion title="Is all data used with Paddy saved locally?">
+    No: **Paddy's own state is local**, but **external services still see what you send them**.
 
     - **Local by default**: sessions, memory files, config, and workspace live on the Gateway host (`~/.openclaw` plus your workspace directory).
     - **Remote by necessity**: messages sent to model providers (Anthropic/OpenAI/etc.) go to their APIs, and chat platforms (Slack/Telegram/WhatsApp/etc.) store message data on their servers.
@@ -20,7 +20,7 @@ read_when:
 
   </Accordion>
 
-  <Accordion title="Where does OpenClaw store its data?">
+  <Accordion title="Where does Paddy store its data?">
     Everything lives under `$OPENCLAW_STATE_DIR` (default: `~/.openclaw`):
 
     | Path                                                               | Purpose                                                            |
@@ -37,7 +37,7 @@ read_when:
 
     Legacy single-agent path `~/.openclaw/agent/*` is migrated by `openclaw doctor`.
 
-    Legacy `auth-profiles.json` files are imported by `openclaw doctor --fix`;
+    Legacy `auth-profiles.json` files are imported by `paddy doctor --fix`;
     new logins write SQLite. Agent-local profiles override the shared read-through
     base. Older installs keep that shared store in the main agent's database until
     doctor relocates it; see [Auth credential semantics](/auth-credential-semantics#agent-copy-portability).
@@ -49,7 +49,7 @@ read_when:
   <Accordion title="Where should AGENTS.md / SOUL.md / USER.md / MEMORY.md live?">
     These live in the **agent workspace**, not `~/.openclaw`.
 
-    - **Workspace (per agent)**: `AGENTS.md`, `SOUL.md`, `IDENTITY.md`, `USER.md`, `MEMORY.md`, `memory/YYYY-MM-DD.md`. Lowercase root `memory.md` is legacy repair input only; `openclaw doctor --fix` can merge it into `MEMORY.md` when both exist.
+    - **Workspace (per agent)**: `AGENTS.md`, `SOUL.md`, `IDENTITY.md`, `USER.md`, `MEMORY.md`, `memory/YYYY-MM-DD.md`. Lowercase root `memory.md` is legacy repair input only; `paddy doctor --fix` can merge it into `MEMORY.md` when both exist.
     - **State dir (`~/.openclaw`)**: config, channel/provider state, auth profiles, sessions, logs, shared skills (`~/.openclaw/skills`).
 
     Default workspace is `~/.openclaw/workspace`, configurable:
@@ -101,12 +101,12 @@ read_when:
 
   </Accordion>
 
-  <Accordion title="How do I completely uninstall OpenClaw?">
+  <Accordion title="How do I completely uninstall Paddy?">
     See [Uninstall](/install/uninstall).
   </Accordion>
 
   <Accordion title="Can agents work outside the workspace?">
-    Yes. The workspace is the **default cwd** and memory anchor, not a hard sandbox. Relative paths resolve inside the workspace; absolute paths can access other host locations unless sandboxing is enabled. For isolation, use [`agents.defaults.sandbox`](/gateway/sandboxing) or per-agent sandbox settings. To make a repo the default working directory, point that agent's `workspace` at the repo root - the OpenClaw repo itself is just source code, so keep the workspace separate unless you intentionally want the agent to work inside it.
+    Yes. The workspace is the **default cwd** and memory anchor, not a hard sandbox. Relative paths resolve inside the workspace; absolute paths can access other host locations unless sandboxing is enabled. For isolation, use [`agents.defaults.sandbox`](/gateway/sandboxing) or per-agent sandbox settings. To make a repo the default working directory, point that agent's `workspace` at the repo root - the Paddy repo itself is just source code, so keep the workspace separate unless you intentionally want the agent to work inside it.
 
     ```json5
     {

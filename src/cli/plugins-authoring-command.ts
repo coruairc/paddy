@@ -1,4 +1,3 @@
-// Plugin authoring commands for init/build/validate manifest generation.
 import fs from "node:fs";
 import path from "node:path";
 import { replaceFileAtomic } from "@openclaw/fs-safe/atomic";
@@ -75,10 +74,6 @@ function writeJsonFile(filePath: string, value: unknown): void {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-function jsStringLiteral(value: string): string {
-  return JSON.stringify(value);
-}
-
 function normalizeRelativePath(rootDir: string, targetPath: string): string {
   const relative = path
     .relative(rootDir, path.resolve(rootDir, targetPath))
@@ -87,10 +82,6 @@ function normalizeRelativePath(rootDir: string, targetPath: string): string {
     throw new Error(`entry must stay inside plugin root: ${targetPath}`);
   }
   return relative.startsWith(".") ? relative : `./${relative}`;
-}
-
-function resolveRootDir(input: string | undefined): string {
-  return path.resolve(input ?? process.cwd());
 }
 
 function resolveEntryPath(rootDir: string, entry: string | undefined): string {
@@ -243,7 +234,7 @@ export function validateToolPluginProject(params: {
     existingManifest: params.manifest,
   });
   if (!jsonSchemaValuesEqual(params.manifest, expectedManifest)) {
-    errors.push("openclaw.plugin.json generated metadata is stale. Run openclaw plugins build.");
+    errors.push(`openclaw.plugin.json generated metadata is stale. Run paddy plugins build.`);
   }
   if (params.manifest.id !== params.metadata.id) {
     errors.push(
@@ -284,7 +275,7 @@ export function validateToolPluginProject(params: {
 }
 
 export async function runPluginsBuildCommand(opts: PluginsBuildOptions): Promise<void> {
-  const rootDir = resolveRootDir(opts.root);
+  const rootDir = path.resolve(opts.root ?? process.cwd());
   const entryPath = resolveEntryPath(rootDir, opts.entry);
   const entryRelative = normalizeRelativePath(rootDir, entryPath);
   const packagePath = path.join(rootDir, "package.json");
@@ -316,7 +307,7 @@ export async function runPluginsBuildCommand(opts: PluginsBuildOptions): Promise
       !jsonSchemaValuesEqual(currentManifest, manifest) ||
       !jsonSchemaValuesEqual(currentPackage, nextPackageManifest)
     ) {
-      defaultRuntime.error("Generated plugin metadata is out of date. Run openclaw plugins build.");
+      defaultRuntime.error("Generated plugin metadata is out of date. Run paddy plugins build.");
       return defaultRuntime.exit(1);
     }
     defaultRuntime.log("Plugin metadata is up to date.");
@@ -340,7 +331,7 @@ export async function runPluginsBuildCommand(opts: PluginsBuildOptions): Promise
 export async function collectPluginsValidationResult(
   opts: PluginsValidateOptions,
 ): Promise<PluginsValidationResult> {
-  const rootDir = resolveRootDir(opts.root);
+  const rootDir = path.resolve(opts.root ?? process.cwd());
   const entryPath = resolveEntryPath(rootDir, opts.entry);
   const entryRelative = normalizeRelativePath(rootDir, entryPath);
   const packageManifest = readPackageManifest(rootDir);
@@ -360,7 +351,7 @@ export async function collectPluginsValidationResult(
   if (browserSource) {
     const declaration = await buildPluginControlUi({ rootDir, source: browserSource, check: true });
     if (!jsonSchemaValuesEqual(manifest.controlUi, declaration)) {
-      errors.push("Control UI manifest is stale. Run openclaw plugins build.");
+      errors.push(`Control UI manifest is stale. Run paddy plugins build.`);
     }
   }
   if (errors.length > 0) {
@@ -409,8 +400,9 @@ function assertCanCreate(filePath: string, force: boolean): void {
 
 function resolveScaffoldType(input: string | undefined): PluginScaffoldType {
   const type = input ?? "tool";
-  if (SUPPORTED_PLUGIN_SCAFFOLD_TYPES.includes(type as PluginScaffoldType)) {
-    return type as PluginScaffoldType;
+  const supported = SUPPORTED_PLUGIN_SCAFFOLD_TYPES.find((candidate) => candidate === type);
+  if (supported) {
+    return supported;
   }
   throw new Error(
     `Unsupported plugin scaffold type "${type}". Supported types: ${SUPPORTED_PLUGIN_SCAFFOLD_TYPES.join(
@@ -419,20 +411,12 @@ function resolveScaffoldType(input: string | undefined): PluginScaffoldType {
   );
 }
 
-function normalizeDisplayName(input: string): string {
-  const name = input.trim();
-  if (!name) {
-    throw new Error("Plugin display name is required.");
+function normalizeRequiredPluginText(input: string, label: string): string {
+  const value = input.trim();
+  if (!value) {
+    throw new Error(`Plugin ${label} is required.`);
   }
-  return name;
-}
-
-function normalizePluginId(input: string): string {
-  const id = input.trim();
-  if (!id) {
-    throw new Error("Plugin id is required.");
-  }
-  return id;
+  return value;
 }
 
 function titleFromId(id: string): string {
@@ -494,8 +478,8 @@ function writeToolPluginScaffold(params: { rootDir: string; id: string; name: st
     private: true,
     scripts: {
       build: "tsc -p tsconfig.json",
-      "plugin:build": "npm run build && openclaw plugins build --entry ./dist/index.js",
-      "plugin:validate": "npm run build && openclaw plugins validate --entry ./dist/index.js",
+      "plugin:build": "npm run build && paddy plugins build --entry ./dist/index.js",
+      "plugin:validate": "npm run build && paddy plugins validate --entry ./dist/index.js",
       test: "vitest run --config ./vitest.config.ts",
     },
     files: ["dist", "openclaw.plugin.json", "README.md"],
@@ -512,10 +496,10 @@ function writeToolPluginScaffold(params: { rootDir: string; id: string; name: st
     },
     openclaw: createPluginPackageMetadata(TOOL_PLUGIN_API_RANGE),
   };
-  const idLiteral = jsStringLiteral(params.id);
-  const nameLiteral = jsStringLiteral(params.name);
-  const description = `Add ${params.name} tools to OpenClaw.`;
-  const descriptionLiteral = jsStringLiteral(description);
+  const idLiteral = JSON.stringify(params.id);
+  const nameLiteral = JSON.stringify(params.name);
+  const description = `Add ${params.name} tools to Paddy.`;
+  const descriptionLiteral = JSON.stringify(description);
   const indexSource = `import { Type } from "typebox";
 import { defineToolPlugin } from "openclaw/plugin-sdk/tool-plugin";
 
@@ -547,7 +531,7 @@ describe(${idLiteral}, () => {
 `;
   const readmeSource = `# ${params.name}
 
-Simple OpenClaw tool plugin.
+Simple Paddy tool plugin.
 
 ## Build
 
@@ -581,11 +565,11 @@ function writeProviderPluginScaffold(params: { rootDir: string; id: string; name
   const flagName = `--${params.id}-api-key`;
   const defaultModelId = "example-chat";
   const defaultModelRef = `${params.id}/${defaultModelId}`;
-  const description = `Add ${params.name} models to OpenClaw.`;
+  const description = `Add ${params.name} models to Paddy.`;
   const packageManifest = {
     name: packageName,
     version: "0.1.0",
-    description: `OpenClaw provider plugin for ${params.name}.`,
+    description: `Paddy provider plugin for ${params.name}.`,
     type: "module",
     scripts: {
       build: "tsc -p tsconfig.json",
@@ -631,17 +615,17 @@ function writeProviderPluginScaffold(params: { rootDir: string; id: string; name
       },
     },
   };
-  const idLiteral = jsStringLiteral(params.id);
-  const nameLiteral = jsStringLiteral(params.name);
-  const envVarLiteral = jsStringLiteral(envVar);
-  const optionKeyLiteral = jsStringLiteral(optionKey);
-  const flagNameLiteral = jsStringLiteral(flagName);
-  const defaultModelIdLiteral = jsStringLiteral(defaultModelId);
-  const defaultModelRefLiteral = jsStringLiteral(defaultModelRef);
-  const descriptionLiteral = jsStringLiteral(description);
-  const apiKeyLabelLiteral = jsStringLiteral(`${params.name} API key`);
-  const promptMessageLiteral = jsStringLiteral(`Enter ${params.name} API key`);
-  const noteMessageLiteral = jsStringLiteral(
+  const idLiteral = JSON.stringify(params.id);
+  const nameLiteral = JSON.stringify(params.name);
+  const envVarLiteral = JSON.stringify(envVar);
+  const optionKeyLiteral = JSON.stringify(optionKey);
+  const flagNameLiteral = JSON.stringify(flagName);
+  const defaultModelIdLiteral = JSON.stringify(defaultModelId);
+  const defaultModelRefLiteral = JSON.stringify(defaultModelRef);
+  const descriptionLiteral = JSON.stringify(description);
+  const apiKeyLabelLiteral = JSON.stringify(`${params.name} API key`);
+  const promptMessageLiteral = JSON.stringify(`Enter ${params.name} API key`);
+  const noteMessageLiteral = JSON.stringify(
     `Replace https://api.example.com/v1 with your ${params.name} API base URL.`,
   );
   const indexSource = `import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
@@ -745,8 +729,8 @@ describe(${idLiteral}, () => {
     ]);
     for (const [apiKey, configuredId, baseUrl, expectedBaseUrl] of [
       [undefined, ${idLiteral}, "https://configured.example/v1", null],
-      ["fixture-api-key", ${jsStringLiteral(`${params.id}-unrelated`)}, "https://unrelated.example/v1", "https://api.example.com/v1"],
-      ["fixture-api-key", ${jsStringLiteral(` ${params.id.toUpperCase()} `)}, " https://configured.example/v1 ", "https://configured.example/v1"],
+      ["fixture-api-key", ${JSON.stringify(`${params.id}-unrelated`)}, "https://unrelated.example/v1", "https://api.example.com/v1"],
+      ["fixture-api-key", ${JSON.stringify(` ${params.id.toUpperCase()} `)}, " https://configured.example/v1 ", "https://configured.example/v1"],
       ["fixture-api-key", ${idLiteral}, " ", "https://api.example.com/v1"],
     ] as const) {
       const result = await provider.catalog.run({
@@ -781,7 +765,7 @@ describe(${idLiteral}, () => {
 `;
   const readmeSource = `# ${params.name}
 
-OpenClaw provider plugin for ${params.name}.
+Paddy provider plugin for ${params.name}.
 
 ## Commands
 
@@ -877,8 +861,8 @@ export async function runPluginsInitCommand(
   idInput: string,
   opts: PluginsInitOptions,
 ): Promise<void> {
-  const id = normalizePluginId(idInput);
-  const name = opts.name ? normalizeDisplayName(opts.name) : titleFromId(id);
+  const id = normalizeRequiredPluginText(idInput, "id");
+  const name = opts.name ? normalizeRequiredPluginText(opts.name, "display name") : titleFromId(id);
   const type = resolveScaffoldType(opts.type);
   const rootDir = path.resolve(opts.directory ?? id);
   const force = opts.force === true;

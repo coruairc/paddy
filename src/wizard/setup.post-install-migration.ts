@@ -108,7 +108,7 @@ function describeCandidate(candidate: ResolvedProviderCandidate): string {
 }
 
 function logMigrationHint(runtime: RuntimeEnv, candidate: ResolvedProviderCandidate): void {
-  const command = formatCliCommand(`openclaw migrate ${candidate.provider.id} --dry-run`);
+  const command = formatCliCommand(`paddy migrate ${candidate.provider.id} --dry-run`);
   runtime.log(`Detected ${describeCandidate(candidate)}. Preview migration with ${command}.`);
 }
 
@@ -227,7 +227,7 @@ async function runPostInstallMigrationOffers(
     const logFailure = (error: unknown) => {
       params.runtime.log(
         `${candidate.provider.label} migration failed: ${formatErrorMessage(error)}. ` +
-          `Re-run with ${formatCliCommand(`openclaw migrate ${candidate.provider.id} --dry-run`)} to inspect.`,
+          `Re-run with ${formatCliCommand(`paddy migrate ${candidate.provider.id} --dry-run`)} to inspect.`,
       );
     };
     let disposingPreparation = false;

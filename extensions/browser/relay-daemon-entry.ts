@@ -50,6 +50,6 @@ async function main(): Promise<void> {
 }
 
 void main().catch((error: unknown) => {
-  process.stderr.write(`openclaw relay daemon failed: ${String(error)}\n`);
+  process.stderr.write(`paddy relay daemon failed: ${String(error)}\n`);
   process.exitCode = 1;
 });

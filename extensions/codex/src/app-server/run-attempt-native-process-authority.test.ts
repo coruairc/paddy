@@ -706,7 +706,7 @@ describe("managed-only Codex sandbox compatibility", () => {
           runCodexAppServerAttempt(f.params, {
             pluginConfig: { appServer: { experimental: { sandboxExecServer: true } } },
           }),
-        ).rejects.toThrow(/managed-only hooks.*OpenClaw native hook relay/i);
+        ).rejects.toThrow(/managed-only hooks.*Paddy native hook relay/i);
         expect(acquisitions).toBeGreaterThanOrEqual(2);
         expect(f.preparation.indexOf("allowed")).toBeLessThan(f.preparation.indexOf("tools"));
         expect(f.preparation.indexOf("tools")).toBeLessThan(f.preparation.indexOf("managed"));

@@ -1,8 +1,9 @@
 ---
-summary: "Ask OpenClaw, the Home dock, the operator terminal, and the browser panel"
+doc-schema-version: 1
+summary: "Ask Paddy, the Home dock, the operator terminal, and the browser panel"
 read_when:
   - Opening a terminal or browser beside a conversation
-  - Using Ask OpenClaw for setup and repair
+  - Using Ask Paddy for setup and repair
   - Using the Home dock
 title: "Panels and docks"
 sidebarTitle: "Panels and docks"
@@ -10,25 +11,27 @@ sidebarTitle: "Panels and docks"
 
 Surfaces that dock beside the current page instead of replacing it.
 
-## OpenClaw system care
+## Paddy system care
 
-Open **Settings → Ask OpenClaw** to talk to the system setup and repair agent. To open it alongside your current page, click **Home** in the sidebar footer and select the **Ask OpenClaw** tab, or use the **Ask OpenClaw** command-palette action. The full page and dockable panel share one machine-wide conversation whose durable history lives on the Gateway. Closing the UI never cancels a turn; reopening Ask OpenClaw shows the completed conversation. The panel docks on the right or bottom, remembers its placement and size in the browser profile, and hides itself while the full page is open.
+Open **Settings → Ask Paddy** to talk to the system setup and repair agent. To open it alongside your current page, click **Home** in the sidebar footer and select the **Ask Paddy** tab, or use the **Ask Paddy** command-palette action. The full page and dockable panel share one machine-wide conversation whose durable history lives on the Gateway. Closing the UI never cancels a turn; reopening Ask Paddy shows the completed conversation. The panel docks on the right or bottom, remembers its placement and size in the browser profile, and hides itself while the full page is open.
 
-If no AI provider is configured, Ask OpenClaw offers **Connect an AI provider**. If a configured runtime fails to start or verify, the conversation stays visible with the actual error and **Retry**. Sending stays disabled until verification succeeds. Retry checks the runtime without resending your earlier message or clearing your draft.
+If no AI provider is configured, Ask Paddy offers **Connect an AI provider**. If a configured runtime fails to start or verify, the conversation stays visible with the actual error and **Retry**. Sending stays disabled until verification succeeds. Retry checks the runtime without resending your earlier message or clearing your draft.
+
+Onboarding suggestions can focus the recommended answer when nothing else has focus. If you have already focused the composer or another control, arriving suggestions leave your keyboard focus there.
 
 Each chat message carries the Control UI page you are currently viewing as an untrusted ambient hint, so requests like "configure this channel" or "why is this page empty?" resolve against the page you are looking at.
 
 Guided channel setup, workspace skills setup, web-search provider setup, and local Gateway setup run as hosted wizards inside the chat. Wizard questions stay in the conversation, secret steps mask input in the browser, and successful config-backed flows are audited and re-validated. If a chosen web-search provider needs a plugin install and that install fails, setup stops and reports the failure instead of pretending the provider is configured.
 
-For Gateway setup, say `configure gateway` to choose the port, bind address, token or password auth, and Tailscale exposure. Before the first question, the web surface warns that applying the saved settings requires a restart that may disconnect the chat or require a new Control UI sign-in. The wizard changes config only; say `restart gateway` when you are ready to apply it. It manages only a local Gateway, so remote mode changes stay in `openclaw onboard` or `openclaw configure`.
+For Gateway setup, say `configure gateway` to choose the port, bind address, token or password auth, and Tailscale exposure. Before the first question, the web surface warns that applying the saved settings requires a restart that may disconnect the chat or require a new Control UI sign-in. The wizard changes config only; say `restart gateway` when you are ready to apply it. It manages only a local Gateway, so remote mode changes stay in `paddy onboard` or `paddy configure`.
 
-Say `import memory` to copy detected local memory into the existing default agent workspace. This flow does not change config or import credentials or skills, needs no Gateway restart, and distinguishes confirmed imports, nothing to import, provider failures, and failures where some files may already have been copied. Finish onboarding first if the default workspace does not exist. See [Import assistant memory](/web/control-ui/settings#import-assistant-memory) for the broader page that can target another agent or replace existing imports, and [`openclaw setup`](/cli/openclaw) for the operation and approval contract.
+Say `import memory` to copy detected local memory into the existing default agent workspace. This flow does not change config or import credentials or skills, needs no Gateway restart, and distinguishes confirmed imports, nothing to import, provider failures, and failures where some files may already have been copied. Finish onboarding first if the default workspace does not exist. See [Import assistant memory](/web/control-ui/settings#import-assistant-memory) for the broader page that can target another agent or replace existing imports, and [`paddy setup`](/cli/paddy) for the operation and approval contract.
 
-Outside onboarding, this page can show at most one dismissible event chip per visit. It stays silent for routine Gateway traffic and reacts only to health snapshots that report a disabled configuration reloader, a configured channel disconnect/degradation, a failed channel probe, or unavailable channel credentials. A newer event replaces the pending chip only when it is more severe; dismissing or using the chip silences event prompts for that visit. Clicking the chip sends its diagnosis question as a real `openclaw.chat` message, so the transcript records the request and OpenClaw performs the diagnosis. Onboarding never shows these event chips.
+Outside onboarding, this page can show at most one dismissible event chip per visit. It stays silent for routine Gateway traffic and reacts only to health snapshots that report a disabled configuration reloader, a configured channel disconnect/degradation, a failed channel probe, or unavailable channel credentials. A newer event replaces the pending chip only when it is more severe; dismissing or using the chip silences event prompts for that visit. Clicking the chip sends its diagnosis question as a real `openclaw.chat` message, so the transcript records the request and Paddy performs the diagnosis. Onboarding never shows these event chips.
 
 ## Home dock
 
-Use the **Home** button in the sidebar footer, or in the toolbar when the sidebar is collapsed, to open the selected agent's main conversation alongside your current page. Select the **Ask OpenClaw** tab in the same dock for system setup and repair. When the same Home conversation is already open as the page, the dock stays hidden rather than showing it twice.
+Use the **Home** button in the sidebar footer, or in the toolbar when the sidebar is collapsed, to open the selected agent's main conversation alongside your current page. Select the **Ask Paddy** tab in the same dock for system setup and repair. When the same Home conversation is already open as the page, the dock stays hidden rather than showing it twice.
 
 Your Home draft and attachments follow the conversation between the page and dock. Files still being prepared keep their progress and Remove action, and Send waits until preparation finishes.
 
@@ -42,9 +45,13 @@ The operator terminal is enabled by default; set `gateway.terminal.enabled: fals
 
 When the terminal is disabled or your connection lacks admin access, the main terminal page shows an unavailable notice and a **New session** button to return to the composer.
 
-On Linux and macOS, a Gateway running on Bun uses a Node helper for terminal
-I/O. Keep Node available on the Gateway's `PATH`; an unavailable Node executable
-produces a startup error with installation guidance.
+On Linux and macOS, a Gateway running on Bun uses Bun's native PTY without a
+Node runtime only on builds providing `Bun.Terminal.pause()` and `resume()`,
+such as the Paddy Bun fork builds that also carry the macOS child-exit fix.
+Other Bun releases use a Node helper for terminal I/O. Keep Node available on
+the Gateway's `PATH`; Paddy skips Bun's `node` shim, and an unavailable Node
+executable produces a startup error with installation guidance. Windows keeps
+`node-pty`. See [Bun compatibility](/install/bun-compatibility#known-limitations).
 
 Enablement changes hot-apply without restarting the Gateway. Disabling closes
 attached, detached, and conversation-owned terminals and cancels pending opens.
@@ -52,14 +59,17 @@ Re-enabling allows fresh sessions; closed sessions do not return. Reload the
 Control UI page to pick up the updated content security policy.
 
 <Warning>
-The terminal is an unconfined host shell and inherits the Gateway process environment. Disable it with `gateway.terminal.enabled: false` on deployments where admin operators should not get a host shell. OpenClaw refuses terminal sessions for agents with `sandbox.mode: "all"`; changing an active agent to that mode closes its existing and in-flight terminal sessions.
+The terminal is an unconfined host shell and inherits the Gateway process environment. Disable it with `gateway.terminal.enabled: false` on deployments where admin operators should not get a host shell. Paddy refuses terminal sessions for agents with `sandbox.mode: "all"`; changing an active agent to that mode closes its existing and in-flight terminal sessions.
 </Warning>
 
 Use **Ctrl + backtick** to toggle the **Terminal** tab in the selected Chat pane's unified side panel. You can also open **Terminal** from the panel's **+** menu. The shared panel docks right or bottom, resizes with the browser viewport, can expand over the Chat pane, and keeps multiple shell tabs. The dock remains available for ad-hoc operator shells. Starting a native CLI from **New session**, or opening a Claude Code or Codex catalog session in the terminal, opens the [main terminal page](/web/urls#terminal-urls), keeping the sidebar and application chrome while replacing the composer. See [Gateway configuration](/gateway/configuration-reference#gateway) for `gateway.terminal.enabled` and the optional `gateway.terminal.shell` override.
 
 Terminal sessions appear as tabs in the Chat side-panel header; choosing **Terminal** again in the panel's **+** menu opens another shell, while sessions, upload, and dock-to-bottom actions sit in the header. A Terminal moved to the main area keeps its own tab strip.
 
-The unified panel also hosts **Browser**, **Files**, **Tasks**, **Review**, **Side chat**, and capability-dependent **Desktop** and **Discussion** tabs. Its open or minimized state, active tab, tab order, width, dock, and expanded state are stored per session in the current browser profile, so switching sessions or reloading restores each session's own working layout. A chat conversation without a saved panel layout does not inherit panels open in another session. Drag tabs to reorder them, close a tab without closing the other tools, or use the panel close button to minimize the whole panel.
+The unified panel also hosts **Browser**, **Files**, **Review**, **Side chat**, and capability-dependent **Desktop** and **Discussion** tabs. Its open or minimized state, active tab, tab order, width, dock, and expanded state are stored per session in the current browser profile, so switching sessions or reloading restores each session's own working layout. A chat conversation without a saved panel layout does not inherit panels open in another session. Drag tabs to reorder them, close a tab without closing the other tools, or use the panel close button to minimize the whole panel.
+
+The side-panel divider follows the pointer and arrow-key direction in both
+left-to-right and right-to-left layouts.
 
 Chat and each tool have their own named region for assistive navigation. Swapping Chat with a tool keeps each tab associated with its own content, including when the same conversation is open in multiple split panes.
 
@@ -71,7 +81,7 @@ Automatic reveals reuse the existing panel and keep an already-selected tool in 
 
 Owner-authorized, unsandboxed agents can use the `terminal` tool to list, read, resize, or close terminals an operator already opened from the same Chat session's Terminal panel. Agents cannot open shells, and access remains exact-session scoped: an agent cannot inspect or control standalone operator terminals or terminals belonging to another session. Terminal input follows the effective session and host-exec permission policy: **Full access** (`full`, or YOLO) sends it immediately; **Guarded** (`guarded`) and **Workspace** (`workspace`, including accept-only or Guardian-reviewed flows) require an explicit, one-time approval for that exact input; **Read only** (`read-only`) or `tools.exec.mode: "deny"` forbids input entirely. Approving one input never grants unrestricted access to the terminal.
 
-Drag one or more files onto the active terminal, or use the paperclip button to choose files. OpenClaw stages each file on the machine that owns the PTY and pastes shell-quoted absolute paths at the cursor; it never presses Enter or executes the input. A compact batch indicator shows the current file and completed count. Cancel stops the remaining batch without pasting paths; a failed transfer stays visible so you can retry from that file without re-uploading completed files. Choose **Insert uploaded paths** to finish a failed batch using only its completed files, then select any remaining files separately. If the batch stays open until its early uploads may have expired, cancel it and choose the files again.
+Drag one or more files onto the active terminal, or use the paperclip button to choose files. Paddy stages each file on the machine that owns the PTY and pastes shell-quoted absolute paths at the cursor; it never presses Enter or executes the input. A compact batch indicator shows the current file and completed count. Cancel stops the remaining batch without pasting paths; a failed transfer stays visible so you can retry from that file without re-uploading completed files. Choose **Insert uploaded paths** to finish a failed batch using only its completed files, then select any remaining files separately. If the batch stays open until its early uploads may have expired, cancel it and choose the files again.
 
 Images, PDFs, archives, and other file types are accepted up to 16 MiB per file. New uploads must fit within shared limits of 256 MiB and 64 files per staging directory, including files from other terminal tabs and previous processes. When either limit is reached, move or remove staged files, or wait for cleanup, then retry. Existing unexpired files are not evicted to make room, including uploads retained above these limits after an upgrade. Staged files use a private system-temporary directory on POSIX hosts (directory mode `0700`, file mode `0600`) or a directory under the user-profile ACL boundary on Windows, plus a 24-hour cleanup timer, so move or copy anything you need to keep.
 
@@ -83,7 +93,7 @@ Path insertion supports PowerShell, `cmd.exe`, and recognized POSIX shells (`sh`
 
 Paired-node Codex, Claude Code, OpenCode, and Pi terminals also support uploaded-path insertion, including Windows paths with spaces and apostrophes. The inserted input remains editable and is never automatically submitted.
 
-Claude Code and Codex sessions discovered in the sessions sidebar open their native CLI in the main terminal page. In **Settings › Chat**, set **Open Codex/Claude threads in** to **Terminal** to make a normal row click open `codex resume` or `claude --resume`; the default remains the read-only OpenClaw viewer. A row's right-click or kebab menu always offers both choices, and the viewer header includes **Open in terminal** when that session is eligible.
+Claude Code and Codex sessions discovered in the sessions sidebar open their native CLI in the main terminal page. In **Settings › Chat**, set **Open Codex/Claude threads in** to **Terminal** to make a normal row click open `codex resume` or `claude --resume`; the default remains the read-only Paddy viewer. A row's right-click or kebab menu always offers both choices, and the viewer header includes **Open in terminal** when that session is eligible.
 
 Catalog-opening requests already queued by an older version finish once in the dock after upgrading. New requests use the main terminal page; the page does not persist catalog-opening intents.
 

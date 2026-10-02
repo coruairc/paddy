@@ -33,7 +33,7 @@ Recommended sequence:
 5. **Add contract coverage.** Add tests so ownership and registration shape
    stay explicit over time.
 
-This is how OpenClaw stays opinionated without becoming hardcoded to one
+This is how Paddy stays opinionated without becoming hardcoded to one
 provider's worldview. See [Adding capabilities](/plugins/adding-capabilities)
 for a concrete file checklist and worked example.
 
@@ -69,11 +69,11 @@ export type VideoGenerationProviderPlugin = {
 
 // plugin API
 api.registerVideoGenerationProvider({
-  id: "openai",
-  label: "OpenAI",
+  id: "xai",
+  label: "xAI",
   async generateVideo(req) {
-    // generateOpenAiVideo is a placeholder for your own vendor call.
-    return await generateOpenAiVideo(req);
+    // generateXaiVideo is a placeholder for your own vendor call.
+    return await generateXaiVideo(req);
   },
 });
 
@@ -89,7 +89,7 @@ lookups such as `providerContractPluginIds`; tests assert a plugin's
 `contracts.videoGenerationProviders` list matches what it actually registers):
 
 ```ts
-expect(pluginManifest.contracts?.videoGenerationProviders).toEqual(["openai"]);
+expect(pluginManifest.contracts?.videoGenerationProviders).toEqual(["xai"]);
 ```
 
 That keeps the rule simple:

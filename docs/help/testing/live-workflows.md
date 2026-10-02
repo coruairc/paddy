@@ -19,7 +19,7 @@ When debugging real providers/models (requires real creds):
   `OPENCLAW_LIVE_TEST=1 OPENCLAW_LIVE_SUBAGENT_STRESS=1 pnpm test:live -- src/agents/subagents/announce/subagent-yield-resume.live.test.ts`
   - Requires `OPENAI_API_KEY` and defaults to `openai/gpt-5.6-luna`; select another
     OpenAI model with `OPENCLAW_LIVE_SUBAGENT_E2E_MODEL`.
-  - Pins the OpenClaw agent harness and uses isolated Gateway state, synthetic
+  - Pins the Paddy agent harness and uses isolated Gateway state, synthetic
     files, and externally held HTTP responses. It checks concurrent hidden-result
     fanout, status-only interrogation of a waiting child tree, operator resume
     with preserved task identity and idempotent replay, child timeout, a live HTTP
@@ -81,11 +81,11 @@ When debugging real providers/models (requires real creds):
     This exits after the sub-agent probe unless
     `OPENCLAW_LIVE_CODEX_HARNESS_SUBAGENT_ONLY=0` is set.
 - Codex on-demand install smoke: `pnpm test:docker:codex-on-demand`
-  - Installs the packaged OpenClaw tarball in Docker, runs OpenAI API-key
+  - Installs the packaged Paddy tarball in Docker, runs OpenAI API-key
     onboarding, and verifies the Codex plugin plus `@openai/codex` dependency
     were downloaded into the managed npm project root on demand.
 - Codex npm-plugin live package smoke: `pnpm test:docker:live-codex-npm-plugin`
-  - Installs the candidate OpenClaw package and exact Codex plugin into Docker,
+  - Installs the candidate Paddy package and exact Codex plugin into Docker,
     then uses a real OpenAI key for CLI preflight and same-session turns.
   - Its zero-retry medium-thinking follow-through turn must send progress, keep
     working through randomized workspace reads and an exact artifact write,
@@ -95,24 +95,24 @@ When debugging real providers/models (requires real creds):
     through `npm-pack:`, verifies the dependency under the managed npm
     project root, then asks a live OpenAI model to call the plugin tool and
     return the hidden slug.
-- OpenClaw rescue command smoke: `pnpm test:live:system-agent-rescue-channel`
+- Paddy rescue command smoke: `pnpm test:live:system-agent-rescue-channel`
   - Opt-in belt-and-suspenders check for the message-channel rescue command
-    surface. Exercises `/openclaw status`, queues a persistent model
-    change, replies `/openclaw yes`, and verifies the audit/config write
+    surface. Exercises `/paddy status`, queues a persistent model
+    change, replies `/paddy yes`, and verifies the audit/config write
     path.
-- OpenClaw first-run Docker smoke: `pnpm test:docker:system-agent-first-run`
-  - Starts from an empty OpenClaw state dir and first proves the packaged
-    `openclaw setup` CLI fails closed without inference. It then
+- Paddy first-run Docker smoke: `pnpm test:docker:system-agent-first-run`
+  - Starts from an empty Paddy state dir and first proves the packaged
+    `paddy setup` CLI fails closed without inference. It then
     tests and activates fake Claude through the packaged activation module.
     Only afterward does a fuzzy packaged CLI request reach the planner and
     resolve to typed setup, followed by one-shot model, agent, Discord config,
     and SecretRef operations. It validates config and audit entries. This is
     supporting gate/operation evidence, not an interactive onboarding or
-    OpenClaw agent/tool/approval proof. The same lane is exposed in QA Lab by
-    `pnpm openclaw qa suite --scenario system-agent-ring-zero-setup`.
+    Paddy agent/tool/approval proof. The same lane is exposed in QA Lab by
+    `pnpm paddy qa suite --scenario system-agent-ring-zero-setup`.
 - Moonshot/Kimi cost smoke: with `MOONSHOT_API_KEY` set, run
-  `openclaw models list --provider moonshot --json`, then run an isolated
-  `openclaw agent --local --session-id live-kimi-cost --message 'Reply exactly: KIMI_LIVE_OK' --thinking off --json`
+  `paddy models list --provider moonshot --json`, then run an isolated
+  `paddy agent --local --session-id live-kimi-cost --message 'Reply exactly: KIMI_LIVE_OK' --thinking off --json`
   against `moonshot/kimi-k2.6`. Verify the JSON reports Moonshot/K2.6 and the
   assistant transcript stores normalized `usage.cost`.
 

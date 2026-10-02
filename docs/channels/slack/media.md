@@ -1,25 +1,25 @@
 ---
 summary: "Audio clips, inbound file handling, chunking, and delivery targets"
 read_when:
-  - Sending voice clips or files to OpenClaw in Slack
+  - Sending voice clips or files to Paddy in Slack
   - Raising or lowering the Slack media size cap
   - Debugging a Slack attachment that was skipped
 title: "Slack media and attachments"
 sidebarTitle: "Media and attachments"
 ---
 
-How Slack files reach the agent turn, and how OpenClaw sends text and media back.
+How Slack files reach the agent turn, and how Paddy sends text and media back.
 
 ## Voice input
 
-To speak to OpenClaw in Slack today, send a Slack audio clip to the OpenClaw app. Slackbot's dictation microphone is a separate Slack-owned feature, not an app API.
+To speak to Paddy in Slack today, send a Slack audio clip to the Paddy app. Slackbot's dictation microphone is a separate Slack-owned feature, not an app API.
 
-- **[Slackbot voice dictation](https://slack.com/help/articles/202026038-How-to-use-Slackbot)** lives inside the user's private Slackbot conversation. Slack turns the recording into a Slackbot prompt but does not emit an audio file, dictation event, prompt, or input-source marker to third-party Slack apps through the Events API. The OpenClaw Slack plugin cannot enable or receive it.
-- **[Slack audio clips](https://slack.com/help/articles/4406235165587-Record-audio-and-video-clips-in-Slack)** are stored Slack files that can be posted in an OpenClaw DM, channel, or thread. OpenClaw downloads an accessible clip with the bot token, normalizes Slack's clip MIME metadata, and sends it through the shared [audio transcription pipeline](/nodes/audio). The recommended app manifest includes the required `files:read` scope.
+- **[Slackbot voice dictation](https://slack.com/help/articles/202026038-How-to-use-Slackbot)** lives inside the user's private Slackbot conversation. Slack turns the recording into a Slackbot prompt but does not emit an audio file, dictation event, prompt, or input-source marker to third-party Slack apps through the Events API. The Paddy Slack plugin cannot enable or receive it.
+- **[Slack audio clips](https://slack.com/help/articles/4406235165587-Record-audio-and-video-clips-in-Slack)** are stored Slack files that can be posted in a Paddy DM, channel, or thread. Paddy downloads an accessible clip with the bot token, normalizes Slack's clip MIME metadata, and sends it through the shared [audio transcription pipeline](/nodes/audio). The recommended app manifest includes the required `files:read` scope.
 
-Audio clips and Slackbot dictation have different privacy semantics: clips follow Slack file-retention policy and OpenClaw downloads them for transcription, while Slack says dictation audio is not stored.
+Audio clips and Slackbot dictation have different privacy semantics: clips follow Slack file-retention policy and Paddy downloads them for transcription, while Slack says dictation audio is not stored.
 
-In a channel with `requireMention: true`, a captionless audio clip can satisfy the gate by speaking a configured mention pattern (`agents.entries.*.groupChat.mentionPatterns`, falling back to `messages.groupChat.mentionPatterns`). OpenClaw authorizes the sender before downloading or transcribing the clip, then admits it only when the transcript matches. A failed or nonmatching speculative transcript is discarded with the downloaded clip; it is not retained in channel history. Native Slack `@bot` identity cannot be inferred from speech, so configure a spoken-name pattern or include a typed mention. If transcript echoing is enabled, the echo is sent only after admission.
+In a channel with `requireMention: true`, a captionless audio clip can satisfy the gate by speaking a configured mention pattern (`agents.entries.*.groupChat.mentionPatterns`, falling back to `messages.groupChat.mentionPatterns`). Paddy authorizes the sender before downloading or transcribing the clip, then admits it only when the transcript matches. A failed or nonmatching speculative transcript is discarded with the downloaded clip; it is not retained in channel history. Native Slack `@bot` identity cannot be inferred from speech, so configure a spoken-name pattern or include a typed mention. If transcript echoing is enabled, the echo is sent only after admission.
 
 ## Media, chunking, and delivery
 
@@ -27,7 +27,7 @@ In a channel with `requireMention: true`, a captionless audio clip can satisfy t
   <Accordion title="Inbound attachments">
     Slack file attachments are downloaded from Slack-hosted private URLs (token-authenticated request flow) and written to the media store when fetch succeeds and size limits permit. File placeholders include the Slack `fileId` so agents can fetch the original file with `download-file`.
 
-    Downloads use bounded idle and total timeouts. If Slack file retrieval stalls or fails, OpenClaw keeps processing the message and falls back to the file placeholder.
+    Downloads use bounded idle and total timeouts. If Slack file retrieval stalls or fails, Paddy keeps processing the message and falls back to the file placeholder.
 
     Runtime inbound size cap defaults to `20MB` unless overridden by `channels.slack.mediaMaxMb`.
 
@@ -68,7 +68,7 @@ an explicit `channelId`. An explicit `threadId` additionally requires the file t
 be shared in that thread; an ambient conversation thread does not narrow a
 channel-only download.
 
-OpenClaw checks the channel's existing access policy and fresh `files.info` share
+Paddy checks the channel's existing access policy and fresh `files.info` share
 evidence before downloading. It repeats the file-share check if Slack refreshes
 an expired download URL. Verified official npm and ClawHub installations use
 the same provider checks as the bundled Slack plugin.
@@ -95,7 +95,7 @@ its own newly created file while preserving preexisting or replaced files.
 
 When a Slack message with file attachments arrives:
 
-1. OpenClaw downloads the file from Slack's private URL using the bot token.
+1. Paddy downloads the file from Slack's private URL using the bot token.
 2. The file is written to the media store on success.
 3. Downloaded media paths and content types are added to the inbound context.
 4. Audio clips are routed to the shared transcription pipeline; image-capable model/tool paths can use image attachments from the same context.
@@ -137,7 +137,7 @@ When a single Slack message contains multiple file attachments:
 | Captionless clip does not pass a mention gate | Dropped after private speculative transcription; transcript and download discarded | Configure a spoken-name mention pattern, add a typed bot mention, or use a DM |
 | Vision model not configured                   | Image attachments are stored as media references, but not analyzed as images       | Configure `agents.defaults.imageModel` or use a vision-capable reply model    |
 | Very large images (> 20 MB by default)        | Skipped per size cap                                                               | Increase `channels.slack.mediaMaxMb` if Slack allows                          |
-| Forwarded/shared attachments                  | Text and Slack-hosted image/file media are best-effort                             | Re-share directly in the OpenClaw thread                                      |
+| Forwarded/shared attachments                  | Text and Slack-hosted image/file media are best-effort                             | Re-share directly in the Paddy thread                                         |
 | PDF attachments                               | Stored as file/media context, not automatically routed through image vision        | Use `download-file` for file metadata or the `pdf` tool for PDF analysis      |
 
 ### Related documentation

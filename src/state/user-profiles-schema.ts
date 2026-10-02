@@ -53,11 +53,18 @@ export class UserProfileNotFoundError extends Error {
   }
 }
 
+export class UserProfileMergeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UserProfileMergeError";
+  }
+}
+
 export class UserProfileOwnerError extends Error {
   constructor(readonly code: UserProfileOwnerErrorCode) {
     super(
       code === "repair-required"
-        ? "the shared owner profile requires repair; run openclaw doctor --fix and reconnect"
+        ? "the shared owner profile requires repair; run paddy doctor --fix and reconnect"
         : code === "merge"
           ? "the shared owner profile cannot be merged; sign in with a personal identity instead"
           : "the shared owner profile is not governed by operator roles",

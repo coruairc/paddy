@@ -1,3 +1,4 @@
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import type { UpdateRecovery } from "../infra/update-recovery.js";
 import type { NodeVersionManager } from "./version-manager-path.js";
 
@@ -30,7 +31,7 @@ export function createRuntimeUpdateRecoverySteps(params: {
     return [
       {
         kind: "deployment",
-        instruction: `Pull or build an OpenClaw image with version ${targetVersion} and Node ${nodeVersion}, then recreate or redeploy the container with the same state/config mounts. In-container package changes are not durable.`,
+        instruction: `Pull or build a ${PRODUCT_NAME} image with version ${targetVersion} and Node ${nodeVersion}, then recreate or redeploy the container with the same state/config mounts. In-container package changes are not durable.`,
       },
     ];
   }
@@ -90,14 +91,13 @@ export function formatUpdateActivationTimeoutGuidance(
 }
 
 export const UPDATE_INSTALL_SKIP_GUIDANCE: Readonly<Record<string, string>> = {
-  "external-supervisor-update-required":
-    "This Gateway is managed by an external supervisor. Use your server or deployment's update workflow to update OpenClaw and restart the Gateway. The Control UI and `openclaw update` cannot update this installation. No package changes or Gateway restart were attempted.",
+  "external-supervisor-update-required": `This Gateway is managed by an external supervisor. Use your server or deployment's update workflow to update ${PRODUCT_NAME} and restart the Gateway. The Control UI and \`${CLI_NAME} update\` cannot update this installation. No package changes or Gateway restart were attempted.`,
   "container-image-install":
     "Pull or build the target Docker/container image, then redeploy it with the same state/config mounts. No package changes or Gateway restart were attempted.",
   "unmanaged-package-install":
     "No npm, pnpm, or Bun global owner was detected. Reinstall using the original method; use Yarn for Yarn global installs. No package changes or Gateway restart were attempted.",
   "package-update-requires-cli":
-    "Run `openclaw update` through this install's npm, pnpm, or Bun global launcher. No package changes or Gateway restart were attempted.",
+    "Run `paddy update` through this install's npm, pnpm, or Bun global launcher. No package changes or Gateway restart were attempted.",
 };
 
 export const SKIPPED_UPDATE_OUTCOMES: Readonly<Record<string, "pending" | "noop">> = {

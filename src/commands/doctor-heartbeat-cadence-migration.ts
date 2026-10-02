@@ -71,7 +71,8 @@ function describePlannedChange(change: HeartbeatMonitorChange): string {
   const cadence =
     schedule.kind === "every" ? formatDurationCompact(schedule.everyMs) : schedule.kind;
   const action = change.kind === "create" ? "Create" : "Update";
-  return `${action} heartbeat monitor for agent "${change.agentId}" at ${cadence}.`;
+  const state = change.input.enabled ? `at ${cadence}` : "as disabled";
+  return `${action} heartbeat monitor for agent "${change.agentId}" ${state}.`;
 }
 
 function noteWarnings(warnings: readonly string[], storePath: string): void {
@@ -92,7 +93,7 @@ function cadenceFinding(params: {
     path: params.storePath,
     target: params.change.agentId,
     requirement: `heartbeat-monitor-${params.change.kind}`,
-    fixHint: `Run ${formatCliCommand("openclaw doctor --fix")} to materialize heartbeat cadence in cron.`,
+    fixHint: `Run ${formatCliCommand("paddy doctor --fix")} to materialize heartbeat cadence in cron.`,
   };
 }
 
@@ -113,7 +114,7 @@ export async function collectHeartbeatCadenceMigrationFindings(
         message: `Heartbeat cadence could not be inspected: ${errorMessage(error)}`,
         path: storePath,
         requirement: "heartbeat-monitor-inspection",
-        fixHint: `Run ${formatCliCommand("openclaw doctor --fix")} after resolving the cron store error.`,
+        fixHint: `Run ${formatCliCommand("paddy doctor --fix")} after resolving the cron store error.`,
       },
     ];
   }

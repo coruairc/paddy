@@ -11,7 +11,7 @@ const loadStream = createLazyRuntimeModule(() => import("./stream.js"));
 export default defineSingleProviderPluginEntry({
   id: APPLE_FM_PROVIDER_ID,
   name: "Apple Foundation Models",
-  description: "On-device Apple Intelligence inference for lightweight OpenClaw setup",
+  description: "On-device Apple Intelligence inference for lightweight Paddy setup",
   manifest,
   provider: (api) => {
     const pluginRoot = api.rootDir ?? path.dirname(api.source);
@@ -59,7 +59,7 @@ export default defineSingleProviderPluginEntry({
             }
           : undefined,
       buildMissingAuthMessage: () =>
-        "Run openclaw onboard and select Apple Foundation Models on a supported Mac to prepare local inference. No API key is required.",
+        "Run paddy onboard and select Apple Foundation Models on a supported Mac to prepare local inference. No API key is required.",
       createStreamFn: () => nativeStream,
       wrapSimpleCompletionStreamFn: () => nativeStream,
     };

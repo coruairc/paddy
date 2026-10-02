@@ -108,7 +108,7 @@ function acceptManagedPluginDeclaredSurface<T extends PluginInstallRecord>(
 
 function throwManagedPluginCapabilityConsentRequired(
   review: PluginCapabilityConsentReview,
-  recovery = "Rerun the openclaw plugins install, enable, update, or reload command with --accept-capabilities after reviewing the plugin.",
+  recovery = "Rerun the paddy plugins install, enable, update, or reload command with --accept-capabilities after reviewing the plugin.",
 ): never {
   pendingPluginCapabilityReviews.delete(review.pluginId);
   pendingPluginCapabilityReviews.set(review.pluginId, review);
@@ -267,14 +267,19 @@ async function resolvePluginArtifactCapabilityConsent(params: {
       record: params.sourceRecord,
     });
   const official = isOfficialArtifact(manifest);
-  const review = buildPluginCapabilityConsentReview({
-    pluginId: params.pluginId,
-    manifest: manifest ?? { name: params.pluginId },
-    record: params.sourceRecord ?? params.record,
-    config: params.config,
-    declared,
-    ...(params.previousDeclared ? { previousDeclared: params.previousDeclared } : {}),
-  });
+  const reviewArtifact = (
+    artifactDeclared: PluginAcceptedDeclaredSurface,
+    artifactManifest: typeof manifest,
+  ) =>
+    buildPluginCapabilityConsentReview({
+      pluginId: params.pluginId,
+      manifest: artifactManifest ?? { name: params.pluginId },
+      record: params.sourceRecord ?? params.record,
+      config: params.config,
+      declared: artifactDeclared,
+      ...(params.previousDeclared ? { previousDeclared: params.previousDeclared } : {}),
+    });
+  const review = reviewArtifact(declared, manifest);
   let acceptanceCurrent = false;
   if (params.mode === "update" && params.previousDeclared) {
     const { hasWidening } = diffDeclaredSurfaceWidening(params.previousDeclared, declared);
@@ -308,22 +313,11 @@ async function resolvePluginArtifactCapabilityConsent(params: {
     (official && !isOfficialArtifact(finalManifest))
   ) {
     const finalReview =
-      finalToken === review.reviewToken
-        ? review
-        : buildPluginCapabilityConsentReview({
-            pluginId: params.pluginId,
-            manifest: finalManifest ?? {
-              name: params.pluginId,
-            },
-            record: params.sourceRecord ?? params.record,
-            config: params.config,
-            declared: finalDeclared,
-            ...(params.previousDeclared ? { previousDeclared: params.previousDeclared } : {}),
-          });
+      finalToken === review.reviewToken ? review : reviewArtifact(finalDeclared, finalManifest);
     const outcome = params.currentArtifactDir ? "updated" : "installed";
     return throwManagedPluginCapabilityConsentRequired(
       finalReview,
-      `The plugin was not ${outcome}. Re-run the same "openclaw plugins install" or "openclaw plugins update" command with --accept-capabilities, keeping its source and other options. For Doctor or setup, complete the plugin command first, then retry Doctor or setup.`,
+      `The plugin was not ${outcome}. Re-run the same "paddy plugins install" or "paddy plugins update" command with --accept-capabilities, keeping its source and other options. For Doctor or setup, complete the plugin command first, then retry Doctor or setup.`,
     );
   }
   pendingPluginCapabilityReviews.delete(params.pluginId);

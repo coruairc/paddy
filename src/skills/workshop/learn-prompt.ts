@@ -1,4 +1,5 @@
 // Builds the server-authored instruction used by the /learn command.
+import { PRODUCT_NAME } from "../../brand.js";
 import { SKILL_AUTHORING_STANDARDS_PROMPT } from "./skill-authoring-standards.js";
 
 export const DEFAULT_LEARN_REQUEST =
@@ -8,7 +9,7 @@ export const DEFAULT_LEARN_REQUEST =
 export function buildLearnPrompt(request: string): string {
   const normalizedRequest = request.trim() || DEFAULT_LEARN_REQUEST;
   return [
-    "Improve the OpenClaw skill collection from the learning request below.",
+    `Improve the ${PRODUCT_NAME} skill collection from the learning request below.`,
     "",
     `Learning request (JSON string): ${JSON.stringify(normalizedRequest)}`,
     "",

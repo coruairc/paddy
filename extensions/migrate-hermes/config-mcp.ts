@@ -4,6 +4,7 @@ import { asPositiveFiniteNumber as readPositiveNumber } from "openclaw/plugin-sd
 import type { MigrationItem } from "openclaw/plugin-sdk/plugin-entry";
 import {
   asBoolean,
+  asOptionalRecord,
   isRecord,
   normalizeOptionalString,
   parseBooleanValue,
@@ -15,13 +16,7 @@ const MCP_RESOURCE_UTILITY_TOOLS = ["resources_list", "resources_read"] as const
 const MCP_PROMPT_UTILITY_TOOLS = ["prompts_list", "prompts_get"] as const;
 
 function readPositiveNumeric(value: unknown): number | undefined {
-  if (typeof value === "number") {
-    return readPositiveNumber(value);
-  }
-  if (typeof value !== "string" || !value.trim()) {
-    return undefined;
-  }
-  return readPositiveNumber(Number(value));
+  return readPositiveNumber(typeof value === "string" ? Number(value) : value);
 }
 
 function readToolFilterList(value: unknown): string[] | undefined {
@@ -40,11 +35,7 @@ function hasUnsupportedToolPattern(pattern: string): boolean {
 }
 
 function mapHermesToolFilter(value: Record<string, unknown>): Record<string, unknown> | undefined {
-  const direct = isRecord(value.toolFilter)
-    ? value.toolFilter
-    : isRecord(value.tool_filter)
-      ? value.tool_filter
-      : undefined;
+  const direct = asOptionalRecord(value.toolFilter) ?? asOptionalRecord(value.tool_filter);
   if (direct) {
     const include = readToolFilterList(direct.include);
     const exclude = readToolFilterList(direct.exclude);
@@ -54,7 +45,7 @@ function mapHermesToolFilter(value: Record<string, unknown>): Record<string, unk
     return exclude !== undefined && exclude.length > 0 ? { exclude } : undefined;
   }
 
-  const tools = isRecord(value.tools) ? value.tools : undefined;
+  const tools = asOptionalRecord(value.tools);
   if (!tools) {
     return undefined;
   }
@@ -120,7 +111,7 @@ export function importsMcpSensitiveValues(
 }
 
 function mapHermesMcpOauth(value: Record<string, unknown>): Record<string, unknown> | undefined {
-  const oauth = isRecord(value.oauth) ? value.oauth : undefined;
+  const oauth = asOptionalRecord(value.oauth);
   if (!oauth) {
     return undefined;
   }
@@ -192,7 +183,7 @@ export function mapMcpServer(
   next.oauth = mapHermesMcpOauth(value);
   Object.assign(next, mapHermesClientCertificate(value));
   next.toolFilter = mapHermesToolFilter(value);
-  const tools = isRecord(value.tools) ? value.tools : undefined;
+  const tools = asOptionalRecord(value.tools);
   if (
     tools &&
     readToolFilterList(tools.include) === undefined &&
@@ -266,7 +257,7 @@ export function mcpManualItems(params: {
     add(
       "unresolved-secrets",
       `Hermes MCP server "${name}" references environment values that were not found in its .env file.`,
-      "Define the missing values in OpenClaw's MCP server environment or headers manually.",
+      "Define the missing values in Paddy's MCP server environment or headers manually.",
     );
   }
 
@@ -275,29 +266,23 @@ export function mcpManualItems(params: {
   if (Array.isArray(cert) && cert.length === 3) {
     add(
       "client-cert-password",
-      `Hermes MCP server "${name}" uses a password-protected client key, which OpenClaw cannot represent in MCP config.`,
+      `Hermes MCP server "${name}" uses a password-protected client key, which Paddy cannot represent in MCP config.`,
       "Configure an unencrypted protected key path or an equivalent TLS proxy manually.",
     );
   } else if (
     (cert !== undefined || key !== undefined) &&
-    !(
-      (Array.isArray(cert) &&
-        cert.length === 2 &&
-        normalizeOptionalString(cert[0]) &&
-        normalizeOptionalString(cert[1])) ||
-      (normalizeOptionalString(cert) && key)
-    )
+    !mapHermesClientCertificate(raw).clientCert
   ) {
     add(
       "client-cert",
       `Hermes MCP server "${name}" uses a combined or invalid client-certificate shape that was not imported.`,
-      "Configure separate OpenClaw clientCert and clientKey file paths manually.",
+      "Configure separate Paddy clientCert and clientKey file paths manually.",
     );
   }
   if (typeof (raw.sslVerify ?? raw.ssl_verify) === "string") {
     add(
       "tls-ca",
-      `Hermes MCP server "${name}" uses a CA bundle path for TLS verification, which OpenClaw MCP config cannot represent.`,
+      `Hermes MCP server "${name}" uses a CA bundle path for TLS verification, which Paddy MCP config cannot represent.`,
       "Install the CA in the host trust store or configure an equivalent TLS proxy manually.",
     );
   }
@@ -307,7 +292,7 @@ export function mcpManualItems(params: {
     add(
       "transport",
       `Hermes MCP server "${name}" uses unsupported transport "${transport}".`,
-      "Configure an equivalent OpenClaw MCP transport manually.",
+      "Configure an equivalent Paddy MCP transport manually.",
     );
   }
 
@@ -316,15 +301,15 @@ export function mcpManualItems(params: {
     add(
       "auth",
       `Hermes MCP server "${name}" uses unsupported authentication mode "${auth}".`,
-      "Configure an equivalent OpenClaw MCP authentication mode manually.",
+      "Configure an equivalent Paddy MCP authentication mode manually.",
     );
   }
-  const oauth = isRecord(raw.oauth) ? raw.oauth : undefined;
+  const oauth = asOptionalRecord(raw.oauth);
   if (auth === "oauth" || oauth) {
     add(
       "oauth-login",
-      `Hermes MCP server "${name}" requires OAuth login in OpenClaw.`,
-      `Run "openclaw mcp login ${name}" after migration.`,
+      `Hermes MCP server "${name}" requires OAuth login in Paddy.`,
+      `Run "paddy mcp login ${name}" after migration.`,
     );
   }
   if (
@@ -336,12 +321,12 @@ export function mcpManualItems(params: {
   ) {
     add(
       "oauth-client",
-      `Hermes MCP server "${name}" uses pre-registered OAuth client settings that were not copied into OpenClaw config.`,
-      `Run "openclaw mcp login ${name}" and configure supported OAuth metadata manually.`,
+      `Hermes MCP server "${name}" uses pre-registered OAuth client settings that were not copied into Paddy config.`,
+      `Run "paddy mcp login ${name}" and configure supported OAuth metadata manually.`,
     );
   }
 
-  const tools = isRecord(raw.tools) ? raw.tools : undefined;
+  const tools = asOptionalRecord(raw.tools);
   const include = tools ? readToolFilterList(tools.include) : undefined;
   const activePatterns = include ?? (tools ? readToolFilterList(tools.exclude) : undefined);
   if (activePatterns?.some(hasUnsupportedToolPattern)) {
@@ -349,7 +334,7 @@ export function mcpManualItems(params: {
       "tool-patterns",
       include === undefined
         ? `Hermes MCP server "${name}" was imported disabled because its tool exclusions use unsupported fnmatch patterns.`
-        : `Hermes MCP server "${name}" has tool include patterns that were omitted because OpenClaw supports only exact names and "*".`,
+        : `Hermes MCP server "${name}" has tool include patterns that were omitted because Paddy supports only exact names and "*".`,
       "Replace ? and bracket patterns with exact tool names or equivalent * patterns in mcp.servers toolFilter, then enable the server if disabled.",
     );
   }
@@ -388,7 +373,7 @@ export function mcpManualItems(params: {
     if (configured) {
       add(
         feature,
-        `Hermes MCP server "${name}" uses ${feature} behavior that OpenClaw MCP config does not expose.`,
+        `Hermes MCP server "${name}" uses ${feature} behavior that Paddy MCP config does not expose.`,
         "Review the server requirement and configure an equivalent deployment or runtime policy manually.",
       );
     }

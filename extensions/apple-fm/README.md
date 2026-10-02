@@ -1,7 +1,7 @@
 # Apple Foundation Models provider
 
-Bundled on-device Apple Intelligence inference for OpenClaw setup and utility tasks.
-Choose **Apple Foundation Models** during `openclaw onboard` on a Mac. No API key
+Bundled on-device Apple Intelligence inference for Paddy setup and utility tasks.
+Choose **Apple Foundation Models** during `paddy onboard` on a Mac. No API key
 or third-party model server is required.
 
 Requires macOS 27 on Apple silicon, Apple Intelligence enabled with its model

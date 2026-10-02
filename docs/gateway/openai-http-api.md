@@ -18,7 +18,7 @@ Once enabled, it serves all of these on the same port as the Gateway (WS + HTTP 
 
 `POST /v1/responses` is enabled separately with `gateway.http.endpoints.responses.enabled`. See [OpenResponses API](/gateway/openresponses-http-api).
 
-Requests run as a normal Gateway agent run (same codepath as `openclaw agent`), so routing, permissions, and config match your Gateway.
+Requests run as a normal Gateway agent run (same codepath as `paddy agent`), so routing, permissions, and config match your Gateway.
 
 ## Enabling the endpoint
 
@@ -77,7 +77,7 @@ Notes:
 
 ## Agent-first model contract
 
-OpenClaw treats the OpenAI `model` field as an **agent target**, not a raw provider model id.
+Paddy treats the OpenAI `model` field as an **agent target**, not a raw provider model id.
 
 | `model` value                                | Routes to                                                                                                                |
 | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -105,7 +105,7 @@ The model list and detail endpoints require `operator.read` or a scope that incl
 
 By default the endpoint is **stateless per request** (a new session key is generated each call).
 
-If the request includes an OpenAI `user` string, the Gateway derives a stable session key from it so repeated calls can share an agent session. For custom apps, reuse the same `user` value per conversation thread; avoid account-level identifiers unless you want multiple conversations/devices to share one OpenClaw session. Use `x-openclaw-session-key` only when you need explicit routing control across multiple clients/threads, with application-owned keys that avoid the reserved namespaces above.
+If the request includes an OpenAI `user` string, the Gateway derives a stable session key from it so repeated calls can share an agent session. For custom apps, reuse the same `user` value per conversation thread; avoid account-level identifiers unless you want multiple conversations/devices to share one Paddy session. Use `x-openclaw-session-key` only when you need explicit routing control across multiple clients/threads, with application-owned keys that avoid the reserved namespaces above.
 
 ### Explicit incognito session continuation
 
@@ -167,7 +167,7 @@ Image settings default to:
 | `images.maxRedirects` | 3                                                                   |
 | `images.timeoutMs`    | 10s                                                                 |
 
-HEIC/HEIF `image_url` sources are accepted and normalized to JPEG before provider delivery through the shared OpenClaw image processor (Rastermill), which falls back to a system converter (`sips`, ImageMagick, GraphicsMagick, or ffmpeg) for formats needing external codec support.
+HEIC/HEIF `image_url` sources are accepted and normalized to JPEG before provider delivery through the shared Paddy image processor (Rastermill), which falls back to a system converter (`sips`, ImageMagick, GraphicsMagick, or ffmpeg) for formats needing external codec support.
 
 Security note: allowlisting a hostname does not bypass private/internal IP blocking. For internet-exposed gateways, apply network egress controls in addition to app-level guards. See [Security](/gateway/security).
 
@@ -206,7 +206,7 @@ Returns `400 invalid_request_error` for:
 - `tool_choice` variants such as `allowed_tools` and `custom`
 - `tool_choice.function.name` values that do not match a provided tool
 
-For `tool_choice: "required"` and function-pinned `tool_choice`, the endpoint narrows the exposed client function-tool set, instructs the runtime to call a client tool before responding, and errors if the agent response has no matching structured client-tool call. This applies to the caller-supplied HTTP `tools` list, not every internal OpenClaw agent tool.
+For `tool_choice: "required"` and function-pinned `tool_choice`, the endpoint narrows the exposed client function-tool set, instructs the runtime to call a client tool before responding, and errors if the agent response has no matching structured client-tool call. This applies to the caller-supplied HTTP `tools` list, not every internal Paddy agent tool.
 
 ### Non-streaming tool response shape
 

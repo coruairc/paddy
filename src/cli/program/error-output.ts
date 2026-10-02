@@ -3,7 +3,7 @@ import { stripAnsi } from "../../../packages/terminal-core/src/ansi.js";
 import { formatDocsLink } from "../../../packages/terminal-core/src/links.js";
 import { theme } from "../../../packages/terminal-core/src/theme.js";
 import { getCommandPathWithRootOptions } from "../argv.js";
-import { PRODUCT_NAME } from "../cli-name.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { ExpectedCliError } from "../failure-output.js";
 import { formatCliCommandSuggestions } from "./command-suggestions.js";
@@ -31,9 +31,9 @@ function resolveHelpCommand(
 ): string {
   const commandPath = options?.commandPath ?? (argv ? getCommandPathWithRootOptions(argv, 2) : []);
   if (commandPath.length === 0) {
-    return formatCliCommand("openclaw --help");
+    return formatCliCommand(`${CLI_NAME} --help`);
   }
-  return formatCliCommand(`openclaw ${commandPath.join(" ")} --help`);
+  return formatCliCommand(`${CLI_NAME} ${commandPath.join(" ")} --help`);
 }
 
 function lines(...items: Array<string | undefined>): string {
@@ -72,7 +72,7 @@ function formatCliUnknownCommandOutput(
     formatHelpHint(options.argv, { commandPath }),
     hasParentCommand
       ? undefined
-      : `${theme.muted("Plugin command?")} ${theme.command(formatCliCommand("openclaw plugins list"))}`,
+      : `${theme.muted("Plugin command?")} ${theme.command(formatCliCommand(`${CLI_NAME} plugins list`))}`,
     formatDocsHint(),
   );
 }

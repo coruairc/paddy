@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { extractSqliteTableSchema } from "../infra/sqlite-schema-sql.js";
 import { withLegacySessionParticipantsSchema } from "./openclaw-agent-participants-migration.js";
 import { AGENT_SCHEMA_WITHOUT_PROGRESS_CARD_SQL } from "./openclaw-agent-progress-card-schema.js";
@@ -11,12 +12,12 @@ const sessionSharingSchema = extractSqliteTableSchema(
   {
     endMarker: "CREATE TABLE IF NOT EXISTS heartbeat_outcomes (",
     includeEndMarker: false,
-    errorMessage: "OpenClaw agent session-sharing schema markers are missing.",
+    errorMessage: `${PRODUCT_NAME} agent session-sharing schema markers are missing.`,
   },
 );
 const sessionSuggestionsStart = sessionSharingSchema.indexOf(SUGGESTIONS_SCHEMA_START);
 if (sessionSuggestionsStart === -1) {
-  throw new Error("OpenClaw agent session-suggestions schema marker is missing.");
+  throw new Error(`${PRODUCT_NAME} agent session-suggestions schema marker is missing.`);
 }
 export const AGENT_V14_SESSION_SHARING_SCHEMA_SQL = sessionSharingSchema.slice(
   0,

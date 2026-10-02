@@ -132,7 +132,7 @@ Read-only inspection recognizes valid `store` bindings without opening the datab
 - `mode: "json"` (default) expects a JSON object payload and resolves `id` as a JSON pointer.
 - `mode: "singleValue"` expects ref id `"value"` and returns the raw file contents (trailing newline stripped).
 - Path must be a private regular file with one hard link and pass ownership/permission checks. Symlinks and hardlinked files are rejected; `timeoutMs` (default 5000) and `maxBytes` (default 1 MiB) bound the read.
-- Windows fail-closed: if ACL verification is unavailable for the path, resolution fails. Move the secret to a path whose ACLs OpenClaw can verify; there is no provider-level bypass.
+- Windows fail-closed: if ACL verification is unavailable for the path, resolution fails. Move the secret to a path whose ACLs Paddy can verify; there is no provider-level bypass.
 
 If an upgrade reports `must not be hardlinked`, copy the contents into a new private
 file and replace the configured path. Changing permissions alone does not break
@@ -154,7 +154,7 @@ credential path in an existing private directory:
 
 This preserves the configured path and contents while creating a single-link,
 `0600` file. Other names for the old inode remain unchanged. Run
-`openclaw secrets reload` for a running Gateway; if startup failed, repair the file
+`paddy secrets reload` for a running Gateway; if startup failed, repair the file
 before starting the Gateway again. See [activation behavior](/gateway/secrets/operations#activation-triggers).
 The [1Password integration](/gateway/secrets/integration-examples#1password) retains
 its separate, explicit allowance for broker-token hardlinks.
@@ -167,8 +167,8 @@ its separate, explicit allowance for broker-token hardlinks.
 - [`config validate`](/cli/config#config-validate) checks every manual exec command path without executing providers. Config writes and dry runs check only changed or newly referenced providers, so an unrelated inactive provider does not block repairs. These are path trust checks, not proof that a provider can execute or return a secret.
 - Supports `timeoutMs` (default 5000), `noOutputTimeoutMs` (default equals `timeoutMs`), `maxOutputBytes` (default 1 MiB), `env`/`passEnv` allowlist, and `trustedDirs`.
 - `jsonOnly` defaults to `true`. With `jsonOnly: false` and a single requested id, plain non-JSON stdout is accepted as that id's value.
-- Windows fail-closed: if ACL verification is unavailable for the command path, resolution fails. Use a command path whose ACLs OpenClaw can verify; there is no provider-level bypass.
-- Plugin-managed exec providers can use `pluginIntegration` instead of a copied `command`/`args`. OpenClaw resolves the current command details from the installed plugin manifest during startup/reload; if the plugin is disabled, removed, untrusted, or no longer declares the integration, active SecretRefs on that provider fail closed.
+- Windows fail-closed: if ACL verification is unavailable for the command path, resolution fails. Use a command path whose ACLs Paddy can verify; there is no provider-level bypass.
+- Plugin-managed exec providers can use `pluginIntegration` instead of a copied `command`/`args`. Paddy resolves the current command details from the installed plugin manifest during startup/reload; if the plugin is disabled, removed, untrusted, or no longer declares the integration, active SecretRefs on that provider fail closed.
 
 Request payload (stdin):
 
@@ -192,7 +192,7 @@ Optional per-id errors:
 }
 ```
 
-`code` is an optional machine-readable diagnostic. OpenClaw displays the recognized
+`code` is an optional machine-readable diagnostic. Paddy displays the recognized
 codes `NOT_FOUND` and `AMBIGUOUS_DUPLICATE_KEY` with the provider and ref id. Other
 codes and free-form fields such as `message` are accepted for protocol-v1 compatibility
 but are not displayed because resolver output can contain credential material.
@@ -200,7 +200,7 @@ but are not displayed because resolver output can contain credential material.
 </Accordion>
 
 <Accordion title="Store provider">
-- Reads values from OpenClaw's shared state SQLite database.
+- Reads values from Paddy's shared state SQLite database.
 - The provider has no connection settings. `secrets.defaults.store` selects its default alias.
 - Only team scope is resolved. Identity scope is not supported yet.
 

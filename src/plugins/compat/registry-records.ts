@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../../brand.js";
 import { DEPRECATION_MARKING_COMPAT_RECORDS } from "./deprecation-marking.js";
 import { MEDIA_LEGACY_PROJECTION_COMPAT_RECORD } from "./media-legacy-projection.js";
 import {
@@ -105,33 +106,6 @@ export const PLUGIN_COMPAT_RECORDS = [
     ],
     releaseNote:
       "Node-host plugins can await managed workspace acquisition while existing synchronous callers retain their immediate lease contract.",
-  },
-  {
-    code: "plugin-tasks-sync-reads",
-    status: "deprecated",
-    owner: "sdk",
-    introduced: "2026-09-12",
-    deprecated: "2026-09-12",
-    warningStarts: "2026-09-12",
-    removalGate: "next-plugin-sdk-major",
-    replacement:
-      "Await the 14 read methods on api.runtime.tasks.async.runs, flows, and managedFlows, plus createManaged, tryCreateManaged, setWaiting, resume, finish, fail, requestCancel, and runTask on api.runtime.tasks.async.managedFlows. Reconcile outcome-unknown errors before retrying creation or child linkage. Retain synchronous methods until supported external-plugin migration and explicit breaking-release approval; native cancellation remains on the existing surface.",
-    docsPath: "/plugins/sdk-runtime/background-work",
-    surfaces: [
-      "api.runtime.tasks.runs get/list/findLatest/resolve",
-      "api.runtime.tasks.flows get/list/findLatest/resolve/getTaskSummary",
-      "api.runtime.tasks.managedFlows get/list/findLatest/resolve/getTaskSummary",
-      "api.runtime.tasks.managedFlows createManaged/tryCreateManaged/setWaiting/resume/finish/fail/requestCancel/runTask",
-    ],
-    diagnostics: [
-      "TypeScript @deprecated annotations and migration documentation; no runtime warnings",
-    ],
-    tests: [
-      "src/infra/sqlite-worker-task-runtime.test.ts",
-      "src/infra/sqlite-worker-managed-task-link.test.ts",
-    ],
-    releaseNote:
-      "Plugins can opt into worker-backed task and flow reads plus managed-flow writes and child linkage through tasks.async while synchronous methods remain available for external compatibility. Cold registry and configuration preparation remains synchronous.",
   },
   {
     code: "plugin-state-sync-keyed-store",
@@ -654,7 +628,7 @@ export const PLUGIN_COMPAT_RECORDS = [
     ],
     tests: ["src/plugin-sdk/shipped-channel-compat.test.ts", "src/plugins/compat/registry.test.ts"],
     releaseNote:
-      "Published OpenClaw channel packages through 2026.7.1 remain loadable while they migrate to plugin-owned config and setup helpers.",
+      `Published ${PRODUCT_NAME} channel packages through 2026.7.1 remain loadable while they migrate to plugin-owned config and setup helpers.`,
   },
   {
     code: "generated-bundled-channel-config-fallback",

@@ -1,5 +1,5 @@
 ---
-summary: "OpenAI Agents API harness and hosted sessions."
+summary: "OpenAI Agents API harness with hosted or self-hosted sessions."
 read_when:
   - You are installing, configuring, or auditing the agentsapi plugin
 title: "Agentsapi plugin reference"
@@ -10,12 +10,12 @@ Run `pnpm plugins:inventory:gen` to rebuild it. Hand-written text survives only
 between the openclaw-plugin-reference:manual-start and
 openclaw-plugin-reference:manual-end comment markers. -->
 
-OpenAI Agents API harness and hosted sessions.
+OpenAI Agents API harness with hosted or self-hosted sessions.
 
 ## Distribution
 
 - Package: `@openclaw/agentsapi`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 

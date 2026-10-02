@@ -70,7 +70,7 @@ async function runLock(record: ManagedWorktreeRecord) {
     "worktree",
     "lock",
     "--reason",
-    `openclaw pid=${process.pid}`,
+    `paddy pid=${process.pid}`,
     record.path,
   ]);
 }

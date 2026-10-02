@@ -35,7 +35,7 @@ export function getTelegramTokenHelpLines(): string[] {
 export function getTelegramUserIdHelpLines(): string[] {
   return [
     t("wizard.telegram.userIdHelpLogs", {
-      command: formatCliCommand("openclaw logs --follow"),
+      command: formatCliCommand("paddy logs --follow"),
     }),
     t("wizard.telegram.userIdHelpGetUpdates"),
     t("wizard.telegram.userIdHelpThirdParty"),

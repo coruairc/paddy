@@ -243,7 +243,7 @@ describe("noteClaudeCliHealth", () => {
       const body = noteBody(noteFn);
       expect(body).toContain("Claude auth: not logged in.");
       expect(body).toContain("claude auth login");
-      expect(body).not.toContain("openclaw models auth login");
+      expect(body).not.toContain("models auth login");
     });
   });
 

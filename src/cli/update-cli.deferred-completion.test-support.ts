@@ -13,7 +13,7 @@ export const syncPluginsForUpdateChannel = vi.fn();
 export const updateNpmInstalledPlugins = vi.fn();
 export const loadInstalledPluginIndexInstallRecords = vi.fn();
 export const pathExists = vi.fn();
-export const spawn = vi.fn();
+const spawn = vi.fn();
 export const observeUpdateGatewayReadiness =
   vi.fn<typeof import("./update-cli/update-command-readiness.js").observeUpdateGatewayReadiness>();
 const { defaultRuntime: runtimeCapture, resetRuntimeCapture } = createCliRuntimeCapture();
@@ -88,7 +88,7 @@ vi.mock("../config/config.js", () => {
       if (process.env.OPENCLAW_NIX_MODE === "1") {
         throw new Error(
           [
-            "Config is managed by Nix (`OPENCLAW_NIX_MODE=1`), so OpenClaw treats openclaw.json as immutable.",
+            "Config is managed by Nix (`OPENCLAW_NIX_MODE=1`), so Paddy treats openclaw.json as immutable.",
             "Do not run setup, onboarding, openclaw update, plugin install/update/uninstall/enable, doctor repair/token-generation, or config set against this file.",
             "Agent-first Nix setup: https://github.com/openclaw/nix-openclaw#quick-start",
             "OpenClaw Nix overview: https://docs.openclaw.ai/install/nix",
@@ -194,7 +194,8 @@ const { createTempHomeEnv } = await import("../test-utils/temp-home.js");
 const existingHostUri = nodeSqlite.resolveExistingSqliteFileUri;
 const immutableHostUri = nodeSqlite.resolveImmutableSqliteFileUri;
 export const { updateGitCheckout } = await import("../infra/update-runner-git.js");
-export const { runExec, runCommandWithTimeout } = await import("../process/exec.js");
+const { runExec, runCommandWithTimeout } = await import("../process/exec.js");
+export { runExec };
 export const { defaultRuntime, ExitError } = await import("../runtime.js");
 export const { readConfigFileSnapshot, replaceConfigFile, mutateConfigFileWithRetry } =
   await import("../config/config.js");

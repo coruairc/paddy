@@ -129,7 +129,7 @@ export async function migrateDoctorDeliveryQueues(params: {
             changes: imported.changes,
             warnings: [
               ...warnings,
-              `Legacy outbound delivery preparation deferred: ${String(error)}. Run openclaw doctor --fix after repairing the plugin.`,
+              `Legacy outbound delivery preparation deferred: ${String(error)}. Run paddy doctor --fix after repairing the plugin.`,
             ],
             warningDisposition: "recoverable",
           };
@@ -167,7 +167,7 @@ export async function migrateDoctorDeliveryQueues(params: {
       }
       if (result.remaining > 0) {
         warnings.push(
-          `${result.remaining} legacy outbound deliveries still require preparation. Run openclaw doctor --fix to retry.`,
+          `${result.remaining} legacy outbound deliveries still require preparation. Run paddy doctor --fix to retry.`,
         );
       }
       return {

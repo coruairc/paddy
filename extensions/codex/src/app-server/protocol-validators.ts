@@ -282,7 +282,7 @@ export class CodexThreadDirectInputError extends Error {
   constructor(threadId: string) {
     super(
       `Codex thread ${threadId} is controlled by its parent and cannot accept direct input. ` +
-        "Continue its parent thread, or use /new for a separate OpenClaw session.",
+        "Continue its parent thread, or use /new for a separate Paddy session.",
     );
     this.name = "CodexThreadDirectInputError";
   }
@@ -366,6 +366,18 @@ export function readCodexTurnCompletedNotification(
   const notification = readCodexShape(validateTurnCompletedNotification, value);
   // Turn is shared with turn/start, but only terminal states belong in this notification.
   return notification?.turn.status === "inProgress" ? undefined : notification;
+}
+
+export function assertExactSupervisionModelSelection(
+  value: { model?: string | null; modelProvider?: string | null },
+  expected: { model: string; modelProvider: string; operation: string },
+): void {
+  if (value.model !== expected.model || value.modelProvider !== expected.modelProvider) {
+    throw new Error(
+      `Codex supervision ${expected.operation} changed native model selection: ` +
+        `${value.modelProvider ?? "unknown"}/${value.model ?? "unknown"}`,
+    );
+  }
 }
 
 function assertCodexShape<T>(validate: CodexValidator<T>, value: unknown, label: string): T {

@@ -45,6 +45,7 @@ import {
 import { resolveTelegramReplyId } from "./bot/helpers.js";
 import type { TelegramInlineButtons } from "./button-types.js";
 import { failPromptContextSequence, mergeTelegramPartialDeliveryError } from "./chunk-delivery.js";
+import { prepareTelegramFinalDeliveryConfig } from "./final-delivery-config.js";
 import {
   copyTelegramDroppedControlFallback,
   resolveFinalTelegramPresentationText,
@@ -170,7 +171,7 @@ function createDeliveryBaseOptions(turn: Turn) {
     thread: turn.context.threadSpec,
     tableMode: turn.tableMode,
     chunkMode: turn.chunkMode,
-    richMessages: turn.telegramCfg.richMessages,
+    richMessages: turn.richMessages,
     linkPreview: turn.telegramCfg.linkPreview,
     replyQuoteMessageId: turn.replyQuoteMessageId,
     replyQuoteText: turn.replyQuoteText,
@@ -255,6 +256,8 @@ export async function sendPayload(
     }
     const durable = await durableDelivery({
       cfg: turn.cfg,
+      prepareRuntimeHandoff: (cfg) =>
+        prepareTelegramFinalDeliveryConfig(cfg, turn.context.route.accountId, turn.opts.token),
       channel: "telegram",
       to:
         turn.context.ctxPayload.OriginatingTo ??
@@ -675,7 +678,7 @@ export function createDeliveryState(
       resolveFinalTelegramPresentationText({
         payload,
         text,
-        richMessages: getTurn().telegramCfg.richMessages === true,
+        richMessages: getTurn().richMessages,
         allowWebAppButtons:
           resolveTelegramTargetChatType(String(getTurn().context.chatId)) === "direct",
       }),

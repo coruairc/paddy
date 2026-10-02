@@ -214,7 +214,7 @@ export async function getReplyFromConfig(
   options?: GetReplyOptions,
   configOverride?: OpenClawConfig,
 ): Promise<ReplyPayload | ReplyPayload[] | undefined> {
-  const opts = prepareInternalGetReplyOptions(options);
+  const opts = prepareInternalGetReplyOptions(options, ctx);
   const isFastTestEnv = isFastTestRuntimeEnv();
   const preparedReplyDispatchRuntime = configOverride
     ? undefined
@@ -360,12 +360,10 @@ export async function getReplyFromConfig(
   const { workspaceDirRaw, workspaceDirForNativeCommand, agentDir, timeoutMs } =
     resolverTiming.measureSync("reply.resolve_workspace_agent_dir", () => {
       const workspaceDirRawLocal =
-        preparedWorkspaceDir ??
-        resolveAgentWorkspaceDir(cfg, agentId) ??
-        DEFAULT_AGENT_WORKSPACE_DIR;
+        resolveAgentWorkspaceDir(cfg, agentId) ?? DEFAULT_AGENT_WORKSPACE_DIR;
       return {
         workspaceDirRaw: workspaceDirRawLocal,
-        workspaceDirForNativeCommand: workspaceDirRawLocal,
+        workspaceDirForNativeCommand: preparedWorkspaceDir ?? workspaceDirRawLocal,
         agentDir: preparedAgentDir ?? resolveAgentDir(cfg, agentId),
         timeoutMs: resolveAgentTimeoutMs({
           cfg,
@@ -462,11 +460,11 @@ export async function getReplyFromConfig(
     logVerbose(`workspace unavailable; replying with repair notice: ${error.message}`);
     const text =
       error instanceof WorkspaceAliasRepointedError
-        ? "⚠️ This agent's workspace state needs repair: the configured workspace path no longer matches its stored identity. Ask the gateway operator to run `openclaw doctor --fix` and confirm the move only if the same workspace moved."
-        : "⚠️ This agent's workspace is missing on the gateway host. Ask the operator to restore the workspace from backup and run `openclaw doctor`.";
+        ? "⚠️ This agent's workspace state needs repair: the configured workspace path no longer matches its stored identity. Ask the gateway operator to run `paddy doctor --fix` and confirm the move only if the same workspace moved."
+        : "⚠️ This agent's workspace is missing on the gateway host. Ask the operator to restore the workspace from backup and run `paddy doctor`.";
     return markReplyPayloadForSourceSuppressionDelivery({ text });
   }
-  const workspaceDir = workspace.dir;
+  const workspaceDir = preparedWorkspaceDir ?? workspace.dir;
 
   if (
     !isFastTestEnv &&

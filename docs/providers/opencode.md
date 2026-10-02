@@ -1,12 +1,12 @@
 ---
-summary: "Use OpenCode Zen and Go catalogs with OpenClaw"
+summary: "Use OpenCode Zen and Go catalogs with Paddy"
 read_when:
   - You want OpenCode-hosted model access
   - You want to pick between the Zen and Go catalogs
 title: "OpenCode"
 ---
 
-OpenCode exposes two hosted catalogs in OpenClaw:
+OpenCode exposes two hosted catalogs in Paddy:
 
 | Catalog | Prefix            | Runtime provider |
 | ------- | ----------------- | ---------------- |
@@ -15,16 +15,16 @@ OpenCode exposes two hosted catalogs in OpenClaw:
 
 Both catalogs use the same OpenCode API key infrastructure (`OPENCODE_API_KEY`,
 alias `OPENCODE_ZEN_API_KEY`). Go still requires its own paid subscription;
-having a Zen key does not by itself grant Go access. OpenClaw keeps the runtime
+having a Zen key does not by itself grant Go access. Paddy keeps the runtime
 provider ids split so upstream per-model routing stays correct.
 
-OpenClaw sends a stable `x-opencode-session` conversation header on requests to
+Paddy sends a stable `x-opencode-session` conversation header on requests to
 `https://opencode.ai` across the Anthropic, Gemini, OpenAI Chat Completions, and
 OpenAI Responses transports. This header remains enabled when prompt caching is
 disabled. Low-level SDK stream callers should supply `sessionId` in their stream
 options.
 
-Standalone `openclaw infer model run --local` calls and the
+Standalone `paddy infer model run --local` calls and the
 [prepared completion helper](/plugins/sdk-runtime/models#prepared-completion-sdk-compatibility)
 generate a fresh routing header per invocation when no explicit routing header
 or session identifier is supplied. This generated value stays in the header and
@@ -41,23 +41,23 @@ or caller routing headers are preserved regardless of header name casing.
     <Steps>
       <Step title="Run onboarding">
         ```bash
-        openclaw onboard --auth-choice opencode-zen
+        paddy onboard --auth-choice opencode-zen
         ```
 
         Or pass the key directly:
 
         ```bash
-        openclaw onboard --opencode-zen-api-key "$OPENCODE_API_KEY"
+        paddy onboard --opencode-zen-api-key "$OPENCODE_API_KEY"
         ```
       </Step>
       <Step title="Set a Zen model as the default">
         ```bash
-        openclaw config set agents.defaults.model.primary "opencode/gpt-5.6-sol"
+        paddy config set agents.defaults.model.primary "opencode/gpt-5.6-sol"
         ```
       </Step>
       <Step title="Verify models are available">
         ```bash
-        openclaw models list --provider opencode
+        paddy models list --provider opencode
         ```
       </Step>
     </Steps>
@@ -70,28 +70,28 @@ or caller routing headers are preserved regardless of header name casing.
 
     <Steps>
       <Step title="Use the bundled Go catalog">
-        OpenCode Go is included with OpenClaw, so no separate
+        OpenCode Go is included with Paddy, so no separate
         plugin installation or Gateway restart is required.
       </Step>
       <Step title="Run onboarding">
         ```bash
-        openclaw onboard --auth-choice opencode-go
+        paddy onboard --auth-choice opencode-go
         ```
 
         Or pass the key directly:
 
         ```bash
-        openclaw onboard --opencode-go-api-key "$OPENCODE_API_KEY"
+        paddy onboard --opencode-go-api-key "$OPENCODE_API_KEY"
         ```
       </Step>
       <Step title="Set a Go model as the default">
         ```bash
-        openclaw config set agents.defaults.model.primary "opencode-go/kimi-k3"
+        paddy config set agents.defaults.model.primary "opencode-go/kimi-k3"
         ```
       </Step>
       <Step title="Verify models are available">
         ```bash
-        openclaw models list --provider opencode-go
+        paddy models list --provider opencode-go
         ```
       </Step>
     </Steps>
@@ -117,15 +117,15 @@ or caller routing headers are preserved regardless of header name casing.
 | Runtime provider | `opencode`                                                               |
 | Example models   | `opencode/gpt-5.6-sol`, `opencode/kimi-k3`, `opencode/deepseek-v4-flash` |
 
-Run `openclaw models list --provider opencode` for the current active list.
-Model availability and promotional routes can change independently of OpenClaw.
+Run `paddy models list --provider opencode` for the current active list.
+Model availability and promotional routes can change independently of Paddy.
 
 Live discovery combines the models available to your OpenCode account with
 authoritative model metadata from `https://models.opencode.ai/api.json`.
-OpenClaw fetches and caches that catalog only when OpenCode Zen or Go is
+Paddy fetches and caches that catalog only when OpenCode Zen or Go is
 configured or explicitly selected with OpenCode credentials; startup and
 unrelated providers never download it. New upstream models become available
-without an OpenClaw update when their metadata describes a supported transport
+without a Paddy update when their metadata describes a supported transport
 on the trusted OpenCode endpoint. A key-scoped response can omit models
 unavailable to that workspace. Metadata and lifecycle status refresh together;
 deprecated models are excluded from active discovery and its offline fallback.
@@ -174,7 +174,7 @@ a model does not prove your account can run it.
   </Accordion>
 
   <Accordion title="Gemini replay behavior">
-    Gemini-backed OpenCode refs stay on the proxy-Gemini path, so OpenClaw keeps
+    Gemini-backed OpenCode refs stay on the proxy-Gemini path, so Paddy keeps
     Gemini thought-signature sanitation there without enabling native Gemini
     replay validation or bootstrap rewrites.
   </Accordion>

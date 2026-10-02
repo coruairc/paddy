@@ -209,7 +209,7 @@ it("keeps message in the registered schema when disabled for an internal turn", 
     contentItems: [
       {
         type: "inputText",
-        text: "OpenClaw tool is not available for this turn: message",
+        text: "Paddy tool is not available for this turn: message",
       },
     ],
   });

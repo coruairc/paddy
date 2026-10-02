@@ -1,32 +1,60 @@
 ---
-summary: "How the installer scripts work (install.sh, install-cli.sh, install.ps1), flags, and automation"
+summary: "Paddy installer flags, plus the upstream OpenClaw installer reference"
 read_when:
-  - You want to understand `openclaw.ai/install.sh`
-  - You want to automate installs (CI / headless)
-  - You want to install from a GitHub checkout
-  - You want to install a private Node runtime without reinstalling OpenClaw
+  - You want the flags Paddy's root installer actually accepts
+  - You want to automate a Paddy install (CI / headless)
+  - You are comparing that with the upstream OpenClaw installer
 title: "Installer internals"
 ---
 
-OpenClaw ships three installer scripts, served from `openclaw.ai`.
+Paddy's installer is the repository root [`install.sh`](https://raw.githubusercontent.com/coruairc/paddy/main/install.sh) (macOS, Linux, WSL) and [`install.ps1`](https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1) (Windows PowerShell). It clones `coruairc/paddy` at ref `main` into `~/.paddy/src`, installs dependencies with pnpm, builds, and writes a `paddy` wrapper to `~/.local/bin`. On Unix it also writes an `openclaw` compatibility alias. Paddy is a fork and is not affiliated with the OpenClaw Foundation.
 
-| Script                             | Platform                      | What it does                                                                                                                   |
-| ---------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| [`install.sh`](#installsh)         | macOS / Linux / WSL           | Installs Node if needed, installs OpenClaw via npm (default) or git, can run onboarding.                                       |
-| [`install-cli.sh`](#install-clish) | macOS / Linux / WSL / FreeBSD | Installs Node + OpenClaw into a local prefix (`~/.openclaw`) via npm (FreeBSD) or npm/git (macOS/Linux/WSL). No root required. |
-| [`install.ps1`](#installps1)       | Windows (PowerShell)          | Installs Node if needed, installs OpenClaw via npm (default) or git, can run onboarding.                                       |
+```bash
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --help
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --no-onboard
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --ref main
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --dry-run
+```
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex
+& ([scriptblock]::Create((iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1))) -NoOnboard
+```
+
+| Flag                          | Meaning                                          |
+| ----------------------------- | ------------------------------------------------ |
+| `--help`                      | Print the installer help                         |
+| `--yes`                       | Install missing git or Node without asking       |
+| `--no-onboard`, `--no-config` | Skip the first-run wizard                        |
+| `--skip-build`                | Clone and install dependencies, but do not build |
+| `--ref <ref>`                 | Git branch or tag (default `main`)               |
+| `--repo <owner/name>`         | Source repository (default `coruairc/paddy`)     |
+| `--git-dir <path>`            | Checkout path (default `~/.paddy/src`)           |
+| `--bin-dir <path>`            | Wrapper path (default `~/.local/bin`)            |
+| `--dry-run`                   | Print actions, install nothing                   |
+
+Windows accepts `-NoOnboard`, `-NoConfig`, `-SkipBuild`, `-DryRun`, `-Yes`, `-Ref`, `-Repo`, `-GitDir`, `-BinDir`, and `-CliName`.
+
+Paddy's installer does not accept `--install-method`, `--version`, `--beta`, `--verify`, `--verbose`, or `--no-prompt`, and it does not publish `install-cli.sh`. Passing an unknown flag stops the install.
+
+<a id="upstream-openclaw-installer"></a>
+
+## Upstream OpenClaw installer
+
+The sections below describe the upstream OpenClaw installer served from `openclaw.ai` (`install.sh`, `install-cli.sh`, and `install.ps1`). They are not Paddy's root installer. Keep them when you need the upstream flag catalog. Do not point those commands at the Paddy URLs above: Paddy's script rejects the extra flags.
 
 All three support Node **24.16+ or 26.1+** with a WAL-reset-safe linked SQLite library. When Node is missing and nvm is not detected, `install.sh` provisions Node 26 through Homebrew on macOS and the supported Node 24 LTS line through NodeSource on Linux. When a supported RPM-owned Node links unsafe SQLite, `install.sh` preserves the distro package and provisions a user-space Node runtime through `install-cli.sh`. The rootless `install-cli.sh` downloads Node 24.21.0 on macOS and glibc Linux. FreeBSD uses an installed system runtime. Linux ARMv7 is unsupported. On Windows, winget/Chocolatey/Scoop install the supported Node LTS line, and the portable fallback downloads Node 26.
 
-Before changing packages, every installer probes the exact npm executable it will use. npm 11.15 and earlier installs normally; npm 11.16 and later, including npm 12, receives `--allow-scripts` for only the npm-resolved OpenClaw candidate identity. An unreadable npm version stops before package mutation. A remaining `.openclaw-lifecycle-pending` marker or legacy `dist/openclaw-install-guard` makes the install fail instead of reporting a lifecycle-skipped package as successful.
+Before changing packages, every installer probes the exact npm executable it will use. npm 11.15 and earlier installs normally; npm 11.16 and later, including npm 12, receives `--allow-scripts` for only the npm-resolved Paddy candidate identity. An unreadable npm version stops before package mutation. A remaining `.openclaw-lifecycle-pending` marker or legacy `dist/openclaw-install-guard` makes the install fail instead of reporting a lifecycle-skipped package as successful.
 
 On npm 12, local `.tgz` and `.tar.gz` installs and updates need a comma-free archive filename and parent path. npm uses commas to separate lifecycle approvals, so move the archive to a comma-free path before retrying. Relative tarball arguments are still supported; the installer resolves their full path for approval.
 
-Install-method switches verify the replacement before retiring the current owner. Source wrappers use a same-directory atomic replacement; when an npm shim shares that path, the installer moves only an identity-matched source wrapper aside and restores it if npm installation, lifecycle checks, or candidate verification fails. On upgrades, `install.sh` and `install.ps1` run `openclaw doctor --fix`; repair or final verification failure exits nonzero, and the success banner appears only after those steps complete.
+Install-method switches verify the replacement before retiring the current owner. Source wrappers use a same-directory atomic replacement; when an npm shim shares that path, the installer moves only an identity-matched source wrapper aside and restores it if npm installation, lifecycle checks, or candidate verification fails. On upgrades, `install.sh` and `install.ps1` run `paddy doctor --fix`; repair or final verification failure exits nonzero, and the success banner appears only after those steps complete.
 
 ## Private Node recovery
 
-When the active Node.js is unsupported, the CLI can offer `Update NodeJS: Y/N [N]:` before loading OpenClaw. Enter **Y** to install a checksum-verified private runtime and retry the same command. Provisioning leaves system Node.js, shell settings, OpenClaw packages, and Gateway services unchanged; the retried command keeps its normal behavior. Enter **N**, press Enter, or cancel to receive manual upgrade instructions.
+When the active Node.js is unsupported, the CLI can offer `Update NodeJS: Y/N [N]:` before loading Paddy. Enter **Y** to install a checksum-verified private runtime and retry the same command. Provisioning leaves system Node.js, shell settings, Paddy packages, and Gateway services unchanged; the retried command keeps its normal behavior. Enter **N**, press Enter, or cancel to receive manual upgrade instructions.
 
 The installation offer requires both stdin and stderr to be interactive terminals. The CLI never prompts or installs a runtime in CI or with `--json`, `--yes`, or `--non-interactive`. Recovery supports x64/ARM64 macOS, Windows, and glibc Linux; Alpine/musl and other architectures require manual installation. Commands with an exact process identity requirement, including `hooks relay` and `webhooks gmail run`, keep their existing runtime requirement.
 
@@ -36,7 +64,7 @@ The CLI stores the private runtime under `~/.openclaw/tools/cli-node`, using `OP
 
 The launcher first reuses a compatible private runtime, including for diagnostics. Without one, diagnostics require Node 22 or newer with `node:sqlite` available. Older runtimes retain the interactive recovery offer or non-interactive refusal before any diagnostic code loads.
 
-On a capable unsupported runtime, `openclaw --version` (`-V` or `-v`), `--help` (`-h`), `gateway status`, `doctor --lint`, `update status`, and `triage --json` or `triage --non-interactive` remain available. Plain `doctor` runs read-only lint checks on an unsupported Node. Repair flags, Gateway startup, and triage agent execution still require a supported runtime. `openclaw update` can report the exact Node installation instructions before admitting an update or writing its run ledger.
+On a capable unsupported runtime, `paddy --version` (`-V` or `-v`), `--help` (`-h`), `gateway status`, `doctor --lint`, `update status`, and `triage --json` or `triage --non-interactive` remain available. Plain `doctor` runs read-only lint checks on an unsupported Node. Repair flags, Gateway startup, and triage agent execution still require a supported runtime. `paddy update` can report the exact Node installation instructions before admitting an update or writing its run ledger.
 
 These commands print `Running on an unsupported Node (<version>); diagnostics may show truncated text`. Findings remain visible, including the CLI and recorded service Node versions and their repair instructions. `update status --json` includes `runtimeFindings` when present, and update-failure issue reports record the reporting process's Node version. A successful npm installation alone does not establish runtime compatibility: npm may skip the preinstall check.
 
@@ -67,6 +95,8 @@ manual builds, follow [From source](/install#from-source) to select the
 checkout-pinned toolchain rather than reusing an older ambient launcher.
 
 ## Quick commands
+
+These tabs call the upstream OpenClaw installer. Use the Paddy commands at the top of this page to install Paddy.
 
 <Tabs>
   <Tab title="install.sh">
@@ -102,7 +132,7 @@ checkout-pinned toolchain rather than reusing an older ambient launcher.
 </Tabs>
 
 <Note>
-If install succeeds but `openclaw` is not found in a new terminal, see [Node.js troubleshooting](/install/node#troubleshooting).
+If install succeeds but `paddy` is not found in a new terminal, see [Node.js troubleshooting](/install/node#troubleshooting).
 </Note>
 
 ---
@@ -127,19 +157,19 @@ checks also default to five minutes.
     Supports macOS and Linux (including WSL).
   </Step>
   <Step title="Ensure a supported Node.js runtime">
-    Checks the Node version and linked SQLite library, then installs Node if needed (Node 26 through Homebrew `node` on macOS; Node 24 LTS through NodeSource setup scripts on Linux apt/dnf/yum). On RPM-based Linux, a supported distro Node that links unsafe SQLite remains installed while OpenClaw receives a user-space Node runtime. On macOS, Homebrew is installed only when the installer needs it for Node or Git. Node 24.16+ and Node 26.1+ are supported; Node 22, 23, and 25 are unsupported.
+    Checks the Node version and linked SQLite library, then installs Node if needed (Node 26 through Homebrew `node` on macOS; Node 24 LTS through NodeSource setup scripts on Linux apt/dnf/yum). On RPM-based Linux, a supported distro Node that links unsafe SQLite remains installed while Paddy receives a user-space Node runtime. On macOS, Homebrew is installed only when the installer needs it for Node or Git. Node 24.16+ and Node 26.1+ are supported; Node 22, 23, and 25 are unsupported.
     On Alpine/musl Linux, the installer uses apk packages instead of NodeSource and verifies the actual linked SQLite version. Current stable Alpine package streams can provide a new-enough Node with vulnerable system SQLite; when that happens, use an official `node:26-alpine` container or a glibc-based host instead.
   </Step>
   <Step title="Ensure Git">
     Installs Git if missing using the detected package manager, including Homebrew on macOS and apk on Alpine.
   </Step>
-  <Step title="Install OpenClaw">
+  <Step title="Install Paddy">
     - `npm` method (default): global npm install
     - `git` method: clone/update repo, install deps with pnpm, build, then install wrapper at `~/.local/bin/openclaw`
 
   </Step>
   <Step title="Post-install tasks">
-    - Resolves the just-installed `openclaw` binary for follow-up commands
+    - Resolves the just-installed `paddy` binary for follow-up commands
     - npm-prefix and daemon-status probes use a default five-second timeout; completed probes return without waiting for that deadline.
     - For an unconfigured install, starts onboarding before doctor or gateway probes. With `--no-onboard` or no TTY, it prints the command to finish setup later.
     - For a configured install, refreshes and restarts a loaded gateway service best-effort and runs repair Doctor. Upgrade repair failures are fatal; plugin update failures remain warnings.
@@ -178,7 +208,7 @@ commands. Without nvm, the existing user-local npm prefix setup still applies.
 
 ### Source checkout detection
 
-If run inside an OpenClaw checkout (`package.json` + `pnpm-workspace.yaml`), the script offers:
+If run inside a Paddy checkout (`package.json` + `pnpm-workspace.yaml`), the script offers:
 
 - use checkout (`git`), or
 - use global install (`npm`)
@@ -254,20 +284,20 @@ object is unavailable or cannot resolve to a commit.
 
   <Accordion title="Environment variables reference">
 
-| Variable                                          | Description                                                        |
-| ------------------------------------------------- | ------------------------------------------------------------------ |
-| `OPENCLAW_INSTALL_METHOD=git\|npm`                | Install method                                                     |
-| `OPENCLAW_VERSION=latest\|next\|<semver>\|<spec>` | npm version, dist-tag, or package spec                             |
-| `OPENCLAW_BETA=0\|1`                              | Use beta if available                                              |
-| `OPENCLAW_HOME=<path>`                            | Base directory for OpenClaw state and default git/onboarding paths |
-| `OPENCLAW_GIT_DIR=<path>`                         | Checkout directory                                                 |
-| `OPENCLAW_GIT_UPDATE=0\|1`                        | Toggle git updates                                                 |
-| `OPENCLAW_NO_PROMPT=1`                            | Disable prompts                                                    |
-| `OPENCLAW_VERIFY_INSTALL=1`                       | Run the post-install smoke verify                                  |
-| `OPENCLAW_NO_ONBOARD=1`                           | Skip onboarding                                                    |
-| `OPENCLAW_DRY_RUN=1`                              | Dry run mode                                                       |
-| `OPENCLAW_VERBOSE=1`                              | Debug mode                                                         |
-| `OPENCLAW_NPM_LOGLEVEL=error\|warn\|notice`       | npm log level (default: `error`, hides npm deprecation noise)      |
+| Variable                                          | Description                                                     |
+| ------------------------------------------------- | --------------------------------------------------------------- |
+| `OPENCLAW_INSTALL_METHOD=git\|npm`                | Install method                                                  |
+| `OPENCLAW_VERSION=latest\|next\|<semver>\|<spec>` | npm version, dist-tag, or package spec                          |
+| `OPENCLAW_BETA=0\|1`                              | Use beta if available                                           |
+| `OPENCLAW_HOME=<path>`                            | Base directory for Paddy state and default git/onboarding paths |
+| `OPENCLAW_GIT_DIR=<path>`                         | Checkout directory                                              |
+| `OPENCLAW_GIT_UPDATE=0\|1`                        | Toggle git updates                                              |
+| `OPENCLAW_NO_PROMPT=1`                            | Disable prompts                                                 |
+| `OPENCLAW_VERIFY_INSTALL=1`                       | Run the post-install smoke verify                               |
+| `OPENCLAW_NO_ONBOARD=1`                           | Skip onboarding                                                 |
+| `OPENCLAW_DRY_RUN=1`                              | Dry run mode                                                    |
+| `OPENCLAW_VERBOSE=1`                              | Debug mode                                                      |
+| `OPENCLAW_NPM_LOGLEVEL=error\|warn\|notice`       | npm log level (default: `error`, hides npm deprecation noise)   |
 
   </Accordion>
 </AccordionGroup>
@@ -297,7 +327,7 @@ system Node packages.
     If Git is missing, attempts install via apt/dnf/yum/apk on Linux or Homebrew on macOS.
     On FreeBSD, install Git with `pkg install git` before retrying.
   </Step>
-  <Step title="Install OpenClaw under prefix">
+  <Step title="Install Paddy under prefix">
     - `npm` method (default): installs under the prefix with npm, then writes wrapper to `<prefix>/bin/openclaw`
     - `git` method: clones/updates a checkout (default `~/openclaw`) and still writes the wrapper to `<prefix>/bin/openclaw`
 
@@ -308,14 +338,14 @@ system Node packages.
   </Step>
   <Step title="Refresh loaded gateway service">
     If a gateway service is already loaded from that same prefix, the script runs
-    `openclaw gateway install --force`, which activates the replacement service,
+    `paddy gateway install --force`, which activates the replacement service,
     and then probes gateway health best-effort.
   </Step>
 </Steps>
 
 On FreeBSD, use the default npm method (`--install-method npm`) with a published
 version or compatible built `.tgz` package. Source/git installation is unsupported.
-If OpenClaw is managed by pkg or Ports, keep using that package owner instead of
+If Paddy is managed by pkg or Ports, keep using that package owner instead of
 installing over it.
 
 On FreeBSD, install `bash`, `node24`, `npm-node24`, `git`, `python3`, and `gmake` through `pkg` before running the installer.
@@ -326,13 +356,13 @@ It links that runtime into the local prefix without changing system packages.
 An explicit `--node-version` sets the minimum accepted system version on FreeBSD.
 
 The upstream Codex CLI does not provide a FreeBSD binary target.
-A successful installation or `openclaw doctor --fix` does not verify native Codex execution.
+A successful installation or `paddy doctor --fix` does not verify native Codex execution.
 For OpenAI API models, configure an API-key auth profile.
-Explicitly select `agentRuntime.id: "openclaw"` for the models you use.
+Explicitly select `agentRuntime.id: "paddy"` for the models you use.
 API-key access uses OpenAI Platform billing, separate from a ChatGPT/Codex subscription.
 See [OpenAI setup](/providers/openai/setup) and [runtime selection](/providers/openai/runtimes#implicit-agent-runtime).
 
-With `--node-only`, `install-cli.sh` stops after provisioning Node into `<prefix>/tools/node-v<version>` and updating the `<prefix>/tools/node` alias. It skips Git, OpenClaw installation, onboarding, and Gateway service work. This mode refuses musl Linux and FreeBSD. Update their system Node packages manually.
+With `--node-only`, `install-cli.sh` stops after provisioning Node into `<prefix>/tools/node-v<version>` and updating the `<prefix>/tools/node` alias. It skips Git, Paddy installation, onboarding, and Gateway service work. This mode refuses musl Linux and FreeBSD. Update their system Node packages manually.
 
 With `--runtime-only`, the script installs Node and the CLI but skips Gateway
 service discovery, refresh, and onboarding, even if `--onboard` is also supplied.
@@ -387,13 +417,13 @@ its existing service-refresh behavior.
 | `--git \| --github`                     | Shortcut for git method                                                           |
 | `--git-dir \| --dir <path>`             | Git checkout directory (default: `~/openclaw`)                                    |
 | `--no-git-update`                       | Skip `git pull` for an existing git checkout                                      |
-| `--version <ver>`                       | OpenClaw version or dist-tag (default: `latest`)                                  |
+| `--version <ver>`                       | Paddy version or dist-tag (default: `latest`)                                     |
 | `--compatible-with <ver>`               | Refuse a CLI that cannot modify config written by `<ver>`                         |
 | `--node-version <ver>`                  | Node version (default: `24.21.0`)                                                 |
 | `--node-only`                           | Install only the private Node runtime under `--prefix`; no system package changes |
 | `--runtime-only`                        | Install Node and CLI without Gateway probes, service refresh, or onboarding       |
 | `--json`                                | Emit NDJSON events                                                                |
-| `--onboard`                             | Run `openclaw onboard` after install                                              |
+| `--onboard`                             | Run `paddy onboard` after install                                                 |
 | `--no-onboard`                          | Skip onboarding (default)                                                         |
 | `--set-npm-prefix`                      | On Linux, force npm prefix to `~/.npm-global` if current prefix is not writable   |
 | `--help \| -h`                          | Show usage                                                                        |
@@ -402,17 +432,17 @@ its existing service-refresh behavior.
 
   <Accordion title="Environment variables reference">
 
-| Variable                                    | Description                                                        |
-| ------------------------------------------- | ------------------------------------------------------------------ |
-| `OPENCLAW_PREFIX=<path>`                    | Install prefix                                                     |
-| `OPENCLAW_INSTALL_METHOD=git\|npm`          | Install method                                                     |
-| `OPENCLAW_VERSION=<ver>`                    | OpenClaw version or dist-tag                                       |
-| `OPENCLAW_NODE_VERSION=<ver>`               | Node version                                                       |
-| `OPENCLAW_HOME=<path>`                      | Base directory for OpenClaw state and default git/onboarding paths |
-| `OPENCLAW_GIT_DIR=<path>`                   | Git checkout directory for git installs                            |
-| `OPENCLAW_GIT_UPDATE=0\|1`                  | Toggle git updates for existing checkouts                          |
-| `OPENCLAW_NO_ONBOARD=1`                     | Skip onboarding                                                    |
-| `OPENCLAW_NPM_LOGLEVEL=error\|warn\|notice` | npm log level (default: `error`)                                   |
+| Variable                                    | Description                                                     |
+| ------------------------------------------- | --------------------------------------------------------------- |
+| `OPENCLAW_PREFIX=<path>`                    | Install prefix                                                  |
+| `OPENCLAW_INSTALL_METHOD=git\|npm`          | Install method                                                  |
+| `OPENCLAW_VERSION=<ver>`                    | Paddy version or dist-tag                                       |
+| `OPENCLAW_NODE_VERSION=<ver>`               | Node version                                                    |
+| `OPENCLAW_HOME=<path>`                      | Base directory for Paddy state and default git/onboarding paths |
+| `OPENCLAW_GIT_DIR=<path>`                   | Git checkout directory for git installs                         |
+| `OPENCLAW_GIT_UPDATE=0\|1`                  | Toggle git updates for existing checkouts                       |
+| `OPENCLAW_NO_ONBOARD=1`                     | Skip onboarding                                                 |
+| `OPENCLAW_NPM_LOGLEVEL=error\|warn\|notice` | npm log level (default: `error`)                                |
 
   </Accordion>
 </AccordionGroup>
@@ -434,17 +464,17 @@ its existing service-refresh behavior.
     Requires PowerShell 5+.
   </Step>
   <Step title="Ensure a supported Node.js runtime">
-    If missing, attempts install via winget, then Chocolatey, then Scoop. If those methods are unavailable, fail, or leave an unsupported runtime, the script downloads the official Node.js 26 Windows zip into `%LOCALAPPDATA%\OpenClaw\deps\portable-node` and adds it to the current process and user PATH. Node 24.16+ and Node 26.1+ are supported; Node 22, 23, and 25 are unsupported.
+    If missing, attempts install via winget, then Chocolatey, then Scoop. If those methods are unavailable, fail, or leave an unsupported runtime, the script downloads the official Node.js 26 Windows zip into `%LOCALAPPDATA%\Paddy\deps\portable-node` and adds it to the current process and user PATH. Node 24.16+ and Node 26.1+ are supported; Node 22, 23, and 25 are unsupported.
   </Step>
-  <Step title="Install OpenClaw">
+  <Step title="Install Paddy">
     - `npm` method (default): global npm install using the selected `-Tag`, launched from a writable installer temp directory so shells opened in protected folders such as `C:\` still work
-    - `git` method: clone/update repo, install/build with pnpm, and install wrapper at `%USERPROFILE%\.local\bin\openclaw.cmd`. If Git is missing, the script bootstraps user-local MinGit under `%LOCALAPPDATA%\OpenClaw\deps\portable-git` and adds it to the current process and user PATH.
+    - `git` method: clone/update repo, install/build with pnpm, and install wrapper at `%USERPROFILE%\.local\bin\openclaw.cmd`. If Git is missing, the script bootstraps user-local MinGit under `%LOCALAPPDATA%\Paddy\deps\portable-git` and adds it to the current process and user PATH.
 
   </Step>
   <Step title="Post-install tasks">
     - Adds needed bin directory to user PATH when possible
-    - Refreshes a loaded gateway service best-effort (`openclaw gateway install --force`, then restart)
-    - Runs `openclaw doctor --fix --non-interactive` on upgrades and git installs; failure prevents an upgrade-success result
+    - Refreshes a loaded gateway service best-effort (`paddy gateway install --force`, then restart)
+    - Runs `paddy doctor --fix --non-interactive` on upgrades and git installs; failure prevents an upgrade-success result
 
   </Step>
   <Step title="Handle failures">
@@ -452,7 +482,7 @@ its existing service-refresh behavior.
   </Step>
 </Steps>
 
-With `-NodeOnly`, `install.ps1` downloads the official Node archive, verifies its SHA-256 checksum and runtime compatibility, then installs Node with its matching npm/npx into `-NodePrefix`. The prefix must be an absolute private directory, not a filesystem root. This mode skips package managers, OpenClaw installation, onboarding, and Gateway service work, and leaves process, user, and machine PATH unchanged. `-NodePrefix` requires `-NodeOnly`; `-DryRun` previews the destination without installing.
+With `-NodeOnly`, `install.ps1` downloads the official Node archive, verifies its SHA-256 checksum and runtime compatibility, then installs Node with its matching npm/npx into `-NodePrefix`. The prefix must be an absolute private directory, not a filesystem root. This mode skips package managers, Paddy installation, onboarding, and Gateway service work, and leaves process, user, and machine PATH unchanged. `-NodePrefix` requires `-NodeOnly`; `-DryRun` previews the destination without installing.
 
 <Note>
 The complete native Windows launcher → PowerShell → downloaded Node handoff remains unproven on native Windows. PowerShell installer fixtures cover checksum failures and installation isolation, but do not establish that complete recovery flow.
@@ -483,7 +513,7 @@ The complete native Windows launcher → PowerShell → downloaded Node handoff 
   </Tab>
   <Tab title="Custom git directory">
     ```powershell
-    & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -InstallMethod git -GitDir "C:\openclaw"
+    & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -InstallMethod git -GitDir "C:\paddy"
     ```
   </Tab>
   <Tab title="Dry run">
@@ -500,7 +530,7 @@ The complete native Windows launcher → PowerShell → downloaded Node handoff 
 | --------------------------- | ---------------------------------------------------------- |
 | `-InstallMethod npm\|git`   | Install method (default: `npm`)                            |
 | `-Tag <tag\|version\|spec>` | npm dist-tag, version, or package spec (default: `latest`) |
-| `-GitDir <path>`            | Checkout directory (default: `%USERPROFILE%\openclaw`)     |
+| `-GitDir <path>`            | Checkout directory (default: `%USERPROFILE%\paddy`)        |
 | `-NoOnboard`                | Skip onboarding                                            |
 | `-NoGitUpdate`              | Skip `git pull`                                            |
 | `-DryRun`                   | Print actions only                                         |
@@ -578,7 +608,7 @@ Use non-interactive flags/env vars for predictable runs.
     Rerun the installer so it can bootstrap user-local MinGit, or install Git for Windows and reopen PowerShell.
   </Accordion>
 
-  <Accordion title='Windows: "openclaw is not recognized"'>
+  <Accordion title='Windows: "paddy is not recognized"'>
     Run `npm config get prefix` and add that directory to your user PATH (no `\bin` suffix needed on Windows), then reopen PowerShell.
   </Accordion>
 
@@ -593,7 +623,7 @@ Use non-interactive flags/env vars for predictable runs.
 
   </Accordion>
 
-  <Accordion title="openclaw not found after install">
+  <Accordion title="paddy not found after install">
     Usually a PATH issue. See [Node.js troubleshooting](/install/node#troubleshooting).
   </Accordion>
 </AccordionGroup>

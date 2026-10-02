@@ -134,7 +134,9 @@ export function configureProgramHelp(
   if (isRootVersionInvocation(process.argv)) {
     const commit = resolveCommitHash({ moduleUrl: import.meta.url });
     console.log(
-      commit ? `${PRODUCT_NAME} ${ctx.programVersion} (${commit})` : `${PRODUCT_NAME} ${ctx.programVersion}`,
+      commit
+        ? `${PRODUCT_NAME} ${ctx.programVersion} (${commit})`
+        : `${PRODUCT_NAME} ${ctx.programVersion}`,
     );
     process.exit(0);
   }

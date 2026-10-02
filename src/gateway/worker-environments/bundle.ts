@@ -2,8 +2,10 @@ import { createHash, randomUUID } from "node:crypto";
 import { createReadStream, type Dirent } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import * as tar from "tar";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveStateDir } from "../../config/paths.js";
 import { sha256File } from "../../infra/directory-durability.js";
 import { isExactSemverVersion, resolveNpmJsonEntries } from "../../infra/npm-registry-spec.js";
@@ -18,33 +20,26 @@ import {
   compareWorkerBundlePaths,
   hashWorkerBundleManifest,
   WORKER_BUNDLE_ARTIFACT_MODE,
-  WORKER_BUNDLE_MANIFEST_VERSION,
   type WorkerBundleHashEntry,
 } from "../../shared/worker-bundle-hash.js";
 import { VERSION } from "../../version.js";
+import type { ExpectedWorkerBuild } from "../../worker/worker-build-identity.js";
 import { collectWorkerBundleManifest } from "./bundle-staging.js";
 
-export { WORKER_BUNDLE_MANIFEST_VERSION };
 const OPENCLAW_NPM_REGISTRY = "https://registry.npmjs.org/";
 const NPM_RELEASE_PROOF_TIMEOUT_MS = 60_000;
 const NPM_SHA512_INTEGRITY_PATTERN = /^sha512-[A-Za-z0-9+/]{86}==$/u;
 const BUNDLE_TARBALL_NAME_PATTERN = /^([a-f0-9]{64})\.tgz$/u;
 const BUNDLE_STAGING_NAME_PATTERN = /^\.staging-[A-Za-z0-9_-]+$/u;
 const BUNDLE_TEMP_NAME_PATTERN = /^[a-f0-9]{64}\.tgz\.[0-9]+\.[0-9a-f-]{36}\.tmp$/u;
-type WorkerInstallationArtifactBase = {
-  bundleHash: string;
-  openclawVersion: string;
-  protocolFeatures: readonly string[];
-};
-
-type WorkerBundleArtifact = WorkerInstallationArtifactBase & {
+type WorkerBundleArtifact = ExpectedWorkerBuild & {
   install: "bundle";
   tarballBytes: number;
   tarballSha256: string;
   tarballPath: string;
 };
 
-export type WorkerNpmArtifact = WorkerInstallationArtifactBase & {
+export type WorkerNpmArtifact = ExpectedWorkerBuild & {
   install: "npm";
   packageIntegrity: string;
   packageSpec: string;
@@ -97,7 +92,7 @@ function resolvePackageRoot(packageRoot: string | undefined): string {
     cwd: process.cwd(),
   });
   if (!resolved) {
-    throw new Error("Unable to locate the running OpenClaw package root for worker bundling");
+    throw new Error(`Unable to locate the running ${PRODUCT_NAME} package root for worker bundling`);
   }
   return resolved;
 }
@@ -120,15 +115,14 @@ type NpmPackageIdentity = {
 };
 
 function parseNpmPackageIdentity(value: unknown): NpmPackageIdentity | undefined {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  if (!isRecord(value)) {
     return undefined;
   }
-  const record = value as Record<string, unknown>;
-  const name = normalizeOptionalString(record.name);
-  const version = normalizeOptionalString(record.version);
+  const name = normalizeOptionalString(value.name);
+  const version = normalizeOptionalString(value.version);
   const integrity =
-    normalizeOptionalString(record.integrity) ?? normalizeOptionalString(record["dist.integrity"]);
-  const filename = normalizeOptionalString(record.filename);
+    normalizeOptionalString(value.integrity) ?? normalizeOptionalString(value["dist.integrity"]);
+  const filename = normalizeOptionalString(value.filename);
   return name && version && integrity ? { name, version, integrity, filename } : undefined;
 }
 
@@ -188,7 +182,7 @@ async function verifyPublishedNpmRelease(params: {
             `--registry=${OPENCLAW_NPM_REGISTRY}`,
           ],
           cwd: temporaryRoot,
-          failureMessage: `OpenClaw ${params.version} is not published; use the worker bundle install`,
+          failureMessage: `${PRODUCT_NAME} ${params.version} is not published; use the worker bundle install`,
           runCommand,
         }),
       )[0],
@@ -215,7 +209,7 @@ async function verifyPublishedNpmRelease(params: {
       ],
       cwd: temporaryRoot,
       failureMessage:
-        "Unable to verify the installed OpenClaw package; use the worker bundle install",
+        `Unable to verify the installed ${PRODUCT_NAME} package; use the worker bundle install`,
       runCommand,
     });
     const packed = parseNpmPackageIdentity(resolveNpmJsonEntries(packedValue)[0]);
@@ -228,7 +222,7 @@ async function verifyPublishedNpmRelease(params: {
       packedTarballIntegrity = await hashNpmTarballIntegrity(packedTarballPath);
     } catch {
       throw new Error(
-        "Unable to verify the installed OpenClaw package; use the worker bundle install",
+        `Unable to verify the installed ${PRODUCT_NAME} package; use the worker bundle install`,
       );
     }
     if (
@@ -238,7 +232,7 @@ async function verifyPublishedNpmRelease(params: {
       packedTarballIntegrity !== published.integrity
     ) {
       throw new Error(
-        `Installed OpenClaw ${params.version} does not match the published package; use the worker bundle install`,
+        `Installed ${PRODUCT_NAME} ${params.version} does not match the published package; use the worker bundle install`,
       );
     }
     const extractedRoot = path.join(temporaryRoot, "package");
@@ -257,32 +251,13 @@ async function verifyPublishedNpmRelease(params: {
     });
     if (packedBundle.bundleHash !== params.bundleHash) {
       throw new Error(
-        `Published OpenClaw ${params.version} does not match the prepared worker bundle; use the worker bundle install`,
+        `Published ${PRODUCT_NAME} ${params.version} does not match the prepared worker bundle; use the worker bundle install`,
       );
     }
     return published.integrity;
   } finally {
     await fs.rm(temporaryRoot, { recursive: true, force: true });
   }
-}
-
-function manifestsMatch(
-  left: readonly WorkerBundleHashEntry[],
-  right: readonly WorkerBundleHashEntry[],
-): boolean {
-  return (
-    left.length === right.length &&
-    left.every((entry, index) => {
-      const other = right[index];
-      return (
-        other !== undefined &&
-        entry.path === other.path &&
-        entry.mode === other.mode &&
-        entry.size === other.size &&
-        entry.sha256 === other.sha256
-      );
-    })
-  );
 }
 
 async function isCachedTarball(filePath: string): Promise<boolean> {
@@ -308,9 +283,10 @@ async function cachedTarballMatches(
     return false;
   }
   try {
-    return manifestsMatch(
-      await readWorkerBundleArchiveManifest(tarballPath, DEFAULT_WORKER_BUNDLE_ARCHIVE_LIMITS),
-      manifest,
+    return (
+      hashWorkerBundleManifest(
+        await readWorkerBundleArchiveManifest(tarballPath, DEFAULT_WORKER_BUNDLE_ARCHIVE_LIMITS),
+      ) === hashWorkerBundleManifest(manifest)
     );
   } catch {
     return false;
@@ -437,7 +413,7 @@ async function prepareWorkerBundle(
   const cacheDir = resolveBundleCacheDir(options.cacheDir);
   const openclawVersion = (options.openclawVersion ?? VERSION).trim();
   if (!openclawVersion) {
-    throw new Error("Worker bundle requires a non-empty OpenClaw version");
+    throw new Error(`Worker bundle requires a non-empty ${PRODUCT_NAME} version`);
   }
   const protocolFeatures = normalizeProtocolFeatures(options.protocolFeatures ?? []);
   await fs.mkdir(cacheDir, { recursive: true });

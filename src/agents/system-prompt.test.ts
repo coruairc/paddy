@@ -418,7 +418,7 @@ describe("buildAgentSystemPrompt", () => {
       toolNames: ["gateway"],
     });
 
-    expect(prompt).toContain("## OpenClaw Control");
+    expect(prompt).toContain("## Paddy Control");
     expect(prompt).not.toContain("openclaw gateway status|restart|start|stop");
   });
 
@@ -630,7 +630,7 @@ describe("buildAgentSystemPrompt", () => {
       toolNames: [],
     });
 
-    expect(prompt).toContain("active runtime provides the available OpenClaw tools directly");
+    expect(prompt).toContain("active runtime provides the available Paddy tools directly");
     expect(prompt).not.toContain("sessions_spawn");
   });
 
@@ -1025,7 +1025,7 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).toContain("Config read: `gateway`");
     expect(prompt).not.toContain("config.patch");
     expect(prompt).not.toContain("config.apply");
-    expect(prompt).toContain("Update OpenClaw: `gateway` action update.run");
+    expect(prompt).toContain("Update Paddy: `gateway` action update.run");
   });
 
   it.each(["full", "minimal"] as const)(
@@ -1060,7 +1060,7 @@ describe("buildAgentSystemPrompt", () => {
     expect(prompt).toContain(
       "Gateway restart, config, channels, plugins, agents, models/providers: ask `openclaw`.",
     );
-    expect(prompt).toContain("Update OpenClaw: `gateway` action update.run");
+    expect(prompt).toContain("Update Paddy: `gateway` action update.run");
     expect(prompt).not.toContain("models/providers, updates: ask `openclaw`");
   });
 
@@ -1162,7 +1162,7 @@ describe("buildAgentSystemPrompt", () => {
     (promptMode) => {
       const prompt = buildAgentSystemPrompt({
         workspaceDir: "/tmp/openclaw",
-        toolNames: ["tool_search_code"],
+        toolNames: ["exec", "wait"],
         capabilityToolNames: ["skill_workshop"],
         codeModeActive: true,
         promptMode,
@@ -1892,11 +1892,11 @@ describe("buildAgentSystemPrompt", () => {
       "- fake_calendar: Schedule a calendar event",
       "- fake_weather: Read current weather",
       "",
-      "Use tool_search_code with openclaw.tools.search(query).",
+      "Use tool_search to discover deferred tools.",
     ].join("\n");
     const buildPrompt = (owner: string) =>
       renderPrompt({
-        toolNames: ["tool_search_code"],
+        toolNames: ["tool_search", "tool_describe", "tool_call"],
         toolSchemaDirectoryPrompt,
         ownerNumbers: [owner],
       });

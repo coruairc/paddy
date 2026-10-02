@@ -127,7 +127,7 @@ describe("Doctor shared auth health", () => {
           path: resolveAuthProfileDatabasePath(agentDir),
           message: expect.stringContaining("cooldown:session_expired"),
           fixHint:
-            "Re-authenticate with `openclaw models auth login --provider diagnostic-provider --profile-id 'diagnostic-provider:shared'`.",
+            "Re-authenticate with `paddy models auth login --provider diagnostic-provider --profile-id 'diagnostic-provider:shared'`.",
         }),
       ]);
       await noteAuthProfileHealth({
@@ -140,7 +140,7 @@ describe("Doctor shared auth health", () => {
       });
       expect(vi.mocked(note)).toHaveBeenCalledWith(
         expect.stringContaining(
-          "Re-authenticate with `openclaw models auth login --provider diagnostic-provider --profile-id 'diagnostic-provider:shared'`.",
+          "Re-authenticate with `paddy models auth login --provider diagnostic-provider --profile-id 'diagnostic-provider:shared'`.",
         ),
         "Auth profile cooldowns (Agent alpha)",
       );
@@ -171,7 +171,7 @@ describe("Doctor shared auth health", () => {
         expect.objectContaining({
           target: "openai:default",
           requirement: "missing_credential",
-          fixHint: expect.stringContaining("openclaw models auth login --provider openai"),
+          fixHint: expect.stringContaining("paddy models auth login --provider openai"),
         }),
       ]);
       expect(cliCredentials.readCodex).not.toHaveBeenCalled();

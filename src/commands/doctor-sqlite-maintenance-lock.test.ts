@@ -81,7 +81,7 @@ describe("doctor SQLite maintenance lock", () => {
         { lockOptions: fixture.lockOptions },
       );
       await expect(result).rejects.toBeInstanceOf(DoctorSqliteMaintenanceLockUnavailableError);
-      await expect(result).rejects.toThrow(/gateway already running/);
+      await expect(result).rejects.toThrow(/OpenClaw state database is busy/);
       expect(run).not.toHaveBeenCalled();
     } finally {
       await gatewayLock.release();
@@ -229,7 +229,7 @@ describe("doctor SQLite maintenance lock", () => {
           },
           { lockOptions: fixture.lockOptions },
         ),
-      ).rejects.toThrow(/gateway already running/);
+      ).rejects.toThrow(/OpenClaw state database is busy/);
       expect(run).not.toHaveBeenCalled();
     } finally {
       await gatewayLock.release();
@@ -269,7 +269,7 @@ describe("doctor SQLite maintenance lock", () => {
         },
         { lockOptions: fixture.lockOptions },
       ),
-    ).rejects.toThrow(/outside the active OpenClaw state directory/);
+    ).rejects.toThrow(/outside the active Paddy state directory/);
     expect(run).not.toHaveBeenCalled();
 
     const gatewayLock = await acquireGatewayLock({
@@ -311,7 +311,7 @@ describe("doctor SQLite maintenance lock", () => {
         },
         { lockOptions: fixture.lockOptions },
       ),
-    ).rejects.toThrow(/outside the active OpenClaw state directory/);
+    ).rejects.toThrow(/outside the active Paddy state directory/);
     expect(run).not.toHaveBeenCalled();
   });
 
@@ -338,7 +338,7 @@ describe("doctor SQLite maintenance lock", () => {
         },
         { lockOptions: fixture.lockOptions },
       ),
-    ).rejects.toThrow(/outside the active OpenClaw state directory/);
+    ).rejects.toThrow(/outside the active Paddy state directory/);
     expect(run).not.toHaveBeenCalled();
   });
 

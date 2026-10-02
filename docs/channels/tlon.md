@@ -5,7 +5,7 @@ read_when:
 title: "Tlon"
 ---
 
-Tlon is a decentralized messenger built on Urbit. OpenClaw connects to your Urbit ship and
+Tlon is a decentralized messenger built on Urbit. Paddy connects to your Urbit ship and
 responds to DMs and group chat messages. Group replies require an @ mention by default, with
 authorization rules and an owner-approval flow layered on top.
 
@@ -14,7 +14,7 @@ owner approval system are supported. Reactions and polls are not.
 
 ## Bundled plugin
 
-Tlon ships bundled in current OpenClaw releases; packaged builds do not need a separate install.
+Tlon ships bundled in current Paddy releases; packaged builds do not need a separate install.
 
 On an older build or custom install that excludes it, install from npm:
 
@@ -28,7 +28,7 @@ only for reproducible installs.
 From a local checkout:
 
 ```bash
-openclaw plugins install ./path/to/local/tlon-plugin
+paddy plugins install ./path/to/local/tlon-plugin
 ```
 
 Details: [Plugins](/tools/plugin)
@@ -36,7 +36,7 @@ Details: [Plugins](/tools/plugin)
 ## Setup
 
 ```bash
-openclaw channels add --channel tlon --ship ~sampel-palnet --url https://your-ship-host --code lidlut-tabwed-pillex-ridrup
+paddy channels add --channel tlon --ship ~sampel-palnet --url https://your-ship-host --code lidlut-tabwed-pillex-ridrup
 ```
 
 Or edit config directly:
@@ -62,18 +62,18 @@ Ship URLs support IPv6 literals in brackets, such as `http://[::1]:8080`.
 Loopback and private IPv6 addresses require the private-network opt-in below.
 
 Config changes follow [hot reload](/gateway/configuration/hot-reload). Check
-`openclaw channels status --probe`, starting the Gateway if it is offline. Then
+`paddy channels status --probe`, starting the Gateway if it is offline. Then
 DM the bot or @ mention it in a group channel.
 
 ## Inbound durability
 
-OpenClaw persists accepted Tlon DM and group-chat events before agent dispatch. Pending or retryable turns survive a Gateway restart, and work remains serialized per group channel or direct peer. Stable Urbit message IDs also suppress a redelivered event while its queue record or retained completion record exists.
+Paddy persists accepted Tlon DM and group-chat events before agent dispatch. Pending or retryable turns survive a Gateway restart, and work remains serialized per group channel or direct peer. Stable Urbit message IDs also suppress a redelivered event while its queue record or retained completion record exists.
 
 Delivery is at least once across the queue-to-agent boundary: a crash during handoff can replay a turn. Agent actions that produce external side effects should therefore remain idempotent where practical.
 
 ## Private/LAN ships
 
-OpenClaw blocks private/internal hostnames and IP ranges for SSRF protection by default. If your
+Paddy blocks private/internal hostnames and IP ranges for SSRF protection by default. If your
 ship runs on a private network (localhost, LAN IP, internal hostname), opt in explicitly:
 
 ```json5
@@ -94,7 +94,7 @@ Applies to targets like `http://localhost:8080`, `http://192.168.x.x:8080`, and
 protection for that account's HTTP requests.
 
 <Note>
-`channels.tlon.allowPrivateNetwork` (flat key) is retired. `openclaw doctor --fix` moves it to
+`channels.tlon.allowPrivateNetwork` (flat key) is retired. `paddy doctor --fix` moves it to
 `channels.tlon.network.dangerouslyAllowPrivateNetwork` automatically.
 </Note>
 
@@ -114,7 +114,7 @@ Pin channels manually, or turn on auto-discovery:
 ```
 
 `autoDiscoverChannels` defaults to `false` when unset in config; the setup wizard defaults the
-prompt to yes and writes `true` explicitly. With it on, OpenClaw scries joined groups on startup,
+prompt to yes and writes `true` explicitly. With it on, Paddy scries joined groups on startup,
 watches new channels as group invites are accepted, and rechecks every 2 minutes.
 
 ## Access control
@@ -213,6 +213,15 @@ The owner replies in DM to act on a request:
 Without `ownerShip` configured, unauthorized DMs and channel mentions are just dropped and logged;
 there is no approval prompt.
 
+The monitor admits up to 100 new pending approvals. Existing approvals from an older version are
+preserved so owner replies keep targeting the same request after an upgrade. When the queue is
+full, the monitor sends the owner one saturation notice and does not admit more unique requests
+until pending items are resolved. Failed notice delivery is retried up to three times per full-queue
+episode. Admitting a new request after capacity becomes available starts a new episode, so filling
+the queue again can send another notice in the same monitor run. Rejected requesters must retry
+after capacity is available; pending DM and group invite snapshots remain retryable rather than
+being acknowledged.
+
 ## Auto-accept settings
 
 Auto-accept DM invites from ships already on `dmAllowlist` (the owner is always auto-accepted
@@ -254,7 +263,7 @@ config stays the source of truth for values never written to the settings store.
 
 ## Delivery targets (CLI/cron)
 
-Use with `openclaw message send` or cron delivery:
+Use with `paddy message send` or cron delivery:
 
 - DM: `~sampel-palnet` or `dm/~sampel-palnet`
 - Group: `chat/~host-ship/channel` or `group:~host-ship/channel`
@@ -300,10 +309,10 @@ the image cannot be downloaded within that ceiling.
 ## Troubleshooting
 
 ```bash
-openclaw status
-openclaw gateway status
-openclaw logs --follow
-openclaw doctor
+paddy status
+paddy gateway status
+paddy logs --follow
+paddy doctor
 ```
 
 Common failures:

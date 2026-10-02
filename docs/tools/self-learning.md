@@ -1,7 +1,7 @@
 ---
 summary: "Turn corrections and successful work into reusable skills through Skill Workshop"
 read_when:
-  - You want OpenClaw to learn reusable procedures from completed conversations
+  - You want Paddy to learn reusable procedures from completed conversations
   - You are choosing between off, propose, and auto self-learning modes
   - You need to understand self-learning safety, cost, privacy, or troubleshooting
 title: "Self-learning"
@@ -42,7 +42,7 @@ Every learning decision comes from a model reviewing real evidence, not a
 template or pattern-matching path. The conversation and skill files are evidence,
 not permission to resume tasks or execute the procedures under review.
 
-After substantial work, OpenClaw can run one detached background review to find
+After substantial work, Paddy can run one detached background review to find
 a reusable recovery technique or a stable procedure that would remove at least
 two future model or tool round trips. Deep turns the user interrupted qualify
 too: the wrong path and its correction are exactly the evidence worth keeping.
@@ -70,7 +70,7 @@ retain separate candidates. Experience reviews use one Workshop slot within the
 [shared background work budget](/concepts/queue#background-work).
 The foreground answer never waits for the model's review.
 
-OpenClaw records where the completed turn ends, then reads its full model context
+Paddy records where the completed turn ends, then reads its full model context
 asynchronously after the quiet period. The reviewer connects earlier requirements
 and corrections with observed results across that retained conversation, even
 when the latest turn is routine. Later messages are excluded. If the saved
@@ -135,9 +135,9 @@ The reviewer should abstain for:
 Set the mode with the CLI:
 
 ```bash
-openclaw config set skills.workshop.autonomous.mode auto
-openclaw config set skills.workshop.autonomous.mode propose
-openclaw config set skills.workshop.autonomous.mode off
+paddy config set skills.workshop.autonomous.mode auto
+paddy config set skills.workshop.autonomous.mode propose
+paddy config set skills.workshop.autonomous.mode off
 ```
 
 Or edit `~/.openclaw/openclaw.json`:
@@ -182,10 +182,10 @@ scanner, hash binding, size validation, and rollback metadata.
 Reject a pending miscapture with one command:
 
 ```bash
-openclaw skills workshop reject <proposal-id> --reason "Not reusable"
+paddy skills workshop reject <proposal-id> --reason "Not reusable"
 ```
 
-Proposal captures remain visible in `openclaw skills workshop list`. Direct
+Proposal captures remain visible in `paddy skills workshop list`. Direct
 maintenance changes appear in the installed Workshop skills, not as proposal
 records. Weekly review results remain in automation history. Retained legacy
 backups keep their [restore path](/tools/skill-workshop#changes-and-recovery).
@@ -248,15 +248,15 @@ or change settings. Like other sessions, it shares the agent's normal capacity.
 List and inspect every pending, applied, rejected, quarantined, or stale capture:
 
 ```bash
-openclaw skills workshop list
-openclaw skills workshop inspect <proposal-id>
+paddy skills workshop list
+paddy skills workshop inspect <proposal-id>
 ```
 
 Stop a pending capture from becoming active or quarantine it for safety review:
 
 ```bash
-openclaw skills workshop reject <proposal-id> --reason "Too specific"
-openclaw skills workshop quarantine <proposal-id> --reason "Needs security review"
+paddy skills workshop reject <proposal-id> --reason "Too specific"
+paddy skills workshop quarantine <proposal-id> --reason "Needs security review"
 ```
 
 Use `/learn` when you want an explicit proposal from the current conversation or
@@ -306,7 +306,7 @@ Check the following:
 
 An eligible experience review can still abstain. No proposal is the expected
 result when the evidence does not clear the reusable-procedure bar.
-Use `openclaw skills curator status` to inspect experience review outcomes and
+Use `paddy skills curator status` to inspect experience review outcomes and
 live skill usage. Current weekly collection results are in automation run history.
 That CLI retains only the earlier collection records. It does not archive or
 expire skills by age. The `curator pin`, `unpin`, and `restore` commands return an
@@ -314,7 +314,7 @@ error explaining that weekly collection review manages the skill collection.
 
 ### Doctor reports that Workshop is hidden
 
-In `propose` and `auto` modes, `openclaw doctor` checks whether the default agent
+In `propose` and `auto` modes, `paddy doctor` checks whether the default agent
 tool policy permits `skill_workshop`. Apply the reported `tools.allow` or
 `tools.alsoAllow` change, or set the autonomous mode to `off`.
 
@@ -323,7 +323,7 @@ tool policy permits `skill_workshop`. Apply the reported `tools.allow` or
 Automatic apply runs once. Inspect the proposal and its scanner state:
 
 ```bash
-openclaw skills workshop inspect <proposal-id>
+paddy skills workshop inspect <proposal-id>
 ```
 
 A normal write failure leaves it pending for manual review. A critical scanner
@@ -336,8 +336,8 @@ Switch to `propose` to review every capture, or `off` to disable autonomous
 capture:
 
 ```bash
-openclaw config set skills.workshop.autonomous.mode propose
-openclaw config set skills.workshop.autonomous.mode off
+paddy config set skills.workshop.autonomous.mode propose
+paddy config set skills.workshop.autonomous.mode off
 ```
 
 Existing proposals and applied skills remain visible after the mode changes.

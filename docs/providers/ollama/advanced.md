@@ -38,7 +38,7 @@ sidebarTitle: "Advanced"
     This mode may not support streaming and tool calling simultaneously; you
     may need `params: { streaming: false }` on the model.
 
-    OpenClaw injects `options.num_ctx` by default in this mode so Ollama does
+    Paddy injects `options.num_ctx` by default in this mode so Ollama does
     not silently fall back to a 4096-token context. If your proxy rejects
     unknown `options` fields, disable it:
 
@@ -61,9 +61,9 @@ sidebarTitle: "Advanced"
   </Accordion>
 
   <Accordion title="Context windows">
-    For auto-discovered models, OpenClaw uses the context window `/api/show`
+    For auto-discovered models, Paddy uses the context window `/api/show`
     reports, including larger `PARAMETER num_ctx` values from custom
-    Modelfiles; otherwise it falls back to OpenClaw's default Ollama context
+    Modelfiles; otherwise it falls back to Paddy's default Ollama context
     window.
 
     Per-model `contextWindow` declares native window metadata, and per-model
@@ -72,13 +72,13 @@ sidebarTitle: "Advanced"
     `/api/chat` requests set `options.num_ctx` from a positive `params.num_ctx`
     first, then from the effective model `contextTokens` when present. Local
     discovery normally caps `contextTokens` at 32,768 (or the model's smaller
-    native window), so OpenClaw can override a smaller Modelfile context even
+    native window), so Paddy can override a smaller Modelfile context even
     without an explicit `params.num_ctx`. Invalid, zero, negative, or non-finite
     `params.num_ctx` values are ignored. Only when neither value is available
     does Ollama choose its own model, Modelfile, `OLLAMA_CONTEXT_LENGTH`, or
     VRAM-based default; the native adapter does not fall back directly to the
     advertised `contextWindow`. After upgrading an older configuration, run
-    `openclaw doctor --fix`. Doctor preserves current `contextTokens` caps without
+    `paddy doctor --fix`. Doctor preserves current `contextTokens` caps without
     creating a stronger model or provider `num_ctx` pin; uncapped legacy native
     entries still migrate their older context budgets. Existing explicit
     `params.num_ctx` values remain authoritative, including pins an older Doctor
@@ -99,18 +99,18 @@ sidebarTitle: "Advanced"
     `presencePenalty`, and `seed`) override the matching model defaults,
     including explicit zero values. The Gateway's Chat Completions API maps
     `top_p`, `frequency_penalty`, and `presence_penalty` to these controls.
-    With `temperature: 0`, OpenClaw still normalizes `top_p` to `1` for greedy
+    With `temperature: 0`, Paddy still normalizes `top_p` to `1` for greedy
     sampling after applying overrides.
     A few keys (`format`, `keep_alive`, `truncate`, `shift`) are forwarded as
     top-level request fields instead of nested `options`. Local native chat
     requests default to `truncate: false` and `shift: false`, so supporting
     servers reject overflowing input instead of silently dropping history.
-    OpenClaw then attempts compaction and retries, or reports the failure.
+    Paddy then attempts compaction and retries, or reports the failure.
     Generation that fills the window can still produce a labeled partial reply.
     This behavior is verified with Ollama 0.33.3; older servers may ignore the
     fields. Explicit per-model values override these defaults. Hosted models
     and the OpenAI-compatible endpoint keep their existing behavior.
-    OpenClaw only
+    Paddy only
     forwards these Ollama request keys, so runtime-only params such as
     `streaming` are never sent to Ollama. Use `params.think` (or
     `params.thinking`) to set top-level `think`; `false` disables API-level
@@ -154,7 +154,7 @@ sidebarTitle: "Advanced"
     preference. Existing per-model `params.think`/`params.thinking` settings
     keep their normal precedence. Hosted routes keep their compaction defaults.
 
-    OpenClaw forwards thinking as Ollama expects it: top-level `think`, not
+    Paddy forwards thinking as Ollama expects it: top-level `think`, not
     `options.think`. Auto-discovered models whose `/api/show` reports a
     `thinking` capability expose `/think low`, `/think medium`, `/think high`,
     and `/think max`; non-thinking models expose only `/think off`.
@@ -165,8 +165,8 @@ sidebarTitle: "Advanced"
     history policy without mixing it into visible answer text.
 
     ```bash
-    openclaw agent --model ollama/gemma4 --thinking off
-    openclaw agent --model ollama/gemma4 --thinking low
+    paddy agent --model ollama/gemma4 --thinking off
+    paddy agent --model ollama/gemma4 --thinking low
     ```
 
     Or set a model default:
@@ -186,7 +186,7 @@ sidebarTitle: "Advanced"
     ```
 
     Per-model `params.think`/`params.thinking` can disable or force API
-    thinking for a specific model. OpenClaw preserves that explicit config
+    thinking for a specific model. Paddy preserves that explicit config
     when the active run only has the implicit `off` default; a non-off
     runtime command such as `/think medium` still overrides it. A truthy
     thinking request is never sent to a model explicitly marked
@@ -216,7 +216,7 @@ sidebarTitle: "Advanced"
     one `input` request when possible.
 
     When `proxy.enabled=true`, embedding requests to the exact host-local
-    loopback origin derived from the configured `baseUrl` use OpenClaw's
+    loopback origin derived from the configured `baseUrl` use Paddy's
     guarded direct path instead of the managed forward proxy. The configured
     hostname must itself be `localhost` or a loopback IP literal — DNS names
     that merely resolve to loopback still use the managed proxy path. LAN,
@@ -264,7 +264,7 @@ sidebarTitle: "Advanced"
     streaming and tool calling together — no special config needed.
 
     For native requests, thinking control is forwarded directly: `/think off`
-    and `openclaw agent --thinking off` send top-level `think: false` unless
+    and `paddy agent --thinking off` send top-level `think: false` unless
     an explicit `params.think`/`params.thinking` is configured; `/think
     low|medium|high` send the matching effort string. Verified full-effort
     Ollama Cloud families such as GLM 5.2 and DeepSeek V4 also send native

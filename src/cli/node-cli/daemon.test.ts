@@ -67,8 +67,14 @@ const mocks = vi.hoisted(() => {
     runServiceStart: vi.fn(),
     runServiceStop: vi.fn(),
     runServiceUninstall: vi.fn(),
+    runExec: vi.fn(),
   };
 });
+
+vi.mock("../../process/exec.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../process/exec.js")>()),
+  runExec: mocks.runExec,
+}));
 
 vi.mock("../../runtime.js", () => ({
   defaultRuntime: mocks.runtime,
@@ -98,7 +104,7 @@ vi.mock("../../daemon/runtime-hints.js", () => ({
     "Logs: node service log",
     "Restart attempts: node restart log",
   ],
-  buildPlatformServiceStartHints: () => ["openclaw node install", "openclaw node start"],
+  buildPlatformServiceStartHints: () => ["paddy node install", "paddy node start"],
 }));
 
 vi.mock("../../daemon/systemd.js", async () => {
@@ -158,6 +164,16 @@ describe("runNodeDaemonInstall", () => {
     mocks.runtime.writeJson.mockClear();
     mocks.runtime.exit.mockClear();
     vi.stubEnv("OPENCLAW_NIX_MODE", undefined);
+    vi.stubEnv("OPENCLAW_WRAPPER", undefined);
+    mocks.runExec.mockReset().mockResolvedValue({
+      stdout: JSON.stringify({
+        nodeVersion: "26.8.1",
+        bunVersion: "1.4.2",
+        sqliteVersion: "3.53.4",
+        sqliteProbe: { available: true, version: "3.53.4", text: true, blob: true, json: true },
+      }),
+      stderr: "",
+    });
     mocks.service.readCommand.mockReset().mockResolvedValue(null);
     mocks.service.install.mockReset().mockResolvedValue(undefined);
     mocks.service.isLoaded.mockReset().mockResolvedValue(false);
@@ -182,6 +198,50 @@ describe("runNodeDaemonInstall", () => {
       linger: "no",
     });
   });
+
+  it.each([
+    { recorded: "node", runtime: undefined, probe: "supported" },
+    { recorded: "bun", runtime: undefined, probe: "supported" },
+    { recorded: "bun", runtime: "node", probe: "supported" },
+    { recorded: "bun", runtime: "bun", probe: "supported" },
+    { recorded: "bun", runtime: undefined, probe: "unsupported" },
+    { recorded: "bun", runtime: undefined, probe: "ENOENT" },
+    { recorded: "bun", runtime: undefined, probe: "EACCES" },
+  ] as const)(
+    "reinstalls recorded $recorded ($probe) with runtime=$runtime without a pin",
+    async ({ recorded, runtime, probe }) => {
+      const recordedPath = `/opt/recorded/bin/${recorded}`;
+      if (probe === "unsupported") {
+        mocks.runExec.mockResolvedValue({
+          stdout: JSON.stringify({
+            bunVersion: "1.3.0",
+            sqliteVersion: "3.53.4",
+            sqliteProbe: { available: true, version: "3.53.4", text: true, blob: true, json: true },
+          }),
+          stderr: "",
+        });
+      } else if (probe !== "supported") {
+        mocks.runExec.mockRejectedValue(Object.assign(new Error(probe), { code: probe }));
+      }
+      mocks.service.isLoaded.mockResolvedValue(true);
+      mocks.service.readCommand.mockResolvedValue({
+        programArguments: [recordedPath, "/fixture/openclaw.mjs", "node", "run"],
+      });
+      await runNodeDaemonInstall({ force: true, runtime });
+      const retained = runtime === undefined && probe === "supported";
+      expect(mocks.runtime.error).not.toHaveBeenCalled();
+      const plan = mocks.buildNodeInstallPlan.mock.calls[0]?.[0];
+      expect(plan?.runtime).toBe(runtime ?? (retained ? recorded : "node"));
+      expect(plan?.runtimeExplicit).toBe(runtime !== undefined);
+      expect(plan?.pinnedRuntimePath).toBeUndefined();
+      expect(plan?.runtimePath).toBe(retained ? recordedPath : undefined);
+      expect(mocks.service.install).toHaveBeenCalledWith(
+        expect.objectContaining({
+          runtimePinUpdate: { expected: { revision: "empty", stored: false }, pin: undefined },
+        }),
+      );
+    },
+  );
 
   it.each(["preserve", "replace", "reset"] as const)(
     "handles a runtime pin during %s node reinstall",
@@ -630,7 +690,7 @@ describe("runNodeDaemonInstall", () => {
         "Systemd lingering is disabled for pi. The node service will stop when you log out. Run: sudo loginctl enable-linger pi";
       const message = "Node service already loaded.";
       expect(mocks.runtime.log.mock.calls).toEqual(
-        json ? [] : [[warning], [message], ["Reinstall with: openclaw node install --force"]],
+        json ? [] : [[warning], [message], ["Reinstall with: paddy node install --force"]],
       );
       expect(mocks.runtime.writeJson.mock.calls.map(([value]) => JSON.stringify(value))).toEqual(
         json
@@ -792,7 +852,7 @@ describe("runNodeDaemonStatus", () => {
     );
     expect(mocks.runtime.exit).toHaveBeenCalledWith(1);
     expect(stdout()).not.toContain("not loaded");
-    expect(stdout()).not.toContain("openclaw node install");
+    expect(stdout()).not.toContain("paddy node install");
   });
 
   it("reports a failed service check as JSON without inventing node status", async () => {

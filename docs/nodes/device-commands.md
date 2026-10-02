@@ -11,9 +11,9 @@ sidebarTitle: "Device commands"
 ## macOS widget panel
 
 ```bash
-openclaw nodes canvas present --node <idOrNameOrIp>
-openclaw nodes canvas hide --node <idOrNameOrIp>
-openclaw nodes canvas navigate "/__openclaw__/canvas/documents/<document-id>/index.html" --node <idOrNameOrIp>
+paddy nodes canvas present --node <idOrNameOrIp>
+paddy nodes canvas hide --node <idOrNameOrIp>
+paddy nodes canvas navigate "/__openclaw__/canvas/documents/<document-id>/index.html" --node <idOrNameOrIp>
 ```
 
 Notes:
@@ -34,18 +34,18 @@ Notes:
 Photos (`jpg`):
 
 ```bash
-openclaw nodes camera list --node <idOrNameOrIp>
-openclaw nodes camera snap --node <idOrNameOrIp>            # default: one node-selected photo
-openclaw nodes camera snap --node <idOrNameOrIp> --facing front
-openclaw nodes camera snap --node <idOrNameOrIp> --facing both # front then back (2 saved paths)
-openclaw nodes camera snap --node <idOrNameOrIp> --device-id <id> --max-width 1200 --quality 0.9 --delay-ms 2000
+paddy nodes camera list --node <idOrNameOrIp>
+paddy nodes camera snap --node <idOrNameOrIp>            # default: one node-selected photo
+paddy nodes camera snap --node <idOrNameOrIp> --facing front
+paddy nodes camera snap --node <idOrNameOrIp> --facing both # front then back (2 saved paths)
+paddy nodes camera snap --node <idOrNameOrIp> --device-id <id> --max-width 1200 --quality 0.9 --delay-ms 2000
 ```
 
 Video clips (`mp4`):
 
 ```bash
-openclaw nodes camera clip --node <idOrNameOrIp> --duration 10s
-openclaw nodes camera clip --node <idOrNameOrIp> --duration 3000 --no-audio
+paddy nodes camera clip --node <idOrNameOrIp> --duration 10s
+paddy nodes camera clip --node <idOrNameOrIp> --duration 3000 --no-audio
 ```
 
 Notes:
@@ -59,8 +59,8 @@ Notes:
 Supported nodes expose `screen.record` (mp4). Example:
 
 ```bash
-openclaw nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10
-openclaw nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10 --no-audio
+paddy nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10
+paddy nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10 --no-audio
 ```
 
 Notes:
@@ -77,8 +77,8 @@ Nodes expose `location.get` when Location is enabled in settings.
 CLI helper:
 
 ```bash
-openclaw nodes location get --node <idOrNameOrIp>
-openclaw nodes location get --node <idOrNameOrIp> --accuracy precise --max-age 15000 --location-timeout 10000
+paddy nodes location get --node <idOrNameOrIp>
+paddy nodes location get --node <idOrNameOrIp> --accuracy precise --max-age 15000 --location-timeout 10000
 ```
 
 Notes:
@@ -109,7 +109,7 @@ Add `sms.send` separately only when the node should also be able to send message
 Low-level invoke:
 
 ```bash
-openclaw nodes invoke --node <idOrNameOrIp> --command sms.send --params '{"to":"+15555550123","message":"Hello from OpenClaw"}'
+paddy nodes invoke --node <idOrNameOrIp> --command sms.send --params '{"to":"+15555550123","message":"Hello from Paddy"}'
 ```
 
 Notes:
@@ -142,8 +142,8 @@ budget plus 30 seconds for forwarding and the response.
 Example invokes:
 
 ```bash
-openclaw nodes invoke --node <idOrNameOrIp> --command device.status --params '{}'
-openclaw nodes invoke --node <idOrNameOrIp> --command device.apps --params '{"limit":10}'
-openclaw nodes invoke --node <idOrNameOrIp> --command notifications.list --params '{}'
-openclaw nodes invoke --node <idOrNameOrIp> --command photos.latest --params '{"limit":1}'
+paddy nodes invoke --node <idOrNameOrIp> --command device.status --params '{}'
+paddy nodes invoke --node <idOrNameOrIp> --command device.apps --params '{"limit":10}'
+paddy nodes invoke --node <idOrNameOrIp> --command notifications.list --params '{}'
+paddy nodes invoke --node <idOrNameOrIp> --command photos.latest --params '{"limit":1}'
 ```

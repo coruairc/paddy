@@ -187,7 +187,6 @@ export function createDoctorPluginMigrationPreparation(params: {
 
   return {
     deferred: () => deferred,
-    hasPending: () => previousById.size > 0,
     prepare,
     snapshotOptions: async () => {
       // Existing pending inputs must reach the first config read before backup selection.
@@ -297,7 +296,7 @@ export function createDoctorPluginMigrationPreparation(params: {
             : Object.assign(plugin, {
                 reason:
                   "The installed plugin has not confirmed that its saved data and settings are ready for this version. If Doctor cannot finish the upgrade, report this warning to the plugin maintainer.",
-                command: "openclaw doctor --fix",
+                command: "paddy doctor --fix",
               }),
         );
       if (resolvedPluginIds.length === 0 && pending.length === 0) {

@@ -7,6 +7,7 @@ import {
   normalizeOptionalLowercaseString,
 } from "@openclaw/normalization-core/string-coerce";
 import type { EventFrame } from "../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { GatewayClient } from "../gateway/client.js";
 import type { ChannelApprovalKind } from "../infra/approval-types.js";
@@ -130,12 +131,14 @@ export class OpenClawChannelBridge {
 
     this.gateway = new GatewayClientCtor({
       url: bootstrap.url,
+      deviceAuthScope: bootstrap.deviceAuthScope,
+      ...(bootstrap.sshTunnel ? { sshTunnel: bootstrap.sshTunnel } : {}),
       token: bootstrap.auth.token,
       password: bootstrap.auth.password,
       preauthHandshakeTimeoutMs: bootstrap.preauthHandshakeTimeoutMs,
       tlsFingerprint: bootstrap.tlsFingerprint,
       clientName: GATEWAY_CLIENT_NAMES.CLI,
-      clientDisplayName: "OpenClaw MCP",
+      clientDisplayName: `${PRODUCT_NAME} MCP`,
       clientVersion: VERSION,
       mode: GATEWAY_CLIENT_MODES.CLI,
       caps: [GATEWAY_CLIENT_CAPS.APPROVALS],
@@ -386,7 +389,7 @@ export class OpenClawChannelBridge {
       inputPreview: params.inputPreview,
     });
     if (this.verbose) {
-      process.stderr.write(`openclaw mcp: pending Claude permission ${params.requestId}\n`);
+      process.stderr.write(`paddy mcp: pending Claude permission ${params.requestId}\n`);
     }
   }
 
@@ -415,10 +418,10 @@ export class OpenClawChannelBridge {
       }
       // Always surface a single low-noise record so swallowed delivery failures
       // remain observable; the spammy error detail stays behind --verbose.
-      process.stderr.write(`openclaw mcp: notification ${notification.method} failed\n`);
+      process.stderr.write(`paddy mcp: notification ${notification.method} failed\n`);
       if (this.verbose) {
         process.stderr.write(
-          `openclaw mcp: notification ${notification.method} error: ${String(error)}\n`,
+          `paddy mcp: notification ${notification.method} error: ${String(error)}\n`,
         );
       }
       return "failed";
@@ -536,11 +539,9 @@ export class OpenClawChannelBridge {
     } catch (error) {
       // Always surface a single low-noise record so swallowed gateway event
       // failures remain observable; the spammy error detail stays behind --verbose.
-      process.stderr.write(`openclaw mcp: gateway event ${event.event} failed\n`);
+      process.stderr.write(`paddy mcp: gateway event ${event.event} failed\n`);
       if (this.verbose) {
-        process.stderr.write(
-          `openclaw mcp: gateway event ${event.event} error: ${String(error)}\n`,
-        );
+        process.stderr.write(`paddy mcp: gateway event ${event.event} error: ${String(error)}\n`);
       }
     }
   }

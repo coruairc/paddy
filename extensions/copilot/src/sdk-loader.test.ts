@@ -68,7 +68,7 @@ describe("sdk-loader", () => {
 
     await expect(failed).rejects.toMatchObject({ code: "COPILOT_SDK_MISSING" });
     for (const detail of [
-      "openclaw plugins install @openclaw/copilot",
+      "paddy plugins install @openclaw/copilot",
       "primary boom",
       path.join(fallbackDir, "node_modules", "@github", "copilot-sdk"),
       `@github/copilot-sdk@${copilotPluginPackage.dependencies["@github/copilot-sdk"]}`,

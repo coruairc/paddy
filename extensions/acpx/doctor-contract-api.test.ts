@@ -39,11 +39,11 @@ describe("acpx doctor config repair", () => {
     expect(legacyConfigRules).toEqual([
       expect.objectContaining({
         path: ["plugins", "entries", "acpx", "config", "strictWindowsCmdWrapper"],
-        message: expect.stringContaining("openclaw doctor --fix"),
+        message: expect.stringContaining("paddy doctor --fix"),
       }),
       expect.objectContaining({
         path: ["plugins", "entries", "acpx", "config", "queueOwnerTtlSeconds"],
-        message: expect.stringContaining("openclaw doctor --fix"),
+        message: expect.stringContaining("paddy doctor --fix"),
       }),
     ]);
   });

@@ -5,6 +5,7 @@ import type {
 } from "../../../packages/gateway-protocol/src/index.js";
 import { colorize, isRich, theme } from "../../../packages/terminal-core/src/theme.js";
 import type { OutputRuntimeEnv } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import type { callGatewayFromCliWithTransport } from "../gateway-rpc.js";
 
@@ -100,7 +101,7 @@ export async function runGatewaySuspend(
         `${colorize(rich, theme.muted, "Expires:")} ${new Date(latest.expiresAtMs).toISOString()} (${latest.expiresAtMs} ms)`,
       );
       const port = options.rpcOpts.localPortOverride;
-      const command = `openclaw gateway resume ${latest.suspensionId}`;
+      const command = `${CLI_NAME} gateway resume ${latest.suspensionId}`;
       deps.runtime.log(
         `Resume with: ${formatCliCommand(port === undefined ? command : `${command} --port ${port}`)}`,
       );
@@ -111,12 +112,7 @@ export async function runGatewaySuspend(
     }
 
     if (deadlineMs === undefined) {
-      if (options.json) {
-        deps.runtime.writeJson({ ...latest, requestId });
-        deps.runtime.exit(1);
-        return;
-      }
-      throw new Error(`${formatBusyResult(latest)}\nRetry later or use --wait <seconds>.`);
+      break;
     }
 
     const remainingMs = deadlineMs - nowMs();
@@ -135,7 +131,11 @@ export async function runGatewaySuspend(
     deps.runtime.exit(1);
     return;
   }
-  throw new Error(`${formatBusyResult(latest)}\nTimed out waiting for the Gateway to become idle.`);
+  const hint =
+    deadlineMs === undefined
+      ? "Retry later or use --wait <seconds>."
+      : "Timed out waiting for the Gateway to become idle.";
+  throw new Error(`${formatBusyResult(latest)}\n${hint}`);
 }
 
 export async function runGatewayResume(

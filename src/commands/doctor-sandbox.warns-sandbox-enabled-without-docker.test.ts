@@ -445,7 +445,7 @@ describe("maybeRepairSandboxRegistryFiles", () => {
       [
         "Legacy sandbox registry files detected.",
         "- containers monolithic: /tmp/openclaw/sandbox/containers.json (2 entries)",
-        "Run openclaw doctor --fix to migrate them to SQLite.",
+        "Run paddy doctor --fix to migrate them to SQLite.",
       ].join("\n"),
       "Sandbox",
     );
@@ -502,7 +502,7 @@ describe("maybeRepairSandboxRegistryFiles", () => {
         checkId: "core/doctor/sandbox/registry-files",
         severity: "warning",
         path: "/tmp/openclaw/sandbox/containers.json",
-        fixHint: expect.stringContaining("openclaw doctor --fix"),
+        fixHint: expect.stringContaining("paddy doctor --fix"),
       }),
     );
     expect(legacySandboxRegistryInspectionToRepairEffect(monolithicFile)).toEqual({

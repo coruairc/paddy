@@ -1,12 +1,12 @@
-# OpenClaw Exa Plugin
+# Paddy Exa Plugin
 
-Official OpenClaw plugin for Exa.
+Official Paddy plugin for Exa.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/exa-plugin
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/tools/exa-search> for setup and configuration.

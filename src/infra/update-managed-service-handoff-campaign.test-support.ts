@@ -33,7 +33,7 @@ export function registerManagedCampaignFailureTests(
                 status: "started",
                 handoffId: "systemd-boundary",
                 installRoot: expectDefined(env.OPENCLAW_STATE_DIR, "fixture install root"),
-                command: "openclaw update --channel beta",
+                command: "paddy update --channel beta",
                 logPath: "fixture-handoff.log",
               });
             let restoreDiagnosticFailure: (() => void) | undefined;

@@ -1,5 +1,6 @@
 // Reusable CLI error-message formatters that keep recovery hints consistent across commands.
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 
 const DEFAULT_GATEWAY_PORT_EXAMPLE = 18789;
@@ -36,7 +37,7 @@ export function formatUnknownChannelMessage(params: {
   purpose?: string;
 }): string {
   const purpose = params.purpose ? ` for ${params.purpose}` : "";
-  const listCommand = params.listCommand ?? "openclaw channels list --all";
+  const listCommand = params.listCommand ?? `${CLI_NAME} channels list --all`;
   return `Unknown channel "${params.channel}"${purpose}. Run ${formatInlineCliCommand(
     listCommand,
   )} to see configured and installable channels.`;
@@ -49,7 +50,7 @@ export function formatUnsupportedChannelActionMessage(params: {
   inspectCommand?: string;
 }): string {
   const inspectCommand =
-    params.inspectCommand ?? `openclaw channels capabilities --channel ${params.channel}`;
+    params.inspectCommand ?? `${CLI_NAME} channels capabilities --channel ${params.channel}`;
   return `Channel "${params.channel}" does not support ${params.action}. Run ${formatInlineCliCommand(
     inspectCommand,
   )} to inspect supported actions.`;
@@ -65,7 +66,7 @@ export function formatStrictJsonParseFailure(params: { value: string; cause: unk
     `Could not parse ${JSON.stringify(preview)} as JSON for --strict-json.`,
     `${cause}.`,
     `Use valid JSON. For structured changes, use a JSON5 config patch object file with ${formatInlineCliCommand(
-      "openclaw config patch --file <path> --dry-run",
+      `${CLI_NAME} config patch --file <path> --dry-run`,
     )}.`,
     "For plain strings, omit --strict-json.",
   ].join(" ");
@@ -79,12 +80,12 @@ export function formatGatewayCommandFailure(params: {
 }): string {
   const raw = params.error instanceof Error ? params.error.message : String(params.error);
   const message = raw
-    .replace(/\s*Run [`"]?openclaw doctor[`"]? for diagnostics\.?/gi, "")
+    .replace(/\s*Run [`"]?(?:paddy|openclaw) doctor[`"]? for diagnostics\.?/gi, "")
     .replace(/\s+Gateway target:\s+.*$/isu, "")
     .replace(/\s+/g, " ")
     .trim()
     .replace(/[.。]+$/u, "");
-  const inspectCommand = params.inspectCommand ?? "openclaw gateway status --deep";
+  const inspectCommand = params.inspectCommand ?? `${CLI_NAME} gateway status --deep`;
   const detail = message ? `: ${message}` : "";
   return `Could not ${params.action} because the Gateway did not respond${detail}. Run ${formatInlineCliCommand(
     inspectCommand,
@@ -110,9 +111,9 @@ export function formatMissingPluginMessage(params: {
   listCommand?: string;
   includeSearch?: boolean;
 }): string {
-  const listCommand = params.listCommand ?? "openclaw plugins list";
+  const listCommand = params.listCommand ?? `${CLI_NAME} plugins list`;
   const searchHint = params.includeSearch
-    ? `, or ${formatInlineCliCommand("openclaw plugins search " + params.id)} to look for installable plugins`
+    ? `, or ${formatInlineCliCommand(`${CLI_NAME} plugins search ${params.id}`)} to look for installable plugins`
     : "";
   return `Plugin not found: ${params.id}. Run ${formatInlineCliCommand(
     listCommand,

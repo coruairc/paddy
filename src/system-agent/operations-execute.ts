@@ -1,5 +1,5 @@
-// Public operation dispatcher. Parsing and mutation helpers live in focused modules.
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { buildAgentMainSessionKey, normalizeAgentId } from "../routing/session-key.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { resolveUserPath, shortenHomePath } from "../utils.js";
@@ -30,6 +30,29 @@ import {
 } from "./operations-execution-helpers.js";
 import type { SystemAgentOperation, SystemAgentOperationResult } from "./operations-parse.js";
 import { executePluginInstall } from "./plugin-install.js";
+
+const INTERACTIVE_SETUP_GUIDANCE = {
+  "skills-setup": [
+    "Skills setup needs an interactive session.",
+    "Run `paddy setup` and say `configure skills`,",
+    "or run `paddy configure --section skills` for the terminal wizard.",
+  ],
+  "search-setup": [
+    "Web search setup needs an interactive session.",
+    "Run `paddy setup` and say `configure search`,",
+    "or run `paddy configure --section web` for the masked terminal wizard.",
+  ],
+  "gateway-config-setup": [
+    "Gateway configuration needs an interactive session.",
+    "Run `paddy setup` and say `configure gateway`,",
+    "or run `paddy configure --section gateway` for the masked terminal wizard.",
+  ],
+  "memory-import": [
+    "Memory import needs an interactive session.",
+    "Open the Memory page in the Control UI,",
+    "or run `paddy onboard` for the terminal wizard.",
+  ],
+};
 
 // Plugin CLI commands also serve terminals; this operation boundary owns the
 // smaller model budget across every write, without changing human CLI output.
@@ -279,46 +302,16 @@ export async function executeSystemAgentOperation(
       runtime.log(
         [
           `Connecting ${operation.channel} needs an interactive session.`,
-          "Run `openclaw setup` and say `connect " + operation.channel + "`,",
-          "or run `openclaw channels add` for the terminal wizard.",
+          "Run `paddy setup` and say `connect " + operation.channel + "`,",
+          "or run `paddy channels add` for the terminal wizard.",
         ].join("\n"),
       );
       return { applied: false };
     case "skills-setup":
-      runtime.log(
-        [
-          "Skills setup needs an interactive session.",
-          "Run `openclaw setup` and say `configure skills`,",
-          "or run `openclaw configure --section skills` for the terminal wizard.",
-        ].join("\n"),
-      );
-      return { applied: false };
     case "search-setup":
-      runtime.log(
-        [
-          "Web search setup needs an interactive session.",
-          "Run `openclaw setup` and say `configure search`,",
-          "or run `openclaw configure --section web` for the masked terminal wizard.",
-        ].join("\n"),
-      );
-      return { applied: false };
     case "gateway-config-setup":
-      runtime.log(
-        [
-          "Gateway configuration needs an interactive session.",
-          "Run `openclaw setup` and say `configure gateway`,",
-          "or run `openclaw configure --section gateway` for the masked terminal wizard.",
-        ].join("\n"),
-      );
-      return { applied: false };
     case "memory-import":
-      runtime.log(
-        [
-          "Memory import needs an interactive session.",
-          "Open the Memory page in the Control UI,",
-          "or run `openclaw onboard` for the terminal wizard.",
-        ].join("\n"),
-      );
+      runtime.log(INTERACTIVE_SETUP_GUIDANCE[operation.kind].join("\n"));
       return { applied: false };
     case "model-setup":
       runtime.log(
@@ -327,22 +320,22 @@ export async function executeSystemAgentOperation(
       return { applied: false };
     case "model-accounts":
       runtime.log(
-        "Manage your personal accounts in Settings → Profile → Connected accounts, or run `openclaw models accounts list` / `openclaw models accounts login <provider>`. Check the Gateway, person, and Personal scope before signing in. Nothing has changed.",
+        "Manage your personal accounts in Settings → Profile → Connected accounts, or run `paddy models accounts list` / `paddy models accounts login <provider>`. Check the Gateway, person, and Personal scope before signing in. Nothing has changed.",
       );
       return { applied: false };
     case "open-setup": {
       const command =
         operation.target === "guided"
-          ? "openclaw onboard"
+          ? "paddy onboard"
           : operation.target === "classic"
-            ? "openclaw onboard --classic"
+            ? "paddy onboard --classic"
             : operation.target === "channels"
-              ? `openclaw channels add${operation.channel ? ` --channel ${operation.channel}` : ""}`
+              ? `paddy channels add${operation.channel ? ` --channel ${operation.channel}` : ""}`
               : operation.target === "search"
-                ? "openclaw configure --section web"
-                : "openclaw configure --section gateway";
+                ? "paddy configure --section web"
+                : "paddy configure --section gateway";
       runtime.log(
-        `This session cannot host an interactive wizard. Run \`${command}\` on the machine running OpenClaw.`,
+        `This session cannot host an interactive wizard. Run \`${command}\` on the machine running ${PRODUCT_NAME}.`,
       );
       return { applied: false };
     }
@@ -410,8 +403,8 @@ export async function executeSystemAgentOperation(
     case "plugin-uninstall": {
       if (await isPluginBackingDefaultInferenceRoute(operation.pluginId)) {
         const message = [
-          `Uninstalling ${operation.pluginId} could remove the provider behind OpenClaw's own active inference route.`,
-          `Removing it has to happen with OpenClaw stopped: run \`openclaw plugins uninstall ${operation.pluginId}\` on the machine running it.`,
+          `Uninstalling ${operation.pluginId} could remove the provider behind ${PRODUCT_NAME}'s own active inference route.`,
+          `Removing it has to happen with ${PRODUCT_NAME} stopped: run \`${CLI_NAME} plugins uninstall ${operation.pluginId}\` on the machine running it.`,
         ].join("\n");
         runtime.log(message);
         return { applied: false, message };
@@ -438,7 +431,7 @@ export async function executeSystemAgentOperation(
           // command's asynchronous preparation starts.
           if (await isPluginBackingDefaultInferenceRoute(operation.pluginId)) {
             throw new Error(
-              `Uninstall aborted: ${operation.pluginId} now backs the active inference route. Removing it has to happen with OpenClaw stopped: run \`openclaw plugins uninstall ${operation.pluginId}\` on the machine running it.`,
+              `Uninstall aborted: ${operation.pluginId} now backs the active inference route. Removing it has to happen with ${PRODUCT_NAME} stopped: run \`${CLI_NAME} plugins uninstall ${operation.pluginId}\` on the machine running it.`,
             );
           }
           await ctx.commit(() =>
@@ -469,7 +462,7 @@ export async function executeSystemAgentOperation(
       }
       if (operation.model?.trim()) {
         throw new Error(
-          "OpenClaw cannot save an explicit per-agent model until that new route can be live-tested. Retry without `model`; the new agent inherits the verified default, then use `set_default_model` with agentId to live-test and save its own model.",
+          `${PRODUCT_NAME} cannot save an explicit per-agent model until that new route can be live-tested. Retry without \`model\`; the new agent inherits the verified default, then use \`set_default_model\` with agentId to live-test and save its own model.`,
         );
       }
       return await applyPersistentOperation({
@@ -574,7 +567,7 @@ export async function executeSystemAgentOperation(
     }
     case "doctor-fix":
       runtime.log(
-        "Doctor repairs can change the inference route that powers this session, so they run with OpenClaw stopped: `openclaw doctor --fix` on the machine running it.",
+        `Doctor repairs can change the inference route that powers this session, so they run with ${PRODUCT_NAME} stopped: \`${CLI_NAME} doctor --fix\` on the machine running it.`,
       );
       return { applied: false };
     case "status": {
@@ -674,8 +667,8 @@ export async function executeSystemAgentOperation(
       if (result?.exitReason === "return-to-system-agent") {
         runtime.log(
           result.systemAgentMessage
-            ? `[openclaw] returned from agent with request: ${result.systemAgentMessage}`
-            : "[openclaw] returned from agent",
+            ? `[paddy] returned from agent with request: ${result.systemAgentMessage}`
+            : "[paddy] returned from agent",
         );
         return { applied: false, returnToShell: true, nextInput: result.systemAgentMessage };
       }

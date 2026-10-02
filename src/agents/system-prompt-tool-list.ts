@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { AgentPromptSurfaceKind } from "../plugins/types.js";
 import { AUTOMATIONS_TOOL_NAME } from "./tools/automations-tool-name.js";
 
@@ -46,7 +47,7 @@ export function buildSystemPromptToolLines(params: SystemPromptToolListParams): 
     gateway:
       "Read this Gateway's config/schema; owner-only self-update on explicit request; automatic restart and completion notice",
     agents_list: acpSpawnRuntimeEnabled
-      ? "List allowed OpenClaw subagent ids; not ACP ids"
+      ? `List allowed ${PRODUCT_NAME} subagent ids; not ACP ids`
       : "List allowed subagent ids",
     sessions_list: "List visible sessions; filters/last",
     sessions_history: "Read visible session/subagent history",

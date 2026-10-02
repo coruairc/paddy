@@ -4,6 +4,7 @@ import path from "node:path";
 import { root, type Root } from "@openclaw/fs-safe";
 import { mcpOAuthStoreKeyFromLegacyFileName } from "../agents/mcp-oauth-identity.js";
 import { parseMcpOAuthStoreJson } from "../agents/mcp-oauth-store.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { DB as OpenClawStateKyselyDatabase } from "../state/openclaw-state-db.generated.js";
 import { runOpenClawStateWriteTransaction } from "../state/openclaw-state-db.js";
 import {
@@ -298,7 +299,7 @@ async function migrateOneStore(params: {
     } catch (error) {
       warnings.push(`MCP OAuth state is in SQLite, but legacy cleanup failed: ${String(error)}`);
     }
-    return notices.length > 0 ? { changes, warnings, notices } : { changes, warnings };
+    return { changes, warnings };
   }
 
   const hasSource = await source.exists();
@@ -326,24 +327,15 @@ async function migrateOneStore(params: {
     return { changes, warnings };
   }
 
-  if (activePath === params.sourcePath) {
-    try {
+  let result: ReturnType<typeof importAndRecordReceipt>;
+  try {
+    if (activePath === params.sourcePath) {
       snapshot = await source.claim({
         snapshot,
         mismatchMessage: "legacy MCP OAuth source changed before Doctor could claim it",
         beforeClaim: () => params.beforeClaim?.(params.sourcePath),
       });
-    } catch (error) {
-      const restoreError = await source.restore();
-      warnings.push(
-        `Failed migrating legacy MCP OAuth store ${path.basename(params.sourcePath)}: ${String(error)}${restoreError ? `; restore failure: ${restoreError}` : ""}`,
-      );
-      return { changes, warnings };
     }
-  }
-
-  let result: ReturnType<typeof importAndRecordReceipt>;
-  try {
     result = importAndRecordReceipt({
       env: params.env,
       sourcePath: params.sourcePath,
@@ -424,7 +416,7 @@ async function migrateWithExclusiveStateOwnership(params: {
     } catch (error) {
       const staleGuidance =
         (error as { code?: unknown }).code === "file_lock_stale"
-          ? " Verify no older OpenClaw process is running, remove the retired .lock sidecar, and rerun Doctor."
+          ? ` Verify no older ${PRODUCT_NAME} process is running, remove the retired .lock sidecar, and rerun Doctor.`
           : "";
       warnings.push(
         `Failed locking legacy MCP OAuth store ${path.basename(sourcePath)}: ${String(error)}.${staleGuidance}`,

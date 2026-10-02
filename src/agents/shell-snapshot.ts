@@ -9,6 +9,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { withTempWorkspace } from "@openclaw/fs-safe/temp";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveStateDir } from "../config/paths.js";
 import { resolvePreferredOpenClawTmpDir } from "../infra/tmp-openclaw-dir.js";
 import { killProcessTree } from "../process/kill-tree.js";
@@ -375,7 +376,7 @@ function buildSnapshotFile(stdout: string): string | null {
   const exports = parseSafeEnvExports(stdout.slice(envIndex + ENV_MARKER.length).trim());
 
   return [
-    "# OpenClaw exec shell snapshot. Generated; do not edit.",
+    `# ${PRODUCT_NAME} exec shell snapshot. Generated; do not edit.`,
     'if [ -n "${BASH_VERSION:-}" ]; then shopt -s expand_aliases 2>/dev/null || true; fi',
     "unalias -a 2>/dev/null || true",
     shellState,

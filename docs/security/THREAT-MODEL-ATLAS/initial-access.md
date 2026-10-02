@@ -1,8 +1,8 @@
 ---
-summary: "OpenClaw initial access threats (AML.TA0004): T-ACCESS-001, T-ACCESS-002, T-ACCESS-003"
+summary: "Paddy initial access threats (AML.TA0004): T-ACCESS-001, T-ACCESS-002, T-ACCESS-003"
 title: "Initial access (AML.TA0004)"
 read_when:
-  - Reviewing initial access threats against an OpenClaw deployment
+  - Reviewing initial access threats against a Paddy deployment
   - Working on mitigations for T-ACCESS-001, T-ACCESS-002, T-ACCESS-003
 ---
 

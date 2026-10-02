@@ -21,7 +21,7 @@ Optional global root directory for [managed worktree](/concepts/managed-worktree
 }
 ```
 
-Use an absolute Gateway-host path, `~` for the Gateway user's home directory, or `~/` followed by a folder inside it; relative paths are rejected. OpenClaw creates checkouts at `<worktreeRoot>/<repo-fingerprint>/<name>`. This setting applies to all agents and all managed-worktree owners, with no per-agent override. The shared state database and allocation limits remain under the existing state directory.
+Use an absolute Gateway-host path, `~` for the Gateway user's home directory, or `~/` followed by a folder inside it; relative paths are rejected. Paddy creates checkouts at `<worktreeRoot>/<repo-fingerprint>/<name>`. This setting applies to all agents and all managed-worktree owners, with no per-agent override. The shared state database and allocation limits remain under the existing state directory.
 
 Changes affect new allocations only. Registered worktrees retain their original paths for reuse, cleanup, and snapshot restore; existing checkouts are not moved automatically. Keep their original storage available while those records are still needed.
 
@@ -58,7 +58,7 @@ The `models` root also owns global model-catalog behavior.
 - `models.mode`: provider catalog behavior (`merge` or `replace`).
 - `models.providers`: custom provider map keyed by provider id.
 - `models.providers.*.localService`: optional on-demand process manager for
-  local model servers. OpenClaw probes the configured health endpoint, starts
+  local model servers. Paddy probes the configured health endpoint, starts
   the absolute `command` when needed, waits for readiness, then sends the model
   request. See [Local model services](/gateway/local-model-services).
 - `models.catalogRefresh.enabled`: controls the hosted model catalog refresh
@@ -80,8 +80,8 @@ gateway that charges the vendor's price reads that vendor's rate once, without a
 per-gateway copy. Explicit model costs still take precedence.
 
 Pricing updates ship in the same hosted catalog file as model metadata. The
-retired `models.pricing` toggle is removed automatically by `openclaw doctor
---fix`; use `models.catalogRefresh.enabled: false` when OpenClaw must avoid all
+retired `models.pricing` toggle is removed automatically by `paddy doctor
+--fix`; use `models.catalogRefresh.enabled: false` when Paddy must avoid all
 hosted catalog traffic.
 
 ## Discovery
@@ -117,7 +117,7 @@ hosted catalog traffic.
 
 Setting `discovery.wideArea.domain` enables wide-area discovery and writes a unicast DNS-SD zone under `~/.openclaw/dns/`. For cross-network discovery, pair with a DNS server (CoreDNS recommended) + Tailscale split DNS.
 
-Setup: `openclaw dns setup --apply`.
+Setup: `paddy dns setup --apply`.
 
 ---
 
@@ -207,7 +207,7 @@ Behavior and metadata for CLI guided setup flows (`onboard`, `configure`, `docto
 
 ## Bridge (legacy, removed)
 
-Current builds no longer include the TCP bridge. Nodes connect over the Gateway WebSocket. `bridge.*` keys are no longer part of the config schema (validation fails until removed; `openclaw doctor --fix` can strip unknown keys).
+Current builds no longer include the TCP bridge. Nodes connect over the Gateway WebSocket. `bridge.*` keys are no longer part of the config schema (validation fails until removed; `paddy doctor --fix` can strip unknown keys).
 
 <Accordion title="Legacy bridge config (historical reference)">
 

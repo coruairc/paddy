@@ -1,4 +1,5 @@
 import { describeAccountSnapshot } from "openclaw/plugin-sdk/account-helpers";
+import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import {
   createSetupTranslator,
   parseMentionOrPrefixedId,
@@ -7,7 +8,7 @@ import {
 import { formatDocsLink } from "openclaw/plugin-sdk/setup-tools";
 import { isSlackSetupAccountConfigured } from "./account-configured.js";
 import type { ResolvedSlackAccount } from "./accounts.js";
-import type { OpenClawConfig } from "./channel-api.js";
+import { DEFAULT_SLACK_SUGGESTED_PROMPTS } from "./channel-meta.js";
 
 export const SLACK_CHANNEL = "slack" as const;
 
@@ -37,12 +38,12 @@ export function buildSlackAllowFromPrompt() {
   };
 }
 
-export function buildSlackManifest(botName = "OpenClaw") {
-  const safeName = botName.trim() || "OpenClaw";
+export function buildSlackManifest(botName = "Paddy") {
+  const safeName = botName.trim() || "Paddy";
   const manifest = {
     display_information: {
       name: safeName,
-      description: `${safeName} connector for OpenClaw`,
+      description: `${safeName} connector for Paddy`,
     },
     features: {
       bot_user: {
@@ -55,26 +56,13 @@ export function buildSlackManifest(botName = "OpenClaw") {
         messages_tab_read_only_enabled: false,
       },
       agent_view: {
-        agent_description: `${safeName} connects Slack Agent View conversations to OpenClaw agents.`,
-        suggested_prompts: [
-          {
-            title: "What can you do?",
-            message: "What can you help me with?",
-          },
-          {
-            title: "Summarize this channel",
-            message: "Summarize the recent activity in this channel.",
-          },
-          {
-            title: "Draft a reply",
-            message: "Help me draft a reply.",
-          },
-        ],
+        agent_description: `${safeName} connects Slack Agent View conversations to Paddy agents.`,
+        suggested_prompts: DEFAULT_SLACK_SUGGESTED_PROMPTS,
       },
       slash_commands: [
         {
           command: "/openclaw",
-          description: "Send a message to OpenClaw",
+          description: "Send a message to Paddy",
           should_escape: false,
         },
       ],

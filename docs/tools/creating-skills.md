@@ -11,7 +11,7 @@ read_when:
 
 Skills teach the agent how and when to use tools. Each skill is a directory
 containing a `SKILL.md` file with YAML frontmatter and markdown instructions.
-OpenClaw loads skills from several roots in a defined [precedence order](/tools/skills#loading-order).
+Paddy loads skills from several roots in a defined [precedence order](/tools/skills#loading-order).
 
 ## Create your first skill
 
@@ -61,10 +61,10 @@ OpenClaw loads skills from several roots in a defined [precedence order](/tools/
 
   <Step title="Verify the skill loaded">
     ```bash
-    openclaw skills list
+    paddy skills list
     ```
 
-    OpenClaw watches `SKILL.md` files under skills roots by default. If the
+    Paddy watches `SKILL.md` files under skills roots by default. If the
     watcher is disabled or you are continuing an existing session, start a new
     one so the agent receives the refreshed list:
 
@@ -73,14 +73,14 @@ OpenClaw loads skills from several roots in a defined [precedence order](/tools/
     /new
 
     # Or restart the gateway
-    openclaw gateway restart
+    paddy gateway restart
     ```
 
   </Step>
 
   <Step title="Test it">
     ```bash
-    openclaw agent --message "give me a greeting"
+    paddy agent --message "give me a greeting"
     ```
 
     Or open a chat and ask the agent directly. Use `/skill hello-world` to
@@ -197,13 +197,13 @@ live, use [Skill Workshop](/tools/skill-workshop) proposals instead of writing
 
 ```bash
 # Propose a brand-new skill
-openclaw skills workshop propose-create \
+paddy skills workshop propose-create \
   --name "hello-world" \
   --description "A simple skill that prints a greeting." \
   --proposal ./PROPOSAL.md
 
 # Propose an update to an existing skill
-openclaw skills workshop propose-update hello-world \
+paddy skills workshop propose-update hello-world \
   --proposal ./PROPOSAL.md \
   --description "Updated greeting skill"
 ```
@@ -211,7 +211,7 @@ openclaw skills workshop propose-update hello-world \
 Use `--proposal-dir` when the proposal includes support files:
 
 ```bash
-openclaw skills workshop propose-create \
+paddy skills workshop propose-create \
   --name "hello-world" \
   --description "A simple skill that prints a greeting." \
   --proposal-dir ./hello-world-proposal/
@@ -223,9 +223,9 @@ The directory must contain `PROPOSAL.md` at its root. Support files go under
 After review:
 
 ```bash
-openclaw skills workshop inspect <proposal-id>
-openclaw skills workshop evaluate <proposal-id>
-openclaw skills workshop apply <proposal-id>
+paddy skills workshop inspect <proposal-id>
+paddy skills workshop evaluate <proposal-id>
+paddy skills workshop apply <proposal-id>
 ```
 
 See [Skill Workshop](/tools/skill-workshop) for the full proposal lifecycle.
@@ -268,7 +268,7 @@ personal owner or an organization where you have publisher access.
   - **Be concise** — instruct the model on *what* to do, not how to be an AI.
   - **Safety first** — if your skill uses `exec`, ensure prompts do not allow
     arbitrary command injection from untrusted input.
-  - **Test locally** — use `openclaw agent --message "..."` before sharing.
+  - **Test locally** — use `paddy agent --message "..."` before sharing.
   - **Use ClawHub** — browse community skills at [clawhub.ai](https://clawhub.ai)
     before building from scratch.
 </Tip>

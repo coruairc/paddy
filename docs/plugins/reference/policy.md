@@ -15,7 +15,7 @@ Adds policy-backed doctor checks for workspace conformance.
 ## Distribution
 
 - Package: `@openclaw/policy`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 
@@ -25,25 +25,25 @@ Adds policy-backed doctor checks for workspace conformance.
 
 ## Behavior
 
-The Policy plugin contributes doctor health checks for policy-managed OpenClaw
+The Policy plugin contributes doctor health checks for policy-managed Paddy
 settings and governed workspace declarations. Policy currently covers channel
 conformance, governed tool metadata, MCP server posture, model-provider posture,
 private-network access posture, Gateway exposure posture, agent workspace/tool
 posture, configured global/per-agent tool posture, configured sandbox runtime
-posture, ingress/channel access posture, data-handling posture, and OpenClaw config secret
+posture, ingress/channel access posture, data-handling posture, and Paddy config secret
 provider/auth profile posture.
 
 Policy stores authored requirements in `policy.jsonc`, observes existing
-OpenClaw settings and workspace declarations as evidence, and reports drift
-through `openclaw policy check` and `openclaw doctor --lint`. A clean policy
+Paddy settings and workspace declarations as evidence, and reports drift
+through `paddy policy check` and `paddy doctor --lint`. A clean policy
 check emits policy, evidence, findings, and attestation hashes that operators
 can record for audit.
 
-`openclaw policy check`, `watch`, and workspace-relative `compare` accept
+`paddy policy check`, `watch`, and workspace-relative `compare` accept
 `--agent <id>`. Explicit multi-agent fleets must select the workspace owner;
 the plugin does not infer one from roster order.
 
-`openclaw policy compare --baseline <file>` compares one policy file to another
+`paddy policy compare --baseline <file>` compares one policy file to another
 policy file. It is config-level conformance only: it uses policy rule metadata
 to verify that the checked policy is not missing or weaker than the authored
 baseline, and it does not inspect runtime state, credentials, or secret values.

@@ -85,7 +85,7 @@ export async function collectGatewayDaemonFindings(
       target: service.label,
       fixHint:
         service.unsupportedReason ??
-        "Run `openclaw gateway status --deep`, restore service-manager access, and retry.",
+        "Run `paddy gateway status --deep`, restore service-manager access, and retry.",
     });
     return findings;
   }
@@ -96,7 +96,7 @@ export async function collectGatewayDaemonFindings(
       message: "Gateway service is not installed.",
       path: "gateway.mode",
       target: service.label,
-      fixHint: "Run `openclaw gateway install` to install the service.",
+      fixHint: "Run `paddy gateway install` to install the service.",
     });
     return findings;
   }
@@ -120,7 +120,7 @@ export async function collectGatewayDaemonFindings(
                 ...(runtime.status === "unsupported"
                   ? [formatUnsupportedNodeVersionMessage(runtime.version)]
                   : []),
-                "Repair the Node runtime, then run `openclaw gateway install`.",
+                "Repair the Node runtime, then run `paddy gateway install`.",
               ].join("\n"),
             }
           : {}),
@@ -134,7 +134,7 @@ export async function collectGatewayDaemonFindings(
       message: "Gateway service is installed but not loaded.",
       path: state.command?.sourcePath,
       target: service.label,
-      fixHint: "Start the installed service with `openclaw gateway start`.",
+      fixHint: "Start the installed service with `paddy gateway start`.",
     });
   }
   const status = gatewayRuntimeStatus(state.runtime);
@@ -148,7 +148,7 @@ export async function collectGatewayDaemonFindings(
       path: state.command?.sourcePath,
       target: service.label,
       fixHint:
-        "Run `openclaw gateway status --deep` to inspect the service before choosing a recovery action.",
+        "Run `paddy gateway status --deep` to inspect the service before choosing a recovery action.",
     });
   }
   if (state.runtime?.missingGuiSession) {

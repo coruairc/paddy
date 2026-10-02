@@ -1188,7 +1188,7 @@ describe("Codex app-server approval bridge", () => {
     findApprovalEvent(params, {
       status: "denied",
       message:
-        "OpenClaw native hook relay returned an unreadable Codex app-server approval result.",
+        "Paddy native hook relay returned an unreadable Codex app-server approval result.",
     });
   });
 
@@ -1227,7 +1227,7 @@ describe("Codex app-server approval bridge", () => {
     expect(mockCallGatewayTool).not.toHaveBeenCalled();
     findApprovalEvent(params, {
       status: "denied",
-      message: "OpenClaw native hook relay returned a non-deny Codex app-server approval decision.",
+      message: "Paddy native hook relay returned a non-deny Codex app-server approval decision.",
     });
   });
 
@@ -1289,7 +1289,7 @@ describe("Codex app-server approval bridge", () => {
     findApprovalEvent(params, {
       status: "denied",
       message:
-        "OpenClaw native hook relay unavailable for Codex app-server approval: native hook relay not found",
+        "Paddy native hook relay unavailable for Codex app-server approval: native hook relay not found",
     });
   });
 
@@ -1348,7 +1348,7 @@ describe("Codex app-server approval bridge", () => {
     findApprovalEvent(params, {
       status: "denied",
       message:
-        "OpenClaw native hook relay unavailable for Codex app-server approval: native hook relay handler failed",
+        "Paddy native hook relay unavailable for Codex app-server approval: native hook relay handler failed",
     });
   });
 
@@ -1424,7 +1424,7 @@ describe("Codex app-server approval bridge", () => {
     findApprovalEvent(params, {
       status: "denied",
       message:
-        "OpenClaw tool policy rewrote Codex app-server approval params; refusing original request.",
+        "Paddy tool policy rewrote Codex app-server approval params; refusing original request.",
     });
   });
 
@@ -2011,7 +2011,7 @@ describe("Codex app-server approval bridge", () => {
 
     expect(result).toEqual({
       decision: "decline",
-      reason: "OpenClaw codex app-server bridge does not grant native approvals yet.",
+      reason: "Paddy codex app-server bridge does not grant native approvals yet.",
     });
     expect(mockRunBeforeToolCallHook).not.toHaveBeenCalled();
     expect(mockCallGatewayTool.mock.calls.map(([method]) => method)).toEqual([

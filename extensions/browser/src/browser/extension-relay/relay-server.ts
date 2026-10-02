@@ -397,7 +397,7 @@ export async function startExtensionRelayServer(params: {
         if (existingState.flow === "cdp" && req.method === "GET" && req.url === "/json/version") {
           if (!bridge.extensionConnected) {
             clearSocketState(socket);
-            rejectHttp(res, 503, "OpenClaw Chrome extension is not connected");
+            rejectHttp(res, 503, "Paddy Chrome extension is not connected");
             return;
           }
           res.once("finish", () => {
@@ -445,7 +445,7 @@ export async function startExtensionRelayServer(params: {
         if (!bridge.extensionConnected) {
           writeJson(res, 503, {
             error:
-              "OpenClaw Chrome extension is not connected. Install the extension and pair it with `openclaw browser extension pair`.",
+              "Paddy Chrome extension is not connected. Install the extension and pair it with `paddy browser extension pair`.",
           });
           return;
         }

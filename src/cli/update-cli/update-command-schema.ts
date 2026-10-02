@@ -21,6 +21,7 @@ import {
   type OpenClawSchemaVersions,
 } from "../../state/openclaw-schema-versions.js";
 import { resolveOpenClawStateSqlitePath } from "../../state/openclaw-state-db.paths.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import {
   checkTargetDatabaseSchemasForContexts,
@@ -40,11 +41,11 @@ import {
 } from "./update-command-dry-run.js";
 import type { RefuseUpdate } from "./update-command-result.js";
 import type { prepareUpdateCommand } from "./update-command-run.js";
-import type { PreManagedServiceStop } from "./update-command-service-context-types.js";
-import {
-  resolvePackageRuntimePreflight,
-  type ManagedServiceRootRedirect,
-} from "./update-command-service-plan.js";
+import type {
+  ManagedServiceRootRedirect,
+  PreManagedServiceStop,
+} from "./update-command-service-context-types.js";
+import { resolvePackageRuntimePreflight } from "./update-command-service-plan.js";
 import type { resolveUpdateCommandTarget } from "./update-command-target.js";
 
 /** Render prepared preview facts without initializing runtime state. */
@@ -200,7 +201,7 @@ export async function preflightUpdateCommandSchemas(params: {
           inspectedService.serviceUpdateVerdict.requiresInstallRootRefresh
         ) {
           preflightNotes.push(
-            `Gateway service targets ${inspectedService.serviceUpdateVerdict.root}; ${shouldRestart ? "would reconcile it with" : `restart is disabled; run ${formatCliCommand("openclaw doctor --fix", inspectedService.serviceEnv)} to reconcile it with`} the active installation ${root}.`,
+            `Gateway service targets ${inspectedService.serviceUpdateVerdict.root}; ${shouldRestart ? "would reconcile it with" : `restart is disabled; run ${formatCliCommand(`${CLI_NAME} doctor --fix`, inspectedService.serviceEnv)} to reconcile it with`} the active installation ${root}.`,
           );
         }
       }

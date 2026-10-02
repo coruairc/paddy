@@ -77,7 +77,7 @@ export async function triageAfterFailure(
       const resolvedRoot =
         failure.installationRoot ?? (await resolveOpenClawPackageRoot({ argv1: process.argv[1] }));
       if (!resolvedRoot) {
-        throw new Error("installed CLI root is unavailable; run openclaw triage manually");
+        throw new Error("installed CLI root is unavailable; run paddy triage manually");
       }
       const root = realpathSync(resolvedRoot);
       boundedFailure.installationRoot = root;
@@ -156,15 +156,13 @@ export async function triageAfterFailure(
     const reason = scrubDoctorErrorMessage(
       redactSupportString(error instanceof Error ? error.message : String(error), redaction),
     );
-    runtime.error(
-      `Automatic triage could not complete: ${reason}. Run \`openclaw triage\` manually.`,
-    );
+    runtime.error(`Automatic triage could not complete: ${reason}. Run \`paddy triage\` manually.`);
     if (managedStartup && !cancellation.aborted) {
       try {
         await collectDiagnostics();
       } catch {
         runtime.error(
-          "Managed triage diagnostics could not complete; retain the original failure and run openclaw triage manually.",
+          "Managed triage diagnostics could not complete; retain the original failure and run paddy triage manually.",
         );
       }
     }
@@ -189,11 +187,11 @@ export async function triageAfterFailure(
           { mode: 0o600 },
         );
         runtime.error(
-          `Saved failure diagnostics: ${promptPath}. Run openclaw triage manually after repairing the installed CLI.`,
+          `Saved failure diagnostics: ${promptPath}. Run paddy triage manually after repairing the installed CLI.`,
         );
       } catch {
         runtime.error(
-          "Failure diagnostics could not be saved; retain the original update error and run openclaw triage manually.",
+          "Failure diagnostics could not be saved; retain the original update error and run paddy triage manually.",
         );
       }
     }

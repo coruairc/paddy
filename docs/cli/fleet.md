@@ -1,14 +1,14 @@
 ---
-summary: "CLI reference for provisioning and managing isolated per-tenant OpenClaw cells"
+summary: "CLI reference for provisioning and managing isolated per-tenant Paddy cells"
 read_when:
   - You host multiple tenant trust domains on one machine
   - You need to create, inspect, upgrade, or remove fleet cells
 title: "Fleet"
 ---
 
-# `openclaw fleet`
+# `paddy fleet`
 
-`openclaw fleet` manages complete OpenClaw instances called **cells**. Each cell has its own Gateway, state, credentials, channel accounts, container, and loopback-only host port. Use one cell for each tenant trust boundary; do not use one shared Gateway as a hostile multi-tenant boundary.
+`paddy fleet` manages complete Paddy instances called **cells**. Each cell has its own Gateway, state, credentials, channel accounts, container, and loopback-only host port. Use one cell for each tenant trust boundary; do not use one shared Gateway as a hostile multi-tenant boundary.
 
 Fleet is **experimental**. Command names, flags, output shapes, and the container profile can change between releases without a deprecation window.
 
@@ -19,9 +19,9 @@ Fleet is tested on Linux and macOS hosts. Windows hosts are currently untested.
 ## Quick start
 
 ```bash
-openclaw fleet create acme
-openclaw fleet status acme
-openclaw fleet list
+paddy fleet create acme
+paddy fleet status acme
+paddy fleet list
 ```
 
 `fleet create` prints the generated Gateway token once along with the cell URL. Store the token immediately, then configure each tenant's channel accounts inside that tenant's cell.
@@ -43,13 +43,13 @@ The ID becomes part of the container name: `openclaw-cell-<tenant>`.
 Create a cell and start it:
 
 ```bash
-openclaw fleet create acme
+paddy fleet create acme
 ```
 
 Create a Podman cell on a fixed port without starting it:
 
 ```bash
-openclaw fleet create acme \
+paddy fleet create acme \
   --runtime podman \
   --port 19125 \
   --no-start
@@ -58,7 +58,7 @@ openclaw fleet create acme \
 Pass tenant-specific environment variables by repeating `--env`:
 
 ```bash
-openclaw fleet create acme \
+paddy fleet create acme \
   --env TZ=America/Los_Angeles \
   --env OPENCLAW_DISABLE_BONJOUR=1
 ```
@@ -123,9 +123,9 @@ For Docker, keep the bridge mode and enforce outbound policy with host firewall 
 List cells in tenant-ID order:
 
 ```bash
-openclaw fleet list
-openclaw fleet ls
-openclaw fleet list --json
+paddy fleet list
+paddy fleet ls
+paddy fleet list --json
 ```
 
 The table contains:
@@ -145,8 +145,8 @@ Registry rows remain visible when Docker or Podman is unavailable; only live sta
 Inspect one cell:
 
 ```bash
-openclaw fleet status acme
-openclaw fleet status acme --json
+paddy fleet status acme
+paddy fleet status acme --json
 ```
 
 Human-readable status includes `Runtime: docker` or `Runtime: podman` from the cell's
@@ -167,11 +167,11 @@ The health result is `ok`, `failed`, or `skipped`. `/healthz` proves Gateway liv
 Stream a cell's container logs directly to the terminal:
 
 ```bash
-openclaw fleet logs acme
-openclaw fleet logs acme --follow
-openclaw fleet logs acme --timestamps
-openclaw fleet logs acme --tail 200
-openclaw fleet logs acme --since 10m
+paddy fleet logs acme
+paddy fleet logs acme --follow
+paddy fleet logs acme --timestamps
+paddy fleet logs acme --tail 200
+paddy fleet logs acme --since 10m
 ```
 
 Fleet verifies the registered container's ownership labels before reading any logs, so it refuses a foreign container using the expected cell name. The stream is pinned to that inspected container ID, so a concurrent replacement cannot redirect it to a newer generation. Press Ctrl-C to end `--follow` without treating the operator stop as a command failure. Log output is piped through a redaction filter that replaces the cell's current Gateway token with `<redacted>` before anything reaches the terminal.
@@ -185,9 +185,9 @@ Use `--timestamps` to include Docker or Podman timestamps in the raw stream. It 
 Control an existing cell with its recorded runtime:
 
 ```bash
-openclaw fleet start acme
-openclaw fleet stop acme
-openclaw fleet restart acme
+paddy fleet start acme
+paddy fleet stop acme
+paddy fleet restart acme
 ```
 
 These commands resolve the registered container name, verify ownership, and act on that inspected container's ID. They fail if the tenant is unknown or the recorded runtime cannot perform the operation.
@@ -197,7 +197,7 @@ These commands resolve the registered container name, verify ownership, and act 
 Re-pull the recorded image and replace the cell container:
 
 ```bash
-openclaw fleet upgrade acme
+paddy fleet upgrade acme
 ```
 
 Move the cell to another image:
@@ -217,14 +217,14 @@ The Gateway token is intentionally not stored in the fleet registry. Before remo
 Back up one stopped cell:
 
 ```bash
-openclaw fleet stop acme
-openclaw fleet backup acme --out ./acme.tgz
+paddy fleet stop acme
+paddy fleet backup acme --out ./acme.tgz
 ```
 
 Restore that archive into the registered cell:
 
 ```bash
-openclaw fleet restore acme --from ./acme.tgz
+paddy fleet restore acme --from ./acme.tgz
 ```
 
 These are host-operator-privileged commands. Archives contain tenant state and auth secrets, are created with mode `0600`, and must be stored like credentials. Backup refuses a running cell so SQLite state is captured consistently. Restore refuses a running cell unless `--force` is supplied, replaces only that tenant's state, rotates the Gateway token, and prints the new token once. Fleet backs up one tenant at a time; all-tenant backup is a separate operator action.
@@ -240,8 +240,8 @@ Archives contain regular files and directories only. Backup never follows or sto
 Audit every cell or one tenant without changing runtime or filesystem state:
 
 ```bash
-openclaw fleet doctor
-openclaw fleet doctor acme --json
+paddy fleet doctor
+paddy fleet doctor acme --json
 ```
 
 Doctor checks runtime locality, ownership labels, health, hardening, resource limits, loopback port binding, token presence, network ownership and egress mode, and private state-directory permissions. Warnings describe stopped cells or ownership differences; any failed finding sets a nonzero process exit code.
@@ -251,19 +251,19 @@ Doctor checks runtime locality, ownership labels, health, hardening, resource li
 Remove a stopped cell from the runtime and registry while keeping tenant data:
 
 ```bash
-openclaw fleet rm acme
+paddy fleet rm acme
 ```
 
 A running container requires `--force`:
 
 ```bash
-openclaw fleet rm acme --force
+paddy fleet rm acme --force
 ```
 
 Permanently remove the cell data as well:
 
 ```bash
-openclaw fleet rm acme --purge-data --force
+paddy fleet rm acme --purge-data --force
 ```
 
 Fleet removes the cell container before removing its dedicated bridge network. `--purge-data` requires `--force`. Before recursive deletion, Fleet resolves both Fleet-owned roots and both per-tenant directories. Each target must be the exact expected tenant leaf, strictly inside its root, and not a symlink. These containment checks prevent a corrupted registry path or cross-tenant symlink from redirecting deletion elsewhere.
@@ -272,7 +272,7 @@ Purge is retryable when an exact expected tenant directory is already absent. Th
 
 ## Storage and container layout
 
-Cell state and the legacy auth-profile encryption key use separate per-tenant host paths under the active OpenClaw state directory:
+Cell state and the legacy auth-profile encryption key use separate per-tenant host paths under the active Paddy state directory:
 
 ```text
 <state-dir>/fleet/cells/<tenant>/

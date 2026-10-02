@@ -1468,6 +1468,26 @@
     "target": "Zoom 会议插件"
   },
   {
+    "source": "Slack huddles plugin",
+    "target": "Slack 快速通话插件"
+  },
+  {
+    "source": "Slack huddles plugin reference",
+    "target": "Slack 快速通话插件参考"
+  },
+  {
+    "source": "slack-huddles",
+    "target": "slack-huddles"
+  },
+  {
+    "source": "Slack channel",
+    "target": "Slack 频道"
+  },
+  {
+    "source": "Transcripts CLI",
+    "target": "转录 CLI"
+  },
+  {
     "source": "Voice call plugin",
     "target": "语音通话插件"
   },
@@ -3800,8 +3820,8 @@
     "target": "OpenAI 覆盖范围与费用"
   },
   {
-    "source": "OpenAI image and video generation",
-    "target": "OpenAI 图像与视频生成"
+    "source": "OpenAI image generation",
+    "target": "OpenAI 图像生成"
   },
   {
     "source": "OpenAI voice and speech",
@@ -4954,5 +4974,85 @@
   {
     "source": "Deploy a team server",
     "target": "部署团队服务器"
+  },
+  {
+    "source": "Migrating a Paddy install",
+    "target": "Migrating a Paddy install"
+  },
+  {
+    "source": "Run Paddy as an MCP server",
+    "target": "将 Paddy 作为 MCP 服务器运行"
+  },
+  {
+    "source": "Paddy setup agent",
+    "target": "Paddy setup agent"
+  },
+  {
+    "source": "paddy status",
+    "target": "paddy status"
+  },
+  {
+    "source": "paddy tui",
+    "target": "paddy tui"
+  },
+  {
+    "source": "Embedding Paddy",
+    "target": "嵌入 Paddy"
+  },
+  {
+    "source": "Browser (Paddy-managed)",
+    "target": "浏览器（Paddy 托管）"
+  },
+  {
+    "source": "What is Paddy?",
+    "target": "什么是 Paddy？"
+  },
+  {
+    "source": "Paddy lore",
+    "target": "Paddy 传说"
+  },
+  {
+    "source": "Paddy",
+    "target": "Paddy"
+  },
+  {
+    "source": "Updating Paddy",
+    "target": "更新 Paddy"
+  },
+  {
+    "source": "Host Paddy sessions on a node",
+    "target": "在节点上托管 Paddy 会话"
+  },
+  {
+    "source": "Paddy agent runtime workflow",
+    "target": "Paddy agent runtime workflow"
+  },
+  {
+    "source": "Paddy agent runtime architecture",
+    "target": "Paddy agent runtime architecture"
+  },
+  {
+    "source": "Paddy assistant setup",
+    "target": "Paddy assistant setup"
+  },
+  {
+    "source": "Paddy assistant",
+    "target": "Paddy assistant"
+  },
+  {
+    "source": "Why Paddy: working together",
+    "target": "Why Paddy: working together"
+  },
+  {
+    "source": "Why Paddy",
+    "target": "Why Paddy"
+  },
+  {
+    "source": "Paddy and Hermes Agent",
+    "target": "Paddy 与 Hermes Agent"
+  },
+  {
+    "source": "TUI",
+    "target": "TUI"
   }
 ]

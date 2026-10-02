@@ -1,6 +1,6 @@
 import { defaultRuntime } from "../../runtime.js";
-import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { shortenHomePath } from "../../utils.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { resolveDaemonServiceInstallGuidance, type createCliStatusTextStyles } from "./shared.js";
 import type { DaemonStatus } from "./status.gather.js";
 

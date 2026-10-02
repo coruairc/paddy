@@ -9,20 +9,20 @@ Status: experimental. Direct messages and group chats are both implemented. The 
 
 ## Bundled plugin
 
-Zalo ships as a bundled plugin in current OpenClaw releases, so packaged builds do not need a separate install.
+Zalo ships as a bundled plugin in current Paddy releases, so packaged builds do not need a separate install.
 
 On an older build or a custom install that excludes Zalo, install the npm package directly:
 
 - Install: `openclaw plugins install @openclaw/zalo`
 - Pinned version: `openclaw plugins install @openclaw/zalo@<version>` (pin only for reproducible installs)
-- From a local checkout: `openclaw plugins install ./path/to/local/zalo-plugin`
+- From a local checkout: `paddy plugins install ./path/to/local/zalo-plugin`
 - Details: [Plugins](/tools/plugin)
 
 ## Quick setup
 
 1. Create a bot token at [https://bot.zaloplatforms.com](https://bot.zaloplatforms.com) (sign in, create a bot, configure settings). The token is `numeric_id:secret`. For Marketplace bots the usable runtime token may appear in the bot's welcome message.
 2. Set the token, either as env `ZALO_BOT_TOKEN=...` (default account only) or in config.
-3. Check `openclaw channels status --probe`; start the Gateway if it is offline. Config changes follow [hot reload](/gateway/configuration/hot-reload). If you changed the service environment, restart the Gateway to load it.
+3. Check `paddy channels status --probe`; start the Gateway if it is offline. Config changes follow [hot reload](/gateway/configuration/hot-reload). If you changed the service environment, restart the Gateway to load it.
 4. Approve the pairing code on first DM contact (default DM policy is pairing).
 
 Minimal config:
@@ -74,8 +74,8 @@ This page covers **Zalo Bot Creator / Marketplace bots**. **Zalo Official Accoun
 
 - `channels.zalo.dmPolicy`: `pairing` (default) | `allowlist` | `open` | `disabled`.
 - Pairing: unknown senders get a pairing code. Messages are ignored until approved. Codes expire after 1 hour.
-  - `openclaw pairing list zalo`
-  - `openclaw pairing approve zalo <CODE>`
+  - `paddy pairing list zalo`
+  - `paddy pairing approve zalo <CODE>`
   - Details: [Pairing](/channels/pairing)
 - `channels.zalo.allowFrom` accepts numeric Zalo user IDs (no username lookup). `open` requires `"*"`.
 
@@ -86,7 +86,7 @@ Group chats are supported by the plugin (`chatTypes: ["direct", "group"]`) and g
 - `channels.zalo.groupPolicy`: `open` | `allowlist` | `disabled`.
 - `channels.zalo.groupAllowFrom` restricts which sender IDs can trigger the bot in groups. Falls back to `allowFrom` when unset.
 - Default resolution: when `channels.zalo` is configured, an unset `groupPolicy` resolves to `open`. When `channels.zalo` is missing entirely, runtime fails closed to `allowlist`.
-- Reported real-world caveat: on some Marketplace-bot setups the bot could not be added to a group at all. If you hit that, verify with your bot's Zalo Bot Platform settings. It is a platform-side constraint, not an OpenClaw policy.
+- Reported real-world caveat: on some Marketplace-bot setups the bot could not be added to a group at all. If you hit that, verify with your bot's Zalo Bot Platform settings. It is a platform-side constraint, not a Paddy policy.
 
 ## Long-polling vs webhook
 
@@ -97,7 +97,7 @@ Group chats are supported by the plugin (`chatTypes: ["direct", "group"]`) and g
   - Zalo sends events with an `X-Bot-Api-Secret-Token` header, checked with a constant-time comparison.
   - Gateway HTTP handles webhook requests at `channels.zalo.webhookPath` (defaults to the webhook URL's path).
   - Requests must use `Content-Type: application/json` (or a `+json` media type).
-  - OpenClaw returns HTTP 200 only after it durably stores the raw event. Storage failures return HTTP 500. The durable `200` carries `x-openclaw-delivery-accepted: durable`. Reverse proxies can require that header to distinguish OpenClaw acceptance from a generic `200`. Authentication, validation, and storage-error responses omit it.
+  - Paddy returns HTTP 200 only after it durably stores the raw event. Storage failures return HTTP 500. The durable `200` carries `x-openclaw-delivery-accepted: durable`. Reverse proxies can require that header to distinguish Paddy acceptance from a generic `200`. Authentication, validation, and storage-error responses omit it.
   - getUpdates polling and webhook are mutually exclusive per Zalo API docs.
 
 ## Supported message types
@@ -126,16 +126,16 @@ Group chats are supported by the plugin (`chatTypes: ["direct", "group"]`) and g
 Use a chat ID as the target:
 
 ```bash
-openclaw message send --channel zalo --target 123456789 --message "hi"
+paddy message send --channel zalo --target 123456789 --message "hi"
 ```
 
 ## Troubleshooting
 
 **Bot does not respond:**
 
-- Check the token: `openclaw channels status --probe`
+- Check the token: `paddy channels status --probe`
 - Verify the sender is approved (pairing or `allowFrom`)
-- Check gateway logs: `openclaw logs --follow`
+- Check gateway logs: `paddy logs --follow`
 
 **Webhook not receiving events:**
 

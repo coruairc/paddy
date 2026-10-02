@@ -153,6 +153,7 @@ describe("buildNodeInstallPlan", () => {
   });
 
   it("marks node gateway credentials as file-backed service env", async () => {
+    mocks.resolvePreferredNodePath.mockResolvedValue("/usr/bin/node");
     mocks.resolveNodeProgramArguments.mockResolvedValue({
       programArguments: ["node", "node-host"],
       workingDirectory: "/Users/me",
@@ -181,7 +182,7 @@ describe("buildNodeInstallPlan", () => {
 
     expect(plan.environment.OPENCLAW_GATEWAY_TOKEN).toBe("node-token");
     expect(plan.environment.OPENCLAW_GATEWAY_PASSWORD).toBe("node-password");
-    expect(plan.description).toBe("OpenClaw Node Host");
+    expect(plan.description).toBe("Paddy Node Host");
     expect(plan.environmentValueSources).toEqual({
       OPENCLAW_GATEWAY_TOKEN: "file",
       OPENCLAW_GATEWAY_PASSWORD: "file", // pragma: allowlist secret

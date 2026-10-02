@@ -1,7 +1,11 @@
 // Hermes provider config collection and migration planning.
 import { createMigrationManualItem } from "openclaw/plugin-sdk/migration";
 import type { MigrationItem } from "openclaw/plugin-sdk/plugin-entry";
-import { isRecord, normalizeOptionalString } from "openclaw/plugin-sdk/string-coerce-runtime";
+import {
+  asNonArrayRecord,
+  isRecord,
+  normalizeOptionalString,
+} from "openclaw/plugin-sdk/string-coerce-runtime";
 import {
   HERMES_TRANSPORTS,
   collectProviderModels,
@@ -17,7 +21,7 @@ import {
   resolveProviderApi,
   type HermesProviderConfig,
 } from "./config-provider-contract.js";
-import { childRecord, sanitizeName } from "./helpers.js";
+import { sanitizeName } from "./helpers.js";
 import { normalizeHermesCustomProviderId, resolveHermesConfiguredProviderId } from "./model.js";
 
 type HermesProviderSecretBinding = {
@@ -33,7 +37,7 @@ type HermesProviderSource = {
 };
 
 function* providerSources(config: Record<string, unknown>): Generator<HermesProviderSource> {
-  for (const [id, raw] of Object.entries(childRecord(config, "providers"))) {
+  for (const [id, raw] of Object.entries(asNonArrayRecord(config.providers))) {
     if (isRecord(raw)) {
       yield { id, raw, source: `config.yaml:providers.${id}`, custom: false };
     }
@@ -202,7 +206,7 @@ export function providerManualItems(
   includeSecrets: boolean,
 ): MigrationItem[] {
   const currentProviderIds = new Set(
-    Object.keys(childRecord(config, "providers")).map(normalizeHermesCustomProviderId),
+    Object.keys(asNonArrayRecord(config.providers)).map(normalizeHermesCustomProviderId),
   );
   const entries = [...providerSources(config)].filter(
     ({ id, custom }) => !custom || !currentProviderIds.has(normalizeHermesCustomProviderId(id)),
@@ -244,7 +248,7 @@ export function providerManualItems(
         "transport",
         `${source}.transport`,
         `Hermes provider "${id}" uses unsupported transport "${transport}".`,
-        "Configure an equivalent OpenClaw provider plugin or API adapter manually.",
+        "Configure an equivalent Paddy provider plugin or API adapter manually.",
       );
     } else if (baseUrlConfig.unresolved) {
       add(
@@ -266,8 +270,8 @@ export function providerManualItems(
       add(
         "inline-key",
         `${source}.api_key`,
-        `Hermes provider "${id}" contains an inline API key that was not copied into OpenClaw config.`,
-        "Move the key to an environment variable or OpenClaw secret provider.",
+        `Hermes provider "${id}" contains an inline API key that was not copied into Paddy config.`,
+        "Move the key to an environment variable or Paddy secret provider.",
       );
     }
     if (headerConfig.blocked) {
@@ -297,7 +301,7 @@ export function providerManualItems(
       add(
         "extra-body",
         `${source}.extra_body`,
-        `Hermes provider "${id}" adds request body fields that OpenClaw cannot import generically.`,
+        `Hermes provider "${id}" adds request body fields that Paddy cannot import generically.`,
         "Configure an equivalent provider plugin or supported request option manually.",
       );
     }
@@ -307,7 +311,7 @@ export function providerManualItems(
         "key-env",
         `${source}.key_env`,
         `Hermes provider "${id}" references ${apiKeyEnv}, but that value was not present in the Hermes .env file.`,
-        "Configure an OpenClaw auth profile for this provider or expose the variable to the OpenClaw runtime.",
+        "Configure a Paddy auth profile for this provider or expose the variable to the Paddy runtime.",
       );
     }
   }

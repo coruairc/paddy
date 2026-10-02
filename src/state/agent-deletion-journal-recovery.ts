@@ -76,7 +76,7 @@ export function assertAgentDeletionRecoveryAllowsMutation(
   );
   if (held) {
     throw new Error(
-      `Agent database ${held.path} is held after deletion journal reconstruction. Run openclaw doctor --fix for explicit restoration guidance before repairing agent ${held.agentId}.`,
+      `Agent database ${held.path} is held after deletion journal reconstruction. Run paddy doctor --fix for explicit restoration guidance before repairing agent ${held.agentId}.`,
     );
   }
 }

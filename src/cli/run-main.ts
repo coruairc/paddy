@@ -22,7 +22,6 @@ import { tryProcessCwd } from "../infra/safe-cwd.js";
 import type { PluginCliLoadSession } from "../plugins/cli-registry-loader.js";
 import { getPluginCache } from "../plugins/plugin-cache.js";
 import { resolveCliArgvInvocation } from "./argv-invocation.js";
-import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 import {
   normalizeGeneratedHelpCommandArgv,
   normalizeRootHelpTargetArgv,
@@ -71,6 +70,14 @@ import {
   shouldUseSetupOnboardConfigureHelpFastPath,
 } from "./run-main-policy.js";
 import { tryRunUpdateAdmissionBeforeStartup } from "./run-main-update-admission.js";
+import type {
+  BareRootLaunchTarget,
+  GatewayLaunchTarget,
+  GatewayProbeAuth,
+  GatewayProbeTarget,
+  GatewayResolution,
+  ReachableGateway,
+} from "./run-main.gateway-types.js";
 import type { CliHarnessCleanup } from "./runtime-cleanup-scope.js";
 import { closeCliResources, runCliDisposer } from "./runtime-cleanup.js";
 import { registerSignalExitBarrier, waitForSignalExitBarriers } from "./signal-exit-barrier.js";
@@ -180,7 +187,7 @@ async function tryRunGatewayRunFastPath(
     emitCliBanner(VERSION, { argv });
   }
   const program = new Command();
-  program.name("openclaw");
+  program.name("paddy");
   program.enablePositionalOptions();
   program.option("--no-color", "Disable ANSI colors", false);
   program.exitOverride((err) => {
@@ -249,20 +256,6 @@ export async function shouldStartOnboardingForFreshInstall(argv: string[]): Prom
   return shouldStartLocalOnboarding(snapshot);
 }
 
-type GatewayLaunchTarget = {
-  config: OpenClawConfig;
-  gatewayUrl: string;
-  token?: string;
-  password?: string;
-  tlsFingerprint?: string;
-};
-
-type BareRootLaunchTarget =
-  | { kind: "onboarding"; classic?: boolean }
-  | { kind: "remote-gateway-inference"; target: GatewayLaunchTarget }
-  | { kind: "tui"; local: true }
-  | ({ kind: "tui"; local: false } & GatewayLaunchTarget);
-
 async function resolveBareRootLaunchTarget(argv: string[]): Promise<BareRootLaunchTarget | null> {
   if (!shouldHandleBareRoot(argv)) {
     return null;
@@ -287,7 +280,12 @@ async function resolveConfiguredTuiLaunchTarget(
   const gatewayResolution = await resolveReachableGateway(config, options);
   if (gatewayResolution.kind !== "unreachable") {
     const { url, remote, ...auth } = gatewayResolution.gateway;
-    const target: GatewayLaunchTarget = { config, gatewayUrl: url, ...auth };
+    const target: GatewayLaunchTarget = {
+      config,
+      gatewayUrl: url,
+      ...(remote ? { configuredRemote: true } : {}),
+      ...auth,
+    };
     if (gatewayResolution.kind !== "missing-configured-model") {
       return { kind: "tui", local: false, ...target };
     }
@@ -302,33 +300,6 @@ async function resolveConfiguredTuiLaunchTarget(
   }
   return { kind: "tui", local: true };
 }
-
-type GatewayProbeTarget = {
-  url: string;
-  scope: "local-loopback" | "local-configured" | "remote";
-  tlsFingerprint?: string;
-  preauthHandshakeTimeoutMs?: number;
-};
-
-type ReachableGateway = {
-  url: string;
-  remote: boolean;
-  token?: string;
-  password?: string;
-  tlsFingerprint?: string;
-};
-
-type GatewayResolution =
-  | { kind: "configured"; gateway: ReachableGateway }
-  | { kind: "missing-configured-model"; gateway: ReachableGateway }
-  | { kind: "reachable-unverified"; gateway: ReachableGateway }
-  | { kind: "configured-unreachable"; gateway: ReachableGateway }
-  | { kind: "unreachable" };
-
-type GatewayProbeAuth = {
-  token?: string;
-  password?: string;
-};
 
 function toReachableGateway(target: GatewayProbeTarget, auth: GatewayProbeAuth): ReachableGateway {
   return {
@@ -364,7 +335,9 @@ async function resolveReachableGateway(
     const probeOptions: Parameters<typeof probeGatewayConfiguredModel>[0] = {
       url: target.url,
       // A configured remote origin stays remote through a loopback tunnel.
-      ...(target.scope === "remote" ? { originScopedDeviceAuth: true } : {}),
+      ...(target.scope === "remote"
+        ? { config, originScopedDeviceAuth: true, configuredRemote: true }
+        : {}),
     };
     if (config.gateway?.remote?.edgeAuth) {
       probeOptions.config = config;
@@ -1309,7 +1282,7 @@ async function runCliWithPreparedOutputMode(
     if (bareSessionInvocation) {
       if (!process.stdin.isTTY || !process.stdout.isTTY) {
         console.error(
-          "OpenClaw TUI needs an interactive TTY. Use `openclaw agent --local ...` for automation.",
+          `Paddy TUI needs an interactive TTY. Use \`paddy agent --local ...\` for automation.`,
         );
         process.exitCode = 1;
         return;
@@ -1355,7 +1328,7 @@ async function runCliWithPreparedOutputMode(
       if (bareRootLaunchTarget.kind === "remote-gateway-inference") {
         if (!process.stdin.isTTY || !process.stdout.isTTY) {
           console.error(
-            "Remote Gateway inference setup needs an interactive TTY. Re-run `openclaw` in a terminal connected to this Gateway.",
+            `Remote Gateway inference setup needs an interactive TTY. Re-run \`paddy\` in a terminal connected to this Gateway.`,
           );
           process.exitCode = 1;
           return;
@@ -1369,8 +1342,8 @@ async function runCliWithPreparedOutputMode(
         if (!process.stdin.isTTY || !process.stdout.isTTY) {
           console.error(
             bareRootLaunchTarget.classic
-              ? "OpenClaw config is invalid. Run `openclaw doctor --fix` before onboarding."
-              : "Onboarding needs an interactive TTY. Use `openclaw onboard --non-interactive --accept-risk ...` for automation.",
+              ? `Paddy config is invalid. Run \`paddy doctor --fix\` before onboarding.`
+              : `Onboarding needs an interactive TTY. Use \`paddy onboard --non-interactive --accept-risk ...\` for automation.`,
           );
           process.exitCode = 1;
           return;
@@ -1382,7 +1355,7 @@ async function runCliWithPreparedOutputMode(
       if (bareRootLaunchTarget.kind === "tui") {
         if (!process.stdin.isTTY || !process.stdout.isTTY) {
           console.error(
-            "OpenClaw TUI needs an interactive TTY. Use `openclaw agent --local ...` for automation.",
+            `Paddy TUI needs an interactive TTY. Use \`paddy agent --local ...\` for automation.`,
           );
           process.exitCode = 1;
           return;
@@ -1398,6 +1371,7 @@ async function runCliWithPreparedOutputMode(
                 config: bareRootLaunchTarget.config,
                 boundGateway: {
                   url: bareRootLaunchTarget.gatewayUrl,
+                  ...(bareRootLaunchTarget.configuredRemote ? { configuredRemote: true } : {}),
                   ...(bareRootLaunchTarget.token ? { token: bareRootLaunchTarget.token } : {}),
                   ...(bareRootLaunchTarget.password
                     ? { password: bareRootLaunchTarget.password }
@@ -1466,20 +1440,11 @@ async function runCliWithPreparedOutputMode(
     const suppressStartupProgress = options.builtInMachineOutput || hasJsonOutputFlag(parseArgv);
     const { createCliProgress } = await import("./progress.js");
     const startupProgress = createCliProgress({
-      label: "Loading OpenClaw CLI…",
+      label: `Loading Paddy CLI…`,
       indeterminate: true,
       delayMs: 0,
       ...(suppressStartupProgress ? { enabled: false } : {}),
     });
-    let startupProgressStopped = false;
-    const stopStartupProgress = () => {
-      if (startupProgressStopped) {
-        return;
-      }
-      startupProgressStopped = true;
-      startupProgress.done();
-    };
-
     try {
       const [
         { buildProgram },
@@ -1507,8 +1472,6 @@ async function runCliWithPreparedOutputMode(
       );
       await options.harnessCleanup?.pluginResources?.waitForRegistrations();
 
-      // Global error handlers to prevent silent crashes from unhandled rejections/exceptions.
-      // These log the error and exit gracefully instead of crashing without trace.
       if (!unhandledRejectionHandlerInstalled) {
         installUnhandledRejectionHandler();
       }
@@ -1519,7 +1482,7 @@ async function runCliWithPreparedOutputMode(
         }
         if (isBenignUncaughtExceptionError(error)) {
           console.warn(
-            `[${CLI_NAME}] Non-fatal uncaught exception (continuing):`,
+            `[paddy] Non-fatal uncaught exception (continuing):`,
             formatUncaughtError(error),
           );
           return;
@@ -1528,14 +1491,14 @@ async function runCliWithPreparedOutputMode(
           defaultRuntime.writeJson(formatCliJsonFailure(error));
         }
         for (const line of formatCliFailureLines({
-          title: `${PRODUCT_NAME} hit an unexpected runtime error.`,
+          title: `Paddy hit an unexpected runtime error.`,
           error,
           argv: normalizedArgv,
         })) {
           console.error(line);
         }
         for (const message of runFatalErrorHooks({ reason: "uncaught_exception", error })) {
-          console.error(`[${CLI_NAME}]`, message);
+          console.error(`[paddy]`, message);
         }
         restoreRuntimeTerminalState("uncaught exception", { resumeStdinIfPaused: false });
         process.exit(1);
@@ -1592,7 +1555,7 @@ async function runCliWithPreparedOutputMode(
         normalizeRootNoColorArgvForProgram(parseArgv, program),
         program,
       );
-      stopStartupProgress();
+      startupProgress.done();
 
       let completedHelpOrVersion = false;
       try {
@@ -1624,7 +1587,7 @@ async function runCliWithPreparedOutputMode(
         requestExitAfterOneShotOutput();
       }
     } finally {
-      stopStartupProgress();
+      startupProgress.done();
     }
   } finally {
     pluginCliSession?.close();

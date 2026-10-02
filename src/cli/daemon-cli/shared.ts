@@ -1,4 +1,3 @@
-// Shared Gateway service CLI helpers: status styles, env filtering, and hints.
 import { colorize, isRich, theme } from "../../../packages/terminal-core/src/theme.js";
 import { resolveIsNixMode } from "../../config/paths.js";
 import {
@@ -14,11 +13,11 @@ import { hasSudoToRootSystemdUserManagerMismatch } from "../../daemon/systemd-us
 import { resolveGatewayServiceMutationError } from "../../infra/gateway-supervision.js";
 import { parseTcpPort } from "../../infra/tcp-port.js";
 import { defaultRuntime } from "../../runtime.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { createDaemonActionContext } from "./response.js";
 export { formatRuntimeStatus } from "../../daemon/runtime-format.js";
 
-/** Create install action context with JSON flag normalization. */
 export function createDaemonInstallActionContext(
   jsonFlag: unknown,
   definitionBackup?: Parameters<typeof createDaemonActionContext>[0]["definitionBackup"],
@@ -60,7 +59,7 @@ export function resolveDaemonInstallBlockMessage(
   if (process.platform === "linux" && hasSudoToRootSystemdUserManagerMismatch(env)) {
     return (
       "Gateway install blocked: Refusing a sudo-to-root systemd user-service install because " +
-      "OpenClaw state and service files would belong to root while systemctl targets the " +
+      `${PRODUCT_NAME} state and service files would belong to root while systemctl targets the ` +
       "invoking user's manager. Rerun the same command without sudo. If [unsafe-permissions] " +
       "blocked the non-sudo command, repair the reported directory with `chmod go-w <path>` " +
       "and retry; do not use sudo or --force to bypass it. " +
@@ -73,7 +72,7 @@ export function resolveDaemonInstallBlockMessage(
 export function formatDaemonServiceInstallCommand(env: NodeJS.ProcessEnv, port?: number): string {
   const servicePort = port ?? parseTcpPort(env.OPENCLAW_GATEWAY_PORT);
   return formatCliCommand(
-    `openclaw gateway install --force${servicePort ? ` --port ${servicePort}` : ""}`,
+    `${CLI_NAME} gateway install --force${servicePort ? ` --port ${servicePort}` : ""}`,
     env,
   );
 }
@@ -90,7 +89,7 @@ export function resolveDaemonServiceInstallGuidance(
     resolveDaemonInstallBlockMessage("gateway", env) ??
     (service?.stopped
       ? `Stopped service definitions are preserved; run \`${formatDaemonServiceInstallCommand(env, service.port)}\` from the active CLI. Installation may start the service.`
-      : `Run \`${formatCliCommand("openclaw doctor --fix", env)}\` or \`${formatDaemonServiceInstallCommand(env, service?.port)}\` from the active CLI.`)
+      : `Run \`${formatCliCommand(`${CLI_NAME} doctor --fix`, env)}\` or \`${formatDaemonServiceInstallCommand(env, service?.port)}\` from the active CLI.`)
   );
 }
 
@@ -101,12 +100,11 @@ export function formatGatewayServiceInstallationDrift(
   service?: { stopped?: boolean; port?: number },
 ): string {
   const { serviceRoot, serviceVersion, activeRoot, activeVersion } = drift;
-  const facts = `Gateway service targets a different OpenClaw install: ${serviceRoot} (${serviceVersion ?? "version unknown"}); active CLI: ${activeRoot} (${activeVersion ?? "version unknown"}).`;
+  const facts = `Gateway service targets a different ${PRODUCT_NAME} install: ${serviceRoot} (${serviceVersion ?? "version unknown"}); active CLI: ${activeRoot} (${activeVersion ?? "version unknown"}).`;
   const guidance = resolveDaemonServiceInstallGuidance(targetRole, env, service);
   return guidance ? `${facts} ${guidance}` : facts;
 }
 
-/** Build terminal style helpers for status output with no-color fallback. */
 export function createCliStatusTextStyles() {
   const rich = isRich();
   return {
@@ -120,7 +118,6 @@ export function createCliStatusTextStyles() {
   };
 }
 
-/** Pick the color function for a runtime status label. */
 export function resolveRuntimeStatusColor(status: string | undefined): (value: string) => string {
   const runtimeStatus = status ?? "unknown";
   return runtimeStatus === "running"
@@ -132,7 +129,6 @@ export function resolveRuntimeStatusColor(status: string | undefined): (value: s
         : theme.warn;
 }
 
-/** Pick the best local probe host for a configured Gateway bind mode. */
 export function pickProbeHostForBind(
   bindMode: string,
   tailnetIPv4: string | undefined,
@@ -159,7 +155,6 @@ const SAFE_DAEMON_ENV_KEYS = [
   "OPENCLAW_NIX_MODE",
 ];
 
-/** Keep only daemon env keys safe to print in diagnostics. */
 function filterDaemonEnv(env: Record<string, string> | undefined): Record<string, string> {
   if (!env) {
     return {};
@@ -196,24 +191,18 @@ export function projectDaemonServiceForJson<
   return { ...service, command: publicCommand };
 }
 
-/** Format safe daemon env entries for status output. */
 export function safeDaemonEnv(env: Record<string, string> | undefined): string[] {
-  const filtered = filterDaemonEnv(env);
-  return Object.entries(filtered).map(([key, value]) => `${key}=${value}`);
+  return Object.entries(filterDaemonEnv(env)).map(([key, value]) => `${key}=${value}`);
 }
 
-/** Normalize listener address strings from platform socket tools. */
 export function normalizeListenerAddress(raw: string): string {
-  let value = raw.trim();
-  if (!value) {
-    return value;
-  }
-  value = value.replace(/^TCP\s+/i, "");
-  value = value.replace(/\s+\(LISTEN\)\s*$/i, "");
-  return value.trim();
+  return raw
+    .trim()
+    .replace(/^TCP\s+/i, "")
+    .replace(/\s+\(LISTEN\)\s*$/i, "")
+    .trim();
 }
 
-/** Render install/start hints for the current service platform/container context. */
 export function renderGatewayServiceStartHints(env: NodeJS.ProcessEnv = process.env): string[] {
   const container = resolveDaemonContainerContext(env);
   if (container) {
@@ -222,17 +211,16 @@ export function renderGatewayServiceStartHints(env: NodeJS.ProcessEnv = process.
   const profile = env.OPENCLAW_PROFILE;
   const installHint =
     resolveDaemonInstallBlockMessage("gateway", env) ??
-    formatCliCommand("openclaw gateway install", env);
+    formatCliCommand(`${CLI_NAME} gateway install`, env);
   return buildPlatformServiceStartHints({
     installHint,
-    startCommand: formatCliCommand("openclaw gateway start", env),
+    startCommand: formatCliCommand(`${CLI_NAME} gateway start`, env),
     launchAgentPlistPath: `~/Library/LaunchAgents/${resolveGatewayLaunchAgentLabel(profile)}.plist`,
     systemdServiceName: resolveGatewaySystemdServiceName(profile),
     windowsTaskName: resolveGatewayWindowsTaskName(profile),
   });
 }
 
-/** Drop generic systemd hints when a container-specific hint is clearer. */
 export function filterContainerGenericHints(
   hints: string[],
   env: NodeJS.ProcessEnv = process.env,

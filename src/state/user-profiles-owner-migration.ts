@@ -39,7 +39,7 @@ export function repairMergedGatewayOwnerProfile(
     return {
       ...unchanged,
       warnings: [
-        "The shared gateway owner profile requires repair. Run openclaw doctor --fix, then reconnect.",
+        "The shared gateway owner profile requires repair. Run paddy doctor --fix, then reconnect.",
       ],
     };
   }

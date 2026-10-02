@@ -1,7 +1,7 @@
 ---
-summary: "Use Venice AI privacy-focused models in OpenClaw"
+summary: "Use Venice AI privacy-focused models in Paddy"
 read_when:
-  - You want privacy-focused inference in OpenClaw
+  - You want privacy-focused inference in Paddy
   - You want Venice AI setup guidance
 title: "Venice AI"
 ---
@@ -34,11 +34,11 @@ Anonymized models are not fully private. Venice strips metadata before forwardin
     2. Go to **Settings > API Keys > Create new key**
     3. Copy your API key (format: `vapi_xxxxxxxxxxxx`)
   </Step>
-  <Step title="Configure OpenClaw">
+  <Step title="Configure Paddy">
     <Tabs>
       <Tab title="Interactive (recommended)">
         ```bash
-        openclaw onboard --auth-choice venice-api-key
+        paddy onboard --auth-choice venice-api-key
         ```
 
         Prompts for the API key (or reuses an existing `VENICE_API_KEY`), lists available Venice models, and sets your default model.
@@ -50,7 +50,7 @@ Anonymized models are not fully private. Venice strips metadata before forwardin
       </Tab>
       <Tab title="Non-interactive">
         ```bash
-        openclaw onboard --non-interactive --accept-risk --skip-health \
+        paddy onboard --non-interactive --accept-risk --skip-health \
           --auth-choice venice-api-key \
           --venice-api-key "vapi_xxxxxxxxxxxx"
         ```
@@ -60,7 +60,7 @@ Anonymized models are not fully private. Venice strips metadata before forwardin
   </Step>
   <Step title="Verify setup">
     ```bash
-    openclaw agent --model venice/zai-org-glm-4.7 --message "Hello, are you working?"
+    paddy agent --model venice/zai-org-glm-4.7 --message "Hello, are you working?"
     ```
   </Step>
 </Steps>
@@ -71,11 +71,11 @@ Anonymized models are not fully private. Venice strips metadata before forwardin
 - **Strongest anonymized option**: `venice/claude-opus-5`.
 
 ```bash
-openclaw models set venice/zai-org-glm-4.7
-openclaw models list --all --provider venice
+paddy models set venice/zai-org-glm-4.7
+paddy models list --all --provider venice
 ```
 
-You can also run `openclaw configure` and pick **Model/auth provider > Venice AI**.
+You can also run `paddy configure` and pick **Model/auth provider > Venice AI**.
 
 <Tip>
 | Use case              | Model                                        | Why                                    |
@@ -133,17 +133,17 @@ tool-call format.
 ## Model discovery
 
 The built-in catalog above is the manifest-backed seed catalog. At runtime
-OpenClaw refreshes it from the Venice `/models` API and falls back to the seed
+Paddy refreshes it from the Venice `/models` API and falls back to the seed
 catalog if the API is unreachable. The `/models` endpoint is public (no auth needed for
 listing), but inference requires a valid API key.
 
 Venice may continue accepting retired model IDs as provider-owned aliases. The
-OpenClaw catalog advertises only the canonical model IDs returned by `/models`.
+Paddy catalog advertises only the canonical model IDs returned by `/models`.
 
 ## DeepSeek V4 replay behavior
 
 If Venice exposes DeepSeek V4 models such as `deepseek-v4-pro` or
-`deepseek-v4-flash`, OpenClaw fills the required `reasoning_content` replay
+`deepseek-v4-flash`, Paddy fills the required `reasoning_content` replay
 field on assistant messages when Venice omits it, and strips `thinking`/
 `reasoning`/`reasoning_effort` from the request payload (Venice rejects
 DeepSeek's native `thinking` control on these models). This replay fix is
@@ -164,7 +164,7 @@ Venice uses a credit-based system. Anonymized models cost roughly the same as
 direct API pricing plus a small Venice fee. See
 [venice.ai/pricing](https://venice.ai/pricing) for current rates.
 
-OpenClaw reads live prices from Venice's public
+Paddy reads live prices from Venice's public
 [`GET /api/v1/models`](https://docs.venice.ai/api-reference/endpoint/models/list)
 response during model discovery. The same plugin parser supplies the hosted
 catalog publisher. Known and newly discovered models use the API's complete
@@ -207,19 +207,19 @@ can persist inherited costs as explicit overrides. Historical recorded costs are
 
 ```bash
 # Default private model
-openclaw agent --model venice/zai-org-glm-4.7 --message "Quick health check"
+paddy agent --model venice/zai-org-glm-4.7 --message "Quick health check"
 
 # Claude Opus via Venice (anonymized)
-openclaw agent --model venice/claude-opus-5 --message "Summarize this task"
+paddy agent --model venice/claude-opus-5 --message "Summarize this task"
 
 # Uncensored model
-openclaw agent --model venice/venice-uncensored-1-2 --message "Draft options"
+paddy agent --model venice/venice-uncensored-1-2 --message "Draft options"
 
 # Vision model with image
-openclaw agent --model venice/qwen3-vl-235b-a22b --message "Review attached image"
+paddy agent --model venice/qwen3-vl-235b-a22b --message "Review attached image"
 
 # Coding model
-openclaw agent --model venice/qwen3-coder-480b-a35b-instruct-turbo --message "Refactor this function"
+paddy agent --model venice/qwen3-coder-480b-a35b-instruct-turbo --message "Refactor this function"
 ```
 
 ## Troubleshooting
@@ -227,7 +227,7 @@ openclaw agent --model venice/qwen3-coder-480b-a35b-instruct-turbo --message "Re
 <AccordionGroup>
   <Accordion title="API key not recognized">
     ```bash
-    openclaw models list --provider venice
+    paddy models list --provider venice
     ```
 
     Confirm the API key is configured and starts with `vapi_`; do not print or
@@ -236,7 +236,7 @@ openclaw agent --model venice/qwen3-coder-480b-a35b-instruct-turbo --message "Re
   </Accordion>
 
   <Accordion title="Model not available">
-    Run `openclaw models list --all --provider venice` to see currently
+    Run `paddy models list --all --provider venice` to see currently
     available models; the catalog changes as Venice adds or retires models.
   </Accordion>
 

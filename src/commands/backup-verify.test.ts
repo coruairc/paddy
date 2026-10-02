@@ -295,7 +295,7 @@ describe("backupVerifyCommand", () => {
         return archivePath;
       },
       detail:
-        "Archive is not a valid OpenClaw backup. Unrecognized archive format. Choose another archive or create a new one with `openclaw backup create`.",
+        "Archive is not a valid Paddy backup. Unrecognized archive format. Choose another archive or create a new one with `paddy backup create`.",
     },
   ])("reports an actionable failure for $name", async ({ prepare, detail }) => {
     const tempDir = tempDirs.make("openclaw-backup-verify-input-");
@@ -350,7 +350,7 @@ describe("backupVerifyCommand", () => {
     });
 
     expect(runtime.error).toHaveBeenCalledWith(
-      `Backup archive verification failed: ${archivePath}. Archive is not a valid OpenClaw backup. ${detail}. Choose another archive or create a new one with \`openclaw backup create\`.`,
+      `Backup archive verification failed: ${archivePath}. Archive is not a valid Paddy backup. ${detail}. Choose another archive or create a new one with \`paddy backup create\`.`,
     );
     expect(runtime.exit).toHaveBeenCalledWith(1);
     expect(runtime.log).not.toHaveBeenCalled();

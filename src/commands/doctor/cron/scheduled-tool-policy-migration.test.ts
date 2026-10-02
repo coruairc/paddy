@@ -142,7 +142,7 @@ describe("migrateScheduledToolPolicy", () => {
         legacyJobs: result.legacyScheduledToolPolicyJobs,
         invalidJobs: result.invalidScheduledToolPolicyJobs,
       }),
-    ).toContain("openclaw cron edit <id> --tools");
+    ).toContain("paddy cron edit <id> --tools");
   });
 
   it("reports alias-only Gateway exec jobs without converting their authority", () => {

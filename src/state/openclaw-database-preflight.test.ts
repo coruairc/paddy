@@ -369,9 +369,9 @@ describe("OpenClaw database schema preflight", () => {
             failures: [],
             warnings: [
               expect.stringContaining(
-                `Held agent main database ${agent.path} (deletion journal unavailable); run openclaw doctor --fix`,
+                `Held agent main database ${agent.path} (deletion journal unavailable); run paddy doctor --fix`,
               ),
-              "Agent deletion journal missing; 1 store held back. Run openclaw doctor --fix to record recovery, then restore or delete each held agent explicitly.",
+              "Agent deletion journal missing; 1 store held back. Run paddy doctor --fix to record recovery, then restore or delete each held agent explicitly.",
             ],
           }),
         }),

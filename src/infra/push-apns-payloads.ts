@@ -1,9 +1,10 @@
 // Builds portable APNs payloads for alerts, wakes, and approval lifecycle events.
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
+import { PRODUCT_NAME } from "../brand.js";
 import type { ChannelApprovalKind } from "./approval-types.js";
 
-const EXEC_APPROVAL_GENERIC_ALERT_BODY = "Open OpenClaw to review this request.";
+const EXEC_APPROVAL_GENERIC_ALERT_BODY = `Open ${PRODUCT_NAME} to review this request.`;
 const PLUGIN_APPROVAL_ALERT_BODY_MAX_LENGTH = 256;
 
 function toPushMetadata(params: {

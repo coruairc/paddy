@@ -424,7 +424,7 @@ describe("Hermes migration secret items", () => {
       });
     }
     expect(plan.warnings).toContain(
-      "Hermes and OpenClaw must not keep using the same imported OpenAI OAuth refresh grant after migration; reauthenticate one side before running both.",
+      "Hermes and Paddy must not keep using the same imported OpenAI OAuth refresh grant after migration; reauthenticate one side before running both.",
     );
     const result = await provider.apply(ctx, plan);
     const authItems = result.items.filter((item) => item.kind === "auth");

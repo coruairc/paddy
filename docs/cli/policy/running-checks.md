@@ -8,33 +8,33 @@ title: "Run and configure policy checks"
 sidebarTitle: "Run checks"
 ---
 
-Running checks during authoring, and the plugin settings behind them. Part of the [`openclaw policy`](/cli/policy) reference.
+Running checks during authoring, and the plugin settings behind them. Part of the [`paddy policy`](/cli/policy) reference.
 
 ## Run checks
 
 Run policy-only checks during authoring:
 
 ```bash
-openclaw policy check
-openclaw policy check --agent ops
-openclaw policy check --json
-openclaw policy check --severity-min error
+paddy policy check
+paddy policy check --agent ops
+paddy policy check --json
+paddy policy check --severity-min error
 ```
 
 `policy check` runs only the policy check set and emits evidence, findings,
 and attestation hashes. The same findings also appear in
-`openclaw doctor --lint` when the Policy plugin is enabled.
+`paddy doctor --lint` when the Policy plugin is enabled.
 In a multi-agent fleet with explicit ownership, pass `--agent <id>` so the
 command reads governed declarations and `policy.jsonc` from that agent's
 workspace. A sole-agent or retained legacy-owner configuration still resolves
-without the flag; OpenClaw never selects an arbitrary first agent.
+without the flag; Paddy never selects an arbitrary first agent.
 
 Compare an operator policy file against an authored baseline:
 
 ```bash
-openclaw policy compare --baseline official.policy.jsonc
-openclaw policy compare --baseline official.policy.jsonc --agent ops
-openclaw policy compare --baseline official.policy.jsonc --policy policy.jsonc --json
+paddy policy compare --baseline official.policy.jsonc
+paddy policy compare --baseline official.policy.jsonc --agent ops
+paddy policy compare --baseline official.policy.jsonc --policy policy.jsonc --json
 ```
 
 `policy compare` checks policy-file syntax against policy-file syntax; it does

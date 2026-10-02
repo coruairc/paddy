@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { buildRealtimeVoiceAgentConsultChatMessage } from "./agent-consult-tool.js";
 
@@ -12,9 +13,9 @@ export function buildRealtimeVoiceSpeakExactMessage(params: {
   surfaceLabel: string;
 }): string {
   return [
-    "Internal OpenClaw voice playback result.",
+    `Internal ${PRODUCT_NAME} voice playback result.`,
     "Do not call openclaw_agent_consult or any other tool for this message.",
-    `Speak this exact OpenClaw answer to ${params.surfaceLabel}, without adding, removing, or rephrasing words.`,
+    `Speak this exact ${PRODUCT_NAME} answer to ${params.surfaceLabel}, without adding, removing, or rephrasing words.`,
     `Answer: ${JSON.stringify(params.text)}`,
   ].join("\n");
 }
@@ -28,7 +29,7 @@ export function classifyRealtimeVoiceConsultToolCall(
   // The retained set is the session-owned fact that authorizes the bypass; the
   // marker alone is untrusted model tool-call text and must never select the
   // privileged replay path on its own.
-  if (message.includes("Speak this exact OpenClaw answer")) {
+  if (message.includes(`Speak this exact ${PRODUCT_NAME} answer`)) {
     const text = readJsonStringAfterLabel(message, "Answer:");
     if (text !== undefined && options.retainedExactSpeechTexts.includes(text)) {
       return { kind: "exact-speech-echo", text };

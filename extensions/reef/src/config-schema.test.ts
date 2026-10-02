@@ -167,7 +167,7 @@ describe("Reef configuration boundary", () => {
       reviews: { list: vi.fn(), decide },
     } as never);
     const ownerRequired = {
-      text: "Only an authorized owner can change Reef friends or decide reviews. Ask an owner; friendship changes can also use openclaw reef locally.",
+      text: "Only an authorized owner can change Reef friends or decide reviews. Ask an owner; friendship changes can also use paddy reef locally.",
     };
     await expect(
       command.handler({ args: "friend autonomy peer extended", senderIsOwner: false }),

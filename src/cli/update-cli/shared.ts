@@ -1,4 +1,3 @@
-// Shared update command primitives for channel resolution, install roots, and subprocess steps.
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -43,8 +42,8 @@ import { defaultRuntime } from "../../runtime.js";
 import type { UpdateRecoveryStep } from "../../shared/update-outcome.js";
 import { UPDATE_INSTALL_SKIP_GUIDANCE } from "../../shared/update-outcome.js";
 import { pathExists } from "../../utils.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { COMPLETION_SKIP_PLUGIN_COMMANDS_ENV } from "../completion-runtime.js";
-import { isJsonOutputModeActive } from "../json-output-mode.js";
 import { resolveNodeRunner } from "./node-runner.js";
 
 export { resolveNodeRunner } from "./node-runner.js";
@@ -108,7 +107,6 @@ export type UpdateFinalizeOptions = {
   channel?: string;
   timeout?: string;
   yes?: boolean;
-  restart?: boolean;
   /** Internal external-supervisor handshake; public repair always leaves this false. */
   deferCompletionCache?: boolean;
 };
@@ -124,12 +122,18 @@ export class UpdatePreMutationError<Reason extends string = string> extends Erro
   readonly nextAction?: string;
   readonly recoverySteps?: readonly UpdateRecoveryStep[];
   readonly failureFacts: UpdateFailureFact[];
+  readonly #stepResult?: Pick<UpdateRunResult, "steps" | "failedStep">;
+
+  get stepResult(): Pick<UpdateRunResult, "steps" | "failedStep"> | undefined {
+    return this.#stepResult;
+  }
 
   constructor(
     readonly reason: Reason,
     message: string,
     options?: ErrorOptions & {
       failureFacts?: readonly UpdateFailureFact[];
+      stepResult?: Pick<UpdateRunResult, "steps" | "failedStep">;
       recoverySteps?: readonly UpdateRecoveryStep[];
       origin?: "candidate-admission";
       nextAction?: string;
@@ -140,6 +144,10 @@ export class UpdatePreMutationError<Reason extends string = string> extends Erro
     this.origin = options?.origin;
     this.nextAction = options?.nextAction;
     this.recoverySteps = options?.recoverySteps;
+    // Completed attempts are diagnostics, never recovery authority or enumerable error output.
+    this.#stepResult = options?.stepResult
+      ? { steps: options.stepResult.steps, failedStep: options.stepResult.failedStep }
+      : undefined;
     this.failureFacts = normalizeUpdateFailureFacts(
       options?.failureFacts ?? [{ check: reason, code: reason, message }],
     );
@@ -160,20 +168,6 @@ export function parseUpdateTimeoutMs(timeout?: string): number | undefined {
   return milliseconds;
 }
 
-/** Parse a CLI timeout in seconds, exiting through the runtime on invalid input. */
-export function parseTimeoutMsOrExit(timeout?: string): number | undefined | null {
-  try {
-    return parseUpdateTimeoutMs(timeout);
-  } catch (error) {
-    if (isJsonOutputModeActive(process.argv)) {
-      throw error;
-    }
-    defaultRuntime.error(INVALID_TIMEOUT_ERROR);
-    defaultRuntime.exit(1);
-    return null;
-  }
-}
-
 const UPSTREAM_REPOSITORY_URL = "https://github.com/openclaw/openclaw.git";
 // Keep the full commit graph for dev ref switching while deferring historical blobs.
 // A shallow clone would make older or non-default dev targets unreachable.
@@ -181,7 +175,6 @@ const GIT_CLONE_BLOB_FILTER = "--filter=blob:none";
 
 export const DEFAULT_PACKAGE_NAME = "openclaw";
 
-/** Normalize a CLI tag/version/spec into the npm target form accepted by update flows. */
 export function normalizeTag(value?: string | null): string | null {
   return normalizePackageTagInput(value, [DEFAULT_PACKAGE_NAME]);
 }
@@ -197,7 +190,6 @@ function normalizeVersionTag(tag: string): string | null {
 
 export { readPackageName, readPackageVersion };
 
-/** Resolve an npm dist-tag or explicit version into a concrete package version. */
 export async function resolveTargetVersion(
   tag: string,
   timeoutMs?: number,
@@ -221,7 +213,6 @@ export async function resolveTargetVersion(
   return res;
 }
 
-/** Return true when `root` is a local git checkout directory. */
 export async function isGitCheckout(root: string): Promise<boolean> {
   try {
     await fs.stat(path.join(root, ".git"));
@@ -231,7 +222,6 @@ export async function isGitCheckout(root: string): Promise<boolean> {
   }
 }
 
-/** Return true only for existing directories with no entries. */
 export async function isEmptyDir(targetPath: string): Promise<boolean> {
   try {
     const entries = await fs.readdir(targetPath);
@@ -241,7 +231,6 @@ export async function isEmptyDir(targetPath: string): Promise<boolean> {
   }
 }
 
-/** Resolve the checkout path used by source-based self-update. */
 export function resolveGitInstallDir(): string {
   const override = process.env.OPENCLAW_GIT_DIR?.trim();
   if (override) {
@@ -254,7 +243,6 @@ export function resolveGitInstallDir(): string {
   return path.join(home, "openclaw");
 }
 
-/** Locate the installed OpenClaw package root that should receive update operations. */
 export async function resolveUpdateRoot(context?: { root: string }): Promise<string> {
   if (context) {
     return path.resolve(context.root);
@@ -271,7 +259,6 @@ export async function resolveUpdateRoot(context?: { root: string }): Promise<str
   );
 }
 
-/** Run one update subprocess and report bounded stdout/stderr tails to progress listeners. */
 export async function runUpdateStep(params: {
   name: string;
   argv: string[];
@@ -395,9 +382,6 @@ async function cloneGitCheckoutTransactionally(params: {
           published = true;
           return targetDir;
         }
-      }
-
-      if (!preserveDir) {
         throw new Error(
           `OPENCLAW_GIT_DIR appeared while cloning: ${params.dir}. The existing path was left unchanged; move it or choose another OPENCLAW_GIT_DIR, then retry.`,
         );
@@ -477,7 +461,6 @@ async function cloneGitCheckoutTransactionally(params: {
   }
 }
 
-/** Ensure the configured source-update directory exists and points at an OpenClaw checkout. */
 export async function ensureGitCheckout(params: {
   dir: string;
   timeoutMs: number;
@@ -513,7 +496,6 @@ export async function ensureGitCheckout(params: {
   return { checkoutDir: await fs.realpath(params.dir), step: null };
 }
 
-/** Detect the package manager that owns a global/package OpenClaw install. */
 export async function resolveGlobalManager(params: {
   root: string;
   installKind: "git" | "package" | "unknown";
@@ -529,7 +511,7 @@ export async function resolveGlobalManager(params: {
       const reason = resolveUnmanagedUpdateInstallReason();
       throw new UpdatePreMutationError(
         reason,
-        "This OpenClaw installation is managed by Homebrew. To update OpenClaw, run:\n\n  brew upgrade openclaw-cli\n\nThen restart the gateway:\n\n  openclaw gateway restart",
+        `This ${PRODUCT_NAME} installation is managed by Homebrew. To update ${PRODUCT_NAME}, run:\n\n  brew upgrade openclaw-cli\n\nThen restart the gateway:\n\n  ${CLI_NAME} gateway restart`,
         { failureFacts: [] },
       );
     }
@@ -562,7 +544,7 @@ export async function resolveGlobalManager(params: {
 
 const COMPLETION_CACHE_WRITE_TIMEOUT_MS = 30_000;
 const COMPLETION_CACHE_MANUAL_REFRESH_HINT =
-  "Shell tab-completion may be stale; refresh manually with: openclaw completion --write-state";
+  `Shell tab-completion may be stale; refresh manually with: ${CLI_NAME} completion --write-state`;
 
 /** Best-effort refresh of shell completion state after a successful update. */
 export async function tryWriteCompletionCache(

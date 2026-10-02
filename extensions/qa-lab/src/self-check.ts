@@ -81,18 +81,11 @@ export async function runQaSelfCheckAgainstState(params: {
     }
   });
   const report = renderQaMarkdownReport({
-    title: "OpenClaw QA E2E Self-Check",
+    title: "Paddy QA E2E Self-Check",
     startedAt,
     finishedAt,
     checks,
-    scenarios: [
-      {
-        name: scenarioResult.name,
-        status: scenarioResult.status,
-        details: scenarioResult.details,
-        steps: scenarioResult.steps,
-      },
-    ],
+    scenarios: [scenarioResult],
     timeline,
     notes: params.notes ?? [
       "Vertical slice: qa-channel + qa-lab bus + private debugger surface.",
@@ -100,10 +93,7 @@ export async function runQaSelfCheckAgainstState(params: {
     ],
   });
 
-  const outputPath = resolveQaSelfCheckOutputPath({
-    outputPath: params.outputPath,
-    repoRoot: params.repoRoot,
-  });
+  const outputPath = resolveQaSelfCheckOutputPath(params);
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
   await fs.writeFile(outputPath, report, "utf8");
   await transportFactoryResult.cleanupWithoutGateway();

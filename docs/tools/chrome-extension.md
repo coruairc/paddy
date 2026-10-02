@@ -2,14 +2,14 @@
 summary: "Chrome extension: securely automate signed-in tabs with automatic local pairing"
 read_when:
   - You want an agent to drive your signed-in Chrome without remote-debugging prompts
-  - You are installing, pairing, disabling, or troubleshooting the OpenClaw Chrome extension
+  - You are installing, pairing, disabling, or troubleshooting the Paddy Chrome extension
   - You need the Chrome native bootstrap security and platform support model
 title: "Chrome Extension"
 ---
 
 # Chrome extension
 
-The OpenClaw Chrome extension lets the browser tool automate eligible tabs in
+The Paddy Chrome extension lets the browser tool automate eligible tabs in
 your signed-in Chrome profile. It uses `chrome.debugger`, so it does not require
 Chrome's blocking remote-debugging consent prompt.
 
@@ -21,9 +21,9 @@ a Settings link.
 ## Requirements
 
 - Google Chrome, Chrome for Testing, or Chromium
-- OpenClaw installed on the same machine as Chrome, or an OpenClaw browser node
+- Paddy installed on the same machine as Chrome, or a Paddy browser node
   on that machine
-- macOS/Linux, or Windows with the self-contained OpenClaw native bootstrap executable
+- macOS/Linux, or Windows with the self-contained Paddy native bootstrap executable
 - For browsers other than Google Chrome on macOS, launch the browser at least
   once so its user-data directory exists
 
@@ -52,18 +52,18 @@ owned Store requests first and then owned native registration. The macOS
 
 Run this command on the machine that hosts Chrome. Google Chrome on macOS can
 be prepared before its first launch; other supported browsers need to be
-launched once first. See [`openclaw browser`](/cli/browser) for the full
+launched once first. See [`paddy browser`](/cli/browser) for the full
 `browser extension` subcommand reference:
 
 ```bash
-openclaw browser extension install
+paddy browser extension install
 ```
 
 Keep the command running while you complete Chrome's setup. On macOS, it first
 registers the native host, then asks Google Chrome to install the official
 Store extension. Chrome discovers the request at browser startup. If Chrome is
 already running, fully quit and reopen it when convenient, then approve or
-enable **OpenClaw** in Chrome. OpenClaw never restarts Chrome or approves its
+enable **Paddy** in Chrome. Paddy never restarts Chrome or approves its
 permission prompt for you. The request applies to all profiles in that Chrome
 user-data directory. Chrome controls approval in each profile.
 
@@ -110,10 +110,10 @@ permission approval.
 
 You can also use the Store link if Chrome does not offer the requested install.
 If you previously removed the extension, Chrome remembers that choice. Explicitly
-add it again from the Store. OpenClaw does not clear Chrome's removal decision.
+add it again from the Store. Paddy does not clear Chrome's removal decision.
 
 On macOS and Linux, the origin-locked native host permits the exact official
-Store identity and OpenClaw's deterministic development IDs. Once enabled, the
+Store identity and Paddy's deterministic development IDs. Once enabled, the
 extension pairs on its first native call. The installer inspects the profile's
 `Preferences` and `Secure Preferences`
 backing files and verifies the exact Store ID independently from any extension
@@ -124,10 +124,10 @@ type, permission, and size checks.
 For extension development, skip creating a Store installation request:
 
 ```bash
-openclaw browser extension install --no-store
+paddy browser extension install --no-store
 ```
 
-This still copies the bundled extension to a stable OpenClaw-owned directory
+This still copies the bundled extension to a stable Paddy-owned directory
 and registers the native host. It leaves any existing Store request unchanged.
 Use the unpacked copy as a development fallback:
 
@@ -141,30 +141,30 @@ setup. For unpacked development, the installer verifies that Chrome loaded the
 approved realpath under its predicted deterministic ID.
 
 The installer recognizes the official Store installation only by the exact
-Foundation Store ID. That identity never makes a recorded path OpenClaw-owned.
+Foundation Store ID. That identity never makes a recorded path Paddy-owned.
 For unpacked development, it accepts an ID only when all of these are true:
 
 - the ID matches Chrome's 32-character extension ID format.
 - Chrome records the install location as unpacked.
 - the recorded extension path resolves exactly to the installed or bundled
-  OpenClaw extension directory.
+  Paddy extension directory.
 - the recorded ID equals Chromium's deterministic path ID for that exact
   canonical realpath.
 
 The extension name is not trusted. Existing native-host files with the same
-host name are not overwritten unless they are verifiably OpenClaw-owned.
+host name are not overwritten unless they are verifiably Paddy-owned.
 
 Use a different bounded wait when needed:
 
 ```bash
-openclaw browser extension install --wait-ms 60000
+paddy browser extension install --wait-ms 60000
 ```
 
 For automation, use `--json`. The result reports Store installation requests,
 Store discovery and approval, approved unpacked IDs and paths, and native-host
 registration health separately. These local observations do not prove a live
 connection. Verify the extension's connected state and run
-`openclaw browser --browser-profile chrome tabs` against the intended Gateway
+`paddy browser --browser-profile chrome tabs` against the intended Gateway
 or browser node. JSON output never includes a relay key or pairing string.
 
 ## Shared setup controller
@@ -173,13 +173,13 @@ CLI, native desktop adapters, and the terminal setup flow use the same Browser-o
 controller on the machine that hosts Chrome.
 
 Setup's installation status describes Google Chrome. The
-`openclaw browser extension install` and `openclaw browser extension status`
+`paddy browser extension install` and `paddy browser extension status`
 commands also support Chromium and Chrome for Testing.
 
 ```bash
-openclaw browser extension setup --action inspect --json
-openclaw browser extension setup --action install --json
-openclaw browser extension setup --action verify --browser-profile chrome --json
+paddy browser extension setup --action inspect --json
+paddy browser extension setup --action install --json
+paddy browser extension setup --action verify --browser-profile chrome --json
 ```
 
 `inspect` reads installation state without installing or connecting. `install`
@@ -220,7 +220,7 @@ If the saved profile is no longer configured, or the Node/CLI paths or approved
 extension origins have changed, the Windows contract may return no matching
 descriptor. Automatic selection then stops without an installation attempt.
 Review the intended existing profile and repair explicitly, for example
-`openclaw browser extension setup --action install --browser-profile work`. This
+`paddy browser extension setup --action install --browser-profile work`. This
 is not automatic runtime-upgrade recovery: a different state, configuration,
 profile, or Companion mode remains a context conflict rather than a takeover.
 
@@ -249,7 +249,7 @@ dashboard offers Store and setup-guide links rather than installing on the viewe
 Select the built-in `chrome` profile, or make it the default:
 
 ```bash
-openclaw config set browser.defaultProfile chrome
+paddy config set browser.defaultProfile chrome
 ```
 
 ```json5
@@ -268,8 +268,8 @@ overwritten, and older pairings keep their stored access mode.
 For fresh local setup, native bootstrap connects the extension through the local
 Gateway's exact `/browser/extension` route. That first authenticated connection
 wakes the lazy browser-control service and starts the profile's loopback relay.
-OpenClaw and local clients such as mcporter then use that profile relay port.
-Keep `openclaw gateway run` or the managed Gateway service running. A separate
+Paddy and local clients such as mcporter then use that profile relay port.
+Keep `paddy gateway run` or the managed Gateway service running. A separate
 browser request or prewarm step is not required.
 
 Browser-node setup remains different: the extension connects to the relay on
@@ -334,13 +334,13 @@ The daemon's stricter v2-only default is compatible with Gateway's default.
 - **All tabs** exposes every eligible ordinary tab in that Chrome profile,
   except tabs paused for the current browser session. Use **Pause on this tab**
   and **Allow on this tab** in the popup.
-- **Selected tabs** uses the **OpenClaw** tab group as the access-control
+- **Selected tabs** uses the **Paddy** tab group as the access-control
   boundary. Moving a tab into the group grants access. Moving it out revokes
   access.
 
 Open the extension's Settings page to change the access mode. Switching to
 Selected tabs immediately detaches ungrouped tabs, including attaches already
-in flight. Agent-created tabs stay in the OpenClaw group in either mode.
+in flight. Agent-created tabs stay in the Paddy group in either mode.
 
 The extension excludes incognito tabs, internal pages such as `chrome://` and
 `chrome-extension://`, and tabs without a usable current URL. `file://` access
@@ -348,7 +348,7 @@ also requires Chrome's **Allow access to file URLs** setting.
 
 An agent-created tab may start at `about:blank` while a CDP client initializes
 it before navigating. The extension allows that specific initial tab, keeps it
-in the OpenClaw group, and applies the same pause and access-mode controls.
+in the Paddy group, and applies the same pause and access-mode controls.
 Normal navigation keeps the tab available in either access mode.
 Existing blank tabs, manually grouped blanks, and other `about:` pages remain
 unavailable. Navigating away, replacing the tab, or restarting or reconnecting
@@ -379,12 +379,12 @@ local setup** switch.
   new native bootstrap and standalone relay wake-up attempts.
 - **Disconnect and disable automatic setup** revokes the pairing immediately,
   detaches debugger sessions, and persists the opt-out.
-- **Use local OpenClaw** clears the opt-out and retries the native host.
+- **Use local Paddy** clears the opt-out and retries the native host.
 - Saving an explicit manual pairing also clears the opt-out.
 
 Pre-release development installs that paired before local Gateway wakeup
 routing keep their existing pairing unchanged. In Settings, use **Disconnect
-and disable automatic setup**, then **Use local OpenClaw** to create the new
+and disable automatic setup**, then **Use local Paddy** to create the new
 local pairing. Released builds do not require this recovery step.
 
 ### Upgrades from the retired tab copilot
@@ -392,7 +392,7 @@ local pairing. Released builds do not require this recovery step.
 If Settings says automation is paused to protect a pre-upgrade copilot
 session, confirm that old runs are finished. Then click **Disconnect and
 disable automatic setup** to discard the retired recovery state, followed by
-**Use local OpenClaw** to reconnect. Until that explicit disconnect succeeds,
+**Use local Paddy** to reconnect. Until that explicit disconnect succeeds,
 the extension preserves the retired state and blocks relay connections, native
 setup, manual pairing, tab access changes, and debugger attachment.
 
@@ -408,12 +408,12 @@ the Store extension. For development, pre-register before **Load unpacked**.
 Inspect the installation without printing credentials:
 
 ```bash
-openclaw browser extension status
-openclaw browser extension status --json
+paddy browser extension status
+paddy browser extension status --json
 ```
 
 JSON `storeInstallRequests` entries report `requested` for a verified
-OpenClaw-owned request, `missing` when no request exists, `foreign` for an
+Paddy-owned request, `missing` when no request exists, `foreign` for an
 unrecognized registration, or `invalid` when the file cannot be safely read or
 validated. `storeDiscovered` reports `enabled` and `awaitingApproval` separately.
 A requested installation, a discovered extension, or an enabled extension does
@@ -422,7 +422,7 @@ not prove an authenticated relay connection.
 An `owned` native-host registration is not necessarily launchable. Status reports a filesystem
 readiness snapshot of its registered runtime and native entry. It does not execute
 either target or verify that its code will run successfully. If an upgrade removes
-either target, rerun `openclaw browser extension install` to repair the owned
+either target, rerun `paddy browser extension install` to repair the owned
 registration. Ownership checks still refuse foreign or malformed manifests and
 launchers.
 
@@ -430,7 +430,7 @@ Managed deployment owners can inspect registered entrypoints without reading
 Chrome profiles or Store requests:
 
 ```bash
-openclaw browser extension repair --dry-run --json
+paddy browser extension repair --dry-run --json
 ```
 
 The report includes `retainedNativeHostPaths` and `retentionSafe`. Keep referenced
@@ -442,7 +442,7 @@ To refresh only registrations belonging to one retired package, run the command
 from its replacement installation with the exact old entrypoint:
 
 ```bash
-openclaw browser extension repair --from /path/to/old/package/dist/extensions/browser/native-host-entry.js --json
+paddy browser extension repair --from /path/to/old/package/dist/extensions/browser/native-host-entry.js --json
 ```
 
 Repair keeps unrelated installations, missing registrations, the stable extension
@@ -455,27 +455,27 @@ the native manifest switches only after its launcher is complete, so a failed
 manifest write leaves the prior registration available for retry. General Doctor still skips personal
 browser profile discovery; use `extension install` for first-time setup.
 
-Remove only OpenClaw's macOS Chrome Store installation request:
+Remove only Paddy's macOS Chrome Store installation request:
 
 ```bash
-openclaw browser extension uninstall-store
+paddy browser extension uninstall-store
 ```
 
 Chrome may remove an externally installed extension on its next startup after
 the request is removed. This command leaves native-host registration and the
 development copy intact, and refuses foreign or malformed request files.
 
-Remove only OpenClaw-owned native-host manifests and launchers:
+Remove only Paddy-owned native-host manifests and launchers:
 
 ```bash
-openclaw browser extension uninstall-host
+paddy browser extension uninstall-host
 ```
 
 This does not remove the Store or unpacked extension from Chrome. Use
 `chrome://extensions` for that. It also does not delete the stable development
 copy or an existing relay key.
 
-`openclaw browser extension path` is read-only. It prints the stable installed
+`paddy browser extension path` is read-only. It prints the stable installed
 copy when present and the bundled source directory otherwise.
 
 ## Advanced manual pairing
@@ -483,7 +483,7 @@ copy when present and the bundled source directory otherwise.
 The Settings page owns manual pairing. Generate a host-local pairing string:
 
 ```bash
-openclaw browser extension pair
+paddy browser extension pair
 ```
 
 Manual pairing remains useful for unsupported topologies and recovery. Treat the complete
@@ -495,17 +495,17 @@ wake-up support installed and automatic setup enabled, the extension can
 start that relay on reconnect without a local Gateway. Otherwise, the relay
 must already be running, for example through Browser control or a browser node.
 
-Desktop native helpers can use `openclaw browser extension pair --local-gateway --json`
+Desktop native helpers can use `paddy browser extension pair --local-gateway --json`
 to obtain the same local Gateway wake-up route as automatic native bootstrap.
 This requires a local Gateway configuration, rejects `--gateway-url`, and keeps
 ordinary manual pairing unchanged. Its output contains the relay credential
 and must not be logged.
 
-For a laptop that has Chrome but does not run OpenClaw or a browser node, pair
+For a laptop that has Chrome but does not run Paddy or a browser node, pair
 directly to a remote Gateway:
 
 ```bash
-openclaw browser extension pair \
+paddy browser extension pair \
   --gateway-url wss://gateway.example.com
 ```
 
@@ -518,7 +518,7 @@ path without a path-rewriting proxy prefix.
 ## External CDP clients
 
 The relay supports Browser Relay Authentication v2 clients such as mcporter.
-OpenClaw and an external client can stay connected together. When a client
+Paddy and an external client can stay connected together. When a client
 enables Runtime, the extension checks current tab access before the relay
 replays existing execution contexts to that new subscriber. This does not
 reset another client's Runtime session.
@@ -579,15 +579,15 @@ proof that its debugger client closed. Failed CDP operations are never retried
 against a replacement session.
 
 The connection-lifetime protections require updated extension code as well as
-an updated OpenClaw installation. Update the Store extension when available.
-For an unpacked development copy, rerun `openclaw browser extension install`
+an updated Paddy installation. Update the Store extension when available.
+For an unpacked development copy, rerun `paddy browser extension install`
 and reload the installed copy from `chrome://extensions`.
 
 Print non-secret endpoint metadata:
 
 ```bash
-openclaw browser extension cdp
-openclaw browser extension cdp --json
+paddy browser extension cdp
+paddy browser extension cdp --json
 ```
 
 The output includes the loopback endpoint, protocol version, key ID, and fixed
@@ -633,14 +633,14 @@ The response is below Chrome's 1 MiB native-message limit. Pairing keys never
 appear in launcher arguments, manifests, status JSON, or diagnostics.
 
 The POSIX launcher and manifest use absolute canonical paths under an
-OpenClaw-owned mode-`0700` directory. Manifests are mode `0600`. The launcher is
+Paddy-owned mode-`0700` directory. Manifests are mode `0600`. The launcher is
 owner-executable. Symlinks, foreign ownership, unsafe modes, path traversal,
 wildcard origins, and foreign same-name registrations fail closed.
 
 The managed manifest authorizes the exact Foundation Chrome Web Store origin
 plus deterministic development origins in canonical order. The Store identity
 is a fixed product trust grant, not proof that an arbitrary path is
-OpenClaw-owned.
+Paddy-owned.
 
 Install the official Chrome Web Store build for normal use. Only load unpacked
 development copies you trust: Chrome can give a key-matched unpacked build the
@@ -652,7 +652,7 @@ bytes with SHA-256 (native UTF-16LE path bytes on Windows, with only a lowercase
 drive letter uppercased), keep the first 16 digest bytes, then map hexadecimal
 digits `0` through `f` to letters `a` through `p`. The unpacked extension
 manifest has no `key`. Only these development IDs depend on approved
-OpenClaw-owned realpaths.
+Paddy-owned realpaths.
 
 The relay itself uses connection-bound HMAC proofs. The persistent per-host key
 is not sent in a URL, header, WebSocket subprotocol, or application frame during
@@ -663,9 +663,9 @@ If tightening fails, the key is refused. Windows uses its existing ACL policy.
 ## Troubleshooting
 
 ```bash
-openclaw browser extension status --json
-openclaw browser doctor --browser-profile chrome
-openclaw doctor
+paddy browser extension status --json
+paddy browser doctor --browser-profile chrome
+paddy doctor
 ```
 
 - **No native host was pre-registered:** check the preceding per-browser refusal
@@ -678,13 +678,13 @@ openclaw doctor
   development fallback after the command says native bootstrap is ready.
 - **Extension was loaded before native bootstrap:** restart Chrome once to clear its
   cached native-host miss, then rerun the ordered install flow.
-- **Extension version mismatch:** reload the unpacked OpenClaw extension from
+- **Extension version mismatch:** reload the unpacked Paddy extension from
   `chrome://extensions`, then rerun browser doctor. Fully restart Chrome if the
   running and bundled versions still differ.
-- **Waiting for local OpenClaw:** run `extension status`. Install or repair the
+- **Waiting for local Paddy:** run `extension status`. Install or repair the
   owned native host.
 - **Automatic setup disabled:** enable it in Settings or click **Use local
-  OpenClaw**.
+  Paddy**.
 - **Manual setup required:** use Settings for the advanced pairing flow. This
   is expected for direct extension-only remote Gateway setups. On Windows, first
   check that the packaged native executable and matching local CLI are installed

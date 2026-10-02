@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { SQLITE_IDLE_HANDLE_TTL_MS } from "../infra/sqlite-handle-lifecycle.js";
 import { runInSqliteMaintenanceContext } from "../infra/sqlite-wal.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
@@ -70,7 +71,7 @@ export function createStateDatabaseIdleRetirement(
         borrowers.get(database.db)?.retiring
       ) {
         throw new Error(
-          "OpenClaw state database idle retention requires its current canonical handle",
+          `${PRODUCT_NAME} state database idle retention requires its current canonical handle`,
         );
       }
       const references = idleReferences.get(database.db) ?? new Set<object>();

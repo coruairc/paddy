@@ -10,7 +10,7 @@ type AgentEvent = Parameters<NonNullable<EmbeddedRunAttemptParams["onAgentEvent"
 export type CodexNativePlan = { markdown?: string; steps: AgentPlanStep[] };
 
 const RESTORED_PLAN_PREAMBLE =
-  "OpenClaw restored the session progress card after context compaction. " +
+  "Paddy restored the session progress card after context compaction. " +
   "This is application state, not a new user request. Continue the current task and call " +
   "progress_card whenever the status meaningfully changes.";
 const PROGRESS_CARD_MAX_STEPS = 50;
@@ -59,8 +59,7 @@ export class CodexCompactionPlanState {
     if (event.stream !== "plan") {
       return;
     }
-    const plan = readBoundedPlan(event.data.explanation, event.data.steps);
-    this.latestPlan = plan;
+    this.latestPlan = readBoundedPlan(event.data.explanation, event.data.steps);
   }
 
   /** Retains markdown that migration-only plan events intentionally omit. */
@@ -144,10 +143,10 @@ function readPlanSteps(value: unknown): AgentPlanStep[] {
     return [];
   }
   return value.flatMap((entry) => {
-    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+    if (!isJsonObject(entry)) {
       return [];
     }
-    const { step, status } = entry as { step?: unknown; status?: unknown };
+    const { step, status } = entry;
     if (typeof step !== "string" || !isPlanStatus(status)) {
       return [];
     }

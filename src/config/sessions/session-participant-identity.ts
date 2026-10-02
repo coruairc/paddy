@@ -45,7 +45,7 @@ export function readParticipantIdentity(namespace: string, id: string): SessionP
       return identity;
     }
   }
-  throw new Error("Session participant identity is invalid; run openclaw doctor --fix.");
+  throw new Error("Session participant identity is invalid; run paddy doctor --fix.");
 }
 
 type ParticipantAggregate = {

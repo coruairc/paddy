@@ -1,4 +1,3 @@
-// Xai provider module implements model/runtime integration.
 import type { OpenClawConfig } from "openclaw/plugin-sdk/provider-auth";
 import type {
   SpeechProviderPlugin,
@@ -115,6 +114,6 @@ async function resolveXaiAudioApiKey(
     return apiKey;
   }
   throw new Error(
-    "xAI credentials missing for TTS. Sign in with `openclaw onboard --auth-choice xai-oauth`, or run `openclaw onboard --auth-choice xai-api-key`, or set XAI_API_KEY.",
+    "xAI credentials missing for TTS. Sign in with `paddy onboard --auth-choice xai-oauth`, or run `paddy onboard --auth-choice xai-api-key`, or set XAI_API_KEY.",
   );
 }

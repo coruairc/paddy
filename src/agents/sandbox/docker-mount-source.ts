@@ -2,6 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import { isPathInside } from "../../infra/path-guards.js";
 import { execContainer, type SandboxContainerEngine } from "./container-engine.js";
 import { isSandboxHostPathAbsolute, normalizeSandboxHostPath } from "./host-paths.js";
@@ -213,7 +214,7 @@ export function translateSandboxMountSources(params: {
     .toSorted((a, b) => b.destination.length - a.destination.length)[0];
   if (!mount || mount.type !== "bind") {
     throw new Error(
-      `Sandbox mount source ${params.source} ${mount ? `uses an unsupported ${mount.type} mount` : "is not backed by a Gateway bind mount"}. Bind-mount the workspace and OpenClaw state directories from the Docker host into the Gateway, then restart the Gateway.`,
+      `Sandbox mount source ${params.source} ${mount ? `uses an unsupported ${mount.type} mount` : "is not backed by a Gateway bind mount"}. Bind-mount the workspace and ${PRODUCT_NAME} state directories from the Docker host into the Gateway, then restart the Gateway.`,
     );
   }
   if (!mount.writable && !params.readOnly) {

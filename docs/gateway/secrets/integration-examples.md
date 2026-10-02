@@ -95,7 +95,7 @@ For a dedicated 1Password guide covering service accounts, the bundled agent ski
     The resolver batches requested ids, runs `bws secret list`, and returns values for matching secret `key` fields. Use keys that satisfy the exec SecretRef id contract, such as `openclaw/providers/openai/apiKey`; env-var-style keys with underscores are rejected before the resolver runs. If more than one visible Bitwarden secret shares the requested key, the resolver fails that id as ambiguous instead of guessing. After updating config, verify the resolver path:
 
     ```bash
-    openclaw secrets audit --allow-exec
+    paddy secrets audit --allow-exec
     ```
 
   </Accordion>
@@ -201,8 +201,8 @@ For a dedicated 1Password guide covering service accounts, the bundled agent ski
     Keep the secret on the first line of the `pass` entry, or customize the wrapper to return the full `pass show` output instead. After updating config, verify both the static audit and the exec resolver path:
 
     ```bash
-    openclaw secrets audit --check
-    openclaw secrets audit --allow-exec
+    paddy secrets audit --check
+    paddy secrets audit --allow-exec
     ```
 
   </Accordion>
@@ -293,6 +293,6 @@ The core `ssh` sandbox backend also supports SecretRefs for SSH auth material:
 
 Runtime behavior:
 
-- OpenClaw resolves these refs during sandbox activation, not lazily on each SSH call.
+- Paddy resolves these refs during sandbox activation, not lazily on each SSH call.
 - Resolved values are written to a temp directory with restrictive file permissions (`0o600`) and used in the generated SSH config.
 - If the effective sandbox backend is not `ssh` (or sandbox mode is `off`), these refs stay inactive and do not block startup.

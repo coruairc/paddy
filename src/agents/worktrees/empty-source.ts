@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveStateDir } from "../../config/state-dir.js";
 import { mergeProcessEnv } from "../../infra/process-env.js";
 import { listGitWorktrees, requireGit, worktreePathExists } from "./git.js";
@@ -118,7 +119,7 @@ export async function ensureEmptyWorktreeSource(params: {
     params.signal?.throwIfAborted();
     commitGuard();
     throw new Error(
-      `Empty workspace source is unavailable or modified: ${sourceRoot}. Restore its original Git metadata and keep existing session files; OpenClaw will not recreate it over existing data.`,
+      `Empty workspace source is unavailable or modified: ${sourceRoot}. Restore its original Git metadata and keep existing session files; ${PRODUCT_NAME} will not recreate it over existing data.`,
       { cause },
     );
   }

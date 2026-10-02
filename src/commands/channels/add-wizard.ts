@@ -9,14 +9,13 @@ import {
   resolveConfiguredAgentId,
   tryResolveAgentOperationAgentId,
 } from "../../agents/agent-scope-config.js";
+import { CLI_NAME, PRODUCT_NAME } from "../../brand.js";
 import { resolveChannelAccount } from "../../channels/account-resolution.js";
 import { getLoadedChannelPlugin } from "../../channels/plugins/index.js";
 import type { ChannelSetupPlugin } from "../../channels/plugins/setup-wizard-types.js";
 import { formatUnknownChannelMessage } from "../../cli/error-format.js";
 import { readConfigFileSnapshotForWrite, type OpenClawConfig } from "../../config/config.js";
 import { readCurrentConfigForPolicyCheckAsync } from "../../config/io.runtime.js";
-import { commitConfigWithPendingPluginInstalls } from "../../plugins/install-record-commit.js";
-import { refreshPluginRegistryAfterConfigMutation } from "../../plugins/registry-refresh.js";
 import { DEFAULT_ACCOUNT_ID } from "../../routing/session-key.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import type { WizardPrompter } from "../../wizard/prompts.js";
@@ -25,6 +24,7 @@ import { resolveChannelSetupOwner } from "../channel-setup/owner.js";
 import { withCommandPluginMetadata } from "../config-validation.js";
 import type { ChannelChoice } from "../onboard-types.js";
 import { applyAccountName } from "./add-mutators.js";
+import { persistChannelPluginConfig } from "./plugin-config-persistence.js";
 
 type InitialWizardChannelTarget =
   | { kind: "omitted" }
@@ -130,7 +130,7 @@ export async function runChannelsAddWizardFlow(params: ChannelsAddWizardFlowPara
   const { sourceConfig: cfg, hash: baseHash } = writeSnapshot.snapshot;
   const [{ buildAgentSummaries }, onboardChannels] = await Promise.all([
     import("../agents.config.js"),
-    import("../onboard-channels.js"),
+    import("../../flows/channel-setup.js"),
   ]);
   const channelSetup = onboardChannels.createChannelSetupHooks({
     runtime,
@@ -172,17 +172,13 @@ export async function runChannelsAddWizardFlow(params: ChannelsAddWizardFlowPara
   });
   const commitWizardConfig = async (config: OpenClawConfig) => {
     await params.beforePersistentEffect?.();
-    const committed = await commitConfigWithPendingPluginInstalls({
-      sourceConfig: config,
+    const committed = await persistChannelPluginConfig({
+      cfg: config,
+      pluginInstalled: false,
       writeOptions: writeSnapshot.writeOptions,
-      ...(baseHash !== undefined ? { baseHash } : {}),
+      baseHash,
+      runtime,
     });
-    if (committed.movedInstallRecords) {
-      await refreshPluginRegistryAfterConfigMutation({
-        reason: "source-changed",
-        logger: { warn: (message) => runtime.log(message) },
-      });
-    }
     await channelSetup.runPostWriteHooks(committed.path);
     return committed.nextConfig;
   };
@@ -334,7 +330,7 @@ export async function runChannelsSetupWizard(
   const { snapshot } = writeSnapshot;
   if (snapshot.exists && !snapshot.valid) {
     throw new Error(
-      "OpenClaw config is invalid; run `openclaw doctor --fix`, then retry channel setup.",
+      `${PRODUCT_NAME} config is invalid; run \`${CLI_NAME} doctor --fix\`, then retry channel setup.`,
     );
   }
   const cfg = snapshot.sourceConfig;

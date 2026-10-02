@@ -4,6 +4,7 @@ import {
   WORKER_PROTOCOL_MAX_FEATURES,
   WORKER_PROTOCOL_MAX_IDENTIFIER_LENGTH,
 } from "../../../packages/gateway-protocol/src/schema/worker-admission.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type {
   WorkerDesktopEndpoint,
   WorkerSshEndpoint,
@@ -12,7 +13,6 @@ import { isValidSecretRef } from "../../secrets/ref-contract.js";
 import type { WorkerEnvironmentBootstrapReceipt } from "./environment-record.js";
 import { workerEnvironmentStateRequiresLease, type WorkerEnvironmentState } from "./state.js";
 
-export const TERMINAL_STATES: WorkerEnvironmentState[] = ["destroyed", "failed", "orphaned"];
 const WORKER_BUNDLE_HASH_PATTERN = /^[a-f0-9]{64}$/u;
 const MAX_HOST_KEY_LENGTH = 16_384;
 const MAX_SSH_FALLBACK_PORTS = 10;
@@ -82,7 +82,7 @@ export function normalizeBootstrapReceipt(value: {
     bundleHash,
     openclawVersion: requireWorkerEnvironmentString(
       value.openclawVersion,
-      "bootstrap OpenClaw version",
+      `bootstrap ${PRODUCT_NAME} version`,
     ),
     protocolFeatures: normalizeSortedUniqueTrimmedStringList(value.protocolFeatures),
     ...(value.installKind ? { installKind: value.installKind } : {}),

@@ -1,15 +1,15 @@
 ---
-summary: "Share selected OpenClaw sessions read-only with a paired team Gateway"
+summary: "Share selected Paddy sessions read-only with a paired team Gateway"
 read_when:
-  - Sharing personal OpenClaw sessions with a team Gateway
+  - Sharing personal Paddy sessions with a team Gateway
   - Pairing a node that exposes only session listings and transcripts
   - Configuring attribution for sessions from another Gateway
 title: "Session Share plugin"
 ---
 
-The bundled `session-share` plugin lets teammates read selected sessions from another OpenClaw Gateway in the Control UI. The source operator chooses session groups to publish. A node host on the source machine reads those sessions and connects to the receiver Gateway as a paired device.
+The bundled `session-share` plugin lets teammates read selected sessions from another Paddy Gateway in the Control UI. The source operator chooses session groups to publish. A node host on the source machine reads those sessions and connects to the receiver Gateway as a paired device.
 
-Session Share is disabled by default. It publishes a read-only **OpenClaw sessions** catalog, not a second way to run agents on the source machine. For sanitized snapshots of external coding sessions without a paired node, see [Beam](/plugins/beam).
+Session Share is disabled by default. It publishes a read-only **Paddy sessions** catalog, not a second way to run agents on the source machine. For sanitized snapshots of external coding sessions without a paired node, see [Beam](/plugins/beam).
 
 ## Before you begin
 
@@ -45,14 +45,14 @@ With the default hybrid reload mode, the source Gateway applies plugin configura
 On the receiver Gateway:
 
 ```bash
-openclaw plugins enable session-share
-openclaw devices join-code
+paddy plugins enable session-share
+paddy devices join-code
 ```
 
 The enable command applies the running Gateway's plugin lifecycle without restarting it. Keep the join URL private. On the source machine, use that URL with exactly the two read-only commands:
 
 ```bash
-openclaw connect <join-url> --service \
+paddy connect <join-url> --service \
   --commands openclaw.sessions.list.v1,openclaw.sessions.read.v1
 ```
 
@@ -61,16 +61,16 @@ Omit `--service` to run in the foreground. With `--service`, the allowlist is sa
 Approve the source device on the receiver:
 
 ```bash
-openclaw devices list
-openclaw devices approve <requestId>
-openclaw nodes list
+paddy devices list
+paddy devices approve <requestId>
+paddy nodes list
 ```
 
 Check that the pairing request and connected node declare only `openclaw.sessions.list.v1` and `openclaw.sessions.read.v1`, with the `openclaw-sessions` capability. The catalog only recognizes nodes advertising both commands. See [Connect](/cli/connect) for join-code expiry and [Nodes](/nodes#restrict-the-node-command-surface) for the command allowlist.
 
 ## Read shared sessions
 
-Open the receiver Control UI. Shared rows appear under the source node's heading in **OpenClaw sessions**. Selecting a row opens its transcript view-only. Only user and assistant conversation text is shared. Thinking, tool calls, and tool results are omitted. The receiver cannot continue, archive, or open a terminal for that session.
+Open the receiver Control UI. Shared rows appear under the source node's heading in **Paddy sessions**. Selecting a row opens its transcript view-only. Only user and assistant conversation text is shared. Thinking, tool calls, and tool results are omitted. The receiver cannot continue, archive, or open a terminal for that session.
 
 Publication is shared with the receiver's permitted viewers, not just the named owner. Viewers need `operator.read`; on role-restricted Gateways, their profile's role must also permit viewing others' sessions (`sessions.others: "view"`, `"suggest"`, or `"write"`). Owner-only and unprofiled restricted viewers cannot see published rows. See [Operator scopes](/gateway/operator-scopes).
 
@@ -82,7 +82,7 @@ Listings leave cold transcript archives untouched and use any stored title metad
 
 ## Attribute the source node
 
-Receiver-side identity settings are optional and keyed by the node ID shown by `openclaw nodes list`:
+Receiver-side identity settings are optional and keyed by the node ID shown by `paddy nodes list`:
 
 ```json5
 {
@@ -120,15 +120,15 @@ Sharing a session exposes its user and assistant conversation text and catalog m
 
 ## Troubleshooting
 
-To undo the sessions-only setup, use `openclaw node run --all-commands` in the foreground or `openclaw node install --force --all-commands` for the service; this forgets the saved allowlist and restores the full default node surface.
+To undo the sessions-only setup, use `paddy node run --all-commands` in the foreground or `paddy node install --force --all-commands` for the service; this forgets the saved allowlist and restores the full default node surface.
 
 **The source node fails with no allowed commands**
 
 Enable `session-share` on the source, set a non-empty `share.groups`, restart the node host, and check the exact command IDs. Unknown or unavailable commands are not advertised.
 
-**The node connects but no OpenClaw sessions host appears**
+**The node connects but no Paddy sessions host appears**
 
-Enable the plugin on the receiver and confirm that it applied. In `openclaw nodes list`, the source must declare both session commands and be approved for them.
+Enable the plugin on the receiver and confirm that it applied. In `paddy nodes list`, the source must declare both session commands and be approved for them.
 
 **The host appears but a session is missing**
 

@@ -2,6 +2,7 @@ import {
   normalizeUpdateFailureFacts,
   type UpdateFailureFact,
 } from "../../infra/update-failure-facts.js";
+import { CLI_NAME } from "../cli-name.js";
 import type { PostCorePluginUpdateResult } from "./update-command-plugins.js";
 
 export const POST_PLUGIN_DOCTOR_EXECUTION_FAILED_REASON = "post-plugin-doctor-execution-failed";
@@ -55,14 +56,14 @@ export function applyPostPluginConfigValidation(
               .join("; "),
             message: "Config validation could not complete; refusing to restart.",
             guidance: [
-              "Resolve the validation command failure, then rerun `openclaw update repair`.",
+              `Resolve the validation command failure, then rerun \`${CLI_NAME} update repair\`.`,
             ],
           }
         : {
             reason: "Config remained invalid after updated plugin migrations.",
             message:
               "Post-update plugin migration did not produce a valid config; refusing to restart.",
-            guidance: ["Run `openclaw doctor --fix`, then rerun `openclaw update repair`."],
+            guidance: [`Run \`${CLI_NAME} doctor --fix\`, then rerun \`${CLI_NAME} update repair\`.`],
           },
     ],
   };

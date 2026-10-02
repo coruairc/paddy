@@ -1,7 +1,7 @@
 ---
-summary: "Use Mistral models and Voxtral transcription with OpenClaw"
+summary: "Use Mistral models and Voxtral transcription with Paddy"
 read_when:
-  - You want to use Mistral models in OpenClaw
+  - You want to use Mistral models in Paddy
   - You want Voxtral realtime transcription for Voice Call
   - You need Mistral API key onboarding and model refs
 title: "Mistral"
@@ -42,13 +42,13 @@ media understanding (Voxtral batch transcription), realtime STT for Voice Call
   </Step>
   <Step title="Run onboarding">
     ```bash
-    openclaw onboard --auth-choice mistral-api-key
+    paddy onboard --auth-choice mistral-api-key
     ```
 
     Or pass the key directly:
 
     ```bash
-    openclaw onboard --mistral-api-key "$MISTRAL_API_KEY"
+    paddy onboard --mistral-api-key "$MISTRAL_API_KEY"
     ```
 
   </Step>
@@ -62,7 +62,7 @@ media understanding (Voxtral batch transcription), realtime STT for Voice Call
   </Step>
   <Step title="Verify the model is available">
     ```bash
-    openclaw models list --provider mistral
+    paddy models list --provider mistral
     ```
   </Step>
 </Steps>
@@ -82,13 +82,13 @@ media understanding (Voxtral batch transcription), realtime STT for Voice Call
 Browse the plugin catalog row before changing config:
 
 ```bash
-openclaw models list --all --provider mistral --plain
+paddy models list --all --provider mistral --plain
 ```
 
 Smoke-test a model without starting the Gateway:
 
 ```bash
-openclaw infer model run --local \
+paddy infer model run --local \
   --model mistral/mistral-medium-3-5 \
   --prompt "Reply with exactly: mistral-ok" \
   --json
@@ -151,7 +151,7 @@ The `mistral` plugin registers Voxtral Realtime as a Voice Call streaming STT pr
 ```
 
 <Note>
-OpenClaw defaults Mistral realtime STT to `pcm_mulaw` at 8 kHz so Voice Call can forward Twilio media frames directly. Use `encoding: "pcm_s16le"` and a matching `sampleRate` only if your upstream stream is already raw PCM.
+Paddy defaults Mistral realtime STT to `pcm_mulaw` at 8 kHz so Voice Call can forward Twilio media frames directly. Use `encoding: "pcm_s16le"` and a matching `sampleRate` only if your upstream stream is already raw PCM.
 </Note>
 
 ## Advanced configuration
@@ -160,15 +160,15 @@ OpenClaw defaults Mistral realtime STT to `pcm_mulaw` at 8 kHz so Voice Call can
   <Accordion title="Adjustable reasoning">
     `mistral/mistral-small-latest`, `mistral/mistral-small-2603`, and `mistral/mistral-medium-3-5` support [adjustable reasoning](https://docs.mistral.ai/studio-api/conversations/reasoning) on the Chat Completions API via `reasoning_effort` (`none` minimizes extra thinking in the output; `high` surfaces full thinking traces before the final answer).
 
-    Thinking defaults to **off**. OpenClaw accepts these session thinking levels and maps them to Mistral's API:
+    Thinking defaults to **off**. Paddy accepts these session thinking levels and maps them to Mistral's API:
 
-    | OpenClaw thinking level                                              | Mistral `reasoning_effort` |
+    | Paddy thinking level                                              | Mistral `reasoning_effort` |
     | ----------------------------------------------------------------------- | --------------------------- |
     | **off** / **minimal**                                                 | `none`                      |
     | **low** / **medium** / **high** / **xhigh** / **adaptive** / **max** | `high`                       |
 
     <Warning>
-    Avoid combining Medium 3.5 reasoning mode with `temperature: 0`. The Mistral HTTP API has been reported to reject `reasoning_effort="high"` plus `temperature: 0` with a 400 response. Leave temperature unset, or turn thinking off/minimal so OpenClaw sends `reasoning_effort: "none"` before you set a low temperature.
+    Avoid combining Medium 3.5 reasoning mode with `temperature: 0`. The Mistral HTTP API has been reported to reject `reasoning_effort="high"` plus `temperature: 0` with a 400 response. Leave temperature unset, or turn thinking off/minimal so Paddy sends `reasoning_effort: "none"` before you set a low temperature.
     </Warning>
 
     Example model-scoped config for Medium 3.5 reasoning:

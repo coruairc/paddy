@@ -23,6 +23,7 @@ import {
   readStateLeaseProcessOwnerStatus,
   type StateLeaseProcessOwner,
 } from "./state-lease-process-owner.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 type StartupMigrationCheckpointDatabase = Pick<
   OpenClawStateKyselyDatabase,
@@ -61,14 +62,7 @@ type StartupMigrationLeaseWaitParams = Omit<StartupMigrationLeaseParams, "nowMs"
   sleep?: (ms: number) => Promise<void>;
 };
 
-class StartupMigrationLeaseConflictError extends Error {
-  readonly canWaitForSameHostOwner: boolean;
-
-  constructor(message: string, canWaitForSameHostOwner: boolean) {
-    super(message);
-    this.canWaitForSameHostOwner = canWaitForSameHostOwner;
-  }
-}
+class StartupMigrationLeaseConflictError extends Error {}
 
 function withStartupMigrationCheckpointDatabase<T>(
   env: NodeJS.ProcessEnv,
@@ -116,7 +110,7 @@ function assertStartupMigrationLeaseOwnedInTransaction(params: {
   );
   if (!activeLease) {
     throw new Error(
-      "OpenClaw startup migration lease was lost before startup migrations completed; retry so migrations can run under a fresh lease.",
+      `${PRODUCT_NAME} startup migration lease was lost before startup migrations completed; retry so migrations can run under a fresh lease.`,
     );
   }
 }
@@ -219,8 +213,7 @@ function acquireStartupMigrationLeaseFromDatabase(
       if (existing) {
         const ownerHint = existingOwner ? ` (held by pid ${existingOwner.pid})` : "";
         throw new StartupMigrationLeaseConflictError(
-          `OpenClaw startup migrations are already running for this state directory; retry after the other OpenClaw process finishes or after ${new Date(existing.expiresAt ?? expiresAt).toISOString()}.${ownerHint}`,
-          existingOwner?.host === hostname(),
+          `${PRODUCT_NAME} startup migrations are already running for this state directory; retry after the other ${PRODUCT_NAME} process finishes or after ${new Date(existing.expiresAt ?? expiresAt).toISOString()}.${ownerHint}`,
         );
       }
       executeSqliteQuerySync(
@@ -273,7 +266,7 @@ function acquireStartupMigrationLeaseFromDatabase(
         );
         if (result.numAffectedRows !== 1n) {
           throw new Error(
-            "OpenClaw startup migration lease was lost before startup migrations completed; retry so migrations can run under a fresh lease.",
+            `${PRODUCT_NAME} startup migration lease was lost before startup migrations completed; retry so migrations can run under a fresh lease.`,
           );
         }
       });
@@ -315,9 +308,10 @@ export function acquireStartupMigrationLeaseWithWait(
     sleep: params.sleep,
     acquire: () =>
       acquireStartupMigrationLease({ env: params.env, owner, ownerPid: params.ownerPid }, now),
+    // A replacement host cannot prove the old owner dead. Wait within the same
+    // bound for release or expiry instead of adding supervisor restart backoff.
     shouldRetry: (error) =>
-      (error instanceof StartupMigrationLeaseConflictError && error.canWaitForSameHostOwner) ||
-      sqlitePrimaryResultCode(error) === 5,
+      error instanceof StartupMigrationLeaseConflictError || sqlitePrimaryResultCode(error) === 5,
   });
 }
 

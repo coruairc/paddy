@@ -1,13 +1,13 @@
 ---
-summary: "fal image, video, and music generation setup in OpenClaw"
+summary: "fal image, video, and music generation setup in Paddy"
 title: "Fal"
 read_when:
-  - You want to use fal image generation in OpenClaw
+  - You want to use fal image generation in Paddy
   - You need the FAL_KEY auth flow
   - You want fal defaults for image_generate, video_generate, or music_generate
 ---
 
-OpenClaw ships a bundled `fal` provider for hosted image, video, and music
+Paddy ships a bundled `fal` provider for hosted image, video, and music
 generation.
 
 | Property | Value                                                                           |
@@ -25,7 +25,7 @@ generation.
   </Step>
   <Step title="Set the API key">
     ```bash
-    openclaw onboard --auth-choice fal-api-key
+    paddy onboard --auth-choice fal-api-key
     ```
 
     Non-interactive setups can pass `--fal-api-key <key>` or export `FAL_KEY`.
@@ -107,19 +107,19 @@ These controls do not change older fal models.
 Use `size: "auto"` or explicit dimensions such as `1536x864`.
 Dimensions must be divisible by 16, with no edge above 3840 pixels.
 Total pixels must be 655,360-8,294,400, with an aspect ratio from 1:3 to 3:1.
-OpenClaw converts aspect-ratio hints to valid dimensions.
+Paddy converts aspect-ratio hints to valid dimensions.
 For example, `aspectRatio: "3:2"` produces `1536x1024`.
-Use `size` to choose exact dimensions. OpenClaw rejects invalid explicit sizes.
+Use `size` to choose exact dimensions. Paddy rejects invalid explicit sizes.
 These models reject `resolution` overrides. Edits without geometry hints keep
 fal's automatic size selection.
 
 ```bash
-openclaw infer image generate \
+paddy infer image generate \
   --model fal/openai/gpt-image-2.5/flare/text-to-image \
   --prompt "A simple red circle sticker" \
   --quality low --size 1024x1024 --json
 
-openclaw infer image edit \
+paddy infer image edit \
   --model fal/openai/gpt-image-2.5/sunburst/edit \
   --file /path/to/reference.png \
   --prompt "Keep the shape and change the color to blue" \
@@ -128,7 +128,7 @@ openclaw infer image edit \
 
 ### Krea 2
 
-Krea 2 models use fal's native Krea payload schema. OpenClaw sends
+Krea 2 models use fal's native Krea payload schema. Paddy sends
 `aspect_ratio`, `creativity`, and `image_style_references` instead of the
 generic `image_size` / edit-endpoint payload used by Flux. The model refs are:
 
@@ -141,15 +141,15 @@ looks. Krea defaults to `fal.creativity: "medium"`; supported values are
 `raw`, `low`, `medium`, and `high`.
 
 Krea 2 exposes aspect ratio, not `image_size`, in fal's request schema. Prefer
-`aspectRatio`; OpenClaw maps `size` to the closest supported Krea aspect ratio
+`aspectRatio`; Paddy maps `size` to the closest supported Krea aspect ratio
 and rejects `resolution` for Krea rather than dropping it.
 
 Use `outputFormat: "png"` when you want PNG output from fal models that expose
 `output_format`. Outside GPT Image 2.5, fal models do not declare a
-transparent-background control in OpenClaw. They report `background` as an
+transparent-background control in Paddy. They report `background` as an
 ignored override.
 Krea 2 endpoints do not expose an `output_format` request field through fal, so
-OpenClaw rejects `outputFormat` overrides for Krea requests.
+Paddy rejects `outputFormat` overrides for Krea requests.
 
 To use Krea 2 Medium:
 

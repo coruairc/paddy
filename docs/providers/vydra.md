@@ -1,7 +1,7 @@
 ---
-summary: "Use Vydra image, video, and speech in OpenClaw"
+summary: "Use Vydra image, video, and speech in Paddy"
 read_when:
-  - You want Vydra media generation in OpenClaw
+  - You want Vydra media generation in Paddy
   - You need Vydra API key setup guidance
 title: "Vydra"
 ---
@@ -12,7 +12,7 @@ The official Vydra plugin adds:
 - Video generation via `vydra/veo3` (text-to-video) and `vydra/kling` (image-to-video)
 - Speech synthesis via Vydra's ElevenLabs-backed TTS route
 
-OpenClaw uses the same `VYDRA_API_KEY` for all three capabilities.
+Paddy uses the same `VYDRA_API_KEY` for all three capabilities.
 
 | Property        | Value                                                                     |
 | --------------- | ------------------------------------------------------------------------- |
@@ -42,7 +42,7 @@ Use `https://www.vydra.ai/api/v1` as the base URL. Vydra's apex host (`https://v
   </Step>
   <Step title="Run interactive onboarding">
     ```bash
-    openclaw onboard --auth-choice vydra-api-key
+    paddy onboard --auth-choice vydra-api-key
     ```
 
     Or set the env var directly:

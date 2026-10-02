@@ -1,6 +1,6 @@
 # GitHub Copilot
 
-Use models available to your GitHub Copilot account in OpenClaw. This plugin
+Use models available to your GitHub Copilot account in Paddy. This plugin
 provides account login, model discovery, and embeddings. Model access depends on
 your Copilot plan and organization policy.
 
@@ -9,10 +9,10 @@ your Copilot plan and organization policy.
 Sign in with GitHub's device flow:
 
 ```bash
-openclaw models auth login-github-copilot
+paddy models auth login-github-copilot
 ```
 
-Then browse models with `openclaw models list --provider github-copilot` and
+Then browse models with `paddy models list --provider github-copilot` and
 select one for your agent. Enterprise accounts can use the dedicated Enterprise
 login option.
 
