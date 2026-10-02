@@ -246,7 +246,7 @@ export function pluginInstallIncompleteDiagnostic(
   detail: string,
   installId = pluginId,
 ): PluginDiagnostic {
-  const fixHint = `Run \`openclaw plugins install ${installId} --force\` to reinstall the plugin.`;
+  const fixHint = `Run \`paddy plugins install ${installId} --force\` to reinstall the plugin.`;
   return {
     level: "error",
     pluginId,

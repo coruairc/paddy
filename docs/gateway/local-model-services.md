@@ -1,33 +1,33 @@
 ---
-summary: "Start local model servers on demand before OpenClaw model and embedding requests"
+summary: "Start local model servers on demand before Paddy model and embedding requests"
 read_when:
-  - You want OpenClaw to start a local model server only when its model or embedding provider is selected
+  - You want Paddy to start a local model server only when its model or embedding provider is selected
   - You run ds4, llmman, vLLM, llama.cpp, MLX, or another OpenAI-compatible local server
   - You need to control cold start, readiness, and idle shutdown for local providers
 title: "Local model services"
 ---
 
-`models.providers.<id>.localService` starts a provider-owned local model server on demand. When a model or embedding request selects that provider, OpenClaw probes the health endpoint, starts the process if it is down, waits for readiness, then sends the request. Use it to avoid keeping expensive local servers running all day.
+`models.providers.<id>.localService` starts a provider-owned local model server on demand. When a model or embedding request selects that provider, Paddy probes the health endpoint, starts the process if it is down, waits for readiness, then sends the request. Use it to avoid keeping expensive local servers running all day.
 
 ## How it works
 
 1. A model or embedding request resolves to a configured provider.
-2. If that provider has `localService`, OpenClaw probes `healthUrl`.
-3. On a successful probe, OpenClaw uses the already-running server.
-4. On a failed probe, OpenClaw spawns `command` with `args`.
-5. OpenClaw polls the health endpoint until `readyTimeoutMs` expires.
+2. If that provider has `localService`, Paddy probes `healthUrl`.
+3. On a successful probe, Paddy uses the already-running server.
+4. On a failed probe, Paddy spawns `command` with `args`.
+5. Paddy polls the health endpoint until `readyTimeoutMs` expires.
 6. The request goes through the normal model or embedding transport.
-7. If OpenClaw started the process and `idleStopMs` is set, it stops the process after the last in-flight request has been idle that long.
+7. If Paddy started the process and `idleStopMs` is set, it stops the process after the last in-flight request has been idle that long.
 
-OpenClaw does not install launchd, systemd, Docker, or any daemon for this. The server is a plain child process of whichever OpenClaw process first needed it.
+Paddy does not install launchd, systemd, Docker, or any daemon for this. The server is a plain child process of whichever Paddy process first needed it.
 
 Startup is serialized per configured provider and command/argument/env set, so concurrent chat and embedding requests for the same service do not spawn duplicate servers. Each request holds its own lease until response handling completes, so idle shutdown waits for every in-flight model and embedding request. Configured provider aliases remain distinct: two aliases can point at different GPU hosts without collapsing onto the same Ollama, LM Studio, or OpenAI-compatible adapter id.
 
-OpenClaw waits for any idle shutdown already in progress when it closes local services. A new request for the same service waits for that stop before acquiring a replacement. Shutdown errors remain visible; subsequent requests recheck the owned process before starting a replacement.
+Paddy waits for any idle shutdown already in progress when it closes local services. A new request for the same service waits for that stop before acquiring a replacement. Shutdown errors remain visible; subsequent requests recheck the owned process before starting a replacement.
 
 Shutdown completion requires the child and its output streams to close and pending tree-termination operations to finish. A missing PID alone does not release the service for replacement.
 
-If another OpenClaw process already has a healthy server at the same `healthUrl`, this process reuses it without adopting it (each process only manages the child it personally started). Startup and exit logs include bounded, redacted child-output tails plus timing and exit details; configured environment values are never emitted.
+If another Paddy process already has a healthy server at the same `healthUrl`, this process reuses it without adopting it (each process only manages the child it personally started). Startup and exit logs include bounded, redacted child-output tails plus timing and exit details; configured environment values are never emitted.
 
 ## Managed llama.cpp
 
@@ -38,7 +38,7 @@ and `localService` config. Chat and local embeddings lease the same managed
 router through the normal OpenAI-compatible transports.
 
 Do not copy a generated command path between machines. Run llama.cpp setup on
-each Gateway host so OpenClaw selects and verifies the matching platform build.
+each Gateway host so Paddy selects and verifies the matching platform build.
 See [llama.cpp Provider](/plugins/llama-cpp).
 
 ## Config shape
@@ -89,10 +89,10 @@ During `memory_search`, managed embedding startup uses `readyTimeoutMs` instead 
 | `command`        | yes      | Absolute executable path. No shell PATH lookup.                                                                                      |
 | `args`           | no       | Process arguments. No shell expansion, pipes, globbing, or quoting.                                                                  |
 | `cwd`            | no       | Working directory for the process.                                                                                                   |
-| `env`            | no       | Environment variables merged over the OpenClaw process environment.                                                                  |
+| `env`            | no       | Environment variables merged over the Paddy process environment.                                                                     |
 | `healthUrl`      | no       | Readiness URL. Defaults to `baseUrl` with `/models` appended (`http://127.0.0.1:8000/v1` becomes `http://127.0.0.1:8000/v1/models`). |
 | `readyTimeoutMs` | no       | Startup readiness deadline. Default: `120000`.                                                                                       |
-| `idleStopMs`     | no       | Idle shutdown delay for an OpenClaw-started process. `0` or omitted keeps it alive until OpenClaw exits.                             |
+| `idleStopMs`     | no       | Idle shutdown delay for a Paddy-started process. `0` or omitted keeps it alive until Paddy exits.                                    |
 
 ## llmman example
 

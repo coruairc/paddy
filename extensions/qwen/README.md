@@ -1,12 +1,12 @@
-# OpenClaw Qwen Cloud Provider
+# Paddy Qwen Cloud Provider
 
-Official OpenClaw provider plugin for Qwen Cloud.
+Official Paddy provider plugin for Qwen Cloud.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/qwen-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/qwen> for setup and configuration.

@@ -67,8 +67,8 @@ function collectTelegramRuntimeIssues(params: {
   const lastStartAt = asFiniteNumber(account.lastStartAt) ?? null;
   const fix =
     mode === "polling"
-      ? `Run: ${formatCliCommand("openclaw channels status --probe")} (or restart the gateway). Check the bot token, proxy/network settings, and logs if it persists.`
-      : `Run: ${formatCliCommand("openclaw channels status --probe")} (or restart the gateway). Check the webhook URL, secret, TLS/proxy reachability, and Telegram setWebhook logs if it persists.`;
+      ? `Run: ${formatCliCommand("paddy channels status --probe")} (or restart the gateway). Check the bot token, proxy/network settings, and logs if it persists.`
+      : `Run: ${formatCliCommand("paddy channels status --probe")} (or restart the gateway). Check the webhook URL, secret, TLS/proxy reachability, and Telegram setWebhook logs if it persists.`;
 
   if (account.connected === false) {
     const withinStartupGrace = lastStartAt != null && now - lastStartAt < TELEGRAM_CONNECT_GRACE_MS;

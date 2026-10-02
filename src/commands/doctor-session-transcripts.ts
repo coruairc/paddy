@@ -177,7 +177,7 @@ export function sessionTranscriptIssueToHealthFinding(
       : `Session transcript has legacy branch or provider metadata that can be cleaned up.${metadata}`,
     path: issue.filePath,
     fixHint:
-      "Run `openclaw doctor --fix` to repair legacy transcripts during their staged import into SQLite.",
+      "Run `paddy doctor --fix` to repair legacy transcripts during their staged import into SQLite.",
   };
 }
 
@@ -391,7 +391,7 @@ export async function noteSessionTranscriptHealth(options?: {
     }
     const failure = formatErrorMessage(error);
     note(
-      `- Skipped: ${failure} Then run "${formatCliCommand("openclaw doctor --fix", params.env)}" for session-store maintenance.`,
+      `- Skipped: ${failure} Then run "${formatCliCommand("paddy doctor --fix", params.env)}" for session-store maintenance.`,
       "Session SQLite",
     );
     recordPostSessionRefusal({
@@ -404,7 +404,7 @@ export async function noteSessionTranscriptHealth(options?: {
     note(
       params.shouldRepair
         ? `- Repaired canonical workspace metadata for ${worktreeWorkspaceReport.repaired} of ${worktreeWorkspaceReport.found} managed-worktree session(s). Check project/worktree ownership for any remaining entries.`
-        : `- Found ${worktreeWorkspaceReport.found} managed-worktree session(s) missing canonical workspace metadata. Run "openclaw doctor --fix" to repair them.`,
+        : `- Found ${worktreeWorkspaceReport.found} managed-worktree session(s) missing canonical workspace metadata. Run "paddy doctor --fix" to repair them.`,
       "Session worktrees",
     );
   }
@@ -413,7 +413,7 @@ export async function noteSessionTranscriptHealth(options?: {
       [
         params.shouldRepair
           ? `- Repaired ${acpKeyReport.repaired} of ${acpKeyReport.found} legacy ACP metadata key(s).`
-          : `- Found ${acpKeyReport.found} legacy ACP metadata key(s). Run "openclaw doctor --fix" to repair them.`,
+          : `- Found ${acpKeyReport.found} legacy ACP metadata key(s). Run "paddy doctor --fix" to repair them.`,
         ...acpKeyReport.warnings,
       ].join("\n"),
       "ACP session keys",
@@ -424,7 +424,7 @@ export async function noteSessionTranscriptHealth(options?: {
       [
         params.shouldRepair
           ? `- Repaired ${titleReport.repaired} of ${titleReport.found} missing session title(s) without changing activity.`
-          : `- Found ${titleReport.found} missing session title(s). Run "openclaw doctor --fix" to repair them.`,
+          : `- Found ${titleReport.found} missing session title(s). Run "paddy doctor --fix" to repair them.`,
         ...titleReport.warnings,
       ].join("\n"),
       "Session titles",
@@ -434,7 +434,7 @@ export async function noteSessionTranscriptHealth(options?: {
     note(
       params.shouldRepair
         ? `- Renamed ${reservedKeyReport.repaired} durable session key(s) that collided with the reserved incognito namespace.`
-        : `- Found ${reservedKeyReport.found} durable session key(s) that collide with the reserved incognito namespace. Run "openclaw doctor --fix" to rename them.`,
+        : `- Found ${reservedKeyReport.found} durable session key(s) that collide with the reserved incognito namespace. Run "paddy doctor --fix" to rename them.`,
       "Session SQLite",
     );
   }
@@ -442,7 +442,7 @@ export async function noteSessionTranscriptHealth(options?: {
     note(
       params.shouldRepair
         ? `- Canonicalized ${canonicalKeyReport.repairedGroups} session-key group(s) in ${canonicalKeyReport.repairBatches} transaction batch(es), removed ${canonicalKeyReport.removedRows} duplicate or alias row(s), and preserved cross-store history in ${canonicalKeyReport.archivedTranscriptDirectories.length} archive director${canonicalKeyReport.archivedTranscriptDirectories.length === 1 ? "y" : "ies"}.`
-        : `- Found ${canonicalKeyReport.foundGroups} non-canonical or duplicate session-key group(s). Run "openclaw doctor --fix" to preserve their history and canonicalize the rows.`,
+        : `- Found ${canonicalKeyReport.foundGroups} non-canonical or duplicate session-key group(s). Run "paddy doctor --fix" to preserve their history and canonicalize the rows.`,
       "Session SQLite",
     );
   }
@@ -450,15 +450,15 @@ export async function noteSessionTranscriptHealth(options?: {
     note(
       params.shouldRepair
         ? `- Canonicalized delivery state for ${deliveryReport.repaired} durable session row(s).`
-        : `- Found ${deliveryReport.found} durable session row(s) with legacy delivery fields. Run "openclaw doctor --fix" to canonicalize them.`,
+        : `- Found ${deliveryReport.found} durable session row(s) with legacy delivery fields. Run "paddy doctor --fix" to canonicalize them.`,
       "Session SQLite",
     );
   }
   if (resolvedSkillsReport.found > 0) {
     note(
       params.shouldRepair
-        ? `- Stripped the runtime-only skills catalog from ${resolvedSkillsReport.repaired} durable session row(s). Logical SQLite pages are freed; shrinking the on-disk database requires "openclaw doctor --session-sqlite compact --session-sqlite-all-agents".`
-        : `- Found ${resolvedSkillsReport.found} durable session row(s) carrying a runtime-only skills catalog. Run "openclaw doctor --fix" to strip it.`,
+        ? `- Stripped the runtime-only skills catalog from ${resolvedSkillsReport.repaired} durable session row(s). Logical SQLite pages are freed; shrinking the on-disk database requires "paddy doctor --session-sqlite compact --session-sqlite-all-agents".`
+        : `- Found ${resolvedSkillsReport.found} durable session row(s) carrying a runtime-only skills catalog. Run "paddy doctor --fix" to strip it.`,
       "Session SQLite",
     );
   }
@@ -511,12 +511,12 @@ export async function noteSessionTranscriptHealth(options?: {
     params.onWarnings?.(warnings);
     lines.push(...warnings.map((warning) => `- ${warning}`));
     lines.push(
-      `- Found ${actionableIssues} session SQLite issue(s). Inspect with "${formatCliCommand("openclaw doctor --session-sqlite dry-run --session-sqlite-all-agents", params.env)}".`,
+      `- Found ${actionableIssues} session SQLite issue(s). Inspect with "${formatCliCommand("paddy doctor --session-sqlite dry-run --session-sqlite-all-agents", params.env)}".`,
     );
   }
   if (!params.shouldRepair && actionableTargets.length > 0) {
     lines.push(
-      '- Run "openclaw doctor --fix" to migrate legacy session metadata/transcripts to SQLite.',
+      '- Run "paddy doctor --fix" to migrate legacy session metadata/transcripts to SQLite.',
     );
   }
   if (params.shouldRepair && report.migrationRun && report.totals.archivedTranscriptFiles > 0) {

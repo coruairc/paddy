@@ -1,6 +1,6 @@
-# Moonshot OpenClaw provider
+# Moonshot Paddy provider
 
-Official OpenClaw provider plugin for Moonshot.
+Official Paddy provider plugin for Moonshot.
 
 ## Install
 

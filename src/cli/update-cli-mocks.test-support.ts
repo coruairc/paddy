@@ -264,7 +264,7 @@ vi.mock("../config/config.js", () => {
       if (process.env.OPENCLAW_NIX_MODE === "1") {
         throw new Error(
           [
-            "Config is managed by Nix (`OPENCLAW_NIX_MODE=1`), so OpenClaw treats openclaw.json as immutable.",
+            "Config is managed by Nix (`OPENCLAW_NIX_MODE=1`), so Paddy treats openclaw.json as immutable.",
             "Do not run setup, onboarding, openclaw update, plugin install/update/uninstall/enable, doctor repair/token-generation, or config set against this file.",
             "Agent-first Nix setup: https://github.com/openclaw/nix-openclaw#quick-start",
             "OpenClaw Nix overview: https://docs.openclaw.ai/install/nix",
@@ -378,10 +378,22 @@ vi.mock("../infra/update-managed-service-handoff-cleanup.js", async (importOrigi
 
 vi.mock("node:child_process", async () => {
   const actual = await vi.importActual<typeof import("node:child_process")>("node:child_process");
+  const { SQLITE_READONLY_CHILD_ARG } = await import("../infra/runtime-process-entrypoints.js");
   return {
     ...actual,
-    execFile,
-    spawn,
+    // Async status snapshots need real SQLite IPC; updater and service children stay simulated.
+    execFile: (...args: Parameters<typeof actual.execFile>) =>
+      args[0] === process.execPath &&
+      Array.isArray(args[1]) &&
+      args[1].includes(SQLITE_READONLY_CHILD_ARG)
+        ? actual.execFile(...args)
+        : execFile(...args),
+    spawn: (...args: Parameters<typeof actual.spawn>) =>
+      args[0] === process.execPath &&
+      Array.isArray(args[1]) &&
+      args[1].includes(SQLITE_READONLY_CHILD_ARG)
+        ? actual.spawn(...args)
+        : spawn(...args),
   };
 });
 

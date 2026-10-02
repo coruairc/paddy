@@ -1,6 +1,6 @@
-# Z.AI OpenClaw provider
+# Z.AI Paddy provider
 
-Official OpenClaw provider plugin for Z.AI.
+Official Paddy provider plugin for Z.AI.
 
 ## Install
 

@@ -80,7 +80,7 @@ describe("renderTriagePrompt", () => {
     const rendered = prompt.match(/^- \[warning\]/gmu)?.length ?? 0;
     expect(rendered).toBeGreaterThan(0);
     expect(prompt).toContain(
-      `${findings.length - rendered} more findings omitted; run \`openclaw doctor\` for the full list.`,
+      `${findings.length - rendered} more findings omitted; run \`paddy doctor\` for the full list.`,
     );
     expect(prompt).toContain("## Privacy");
     expect(prompt).not.toContain("\uFFFD");
@@ -114,15 +114,15 @@ describe("renderTriagePrompt", () => {
     const rendered = prompt.match(/^- \[warning\]/gmu)?.length ?? 0;
     expect(rendered).toBeGreaterThan(0);
     expect(prompt).toContain(
-      `${findings.length - rendered} more findings omitted; run \`openclaw doctor\` for the full list.`,
+      `${findings.length - rendered} more findings omitted; run \`paddy doctor\` for the full list.`,
     );
     expect(prompt).toContain("## Privacy");
     expect(prompt).not.toContain("\uFFFD");
     expect(prompt).toContain("...");
     expect(prompt).toContain("restart-unhealthy");
     expect(prompt).not.toContain("sk-test-triage-secret-1234567890");
-    expect(prompt).toContain("openclaw health --json");
-    expect(prompt).toContain("openclaw gateway status --deep");
+    expect(prompt).toContain("paddy health --json");
+    expect(prompt).toContain("paddy gateway status --deep");
     expect(prompt).toContain("2026.8.31");
     expect(prompt).toContain("original symptom");
   });

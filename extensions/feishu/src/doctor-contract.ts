@@ -163,7 +163,7 @@ export const legacyConfigRules: ChannelDoctorLegacyConfigRule[] = [
   {
     path: ["channels", "feishu"],
     message:
-      'channels.feishu[.accounts.<id>].webhookPath must be a canonical HTTP request path; run "openclaw doctor --fix".',
+      'channels.feishu[.accounts.<id>].webhookPath must be a canonical HTTP request path; run "paddy doctor --fix".',
     match: (value) => {
       const entry = asObjectRecord(value);
       return (
@@ -175,7 +175,7 @@ export const legacyConfigRules: ChannelDoctorLegacyConfigRule[] = [
   {
     path: ["channels", "feishu"],
     message:
-      'channels.feishu[.accounts.<id>].tools.base is legacy; use tools.bitable. Run "openclaw doctor --fix".',
+      'channels.feishu[.accounts.<id>].tools.base is legacy; use tools.bitable. Run "paddy doctor --fix".',
     match: (value) => {
       const entry = asObjectRecord(value);
       return (

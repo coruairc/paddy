@@ -4,7 +4,6 @@ import {
   defineChannelSetupContract,
   type ChannelSetupInput,
 } from "openclaw/plugin-sdk/channel-setup";
-// Imessage plugin module implements setup core behavior.
 import {
   createCliPathTextInput,
   createDelegatedSetupWizardProxy,
@@ -152,17 +151,14 @@ export const imessageDmPolicy = createChannelDmPolicy({
   promptAllowFrom: promptIMessageAllowFrom,
 });
 
-function resolveIMessageCliPath(params: { cfg: OpenClawConfig; accountId: string }) {
-  return resolveIMessageAccount(params).config.cliPath ?? "imsg";
-}
-
 export function createIMessageCliPathTextInput(
   shouldPrompt: NonNullable<ChannelSetupWizardTextInput["shouldPrompt"]>,
 ): ChannelSetupWizardTextInput {
   return createCliPathTextInput({
     inputKey: "cliPath",
     message: "imsg CLI path",
-    resolvePath: ({ cfg, accountId }) => resolveIMessageCliPath({ cfg, accountId }),
+    resolvePath: ({ cfg, accountId }) =>
+      resolveIMessageAccount({ cfg, accountId }).config.cliPath ?? "imsg",
     shouldPrompt,
     helpTitle: "iMessage",
     helpLines: [
@@ -176,13 +172,13 @@ export function createIMessageCliPathTextInput(
 export const imessageCompletionNote = {
   title: "iMessage next steps",
   lines: [
-    "For the usual setup, run OpenClaw on the Mac signed into Messages.",
+    "For the usual setup, run Paddy on the Mac signed into Messages.",
     "If the Gateway runs elsewhere, set cliPath to a transparent SSH wrapper that runs imsg on the Messages Mac.",
     `Install imsg on the Messages Mac: ${IMESSAGE_INSTALL_COMMAND}`,
     `Update imsg after imsg fixes or missing-capability errors: ${IMESSAGE_UPDATE_COMMAND}`,
     "Private API mode is strongly encouraged for replies, tapbacks, effects, polls, attachments, and group actions.",
-    "After Private API setup, run `imsg launch`, then `openclaw channels status --probe`.",
-    "Ensure OpenClaw has Full Disk Access to Messages DB.",
+    "After Private API setup, run `imsg launch`, then `paddy channels status --probe`.",
+    "Ensure Paddy has Full Disk Access to Messages DB.",
     "Grant Automation permission for Messages when prompted.",
     "List chats with: imsg chats --limit 20",
     `Docs: ${formatDocsLink("/imessage", "imessage")}`,
@@ -220,13 +216,17 @@ export const imessageSetupContract = defineChannelSetupContract({
   legacyAdapter: imessageSetupAdapter,
 });
 
-export const imessageSetupStatusBase = {
+const imessageSetupStatusLabels = {
   configuredLabel: t("wizard.channels.statusConfigured"),
   unconfiguredLabel: t("wizard.channels.statusNeedsSetup"),
   configuredHint: t("wizard.imessage.imsgFound"),
   unconfiguredHint: t("wizard.imessage.imsgMissing"),
   configuredScore: 1,
   unconfiguredScore: 0,
+};
+
+export const imessageSetupStatusBase = {
+  ...imessageSetupStatusLabels,
   resolveConfigured: ({ cfg, accountId }: { cfg: OpenClawConfig; accountId?: string }) =>
     resolveIMessageAccount({ cfg, accountId }).configured,
 };
@@ -235,14 +235,7 @@ export function createIMessageSetupWizardProxy(loadWizard: () => Promise<Channel
   return createDelegatedSetupWizardProxy({
     channel,
     loadWizard,
-    status: {
-      configuredLabel: imessageSetupStatusBase.configuredLabel,
-      unconfiguredLabel: imessageSetupStatusBase.unconfiguredLabel,
-      configuredHint: imessageSetupStatusBase.configuredHint,
-      unconfiguredHint: imessageSetupStatusBase.unconfiguredHint,
-      configuredScore: imessageSetupStatusBase.configuredScore,
-      unconfiguredScore: imessageSetupStatusBase.unconfiguredScore,
-    },
+    status: imessageSetupStatusLabels,
     delegatePrepare: true,
     credentials: [],
     textInputs: [

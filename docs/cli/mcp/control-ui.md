@@ -15,7 +15,24 @@ The browser Control UI includes a dedicated MCP settings page at `/settings/mcp`
 
 For a shorter setup walkthrough covering Settings, the composer path (**+** → **Connectors** → **Add MCP server…**) and its **This session** / **Everywhere** scopes, CLI, and direct config, see [Connect MCP servers](/tools/mcp).
 
-Use the page for operator edits and quick inventory. Use `openclaw mcp doctor --probe` or `openclaw mcp probe` when you need live server proof.
+Use the page for operator edits and quick inventory. Use `paddy mcp doctor --probe` or `paddy mcp probe` when you need live server proof.
+
+Installed plugin detail pages show **Accounts** first for matching HTTP MCP
+servers configured with `auth: "oauth"`. **Connect** opens the existing OAuth flow; the page refreshes its saved status
+afterward. Saved authorization shows a checkmark and **Connected**, with **Edit**
+opening the existing MCP settings page. Sign-in requires an administrator connection.
+
+Plugins with declared API-key fields also show **Credentials**, including their
+environment variable names. **Configure** opens the existing plugin Settings editor
+for keys and secret references. Configured keys show a checkmark and **Configured**,
+with **Edit** returning to that editor. These sections appear only after installation, not
+in the pre-install catalog preview. Credential presence does not verify that a
+key or secret reference works with the service.
+
+The server name and URL must match the plugin's active MCP declaration. This
+section does not probe service health or discover OAuth for an unconfigured URL.
+Local stdio servers, per-requester accounts, and `oauth.authProfileId` connections
+keep their existing authentication setup paths.
 
 Operator workflow:
 
@@ -25,11 +42,11 @@ Operator workflow:
 4. Toggle enablement when you want to keep a definition but exclude it from runtime discovery.
 5. Edit the scoped `mcp` config section for structural changes such as new servers, headers, TLS, OAuth metadata, or tool filters.
 6. Choose **Save** to persist config only, or **Save & Publish** to apply through the Gateway config path.
-7. Run `openclaw mcp doctor --probe` when you need live proof that the edited server starts and lists tools.
+7. Run `paddy mcp doctor --probe` when you need live proof that the edited server starts and lists tools.
 
 Notes:
 
 - command snippets quote server names so unusual names remain copyable in a shell
 - displayed URL-like values are redacted before rendering when they contain embedded credentials
 - the page does not start MCP transports by itself
-- active runtimes may need `openclaw mcp reload`, Gateway config publish, or process restart depending on which process owns the MCP clients
+- active runtimes may need `paddy mcp reload`, Gateway config publish, or process restart depending on which process owns the MCP clients

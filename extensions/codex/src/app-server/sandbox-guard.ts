@@ -6,6 +6,7 @@ import { tryResolveDefaultAgentId } from "openclaw/plugin-sdk/agent-scope-runtim
 import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import { parseAgentSessionKey } from "openclaw/plugin-sdk/routing";
 import { resolveSandboxRuntimeStatus, type SandboxContext } from "openclaw/plugin-sdk/sandbox";
+import { isRecord } from "openclaw/plugin-sdk/string-coerce-runtime";
 import { isCodexRemoteExecPlacementSandbox } from "./config-parsing.js";
 import {
   formatCodexNativeNodeExecBlock,
@@ -149,32 +150,28 @@ export function resolveCodexNativeSandboxBlock(params: {
 }
 
 function hasOpenClawSandboxEnvironmentSelection(value: unknown): boolean {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  if (!isRecord(value)) {
     return false;
   }
-  const environments = (value as { environments?: unknown }).environments;
+  const environments = value.environments;
   return (
     Array.isArray(environments) &&
     environments.length > 0 &&
-    environments.every((entry) => {
-      if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-        return false;
-      }
-      const environment = entry as { environmentId?: unknown; cwd?: unknown };
-      return (
+    environments.every(
+      (environment) =>
+        isRecord(environment) &&
         typeof environment.environmentId === "string" &&
         environment.environmentId.startsWith("openclaw-sandbox-") &&
         typeof environment.cwd === "string" &&
-        environment.cwd.trim().length > 0
-      );
-    })
+        environment.cwd.trim().length > 0,
+    )
   );
 }
 
 function formatCodexNativeSandboxBlock(params: { surface: string }): string {
   return [
-    `Codex-native ${params.surface} is unavailable because OpenClaw sandboxing is active for this session.`,
-    "This mode cannot route execution through the OpenClaw sandbox backend.",
+    `Codex-native ${params.surface} is unavailable because Paddy sandboxing is active for this session.`,
+    "This mode cannot route execution through the Paddy sandbox backend.",
     "Use a normal Codex harness turn, or run an intentionally unsandboxed session.",
   ].join(" ");
 }

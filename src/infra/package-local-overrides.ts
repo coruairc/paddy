@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { assertDirectoryIdentitySync, readDirectoryIdentity } from "@openclaw/fs-safe/advanced";
+import { PRODUCT_NAME } from "../brand.js";
 import { isMissingPathError } from "./errno.js";
 import { formatErrorMessage } from "./errors.js";
 import { root as openFsRoot } from "./fs-safe.js";
@@ -412,7 +413,7 @@ export async function applyLocalPackageOverrides(params: {
       status: "preserved",
       applied: 0,
       warnings: [
-        "Local OpenClaw changes were preserved in the recovery bundle and were not reapplied. Inspect the bundle and copy back trusted files manually, or run the update with --reapply-local-overrides when you want trusted edits replayed during that update.",
+        `Local ${PRODUCT_NAME} changes were preserved in the recovery bundle and were not reapplied. Inspect the bundle and copy back trusted files manually, or run the update with --reapply-local-overrides when you want trusted edits replayed during that update.`,
       ],
     };
   }
@@ -467,7 +468,7 @@ export async function applyLocalPackageOverrides(params: {
       warnings:
         conflicts.length > 0
           ? [
-              "Local OpenClaw changes were preserved but not reapplied because the update changed the same file(s).",
+              `Local ${PRODUCT_NAME} changes were preserved but not reapplied because the update changed the same file(s).`,
             ]
           : [],
     };
@@ -623,7 +624,7 @@ export async function applyLocalPackageOverrides(params: {
         reason,
       })),
       warnings: [
-        "Local OpenClaw changes were preserved but could not be reapplied.",
+        `Local ${PRODUCT_NAME} changes were preserved but could not be reapplied.`,
         ...(rollbackFailures.size > 0
           ? [
               `Rollback could not fully restore ${rollbackFailures.size} installed file(s); the package may be partially modified. Inspect the preserved rollback data before retrying.`,
@@ -646,7 +647,7 @@ export async function applyLocalPackageOverrides(params: {
     warnings:
       conflicts.length > 0
         ? [
-            "Local OpenClaw changes were preserved but not reapplied because the update changed the same file(s).",
+            `Local ${PRODUCT_NAME} changes were preserved but not reapplied because the update changed the same file(s).`,
           ]
         : [],
   };

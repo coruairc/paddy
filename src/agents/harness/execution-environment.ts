@@ -1,4 +1,5 @@
 import type { AgentRuntimeRestrictionErrorDetails } from "../../../packages/gateway-protocol/src/agent-runtime-restriction-error-details.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveSessionStorePathCore } from "../../config/sessions/paths.js";
 import { resolveSessionEntry } from "../../config/sessions/session-accessor.sqlite-exact-read.js";
 import type { SessionEntry } from "../../config/sessions/types.js";
@@ -102,7 +103,7 @@ function resolveAgentHarnessExecutionRestriction(
     return {
       reason: "tool-policy",
       message:
-        label + " uses its own tools and cannot enforce this chat's OpenClaw tool restrictions.",
+        label + ` uses its own tools and cannot enforce this chat's ${PRODUCT_NAME} tool restrictions.`,
     };
   }
   return undefined;

@@ -1,39 +1,39 @@
 ---
-summary: "Run OpenClaw as a stdio MCP server so an MCP client can read and send channel conversations"
-title: "Run OpenClaw as an MCP server"
+summary: "Run Paddy as a stdio MCP server so an MCP client can read and send channel conversations"
+title: "Run Paddy as an MCP server"
 read_when:
-  - Connecting Codex, Claude Code, or another MCP client to OpenClaw-backed channels
-  - Running `openclaw mcp serve`
+  - Connecting Codex, Claude Code, or another MCP client to Paddy-backed channels
+  - Running `paddy mcp serve`
   - Debugging bridge events, Claude notifications, or missing conversations
 ---
 
-This page covers the `openclaw mcp serve` path: OpenClaw acting as an MCP
+This page covers the `paddy mcp serve` path: Paddy acting as an MCP
 server over stdio, its tools, its event model, and its limits.
 
-## OpenClaw as an MCP server
+## Paddy as an MCP server
 
-This is the `openclaw mcp serve` path.
+This is the `paddy mcp serve` path.
 
 ### When to use serve
 
-Use `openclaw mcp serve` when:
+Use `paddy mcp serve` when:
 
-- Codex, Claude Code, or another MCP client should talk directly to OpenClaw-backed channel conversations
-- you already have a local or remote OpenClaw Gateway with routed sessions
-- you want one MCP server that works across OpenClaw's channel backends instead of running separate per-channel bridges
+- Codex, Claude Code, or another MCP client should talk directly to Paddy-backed channel conversations
+- you already have a local or remote Paddy Gateway with routed sessions
+- you want one MCP server that works across Paddy's channel backends instead of running separate per-channel bridges
 
-Use [`openclaw acp`](/cli/acp) instead when OpenClaw should host the coding runtime itself and keep the agent session inside OpenClaw.
+Use [`paddy acp`](/cli/acp) instead when Paddy should host the coding runtime itself and keep the agent session inside Paddy.
 
 ### How it works
 
-`openclaw mcp serve` starts a stdio MCP server. The MCP client owns that process. While the client keeps the stdio session open, the bridge connects to a local or remote OpenClaw Gateway over WebSocket and exposes routed channel conversations over MCP.
+`paddy mcp serve` starts a stdio MCP server. The MCP client owns that process. While the client keeps the stdio session open, the bridge connects to a local or remote Paddy Gateway over WebSocket and exposes routed channel conversations over MCP.
 
 <Steps>
   <Step title="Client spawns the bridge">
-    The MCP client spawns `openclaw mcp serve`.
+    The MCP client spawns `paddy mcp serve`.
   </Step>
   <Step title="Bridge connects to Gateway">
-    The bridge connects to the OpenClaw Gateway over WebSocket.
+    The bridge connects to the Paddy Gateway over WebSocket.
   </Step>
   <Step title="Sessions become MCP conversations">
     Routed sessions become MCP conversations and transcript/history tools.
@@ -53,9 +53,9 @@ Use [`openclaw acp`](/cli/acp) instead when OpenClaw should host the coding runt
     - Claude push notifications only exist while the MCP session is alive
     - when the client disconnects, the bridge exits and the live queue is gone
     - cancelling an `events_wait` request immediately releases its server-side wait and timeout
-    - bridge or MCP transport close failures make `openclaw mcp serve` fail instead of reporting a clean shutdown
-    - one-shot agent entry points such as `openclaw agent` and `openclaw infer model run` retire any bundled MCP runtimes they open when the reply completes, so repeated scripted runs do not accumulate stdio MCP child processes
-    - stdio MCP servers launched by OpenClaw (bundled or user-configured) are torn down as a process tree on shutdown, so child subprocesses started by the server do not survive after the parent stdio client exits
+    - bridge or MCP transport close failures make `paddy mcp serve` fail instead of reporting a clean shutdown
+    - one-shot agent entry points such as `paddy agent` and `paddy infer model run` retire any bundled MCP runtimes they open when the reply completes, so repeated scripted runs do not accumulate stdio MCP child processes
+    - stdio MCP servers launched by Paddy (bundled or user-configured) are torn down as a process tree on shutdown, so child subprocesses started by the server do not survive after the parent stdio client exits
     - deleting or resetting a session disposes that session's MCP clients through the shared runtime cleanup path, so there are no lingering stdio connections tied to a removed session
 
   </Accordion>
@@ -78,7 +78,7 @@ Use [`openclaw acp`](/cli/acp) instead when OpenClaw should host the coding runt
 
 ### What serve exposes
 
-The bridge uses existing Gateway session route metadata to expose channel-backed conversations. A conversation appears when OpenClaw already has session state with a known route such as:
+The bridge uses existing Gateway session route metadata to expose channel-backed conversations. A conversation appears when Paddy already has session state with a known route such as:
 
 - `channel`
 - recipient or destination metadata
@@ -98,7 +98,7 @@ This gives MCP clients one place to:
 <Tabs>
   <Tab title="Local Gateway">
     ```bash
-    openclaw mcp serve
+    paddy mcp serve
     ```
   </Tab>
   <Tab title="Remote Gateway (token)">
@@ -113,8 +113,8 @@ This gives MCP clients one place to:
   </Tab>
   <Tab title="Verbose / Claude off">
     ```bash
-    openclaw mcp serve --verbose
-    openclaw mcp serve --claude-channel-mode off
+    paddy mcp serve --verbose
+    paddy mcp serve --claude-channel-mode off
     ```
   </Tab>
 </Tabs>
@@ -193,7 +193,7 @@ Current event types:
 
 ### Claude channel notifications
 
-The bridge can also expose Claude-specific channel notifications. This is the OpenClaw equivalent of a Claude Code channel adapter: standard MCP tools remain available, but live inbound messages can also arrive as Claude-specific MCP notifications.
+The bridge can also expose Claude-specific channel notifications. This is the Paddy equivalent of a Claude Code channel adapter: standard MCP tools remain available, but live inbound messages can also arrive as Claude-specific MCP notifications.
 
 <Tabs>
   <Tab title="off">
@@ -247,7 +247,7 @@ For most generic MCP clients, start with the standard tool surface and ignore Cl
 
 ### Options
 
-`openclaw mcp serve` supports:
+`paddy mcp serve` supports:
 
 <ParamField path="--url" type="string">
   Gateway WebSocket URL. Defaults to `gateway.remote.url` when configured.
@@ -281,7 +281,7 @@ The bridge does not invent routing. It only exposes conversations that Gateway a
 
 That means:
 
-- sender allowlists, pairing, and channel-level trust still belong to the underlying OpenClaw channel configuration
+- sender allowlists, pairing, and channel-level trust still belong to the underlying Paddy channel configuration
 - `messages_send` can only reply through an existing stored route
 - approval state is live/in-memory only for the current bridge session
 - bridge auth should use the same Gateway token or password controls you would trust for any other remote Gateway client
@@ -290,13 +290,13 @@ If a conversation is missing from `conversations_list`, the usual cause is not M
 
 ### Testing
 
-OpenClaw ships a deterministic Docker smoke for this bridge:
+Paddy ships a deterministic Docker smoke for this bridge:
 
 ```bash
 pnpm test:docker:mcp-channels
 ```
 
-That smoke runs a single container: it seeds conversation state, starts the Gateway, then spawns `openclaw mcp serve` as a stdio child process and drives it as an MCP client. It verifies conversation discovery, transcript reads, attachment metadata reads, live event queue behavior, and Claude-style channel and permission notifications over the real stdio MCP bridge. Outbound send routing (`messages_send` reusing the stored conversation route) is covered separately by unit tests in `src/mcp/channel-server.test.ts`.
+That smoke runs a single container: it seeds conversation state, starts the Gateway, then spawns `paddy mcp serve` as a stdio child process and drives it as an MCP client. It verifies conversation discovery, transcript reads, attachment metadata reads, live event queue behavior, and Claude-style channel and permission notifications over the real stdio MCP bridge. Outbound send routing (`messages_send` reusing the stored conversation route) is covered separately by unit tests in `src/mcp/channel-server.test.ts`.
 
 This is the fastest way to prove the bridge works without wiring a real Telegram, Discord, or iMessage account into the test run.
 

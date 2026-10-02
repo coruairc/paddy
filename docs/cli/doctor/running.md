@@ -2,11 +2,11 @@
 summary: "Doctor postures, example invocations, and the full option table"
 title: "Run doctor"
 read_when:
-  - You want to run `openclaw doctor` and pick the right posture
+  - You want to run `paddy doctor` and pick the right posture
   - You need the meaning of a doctor flag or a flag combination rule
 ---
 
-This page covers how to invoke `openclaw doctor`: the supported postures, ready-to-run
+This page covers how to invoke `paddy doctor`: the supported postures, ready-to-run
 examples, and every option the command accepts.
 
 If a plugin fails to load during Doctor, the report includes an error finding
@@ -20,16 +20,16 @@ can continue; rerun Doctor after resolving the reported cause.
 
 Doctor supports these postures:
 
-| Posture                   | Command                                   | Behavior                                                                              |
-| ------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
-| Guided checks             | `openclaw doctor`                         | Interactive health flow; can copy legacy config and apply automatic state migrations. |
-| Advisory JSON             | `openclaw doctor --json`                  | Read-only findings; exits successfully after producing a report.                      |
-| Repair                    | `openclaw doctor --fix`                   | Applies supported repairs, using prompts unless non-interactive repair is safe.       |
-| Lint                      | `openclaw doctor --lint [--json]`         | Read-only findings with threshold-based exit codes for CI gates.                      |
-| Shared SQLite maintenance | `openclaw doctor --state-sqlite compact`  | Explicitly checkpoints, compacts, and verifies the canonical shared state DB.         |
-| Session SQLite tools      | `openclaw doctor --session-sqlite <mode>` | Inspects or maintains SQLite sessions and explicitly imports legacy history.          |
+| Posture                   | Command                                | Behavior                                                                              |
+| ------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------- |
+| Guided checks             | `paddy doctor`                         | Interactive health flow; can copy legacy config and apply automatic state migrations. |
+| Advisory JSON             | `paddy doctor --json`                  | Read-only findings; exits successfully after producing a report.                      |
+| Repair                    | `paddy doctor --fix`                   | Applies supported repairs, using prompts unless non-interactive repair is safe.       |
+| Lint                      | `paddy doctor --lint [--json]`         | Read-only findings with threshold-based exit codes for CI gates.                      |
+| Shared SQLite maintenance | `paddy doctor --state-sqlite compact`  | Explicitly checkpoints, compacts, and verifies the canonical shared state DB.         |
+| Session SQLite tools      | `paddy doctor --session-sqlite <mode>` | Inspects or maintains SQLite sessions and explicitly imports legacy history.          |
 
-Use `openclaw doctor --json` when an operator or script wants the advisory Doctor report as JSON. It exits successfully after producing a report; inspect `ok` and `findings` for health state. Use explicit `openclaw doctor --lint --json` when CI should exit nonzero for findings at the selected severity threshold. Prefer `--fix` when a human operator wants Doctor to edit config or state.
+Use `paddy doctor --json` when an operator or script wants the advisory Doctor report as JSON. It exits successfully after producing a report; inspect `ok` and `findings` for health state. Use explicit `paddy doctor --lint --json` when CI should exit nonzero for findings at the selected severity threshold. Prefer `--fix` when a human operator wants Doctor to edit config or state.
 
 For read-only diagnosis, use `--lint` or bare `--json`. Ordinary `doctor`, including `doctor --non-interactive`, can copy legacy config and migrate state even without `--fix`. `--non-interactive` suppresses prompts, not writes.
 
@@ -37,7 +37,7 @@ When ordinary `doctor` asks **Apply recommended config repairs now?**, it checks
 that the selected root config file still matches the source of that proposal.
 If its contents or selected path changed before the write, Doctor preserves the newer file,
 leaves the pending config fixes unwritten, and exits with an error. Rerun
-`openclaw doctor` to review an updated proposal.
+`paddy doctor` to review an updated proposal.
 
 If saving succeeds but later processing fails, Doctor stops with an error, names
 the file that was written, and reports whether the write was rolled back. When it was not rolled
@@ -46,7 +46,7 @@ before rerunning Doctor.
 
 If the shared state database uses a newer schema, Doctor refuses before offering
 an interactive update because update admission also needs that database. Run
-Doctor from the OpenClaw install that wrote the state, or another compatible
+Doctor from the Paddy install that wrote the state, or another compatible
 build. A readable shared database still permits an interactive source update
 when agent databases use newer schemas; if the update does not take over,
 Doctor checks all database schemas again before diagnostics or repair. See
@@ -54,10 +54,10 @@ Doctor checks all database schemas again before diagnostics or repair. See
 
 After an exec-approval format upgrade, Doctor reports older generated approvals
 that are no longer active because they were not tied to a working directory.
-`openclaw doctor --fix` removes those inactive generated entries and leaves
+`paddy doctor --fix` removes those inactive generated entries and leaves
 manual allowlist rules unchanged. Rerun affected workflows and choose
 **Always allow here** to renew trust for the intended directory. The normal
-`openclaw update` finalization runs this safe repair automatically.
+`paddy update` finalization runs this safe repair automatically.
 
 Explicit repair stops the matching managed Gateway and checks Gateway, state,
 and agent-database ownership before taking read-only schema snapshots. It
@@ -69,7 +69,7 @@ Automatic installation refresh covers installation-only drift; other operator
 edits or uncertain inspection still require interactive confirmation. Services
 confirmed offline before maintenance keep their launcher and stop state; Linux
 policy can refresh without activation as described below. Use the reported
-profile-aware `openclaw gateway install --force` command to reconcile their
+profile-aware `paddy gateway install --force` command to reconcile their
 installation drift (installation may start the service). On Linux, Doctor also
 restores a previously running service if systemd unloads the stopped unit during
 repair; a changed service definition or manager still blocks restart. A loaded, enabled
@@ -77,7 +77,7 @@ macOS job between respawns is not offline: Doctor stops it before repair and
 resumes it afterward. Run repair from a shell outside the Gateway process tree. For externally supervised or unmatched installations, stop
 and start the Gateway through its owning supervisor.
 
-Before a Linux maintenance stop, Doctor backs up and refreshes outdated OpenClaw
+Before a Linux maintenance stop, Doctor backs up and refreshes outdated Paddy
 unit policy and confirms `daemon-reload`. Operator drop-ins remain unchanged.
 The current service stop policy is 330 seconds. A resident Gateway can still have
 an older, shorter shutdown budget: published 2026.9.5 cached that budget at startup.
@@ -95,16 +95,16 @@ During [automatic triage](/cli/triage#automatic-failure-handoff), repair can run
 against an offline target when schema and maintenance locks permit it. If repair
 needs to stop the managed Gateway, Doctor refuses inside its automatic fixing
 subtree because that stop would cancel recovery. Use read-only diagnosis or safe
-offline artifact repair followed by an atomic `openclaw gateway restart`, or ask
+offline artifact repair followed by an atomic `paddy gateway restart`, or ask
 an independent operator to run Doctor from a shell outside triage.
 
 Read-only database snapshots and initial integrity scans have a 30-second
 execution limit per database. A timeout names the database and asks you to stop
-its Gateway service and other OpenClaw processes before retrying. If all writers
+its Gateway service and other Paddy processes before retrying. If all writers
 are stopped, inspect storage performance and the reported database; a timeout
 does not prove corruption.
 
-`openclaw doctor --fix --non-interactive` applies the supported migrations that
+`paddy doctor --fix --non-interactive` applies the supported migrations that
 block Gateway startup without prompting, including shared-state audit schema,
 legacy workspace setup, legacy session stores, and exec approvals. Malformed or
 conflicting input is retained and requires the manual action in the diagnostic.
@@ -118,7 +118,7 @@ appears as an `update-inspection-deferred` warning in Doctor output and the
 update outcome, with the reason and remaining inspection allowance. A deferred
 check did not pass or fail; it was not run.
 
-Run `openclaw doctor --fix` after activation to complete those checks and review
+Run `paddy doctor --fix` after activation to complete those checks and review
 optional repairs. An ordinary Doctor run does not retain the update's inspection
 limit. Required session, database, workspace-state, and exec-approval readiness
 checks still run during the update. Project-clone inspection, SQLite database-size
@@ -128,7 +128,7 @@ This maintenance window also applies when repair ultimately finds no changes.
 Runs without `--fix`, `--repair`, or `--yes` do not enter maintenance.
 Custom state directories remain runtime-only and do not adopt a native service.
 
-`--force` alone does not select repair mode: `openclaw doctor --force` remains
+`--force` alone does not select repair mode: `paddy doctor --force` remains
 guided and still requires interactive consent before an eligible service rewrite.
 With `--fix`, `--repair`, or `--yes`, it allows aggressive config/state repairs
 with the same installation-drift and Linux policy-refresh rules above. Force does
@@ -158,15 +158,15 @@ records the failed phase and exact recovery commands in the update result.
 Legacy post-core convergence retains service maintenance custody while its fresh
 Doctor processes run, then restores the Gateway before publishing completion.
 An ordinary healthy Gateway still follows the parent's activation policy;
-`openclaw update --no-restart` does not grant state-repair access to a live writer.
+`paddy update --no-restart` does not grant state-repair access to a live writer.
 
 Unavailable service inspection becomes a warning and grants no service-control
 authority. Doctor still checks Gateway/state coordinators, agent-database leases,
 and the temporary-file lock used by older Gateways such as 2026.6.33 before
 repair. A live or unverifiable legacy lock owner blocks repair and names its PID
 and lock path; stop that Gateway through its service owner, then run
-`openclaw doctor --fix` from an independent shell. An unmatched service that can
-still run also blocks maintenance; inspect it with `openclaw gateway status --deep`.
+`paddy doctor --fix` from an independent shell. An unmatched service that can
+still run also blocks maintenance; inspect it with `paddy gateway status --deep`.
 Once the native manager confirms it is offline, Doctor can repair its selected
 state without changing or starting that service. A stopped or disabled systemd
 unit need not remain loaded in the manager for state repair to proceed.
@@ -175,7 +175,7 @@ If migration or config repair cannot finish, Doctor leaves the stopped service
 stopped and reports an incomplete repair with exit code 1. When state requires
 manual recovery, the diagnosis names its path and the next action:
 
-- **Unsupported canonical workspace version:** use an OpenClaw build that supports
+- **Unsupported canonical workspace version:** use a Paddy build that supports
   that version. Preserve the shared database unchanged.
 - **Unreadable or conflicting exec policy:** stop the Gateway and node hosts,
   then reconcile the named legacy file or interrupted claim with a verified copy
@@ -189,35 +189,35 @@ the service through its owner.
 ## Examples
 
 ```bash
-openclaw doctor
-openclaw doctor --lint
-openclaw doctor --json
-openclaw doctor --lint --json
-openclaw doctor --lint --severity-min warning
-openclaw doctor --lint --all
-openclaw doctor --lint --allow-exec
-openclaw doctor --deep
-openclaw doctor --fix
-openclaw doctor --fix --non-interactive
-openclaw doctor --generate-gateway-token
-openclaw doctor --post-upgrade
-openclaw doctor --post-upgrade --json
-openclaw doctor --state-sqlite compact
-openclaw doctor --state-sqlite compact --json
-openclaw doctor --session-sqlite inspect --session-sqlite-all-agents
-openclaw doctor --session-sqlite dry-run --session-sqlite-agent main --json
-openclaw doctor --session-sqlite import --session-sqlite-all-agents
-openclaw doctor --session-sqlite validate --session-sqlite-all-agents --json
-openclaw doctor --session-sqlite compact --session-sqlite-all-agents
-openclaw doctor --session-sqlite recover --github-issue
-openclaw doctor --session-sqlite restore --session-sqlite-all-agents
+paddy doctor
+paddy doctor --lint
+paddy doctor --json
+paddy doctor --lint --json
+paddy doctor --lint --severity-min warning
+paddy doctor --lint --all
+paddy doctor --lint --allow-exec
+paddy doctor --deep
+paddy doctor --fix
+paddy doctor --fix --non-interactive
+paddy doctor --generate-gateway-token
+paddy doctor --post-upgrade
+paddy doctor --post-upgrade --json
+paddy doctor --state-sqlite compact
+paddy doctor --state-sqlite compact --json
+paddy doctor --session-sqlite inspect --session-sqlite-all-agents
+paddy doctor --session-sqlite dry-run --session-sqlite-agent main --json
+paddy doctor --session-sqlite import --session-sqlite-all-agents
+paddy doctor --session-sqlite validate --session-sqlite-all-agents --json
+paddy doctor --session-sqlite compact --session-sqlite-all-agents
+paddy doctor --session-sqlite recover --github-issue
+paddy doctor --session-sqlite restore --session-sqlite-all-agents
 ```
 
 For channel-specific permissions, use the channel probes instead of `doctor`:
 
 ```bash
-openclaw channels capabilities --channel discord --target channel:<channel-id>
-openclaw channels status --probe
+paddy channels capabilities --channel discord --target channel:<channel-id>
+paddy channels status --probe
 ```
 
 `channels capabilities` reports the bot's effective permissions for a specific channel target. `channels status --probe` audits all configured channels and voice auto-join targets.

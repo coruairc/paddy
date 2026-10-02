@@ -1,7 +1,7 @@
 ---
 summary: "Install the plugin, configure a homeserver account, and control which invites the bot accepts"
 read_when:
-  - Setting up Matrix in OpenClaw for the first time
+  - Setting up Matrix in Paddy for the first time
   - Choosing token or password auth for a Matrix account
   - Restricting which Matrix invites the bot accepts
 title: "Matrix setup"
@@ -24,17 +24,17 @@ openclaw plugins install @openclaw/matrix
 
 1. Create a Matrix account on your homeserver.
 2. Configure `channels.matrix` with `homeserver` + `accessToken`, or `homeserver` + `userId` + `password`. Create the access token in your Matrix client or homeserver admin UI; password auth mints and caches one for you on first login.
-3. Check `openclaw channels status --probe`; start the Gateway if it is offline. Config changes follow [hot reload](/gateway/configuration/hot-reload).
+3. Check `paddy channels status --probe`; start the Gateway if it is offline. Config changes follow [hot reload](/gateway/configuration/hot-reload).
 4. Start a DM with the bot, or invite it to a room. Fresh invites only land when [`autoJoin`](#auto-join) allows them.
 
 ### Interactive setup
 
 ```bash
-openclaw channels add
-openclaw configure --section channels
+paddy channels add
+paddy configure --section channels
 ```
 
-The wizard asks for homeserver URL, auth method (token or password), user ID (password auth only), optional device name, whether to enable E2EE, and room access/auto-join. If matching `MATRIX_*` env vars already exist and the account has no saved auth, the wizard offers an env-var shortcut. Resolve room names before saving an allowlist with `openclaw channels resolve --channel matrix "Project Room"`. Enabling E2EE in the wizard runs the same bootstrap as [`openclaw matrix encryption setup`](/channels/matrix/encryption#encryption-and-verification).
+The wizard asks for homeserver URL, auth method (token or password), user ID (password auth only), optional device name, whether to enable E2EE, and room access/auto-join. If matching `MATRIX_*` env vars already exist and the account has no saved auth, the wizard offers an env-var shortcut. Resolve room names before saving an allowlist with `paddy channels resolve --channel matrix "Project Room"`. Enabling E2EE in the wizard runs the same bootstrap as [`paddy matrix encryption setup`](/channels/matrix/encryption#encryption-and-verification).
 
 ### Minimal config
 
@@ -73,7 +73,7 @@ Token and password SecretRefs follow the shared [source-specific provider-alias 
 
 ### Auto-join
 
-`channels.matrix.autoJoin` defaults to `"off"`: the bot will not appear in new rooms or DMs from fresh invites until you join manually. OpenClaw cannot tell at invite time whether an invite is a DM or a group, so every invite goes through `autoJoin` first; `dm.policy` only applies later, after the bot has joined and the room is classified.
+`channels.matrix.autoJoin` defaults to `"off"`: the bot will not appear in new rooms or DMs from fresh invites until you join manually. Paddy cannot tell at invite time whether an invite is a DM or a group, so every invite goes through `autoJoin` first; `dm.policy` only applies later, after the bot has joined and the room is classified.
 
 <Warning>
 Set `autoJoin: "allowlist"` plus `autoJoinAllowlist` to restrict accepted invites, or `autoJoin: "always"` to accept every invite.
@@ -115,7 +115,7 @@ as untrusted.
 
 ### Allowlist target formats
 
-Matrix user IDs are case-sensitive. Copy the exact `@user:server` value Matrix reports for every allowlist, approver, and approval-target field. If an existing config used different casing, update it manually; OpenClaw cannot safely infer or rewrite the intended account because case-distinct IDs can identify different users.
+Matrix user IDs are case-sensitive. Copy the exact `@user:server` value Matrix reports for every allowlist, approver, and approval-target field. If an existing config used different casing, update it manually; Paddy cannot safely infer or rewrite the intended account because case-distinct IDs can identify different users.
 
 - DMs (`dm.allowFrom`, `groupAllowFrom`, `groups.<room>.users`): use `@user:server`. Display names are ignored by default (mutable); set `dangerouslyAllowNameMatching: true` only for explicit display-name compatibility.
 - Approval forwarding (`approvals.exec.targets[].to` with `channel: "matrix"`): use `user:@user:server` with the exact Matrix casing.
@@ -146,7 +146,7 @@ Config-key-backed env vars, used when the equivalent config key is unset. The de
 For account `ops`, names become `MATRIX_OPS_HOMESERVER`, `MATRIX_OPS_ACCESS_TOKEN`, and so on. `MATRIX_HOMESERVER` (and any `*_HOMESERVER` scoped variant) cannot be set from a workspace `.env`; see [Workspace `.env` files](/gateway/security).
 
 <Note>
-The recovery key is not a config-backed env var: OpenClaw never reads it from the environment itself. CLI guidance text suggests piping it through a shell variable named `MATRIX_RECOVERY_KEY` for the default account, or `MATRIX_RECOVERY_KEY_<ID>` (plain uppercased account ID, no hex-escaping) for a named account - see [Verify this device with a recovery key](/channels/matrix/encryption#verify-this-device-with-a-recovery-key).
+The recovery key is not a config-backed env var: Paddy never reads it from the environment itself. CLI guidance text suggests piping it through a shell variable named `MATRIX_RECOVERY_KEY` for the default account, or `MATRIX_RECOVERY_KEY_<ID>` (plain uppercased account ID, no hex-escaping) for a named account - see [Verify this device with a recovery key](/channels/matrix/encryption#verify-this-device-with-a-recovery-key).
 </Note>
 
 ## Configuration example

@@ -1,4 +1,3 @@
-// Xai doctor contract repairs plugin-owned model configuration.
 import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import { asObjectRecord } from "openclaw/plugin-sdk/runtime-doctor-migrations";
 import { isLegacyXaiBuiltinModel } from "./model-definitions.js";
@@ -132,23 +131,23 @@ function hasLegacyXaiSttEntries(value: unknown): boolean {
 export const legacyConfigRules: LegacyConfigRule[] = [
   ...PLUGIN_MODEL_MIGRATIONS.map((migration) => ({
     path: migration.path,
-    message: `${migration.path.join(".")}.model uses a retired xAI model; run "openclaw doctor --fix" to use ${migration.targetModel}.`,
+    message: `${migration.path.join(".")}.model uses a retired xAI model; run "paddy doctor --fix" to use ${migration.targetModel}.`,
     match: (value: unknown) => isRetiredToolModel(value, migration.retiredModels),
   })),
   ...XAI_MEDIA_MODEL_LIST_PATHS.map((path) => ({
     path: [...path],
-    message: `${path.join(".")} contains an xAI image entry with a retired model; run "openclaw doctor --fix" to migrate it to grok-4.3.`,
+    message: `${path.join(".")} contains an xAI image entry with a retired model; run "paddy doctor --fix" to migrate it to grok-4.3.`,
     match: hasRetiredXaiImageMediaEntries,
   })),
   ...XAI_MEDIA_MODEL_LIST_PATHS.map((path) => ({
     path: [...path],
-    message: `${path.join(".")} contains the obsolete xAI grok-stt model selector; run "openclaw doctor --fix" to remove it.`,
+    message: `${path.join(".")} contains the obsolete xAI grok-stt model selector; run "paddy doctor --fix" to remove it.`,
     match: hasLegacyXaiSttEntries,
   })),
   {
     path: ["models", "providers", "xai", "models"],
     message:
-      'models.providers.xai.models contains stale generated xAI catalog rows; run "openclaw doctor --fix" to remove them.',
+      'models.providers.xai.models contains stale generated xAI catalog rows; run "paddy doctor --fix" to remove them.',
     match: hasLegacyBuiltinCatalogRows,
   },
 ];

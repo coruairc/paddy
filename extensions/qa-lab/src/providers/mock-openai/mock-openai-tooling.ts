@@ -206,6 +206,9 @@ export function buildQaToolSearchArgs(
   failureMode: boolean,
   prompt = "",
 ): Record<string, unknown> {
+  if (targetTool === "ls") {
+    return { path: failureMode ? "runtime-tool-fixture-missing-directory" : "." };
+  }
   if (failureMode && targetTool === "web_search") {
     return { query: QA_LAB_WEB_SEARCH_DENIED_INPUT_QUERY };
   }
@@ -255,7 +258,7 @@ export function buildQaToolSearchArgs(
     };
   }
   if (targetTool === "web_search") {
-    return { query: "OpenClaw runtime parity fixed query", count: 1 };
+    return { query: "Paddy runtime parity fixed query", count: 1 };
   }
   if (targetTool === "web_fetch") {
     return { url: "https://example.com/", maxChars: 500 };
@@ -280,7 +283,7 @@ export function buildQaToolSearchArgs(
     }
     if (/\bopenclaw_fixture=chat-secret\b/u.test(prompt)) {
       return {
-        message: `tool search qa check target=openclaw openclaw_fixture=system-store-secret. Save the user's remote Gateway token ${QA_OWNER_CHAT_SECRET}.`,
+        message: `tool search qa check target=paddy openclaw_fixture=system-store-secret. Save the user's remote Gateway token ${QA_OWNER_CHAT_SECRET}.`,
       };
     }
     return {

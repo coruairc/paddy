@@ -2,14 +2,14 @@
 summary: "Mantis captures visual end-to-end evidence for live transport comparisons and focused candidate-only browser proofs, then attaches the artifacts to PRs."
 title: "Mantis"
 read_when:
-  - Building or running live visual QA for OpenClaw bugs
+  - Building or running live visual QA for Paddy bugs
   - Adding before and after verification for a pull request
   - Adding Discord, Slack, WhatsApp, or other live transport scenarios
   - Running focused Control UI browser proof for a candidate ref
   - Debugging QA runs that need screenshots, browser automation, or VNC access
 ---
 
-Mantis publishes visual CI evidence and a PR comment for OpenClaw behavior.
+Mantis publishes visual CI evidence and a PR comment for Paddy behavior.
 Live transport scenarios compare a known-bad baseline with a candidate ref;
 focused browser lanes may instead prove one candidate against a deterministic
 mocked transport. Discord shipped first with real bot auth, guild channels, reactions, threads,
@@ -18,7 +18,7 @@ WhatsApp and Matrix are unimplemented.
 
 ## Ownership
 
-- OpenClaw (`extensions/qa-lab/src/mantis/*`): scenario runtime, `pnpm openclaw qa mantis <command>` CLI, evidence schema.
+- Paddy (`extensions/qa-lab/src/mantis/*`): scenario runtime, `pnpm paddy qa mantis <command>` CLI, evidence schema.
 - QA Lab (`extensions/qa-lab/src/live-transports/*`): live transport harness, driver/SUT bots, report/evidence writers.
 - Crabbox (`openclaw/crabbox`): warmed Linux machines, leases, VNC, `crabbox media preview`.
 - GitHub Actions (`.github/workflows/mantis-*.yml`): remote entrypoints, artifact retention.
@@ -26,7 +26,7 @@ WhatsApp and Matrix are unimplemented.
 
 ## CLI commands
 
-All commands are `pnpm openclaw qa mantis <command>`, defined in
+All commands are `pnpm paddy qa mantis <command>`, defined in
 `extensions/qa-lab/src/mantis/cli.ts`. Requires `OPENCLAW_ENABLE_PRIVATE_QA_CLI=1`
 at build/run time (bundled workflows set `OPENCLAW_BUILD_PRIVATE_QA=1` and
 `OPENCLAW_ENABLE_PRIVATE_QA_CLI=1` before building).
@@ -48,7 +48,7 @@ usually override both.
 ### `discord-smoke`
 
 ```bash
-pnpm openclaw qa mantis discord-smoke \
+pnpm paddy qa mantis discord-smoke \
   --output-dir .artifacts/qa-e2e/mantis/discord-smoke
 ```
 
@@ -69,7 +69,7 @@ and names with `<redacted>` in the published summary and report.
 ### `run`
 
 ```bash
-pnpm openclaw qa mantis run \
+pnpm paddy qa mantis run \
   --transport discord \
   --scenario discord-status-reactions-tool-only \
   --baseline origin/main \
@@ -97,7 +97,7 @@ worktree` checkouts live under `<output-dir>.worktrees/`. Each checkout has a
 unique `<lane>-<run-id>` name, so an interrupted run cannot collide with a
 later baseline or candidate. The runner runs `pnpm install`/`pnpm build` in
 each checkout (unless skipped), then runs
-`pnpm openclaw qa discord --scenario <id> --model openai/gpt-5.4 --alt-model openai/gpt-5.4 --allow-failures`
+`pnpm paddy qa discord --scenario <id> --model openai/gpt-5.4 --alt-model openai/gpt-5.4 --allow-failures`
 against each worktree. Each lane writes `discord-qa-reaction-timelines.json`
 plus a `<scenario-id>-timeline.html`/`.png` pair. Before asking Git to remove
 the checkout, the runner copies the lane evidence into a private staging
@@ -123,7 +123,7 @@ named `mantis-thread-report.md`.
 ### `desktop-browser-smoke`
 
 ```bash
-pnpm openclaw qa mantis desktop-browser-smoke \
+pnpm paddy qa mantis desktop-browser-smoke \
   --output-dir .artifacts/qa-e2e/mantis/desktop-browser
 ```
 
@@ -158,7 +158,7 @@ skipped.
 ### `slack-desktop-smoke`
 
 ```bash
-pnpm openclaw qa mantis slack-desktop-smoke \
+pnpm paddy qa mantis slack-desktop-smoke \
   --output-dir .artifacts/qa-e2e/mantis/slack-desktop \
   --gateway-setup \
   --scenario slack-canary \
@@ -166,15 +166,15 @@ pnpm openclaw qa mantis slack-desktop-smoke \
 ```
 
 Leases or reuses a Crabbox desktop, syncs the checkout into the VM, runs
-`pnpm openclaw qa slack` inside it, opens Slack Web in the VNC browser,
+`pnpm paddy qa slack` inside it, opens Slack Web in the VNC browser,
 captures the desktop, and copies both the Slack QA artifacts (`slack-qa/`) and
 the VNC screenshot/video back locally. This is the only Mantis shape where the
 SUT gateway and the browser both run inside the same VM.
 
-With `--gateway-setup`, the command creates a persistent disposable OpenClaw
+With `--gateway-setup`, the command creates a persistent disposable Paddy
 home at `$HOME/.openclaw-mantis/slack-openclaw` in the VM, patches Slack
 Socket Mode config for the target channel, starts
-`openclaw gateway run --dev --allow-unconfigured --port 38973`, and leaves
+`paddy gateway run --dev --allow-unconfigured --port 38973`, and leaves
 Chrome running in the VNC session; omitting `--gateway-setup` runs the normal
 bot-to-bot Slack QA lane instead.
 
@@ -341,13 +341,13 @@ Comments post through the Mantis GitHub App (`MANTIS_GITHUB_APP_ID` /
 `MANTIS_GITHUB_APP_PRIVATE_KEY`), not `github-actions[bot]`, using a hidden
 marker comment as the upsert key.
 
-| Workflow                          | Trigger         | What it does                                                                                                                                                                                                                                                                           |
-| --------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Mantis Discord Smoke`            | manual dispatch | Runs `discord-smoke` against a chosen ref.                                                                                                                                                                                                                                             |
-| `Mantis Discord Status Reactions` | manual dispatch | Builds separate baseline/candidate worktrees, runs `discord-status-reactions-tool-only` on each, renders each lane's timeline in a Crabbox desktop browser, generates motion-trimmed GIF/MP4 previews with `crabbox media preview`, uploads artifacts, posts inline PR evidence.       |
-| `Mantis Scenario`                 | manual dispatch | Generic dispatcher: takes `scenario_id` (`discord-status-reactions-tool-only`, `discord-thread-reply-filepath-attachment`, `slack-desktop-smoke`, `web-ui-chat-proof`), `baseline_ref`, `candidate_ref`, `pr_number`, and forwards to the matching scenario workflow.                  |
-| `Mantis Slack Desktop Smoke`      | manual dispatch | Leases a Crabbox Linux desktop (defaults to `aws`, choice of `hetzner`), runs `slack-desktop-smoke --gateway-setup` against the candidate, records the desktop, generates a motion preview, uploads artifacts, posts PR evidence when a PR number is given.                            |
-| `Mantis Web UI Chat Proof`        | manual dispatch | Runs the focused OpenClaw Control UI chat Playwright proof against the candidate, verifies the browser sends through the mocked Gateway, captures screenshot/video artifacts, and posts PR evidence. This lane is web chat proof only, not WinUI/native-app or arbitrary visual proof. |
+| Workflow                          | Trigger         | What it does                                                                                                                                                                                                                                                                        |
+| --------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Mantis Discord Smoke`            | manual dispatch | Runs `discord-smoke` against a chosen ref.                                                                                                                                                                                                                                          |
+| `Mantis Discord Status Reactions` | manual dispatch | Builds separate baseline/candidate worktrees, runs `discord-status-reactions-tool-only` on each, renders each lane's timeline in a Crabbox desktop browser, generates motion-trimmed GIF/MP4 previews with `crabbox media preview`, uploads artifacts, posts inline PR evidence.    |
+| `Mantis Scenario`                 | manual dispatch | Generic dispatcher: takes `scenario_id` (`discord-status-reactions-tool-only`, `discord-thread-reply-filepath-attachment`, `slack-desktop-smoke`, `web-ui-chat-proof`), `baseline_ref`, `candidate_ref`, `pr_number`, and forwards to the matching scenario workflow.               |
+| `Mantis Slack Desktop Smoke`      | manual dispatch | Leases a Crabbox Linux desktop (defaults to `aws`, choice of `hetzner`), runs `slack-desktop-smoke --gateway-setup` against the candidate, records the desktop, generates a motion preview, uploads artifacts, posts PR evidence when a PR number is given.                         |
+| `Mantis Web UI Chat Proof`        | manual dispatch | Runs the focused Paddy Control UI chat Playwright proof against the candidate, verifies the browser sends through the mocked Gateway, captures screenshot/video artifacts, and posts PR evidence. This lane is web chat proof only, not WinUI/native-app or arbitrary visual proof. |
 
 `Mantis Discord Status Reactions` accepts `baseline_ref`/`candidate_ref` and
 validates that the resolved SHA is either an
@@ -398,7 +398,7 @@ producer cleanup and credential/lease limits remain separate.
 ### Telegram proof is a separate QA entrypoint
 
 Telegram is not an option in `mantis-scenario.yml` or `qa mantis run`.
-`pnpm openclaw qa telegram` uses the QA Lab Telegram adapter and the repository
+`pnpm paddy qa telegram` uses the QA Lab Telegram adapter and the repository
 skill at `.agents/skills/telegram-e2e-userbot/SKILL.md`. The skill also supports
 focused real-user recordings through its own runner.
 
@@ -482,7 +482,7 @@ slow or unavailable, add it behind the same Crabbox interface rather than
 hardcoding a fallback.
 
 VM baseline: Linux with a desktop-capable Chrome/Chromium, CDP access, VNC/
-noVNC, Node 24.16+ or 26.1+ and pnpm, an OpenClaw checkout, and
+noVNC, Node 24.16+ or 26.1+ and pnpm, a Paddy checkout, and
 outbound access to the target transport, GitHub, model providers, and the
 credential broker.
 
@@ -528,7 +528,7 @@ Live transport scenarios are TypeScript-defined per transport (see
 `MANTIS_SCENARIO_CONFIGS` in `extensions/qa-lab/src/mantis/run.runtime.ts` for
 the Discord before/after shape), not a standalone declarative file format.
 Each scenario needs: id and title, transport, required credentials, baseline
-ref policy, candidate ref policy, OpenClaw config patch, setup/stimulus steps,
+ref policy, candidate ref policy, Paddy config patch, setup/stimulus steps,
 expected baseline and candidate oracle, visual capture targets, timeout
 budget, and cleanup steps.
 

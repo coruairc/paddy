@@ -15,6 +15,7 @@ import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { mergeChatStreamMessage } from "../../packages/gateway-client/src/chat-stream-message.js";
 import { recoverTerminalReply } from "../../packages/gateway-client/src/run-recovery-text.js";
 import type { EventFrame } from "../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { GatewayClient } from "../gateway/client.js";
 import { normalizeTerminalChatSendAckStatus } from "../shared/chat-send-ack-status.js";
 import { createDeferredCore, type Deferred } from "../shared/deferred.js";
@@ -567,7 +568,7 @@ export class AcpTranslatorPromptStream {
       await this.emitPromptChunk(
         pending,
         "agent_message_chunk",
-        `[OpenClaw interruption] ${options.interruption}`,
+        `[${PRODUCT_NAME} interruption] ${options.interruption}`,
         false,
       );
     }
@@ -648,7 +649,7 @@ export class AcpTranslatorPromptStream {
       await this.emitPromptChunk(
         pending,
         "agent_message_chunk",
-        `[OpenClaw interruption] ${message}`,
+        `[${PRODUCT_NAME} interruption] ${message}`,
         false,
       );
       await this.rejectPendingPrompt(pending, new Error(message), { claimed: true });
@@ -666,7 +667,7 @@ export class AcpTranslatorPromptStream {
     await this.emitPromptChunk(
       pending,
       "agent_message_chunk",
-      `[OpenClaw interruption] ${message}`,
+      `[${PRODUCT_NAME} interruption] ${message}`,
       false,
     );
     await this.rejectPendingPrompt(pending, new Error(message), { claimed: true });
@@ -724,8 +725,8 @@ export class AcpTranslatorPromptStream {
     try {
       if (options.recordDisconnectNotice) {
         const text = pending.sendAccepted
-          ? "[OpenClaw interruption] The Gateway disconnected after accepting this message, so its final outcome is unknown. Check the session before retrying."
-          : "[OpenClaw interruption] The Gateway disconnected before OpenClaw could confirm whether this message was accepted, so its final outcome is unknown. Check the session before retrying.";
+          ? `[${PRODUCT_NAME} interruption] The Gateway disconnected after accepting this message, so its final outcome is unknown. Check the session before retrying.`
+          : `[${PRODUCT_NAME} interruption] The Gateway disconnected before ${PRODUCT_NAME} could confirm whether this message was accepted, so its final outcome is unknown. Check the session before retrying.`;
         await this.emitPromptChunk(pending, "agent_message_chunk", text, false);
       }
     } catch (noticeError) {

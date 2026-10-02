@@ -5,6 +5,7 @@ import { asOptionalRecord } from "@openclaw/normalization-core/record-coerce";
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import { valid as validVersion } from "semver";
 import { sanitizeForLog, stripAnsi } from "../../packages/terminal-core/src/ansi.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { REDACTED_SENTINEL } from "../config/redact-snapshot.js";
 import { isSecretRefShape } from "../config/redact-snapshot.secret-ref.js";
 import { isBlockedObjectKey } from "../infra/prototype-keys.js";
@@ -481,7 +482,7 @@ export function redactPublicSupportDiagnosticLine(
   if (
     [
       "The npm global install layout cannot stage a candidate. Reinstall with npm into its default global layout, then retry the update.",
-      "Cannot locate the installed updater; run `openclaw doctor` before retrying.",
+      "Cannot locate the installed updater; run `paddy doctor` before retrying.",
       "Managed update handoff requires a user-scope systemd unit; perform a manual system-service update.",
       "managed update handoff requires a finite restart deadline",
       "systemd-run is required to launch a transient user scope",
@@ -491,7 +492,7 @@ export function redactPublicSupportDiagnosticLine(
       "managed update handoff control input closed",
       "managed update ownership transfer failed",
       "requester-revoked",
-      "Doctor could not enter maintenance. An agent database is in use. Stop other OpenClaw processes using this state, then retry the update.",
+      `Doctor could not enter maintenance. An agent database is in use. Stop other ${PRODUCT_NAME} processes using this state, then retry the update.`,
     ].includes(line)
   ) {
     return line;

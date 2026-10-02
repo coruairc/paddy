@@ -18,7 +18,7 @@ meets a condition.
 model architectures and inference backends. Sharing the interface does not make
 their reasoning ability or probabilities interchangeable.
 
-The role and TypeSafe AI adapter were added after released OpenClaw
+The role and TypeSafe AI adapter were added after released Paddy
 `2026.9.5`. These instructions apply to development checkouts containing those
 features and to later releases that include them. See each provider's setup
 page for its host requirements.
@@ -88,8 +88,8 @@ An unset agent override inherits the global default. An empty agent override
 disables decisions for that agent. An unset or empty global default leaves the
 role off. There is no automatic fallback to a conversational model.
 
-For local setup verification, `openclaw onnx models` lists the presets and
-`openclaw onnx probe gliclass-edge-v3.0` runs a Choice, Score, and Boolean smoke
+For local setup verification, `paddy onnx models` lists the presets and
+`paddy onnx probe gliclass-edge-v3.0` runs a Choice, Score, and Boolean smoke
 evaluation after the model has been downloaded.
 
 ## Define a decision

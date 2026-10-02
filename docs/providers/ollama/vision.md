@@ -10,21 +10,21 @@ sidebarTitle: "Vision"
 ## Vision and image description
 
 The bundled Ollama plugin registers Ollama as an image-capable
-media-understanding provider, so OpenClaw can route explicit image-description
+media-understanding provider, so Paddy can route explicit image-description
 requests and configured image-model defaults through local or hosted Ollama
 vision models.
 
 ```bash
 ollama pull qwen2.5vl:7b
 export OLLAMA_API_KEY="ollama-local"
-openclaw infer image describe --file ./photo.jpg --model ollama/qwen2.5vl:7b --json
+paddy infer image describe --file ./photo.jpg --model ollama/qwen2.5vl:7b --json
 ```
 
 `--model` must be a full `<provider/model>` ref; when set, `infer image
 describe` tries that model first instead of skipping description for models
-that already support native vision. If the call fails, OpenClaw can continue
+that already support native vision. If the call fails, Paddy can continue
 through `agents.defaults.imageModel.fallbacks`; file/URL preparation errors
-fail before fallback is attempted. Use `infer image describe` for OpenClaw's
+fail before fallback is attempted. Use `infer image describe` for Paddy's
 image-understanding flow and configured `imageModel`; use `infer model run
 --file` for a raw multimodal probe with a custom prompt.
 
@@ -111,6 +111,6 @@ explicitly:
 }
 ```
 
-OpenClaw rejects image-description requests for models not marked
+Paddy rejects image-description requests for models not marked
 image-capable. With implicit discovery, this comes from `/api/show`'s vision
 capability.

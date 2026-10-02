@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { closePreparedModelRuntimeSnapshots } from "../agents/prepared-model-runtime.lifecycle.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { isNixMode, resolveIsConfigReadOnly } from "../config/paths.js";
 import { GatewayScheduler } from "../infra/gateway-scheduler.js";
 import { clearGatewayAgentCliShim } from "../infra/openclaw-cli-shim.js";
@@ -105,11 +106,11 @@ function formatRuntimeGatewayAuthTokenWarning(): string {
     return `${base} Set gateway.auth.token in your external config source and redeploy.`;
   }
   if (!isNixMode) {
-    return `${base} Persist one with \`openclaw config set gateway.auth.mode token\` and \`openclaw config set gateway.auth.token <token>\`.`;
+    return `${base} Persist one with \`paddy config set gateway.auth.mode token\` and \`paddy config set gateway.auth.token <token>\`.`;
   }
   return [
     base,
-    "In Nix mode, set gateway.auth.token in your Nix-managed OpenClaw config and rebuild.",
+    `In Nix mode, set gateway.auth.token in your Nix-managed ${PRODUCT_NAME} config and rebuild.`,
     "For the first-party Nix flow, see https://github.com/openclaw/nix-openclaw#quick-start and https://docs.openclaw.ai/install/nix.",
   ].join(" ");
 }

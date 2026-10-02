@@ -7,6 +7,7 @@ import {
 import { sliceUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import { resolveAgentWorkspaceDir, resolveDefaultAgentId } from "../agents/agent-scope-config.js";
 import { isMalformedApiKeyInput } from "../agents/auth-profiles/credential-state.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.js";
 import type { SecretInput } from "../config/types.secrets.js";
 import { createLazyRuntimeModule } from "../shared/lazy-runtime.js";
@@ -60,7 +61,7 @@ export const validateApiKeyInput = (value: string) => {
     return "Required";
   }
   if (isMalformedApiKeyInput(normalized)) {
-    return "Paste the API key value, not an OpenClaw onboarding command.";
+    return `Paste the API key value, not a ${PRODUCT_NAME} onboarding command.`;
   }
   return undefined;
 };
@@ -190,23 +191,16 @@ export async function ensureApiKeyFromEnvOrPrompt(params: {
   });
 
   if (selectedMode === "ref") {
-    if (typeof params.prompter.select !== "function") {
-      const fallback = resolveRefFallbackInput({
-        config: params.config,
-        provider: params.provider,
-        preferredEnvVar: envKey?.source ? extractEnvVarFromSourceLabel(envKey.source) : undefined,
-        env,
-      });
-      await params.setCredential(fallback.ref, selectedMode);
-      return fallback.resolvedValue;
-    }
-    const resolved = await promptSecretRef({
+    const refParams = {
       provider: params.provider,
       config: params.config,
-      prompter: params.prompter,
       preferredEnvVar: envKey?.source ? extractEnvVarFromSourceLabel(envKey.source) : undefined,
       env,
-    });
+    };
+    const resolved =
+      typeof params.prompter.select !== "function"
+        ? resolveRefFallbackInput(refParams)
+        : await promptSecretRef({ ...refParams, prompter: params.prompter });
     await params.setCredential(resolved.ref, selectedMode);
     return resolved.resolvedValue;
   }

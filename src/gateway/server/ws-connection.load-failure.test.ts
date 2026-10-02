@@ -62,17 +62,17 @@ describe("WebSocket message handler load failures", () => {
       123,
     );
     expect(logWsControl.error).toHaveBeenCalledWith(
-      expect.stringContaining("OpenClaw installation changed while the Gateway was running"),
+      expect.stringContaining("Paddy installation changed while the Gateway was running"),
     );
     expect(logWsControl.error).toHaveBeenCalledWith(
-      expect.stringContaining("openclaw --profile r13 gateway restart"),
+      expect.stringContaining("paddy --profile r13 gateway restart"),
     );
     expect(logWsControl.warn).toHaveBeenCalledWith(
       expect.stringContaining("closed before connect"),
       expect.objectContaining({
         cause: "message-handler-load-failed",
         staleInstall: true,
-        restartCommand: "openclaw --profile r13 gateway restart",
+        restartCommand: "paddy --profile r13 gateway restart",
       }),
     );
   });

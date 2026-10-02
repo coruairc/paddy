@@ -15,7 +15,7 @@ primary workspace and session placement stay unchanged.
 
 Attached environments install and verify the worker bundle for remote app
 commands, but skip prewarming the agent runtime because the agent stays on the
-current execution host. OpenClaw worker turns still prewarm their agent runtime.
+current execution host. Paddy worker turns still prewarm their agent runtime.
 
 For open-and-show requests, the agent passes `presentation: "desktop"` or
 `presentation: "portal"` when creating the attachment. The side panel opens
@@ -29,7 +29,11 @@ and enable the **Cloud Worker Desktop** lab. The agent launches the application 
 the Desktop panel. When its model supports vision and tool policy permits
 `computer`, it can observe and control the same desktop using the attachment's
 `environmentId`. Taking manual control pauses agent input; observations remain
-available. Release manual control before asking the agent to interact again.
+available. When asked to resume, the agent can use `computer` with
+`action: "take_control"` under its existing computer-control authority. Your
+viewer returns to view-only, and the agent receives a fresh screenshot. No
+separate viewer-issued handoff token is required. You can reclaim control at any
+time or release it yourself; ordinary agent input never takes over automatically.
 
 For a web app, the agent starts a server and opens a [portal](/gateway/portals)
 in the side panel. A browser on the attached desktop can test that server with
@@ -79,13 +83,13 @@ desktop observations; the workers and their applications keep running.
 Re-enabling it restores access to workers that already have desktop capability.
 Changing the lab does not provision or replace workers.
 
-The bundled Crabbox plugin supports direct AWS and Azure profiles. Coordinator-backed AWS, Azure, and Hetzner profiles are supported when the selected coordinator supports that target's desktop. OpenClaw keeps worker execution node-only: `openclaw worker`, workspace transfer, desktop observation, and app launch all use the authenticated outbound node connection. It does not restore SSH execution, a reverse tunnel, or rsync. Direct Hetzner rejects OpenClaw's fixed lease ID, so desktop profiles fail before allocation unless Hetzner uses a capable managed coordinator.
+The bundled Crabbox plugin supports direct AWS and Azure profiles. Coordinator-backed AWS, Azure, and Hetzner profiles are supported when the selected coordinator supports that target's desktop. Paddy keeps worker execution node-only: `paddy worker`, workspace transfer, desktop observation, and app launch all use the authenticated outbound node connection. It does not restore SSH execution, a reverse tunnel, or rsync. Direct Hetzner rejects Paddy's fixed lease ID, so desktop profiles fail before allocation unless Hetzner uses a capable managed coordinator.
 
-Each node connects to its desktop's authenticated RFB server through `127.0.0.1:5900`. The desktop also has a browser with loopback CDP on port `9222` and provider-owned Browser and Terminal launchers. OpenClaw installs a worker wallpaper so the disposable desktop is easy to identify. Setup is idempotent and completes before the cloud desktop becomes available, including on provisioning replay. Project image preparation keeps desktop setup before project setup and capture.
+Each node connects to its desktop's authenticated RFB server through `127.0.0.1:5900`. The desktop also has a browser with loopback CDP on port `9222` and provider-owned Browser and Terminal launchers. Paddy installs a worker wallpaper so the disposable desktop is easy to identify. Setup is idempotent and completes before the cloud desktop becomes available, including on provisioning replay. Project image preparation keeps desktop setup before project setup and capture.
 
 Linux uses Crabbox's XFCE session on display `:99`. Native Windows uses Crabbox's interactive-session launcher so the enrolled node and CUA run as the desktop user, with the same account and session checked on replay. macOS uses the dedicated signed **OpenClaw Cloud Worker** app to host CUA and the enrolled node in the worker account's GUI session; see the image prerequisites below.
 
-A vision-capable agent whose tool policy permits `computer` controls this desktop through the session's exact placement; it cannot select another node. This works for both OpenClaw workers and Codex remote execution. See [Desktop and computer control](/gateway/cloud-sessions#desktop-and-computer-control) for tool enablement and manual-control guidance.
+A vision-capable agent whose tool policy permits `computer` controls this desktop through the session's exact placement; it cannot select another node. This works for both Paddy workers and Codex remote execution. See [Desktop and computer control](/gateway/cloud-sessions#desktop-and-computer-control) for tool enablement and manual-control guidance.
 
 The desktop never gains public ingress. The node reads the lease's password file locally, inspects the loopback RFB security offer, and keeps that same connection for the viewer. Linux and Windows use VNC password authentication. macOS uses Apple Remote Desktop account authentication with the inspected worker username and a private copy of Crabbox's managed password. These credentials pass transiently through the authenticated node connection for preauthentication; the viewer does not enter the worker password. The node redeems a single-use Gateway broker ticket over its already-connected origin. Opening viewers therefore creates no extra unauthenticated probe connections. TLS deployments pin the same Gateway certificate used by the node connection. The Gateway revalidates the durable environment, lease, node, owner epoch, desktop descriptor, connection, and pairing both before dispatch and after attach; drain, replacement, or teardown aborts the stream and any pending app launch. The shared desktop session owner performs RFB preauthentication, view-only input filtering, and single-controller arbitration. Browser protocol negotiation overlaps worker authentication, but authentication success and desktop traffic wait for both sides to finish.
 
@@ -124,9 +128,9 @@ Prepare a macOS 15 or later worker image with `/Applications/OpenClawCloudWorker
 OPENCLAW_MAC_CLOUD_WORKER_HOST=1 scripts/package-mac-app.sh
 ```
 
-Install the resulting `dist/OpenClawCloudWorker.app` in the image. Grant **OpenClaw Cloud Worker** Accessibility and Screen Recording access for the intended worker account, install Google Chrome, and sign in to an unlocked desktop. The cloud app has its own bundle identity and permission grants, separate from the ordinary OpenClaw app. Provisioning verifies the signed cloud-host capability before starting it; an older or ordinary app does not satisfy this requirement.
+Install the resulting `dist/OpenClawCloudWorker.app` in the image. Grant **Paddy Cloud Worker** Accessibility and Screen Recording access for the intended worker account, install Google Chrome, and sign in to an unlocked desktop. The cloud app has its own bundle identity and permission grants, separate from the ordinary Paddy app. Provisioning verifies the signed cloud-host capability before starting it; an older or ordinary app does not satisfy this requirement.
 
-The app uses the existing [local CUA trust boundary](/nodes/computer-use#trust-model): processes running as the worker account can discover and use its desktop resources. Desktop profile and tool-policy settings govern managed OpenClaw entry points; they do not sandbox authorized shell code. Use a separate account or image without these desktop grants when isolation from that code is required.
+The app uses the existing [local CUA trust boundary](/nodes/computer-use#trust-model): processes running as the worker account can discover and use its desktop resources. Desktop profile and tool-policy settings govern managed Paddy entry points; they do not sandbox authorized shell code. Use a separate account or image without these desktop grants when isolation from that code is required.
 
 Keep Crabbox's passwordless `sudo` access enabled for the worker account. Desktop launch uses it to enter the GUI session, then runs the app, browser, and terminal as that worker account.
 
@@ -138,9 +142,9 @@ AWS macOS requires an available EC2 Mac Dedicated Host and On-Demand allocation.
 
 Use a managed Windows desktop image with Crabbox's **CrabboxDesktopLauncher** service and an active desktop for the configured worker account. Desktop enrollment runs inside that interactive session; the ordinary detached SSH launcher remains the path for headless Windows workers. A Session 0 process or a process belonging to another account cannot satisfy desktop enrollment replay. See [Windows runtime prerequisites](/gateway/cloud-workers/setup-and-bundle-installation#native-windows-prerequisites).
 
-OpenClaw switches the lease's managed TightVNC server to the interactive account with GDI capture, preserving Crabbox's VNC authentication and restricting the listener to loopback. The image must permit TightVNC application mode. Provisioning replay reuses the verified server so attached viewers stay connected; release and reprovision the worker after its interactive session ends.
+Paddy switches the lease's managed TightVNC server to the interactive account with GDI capture, preserving Crabbox's VNC authentication and restricting the listener to loopback. The image must permit TightVNC application mode. Provisioning replay reuses the verified server so attached viewers stay connected; release and reprovision the worker after its interactive session ends.
 
-This mode controls the active desktop; it does not provide sign-in, Ctrl+Alt+Delete, or secure-desktop control. Use OpenClaw provisioning replay or reprovisioning for recovery. Crabbox's generic VNC reset manages service mode.
+This mode controls the active desktop; it does not provide sign-in, Ctrl+Alt+Delete, or secure-desktop control. Use Paddy provisioning replay or reprovisioning for recovery. Crabbox's generic VNC reset manages service mode.
 
 Workspaces containing symbolic links require Windows Developer Mode in the image or the **Create symbolic links** privilege for the interactive account.
 

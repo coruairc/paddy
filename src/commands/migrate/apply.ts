@@ -1,5 +1,6 @@
 /** Applies migration plans with backup, filtering, reporting, and progress output. */
 import fs from "node:fs/promises";
+import { PRODUCT_NAME } from "../../brand.js";
 import { exitCliAfterOutput } from "../../cli/one-shot-exit.js";
 import { withProgress } from "../../cli/progress.js";
 import type { ProgressReporter } from "../../cli/progress.js";
@@ -18,8 +19,8 @@ import type { MigrateApplyOptions } from "./types.js";
 function shouldTreatMissingBackupAsEmptyState(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
   return (
-    message.includes("No local OpenClaw state was found to back up") ||
-    message.includes("No OpenClaw config file was found to back up")
+    message.includes(`No local ${PRODUCT_NAME} state was found to back up`) ||
+    message.includes(`No ${PRODUCT_NAME} config file was found to back up`)
   );
 }
 

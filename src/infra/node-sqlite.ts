@@ -2,8 +2,10 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { PRODUCT_NAME } from "../brand.js";
 import { ensureSqliteLibrarySelected } from "./bun-sqlite-library.js";
 import { formatErrorMessage } from "./errors.js";
+import { registerNodeSqliteDisposeCallback } from "./kysely-sync-cache-state.js";
 import { compareValidSemver } from "./semver.js";
 import { registerSqliteReaderConnection } from "./sqlite-reader-lifecycle.js";
 import { isSqliteWalResetSafeVersion } from "./sqlite-runtime-version.js";
@@ -14,6 +16,8 @@ const require = createRequire(import.meta.url);
 let validatedSqliteModule: typeof import("node:sqlite") | undefined;
 let extensionLoadingSupported = false;
 let jsonbSupported = false;
+// Bun cannot confirm native disposal until the owning worker exits.
+export let bunSqliteNativeCleanupPending = false;
 
 type NodeSqliteDatabaseOptions = ConstructorParameters<
   typeof import("node:sqlite").DatabaseSync
@@ -74,7 +78,7 @@ function assertSqliteWalResetSafeVersion(version: string, nodeVersion: string): 
     ? "Upgrade the system SQLite library to one of those safe versions, or use a Node build embedding a safe version."
     : "Upgrade to Node 24.16.0+ or 26.1.0+ before retrying.";
   throw new Error(
-    `OpenClaw requires SQLite 3.51.3+, 3.50.7+ within 3.50.x, or 3.44.6+ within 3.44.x for WAL safety; ` +
+    `${PRODUCT_NAME} requires SQLite 3.51.3+, 3.50.7+ within 3.50.x, or 3.44.6+ within 3.44.x for WAL safety; ` +
       `Node ${nodeVersion} ${wording} SQLite ${version}, which is affected by the upstream WAL-reset ` +
       `database corruption bug. ${remediation}`,
   );
@@ -145,11 +149,14 @@ export function openNodeSqliteDatabase(
   // Callers may pass file: URIs or already-namespaced paths from specialized
   // resolvers; location normalization must remain idempotent for those forms.
   const resolvedLocation = resolveNodeSqliteLocation(location);
-  const database =
-    options === undefined
-      ? new sqlite.DatabaseSync(resolvedLocation)
-      : new sqlite.DatabaseSync(resolvedLocation, options);
+  const database = new sqlite.DatabaseSync(resolvedLocation, options ?? {});
+  // Schema tracking must precede the statement-cache authorizer wrapper.
   trackSqliteSchema(database, sqlite);
+  if (process.versions.bun) {
+    registerNodeSqliteDisposeCallback(database, () => {
+      bunSqliteNativeCleanupPending = true;
+    });
+  }
   registerSqliteReaderConnection(database);
   return database;
 }

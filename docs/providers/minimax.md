@@ -1,7 +1,7 @@
 ---
-summary: "Use MiniMax models in OpenClaw"
+summary: "Use MiniMax models in Paddy"
 read_when:
-  - You want MiniMax models in OpenClaw
+  - You want MiniMax models in Paddy
   - You need MiniMax setup guidance
 title: "MiniMax"
 ---
@@ -44,14 +44,14 @@ MiniMax M3 is a preferred [Code Mode](/tools/code-mode) model on both API-key an
         <Steps>
           <Step title="Run onboarding">
             ```bash
-            openclaw onboard --auth-choice minimax-global-oauth
+            paddy onboard --auth-choice minimax-global-oauth
             ```
 
             Resulting provider base URL: `api.minimax.io`.
           </Step>
           <Step title="Verify the model is available">
             ```bash
-            openclaw models list --provider minimax-portal
+            paddy models list --provider minimax-portal
             ```
           </Step>
         </Steps>
@@ -60,14 +60,14 @@ MiniMax M3 is a preferred [Code Mode](/tools/code-mode) model on both API-key an
         <Steps>
           <Step title="Run onboarding">
             ```bash
-            openclaw onboard --auth-choice minimax-cn-oauth
+            paddy onboard --auth-choice minimax-cn-oauth
             ```
 
             Resulting provider base URL: `api.minimaxi.com`.
           </Step>
           <Step title="Verify the model is available">
             ```bash
-            openclaw models list --provider minimax-portal
+            paddy models list --provider minimax-portal
             ```
           </Step>
         </Steps>
@@ -88,14 +88,14 @@ MiniMax M3 is a preferred [Code Mode](/tools/code-mode) model on both API-key an
         <Steps>
           <Step title="Run onboarding">
             ```bash
-            openclaw onboard --auth-choice minimax-global-api
+            paddy onboard --auth-choice minimax-global-api
             ```
 
             This configures `api.minimax.io` as the base URL.
           </Step>
           <Step title="Verify the model is available">
             ```bash
-            openclaw models list --provider minimax
+            paddy models list --provider minimax
             ```
           </Step>
         </Steps>
@@ -104,14 +104,14 @@ MiniMax M3 is a preferred [Code Mode](/tools/code-mode) model on both API-key an
         <Steps>
           <Step title="Run onboarding">
             ```bash
-            openclaw onboard --auth-choice minimax-cn-api
+            paddy onboard --auth-choice minimax-cn-api
             ```
 
             This configures `api.minimaxi.com` as the base URL.
           </Step>
           <Step title="Verify the model is available">
             ```bash
-            openclaw models list --provider minimax
+            paddy models list --provider minimax
             ```
           </Step>
         </Steps>
@@ -168,7 +168,7 @@ MiniMax M3 is a preferred [Code Mode](/tools/code-mode) model on both API-key an
     ```
 
     <Warning>
-    MiniMax-M2.x's Anthropic-compatible streaming endpoint emits `reasoning_content` in OpenAI-style delta chunks instead of native Anthropic thinking blocks, which leaks internal reasoning into visible output if thinking is left enabled implicitly. OpenClaw disables M2.x thinking by default unless you explicitly set `thinking` yourself. MiniMax-M3 (and forward-compatible M3.x) is exempt: M3 emits proper Anthropic thinking blocks and requires thinking active to produce visible content, so OpenClaw keeps M3 on the provider's adaptive thinking path. See the Thinking defaults section under Advanced configuration below.
+    MiniMax-M2.x's Anthropic-compatible streaming endpoint emits `reasoning_content` in OpenAI-style delta chunks instead of native Anthropic thinking blocks, which leaks internal reasoning into visible output if thinking is left enabled implicitly. Paddy disables M2.x thinking by default unless you explicitly set `thinking` yourself. MiniMax-M3 (and forward-compatible M3.x) is exempt: M3 emits proper Anthropic thinking blocks and requires thinking active to produce visible content, so Paddy keeps M3 on the provider's adaptive thinking path. See the Thinking defaults section under Advanced configuration below.
     </Warning>
 
     <Note>
@@ -178,12 +178,12 @@ MiniMax M3 is a preferred [Code Mode](/tools/code-mode) model on both API-key an
   </Tab>
 </Tabs>
 
-## Configure via `openclaw configure`
+## Configure via `paddy configure`
 
 <Steps>
   <Step title="Launch the wizard">
     ```bash
-    openclaw configure
+    paddy configure
     ```
   </Step>
   <Step title="Select Model/auth">
@@ -236,9 +236,9 @@ The bundled `minimax` plugin registers MiniMax T2A v2 as a speech provider for `
 - Default voice: `English_expressive_narrator`
 - Bundled model ids: `speech-2.8-hd`, `speech-2.8-turbo`, `speech-2.6-hd`, `speech-2.6-turbo`, `speech-02-hd`, `speech-02-turbo`, `speech-01-hd`, `speech-01-turbo`
 - Auth resolution order: `tts.providers.minimax.apiKey`, then `minimax-portal` OAuth/token auth profiles, then Token Plan environment keys (`MINIMAX_OAUTH_TOKEN`, `MINIMAX_CODE_PLAN_KEY`, `MINIMAX_CODING_API_KEY`), then `MINIMAX_API_KEY`
-- If no TTS host is configured, OpenClaw reuses the configured `minimax-portal` OAuth host and strips Anthropic-compatible path suffixes such as `/anthropic`
+- If no TTS host is configured, Paddy reuses the configured `minimax-portal` OAuth host and strips Anthropic-compatible path suffixes such as `/anthropic`
 - Normal audio attachments stay MP3. Voice-note targets (Feishu, Telegram, and other channels that request a voice-note-compatible attachment) are transcoded from MiniMax MP3 to 48kHz Opus with `ffmpeg`, because e.g. the Feishu/Lark file API only accepts `file_type: "opus"` for native audio messages
-- MiniMax T2A accepts fractional `speed` and `vol`, but `pitch` is sent as an integer; OpenClaw truncates fractional `pitch` values before the API request
+- MiniMax T2A accepts fractional `speed` and `vol`, but `pitch` is sent as an integer; Paddy truncates fractional `pitch` values before the API request
 
 | Setting                         | Env var                | Default                       | Description                      |
 | ------------------------------- | ---------------------- | ----------------------------- | -------------------------------- |
@@ -341,9 +341,9 @@ See [MiniMax Search](/tools/minimax-search) for full web search configuration an
   </Accordion>
 
   <Accordion title="Thinking defaults">
-    On `api: "anthropic-messages"`, OpenClaw injects `thinking: { type: "disabled" }` for MiniMax M2.x models unless an earlier wrapper already set the `thinking` field in the payload. This prevents M2.x's streaming endpoint from emitting `reasoning_content` in OpenAI-style delta chunks, which would leak internal reasoning into visible output.
+    On `api: "anthropic-messages"`, Paddy injects `thinking: { type: "disabled" }` for MiniMax M2.x models unless an earlier wrapper already set the `thinking` field in the payload. This prevents M2.x's streaming endpoint from emitting `reasoning_content` in OpenAI-style delta chunks, which would leak internal reasoning into visible output.
 
-    MiniMax-M3 (and M3.x) is exempt: M3 returns an empty `content` array with `stop_reason: "end_turn"` when thinking is disabled, so OpenClaw removes the implicit disabled default for M3 and, when a thinking level is set, forces `thinking: { type: "adaptive" }` instead.
+    MiniMax-M3 (and M3.x) is exempt: M3 returns an empty `content` array with `stop_reason: "end_turn"` when thinking is disabled, so Paddy removes the implicit disabled default for M3 and, when a thinking level is set, forces `thinking: { type: "adaptive" }` instead.
 
     Available thinking levels per model family:
 
@@ -384,8 +384,8 @@ See [MiniMax Search](/tools/minimax-search) for full web search configuration an
   <Accordion title="Coding Plan usage details">
     - Coding Plan usage API: `https://api.minimaxi.com/v1/token_plan/remains` or `https://api.minimax.io/v1/token_plan/remains` (requires a coding plan key).
     - Usage polling derives the host from `models.providers.minimax-portal.baseUrl` or `models.providers.minimax.baseUrl` when configured, so global setups using `https://api.minimax.io/anthropic` poll `api.minimax.io`. Missing or malformed base URLs keep the CN fallback for compatibility.
-    - OpenClaw normalizes MiniMax coding-plan usage to the same `% left` display used by other providers. MiniMax's raw `usage_percent` / `usagePercent` fields are remaining quota, not consumed quota, so OpenClaw inverts them. Count-based fields win when present.
-    - When the API returns `model_remains`, OpenClaw prefers the chat-model entry, derives the window label from `start_time` / `end_time` when needed, and includes the selected model name in the plan label so coding-plan windows are easier to distinguish.
+    - Paddy normalizes MiniMax coding-plan usage to the same `% left` display used by other providers. MiniMax's raw `usage_percent` / `usagePercent` fields are remaining quota, not consumed quota, so Paddy inverts them. Count-based fields win when present.
+    - When the API returns `model_remains`, Paddy prefers the chat-model entry, derives the window label from `start_time` / `end_time` when needed, and includes the selected model name in the plan label so coding-plan windows are easier to distinguish.
     - Usage snapshots treat `minimax`, `minimax-cn`, `minimax-portal`, and `minimax-portal-cn` as the same MiniMax quota surface, and prefer stored MiniMax OAuth before falling back to Coding Plan key env vars.
 
   </Accordion>
@@ -397,7 +397,7 @@ See [MiniMax Search](/tools/minimax-search) for full web search configuration an
 - Onboarding and direct API-key setup write model definitions for M3 and both M2.7 variants
 - Image understanding uses the plugin-owned `MiniMax-VL-01` media provider
 - Update pricing values in `models.json` if you need exact cost tracking
-- Use `openclaw models list` to confirm the current provider id, then switch with `openclaw models set minimax/MiniMax-M3` or `openclaw models set minimax-portal/MiniMax-M3`
+- Use `paddy models list` to confirm the current provider id, then switch with `paddy models set minimax/MiniMax-M3` or `paddy models set minimax-portal/MiniMax-M3`
 
 <Note>
 See [Model providers](/concepts/model-providers) for provider rules.
@@ -409,7 +409,7 @@ See [Model providers](/concepts/model-providers) for provider rules.
   <Accordion title='"Unknown model: minimax/MiniMax-M3"'>
     This usually means the **MiniMax provider is not configured** (no matching provider entry and no MiniMax auth profile/env key found). Fix by:
 
-    - Running `openclaw configure` and selecting a **MiniMax** auth option, or
+    - Running `paddy configure` and selecting a **MiniMax** auth option, or
     - Adding the matching `models.providers.minimax` or `models.providers.minimax-portal` block manually, or
     - Setting `MINIMAX_API_KEY`, `MINIMAX_OAUTH_TOKEN`, or a MiniMax auth profile so the matching provider can be injected.
 
@@ -421,7 +421,7 @@ See [Model providers](/concepts/model-providers) for provider rules.
     Then recheck with:
 
     ```bash
-    openclaw models list
+    paddy models list
     ```
 
   </Accordion>

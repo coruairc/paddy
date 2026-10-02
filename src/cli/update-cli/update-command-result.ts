@@ -12,7 +12,7 @@ import {
 } from "../../infra/error-diagnostics.js";
 import { collectNestedErrorCandidates } from "../../infra/error-graph-internal.js";
 import { formatErrorMessage, formatUncaughtError } from "../../infra/errors.js";
-import type { PackageUpdateTransaction } from "../../infra/package-update-steps.js";
+import type { PackageUpdateTransaction } from "../../infra/package-update-swap-contract.js";
 import { isSqliteLockError } from "../../infra/sqlite-error-diagnostics.js";
 import type { readUpdateStateSchemaVersions } from "../../infra/update-candidate-state.js";
 import {
@@ -46,6 +46,7 @@ import { hasCommandProcessCleanupError } from "../../process/exec-result.js";
 import { defaultRuntime } from "../../runtime.js";
 import { isVerifiedUpdateRollback, type UpdateRecoveryStep } from "../../shared/update-outcome.js";
 import type { OpenClawSchemaVersions } from "../../state/openclaw-schema-versions.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import {
   formatDaemonServiceInstallCommand,
@@ -153,7 +154,7 @@ export function recordServiceReconciliationWarnings(
   assertCurrent();
   const step = {
     name: "managed-service-reconciliation",
-    command: "openclaw gateway install --force",
+    command: `${CLI_NAME} gateway install --force`,
     cwd: result.root ?? "",
     durationMs: 0,
     exitCode: 0,
@@ -183,7 +184,7 @@ export function prepareUpdateServiceResult(
   if (verdict?.kind === "unavailable") {
     params.result.steps.push({
       name: "managed-service",
-      command: formatCliCommand("openclaw gateway status --deep", serviceEnv),
+      command: formatCliCommand(`${CLI_NAME} gateway status --deep`, serviceEnv),
       cwd: params.root,
       durationMs: 0,
       exitCode: 0,
@@ -259,10 +260,11 @@ export function createUpdateCommandFailureResult(
         : admissionFailure
           ? "managed-service-preflight"
           : "update-failed";
-  const failedStep: UpdateStepResult = {
+  const stepResult = preMutationFailure ? cause.stepResult : undefined;
+  const failedStep: UpdateStepResult = stepResult?.failedStep ?? {
     name:
       preMutationFailure || pkgOwnershipFailure || admissionFailure ? reason : (phase ?? "update"),
-    command: "openclaw update",
+    command: `${CLI_NAME} update`,
     cwd: result.root ?? process.cwd(),
     durationMs: result.durationMs,
     exitCode: 1,
@@ -275,7 +277,13 @@ export function createUpdateCommandFailureResult(
         ? cause.failureFacts
         : [createUpdateErrorFact(phase ?? "update", cause)],
   };
-  return { ...result, status: "error", reason, failedStep, steps: [failedStep] };
+  return {
+    ...result,
+    status: "error",
+    reason,
+    failedStep,
+    steps: stepResult?.failedStep ? stepResult.steps : [...(stepResult?.steps ?? []), failedStep],
+  };
 }
 
 /** Mutable exceptions cannot authorize recovery while command cleanup is unknown. */
@@ -363,7 +371,7 @@ export async function withUpdateAdmissionReporting<T>(
     const message =
       error instanceof FreeBsdPkgOwnershipError
         ? error.message
-        : `${error.message} Run \`openclaw gateway status --deep\` from the service's owning account before retrying.`;
+        : `${error.message} Run \`${CLI_NAME} gateway status --deep\` from the service's owning account before retrying.`;
     if (opts.json) {
       defaultRuntime.error(message);
     }
@@ -506,6 +514,7 @@ export function resolveAutomaticUpdateTriage(
 
 export type UpdateAdmissionReportParams = {
   mode?: UpdateRunResult["mode"];
+  stepResult?: Pick<UpdateRunResult, "steps" | "failedStep">;
   recoverySteps?: readonly UpdateRecoveryStep[];
   failureFacts?: readonly UpdateFailureFact[];
   root: string;
@@ -526,12 +535,19 @@ export type RefuseUpdate = (
 
 /** A fresh admission decision is data until its staging and executor owners settle. */
 export class UnreportedUpdateAdmissionOutcome extends Error {
+  readonly #report: UpdateAdmissionReportParams;
+
+  get report(): UpdateAdmissionReportParams {
+    return this.#report;
+  }
+
   constructor(
-    readonly report: UpdateAdmissionReportParams,
+    report: UpdateAdmissionReportParams,
     readonly skipped?: { exitCode: 0 | 1 },
   ) {
     super(report.message ?? report.reason);
     this.name = "UnreportedUpdateAdmissionOutcome";
+    this.#report = report;
   }
 }
 

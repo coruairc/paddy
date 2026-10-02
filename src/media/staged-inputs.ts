@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { compileFunction } from "node:vm";
+import { PRODUCT_NAME } from "../brand.js";
 import { root as fsRoot, sanitizeUntrustedFileName, type Root } from "../infra/fs-safe.js";
 import type { MediaFact } from "./media-facts.js";
 
@@ -162,7 +163,7 @@ export async function ensureStagedInputDirectory(
   const ignorePath = `${directory}/.gitignore`;
   if (await root.exists(directory)) {
     if ((await root.readText(ignorePath, { maxBytes: 1024 })) !== STAGED_INPUT_GITIGNORE) {
-      throw new Error("Input staging directory is not owned by OpenClaw");
+      throw new Error(`Input staging directory is not owned by ${PRODUCT_NAME}`);
     }
     return;
   }

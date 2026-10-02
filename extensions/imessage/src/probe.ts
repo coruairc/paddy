@@ -114,7 +114,7 @@ function resolveIMessageNonMacHostError(
   if (platform === "darwin" || !isDefaultLocalIMessageCliPath(cliPath)) {
     return undefined;
   }
-  return "iMessage via the default imsg CLI must run on macOS. Run OpenClaw on the signed-in Messages Mac, or set channels.imessage.cliPath to an SSH wrapper that runs imsg on that Mac.";
+  return "iMessage via the default imsg CLI must run on macOS. Run Paddy on the signed-in Messages Mac, or set channels.imessage.cliPath to an SSH wrapper that runs imsg on that Mac.";
 }
 
 async function probeRpcSupport(cliPath: string, timeoutMs: number): Promise<RpcSupportResult> {

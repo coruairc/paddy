@@ -49,9 +49,9 @@ export class PluginTrustRefusalError extends Error {
     };
     const remedy =
       trust.reason === "provenance-missing"
-        ? "Run openclaw doctor --fix to repair proven legacy official provenance; if it cannot be verified, reinstall from the official npm package or ClawHub listing."
+        ? "Run paddy doctor --fix to repair proven legacy official provenance; if it cannot be verified, reinstall from the official npm package or ClawHub listing."
         : trust.reason === "record-missing"
-          ? "Compare this registryPath with openclaw plugins inspect <plugin-id> --json. If the CLI and Gateway state paths differ, align the service environment; otherwise reinstall from the official npm package or ClawHub listing."
+          ? "Compare this registryPath with paddy plugins inspect <plugin-id> --json. If the CLI and Gateway state paths differ, align the service environment; otherwise reinstall from the official npm package or ClawHub listing."
           : trust.reason === "origin-path"
             ? "Install the official npm package or ClawHub listing and remove the local override from plugins.load.paths; --link and --force do not grant trusted plugin state."
             : "Reinstall from the official npm package or ClawHub listing; local paths, archives, ambiguous ownership, and inconsistent install records do not grant trusted plugin state.";

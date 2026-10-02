@@ -72,7 +72,11 @@ import type {
 } from "./system-prompt-contribution.js";
 import { buildMessagingSection } from "./system-prompt-messaging.js";
 import { buildSystemPromptToolLines } from "./system-prompt-tool-list.js";
-import type { PromptMode, SilentReplyPromptMode } from "./system-prompt.types.js";
+import type {
+  PromptMode,
+  SilentReplyPromptMode,
+  SystemPromptRuntimeInfo,
+} from "./system-prompt.types.js";
 import { AUTOMATIONS_TOOL_NAME } from "./tools/automations-tool-name.js";
 import { buildUiPresentationPrompt } from "./ui-presentation-prompt.js";
 import { buildProactiveSubagentOrchestrationSection } from "./ultra-orchestration.js";
@@ -84,27 +88,6 @@ import {
 type OwnerIdDisplay = "raw" | "hash";
 
 const SYSTEM_PROMPT_STABLE_PREFIX_CACHE_LIMIT = 64;
-
-export type SystemPromptRuntimeInfo = {
-  agentId?: string;
-  agentName?: string;
-  sessionKey?: string;
-  sessionId?: string;
-  sessionUrl?: string;
-  gitCoauthorPrompt?: string;
-  host?: string;
-  os?: string;
-  arch?: string;
-  node?: string;
-  model?: string;
-  defaultModel?: string;
-  shell?: string;
-  channel?: string;
-  chatType?: string;
-  capabilities?: string[];
-  repoRoot?: string;
-  activeNode?: string;
-};
 
 const stablePromptPrefixCache = new Map<string, string>();
 
@@ -439,15 +422,15 @@ function buildDocsSection(params: {
     docsPath ? "Mirror: https://docs.openclaw.ai" : undefined,
     sourcePath ? `Source: ${sourcePath}` : "Source: https://github.com/openclaw/openclaw",
     docsPath
-      ? `OpenClaw behavior questions: docs first${params.readToolName ? ` via \`${params.readToolName}\`/local search` : " using available tools"}. AGENTS/project/workspace/profile/memory = instructions/user memory, not product design truth.`
-      : "OpenClaw behavior questions: docs mirror first when web exists. AGENTS/project/workspace/profile/memory = instructions/user memory, not product design truth.",
+      ? `Paddy behavior questions: docs first${params.readToolName ? ` via \`${params.readToolName}\`/local search` : " using available tools"}. AGENTS/project/workspace/profile/memory = instructions/user memory, not product design truth.`
+      : `Paddy behavior questions: docs mirror first when web exists. AGENTS/project/workspace/profile/memory = instructions/user memory, not product design truth.`,
     params.hasGateway
       ? "Config field: use `gateway(config.schema.lookup)` with an exact path only when that action is exposed by the tool schema. Otherwise use `docs/gateway/configuration.md` and `docs/gateway/configuration-reference.md`."
       : "Configuration docs: `docs/gateway/configuration.md`, `docs/gateway/configuration-reference.md`.",
     sourcePath
       ? "If docs are silent/stale, say so and inspect local source."
       : "If docs are silent/stale, say so and inspect GitHub source.",
-    "Diagnosis: run `openclaw status` when possible; ask only if blocked.",
+    "Diagnosis: run `paddy status` when possible; ask only if blocked.",
     "",
   ];
   return lines.filter((line): line is string => line !== undefined);
@@ -584,7 +567,7 @@ export function buildAgentSystemPrompt(params: {
   const runtimeInfo = params.runtimeInfo;
   const modelIdentityLine = buildModelIdentityPromptLine(runtimeInfo?.model);
   if (promptMode === "none") {
-    return ["You are a personal assistant running inside OpenClaw.", modelIdentityLine]
+    return [`You are a personal assistant running inside Paddy.`, modelIdentityLine]
       .filter(Boolean)
       .join("\n");
   }
@@ -827,7 +810,7 @@ export function buildAgentSystemPrompt(params: {
   });
   const stablePrefix = cacheStablePromptPrefix(stablePrefixCacheKey, () => {
     const lines = [
-      "You are a personal assistant running inside OpenClaw.",
+      `You are a personal assistant running inside Paddy.`,
       "",
       ...(includeToolGuidance
         ? [
@@ -943,7 +926,7 @@ export function buildAgentSystemPrompt(params: {
           : [],
       ),
       "",
-      "## OpenClaw Control",
+      `## Paddy Control`,
       "Do not invent commands.",
       hasOpenClaw
         ? "Gateway restart, config, channels, plugins, agents, models/providers: ask `openclaw`."
@@ -954,14 +937,14 @@ export function buildAgentSystemPrompt(params: {
         "For the Gateway hosting this session:",
         "In a connected chat, the owner can send `/update` with commands.restart enabled (the default), regardless of the agent's tool profile.",
         hasGateway
-          ? "Update OpenClaw: `gateway` action update.run, only on an explicit owner request or an operator-scheduled update; the runtime coordinates restart and completion notices. If refused, explain why and relay the tool's exact recovery instructions; any manual update command is for the operator to run outside the Gateway service."
-          : "For a chat update request, direct the user to `/update`. Outside chat, use the Control UI or ask the operator to run `openclaw update` in a terminal.",
+          ? `Update Paddy: \`gateway\` action update.run, only on an explicit owner request or an operator-scheduled update; the runtime coordinates restart and completion notices. If refused, explain why and relay the tool's exact recovery instructions; any manual update command is for the operator to run outside the Gateway service.`
+          : "For a chat update request, direct the user to `/update`. Outside chat, use the Control UI or ask the operator to run `paddy update` in a terminal.",
         "Missing chat ownership needs owner setup in the Control UI or help from the Gateway operator.",
-        "Never run openclaw update, npm install -g openclaw, swap installations, or stop/restart the gateway service via exec or detached jobs.",
+        "Never run paddy update, npm install -g paddy, swap installations, or stop/restart the gateway service via exec or detached jobs.",
       ].join(" "),
       ...(hasExec
         ? [
-            "For a user-requested update on another host, verify it is not this Gateway, then use exec/SSH with `openclaw update --yes`; normal exec approvals still apply.",
+            "For a user-requested update on another host, verify it is not this Gateway, then use exec/SSH with `paddy update --yes`; normal exec approvals still apply.",
           ]
         : []),
       "",
@@ -1038,7 +1021,7 @@ export function buildAgentSystemPrompt(params: {
         : "",
       ...bootstrapSystemPromptSections,
       "## Workspace Files (injected)",
-      "User-editable; OpenClaw loads below as Project Context.",
+      `User-editable; Paddy loads below as Project Context.`,
       "",
     ];
 
@@ -1227,6 +1210,7 @@ function buildRuntimeLine(
     runtimeInfo?.activeNode
       ? `active_node=${sanitizeForPromptLiteral(runtimeInfo.activeNode)}`
       : "",
+    runtimeInfo?.activeNodeIdentity ? `active_node_identity=${runtimeInfo.activeNodeIdentity}` : "",
     runtimeInfo?.model ? `model=${runtimeInfo.model}` : "",
     runtimeInfo?.defaultModel ? `default_model=${runtimeInfo.defaultModel}` : "",
     runtimeInfo?.shell ? `shell=${runtimeInfo.shell}` : "",

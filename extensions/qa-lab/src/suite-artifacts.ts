@@ -13,12 +13,11 @@ import type { QaProviderMode } from "./model-selection.js";
 import type { QaTransportDriver } from "./qa-transport-registry.js";
 import type { QaTransportAdapter } from "./qa-transport.js";
 import { renderQaMarkdownReport } from "./report.js";
-import type { RuntimeId } from "./runtime-parity.js";
+import type { RuntimeId } from "./runtime-id.js";
 import type { QaSeedScenarioWithSource } from "./scenario-catalog.js";
 import type { QaScorecardEvidenceMode } from "./scorecard-taxonomy.js";
 import { splitModelRef } from "./suite-planning.js";
 import { countQaSuiteFailedScenarios, type QaSuiteSummaryJson } from "./suite-summary.js";
-import { createQaSuiteReportNotes } from "./suite-support.js";
 import {
   rejectRemovedQaChannelDriverSelection,
   type QaSuiteScenarioResult,
@@ -153,15 +152,15 @@ export async function writeQaSuiteArtifacts(
     (artifact) => artifact.kind === "channel-driver-smoke",
   )?.path;
   const report = renderQaMarkdownReport({
-    title: "OpenClaw QA Scenario Suite",
+    title: "Paddy QA Scenario Suite",
     inProgress: params.status === "running",
     startedAt: params.startedAt,
     finishedAt: params.finishedAt,
     scenarios: params.scenarios,
-    notes: createQaSuiteReportNotes({
-      ...params,
-      transportArtifactNotes: params.transportArtifacts?.reportNotes,
-    }),
+    notes: [
+      ...params.transport.createReportNotes(params),
+      ...(params.transportArtifacts?.reportNotes ?? []),
+    ],
   });
   const artifactPaths = [
     { kind: "summary", path: path.basename(summaryPath) },

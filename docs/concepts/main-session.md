@@ -7,7 +7,7 @@ read_when:
 title: "The main session"
 ---
 
-OpenClaw is a personal agent first. Out of the box, every direct message you
+Paddy is a personal agent first. Out of the box, every direct message you
 send it — from Telegram, WhatsApp, iMessage, Slack DMs, the web app, anywhere —
 lands in **one rolling conversation**: the main session. Ask something on your
 phone, follow up from your laptop, and the agent has the same context in both
@@ -34,7 +34,7 @@ Select **Talk to your Home agent** in the sidebar footer (or press
 `Cmd/Ctrl+Shift+H`) to open Home beside your current page. The assistant
 sidebar can dock on the right or bottom.
 It follows the agent selected in the sidebar's agent switcher, so there is one
-place to change agents. **Ask OpenClaw** remains a separate system-care
+place to change agents. **Ask Paddy** remains a separate system-care
 conversation in the same sidebar.
 
 The dock uses your real Home conversation, including its history, tools,
@@ -111,7 +111,7 @@ making the model carry its entire history at once:
 - When the per-agent store's physical database, WAL, and session artifacts
   exceed the disk budget (`session.maintenance.maxDiskBytes`, default `10gb` —
   see [Session maintenance](/reference/session-management-compaction/maintenance)),
-  OpenClaw extracts the oldest unreferenced history to a verified compressed
+  Paddy extracts the oldest unreferenced history to a verified compressed
   archive before removing its database rows. Live, routed, and in-flight
   sessions are never budget victims.
 
@@ -132,7 +132,7 @@ With an isolating scope, each sender gets their own session and
 cross-conversation memory recall defaults off. Group watching remains controlled
 independently by `session.groupScope`: `per-group` keeps ambient main-session
 visibility, while `main` puts the room in the main conversation directly.
-`openclaw security audit` recommends DM isolation when it detects multiple
+`paddy security audit` recommends DM isolation when it detects multiple
 senders. The full scope matrix, identity linking, and per-route overrides are
 covered in [Session management](/concepts/session) and [Channel routing](/channels/channel-routing).
 

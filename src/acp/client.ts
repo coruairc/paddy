@@ -14,6 +14,7 @@ import {
   type SessionNotification,
 } from "@agentclientprotocol/sdk";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import { ensureOpenClawCliOnPath } from "../infra/path-env.js";
 import { killProcessTree, signalProcessTree } from "../process/kill-tree.js";
 import {
@@ -149,7 +150,7 @@ async function createAcpClient(opts: AcpClientOptions = {}): Promise<AcpClientHa
   const defaultServerArgs = entryPath ? [entryPath, ...serverArgs] : serverArgs;
   const serverCommand = opts.serverCommand ?? defaultServerCommand;
   const effectiveArgs = opts.serverCommand || !entryPath ? serverArgs : defaultServerArgs;
-  const { getActiveSkillEnvKeys } = await import("../skills/runtime/env-overrides.runtime.js");
+  const { getActiveSkillEnvKeysCore } = await import("../skills/runtime/env-overrides.js");
   const stripProviderAuthEnvVars = shouldStripProviderAuthEnvVarsForAcpServer({
     serverCommand,
     serverArgs: effectiveArgs,
@@ -158,7 +159,7 @@ async function createAcpClient(opts: AcpClientOptions = {}): Promise<AcpClientHa
   });
   const stripKeys = buildAcpClientStripKeys({
     stripProviderAuthEnvVars,
-    activeSkillEnvKeys: getActiveSkillEnvKeys(),
+    activeSkillEnvKeys: getActiveSkillEnvKeysCore(),
   });
   const spawnEnv = resolveAcpClientSpawnEnv(process.env, { stripKeys });
   const spawnInvocation = resolveAcpClientSpawnInvocation(
@@ -241,7 +242,7 @@ export async function runAcpClientInteractive(opts: AcpClientOptions = {}): Prom
     output: process.stdout,
   });
 
-  console.log("OpenClaw ACP client");
+  console.log(`${PRODUCT_NAME} ACP client`);
   console.log(`Session: ${sessionId}`);
   console.log('Type a prompt, or "exit" to quit.\n');
 

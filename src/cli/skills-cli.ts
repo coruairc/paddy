@@ -1,4 +1,3 @@
-// Skills CLI for workspace status, install/update, ClawHub verification, and workshop proposals.
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import type { Command } from "commander";
 import {
@@ -220,13 +219,6 @@ async function runSkillsAction(
   });
 }
 
-function resolveSkillsWorkspaceForCommand(
-  command: Command | null | undefined,
-  opts?: { agent?: string },
-): ReturnType<typeof resolveSkillsWorkspace> {
-  return resolveSkillsWorkspace({ agentId: resolveAgentOption(command ?? undefined, opts) });
-}
-
 function resolveClawHubTargetWorkspace(
   command: Command | undefined,
   opts: { agent?: string; global?: boolean },
@@ -367,7 +359,7 @@ async function withOfflineGatewayLock<T>(
   const lock = await acquireGatewayLock({
     allowInTests: true,
     port: resolveGatewayPort(config, process.env),
-    role: "skill-workshop-apply",
+    role: "sqlite-maintenance",
     timeoutMs: GATEWAY_SKILLS_OFFLINE_LOCK_TIMEOUT_MS,
   }).catch(() => undefined);
   if (!lock) {
@@ -375,7 +367,7 @@ async function withOfflineGatewayLock<T>(
   }
   // Missing credentials cannot prove a Gateway is absent; only its ownership lock can.
   try {
-    return await action();
+    return await lock.run(action);
   } finally {
     await lock.release();
   }
@@ -515,9 +507,6 @@ async function readSkillProposalInput(options: {
   return { content: await readSkillProposalDraftFile(proposal!) };
 }
 
-/**
- * Register the skills CLI commands
- */
 export function registerSkillsCli(program: Command) {
   const skills = program
     .command("skills")
@@ -560,7 +549,7 @@ export function registerSkillsCli(program: Command) {
     .option("--as <slug>", "Install a git/local skill under this slug")
     .addHelpText(
       "after",
-      "\nExamples:\n  openclaw skills install @owner/weather\n  openclaw skills install skills-sh:owner/repo/weather\n",
+      `\nExamples:\n  paddy skills install @owner/weather\n  paddy skills install skills-sh:owner/repo/weather\n`,
     )
     .action(
       async (
@@ -765,7 +754,7 @@ export function registerSkillsCli(program: Command) {
       false,
     )
     .option("--agent <id>", "Target agent workspace (defaults to cwd-inferred, then default agent)")
-    .addHelpText("after", "\nExamples:\n  openclaw skills verify @owner/weather\n")
+    .addHelpText("after", `\nExamples:\n  paddy skills verify @owner/weather\n`)
     .action(
       async (
         slug: string,
@@ -899,7 +888,9 @@ export function registerSkillsCli(program: Command) {
     format: (result: T) => string,
   ): Promise<void> => {
     await runCommandWithRuntime(defaultRuntime, async () => {
-      const result = await action(resolveSkillsWorkspaceForCommand(command, opts));
+      const result = await action(
+        resolveSkillsWorkspace({ agentId: resolveAgentOption(command, opts) }),
+      );
       if (hasJsonOutput(opts)) {
         defaultRuntime.writeJson(result);
         return;
@@ -1209,7 +1200,6 @@ export function registerSkillsCli(program: Command) {
       );
     });
 
-  // Default action (no subcommand) - show list
   skills.action(async (opts: { agent?: string; json?: boolean }, command: Command) => {
     await runSkillsAction((report) => formatSkillsList(report, { json: hasJsonOutput(opts) }), {
       agentId: resolveAgentOption(command, opts),

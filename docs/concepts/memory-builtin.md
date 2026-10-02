@@ -25,7 +25,7 @@ started.
 
 Native sqlite-vec queries run in a separate, read-only process so a slow query
 does not block the Gateway event loop. Cancelling a search terminates its query
-process; OpenClaw does not retry that native query on the Gateway thread.
+process; Paddy does not retry that native query on the Gateway thread.
 Queries reuse a process for each database, with at most two processes alive.
 Idle processes retire after 30 minutes or when another database needs capacity.
 Each query reopens the database so committed updates and replaced indexes remain visible.
@@ -119,7 +119,7 @@ openclaw plugins install @openclaw/llama-cpp-provider
 | Gemini            | `gemini`            | Supports multimodal (image + audio) |
 | GitHub Copilot    | `github-copilot`    | Uses your Copilot subscription      |
 | LM Studio         | `lmstudio`          | Local/self-hosted                   |
-| Local             | `local`             | OpenClaw-managed llama.cpp server   |
+| Local             | `local`             | Paddy-managed llama.cpp server      |
 | Mistral           | `mistral`           |                                     |
 | Ollama            | `ollama`            | Local/self-hosted                   |
 | OpenAI            | `openai`            | Default: `text-embedding-3-small`   |
@@ -130,9 +130,9 @@ Set `memory.search.provider` to switch away from OpenAI.
 
 ## How indexing works
 
-OpenClaw indexes `MEMORY.md`, an existing root `USER.md`, and `memory/*.md` into
+Paddy indexes `MEMORY.md`, an existing root `USER.md`, and `memory/*.md` into
 chunks (400 tokens with 80-token overlap by default) and stores them in a
-per-agent SQLite database. OpenClaw does not create `USER.md` automatically.
+per-agent SQLite database. Paddy does not create `USER.md` automatically.
 
 Each chunk can carry nullable importance and trigger metadata. Null values are
 neutral, so older indexes remain usable. Search combines hybrid relevance,
@@ -156,9 +156,9 @@ which support selective deletion after promotion. For coverage and limits, see
 - **Index compatibility:** changing the embedding provider, model, settings,
   configured sources, or scope can pause search until you explicitly rebuild.
   See [provider selection](/reference/memory-config#provider-selection).
-- **Reindex on demand:** `openclaw memory index --force --agent <id>`
+- **Reindex on demand:** `paddy memory index --force --agent <id>`
 
-When the index identity reports an OpenClaw chunking-implementation change,
+When the index identity reports a Paddy chunking-implementation change,
 a normal or CLI search rebuilds it before returning results. The rebuild uses
 the agent's current embedding settings; status inspection remains read-only.
 
@@ -189,7 +189,7 @@ Other agent state, including sessions and transcripts in the same database,
 is retained. Use the [memory index command](/cli/memory#memory-index) for
 memory-only repair.
 
-`openclaw memory status` reports stored chunk text and binary embedding bytes
+`paddy memory status` reports stored chunk text and binary embedding bytes
 for each source (`sourceCounts[].chunkBytes` in JSON). These are payload sizes,
 not total disk usage: embedding cache, FTS/vector tables, SQLite overhead, and
 WAL/free pages are excluded.
@@ -223,7 +223,7 @@ You can also index Markdown files outside the workspace with
 QMD has been removed; builtin is the only memory engine. After upgrading, run:
 
 ```bash
-openclaw doctor --fix
+paddy doctor --fix
 ```
 
 Doctor removes the retired `memory.backend`, `memory.qmd`, and
@@ -237,7 +237,7 @@ agent's sessions directory and are indexed from those original artifacts.
 
 Doctor removes only empty per-agent QMD directories under
 `~/.openclaw/agents/<agentId>/qmd/`. Nonempty directories stay untouched:
-OpenClaw's retired QMD backend used the same layout as standalone QMD, without
+Paddy's retired QMD backend used the same layout as standalone QMD, without
 an ownership marker. Retained directories do not block migration or Gateway
 startup. After backing them up, you can remove old indexes, model downloads,
 collection metadata, and session exports manually if you have confirmed that
@@ -265,26 +265,26 @@ BM25 keyword search only.
 
 ## Troubleshooting
 
-**Memory search disabled?** Check `openclaw memory status`. If no provider is
+**Memory search disabled?** Check `paddy memory status`. If no provider is
 detected, set one explicitly or add an API key.
 
 **Local provider not detected?** Run the interactive
-[llama.cpp](/plugins/llama-cpp) setup once with `openclaw onboard`, confirm the
+[llama.cpp](/plugins/llama-cpp) setup once with `paddy onboard`, confirm the
 local path exists, and run:
 
 ```bash
-openclaw memory status --deep --agent main
-openclaw memory index --force --agent main
+paddy memory status --deep --agent main
+paddy memory index --force --agent main
 ```
 
 Both standalone CLI commands and the Gateway use the same `local` provider id.
 Set `memory.search.provider: "local"` when you want local embeddings.
 
-**Stale results?** Run `openclaw memory index --force` to rebuild. The watcher
+**Stale results?** Run `paddy memory index --force` to rebuild. The watcher
 may miss changes in rare edge cases.
 
-**sqlite-vec not loading?** OpenClaw falls back to in-process cosine
-similarity automatically. `openclaw memory status --deep` reports the local
+**sqlite-vec not loading?** Paddy falls back to in-process cosine
+similarity automatically. `paddy memory status --deep` reports the local
 vector store separately from the embedding provider, so `Vector store:
 unavailable` points at sqlite-vec loading while `Embeddings: unavailable`
 points at provider/auth or model readiness. Check logs for the specific load
@@ -296,9 +296,9 @@ To rebuild after stale results or an embedding-provider change, select the
 affected agent explicitly:
 
 ```bash
-openclaw memory status --agent <agent-id> --deep
-openclaw memory index --agent <agent-id> --force --verbose
-openclaw memory status --agent <agent-id> --deep
+paddy memory status --agent <agent-id> --deep
+paddy memory index --agent <agent-id> --force --verbose
+paddy memory status --agent <agent-id> --deep
 ```
 
 <Warning>
@@ -312,8 +312,8 @@ To discard the derived index and embedding cache before rebuilding, use
 [`memory reset`](/cli/memory#memory-reset):
 
 ```bash
-openclaw memory reset --agent <agent-id>
-openclaw memory index --agent <agent-id>
+paddy memory reset --agent <agent-id>
+paddy memory index --agent <agent-id>
 ```
 
 Reset asks for confirmation; add `--yes` for non-interactive use. It clears only
@@ -332,7 +332,7 @@ the [restore workflow](/install/backups#restore-a-full-archive).
 
 ### Reclaim disk space
 
-Start with `openclaw memory status --agent <agent-id> --json`. Compare the
+Start with `paddy memory status --agent <agent-id> --json`. Compare the
 database and WAL sizes, reusable bytes, retained embedding-cache payload, and
 per-source chunk payloads. Reusable bytes are pages already free inside SQLite;
 they are not additional data. Cache and chunk payloads exclude indexes and
@@ -344,10 +344,10 @@ stop other writers. Keep them stopped through reset and compaction so background
 indexing cannot refill the cache between commands:
 
 ```bash
-openclaw memory reset --agent <agent-id> --yes
-openclaw doctor --session-sqlite compact --session-sqlite-agent <agent-id>
-openclaw memory index --agent <agent-id>
-openclaw memory status --agent <agent-id>
+paddy memory reset --agent <agent-id> --yes
+paddy doctor --session-sqlite compact --session-sqlite-agent <agent-id>
+paddy memory index --agent <agent-id>
+paddy memory status --agent <agent-id>
 ```
 
 If only unused pages need reclaiming, skip reset and preserve the existing index.

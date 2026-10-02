@@ -1,21 +1,21 @@
 ---
-summary: "CLI reference for `openclaw docs` (search the live docs index)"
+summary: "CLI reference for `paddy docs` (search the live docs index)"
 read_when:
-  - You want to search the live OpenClaw docs from the terminal
+  - You want to search the live Paddy docs from the terminal
   - You need to know which hosted search API the docs CLI calls
 title: "Docs"
 ---
 
-# `openclaw docs`
+# `paddy docs`
 
-Search the live OpenClaw docs index from the terminal.
+Search the live Paddy docs index from the terminal.
 
 ## Usage
 
 ```bash
-openclaw docs                              # print docs entrypoint and example search
-openclaw docs --json                       # print the same guidance as JSON
-openclaw docs <query...> [--json] [--limit <count>]
+paddy docs                              # print docs entrypoint and example search
+paddy docs --json                       # print the same guidance as JSON
+paddy docs <query...> [--json] [--limit <count>]
 ```
 
 | Argument/option   | Description                                                                        |
@@ -24,18 +24,18 @@ openclaw docs <query...> [--json] [--limit <count>]
 | `--json`          | Emit one machine-readable JSON object on stdout.                                   |
 | `--limit <count>` | Return at most this many results. The value must be a positive integer.            |
 
-With no query, `openclaw docs` prints the docs entrypoint URL and a sample search command instead of running a search.
+With no query, `paddy docs` prints the docs entrypoint URL and a sample search command instead of running a search.
 
 Omit `--limit` to show all results returned by the search service. The limit applies to displayed results and does not reduce the downloaded response size.
 
 ## Examples
 
 ```bash
-openclaw docs browser existing-session
-openclaw docs browser existing-session --json
-openclaw docs plugin --limit 5
-openclaw docs sandbox allowHostControl
-openclaw docs gateway token secretref
+paddy docs browser existing-session
+paddy docs browser existing-session --json
+paddy docs plugin --limit 5
+paddy docs sandbox allowHostControl
+paddy docs gateway token secretref
 ```
 
 ## How it works

@@ -1,12 +1,12 @@
-# OpenClaw DeepSeek Provider
+# Paddy DeepSeek Provider
 
-Official OpenClaw provider plugin for DeepSeek.
+Official Paddy provider plugin for DeepSeek.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/deepseek-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/deepseek> for setup and configuration.

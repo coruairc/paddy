@@ -1,27 +1,27 @@
 ---
 doc-schema-version: 1
-summary: "CLI reference for `openclaw webhooks` (Gmail Pub/Sub setup and runner)"
+summary: "CLI reference for `paddy webhooks` (Gmail Pub/Sub setup and runner)"
 read_when:
-  - You want to wire Gmail Pub/Sub events into OpenClaw
+  - You want to wire Gmail Pub/Sub events into Paddy
   - You need the full flag list and default values
 title: "Webhooks"
 ---
 
-# `openclaw webhooks`
+# `paddy webhooks`
 
-`openclaw webhooks` sets up and runs the Gmail Pub/Sub transport through `gog` (gogcli). It does not register [internal `HOOK.md` hooks](/automation/hooks) or manage arbitrary [Gateway hook mappings](/automation/cron-jobs#webhooks).
+`paddy webhooks` sets up and runs the Gmail Pub/Sub transport through `gog` (gogcli). It does not register [internal `HOOK.md` hooks](/automation/hooks) or manage arbitrary [Gateway hook mappings](/automation/cron-jobs#webhooks).
 
 ## Subcommands
 
 ```bash
-openclaw webhooks gmail setup --account <email> [...]
-openclaw webhooks gmail run   [--account <email>] [...]
+paddy webhooks gmail setup --account <email> [...]
+paddy webhooks gmail run   [--account <email>] [...]
 ```
 
-| Subcommand    | Description                                                                           |
-| ------------- | ------------------------------------------------------------------------------------- |
-| `gmail setup` | One-time wizard: Gmail watch, Pub/Sub topic/subscription, and OpenClaw hook delivery. |
-| `gmail run`   | Run `gog gmail watch serve` plus the watch auto-renew loop in the foreground.         |
+| Subcommand    | Description                                                                        |
+| ------------- | ---------------------------------------------------------------------------------- |
+| `gmail setup` | One-time wizard: Gmail watch, Pub/Sub topic/subscription, and Paddy hook delivery. |
+| `gmail run`   | Run `gog gmail watch serve` plus the watch auto-renew loop in the foreground.      |
 
 <Note>
 The Gateway also auto-starts `gog gmail watch serve` on boot once `hooks.enabled=true` and `hooks.gmail.account` is set (set by `gmail setup`). `gmail run` provides a foreground watcher for debugging or when the Gateway watcher is disabled. Do not run both against the same listener. See [Gmail Pub/Sub integration](/automation/cron-jobs#gmail-pubsub-integration) for the auto-start details and `OPENCLAW_SKIP_GMAIL_WATCHER` opt-out.
@@ -30,14 +30,14 @@ The Gateway also auto-starts `gog gmail watch serve` on boot once `hooks.enabled
 ## `webhooks gmail setup`
 
 ```bash
-openclaw webhooks gmail setup --account you@example.com
-openclaw webhooks gmail setup --account you@example.com --project my-gcp-project --json
-openclaw webhooks gmail setup --account you@example.com --hook-url https://gateway.example.com/hooks/gmail
+paddy webhooks gmail setup --account you@example.com
+paddy webhooks gmail setup --account you@example.com --project my-gcp-project --json
+paddy webhooks gmail setup --account you@example.com --hook-url https://gateway.example.com/hooks/gmail
 ```
 
 Authenticates `gcloud`, enables the required APIs, creates or updates the Pub/Sub topic/subscription and push endpoint, starts the Gmail watch, and writes `hooks.gmail` with `hooks.enabled: true` and the Gmail preset. Missing `gcloud`, `gog`, and Tailscale dependencies can be installed automatically on macOS with Homebrew. Other platforms need them installed first. The Gmail account must already be authorized in `gog`.
 
-Setup changes cloud resources, exposure settings, and local config. It is not a read-only check. Re-running it can apply the CLI defaults over saved Gmail settings. It prints `Next: openclaw webhooks gmail run`. Use that only if the Gateway-managed watcher is not already running.
+Setup changes cloud resources, exposure settings, and local config. It is not a read-only check. Re-running it can apply the CLI defaults over saved Gmail settings. It prints `Next: paddy webhooks gmail run`. Use that only if the Gateway-managed watcher is not already running.
 
 <Warning>
 This command connects Gmail transport but does not create a restricted reader agent or the session-key policy required by the templated preset. Without a custom Gmail mapping that sets `agentId`, inbound email runs as the default agent with that agent's effective workspace, sandbox, and tool policy. Complete [Configure a restricted Gmail reader](/automation/cron-jobs#configure-a-restricted-gmail-reader-recommended) before running setup for an untrusted inbox.
@@ -59,13 +59,13 @@ This command connects Gmail transport but does not create a restricted reader ag
 | `--label <label>`       | `INBOX`                | Gmail label to watch.                                                                                                                                                                  |
 | `--push-endpoint <url>` | (none)                 | Explicit Pub/Sub push endpoint. Skips Tailscale endpoint setup; use `--tailscale off` for externally managed exposure. The URL is used as supplied, including any required push token. |
 
-### OpenClaw delivery options
+### Paddy delivery options
 
-| Flag                   | Default                                       | Description                                                                      |
-| ---------------------- | --------------------------------------------- | -------------------------------------------------------------------------------- |
-| `--hook-url <url>`     | `hooks.gmail.hookUrl`, then local Gateway URL | OpenClaw webhook URL; generated fallback uses `hooks.path` and the Gateway port. |
-| `--hook-token <token>` | `hooks.token`, or a generated token           | OpenClaw webhook token.                                                          |
-| `--push-token <token>` | `hooks.gmail.pushToken`, or a generated token | Separate token authenticating Pub/Sub to `gog gmail watch serve`.                |
+| Flag                   | Default                                       | Description                                                                   |
+| ---------------------- | --------------------------------------------- | ----------------------------------------------------------------------------- |
+| `--hook-url <url>`     | `hooks.gmail.hookUrl`, then local Gateway URL | Paddy webhook URL; generated fallback uses `hooks.path` and the Gateway port. |
+| `--hook-token <token>` | `hooks.token`, or a generated token           | Paddy webhook token.                                                          |
+| `--push-token <token>` | `hooks.gmail.pushToken`, or a generated token | Separate token authenticating Pub/Sub to `gog gmail watch serve`.             |
 
 <a id="gog-watch-serve-options" />
 
@@ -103,12 +103,12 @@ Command failures show bounded tails from both stdout and stderr, with terminal c
 ## `webhooks gmail run`
 
 ```bash
-openclaw webhooks gmail run --account you@example.com
+paddy webhooks gmail run --account you@example.com
 ```
 
 Starts the Gmail watch and runs `gog gmail watch serve` plus periodic watch renewal in the foreground. Unexpected serve-process exits continue to restart after 5 seconds. A bind conflict stops restarts. Run only one watcher per listener and stop the other watcher before retrying. Ctrl-C or SIGTERM cancels pending restarts and renewal work and shuts down the serve process tree. Investigate repeated exits in the logs.
 
-`run` accepts the same Pub/Sub, OpenClaw delivery, `gog gmail watch serve`, and Tailscale flags as `setup`, except:
+`run` accepts the same Pub/Sub, Paddy delivery, `gog gmail watch serve`, and Tailscale flags as `setup`, except:
 
 - `--account` is **optional** on `run`. It falls back to `hooks.gmail.account`.
 - `run` does **not** accept `--project`, `--push-endpoint`, or `--json`.
@@ -119,7 +119,7 @@ Starts the Gmail watch and runs `gog gmail watch serve` plus periodic watch rene
 | Category                | Flags                                                                            |
 | ----------------------- | -------------------------------------------------------------------------------- |
 | Pub/Sub                 | `--account`, `--topic`, `--subscription`, `--label`                              |
-| OpenClaw delivery       | `--hook-url`, `--hook-token`, `--push-token`                                     |
+| Paddy delivery          | `--hook-url`, `--hook-token`, `--push-token`                                     |
 | `gog gmail watch serve` | `--bind`, `--port`, `--path`, `--include-body`, `--max-bytes`, `--renew-minutes` |
 | Tailscale               | `--tailscale`, `--tailscale-path`, `--tailscale-target`                          |
 
@@ -130,8 +130,8 @@ For `run`, the `--topic` value is the full Pub/Sub topic path (`projects/.../top
 ## Verify forwarding
 
 ```bash
-openclaw config validate
-openclaw logs --follow
+paddy config validate
+paddy logs --follow
 ```
 
 Send a test from another account to the watched inbox. The watcher excludes

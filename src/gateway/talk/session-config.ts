@@ -7,7 +7,7 @@ import {
   normalizeOptionalLowercaseString,
   normalizeOptionalString,
 } from "@openclaw/normalization-core/string-coerce";
-import { resolveRealtimeBootstrapContextInstructions } from "../../agents/realtime-bootstrap-context.js";
+import { resolveRealtimeVoiceAgentContextInstructions } from "../../agents/realtime-bootstrap-context.js";
 import type { TalkRealtimeConfig } from "../../config/types.gateway.js";
 import type { OpenClawConfig } from "../../config/types.js";
 import type { RealtimeVoiceProviderPlugin } from "../../plugins/types.js";
@@ -16,10 +16,7 @@ import {
   listRealtimeTranscriptionProviders,
 } from "../../realtime-transcription/provider-registry.js";
 import type { RealtimeTranscriptionProviderConfig } from "../../realtime-transcription/provider-types.js";
-import {
-  REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME,
-  REALTIME_VOICE_AGENT_CONTEXT_INSTRUCTIONS,
-} from "../../talk/agent-consult-tool.js";
+import { REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME } from "../../talk/agent-consult-tool.js";
 import { REALTIME_VOICE_AGENT_CONTROL_TOOL_NAME } from "../../talk/agent-run-control-shared.js";
 import { resolveInternalRealtimeVoiceGatewayRelayLaunchError } from "../../talk/provider-internal.js";
 import { listRealtimeVoiceProviders } from "../../talk/provider-registry.js";
@@ -35,6 +32,7 @@ import {
   type VoiceModelProvider,
 } from "../../tts/voice-models.js";
 import { ADMIN_SCOPE } from "../operator-scopes.js";
+import { PRODUCT_NAME } from "../../brand.js";
 
 /** Resolve the Talk session mode, defaulting managed-room transports to stt-tts. */
 export function normalizeTalkSessionMode(params: { mode?: string; transport?: string }): TalkMode {
@@ -72,12 +70,7 @@ export async function resolveTalkRealtimeProviderInstructions(params: {
   sessionKey: string;
   warn: (message: string) => void;
 }): Promise<string> {
-  const bootstrapContext = await resolveRealtimeBootstrapContextInstructions(params);
-  return [
-    params.configuredInstructions,
-    REALTIME_VOICE_AGENT_CONTEXT_INSTRUCTIONS,
-    bootstrapContext,
-  ]
+  return [params.configuredInstructions, await resolveRealtimeVoiceAgentContextInstructions(params)]
     .filter((entry): entry is string => Boolean(entry?.trim()))
     .join("\n\n");
 }
@@ -351,12 +344,12 @@ export function resolveConfiguredRealtimeTranscriptionProvider(params: {
 }
 
 const DEFAULT_REALTIME_INSTRUCTIONS = [
-  "You are OpenClaw's realtime voice interface. Keep spoken replies concise.",
-  `If the user asks for code, repository state, files, current OpenClaw context, tool-backed actions, or deeper reasoning, call ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} and then summarize the result naturally.`,
-  `Do not claim you cannot use tools, perform actions, or reach OpenClaw unless ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} returns that failure.`,
-  `When ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} is in progress, speak one brief acknowledgement such as "Let me check that for you", then wait for the final OpenClaw result before answering with the actual result.`,
-  `If OpenClaw is already working through ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} and the user asks in any language for progress, cancellation, a redirect/change, or a follow-up, call ${REALTIME_VOICE_AGENT_CONTROL_TOOL_NAME} with the semantic mode.`,
-  "For greetings and casual chatter while OpenClaw is working, answer naturally and do not redirect the active work.",
+  `You are ${PRODUCT_NAME}'s realtime voice interface. Keep spoken replies concise.`,
+  `If the user asks for code, repository state, files, current ${PRODUCT_NAME} context, tool-backed actions, or deeper reasoning, call ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} and then summarize the result naturally.`,
+  `Do not claim you cannot use tools, perform actions, or reach ${PRODUCT_NAME} unless ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} returns that failure.`,
+  `When ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} is in progress, speak one brief acknowledgement such as "Let me check that for you", then wait for the final ${PRODUCT_NAME} result before answering with the actual result.`,
+  `If ${PRODUCT_NAME} is already working through ${REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME} and the user asks in any language for progress, cancellation, a redirect/change, or a follow-up, call ${REALTIME_VOICE_AGENT_CONTROL_TOOL_NAME} with the semantic mode.`,
+  `For greetings and casual chatter while ${PRODUCT_NAME} is working, answer naturally and do not redirect the active work.`,
 ].join(" ");
 
 export function buildRealtimeInstructions(configuredInstructions?: string): string {

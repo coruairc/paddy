@@ -12,6 +12,7 @@ import type {
   MigrationPlan,
   MigrationProviderContext,
 } from "openclaw/plugin-sdk/plugin-entry";
+import { filterStringRecord } from "openclaw/plugin-sdk/string-coerce-runtime";
 import { buildAuthItems } from "./auth.js";
 import { buildConfigItems } from "./config.js";
 import { exists, parseEnv, parseHermesConfig, readText } from "./helpers.js";
@@ -76,11 +77,7 @@ export async function buildHermesPlan(ctx: MigrationProviderContext): Promise<Mi
   }
   const env = parseEnv(await readText(source.envPath));
   const modelRef = resolveHermesModelRef(config, env);
-  const runtimeEnv = Object.fromEntries(
-    Object.entries(process.env).filter(
-      (entry): entry is [string, string] => typeof entry[1] === "string",
-    ),
-  );
+  const runtimeEnv = filterStringRecord(process.env) ?? {};
   const items: MigrationItem[] = [];
 
   let modelItemIndex: number | undefined;
@@ -154,9 +151,9 @@ export async function buildHermesPlan(ctx: MigrationProviderContext): Promise<Mi
       createMigrationManualItem({
         id: "manual:auth-reauthenticate:qwen",
         source: source.configPath ?? source.root,
-        message: "Hermes Qwen Portal OAuth and Qwen CLI credentials cannot be reused by OpenClaw.",
+        message: "Hermes Qwen Portal OAuth and Qwen CLI credentials cannot be reused by Paddy.",
         recommendation:
-          "Authenticate qwen with an API key after migration: openclaw onboard --auth-choice qwen-api-key.",
+          "Authenticate qwen with an API key after migration: paddy onboard --auth-choice qwen-api-key.",
       }),
     );
   }
@@ -186,7 +183,7 @@ export async function buildHermesPlan(ctx: MigrationProviderContext): Promise<Mi
       (item) => item.kind === "auth" && item.details?.sourceKind === "hermes-auth-json",
     )
       ? [
-          "Hermes and OpenClaw must not keep using the same imported OpenAI OAuth refresh grant after migration; reauthenticate one side before running both.",
+          "Hermes and Paddy must not keep using the same imported OpenAI OAuth refresh grant after migration; reauthenticate one side before running both.",
         ]
       : []),
     ...(items.some((item) => item.status === "conflict")
@@ -196,7 +193,7 @@ export async function buildHermesPlan(ctx: MigrationProviderContext): Promise<Mi
       : []),
     ...(source.archivePaths.length > 0
       ? [
-          "Some Hermes files are archive-only. They will be copied into the migration report for manual review, not loaded into OpenClaw.",
+          "Some Hermes files are archive-only. They will be copied into the migration report for manual review, not loaded into Paddy.",
         ]
       : []),
     ...(items.some((item) => item.kind === "manual")
@@ -210,7 +207,7 @@ export async function buildHermesPlan(ctx: MigrationProviderContext): Promise<Mi
     summary: summarizeMigrationItems(items),
     items,
     warnings,
-    nextSteps: ["Run openclaw doctor after applying the migration."],
+    nextSteps: ["Run paddy doctor after applying the migration."],
     metadata: { agentDir: targets.agentDir },
   };
 }

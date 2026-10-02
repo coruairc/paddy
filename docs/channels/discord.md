@@ -5,7 +5,7 @@ read_when:
 title: "Discord"
 ---
 
-OpenClaw connects to Discord as a bot over the official Discord gateway. DMs and guild channels are supported.
+Paddy connects to Discord as a bot over the official Discord gateway. DMs and guild channels are supported.
 
 <CardGroup cols={3}>
   <Card title="Pairing" icon="link" href="/channels/pairing">
@@ -64,7 +64,7 @@ Every section heading from the previous single-page version keeps its anchor her
 - <a id="enable-developer-mode-and-collect-your-ids" />[Enable Developer Mode and collect your IDs](/channels/discord/setup#enable-developer-mode-and-collect-your-ids)
 - <a id="allow-dms-from-server-members" />[Allow DMs from server members](/channels/discord/setup#allow-dms-from-server-members)
 - <a id="set-your-bot-token-securely-do-not-send-it-in-chat" />[Set your bot token securely (do not send it in chat)](/channels/discord/setup#set-your-bot-token-securely-do-not-send-it-in-chat)
-- <a id="configure-openclaw-and-pair" />[Configure OpenClaw and pair](/channels/discord/setup#configure-openclaw-and-pair)
+- <a id="configure-openclaw-and-pair" />[Configure Paddy and pair](/channels/discord/setup#configure-openclaw-and-pair)
 - <a id="ask-your-agent" />[Ask your agent](/channels/discord/setup#ask-your-agent)
 - <a id="cli-%2F-config" />[CLI / config](/channels/discord/setup#cli-%2F-config)
 - <a id="approve-first-dm-pairing" />[Approve first DM pairing](/channels/discord/setup#approve-first-dm-pairing)
@@ -123,7 +123,7 @@ Primary reference: [Configuration reference - Discord](/gateway/config-channels#
 - gateway: `proxy`
 - reply/history: `replyToMode`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
 - delivery: `textChunkLimit` (default `2000`), `maxLinesPerMessage` (default `17`)
-- streaming: `streaming.mode`, `streaming.chunkMode`, `streaming.preview.*`, `streaming.progress.*`, `streaming.block.*` (legacy flat `streamMode`, `draftChunk`, `blockStreaming`, `blockStreamingCoalesce`, `chunkMode` keys are migrated into `streaming.*` by `openclaw doctor --fix`)
+- streaming: `streaming.mode`, `streaming.chunkMode`, `streaming.preview.*`, `streaming.progress.*`, `streaming.block.*` (legacy flat `streamMode`, `draftChunk`, `blockStreaming`, `blockStreamingCoalesce`, `chunkMode` keys are migrated into `streaming.*` by `paddy doctor --fix`)
 - media: `mediaMaxMb` (caps outbound Discord uploads, default `100`)
 - actions: `actions.*`
 - presence: `activity`, `status`, `activityType`, `activityUrl`, `autoPresence.*`
@@ -142,13 +142,13 @@ Set `channels.discord.activities` to let the core `show_widget` tool post self-c
 
 - Treat bot tokens as secrets (`DISCORD_BOT_TOKEN` preferred in supervised environments).
 - `DISCORD_API_URL` overrides the process-wide, versioned Discord REST base (for example,
-  `https://discord.example.com/api/v10`). OpenClaw also uses that origin for Gateway discovery,
+  `https://discord.example.com/api/v10`). Paddy also uses that origin for Gateway discovery,
   WebSocket connections, media, webhooks, OAuth, and command registration; requests do not fall
   back to public Discord while the override is set. Plain HTTP/WS is accepted only on loopback,
   and Discord voice transport is unavailable with the override. Set it in the Gateway process
   environment or global runtime dotenv, not a workspace `.env`.
 - Grant least-privilege Discord permissions.
-- If command deploy/state is stale, restart the gateway and re-check with `openclaw channels status --probe`.
+- If command deploy/state is stale, restart the gateway and re-check with `paddy channels status --probe`.
 
 ## Related
 

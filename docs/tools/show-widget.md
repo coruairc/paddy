@@ -10,7 +10,7 @@ read_when:
   - You need the show_widget input, security, or retention contract
 ---
 
-`show_widget` is a core tool that shows a self-contained HTML widget on the user's current surface. OpenClaw renders it inline in the Control UI and in iOS, Android, macOS, and Linux Quick Chat transcripts. The Linux dashboard uses the browser Control UI. In a Discord session with [Activities](/channels/discord-activities) enabled, the Discord plugin posts an **Open widget** button that launches it as an Activity.
+`show_widget` is a core tool that shows a self-contained HTML widget on the user's current surface. Paddy renders it inline in the Control UI and in iOS, Android, macOS, and Linux Quick Chat transcripts. The Linux dashboard uses the browser Control UI. In a Discord session with [Activities](/channels/discord-activities) enabled, the Discord plugin posts an **Open widget** button that launches it as an Activity.
 
 For a pinned data report, provide a structured `report` with `pin: true`. Reports render directly in the Control UI dashboard using its native typography and layout, without a document frame. Use HTML for arbitrary interactive content or an inline preview. See [Native dashboard reports](#native-dashboard-reports).
 
@@ -22,7 +22,7 @@ non-code visualizations that belong together.
 
 ## How widgets work
 
-For HTML widgets, OpenClaw core validates `widget_code` by parsing every inline JavaScript `<script>` (classic and module), skipping scripts with `src` or a non-JavaScript `type`, then wraps it once in the canonical HTML document. Core rejects the call with the line and column of the first syntax error, so a widget with a broken script is never hosted. For an inline client, core stores that document as a Canvas document and returns a preview handle. The Control UI reads the document over its authenticated Gateway connection and renders it through the dedicated-origin, double-iframe sandbox used by dashboard widgets and MCP Apps. The widget frame does not need its own login session. iOS, Android, macOS, and Linux Quick Chat use isolated web views. Full chat clients restore the widget after history reload. Quick Chat keeps the widget for its active reply.
+For HTML widgets, Paddy core validates `widget_code` by parsing every inline JavaScript `<script>` (classic and module), skipping scripts with `src` or a non-JavaScript `type`, then wraps it once in the canonical HTML document. Core rejects the call with the line and column of the first syntax error, so a widget with a broken script is never hosted. For an inline client, core stores that document as a Canvas document and returns a preview handle. The Control UI reads the document over its authenticated Gateway connection and renders it through the dedicated-origin, double-iframe sandbox used by dashboard widgets and MCP Apps. The widget frame does not need its own login session. iOS, Android, macOS, and Linux Quick Chat use isolated web views. Full chat clients restore the widget after history reload. Quick Chat keeps the widget for its active reply.
 
 Channel plugins can register a contextual presenter behind the same core tool. In a configured Discord session, core hands the composed document to the Discord presenter, which stores it and posts the Activity button in the current channel. The model still makes one `show_widget` call. There is no transport-specific widget tool or content kind.
 
@@ -39,7 +39,7 @@ For browser embedding, the wrapper document injects six small host bridges aroun
 
 Everything else stays inside the frame. The document runs in an opaque origin with a restrictive Content Security Policy. Widget scripts cannot directly reach the Control UI or Gateway. Public CDN assets are allowed as described below; API connections remain separate from static-resource loading.
 
-OpenClaw exposes `show_widget` only when the originating Gateway client declares the `inline-widgets` capability or exactly one registered current-channel presenter synchronously matches trusted run context. The Control UI and supported native apps declare the inline capability automatically. Linux Quick Chat stays text-only for Gateway connections that require a custom TLS leaf pin because its platform WebView cannot bind that pin. Discord matches only when Activities are configured for the current account and a concrete channel is available. Other channel runs without an inline client or matching presenter do not receive the tool.
+Paddy exposes `show_widget` only when the originating Gateway client declares the `inline-widgets` capability or exactly one registered current-channel presenter synchronously matches trusted run context. The Control UI and supported native apps declare the inline capability automatically. Linux Quick Chat stays text-only for Gateway connections that require a custom TLS leaf pin because its platform WebView cannot bind that pin. Discord matches only when Activities are configured for the current account and a concrete channel is available. Other channel runs without an inline client or matching presenter do not receive the tool.
 
 An agent-turn automation bound to a persistent session and carrying a server-authored scheduled tool policy may explicitly allow `show_widget` without an inline client. That scheduled surface is pinned-only: every call requires `pin: true`, writes to the bound session dashboard, and cannot set `presentation.target`. Detached cron-run sessions, ordinary capless channel runs, and scheduled jobs without an explicit tool cap remain excluded. The originating-client capability remains mandatory for inline presentation.
 
@@ -98,7 +98,7 @@ Author widgets with four rules:
 ## Libraries and fonts
 
 Send an HTML/SVG fragment in `widget_code`, with optional `<style>`, `<link>`, and
-`<script>` tags. OpenClaw supplies the document shell. The default widget policy
+`<script>` tags. Paddy supplies the document shell. The default widget policy
 allows scripts, ES module imports, stylesheets, and fonts from:
 
 - `https://cdnjs.cloudflare.com`
@@ -155,7 +155,7 @@ The core tool requires `title` and one content input: `widget_code` for HTML or 
 </ParamField>
 
 <ParamField path="widget_code" type="string">
-  Required for HTML, SVG, or registered source. Omit when providing `report`. For HTML, core parses every inline JavaScript `<script>` (classic and module), skipping scripts with `src` or a non-JavaScript `type`. The call is rejected with the line and column of the first syntax error, so a widget with a broken script is never hosted. For inline-widget clients, input beginning with `<svg` after trimming is rendered in SVG mode. Maximum length is 262,144 characters. The Discord presenter accepts HTML source up to 48 KiB. A Discord-only route does not advertise or accept registered non-HTML content kinds.
+  Required for HTML, SVG, or registered source. Omit when providing `report`. For HTML, core parses every inline JavaScript `<script>` (classic and module), skipping scripts with `src` or a non-JavaScript `type`. The call is rejected with the line and column of the first syntax error, so a widget with a broken script is never hosted. For inline-widget clients, input beginning with `<svg` after trimming is rendered in SVG mode. HTML and SVG accept up to 10 MiB of UTF-8 data, including Paddy's wrapper in the final document. Registered source remains limited to 262,144 characters and 256 KiB when pinned. The Discord presenter accepts HTML source up to 48 KiB. A Discord-only route does not advertise or accept registered non-HTML content kinds.
 </ParamField>
 
 <ParamField path="report" type="object">
@@ -232,9 +232,9 @@ Reuse the same `name` and `pin: true` with a new `report` object to replace a re
 
 ## Show on a device
 
-When a widget presenter plugin is active, `presentation.target` also offers `node_panel`. OpenClaw creates the same hosted widget document, selects a connected widget-panel-capable Mac, and opens its native panel at that document. The tool result names the selected Mac.
+When a widget presenter plugin is active, `presentation.target` also offers `node_panel`. Paddy creates the same hosted widget document, selects a connected widget-panel-capable Mac, and opens its native panel at that document. The tool result names the selected Mac.
 
-If no eligible Mac is connected or the node command fails, the widget still appears inline in chat and the result explains how to recover. Pair a Mac running OpenClaw or open the macOS app, then retry. Widgets shown in a native panel are render-only. Widget actions are disabled there.
+If no eligible Mac is connected or the node command fails, the widget still appears inline in chat and the result explains how to recover. Pair a Mac running Paddy or open the macOS app, then retry. Widgets shown in a native panel are render-only. Widget actions are disabled there.
 
 ## Audio and video
 
@@ -256,10 +256,10 @@ media URLs are not allowed; use HTTPS, including across redirects. Media hosts
 receive the client's request; keep private data and credentials out of media
 URLs. Widget documents use a no-referrer policy.
 
-Embedded media counts toward the existing `widget_code` limit of 262,144
-characters, including base64 encoding and the surrounding HTML. Pinned HTML
-also has a 256 KiB UTF-8 limit after OpenClaw adds its wrapper. For larger clips,
-use a direct HTTPS URL or a normal media attachment instead of base64.
+Embedded media counts toward the 10 MiB UTF-8 HTML limit, including base64
+encoding, the surrounding HTML, and Paddy's wrapper. The same document limit
+applies to inline widgets and pinned dashboards. For larger clips, use a direct
+HTTPS URL or a normal media attachment instead of base64.
 
 ## Interactive widgets
 
@@ -291,7 +291,7 @@ Pinned HTML and registered-source widgets expose one ticket-bound host API. An e
 - `openclaw.action.run(actionId, params?)` invokes an operator-granted plugin dashboard action verb through its write-scoped Gateway method.
 - `openclaw.cron.trigger(jobId)` runs an existing job now only when the exact `cron.trigger:<jobId>` capability was granted.
 
-OpenClaw forwards user-clicked links to `http` or `https` destinations to the Control UI host. The host opens a new tab with `noopener` and `noreferrer`. Forwarding covers a primary click on a `target="_blank"` link and a middle-button click on any link, matching how links behave elsewhere in the Control UI. A widget's own `preventDefault` still cancels the click. The widget sandbox never grants popup permission, and script-initiated `window.open` does not work.
+Paddy forwards user-clicked links to `http` or `https` destinations to the Control UI host. The host opens a new tab with `noopener` and `noreferrer`. Forwarding covers a primary click on a `target="_blank"` link and a middle-button click on any link, matching how links behave elsewhere in the Control UI. A widget's own `preventDefault` still cancels the click. The widget sandbox never grants popup permission, and script-initiated `window.open` does not work.
 
 Popup blocking comes from the iframe sandbox permissions. Widgets can define their own `open` function, such as a dialog helper, without colliding with an OpenClaw global. Host APIs remain under `window.openclaw`, with `sendPrompt` retained as a legacy helper.
 

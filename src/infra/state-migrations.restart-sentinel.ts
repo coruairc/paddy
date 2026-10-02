@@ -387,7 +387,7 @@ export async function migrateLegacyRestartSentinel(params: {
     label: "the legacy restart sentinel",
     releaseLabel: "Restart sentinel",
     errorLabel: "Failed reading the legacy restart sentinel",
-    retryGuidance: "Stop the Gateway, then run `openclaw doctor --fix` again.",
+    retryGuidance: "Stop the Gateway, then run `paddy doctor --fix` again.",
     run: async (env) => {
       const stateRoot = await root(params.stateDir, {
         hardlinks: "reject",

@@ -525,7 +525,7 @@ export async function runMemoryStatus(
         lines.push(`  ${issue.severity === "error" ? warn(issue.message) : muted(issue.message)}`);
       }
       if (!opts.fix && report.issues.some((issue) => issue.fixable)) {
-        lines.push(`  ${muted(`Fix: openclaw memory status --fix --agent ${agentId}`)}`);
+        lines.push(`  ${muted(`Fix: paddy memory status --fix --agent ${agentId}`)}`);
       }
     }
     defaultRuntime.log(lines.join("\n"));

@@ -1,6 +1,7 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { createDeferred } from "openclaw/plugin-sdk/extension-shared";
 import {
   appendQaChildOutput,
   appendQaChildOutputTail,
@@ -41,7 +42,7 @@ export function resolveQaGatewayChildCommand(repoRoot: string): QaGatewayChildCo
   }
 
   throw new Error(
-    "OpenClaw CLI entry not found: expected scripts/run-node.mjs or dist/index.(m)js",
+    "Paddy CLI entry not found: expected scripts/run-node.mjs or dist/index.(m)js",
   );
 }
 
@@ -86,10 +87,7 @@ async function readQaGatewayCliCommand(
   child.stdout?.on("data", (chunk) => appendQaChildOutput(stdout, chunk));
 
   let failure: Error | undefined;
-  let finish!: (code: number | undefined) => void;
-  const terminal = new Promise<number | undefined>((resolve) => {
-    finish = resolve;
-  });
+  const { promise: terminal, resolve: finish } = createDeferred<number | undefined>();
   const fail = (error: unknown) => {
     failure ??= createQaGatewayCliError(error);
     finish(undefined);
@@ -153,7 +151,7 @@ async function readQaGatewayCliCommand(
   const stdoutText = readQaChildOutput(stdout);
   if (failure || exitCode !== 0) {
     // Preserve the first failure's reason, but include output drained during shutdown.
-    const reason = failure?.message ?? `OpenClaw CLI exited ${exitCode}`;
+    const reason = failure?.message ?? `Paddy CLI exited ${exitCode}`;
     const stderrText = formatQaChildOutputTail(stderr, "stderr");
     failure = createQaGatewayCliError(
       `${reason}: ${[stderrText, stdoutText].filter(Boolean).join("\n")}`,

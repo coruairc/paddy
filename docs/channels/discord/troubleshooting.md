@@ -28,7 +28,7 @@ Symptom-first checks for a Discord account that is not behaving.
     - if a guild `channels` map exists, only listed channels are allowed
     - verify `requireMention` behavior and mention patterns
 
-    The Control UI channel details and `openclaw channels status` warn when the
+    The Control UI channel details and `paddy channels status` warn when the
     effective policy is `allowlist` but no guilds are configured. Add your server
     under `channels.discord.guilds`, or the account's `guilds` map when overridden.
     An explicit `channels.discord.accounts.default.guilds` map also overrides the
@@ -43,9 +43,9 @@ Symptom-first checks for a Discord account that is not behaving.
     Useful checks:
 
 ```bash
-openclaw doctor
-openclaw channels status --probe
-openclaw logs --follow
+paddy doctor
+paddy channels status --probe
+paddy logs --follow
 ```
 
   </Accordion>
@@ -71,14 +71,14 @@ openclaw logs --follow
   </Accordion>
 
   <Accordion title="Gateway metadata lookup timeout warnings">
-    OpenClaw fetches Discord `/gateway/bot` metadata before connecting. Transient failures fall back to Discord's default gateway URL and are rate-limited in logs.
+    Paddy fetches Discord `/gateway/bot` metadata before connecting. Transient failures fall back to Discord's default gateway URL and are rate-limited in logs.
 
     The metadata timeout defaults to 30 seconds. `OPENCLAW_DISCORD_GATEWAY_INFO_TIMEOUT_MS` can override it for unusual host environments.
 
   </Accordion>
 
   <Accordion title="Gateway READY timeout restarts">
-    OpenClaw waits for Discord's gateway `READY` event during startup and after runtime reconnects. Multi-account setups with startup staggering can need a longer startup READY window than the default.
+    Paddy waits for Discord's gateway `READY` event during startup and after runtime reconnects. Multi-account setups with startup staggering can need a longer startup READY window than the default.
 
     Startup waits 15 seconds and runtime reconnects wait 30 seconds. `OPENCLAW_DISCORD_READY_TIMEOUT_MS` and `OPENCLAW_DISCORD_RUNTIME_READY_TIMEOUT_MS` remain available for unusual host environments.
 
@@ -105,7 +105,7 @@ openclaw logs --follow
     Keep mention and allowlist rules appropriate for the room. Set `channels.discord.allowBots=false` to disable bot-triggered turns, or `channels.discord.allowBots="mentions"` to only accept bot messages that mention the bot. These settings do not hide accessible bot-authored history or human-selected reply context.
     In `"mentions"` mode, reply-ping metadata alone does not count. Bot replies need an active native mention or a configured text/transcript mention outside Markdown code.
 
-    OpenClaw also ships shared [bot loop protection](/channels/bot-loop-protection). Whenever `allowBots` lets bot-authored messages reach dispatch, Discord maps the inbound event to `(account, channel, bot pair)` facts and the generic pair guard suppresses the pair after it crosses the configured event budget. The guard bounds rapid two-bot loops; exchanges below the budget can continue. It does not affect human messages or one-shot bot replies that stay under the budget.
+    Paddy also ships shared [bot loop protection](/channels/bot-loop-protection). Whenever `allowBots` lets bot-authored messages reach dispatch, Discord maps the inbound event to `(account, channel, bot pair)` facts and the generic pair guard suppresses the pair after it crosses the configured event budget. The guard bounds rapid two-bot loops; exchanges below the budget can continue. It does not affect human messages or one-shot bot replies that stay under the budget.
 
     Default settings (active whenever bot-authored messages are admitted):
 

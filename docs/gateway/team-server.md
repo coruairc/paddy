@@ -1,7 +1,7 @@
 ---
 summary: "Deploy a shared team Gateway with Cloudflare Access, verified GitHub identities, roles, session sharing, and recoverable operations"
 read_when:
-  - Deploying an always-on OpenClaw server for a trusted team
+  - Deploying an always-on Paddy server for a trusted team
   - Connecting Cloudflare sign-in to Gateway profiles and GitHub identities
   - Operating separate collaboration and release Gateways
 title: "Deploy a team server"
@@ -19,13 +19,13 @@ This guide uses `team.example.com` for collaboration and
 `release.example.com` for an optional second Gateway. Replace them with your
 own hostnames; each Gateway needs its own configuration and state.
 
-## How we build OpenClaw with OpenClaw
+## How we build Paddy with Paddy
 
 We use [team.openclaw.ai](https://team.openclaw.ai) as a shared development
-workspace for OpenClaw itself. Maintainers and agents work through repository
+workspace for Paddy itself. Maintainers and agents work through repository
 changes in the same conversations:
 
-1. **Start a repository task.** Choose the OpenClaw project in **New conversation**
+1. **Start a repository task.** Choose the Paddy project in **New conversation**
    and select **Worktree** for a [managed branch and checkout](/concepts/managed-worktrees).
    Give the agent a concrete change and the checks that demonstrate it works.
 2. **Work together.** Teammates with access can open the session, add context,
@@ -37,7 +37,7 @@ changes in the same conversations:
    [GitHub publication account](/concepts/user-model#github-connections).
    The linked pull request and its CI details stay available in the conversation.
 
-![An OpenClaw development task on the Team server, with analysis, test results, and a published pull request](https://github.com/user-attachments/assets/b64f4d3a-3988-4f59-ac73-27552b6bdd30)
+![A Paddy development task on the Team server, with analysis, test results, and a published pull request](https://github.com/user-attachments/assets/b64f4d3a-3988-4f59-ac73-27552b6bdd30)
 
 The screenshot shows a live repository task, cropped to its conversation.
 See [Chat and code review](/web/control-ui/chat) for the diff, file, and PR controls.
@@ -49,7 +49,7 @@ activation and verification. See [Keep operations recoverable](/gateway/team-ser
 ## Before you begin
 
 - A Linux host with persistent storage and a dedicated service account. Use a
-  [supported Node runtime](/install/node) and an [OpenClaw installation](/install).
+  [supported Node runtime](/install/node) and an [Paddy installation](/install).
 - A Cloudflare-managed domain, Zero Trust account, and `cloudflared` on the host.
 - An identity provider and an explicit policy for who may sign in.
 - Model credentials and, if needed, a bot account for your team chat.
@@ -67,8 +67,8 @@ Complete [Getting started](/start/getting-started) as the account that will run
 the Gateway, including model setup and managed-service installation:
 
 ```bash
-openclaw onboard --install-daemon
-openclaw gateway status --deep
+paddy onboard --install-daemon
+paddy gateway status --deep
 ```
 
 Keep subsequent configuration, backup, and update commands under that same
@@ -169,12 +169,12 @@ local password fallback is supported. Validate the configuration, then use the
 owning service's lifecycle to activate setup changes:
 
 ```bash
-openclaw config validate --json
-openclaw gateway restart
-openclaw gateway status --deep
+paddy config validate --json
+paddy gateway restart
+paddy gateway status --deep
 ```
 
-`allowLoopback` trusts local processes as well as `cloudflared`. OpenClaw checks
+`allowLoopback` trusts local processes as well as `cloudflared`. Paddy checks
 the proxy source and required headers; their presence is not Access JWT
 signature verification. The external authentication boundary is Access plus the
 private origin. Do not run hostile workloads with access to this listener. See
@@ -185,7 +185,7 @@ requirements.
 
 ### Set the public URL once
 
-`publicOrigin` tells OpenClaw which external URL to advertise and supplies the
+`publicOrigin` tells Paddy which external URL to advertise and supplies the
 default browser-origin allowlist. For a Control UI served from that same origin,
 leave `gateway.controlUi.allowedOrigins` unset.
 
@@ -203,7 +203,7 @@ uses a path prefix, configure `gateway.controlUi.basePath` separately.
 For an existing server missing only this setting:
 
 ```bash
-openclaw config set gateway.publicOrigin https://team.example.com --expect-current-absent
+paddy config set gateway.publicOrigin https://team.example.com --expect-current-absent
 ```
 
 This conditional write refuses to overwrite an existing value. With live config
@@ -216,7 +216,7 @@ rather than copying the first server's URL.
 
 Existing installations retain their explicit allowlists, including values saved
 by earlier setup or Doctor runs. After upgrading to a version with this default,
-remove the list with `openclaw config unset gateway.controlUi.allowedOrigins` if
+remove the list with `paddy config unset gateway.controlUi.allowedOrigins` if
 you want it to follow `publicOrigin`; check that no additional UI origin is needed
 first. Startup and Doctor leave the inherited default out of saved config.
 
@@ -227,8 +227,8 @@ profile is created, initially with the observer role. From the local maintenance
 shell, list profiles and identify the verified person:
 
 ```bash
-openclaw users list --json
-openclaw gateway call users.setRole \
+paddy users list --json
+paddy gateway call users.setRole \
   --params '{"profileId":"<administrator-profile-id>","role":"administrator"}' \
   --json
 ```
@@ -264,7 +264,7 @@ Keep these responsibilities separate:
 | What that person may do      | Connection scopes and named operator roles   |
 | Which account publishes code | System, agent, or personal GitHub connection |
 
-With the GitHub identity provider in Access, OpenClaw queries Access's identity
+With the GitHub identity provider in Access, Paddy queries Access's identity
 endpoint, verifies that its email matches the authenticated proxy principal, and
 resolves the immutable numeric GitHub account ID to its current login. Names and
 avatars can then update through normal sign-in/profile synchronization. Saved
@@ -282,7 +282,7 @@ changing providers or email addresses, link the new verified address to the
 existing person from an administrator's maintenance session:
 
 ```bash
-openclaw users link-email new-address@example.com \
+paddy users link-email new-address@example.com \
   --to <existing-profile-id> --json
 ```
 
@@ -348,7 +348,7 @@ clients need `gateway.remote.edgeAuth` and their own Access login; see
 Nodes and cloud workers need a route that authenticates every required join,
 WebSocket, and transfer request. Prefer the Access service-token setup in
 [Cloudflare machine access](/gateway/cloudflare-access#step-4-decide-how-nodes-and-workers-get-in).
-A browser working while `openclaw connect` receives HTTP 302 means the machine
+A browser working while `paddy connect` receives HTTP 302 means the machine
 request reached Access, not that node pairing succeeded. Keep machine credentials
 out of browser links and do not bypass Access for the whole Gateway.
 
@@ -403,26 +403,28 @@ an explicit group:
 }
 ```
 
-On the receiver, advertise the reachable node endpoint before creating a join
-code. For the Access service-token topology above, use the same HTTPS hostname;
-if you operate a separate authenticated machine endpoint, use that URL instead:
+On the receiver, the `gateway.publicOrigin` configured above supplies the join
+endpoint when the loopback Gateway has no other advertised route. For the Access
+service-token topology above, use that same HTTPS hostname. If you operate a
+separate authenticated machine endpoint, set
+`plugins.entries.device-pair.config.publicUrl` to its URL instead:
 
 ```bash
-openclaw config set plugins.entries.device-pair.config.publicUrl https://team.example.com
-openclaw plugins enable session-share
-openclaw devices join-code
+paddy plugins enable session-share
+paddy devices join-code
 ```
 
-The join-code command needs this advertised pairing endpoint on a loopback-only
-Gateway; `publicOrigin` alone is not its endpoint-discovery setting. The
-`device-pair` plugin does not need to be enabled for core join-code creation.
+Join codes retain existing Tailscale, remote, and bind-derived routes before
+falling back to `publicOrigin`. The pairing-specific `publicUrl` override takes
+precedence over discovery. The `device-pair` plugin does not need to be enabled
+for core join-code creation.
 See [Node onboarding](/nodes/node-host).
 
 On the source, run the node under the source Gateway's account, state directory,
 and configuration, with exactly the two read-only session commands:
 
 ```bash
-openclaw connect <join-url> --service \
+paddy connect <join-url> --service \
   --commands openclaw.sessions.list.v1,openclaw.sessions.read.v1
 ```
 
@@ -442,8 +444,8 @@ and requires source access.
 
 Use both host checks and two real user accounts:
 
-1. Run `openclaw config validate --json`, `openclaw gateway status --deep`, and
-   `openclaw security audit` as the service owner. Resolve unintended exposure.
+1. Run `paddy config validate --json`, `paddy gateway status --deep`, and
+   `paddy security audit` as the service owner. Resolve unintended exposure.
 2. Confirm that an unauthenticated public request meets Access, then sign in and
    reach a connected Control UI. An Access redirect alone does not prove Gateway
    health.
@@ -462,7 +464,7 @@ Use both host checks and two real user accounts:
 ## Keep operations recoverable
 
 Use one lifecycle owner per installation. For a normal managed installation,
-use `openclaw update` and the native Gateway service commands. If an external
+use `paddy update` and the native Gateway service commands. If an external
 deployment system owns the service, use that owner instead; do not race it with
 a second updater, a direct restart, or an in-place source build. Coordinate an
 interruption with the team and verify the serving version after activation.
@@ -476,8 +478,8 @@ environment labels distinct through `gateway.controlUi.environment`.
 Create and verify a backup before substantial updates:
 
 ```bash
-openclaw backup create --verify
-openclaw backup restore <archive.tar.gz> --target <fresh-restore-directory>
+paddy backup create --verify
+paddy backup restore <archive.tar.gz> --target <fresh-restore-directory>
 ```
 
 The restore command stages recovery data; activating it is a separate offline

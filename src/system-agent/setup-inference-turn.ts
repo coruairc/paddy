@@ -11,10 +11,10 @@ import {
 } from "../agents/agent-run-result.js";
 import { resolveAgentWorkspaceDir } from "../agents/agent-scope.js";
 import type { AgentExecutionAuthBinding } from "../agents/execution-auth-binding.js";
-import { describeFailoverError } from "../agents/failover-error.js";
 import type { AgentHarnessPluginSelection } from "../agents/harness/runtime-plugin-load-plan.js";
 import { loadAgentRuntimePluginRegistryHandle } from "../agents/runtime-plugins.js";
 import { SessionManager } from "../agents/sessions/index.js";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
 import { clearAgentRunContext } from "../infra/agent-run-registry.js";
@@ -38,8 +38,8 @@ import {
   type ActivateSetupInferenceDeps,
   type BoundVerifySetupInferenceResult,
   type CompleteSetupInferenceResult,
+  describeSetupInferenceError,
   invalidSetupConfigError,
-  mapFailoverReasonToSetupStatus,
   parseInferenceRef,
   redactSetupInferenceError,
   resolveSetupInferenceWinnerError,
@@ -178,6 +178,7 @@ export async function runSetupInferenceTurn(params: {
         ...(route.authProfileId ? { authProfileIdSource: "user" as const } : {}),
         authProfileStateMode: "read-only",
         allowAuthProfileFallback: false,
+        retryConnectionErrors: false,
         preparedModelRuntimeMode: "isolated-read-only",
         ...(harness === "codex" ? { cleanupBundleMcpOnRunEnd: true } : {}),
         ...(harness ? { agentHarnessRuntimeOverride: harness } : {}),
@@ -220,7 +221,7 @@ export async function runSetupInferenceTurn(params: {
     if (params.requireExecutionOwner && !successfulAuth) {
       return failed(
         "unknown",
-        "Inference succeeded, but its runtime did not report an owner that OpenClaw can safely reuse.",
+        `Inference succeeded, but its runtime did not report an owner that ${PRODUCT_NAME} can safely reuse.`,
       );
     }
     return {
@@ -230,8 +231,8 @@ export async function runSetupInferenceTurn(params: {
       auth: successfulAuth ?? (route.authProfileId ? { authProfileId: route.authProfileId } : {}),
     };
   } catch (error) {
-    const described = describeFailoverError(error);
-    return failed(mapFailoverReasonToSetupStatus(described.reason), described.message);
+    const described = describeSetupInferenceError(error, route);
+    return failed(described.status, described.error);
   } finally {
     preparedRunAdmission.close();
     clearAgentRunContext(runId);
@@ -439,7 +440,7 @@ export async function verifySetupInference(
     return {
       ok: false,
       status: "unavailable",
-      error: "No OpenClaw config exists. Run `openclaw onboard` first.",
+      error: `No ${PRODUCT_NAME} config exists. Run \`${CLI_NAME} onboard\` first.`,
     };
   }
   if (!snapshot.valid) {
@@ -497,8 +498,7 @@ export async function verifySetupInference(
     return {
       ok: false,
       status: "unknown",
-      error:
-        "The successful inference run did not report an exact execution binding. Retry setup before starting OpenClaw.",
+      error: `The successful inference run did not report an exact execution binding. Retry setup before starting ${PRODUCT_NAME}.`,
     };
   }
   return { ...verification, binding: verifiedBinding };
@@ -608,7 +608,7 @@ export async function verifySetupInferenceConfig(
     return {
       ok: false,
       status: "unavailable",
-      error: "No agent model is configured. Run `openclaw onboard` first.",
+      error: "No agent model is configured. Run `paddy onboard` first.",
     };
   }
   const route = params.agentDir
@@ -703,7 +703,7 @@ export async function completeSetupInference(
     (await import("../config/config.js")).readConfigFileSnapshot;
   const snapshot = await readSnapshot();
   if (!snapshot.exists) {
-    return { ok: false, status: "unavailable", error: "No OpenClaw config exists." };
+    return { ok: false, status: "unavailable", error: `No ${PRODUCT_NAME} config exists.` };
   }
   if (!snapshot.valid) {
     return { ok: false, status: "format", error: invalidSetupConfigError(snapshot) };

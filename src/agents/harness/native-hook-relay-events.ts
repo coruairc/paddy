@@ -1,4 +1,5 @@
 import { stableStringify } from "@openclaw/normalization-core";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   getAgentToolResultMiddlewareMatcherScope,
   listAgentToolResultMiddlewares,
@@ -138,13 +139,9 @@ export async function processNativeHookRelayInvocation(params: {
   return runNativeHookRelayPermissionRequest(params);
 }
 
-async function runNativeHookRelayPreToolUse(params: {
-  registration: NativeHookRelayRegistration;
-  invocation: NativeHookRelayInvocation;
-  adapter: NativeHookRelayProviderAdapter;
-  executionAdmission?: NativeHookRelayExecutionAdmission;
-  assertExecutionAdmissionCurrent: () => void;
-}): Promise<NativeHookRelayProcessResponse> {
+async function runNativeHookRelayPreToolUse(
+  params: Parameters<typeof processNativeHookRelayInvocation>[0],
+): Promise<NativeHookRelayProcessResponse> {
   const toolName = normalizeNativeHookToolName(params.invocation.toolName);
   const toolInput = params.adapter.readToolInput(params.invocation.rawPayload);
   const originalToolInputFingerprint = stableStringify(toolInput);
@@ -202,14 +199,14 @@ async function runNativeHookRelayPreToolUse(params: {
   ) {
     // Native execution must not retain custody of rewritten inputs it will not use.
     return params.adapter.renderPreToolUseBlockResponse(
-      "OpenClaw tool policy rewrote Codex app-server approval params; refusing original request.",
+      `${PRODUCT_NAME} tool policy rewrote Codex app-server approval params; refusing original request.`,
     );
   }
   try {
     if (params.executionAdmission?.toolNames.includes(toolName)) {
       // Accepted execution outlives the one-shot hook transport, while this
       // request must still be current before returning or publishing approval.
-      await params.executionAdmission.admit(
+      const assertAdmitted = await params.executionAdmission.admit(
         params.invocation,
         params.assertExecutionAdmissionCurrent,
         {
@@ -222,6 +219,13 @@ async function runNativeHookRelayPreToolUse(params: {
       );
       params.registration.signal?.throwIfAborted();
       params.registration.assertActive?.();
+      const refusal = assertAdmitted?.();
+      if (refusal) {
+        if (outcome.deferredApproval) {
+          cancelDeferredPluginToolApproval(outcome.deferredApproval);
+        }
+        return params.adapter.renderPreToolUseBlockResponse(refusal);
+      }
     }
   } catch (error) {
     if (outcome.deferredApproval) {
@@ -243,16 +247,13 @@ async function runNativeHookRelayPreToolUse(params: {
         "Plugin approval required but Codex tool id unavailable.",
       );
     }
-    return params.adapter.renderNoopResponse(params.invocation.event);
   }
   return params.adapter.renderNoopResponse(params.invocation.event);
 }
 
-async function runNativeHookRelayPostToolUse(params: {
-  registration: NativeHookRelayRegistration;
-  invocation: NativeHookRelayInvocation;
-  adapter: NativeHookRelayProviderAdapter;
-}): Promise<NativeHookRelayProcessResponse> {
+async function runNativeHookRelayPostToolUse(
+  params: Parameters<typeof processNativeHookRelayInvocation>[0],
+): Promise<NativeHookRelayProcessResponse> {
   const toolName = normalizeNativeHookToolName(params.invocation.toolName);
   const toolCallId =
     params.invocation.toolUseId ?? `${params.invocation.event}:${params.invocation.receivedAt}`;
@@ -292,11 +293,9 @@ async function runNativeHookRelayPostToolUse(params: {
   return params.adapter.renderNoopResponse(params.invocation.event);
 }
 
-async function runNativeHookRelayBeforeAgentFinalize(params: {
-  registration: NativeHookRelayRegistration;
-  invocation: NativeHookRelayInvocation;
-  adapter: NativeHookRelayProviderAdapter;
-}): Promise<NativeHookRelayProcessResponse> {
+async function runNativeHookRelayBeforeAgentFinalize(
+  params: Parameters<typeof processNativeHookRelayInvocation>[0],
+): Promise<NativeHookRelayProcessResponse> {
   const outcome = await runAgentHarnessBeforeAgentFinalizeHook({
     event: {
       runId: params.registration.runId,

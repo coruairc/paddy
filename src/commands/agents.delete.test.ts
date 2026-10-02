@@ -364,7 +364,7 @@ describe("agents delete command", () => {
       await agentsDeleteCommand({ id: "агент✨", force: true }, runtime);
 
       expect(runtime.error).toHaveBeenCalledWith(
-        'Agent "агент✨" not found. Run openclaw agents list to see configured agents.',
+        'Agent "агент✨" not found. Run paddy agents list to see configured agents.',
       );
       expect(runtime.exit).toHaveBeenCalledWith(1);
       expect(gatewayMocks.callGateway).not.toHaveBeenCalled();

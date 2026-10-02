@@ -15,6 +15,7 @@ import { resolveDefaultModelForAgent } from "../../agents/model-selection.js";
 import { resolveNativeWebSearchRoute } from "../../agents/native-web-search.js";
 import { hasAuthProfileForProvider } from "../../agents/tools/model-config.helpers.js";
 import { resolveWebSearchToolPolicy } from "../../agents/web-search-tool-policy.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { getRuntimeConfigSourceSnapshot } from "../../config/runtime-snapshot.js";
 import { resolveSecretInputRef } from "../../config/types.secrets.js";
 import { listSearchProviderOptions } from "../../flows/search-setup.js";
@@ -250,7 +251,7 @@ export async function prepareWebSearchStatus(
           label: `${status.model.runtimeLabel} controls search`,
           testable: false,
           reason:
-            "The selected harness determines native search availability when the turn starts. A configured OpenClaw provider does not prove which tool that harness will use. Test search in a chat with this model.",
+            `The selected harness determines native search availability when the turn starts. A configured ${PRODUCT_NAME} provider does not prove which tool that harness will use. Test search in a chat with this model.`,
         };
         return { status, config, agentDir: scope.agentDir };
       }

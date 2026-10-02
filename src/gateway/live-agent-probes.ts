@@ -107,31 +107,31 @@ export function buildLiveCronProbeMessage(params: {
   if (params.attempt === 0) {
     return (
       "Use the OpenClaw MCP automations tool from server `openclaw`. " +
-      "If it is not already visible, search/load MCP tools for `openclaw automations` or `automations`, " +
+      "If it is not already visible, search/load MCP tools for `paddy automations` or `automations`, " +
       "then call the matching OpenClaw MCP tool; Claude-style names may appear as `mcp__openclaw__automations`. " +
-      "Do not use Claude native `CronCreate`, `CronList`, or `CronDelete`; those are not OpenClaw proof. " +
+      "Do not use Claude native `CronCreate`, `CronList`, or `CronDelete`; those are not Paddy proof. " +
       `Call it with JSON arguments ${params.argsJson}. ` +
       "Preserve the JSON exactly, including job.sessionTarget and job.sessionKey; do not omit, rename, or flatten those fields. " +
-      "Do the actual tool call; I will verify externally with the OpenClaw cron CLI. " +
+      "Do the actual tool call; I will verify externally with the Paddy cron CLI. " +
       `After the cron job is created, reply exactly: ${params.exactReply}`
     );
   }
   if (claudeLike) {
     return (
       "Retry the OpenClaw MCP automations tool from server `openclaw` now. " +
-      "If it is not already visible, search/load MCP tools for `openclaw automations` or `automations`, " +
+      "If it is not already visible, search/load MCP tools for `paddy automations` or `automations`, " +
       "then call the matching OpenClaw MCP tool; Claude-style names may appear as `mcp__openclaw__automations`. " +
-      "Do not use Claude native `CronCreate`, `CronList`, or `CronDelete`; those are not OpenClaw proof. " +
+      "Do not use Claude native `CronCreate`, `CronList`, or `CronDelete`; those are not Paddy proof. " +
       `Use these exact JSON arguments: ${params.argsJson}. ` +
       "Preserve job.sessionTarget and job.sessionKey exactly as provided. " +
       `If the cron job is created, reply exactly: ${params.exactReply}. ` +
       "If the tool call is cancelled, the job is not created, or you cannot confirm creation, " +
       "reply briefly saying that and ask me to retry. No markdown. " +
-      "I will verify externally with the OpenClaw cron CLI."
+      "I will verify externally with the Paddy cron CLI."
     );
   }
   return (
-    "Your previous OpenClaw automations MCP tool call was cancelled before the job was created. " +
+    "Your previous Paddy automations MCP tool call was cancelled before the job was created. " +
     "Retry the OpenClaw MCP automations tool from server `openclaw` now. " +
     "If the harness shows Claude-style MCP names, use `mcp__openclaw__automations`. " +
     `Use these exact JSON arguments: ${params.argsJson}. ` +
@@ -139,7 +139,7 @@ export function buildLiveCronProbeMessage(params: {
     `If the cron job is created, reply exactly: ${params.exactReply}. ` +
     "If the tool call is cancelled, the job is not created, or you cannot confirm creation, " +
     "reply briefly saying that and ask me to retry. No markdown. " +
-    "I will verify externally with the OpenClaw cron CLI."
+    "I will verify externally with the Paddy cron CLI."
   );
 }
 
@@ -170,7 +170,7 @@ export async function runOpenClawCliJson<T>(args: string[], env: NodeJS.ProcessE
   if (!trimmed) {
     throw new Error(
       [
-        `openclaw ${args.join(" ")} produced no JSON stdout`,
+        `paddy ${args.join(" ")} produced no JSON stdout`,
         stderr.trim() ? `stderr: ${stderr.trim()}` : undefined,
       ]
         .filter(Boolean)
@@ -182,7 +182,7 @@ export async function runOpenClawCliJson<T>(args: string[], env: NodeJS.ProcessE
   } catch (error) {
     throw new Error(
       [
-        `openclaw ${args.join(" ")} returned invalid JSON`,
+        `paddy ${args.join(" ")} returned invalid JSON`,
         `stdout: ${trimmed}`,
         stderr.trim() ? `stderr: ${stderr.trim()}` : undefined,
         error instanceof Error ? `cause: ${error.message}` : undefined,

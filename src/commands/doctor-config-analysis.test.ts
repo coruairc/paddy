@@ -67,7 +67,7 @@ describe("doctor config analysis helpers", () => {
     noteMissingDefaultAgentOwner(cfg);
 
     expect(noteMock).toHaveBeenCalledExactlyOnceWith(
-      expect.stringContaining("openclaw config set agents.defaults.systemAgent.agentId <id>"),
+      expect.stringContaining("paddy config set agents.defaults.systemAgent.agentId <id>"),
       "Agent ownership",
     );
   });

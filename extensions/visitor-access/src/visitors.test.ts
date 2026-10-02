@@ -212,7 +212,7 @@ describe("VisitorAccessService", () => {
         operation === "invite"
           ? fixture.service.invite({ github: "visitor" }, fixture.authority)
           : fixture.service.revoke({ github: "visitor" }, fixture.authority.assertCurrent),
-      ).rejects.toThrow(/Update OpenClaw before managing visitors/);
+      ).rejects.toThrow(/Update Paddy before managing visitors/);
 
       expect(lookup).not.toHaveBeenCalled();
       expect(entries).not.toHaveBeenCalled();

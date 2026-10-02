@@ -80,16 +80,20 @@ export function recordPostCoreUpdateEvidence(
 /** Correct only a proven interrupted completion; all other terminal outcomes remain immutable. */
 export async function reconcileInterruptedUpdateRuns(
   input: { env?: NodeJS.ProcessEnv; signal?: AbortSignal } = {},
+  onCandidate?: (runId: string) => void,
 ): Promise<UpdateRunRecord[]> {
   const env = { ...(input.env ?? process.env) };
   const options = { env, path: resolveOpenClawStateSqlitePath(env) };
+  const context = captureOpenClawStateWorkerContext(options);
   // A later invocation may have installed the same build. Never attribute its
   // serving result to an older occurrence merely because the versions agree.
-  const expected = await readInterruptedUpdateCandidateAsync(options);
+  const expected = await readInterruptedUpdateCandidateAsync(options, context);
   const candidate = expected ? readInstalledUpdateCandidate(expected) : undefined;
   if (!expected || !candidate || !canSettleInterruptedUpdate(expected)) {
     return [];
   }
+  input.signal?.throwIfAborted();
+  onCandidate?.(expected.runId);
   const managed = expected.steps.some(
     (step) => step.step === "restarting" && step.status === "completed",
   );
@@ -131,7 +135,6 @@ export async function reconcileInterruptedUpdateRuns(
     }
   }
   input.signal?.throwIfAborted();
-  const context = captureOpenClawStateWorkerContext(options);
   const record = async (
     captured: UpdateRunRecord,
     observed: InterruptedUpdateGatewayObservation,
@@ -143,13 +146,13 @@ export async function reconcileInterruptedUpdateRuns(
         ? ` Deadline timed-out after ${observed.timeout.elapsedMs} ms during ${observed.timeout.phase}.`
         : "") +
       (observed.cleanup === "unknown"
-        ? " Command cleanup failed: could not confirm that owned work stopped; cleanup outcome unknown. Check openclaw update status before recovery."
+        ? " Command cleanup failed: could not confirm that owned work stopped; cleanup outcome unknown. Check paddy update status before recovery."
         : observed.cleanup === "pending"
           ? " Command cleanup is still pending; cleanup outcome unknown. Completion is not verified."
           : observed.verification
             ? " Installed and serving candidate verified."
             : managed
-              ? " Continuing without verified completion; will retry. Check openclaw update status."
+              ? " Continuing without verified completion; will retry. Check paddy update status."
               : " No completed managed-service restart was recorded; probing skipped.");
     const result = await persistInterruptedUpdateObservationAsync(
       context,
@@ -162,7 +165,7 @@ export async function reconcileInterruptedUpdateRuns(
       input.signal,
     );
     if (result?.accepted || observed.cleanup === "unknown") {
-      console.warn(`[openclaw] ${detail}`);
+      console.warn(`[paddy] ${detail}`);
     }
     return result;
   };
@@ -184,7 +187,7 @@ export async function reconcileInterruptedUpdateRuns(
       })
       .catch(() => {
         console.warn(
-          "[openclaw] Command cleanup outcome unknown; interrupted update cleanup could not be recorded. Check openclaw update status before recovery.",
+          "[paddy] Command cleanup outcome unknown; interrupted update cleanup could not be recorded. Check paddy update status before recovery.",
         );
       });
   }

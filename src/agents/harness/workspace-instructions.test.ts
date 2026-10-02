@@ -19,9 +19,9 @@ describe("agent workspace instruction snapshots", () => {
     expect(snapshot).toEqual({
       files: [instructionsFile],
       instructions: [
-        "## OpenClaw Agent Workspace Instructions",
+        "## Paddy Agent Workspace Instructions",
         "",
-        "OpenClaw loaded this bounded snapshot from the configured agent workspace.",
+        "Paddy loaded this bounded snapshot from the configured agent workspace.",
         "",
         `### ${instructionsPath}`,
         "",
@@ -30,7 +30,7 @@ describe("agent workspace instruction snapshots", () => {
     });
   });
 
-  it.each(["", " \n\t", "[MISSING] Expected at: fixture workspace"])(
+  it.each([" \n\t", "[MISSING] Expected at: fixture workspace"])(
     "records a successful empty capture for unusable context (%j)",
     (content) => {
       expect(

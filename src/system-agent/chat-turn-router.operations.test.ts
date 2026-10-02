@@ -843,7 +843,7 @@ describe("SystemAgentChatEngine operations", () => {
 
     const reply = await verifyConfigAfterSystemAgentWrite(async () => ({ text: "" }));
 
-    expect(reply).toContain("with OpenClaw stopped");
+    expect(reply).toContain("with Paddy stopped");
     expect(reply).toContain("openclaw doctor --fix");
     expect(reply).toContain("machine running it");
   });

@@ -25,6 +25,7 @@ import {
   installLaunchAgent,
   isPidDefinitelyDead,
 } from "./launchd-ancestry.test-support.js";
+import * as launchdExec from "./launchd-exec.js";
 import {
   capturePassThroughOutput,
   createDefaultLaunchdEnv,
@@ -1402,7 +1403,7 @@ describe("launchd install", () => {
     };
     await installLaunchAgent(
       launchAgentFixture(env, ["node", "node-host.js"], {
-        description: "OpenClaw Node Host",
+        description: "Paddy Node Host",
       }),
     );
 
@@ -1703,12 +1704,10 @@ describe("launchd install", () => {
     expect(plist).not.toContain("<key>StandardErrorPath</key>\n    <string>/dev/null</string>");
   });
 
-  it("rewrites the plist before bootstrap during restart fallback", async () => {
+  it("publishes the rewritten plist before restart bootstrap", async () => {
     const env = createDefaultLaunchdEnv();
     const plistPath = resolveLaunchAgentPlistPath(env);
     state.serviceLoaded = false;
-    state.kickstartError = "Could not find service";
-    state.kickstartFailuresRemaining = 1;
     setLegacyGatewayLaunchAgentPlist(plistPath, [
       "    <key>EnvironmentVariables</key>",
       "    <dict>",
@@ -1717,23 +1716,24 @@ describe("launchd install", () => {
       "    </dict>",
     ]);
 
+    const execLaunchctl = launchdExec.execLaunchctl;
+    using launchctl = vi.spyOn(launchdExec, "execLaunchctl");
+    let plist: string | undefined;
+    launchctl.mockImplementation(async (...args) => {
+      if (args[0][0] === "bootstrap") {
+        plist = await fs.readFile(expectDefined(args[0][2], "bootstrap plist path"), "utf8");
+      }
+      return await execLaunchctl(...args);
+    });
     await restartLaunchAgent(launchAgentControlFixture(env));
 
-    const plist = state.files.get(plistPath) ?? "";
+    const logPath = "/Users/test/Library/Logs/openclaw/gateway.log";
     expect(plist).toContain("<key>StandardInPath</key>");
-    expect(plist).toContain("<key>StandardOutPath</key>");
-    expect(plist).toContain("<string>/Users/test/Library/Logs/openclaw/gateway.log</string>");
-    expect(plist).toContain(
-      "<key>StandardErrorPath</key>\n    <string>/Users/test/Library/Logs/openclaw/gateway.log</string>",
-    );
+    expect(plist).toContain(`<key>StandardOutPath</key>\n    <string>${logPath}</string>`);
+    expect(plist).toContain(`<key>StandardErrorPath</key>\n    <string>${logPath}</string>`);
     expect(plist).toContain("<key>KeepAlive</key>");
     expect(plist).toContain("<string>node</string>");
     expect(plist).not.toContain("OPENCLAW_SERVICE_VERSION");
-    const rewriteIndex = state.fileWrites.findIndex((write) => write.path === plistPath);
-    const bootstrapIndex = state.launchctlCalls.findIndex((call) => call[0] === "bootstrap");
-    expect(rewriteIndex).toBeGreaterThanOrEqual(0);
-    expect(bootstrapIndex).toBeGreaterThanOrEqual(0);
-    expect(rewriteIndex).toBeLessThan(bootstrapIndex);
   });
 
   it.each([
@@ -2420,7 +2420,7 @@ describe("launchd install", () => {
     );
     expect(message).toContain(`LaunchAgent ${domain}/ai.openclaw.gateway is not loaded`);
     expect(message).toContain("The gateway is down and launchd has no job left to respawn it.");
-    expect(message).toContain("openclaw gateway start");
+    expect(message).toContain("paddy gateway start");
   });
 
   it("does not wait out the teardown deadline when the reload bootstrap reports already-loaded", async () => {

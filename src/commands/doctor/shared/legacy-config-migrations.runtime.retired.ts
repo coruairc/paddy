@@ -31,7 +31,7 @@ const rule = (
   match?: LegacyConfigRule["match"],
 ): LegacyConfigRule => ({
   path,
-  message: `${message} Run "openclaw doctor --fix".`,
+  message: `${message} Run "paddy doctor --fix".`,
   ...(match ? { match } : {}),
 });
 
@@ -233,19 +233,18 @@ function migrateFinalLayoutRenames(raw: Record<string, unknown>, changes: string
       changes.push("Moved gateway.nodes.skills.enabled → gateway.nodes.allowSkills.");
     }
     const commands = getRecord(nodes.commands) ?? {};
-    if (Object.hasOwn(nodes, "allowCommands")) {
-      if (commands.allow === undefined) {
-        commands.allow = nodes.allowCommands;
+    for (const [legacy, canonical] of [
+      ["allowCommands", "allow"],
+      ["denyCommands", "deny"],
+    ] as const) {
+      if (!Object.hasOwn(nodes, legacy)) {
+        continue;
       }
-      delete nodes.allowCommands;
-      changes.push("Moved gateway.nodes.allowCommands → gateway.nodes.commands.allow.");
-    }
-    if (Object.hasOwn(nodes, "denyCommands")) {
-      if (commands.deny === undefined) {
-        commands.deny = nodes.denyCommands;
+      if (commands[canonical] === undefined) {
+        commands[canonical] = nodes[legacy];
       }
-      delete nodes.denyCommands;
-      changes.push("Moved gateway.nodes.denyCommands → gateway.nodes.commands.deny.");
+      delete nodes[legacy];
+      changes.push(`Moved gateway.nodes.${legacy} → gateway.nodes.commands.${canonical}.`);
     }
     if (Object.keys(commands).length > 0) {
       nodes.commands = commands;
@@ -508,7 +507,7 @@ export const LEGACY_CONFIG_MIGRATIONS_RUNTIME_RETIRED: LegacyConfigMigrationSpec
       {
         path: ["hooks", "internal", "handlers"],
         message:
-          'hooks.internal.handlers is retired. Move each module to a managed/workspace hook directory with HOOK.md + handler file before running "openclaw doctor --fix"; the fix removes retired registrations and does not materialize executable files.',
+          'hooks.internal.handlers is retired. Move each module to a managed/workspace hook directory with HOOK.md + handler file before running "paddy doctor --fix"; the fix removes retired registrations and does not materialize executable files.',
       },
     ],
     apply: (raw, changes) => {

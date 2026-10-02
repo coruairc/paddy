@@ -21,7 +21,7 @@ export function createModelReferenceCheck(): HealthCheck {
           ? {
               message: `Configured model "${inspection.ref}" is a legacy reference. Doctor can migrate it to "${migrationTarget}".`,
               requirement: `canonical model reference "${migrationTarget}"`,
-              fixHint: `Run \`openclaw doctor --fix\` to migrate this model reference to "${migrationTarget}".`,
+              fixHint: `Run \`paddy doctor --fix\` to migrate this model reference to "${migrationTarget}".`,
             }
           : undefined;
         if (inspection.status === "unknown-provider") {

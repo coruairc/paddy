@@ -288,7 +288,7 @@ async function runBoundedCodexAppServerTurnInWorkspace(
           cwd: workspace.cwd,
           approvalPolicy: "on-request",
           sandbox: "read-only",
-          serviceName: "OpenClaw",
+          serviceName: "Paddy",
           ...(params.requireNoExternalCapabilities ? { baseInstructions: "" } : {}),
           developerInstructions: params.developerInstructions,
           config: threadConfig,
@@ -548,7 +548,7 @@ function createCodexBoundedApprovalHandler(taskLabel: string) {
     ) {
       return {
         decision: "decline",
-        reason: `OpenClaw Codex ${taskLabel} does not grant tool or file approvals.`,
+        reason: `Paddy Codex ${taskLabel} does not grant tool or file approvals.`,
       };
     }
     if (request.method === "item/permissions/requestApproval") {
@@ -557,12 +557,12 @@ function createCodexBoundedApprovalHandler(taskLabel: string) {
     if (request.method.includes("requestApproval")) {
       return {
         decision: "decline",
-        reason: `OpenClaw Codex ${taskLabel} does not grant native approvals.`,
+        reason: `Paddy Codex ${taskLabel} does not grant native approvals.`,
       };
     }
     if (request.method === "mcpServer/elicitation/request") {
       return createCodexElicitationResponse("decline", null, {
-        message: `OpenClaw Codex ${taskLabel} does not support interactive input.`,
+        message: `Paddy Codex ${taskLabel} does not support interactive input.`,
       });
     }
     return undefined;

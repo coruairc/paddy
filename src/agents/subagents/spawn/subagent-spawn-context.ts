@@ -1,5 +1,6 @@
 import { finiteSecondsToTimerSafeMilliseconds } from "@openclaw/normalization-core/number-coercion";
 import { sanitizeForLog } from "../../../../packages/terminal-core/src/ansi.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 import { resolveThreadBindingSpawnPolicy } from "../../../channels/thread-bindings-policy.js";
 import type { SessionEntry } from "../../../config/sessions/types.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
@@ -81,14 +82,14 @@ export async function prepareSubagentSessionContext(params: {
     }
     if (forkedResult.status === "failed" || forkedResult.status === "missing-entry") {
       throw new Error(
-        'context="fork" requested but OpenClaw could not fork the requester transcript.',
+        `context="fork" requested but ${PRODUCT_NAME} could not fork the requester transcript.`,
       );
     }
     if (forkedResult.status === "skipped") {
       const forkFallbackNote =
         forkedResult.decision?.status === "skip" ? forkedResult.decision.message : undefined;
       if (!forkFallbackNote) {
-        throw new Error('context="fork" requested but OpenClaw could not prepare forked context.');
+        throw new Error(`context="fork" requested but ${PRODUCT_NAME} could not prepare forked context.`);
       }
       return {
         status: "ok",

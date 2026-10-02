@@ -125,7 +125,7 @@ export function createAcpAgentHarness(params: {
         return { supported: false, reason: `Choose ${params.label} explicitly` };
       }
       if (modelProvider?.endpointOverrides === undefined) {
-        return { supported: false, reason: "Update OpenClaw to use this native runtime." };
+        return { supported: false, reason: "Update Paddy to use this native runtime." };
       }
       if (
         modelProvider?.requestTransportOverrides === "present" ||
@@ -136,7 +136,7 @@ export function createAcpAgentHarness(params: {
       ) {
         return {
           supported: false,
-          reason: `${params.label} owns its login and cannot use an OpenClaw credential or custom provider transport`,
+          reason: `${params.label} owns its login and cannot use a Paddy credential or custom provider transport`,
         };
       }
       return { supported: true, priority: 100 };

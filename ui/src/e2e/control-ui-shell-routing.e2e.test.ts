@@ -32,7 +32,7 @@ const forwardedHeaderBlocklist = new Set([
 const publicAssetPaths = new Set([
   "/apple-touch-icon.png",
   "/favicon-32.png",
-  "/favicon.svg",
+  "/paddy-icon.jpg",
   "/manifest.webmanifest",
 ]);
 
@@ -196,11 +196,11 @@ describeControlUiE2e("Control UI shell routing E2E", () => {
       expect(assetResults).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            contentType: expect.stringContaining("image/svg+xml"),
-            pathname: `${basePath}/favicon.svg`,
+            contentType: expect.stringContaining("image/jpeg"),
+            pathname: `${basePath}/paddy-icon.jpg`,
             rel: "icon",
             status: 200,
-            type: "image/svg+xml",
+            type: "image/jpeg",
           }),
           expect.objectContaining({
             contentType: expect.stringContaining("image/png"),
@@ -226,7 +226,7 @@ describeControlUiE2e("Control UI shell routing E2E", () => {
       expect(proxy.requests).toEqual(
         expect.arrayContaining([
           `${basePath}/chat`,
-          `${basePath}/favicon.svg`,
+          `${basePath}/paddy-icon.jpg`,
           `${basePath}/favicon-32.png`,
           `${basePath}/apple-touch-icon.png`,
           `${basePath}/manifest.webmanifest`,

@@ -9,13 +9,13 @@ sidebarTitle: "Image generation"
 ---
 
 The `image_generate` tool creates and edits images through your configured
-providers. In chat sessions it runs asynchronously: OpenClaw records a
-background task, returns the task id immediately, and wakes the agent when
-the provider finishes. The task record stays silent, while the completion
-agent follows the session's current visible-reply contract with a short
+providers. In chat sessions it runs asynchronously: the native media-generation
+owner tracks the operation, returns the task id immediately, and wakes the agent
+when the provider finishes. The completion agent follows the session's current
+visible-reply contract with a short
 user-facing caption and every structured generated attachment. If generation
 fails, the agent returns a concise visible failure instead. If the requester
-session is inactive or its active wake fails, OpenClaw sends an idempotent
+session is inactive or its active wake fails, Paddy sends an idempotent
 direct fallback with the generated images so the result is not lost.
 
 In WebChat and the macOS app, generated attachments stay on the completion
@@ -53,7 +53,7 @@ or sign in with OpenAI ChatGPT/Codex OAuth.
     ```
 
     ChatGPT/Codex OAuth uses the same `openai/gpt-image-2` model ref. When an
-    `openai` OAuth profile is configured, OpenClaw routes image requests
+    `openai` OAuth profile is configured, Paddy routes image requests
     through that OAuth profile instead of first trying `OPENAI_API_KEY`.
     Explicit `models.providers.openai` config (API key, custom/Azure base URL)
     opts back into the direct OpenAI Images API route.
@@ -105,7 +105,7 @@ backend emits it.
 OpenAI supports `low` and `auto` moderation for both text-to-image generation
 and reference-image edits through the direct Images API or the Codex Responses
 backend. For CLI requests, pass `--openai-moderation low|auto` to either
-`openclaw infer image generate` or `openclaw infer image edit`.
+`paddy infer image generate` or `paddy infer image edit`.
 
 ## Supported providers
 
@@ -135,6 +135,10 @@ current session:
 ```text
 /tool image_generate action=status
 ```
+
+Task status and duplicate detection are scoped to the requesting chat, even
+when direct chats share the main session transcript. Completion returns to
+the peer who requested the image.
 
 ## Provider capabilities
 
@@ -202,7 +206,7 @@ current session:
 
 <Note>
 Not all providers support all parameters. When a fallback provider supports a
-nearby geometry option instead of the exact requested one, OpenClaw remaps to
+nearby geometry option instead of the exact requested one, Paddy remaps to
 the closest supported size, aspect ratio, or resolution before submission.
 Unsupported output hints are dropped for providers that do not declare
 support and reported in the tool result. Tool results report the applied
@@ -236,7 +240,7 @@ translation.
 
 ### Provider selection order
 
-For `image_generate`, OpenClaw tries providers in this order:
+For `image_generate`, Paddy tries providers in this order:
 
 1. **`model` parameter** from the tool call. When set, only this model is tried.
 2. **`agents.defaults.mediaModels.image.primary`** from config.
@@ -260,7 +264,7 @@ the supplied reference count are skipped.
   <Accordion title="Auto-detection uses configured providers">
     Auto-detection considers provider defaults whose readiness or auth checks pass.
     Explicit image model configuration limits fallback to the configured list.
-    OpenClaw does not append auto-detected providers.
+    Paddy does not append auto-detected providers.
   </Accordion>
   <Accordion title="Timeouts">
     Set `agents.defaults.mediaModels.image.timeoutMs` for slow image
@@ -270,7 +274,7 @@ the supplied reference count are skipped.
     defaults. Microsoft Foundry MAI, xAI, and Azure OpenAI image generation use
     600 seconds. Codex dynamic-tool calls use a 120 second `image_generate`
     bridge default and honor the same timeout budget when configured, bounded
-    by OpenClaw's 600000 ms dynamic-tool bridge maximum.
+    by Paddy's 600000 ms dynamic-tool bridge maximum.
   </Accordion>
   <Accordion title="Inspect at runtime">
     Use `action: "list"` to inspect the currently registered providers,
@@ -307,7 +311,7 @@ and ComfyUI support 1.
 
     Both variants support generation, edits, `xhigh` and `max` quality,
     PNG/JPEG/WebP output, and transparent backgrounds with PNG or WebP.
-    OpenAI accepts up to 5 reference images through OpenClaw. fal accepts 16.
+    OpenAI accepts up to 5 reference images through Paddy. fal accepts 16.
     With reference images, fal replaces `/text-to-image` with `/edit`.
     Explicit fal `/edit` paths remain unchanged.
 
@@ -326,11 +330,11 @@ and ComfyUI support 1.
   </Accordion>
   <Accordion title="OpenAI gpt-image-2 (and gpt-image-1.5)">
     OpenAI image generation defaults to `openai/gpt-image-2`. If an
-    `openai` OAuth profile is configured, OpenClaw reuses the same
+    `openai` OAuth profile is configured, Paddy reuses the same
     OAuth profile used by Codex subscription chat models and sends the
     image request through the Codex Responses backend. Legacy Codex base
     URLs such as `https://chatgpt.com/backend-api` are canonicalized to
-    `https://chatgpt.com/backend-api/codex` for image requests. OpenClaw
+    `https://chatgpt.com/backend-api/codex` for image requests. Paddy
     does **not** silently fall back to `OPENAI_API_KEY` for that request -
     to force direct OpenAI Images API routing, configure
     `models.providers.openai` explicitly with an API key, custom base URL,
@@ -343,9 +347,9 @@ and ComfyUI support 1.
 
     `gpt-image-2` supports both text-to-image generation and
     reference-image editing through the same `image_generate` tool.
-    OpenClaw forwards `prompt`, `count`, `size`, `quality`, `outputFormat`,
+    Paddy forwards `prompt`, `count`, `size`, `quality`, `outputFormat`,
     and reference images to OpenAI. OpenAI does **not** receive
-    `aspectRatio` or `resolution` directly. When possible OpenClaw maps
+    `aspectRatio` or `resolution` directly. When possible Paddy maps
     those into a supported `size`, otherwise the tool reports them as
     ignored overrides.
 
@@ -355,7 +359,7 @@ and ComfyUI support 1.
     dimensions must be multiples of 16, neither may exceed 3840 pixels,
     the aspect ratio cannot exceed 3:1, and the image must contain
     between 655,360 and 8,294,400 pixels. For example, `1024x640` is
-    valid. When only `aspectRatio` is specified, OpenClaw still selects
+    valid. When only `aspectRatio` is specified, Paddy still selects
     the closest supported size.
 
     OpenAI-specific options live under the `openai` object:
@@ -375,7 +379,7 @@ and ComfyUI support 1.
 
     `openai.background` accepts `transparent`, `opaque`, or `auto`.
     Transparent outputs require `outputFormat` `png` or `webp` and a
-    transparency-capable OpenAI image model. OpenClaw routes default
+    transparency-capable OpenAI image model. Paddy routes default
     `gpt-image-2` transparent-background requests to `gpt-image-1.5`.
     `openai.outputCompression` applies to JPEG/WebP outputs and is ignored
     for PNG outputs.
@@ -424,7 +428,7 @@ and ComfyUI support 1.
 
     Prompt-only generation can use a custom deployment name with just the
     Foundry endpoint configured. Edits with custom deployment names need
-    onboarding/model metadata so OpenClaw can verify that the deployment is
+    onboarding/model metadata so Paddy can verify that the deployment is
     backed by `MAI-Image-2.5-Flash` or `MAI-Image-2.5`.
 
     Current MAI image models are `MAI-Image-2.5-Flash`, `MAI-Image-2.5`,
@@ -454,7 +458,7 @@ and ComfyUI support 1.
     }
     ```
 
-    OpenClaw forwards `prompt`, `count`, reference images, and
+    Paddy forwards `prompt`, `count`, reference images, and
     Gemini-compatible `aspectRatio` / `resolution` hints to OpenRouter.
     Current built-in OpenRouter image model shortcuts include
     `google/gemini-3.1-flash-image`,
@@ -464,7 +468,7 @@ and ComfyUI support 1.
   </Accordion>
   <Accordion title="fal Krea 2">
     Krea 2 models on fal use fal's native Krea schema instead of the generic
-    `image_size` schema used by Flux. OpenClaw sends:
+    `image_size` schema used by Flux. Paddy sends:
 
     - `aspect_ratio` for aspect-ratio hints
     - `creativity`, defaulting to `medium`
@@ -488,7 +492,7 @@ and ComfyUI support 1.
     ```
 
     Krea 2 returns one image per request. Prefer `aspectRatio` for
-    Krea. OpenClaw maps `size` to the closest supported Krea aspect ratio and
+    Krea. Paddy maps `size` to the closest supported Krea aspect ratio and
     rejects `resolution` for Krea rather than dropping it. Use `fal.creativity`
     when you want a native Krea creativity level:
 
@@ -522,9 +526,9 @@ and ComfyUI support 1.
     - Aspect ratios: `1:1`, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `2:1`,
       `1:2`, `19.5:9`, `9:19.5`, `20:9`, `9:20`
     - Resolutions: `1K`, `2K`
-    - Outputs: returned as OpenClaw-managed image attachments
+    - Outputs: returned as Paddy-managed image attachments
 
-    OpenClaw intentionally does not expose xAI-native `quality`, `mask`,
+    Paddy intentionally does not expose xAI-native `quality`, `mask`,
     `user`, or the `auto` aspect ratio until those controls exist in the shared
     cross-provider `image_generate` contract.
 
@@ -536,7 +540,7 @@ and ComfyUI support 1.
 <Tabs>
   <Tab title="Generate (4K landscape)">
 ```text
-/tool image_generate action=generate model=openai/gpt-image-2 prompt="A clean editorial poster for OpenClaw image generation" size=3840x2160 count=1
+/tool image_generate action=generate model=openai/gpt-image-2 prompt="A clean editorial poster for Paddy image generation" size=3840x2160 count=1
 ```
   </Tab>
   <Tab title="Generate (transparent PNG)">
@@ -547,7 +551,7 @@ and ComfyUI support 1.
 Equivalent CLI:
 
 ```bash
-openclaw infer image generate \
+paddy infer image generate \
   --model openai/gpt-image-1.5 \
   --output-format png \
   --background transparent \
@@ -564,7 +568,7 @@ openclaw infer image generate \
 Equivalent CLI:
 
 ```bash
-openclaw infer image generate \
+paddy infer image generate \
   --model openai/gpt-image-2 \
   --quality low \
   --openai-moderation low \
@@ -596,7 +600,7 @@ openclaw infer image generate \
 </Tabs>
 
 The same `--output-format`, `--background`, and `--quality` flags are available
-on `openclaw infer image edit`. `--openai-background` remains as an
+on `paddy infer image edit`. `--openai-background` remains as an
 OpenAI-specific alias. Use `--openai-moderation low|auto` with both OpenAI image
 generation and reference-image edits. The direct OpenAI Images API and the
 ChatGPT/Codex OAuth Responses backend both support the moderation hint.

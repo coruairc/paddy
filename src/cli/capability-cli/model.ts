@@ -22,13 +22,14 @@ import { ADMIN_SCOPE } from "../../gateway/operator-scopes.js";
 import { defaultRuntime } from "../../runtime.js";
 import { AsyncWorkScope, captureAsyncWorkTracker } from "../../shared/async-work-scope.js";
 import { createDeferredCore } from "../../shared/deferred.js";
+import { PRODUCT_NAME } from "../cli-name.js";
 import { runCommandWithRuntime } from "../cli-utils.js";
 import { collectOption } from "../program/helpers.js";
 import type { CapabilityEnvelope, CapabilityTransport } from "./metadata.js";
 import { formatEnvelopeForText, providerSummaryText } from "./output.js";
 import { registerLocalProvidersCommand, runCapabilityCommand } from "./providers-command.js";
 
-const LOCAL_MODEL_RUN_SYSTEM_PROMPT = "You are a personal assistant running inside OpenClaw.";
+const LOCAL_MODEL_RUN_SYSTEM_PROMPT = `You are a personal assistant running inside ${PRODUCT_NAME}.`;
 const HEIC_MODEL_RUN_MIMES = new Set([
   "image/heic",
   "image/heic-sequence",

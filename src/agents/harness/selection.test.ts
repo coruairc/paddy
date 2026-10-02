@@ -96,6 +96,7 @@ import {
 import {
   createHarnessAttemptParams,
   createHarnessCompactionFixture,
+  privateHarnessParamCases,
   withOwnedHarnessGeneration,
 } from "./selection.test-support.js";
 import {
@@ -130,16 +131,6 @@ const contextEngineTurnAttemptMocks = vi.hoisted(() => ({
   drainPendingContextEngineTurnsBeforeRun: vi.fn(async (_params: unknown) => {}),
 }));
 const builtInHarnesses = vi.hoisted(() => new WeakSet<object>());
-const privateHarnessParamCases = [
-  {
-    field: "runtimePluginToolGrant",
-    value: { pluginId: "grant-owner", toolNames: ["optional_tool"] },
-  },
-  { field: "__openclawSourceReplyDeliveryRuntime", value: { currentMode: "automatic" } },
-  { field: "compactionCountOwner", value: "caller" },
-  { field: "onContextAccountingEvent", value: () => undefined },
-  { field: "onCompactionRequestBudget", value: () => undefined },
-] as const;
 
 function createTranscriptRecorder(
   admission: ReturnType<typeof createTranscriptAnchor> & {
@@ -169,7 +160,7 @@ vi.mock("./builtin-openclaw.js", () => ({
   createOpenClawAgentHarness: (): AgentHarness => {
     const harness: AgentHarness = {
       id: "openclaw",
-      label: "OpenClaw embedded agent",
+      label: "Paddy embedded agent",
       contextEngineHostCapabilities: OPENCLAW_EMBEDDED_CONTEXT_ENGINE_HOST.capabilities,
       supports: () => ({ supported: true, priority: 0 }),
       runAttempt: agentRunAttempt,
@@ -1332,7 +1323,7 @@ describe("runAgentHarnessAttempt", () => {
     params.systemAgentTool = { surface: "cli", proposalRef: {}, directiveRef: {} };
 
     await expect(runAgentHarnessAttempt(params)).rejects.toThrow(
-      'OpenClaw host authority requires toolsAllow: ["openclaw"]',
+      'Paddy host authority requires toolsAllow: ["openclaw"]',
     );
     expect(pluginRunAttempt).not.toHaveBeenCalled();
     expect(isHostScopedAgentToolActive("openclaw")).toBe(false);

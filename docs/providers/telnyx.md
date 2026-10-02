@@ -2,11 +2,11 @@
 summary: "Telnyx setup for OpenAI-compatible AI inference"
 title: "Telnyx"
 read_when:
-  - You want to run Telnyx-hosted models in OpenClaw
+  - You want to run Telnyx-hosted models in Paddy
   - You want one OpenAI-compatible API for Telnyx AI inference
 ---
 
-[Telnyx AI inference](https://developers.telnyx.com/docs/inference/getting-started) provides hosted, OpenAI-compatible access to open-weight models plus proxied frontier routes. The vendor-maintained external [`@telnyx/openclaw-provider`](https://github.com/team-telnyx/openclaw-telnyx-provider) plugin supplies the runtime; OpenClaw carries its catalog and onboarding metadata. Authenticated discovery follows the complete model set enabled for your Telnyx account, while the offline fallback contains the models available when that plugin release was built.
+[Telnyx AI inference](https://developers.telnyx.com/docs/inference/getting-started) provides hosted, OpenAI-compatible access to open-weight models plus proxied frontier routes. The vendor-maintained external [`@telnyx/openclaw-provider`](https://github.com/team-telnyx/openclaw-telnyx-provider) plugin supplies the runtime; Paddy carries its catalog and onboarding metadata. Authenticated discovery follows the complete model set enabled for your Telnyx account, while the offline fallback contains the models available when that plugin release was built.
 
 | Property        | Value                                                            |
 | --------------- | ---------------------------------------------------------------- |
@@ -21,18 +21,18 @@ read_when:
 
 ## Requirements
 
-The catalog pin for `@telnyx/openclaw-provider@0.2.0` requires OpenClaw `2026.8.1` or newer. Upgrade OpenClaw before installing the plugin:
+The catalog pin for `@telnyx/openclaw-provider@0.2.0` requires Paddy `2026.8.1` or newer. Upgrade Paddy before installing the plugin:
 
 ```bash
-openclaw update
-openclaw --version
+paddy update
+paddy --version
 ```
 
 ## Install plugin
 
 ```bash
-openclaw plugins install telnyx
-openclaw gateway restart
+paddy plugins install telnyx
+paddy gateway restart
 ```
 
 ## Getting started
@@ -45,11 +45,11 @@ openclaw gateway restart
     <CodeGroup>
 
 ```bash Onboarding
-openclaw onboard --auth-choice telnyx-api-key
+paddy onboard --auth-choice telnyx-api-key
 ```
 
 ```bash Direct flag
-openclaw onboard --non-interactive --accept-risk \
+paddy onboard --non-interactive --accept-risk \
   --auth-choice telnyx-api-key \
   --telnyx-api-key "$TELNYX_API_KEY"
 ```
@@ -65,7 +65,7 @@ export TELNYX_API_KEY=...
   </Step>
   <Step title="Verify the live catalog">
     ```bash
-    openclaw models list --refresh --provider telnyx
+    paddy models list --refresh --provider telnyx
     ```
 
     With usable auth, the plugin requests the authenticated `/models` endpoint and lists every model returned for the account. Without auth, it stays offline and uses the bundled fallback.
@@ -75,7 +75,7 @@ export TELNYX_API_KEY=...
 
 ## Default model
 
-`telnyx/moonshotai/Kimi-K3` is the default model. In OpenClaw it supports text and image input, tool calling, reasoning, a 1M-token context window, and up to 64k output tokens:
+`telnyx/moonshotai/Kimi-K3` is the default model. In Paddy it supports text and image input, tool calling, reasoning, a 1M-token context window, and up to 64k output tokens:
 
 ```json5
 {
@@ -166,7 +166,7 @@ If the Gateway runs as a daemon (launchd, systemd, Docker), make sure `TELNYX_AP
     Choosing providers, model refs, and failover behavior.
   </Card>
   <Card title="Thinking modes" href="/tools/thinking" icon="brain">
-    Select OpenClaw reasoning effort levels.
+    Select Paddy reasoning effort levels.
   </Card>
   <Card title="Models CLI" href="/cli/models" icon="terminal">
     List, inspect, and select discovered models.

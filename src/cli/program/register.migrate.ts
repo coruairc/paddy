@@ -9,6 +9,7 @@ import {
   migratePlanCommand,
 } from "../../commands/migrate.js";
 import { defaultRuntime } from "../../runtime.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { runCommandWithRuntime } from "../cli-utils.js";
 import { inheritOptionFromParent } from "../command-options.js";
 import { formatHelpExamples } from "../help-format.js";
@@ -89,7 +90,7 @@ function readSharedMigrationOptions(opts: Record<string, unknown>, command: Comm
 function rejectUnsupportedApplyDryRun(command: Command): void {
   if (inheritOptionFromParent<boolean>(command, "dryRun") === true) {
     throw new Error(
-      "--dry-run is not supported for `openclaw migrate apply`. Run `openclaw migrate plan <provider>` or `openclaw migrate <provider> --dry-run` instead.",
+      `--dry-run is not supported for \`${CLI_NAME} migrate apply\`. Run \`${CLI_NAME} migrate plan <provider>\` or \`${CLI_NAME} migrate <provider> --dry-run\` instead.`,
     );
   }
 }
@@ -106,7 +107,7 @@ export function registerMigrateCommand(program: Command) {
     .option("--yes", "Apply without prompting after preview", false);
   addMigrationSelectionOptions(migrate)
     .option("--backup-output <path>", "Pre-migration backup archive path or directory")
-    .option("--no-backup", "Skip the pre-migration OpenClaw backup")
+    .option("--no-backup", `Skip the pre-migration ${PRODUCT_NAME} backup`)
     .option("--force", "Allow dangerous options such as --no-backup", false)
     .option("--json", "Output JSON", false);
   addVerifyPluginAppsOption(migrate)
@@ -114,15 +115,15 @@ export function registerMigrateCommand(program: Command) {
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ["openclaw migrate list", "Show available migration providers."],
-          ["openclaw migrate hermes", "Preview Hermes migration, then prompt before applying."],
-          ["openclaw migrate hermes --dry-run", "Preview Hermes migration only."],
+          [`${CLI_NAME} migrate list`, "Show available migration providers."],
+          [`${CLI_NAME} migrate hermes`, "Preview Hermes migration, then prompt before applying."],
+          [`${CLI_NAME} migrate hermes --dry-run`, "Preview Hermes migration only."],
           [
-            "openclaw migrate apply hermes --yes",
+            `${CLI_NAME} migrate apply hermes --yes`,
             "Apply Hermes migration non-interactively after writing a verified backup.",
           ],
           [
-            "openclaw migrate hermes --no-auth-credentials",
+            `${CLI_NAME} migrate hermes --no-auth-credentials`,
             "Preview and apply Hermes migration while skipping auth credential import.",
           ],
         ])}`,
@@ -165,7 +166,7 @@ export function registerMigrateCommand(program: Command) {
   addMigrationOptions(
     migrate
       .command("plan <provider>")
-      .description("Preview a migration without changing OpenClaw state"),
+      .description(`Preview a migration without changing ${PRODUCT_NAME} state`),
   ).action(async (provider, opts, command) => {
     await runCommandWithRuntime(defaultRuntime, async () => {
       await migratePlanCommand(defaultRuntime, {
@@ -180,7 +181,7 @@ export function registerMigrateCommand(program: Command) {
   )
     .option("--yes", "Apply without prompting", false)
     .option("--backup-output <path>", "Pre-migration backup archive path or directory")
-    .option("--no-backup", "Skip the pre-migration OpenClaw backup")
+    .option("--no-backup", `Skip the pre-migration ${PRODUCT_NAME} backup`)
     .option("--force", "Allow dangerous options such as --no-backup", false)
     .action(async (provider, opts, command) => {
       await runCommandWithRuntime(defaultRuntime, async () => {

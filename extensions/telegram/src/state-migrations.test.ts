@@ -61,7 +61,7 @@ describe("retired Telegram state", () => {
     expect(result.warningDisposition).toBeUndefined();
     for (const source of paths) {
       expect(result.warnings).toContainEqual(
-        expect.stringContaining(`${source}. Run openclaw doctor --fix on 2026.9.5`),
+        expect.stringContaining(`${source}. Run paddy doctor --fix on 2026.9.5`),
       );
       expect(await fs.readFile(source, "utf8")).toBe("unparsed legacy bytes\n");
     }

@@ -442,7 +442,7 @@ describe("browser manage output", () => {
     ).rejects.toThrow("__exit__:1");
 
     expect(getBrowserCliRuntimeCapture().runtimeErrors.at(-1)).toContain(
-      "--driver must be openclaw or existing-session",
+      "--driver must be paddy or existing-session",
     );
     expect(getBrowserManageGatewayMock()).not.toHaveBeenCalled();
   });

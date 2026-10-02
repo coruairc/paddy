@@ -1,4 +1,5 @@
 // Builds approval prompt view models from request and resolution events.
+import { PRODUCT_NAME } from "../brand.js";
 import { summarizeApprovalScope } from "./approval-scope.js";
 import { normalizeApprovalRequest, type ApprovalRequestInput } from "./approval-types.js";
 import type {
@@ -122,7 +123,7 @@ function buildSystemAgentViewBase<TPhase extends ApprovalPhase>(
     approvalId: request.id,
     approvalKind: "system-agent",
     phase,
-    title: phase === "pending" ? "OpenClaw change requires approval" : "OpenClaw change",
+    title: phase === "pending" ? `${PRODUCT_NAME} change requires approval` : `${PRODUCT_NAME} change`,
     description: request.request.description,
     metadata: request.request.agentId ? [{ label: "Agent", value: request.request.agentId }] : [],
     agentId: request.request.agentId ?? null,

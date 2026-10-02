@@ -1,6 +1,6 @@
-# IRC OpenClaw channel
+# IRC Paddy channel
 
-Official OpenClaw channel plugin for IRC.
+Official Paddy channel plugin for IRC.
 
 ## Install
 

@@ -51,6 +51,11 @@ vi.mock("../../daemon/gateway-entrypoint.js", () => ({
   resolveGatewayInstallEntrypoint: mocks.resolveEntrypoint,
 }));
 
+vi.mock("../../infra/deferred-plugin-migrations.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../infra/deferred-plugin-migrations.js")>()),
+  readDeferredPluginMigrationsAsync: async () => [],
+}));
+
 vi.mock("../../process/exec.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../process/exec.js")>();
   return {
@@ -131,7 +136,7 @@ describe("post-plugin update readiness", () => {
     async (phase) => {
       const refusal = { kind: "deferred", reason: "coordinator-contention" };
       const warning =
-        "Doctor maintenance is deferred; stop other OpenClaw processes and run openclaw doctor --fix.";
+        "Doctor maintenance is deferred; stop other OpenClaw processes and run paddy doctor --fix.";
       const onWarnings = vi.fn();
       mocks.runExec.mockImplementationOnce(async (_command, _args, options) => {
         await fs.writeFile(

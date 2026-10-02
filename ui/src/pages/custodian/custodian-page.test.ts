@@ -62,7 +62,7 @@ describe("custodian page", () => {
       assistantGroup
         .querySelector<HTMLImageElement>("img.chat-avatar.assistant")
         ?.getAttribute("src"),
-    ).toBe("/favicon.svg");
+    ).toBe("/paddy-icon.jpg");
     // Onboarding strips the header identity; the thread avatar is the only mascot.
     expect(page.querySelector(".custodian__mark openclaw-mascot")).toBeNull();
     const card = page.querySelector("openclaw-option-card")!;

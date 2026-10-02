@@ -8,7 +8,7 @@ title: "Scoped policy overlays"
 sidebarTitle: "Scoped overlays"
 ---
 
-Holding named agents or channels to stricter rules than the baseline. Part of the [`openclaw policy`](/cli/policy) reference.
+Holding named agents or channels to stricter rules than the baseline. Part of the [`paddy policy`](/cli/policy) reference.
 
 ## Scoped overlays
 
@@ -22,7 +22,7 @@ and the scoped rule can add its own finding against the same evidence.
 | `agentIds`   | `tools`, `agents.workspace`, `sandbox`, `dataHandling.memory`, `execApprovals` | One or more runtime agents need stricter rules.   |
 | `channelIds` | `ingress.channels`                                                             | One or more channels need stricter ingress rules. |
 
-If an `agentIds` entry is not present in `agents.entries.*`, OpenClaw evaluates
+If an `agentIds` entry is not present in `agents.entries.*`, Paddy evaluates
 the scoped rule against inherited global/default posture for that runtime
 agent id instead of skipping it.
 

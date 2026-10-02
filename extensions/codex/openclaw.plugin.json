@@ -25,6 +25,7 @@
     "configRepair": true,
     "stateMigrations": [
       { "id": "codex-app-server-sidecars-to-plugin-state" },
+      { "id": "codex-native-task-assignments" },
       {
         "id": "codex-app-server-orphaned-session-bindings",
         "doctorOnly": true,
@@ -190,7 +191,7 @@
           "timeoutMs": {
             "type": "number",
             "minimum": 1,
-            "default": 2500
+            "default": 10000
           }
         }
       },
@@ -491,7 +492,7 @@
   "uiHints": {
     "sessionCatalog": {
       "label": "Native Session Discovery",
-      "help": "Controls whether Codex sessions from this Gateway and paired nodes appear in the sidebar. Disabling also removes this host's paired-node catalog commands without disabling the Codex provider or harness. Node-list failures usually indicate a Gateway pairing-store or node-registry problem; verify Settings > Devices or run openclaw nodes list. Changes require a Gateway restart."
+      "help": "Controls whether Codex sessions from this Gateway and paired nodes appear in the sidebar. Disabling also removes this host's paired-node catalog commands without disabling the Codex provider or harness. Node-list failures usually indicate a Gateway pairing-store or node-registry problem; verify Settings > Devices or run paddy nodes list. Changes require a Gateway restart."
     },
     "sessionCatalog.enabled": {
       "label": "Discover Codex Sessions",
@@ -504,12 +505,12 @@
     },
     "codexDynamicToolsLoading": {
       "label": "Dynamic Tools Loading",
-      "help": "Use searchable to defer OpenClaw dynamic tools behind Codex tool search, or direct to expose them in the initial context.",
+      "help": "Use searchable to defer Paddy dynamic tools behind Codex tool search, or direct to expose them in the initial context.",
       "advanced": true
     },
     "codexDynamicToolsExclude": {
       "label": "Dynamic Tool Excludes",
-      "help": "Additional OpenClaw dynamic tool names to omit from Codex app-server turns.",
+      "help": "Additional Paddy dynamic tool names to omit from Codex app-server turns.",
       "advanced": true
     },
     "discovery": {
@@ -518,11 +519,11 @@
     },
     "discovery.enabled": {
       "label": "Enable Discovery",
-      "help": "When false, OpenClaw keeps the Codex harness available but uses the bundled fallback model list."
+      "help": "When false, Paddy keeps the Codex harness available but uses the bundled fallback model list."
     },
     "discovery.timeoutMs": {
       "label": "Discovery Timeout",
-      "help": "Maximum time to wait for Codex app-server model discovery before falling back to the bundled model list.",
+      "help": "Maximum time to wait for Codex app-server model discovery. The default allows Codex to finish its remote catalog refresh or native fallback; a timeout leaves native models unavailable until discovery succeeds.",
       "advanced": true
     },
     "computerUse": {
@@ -552,7 +553,7 @@
     },
     "computerUse.toolCallTimeoutMs": {
       "label": "Tool Call Timeout",
-      "help": "Maximum expected time for real Computer Use tool calls such as list_apps before OpenClaw treats the child runtime as stale.",
+      "help": "Maximum expected time for real Computer Use tool calls such as list_apps before Paddy treats the child runtime as stale.",
       "advanced": true
     },
     "computerUse.healthCheckEnabled": {
@@ -676,7 +677,7 @@
     },
     "appServer.command": {
       "label": "Command",
-      "help": "Executable used for stdio transport. Leave unset to use OpenClaw's managed Codex binary.",
+      "help": "Executable used for stdio transport. Leave unset to use Paddy's managed Codex binary.",
       "advanced": true
     },
     "appServer.args": {
@@ -708,17 +709,17 @@
     },
     "appServer.remoteWorkspaceRoot": {
       "label": "Remote Workspace Root",
-      "help": "Remote Codex app-server workspace root used to project OpenClaw cwd suffixes before starting Codex threads.",
+      "help": "Remote Codex app-server workspace root used to project Paddy cwd suffixes before starting Codex threads.",
       "advanced": true
     },
     "appServer.codeModeOnly": {
       "label": "Code Mode Only",
-      "help": "Expose Codex's code-mode-only tool surface. OpenClaw dynamic tools remain available through Codex nested tool calls.",
+      "help": "Expose Codex's code-mode-only tool surface. Paddy dynamic tools remain available through Codex nested tool calls.",
       "advanced": true
     },
     "appServer.loopDetectionPreToolUseRelay": {
       "label": "Loop Detection Pre-tool Relay",
-      "help": "Install the Codex PreToolUse subprocess used only for OpenClaw loop detection and its no-policy marker. Disable to reduce per-tool process fan-out; before-tool and trusted policy relays remain enforced.",
+      "help": "Install the Codex PreToolUse subprocess used only for Paddy loop detection and its no-policy marker. Disable to reduce per-tool process fan-out; before-tool and trusted policy relays remain enforced.",
       "advanced": true
     },
     "appServer.requestTimeoutMs": {
@@ -758,7 +759,7 @@
     },
     "appServer.networkProxy.enabled": {
       "label": "Network Proxy Enabled",
-      "help": "When enabled, OpenClaw defines a Codex permissions profile and selects it with default_permissions instead of sandbox fields.",
+      "help": "When enabled, Paddy defines a Codex permissions profile and selects it with default_permissions instead of sandbox fields.",
       "advanced": true
     },
     "appServer.networkProxy.profileName": {
@@ -838,7 +839,7 @@
     },
     "appServer.experimental.sandboxExecServer": {
       "label": "Sandbox Exec Server",
-      "help": "Route native Codex execution through an OpenClaw sandbox-backed exec-server when OpenClaw sandboxing is active.",
+      "help": "Route native Codex execution through a Paddy sandbox-backed exec-server when Paddy sandboxing is active.",
       "advanced": true
     }
   }

@@ -28,9 +28,9 @@ Runtime behavior:
 - Bundled realtime voice providers: Google Gemini Live (`google`) and OpenAI (`openai`), registered by their provider plugins.
 - Provider-owned raw config lives under `realtime.providers.<providerId>`.
 - On models that support function tools, Voice Call exposes the built-in `openclaw_end_call` realtime tool. It takes no arguments or call ID; the active voice bridge binds it to the current call.
-- Voice Call exposes the shared `openclaw_agent_consult` realtime tool by default. GPT-Live uses native delegation to the same call-owned agent consult instead. The realtime model can delegate when the caller asks for deeper reasoning, current information, or normal OpenClaw tools.
+- Voice Call exposes the shared `openclaw_agent_consult` realtime tool by default. GPT-Live uses native delegation to the same call-owned agent consult instead. The realtime model can delegate when the caller asks for deeper reasoning, current information, or normal Paddy tools.
 - `realtime.consultPolicy` optionally adds guidance for when the realtime model should call `openclaw_agent_consult`.
-- `realtime.agentContext.enabled` is default-off. When enabled, Voice Call injects a bounded agent identity and selected workspace-file capsule into the realtime provider instructions at session setup.
+- On hosts with the shared context resolver, Voice Call always tells the realtime model that it speaks for a Paddy agent that may have other sessions and work. `realtime.agentContext.enabled` is default-off and controls the additional configured identity and profile-file context. Supported older hosts retain the [legacy context behavior](/plugins/voice-call/realtime-and-streaming#agent-voice-context).
 - `realtime.fastContext.enabled` is default-off. When enabled, Voice Call first searches indexed memory/session context for the consult question and returns authorized snippets to the realtime model within `realtime.fastContext.timeoutMs` before falling back to the full consult agent only if `realtime.fastContext.fallbackToConsult` is true. The active memory plugin authorizes session-transcript hits; plugins without that capability fail closed for session hits while ordinary memory hits remain available.
 - If `realtime.provider` points at an unregistered provider, or no realtime voice provider is registered at all, Voice Call logs a warning and skips realtime media instead of failing the whole plugin.
 - `inboundPolicy` must not be `"disabled"` when `realtime.enabled` is true; `validateProviderConfig` rejects that combination.
@@ -47,7 +47,7 @@ controls; selecting GPT-Live does not make them available through delegation.
 
 Voice Call uses the same Gateway-owned GPT-Live bridge as Discord and Talk.
 Select `gpt-live-1-codex` with `cove` to use the ChatGPT OAuth route; it tries
-the routed agent's OpenClaw ChatGPT profile first, then the configured Platform
+the routed agent's Paddy ChatGPT profile first, then the configured Platform
 key, API-key profile, and `OPENAI_API_KEY`. Select `gpt-live-1` with `marin` for
 the public Platform API route. Leaving the model unset preserves Voice Call's
 provider default.
@@ -90,10 +90,10 @@ too. The end-call and custom function-tool limitations above still apply.
 
 Realtime calls normally end when the carrier sends a stream stop event or closes
 the media WebSocket. If an intermediary does not promptly forward that close,
-OpenClaw treats 30 seconds without inbound media as a disconnect, waits a
+Paddy treats 30 seconds without inbound media as a disconnect, waits a
 2-second grace period for media to resume, and then ends the call.
 
-If the realtime provider ends its session first, OpenClaw also ends the carrier
+If the realtime provider ends its session first, Paddy also ends the carrier
 call, including when the provider reports a normal close. This prevents a silent
 phone connection from remaining open after its voice session has finished.
 
@@ -107,7 +107,7 @@ the caller. Configured `realtime.tools` cannot replace this built-in by name.
 For inbound Twilio numbers, also configure a Status Callback using `POST` to
 your public webhook URL with `?type=status` appended, for example
 `https://voice.example.com/voice/webhook?type=status`. Include the `completed`
-call event. OpenClaw-created outbound calls configure their callback
+call event. Paddy-created outbound calls configure their callback
 automatically. The callback provides the fastest teardown signal, while stream
 close and the inactivity backstop remain independent of it.
 
@@ -138,12 +138,33 @@ remain errors; ending the phone session suppresses pending consult results.
 
 ### Agent voice context
 
-Enable `realtime.agentContext` when the voice bridge should sound like the
-configured OpenClaw agent without paying a full agent-consult round trip on
-ordinary turns. The context capsule is added once when the realtime session
-is created, so it does not add per-turn latency. Calls to
-`openclaw_agent_consult` still run the full OpenClaw agent and should be used
-for tool work, current information, memory lookups, or workspace state.
+On hosts with the shared context resolver, every realtime session includes an agent-context paragraph explaining that the
+voice model speaks for a Paddy agent with multiple sessions. It directs
+questions about other sessions, running work, progress, or priorities to
+Paddy. This paragraph stays present when `realtime.agentContext.enabled`
+is `false`.
+
+Enable `realtime.agentContext` to add the configured agent's identity and
+selected profile files for ordinary voice turns. `includeIdentity` controls
+the configured name, emoji, vibe, theme, and creature/persona fields;
+`includeWorkspaceFiles` controls the files listed in `files`. The shared core
+resolver loads `IDENTITY.md`, `USER.md`, and `SOUL.md` through the normal
+bootstrap path, honoring bootstrap hooks and workspace access. Other workspace-relative files use safe workspace reads; missing or
+unreadable files are skipped. `maxChars` bounds the profile-file block, with a
+default of 6000 characters, and excludes the agent-context paragraph and
+configured identity.
+
+Paddy 2026.9.6 lacks that shared resolver. On this supported host, Voice Call
+retains its shipped optional context capsule: `enabled: false` omits the capsule;
+when enabled, identity fields and selected safe workspace-relative files follow
+their respective controls. `maxChars` bounds the entire optional capsule,
+including identity, headings, and the truncation marker. The newer multi-session
+paragraph is unavailable on this path. This compatibility path will retire when
+the supported host floor includes the shared context resolver.
+
+Context is added when the realtime session is created, so it does not add per-turn latency.
+Calls to `openclaw_agent_consult` still run the full Paddy agent and should
+be used for tool work, current information, memory lookups, or workspace state.
 
 ```json5
 {

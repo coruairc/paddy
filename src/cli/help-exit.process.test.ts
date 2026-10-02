@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { Command, CommanderError } from "commander";
 import * as tar from "tar";
 import { afterEach, describe, expect, it } from "vitest";
+import { resolveVitestNodeArgs } from "../../scripts/lib/vitest-process-env.mts";
 import { createFixtureLifetime } from "../../test/helpers/fixture-lifetime.js";
 import { runNodeScript } from "../../test/helpers/run-node-script.js";
 import { useAutoCleanupTempDirTracker } from "../../test/helpers/temp-dir.js";
@@ -212,7 +213,7 @@ describe("CLI help process exit", () => {
     });
 
     expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("Usage: openclaw [options] [command]");
+    expect(result.stdout).toContain("Usage: paddy [options] [command]");
     expect(() => parseJsonLines(result.stdout)).toThrow();
   });
 
@@ -225,7 +226,7 @@ describe("CLI help process exit", () => {
     });
 
     expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("Usage: openclaw [options] [command]");
+    expect(result.stdout).toContain("Usage: paddy [options] [command]");
   });
 
   // One lazy process is representative by design; the matrix below exercises
@@ -238,7 +239,7 @@ describe("CLI help process exit", () => {
     });
 
     expect(result.stderr).toBe("");
-    expect(result.stdout).toContain("Usage: openclaw backup [options] [command]");
+    expect(result.stdout).toContain("Usage: paddy backup [options] [command]");
   });
   it("flushes explicitly requested entry traces on precomputed help", async () => {
     const result = await runCliProcess({
@@ -288,13 +289,13 @@ describe("CLI help process exit", () => {
       expect(parseResult).toBeInstanceOf(CommanderError);
       expect(parseResult).toMatchObject({ code: "commander.helpDisplayed", exitCode: 0 });
       expect(stderr).toBe("");
-      expect(stdout).toContain(`Usage: openclaw ${usageCommand} [options] [command]`);
+      expect(stdout).toContain(`Usage: paddy ${usageCommand} [options] [command]`);
     },
   );
 
   it.concurrent.each([
-    { args: ["acp", "--help"], usage: "Usage: openclaw acp [options] [command]" },
-    { args: ["acp", "client", "--help"], usage: "Usage: openclaw acp client [options]" },
+    { args: ["acp", "--help"], usage: "Usage: paddy acp [options] [command]" },
+    { args: ["acp", "client", "--help"], usage: "Usage: paddy acp client [options]" },
   ])("renders in-process ACP help for $args", async ({ args, usage }) => {
     let stdout = "";
     let stderr = "";
@@ -365,7 +366,7 @@ describe("models list JSON failure process output", () => {
       {
         provider: "autoqa-no-such-provider",
         message:
-          "Unknown model catalog provider. Use a provider id from the installed plugins or configured providers.",
+          'Unknown model catalog provider "autoqa-no-such-provider". Run openclaw models list --all to list models and their provider IDs.',
       },
     ].flatMap(({ provider, message }) => [
       {
@@ -471,7 +472,11 @@ await runCliWithExitFinalization({
       const spawned: { child?: ChildProcess } = {};
       const child = await lifetime.track(
         runNodeScript(
-          [...resolveRuntimeWorkerArgv(helpersUrl).slice(0, -1), entryPath],
+          [
+            ...resolveVitestNodeArgs(),
+            ...resolveRuntimeWorkerArgv(helpersUrl).slice(0, -1),
+            entryPath,
+          ],
           {
             PATH: process.env.PATH,
             SystemRoot: process.env.SystemRoot,

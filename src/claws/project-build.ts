@@ -3,6 +3,7 @@ import { link, lstat, mkdir, mkdtemp, readFile, rm, stat } from "node:fs/promise
 import { dirname, join, resolve } from "node:path";
 import { tempWorkspace } from "@openclaw/fs-safe/temp";
 import * as tar from "tar";
+import { PRODUCT_NAME } from "../brand.js";
 import { root as fsSafeRoot } from "../infra/fs-safe.js";
 import { resolvePreferredOpenClawTmpDir } from "../infra/tmp-openclaw-dir.js";
 import {
@@ -129,7 +130,7 @@ export async function buildClawProject(
       if (!profileSnapshot) {
         throw new ClawProjectError(
           "project_invalid",
-          "Validated OpenClaw profile is missing its source snapshot.",
+          `Validated ${PRODUCT_NAME} profile is missing its source snapshot.`,
         );
       }
       const profile = await readSelectedProjectFile(project.root, profileSnapshot.sourcePath);

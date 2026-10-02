@@ -1,4 +1,5 @@
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { UpdateChannel } from "./update-channels.js";
 
@@ -56,7 +57,7 @@ export function formatManagedServiceUpdateCommand(
 
 export function buildManagedServiceHandoffUnavailableMessage(command: string): string {
   return [
-    "OpenClaw updates cannot safely run inside the live gateway process without a managed-service handoff.",
+    `${PRODUCT_NAME} updates cannot safely run inside the live gateway process without a managed-service handoff.`,
     `Stop the foreground Gateway, run \`${command}\` from a shell, then launch the Gateway again. For a managed deployment, use its host's stop, update, and restart workflow.`,
   ].join("\n");
 }

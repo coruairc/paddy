@@ -5,6 +5,7 @@ import { expectDefined } from "@openclaw/normalization-core";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { consumeRootOptionToken, FLAG_TERMINATOR } from "../infra/cli-root-options.js";
 import { resolveCliArgvInvocation } from "./argv-invocation.js";
+import { CLI_NAME } from "./cli-name.js";
 import { scanCliRootOptions } from "./root-option-scan.js";
 import { takeCliRootOptionValue } from "./root-option-value.js";
 import { resolveSubprocessExitCode } from "./subprocess-exit-code.js";
@@ -234,13 +235,14 @@ export function maybeRunCliInContainer(
   if (!parsed.ok) {
     throw new Error(parsed.error);
   }
-  const containerName = resolveCliContainerTarget(argv, resolvedDeps.env);
+  const containerName =
+    parsed.container ?? normalizeOptionalString(resolvedDeps.env.OPENCLAW_CONTAINER);
   if (!containerName) {
     return { handled: false, argv: parsed.argv };
   }
   if (isBlockedContainerCommand(parsed.argv.slice(2))) {
     throw new Error(
-      "openclaw update is not supported with --container; rebuild or restart the container image instead.",
+      `${CLI_NAME} update is not supported with --container; rebuild or restart the container image instead.`,
     );
   }
 

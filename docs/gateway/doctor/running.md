@@ -6,11 +6,11 @@ read_when:
   - You need a read-only health report for CI or preflight automation
 ---
 
-Run `openclaw doctor` to repair and migrate an OpenClaw install. This page covers the
+Run `paddy doctor` to repair and migrate a Paddy install. This page covers the
 command, its automation flags, and the read-only lint mode.
 
 When the System agent runs Doctor, it uses a separate process from the same
-OpenClaw installation. Bulk diagnostic checks can then run without blocking the
+Paddy installation. Bulk diagnostic checks can then run without blocking the
 Gateway's event loop. This uses the existing `--non-interactive` behavior,
 including its safe migrations; it does not enable additional repairs. Once
 started, Doctor finishes and releases its resources before a cancelled caller
@@ -19,7 +19,7 @@ settles, so cancellation cannot abandon an in-progress migration.
 ## Quick start
 
 ```bash
-openclaw doctor
+paddy doctor
 ```
 
 ### Headless and automation modes
@@ -27,7 +27,7 @@ openclaw doctor
 <Tabs>
   <Tab title="--yes">
     ```bash
-    openclaw doctor --yes
+    paddy doctor --yes
     ```
 
     Accept default non-service repairs without prompting and enter maintenance under the [service-preservation and installation-drift rules](/cli/doctor/recovery#gateway-service-recovery).
@@ -35,7 +35,7 @@ openclaw doctor
   </Tab>
   <Tab title="--fix">
     ```bash
-    openclaw doctor --fix
+    paddy doctor --fix
     ```
 
     Apply recommended non-service repairs without prompting (`--repair` is an alias) and enter maintenance under the [service-preservation and installation-drift rules](/cli/doctor/recovery#gateway-service-recovery).
@@ -43,8 +43,8 @@ openclaw doctor
   </Tab>
   <Tab title="--lint">
     ```bash
-    openclaw doctor --lint
-    openclaw doctor --lint --json
+    paddy doctor --lint
+    paddy doctor --lint --json
     ```
 
     Run structured health checks for CI or preflight automation. Read-only: no
@@ -53,15 +53,15 @@ openclaw doctor
   </Tab>
   <Tab title="--fix --force">
     ```bash
-    openclaw doctor --fix --force
+    paddy doctor --fix --force
     ```
 
-    Apply aggressive config/state repairs too. Repair maintenance uses the same service-preservation and installation-drift rules; use `openclaw gateway install --force` from the intended installation to replace its launcher and managed environment.
+    Apply aggressive config/state repairs too. Repair maintenance uses the same service-preservation and installation-drift rules; use `paddy gateway install --force` from the intended installation to replace its launcher and managed environment.
 
   </Tab>
   <Tab title="--non-interactive">
     ```bash
-    openclaw doctor --non-interactive
+    paddy doctor --non-interactive
     ```
 
     Run without prompts, applying only safe migrations (config normalization +
@@ -81,7 +81,7 @@ openclaw doctor
   </Tab>
   <Tab title="--deep">
     ```bash
-    openclaw doctor --deep
+    paddy doctor --deep
     ```
 
     Scan system services for extra gateway installs (launchd/systemd/schtasks).
@@ -97,16 +97,16 @@ cat ~/.openclaw/openclaw.json
 
 ## Read-only lint mode
 
-`openclaw doctor --lint` is the automation-friendly sibling of
-`openclaw doctor --fix`. They share the same Doctor rule registry, but they do
+`paddy doctor --lint` is the automation-friendly sibling of
+`paddy doctor --fix`. They share the same Doctor rule registry, but they do
 not select or act on rules in the same way:
 
-| Mode                     | Prompts   | Writes config/state                        | Output                 | Use it for                       |
-| ------------------------ | --------- | ------------------------------------------ | ---------------------- | -------------------------------- |
-| `openclaw doctor`        | yes       | yes, safe migrations and confirmed repairs | friendly health report | guided checks and repairs        |
-| `openclaw doctor --json` | no        | no                                         | JSON advisory report   | machine-readable operator checks |
-| `openclaw doctor --fix`  | sometimes | yes, with repair policy                    | friendly repair log    | applying approved repairs        |
-| `openclaw doctor --lint` | no        | no                                         | structured findings    | CI, preflight, and review gates  |
+| Mode                  | Prompts   | Writes config/state                        | Output                 | Use it for                       |
+| --------------------- | --------- | ------------------------------------------ | ---------------------- | -------------------------------- |
+| `paddy doctor`        | yes       | yes, safe migrations and confirmed repairs | friendly health report | guided checks and repairs        |
+| `paddy doctor --json` | no        | no                                         | JSON advisory report   | machine-readable operator checks |
+| `paddy doctor --fix`  | sometimes | yes, with repair policy                    | friendly repair log    | applying approved repairs        |
+| `paddy doctor --lint` | no        | no                                         | structured findings    | CI, preflight, and review gates  |
 
 Default `doctor --lint` runs the broad-safe automation profile: checks that are
 static, local, and useful in CI or preflight output. It skips opt-in checks that
@@ -131,11 +131,11 @@ finding (`info`, `warning`, or `error`); default selection is not a severity
 level.
 
 ```bash
-openclaw doctor --lint
-openclaw doctor --lint --severity-min warning
-openclaw doctor --lint --json
-openclaw doctor --lint --all
-openclaw doctor --lint --only core/doctor/gateway-config --json
+paddy doctor --lint
+paddy doctor --lint --severity-min warning
+paddy doctor --lint --json
+paddy doctor --lint --all
+paddy doctor --lint --only core/doctor/gateway-config --json
 ```
 
 JSON output fields:
@@ -153,9 +153,9 @@ Exit codes:
 | `1`  | one or more findings met the selected threshold          |
 | `2`  | command/runtime failure before findings could be emitted |
 
-These threshold-based exit codes belong to explicit `--lint` mode, with or without `--json`. Bare `openclaw doctor --json` preserves ordinary Doctor's advisory exit `0` after producing its payload; machine consumers should read `ok` and `findings`. Fatal errors before output remain nonzero.
+These threshold-based exit codes belong to explicit `--lint` mode, with or without `--json`. Bare `paddy doctor --json` preserves ordinary Doctor's advisory exit `0` after producing its payload; machine consumers should read `ok` and `findings`. Fatal errors before output remain nonzero.
 
-During `openclaw update`, failure to remove Doctor's disposable lint snapshot is
+During `paddy update`, failure to remove Doctor's disposable lint snapshot is
 recorded as an update warning and does not block the update. Standalone
 `doctor --lint` still reports that cleanup failure as an error. The update keeps
 the checks' actual findings; cleanup warnings do not hide other failures.

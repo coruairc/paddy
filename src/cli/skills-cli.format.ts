@@ -1,4 +1,3 @@
-// Formatting layer for `openclaw skills` commands; keeps discovery data separate from terminal UI.
 import type { SkillsCuratorCompatibleStatusResult } from "../../packages/gateway-protocol/src/schema/agents-models-skills.js";
 import { sanitizeForLog, stripAnsi } from "../../packages/terminal-core/src/ansi.js";
 import {
@@ -16,30 +15,29 @@ import {
   type SkillStatusReport,
 } from "../skills/discovery/status.js";
 import { shortenHomePath } from "../utils.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import { formatCliJsonFailure } from "./failure-output.js";
 import { quoteCliArg } from "./quote-cli-arg.js";
+import { formatCliRequirements } from "./skills-hooks-cli.format.js";
 
-/** Options for rendering the skill list command. */
 export type SkillsListOptions = {
   json?: boolean;
   eligible?: boolean;
   verbose?: boolean;
 };
 
-/** Options for rendering one skill detail view. */
 export type SkillInfoOptions = {
   json?: boolean;
 };
 
-/** Options for rendering skill readiness checks. */
 export type SkillsCheckOptions = {
   json?: boolean;
   agent?: string;
 };
 
 function appendClawHubHint(output: string): string {
-  const command = formatCliCommand("openclaw skills");
+  const command = formatCliCommand(`${CLI_NAME} skills`);
   return `${output}\n\nTip: use \`${command} search\`, \`${command} install\`, and \`${command} update\` for ClawHub-backed skills.`;
 }
 
@@ -129,7 +127,6 @@ function formatSkillCheckSection(
       ];
 }
 
-/** Render skill discovery status as sanitized JSON or a terminal table. */
 export function formatSkillsList(report: SkillStatusReport, opts: SkillsListOptions): string {
   const isReadyForAgent = (skill: SkillStatusEntry) =>
     skill.eligible && !skill.blockedByAgentFilter;
@@ -161,7 +158,7 @@ export function formatSkillsList(report: SkillStatusReport, opts: SkillsListOpti
 
   if (skills.length === 0) {
     const message = opts.eligible
-      ? `No eligible skills found. Run \`${formatCliCommand("openclaw skills list")}\` to see all skills.`
+      ? `No eligible skills found. Run \`${formatCliCommand(`${CLI_NAME} skills list`)}\` to see all skills.`
       : "No skills found.";
     return appendClawHubHint(message);
   }
@@ -201,7 +198,6 @@ export function formatSkillsList(report: SkillStatusReport, opts: SkillsListOpti
   return appendClawHubHint(lines.join("\n"));
 }
 
-/** Render one skill's status, requirements, install hints, and API-key setup details. */
 export function formatSkillInfo(
   report: SkillStatusReport,
   skillName: string,
@@ -219,7 +215,7 @@ export function formatSkillInfo(
     }
     const safeRequestedName = sanitizeJsonString(sanitizeForLog(requestedName));
     return appendClawHubHint(
-      `Skill "${safeRequestedName}" not found. Run \`${formatCliCommand("openclaw skills list")}\` to see available skills.`,
+      `Skill "${safeRequestedName}" not found. Run \`${formatCliCommand(`${CLI_NAME} skills list`)}\` to see available skills.`,
     );
   }
 
@@ -259,36 +255,7 @@ export function formatSkillInfo(
     lines.push(`${theme.muted("  Primary env:")} ${skill.primaryEnv}`);
   }
 
-  const requirementGroups = SKILL_REQUIREMENT_GROUPS.filter(
-    ([key]) => skill.requirements[key].length > 0,
-  );
-
-  if (requirementGroups.length > 0) {
-    lines.push("");
-    lines.push(theme.heading("Requirements:"));
-    const formatRequirementStatus = (value: string, satisfied: boolean) =>
-      satisfied ? theme.success(`✓ ${value}`) : theme.error(`✗ ${value}`);
-    for (const [key, label] of requirementGroups) {
-      const required = skill.requirements[key];
-      const missing = skill.missing[key];
-      let requirementStatus: string;
-      if (key === "anyBins" || key === "os") {
-        // Missing arrays describe the whole alternative group, not individual availability.
-        const prefix = key === "anyBins" ? "any of: " : "";
-        requirementStatus = formatRequirementStatus(
-          `(${prefix}${required.join(", ")})`,
-          missing.length === 0,
-        );
-      } else {
-        requirementStatus = required
-          .map((requirement) =>
-            formatRequirementStatus(requirement, !missing.includes(requirement)),
-          )
-          .join(", ");
-      }
-      lines.push(`${theme.muted(`  ${label}:`)} ${requirementStatus}`);
-    }
-  }
+  lines.push(...formatCliRequirements(skill, SKILL_REQUIREMENT_GROUPS));
 
   if (skill.install.length > 0 && !skill.eligible) {
     lines.push("");
@@ -310,7 +277,7 @@ export function formatSkillInfo(
     lines.push(
       `  Save via UI: ${theme.muted("Control UI → Skills → ")}${safeName}${theme.muted(" → Save key")}`,
     );
-    lines.push(`  Save via CLI: ${formatCliCommand(`openclaw config set ${apiKeyPath} YOUR_KEY`)}`);
+    lines.push(`  Save via CLI: ${formatCliCommand(`${CLI_NAME} config set ${apiKeyPath} YOUR_KEY`)}`);
     lines.push(
       `  Stored in: ${theme.muted("$OPENCLAW_CONFIG_PATH")} ${theme.muted("(default: ~/.openclaw/openclaw.json)")}`,
     );
@@ -319,7 +286,6 @@ export function formatSkillInfo(
   return appendClawHubHint(lines.join("\n"));
 }
 
-/** Render aggregate setup health for all discovered skills. */
 export function formatSkillsCheck(report: SkillStatusReport, opts: SkillsCheckOptions): string {
   const eligible = report.skills.filter((s) => s.eligible);
   const modelVisible = report.skills.filter((s) => s.modelVisible);

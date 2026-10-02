@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { OPENCLAW_DATABASE_SCHEMA_DOCS_URL } from "../state/openclaw-state-db-contract.js";
 import { resolveRuntimeServiceCommit, VERSION } from "../version.js";
 import { executeWithCachedStatement } from "./kysely-sync-cache-state.js";
@@ -36,7 +37,7 @@ export function readSqliteUserVersion(db: DatabaseSync): number {
 export function describeRunningOpenClawBuild(): string {
   const commit = resolveRuntimeServiceCommit();
   const root = resolveOpenClawPackageRootSync({ moduleUrl: import.meta.url });
-  const identity = commit ? `OpenClaw ${VERSION} (${commit})` : `OpenClaw ${VERSION}`;
+  const identity = commit ? `${PRODUCT_NAME} ${VERSION} (${commit})` : `${PRODUCT_NAME} ${VERSION}`;
   return root ? `${identity} installed at ${root}` : identity;
 }
 
@@ -47,10 +48,10 @@ export function createNewerSqliteSchemaVersionError(
   supportedVersion: number,
 ): Error {
   return new SqliteSchemaVersionError(
-    "This OpenClaw build cannot open your existing data.\n" +
+    `This ${PRODUCT_NAME} build cannot open your existing data.\n` +
       `${databaseLabel} ${pathname} uses newer schema version ${schemaVersion}; this build supports ${supportedVersion}.\n` +
       `Refused by ${describeRunningOpenClawBuild()}.\n` +
-      `Use a build that supports schema ${schemaVersion} or newer with this state directory. To use an older build, restore your pre-update backup created with openclaw backup create.\n` +
+      `Use a build that supports schema ${schemaVersion} or newer with this state directory. To use an older build, restore your pre-update backup created with paddy backup create.\n` +
       `See ${OPENCLAW_DATABASE_SCHEMA_DOCS_URL}.`,
   );
 }

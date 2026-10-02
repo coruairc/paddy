@@ -15,8 +15,8 @@ How `AGENTS.md`, persona, skills, and memory files reach a native Codex turn. Pa
 The full generic developer policy, including a `before_prompt_build.systemPrompt`
 replacement, remains native session configuration for compaction and native-child
 inheritance. Ordinary persistent cold or changed-configuration resumes require an
-uninterrupted app-server client and observed native unload before OpenClaw injects
-the full current policy. OpenClaw must be the sole lifecycle owner of the native
+uninterrupted app-server client and observed native unload before Paddy injects
+the full current policy. Paddy must be the sole lifecycle owner of the native
 conversation, including when its app-server runs remotely. Independent clients
 that can reload the same conversation during the handoff are outside this contract;
 observed unload does not reserve the conversation against a competing resume.
@@ -31,25 +31,25 @@ conversation. Parent-local model-request instructions remain a separate surface.
 See [Hook boundaries](/plugins/codex-harness-runtime#hook-boundaries) for recovery.
 
 Codex normally handles `AGENTS.md` itself through native project-doc discovery.
-OpenClaw does not write synthetic Codex project-doc files or depend on Codex
+Paddy does not write synthetic Codex project-doc files or depend on Codex
 fallback filenames for persona files, because Codex fallbacks only apply when
 `AGENTS.md` is missing. Ordinary policy-restricted turns have no native
-filesystem environment, so OpenClaw instead sends the bounded workspace
+filesystem environment, so Paddy instead sends the bounded workspace
 `AGENTS.md` snapshot as thread-level developer instructions. Ring-zero,
 lightweight, message-only, and tool-disabled internal turns suppress that
 carrier.
 
-For OpenClaw workspace parity, local tool notes live in the `## Tools` section
+For Paddy workspace parity, local tool notes live in the `## Tools` section
 of `AGENTS.md` and normally ride Codex's native project-doc discovery. The
 Codex harness forwards the other bootstrap files as developer instructions:
 
 - On managed direct stdio app-servers, including Desktop executables launched
-  by OpenClaw for Computer Use, `SOUL.md`, `IDENTITY.md`, and
+  by Paddy for Computer Use, `SOUL.md`, `IDENTITY.md`, and
   `USER.md` are added to **parent-only model request instructions**. The
   private relay leaves native base/catalog instructions and history intact,
   so newly delivered persona and user-profile context are not automatically
   inherited by native Codex subagents.
-- The compact loaded OpenClaw skills list uses the same parent-local layer.
+- The compact loaded Paddy skills list uses the same parent-local layer.
 - The selected memory plugin's prompt builder receives the complete available
   tool set, including deferred plugin tools. Its guidance uses the same
   parent-local layer independently of `MEMORY.md` file routing.
@@ -86,7 +86,7 @@ compression on HTTP. Requests with parent-local instructions still receive the
 same bounded instruction injection.
 
 Desktop executable selection and Computer Use permissions stay unchanged. The
-relay belongs to the direct stdio process OpenClaw starts, not to the Desktop
+relay belongs to the direct stdio process Paddy starts, not to the Desktop
 application's other conversations.
 
 Custom commands, Desktop proxy attachments, external Unix/WebSocket connections,
@@ -94,13 +94,13 @@ non-OpenAI native providers, custom upstream endpoints, unsupported native accou
 modes, locked upstream configuration, and native `features.respect_system_proxy` profiles keep the legacy
 collaboration carrier for persona and memory guidance, which model-owned catalog
 instructions can replace. A warning and unverified persona accounting identify that the
-workaround is not active. OpenClaw does not reroute or shut down those sessions.
+workaround is not active. Paddy does not reroute or shut down those sessions.
 Previously embedded persona, conversation text, and explicit task handoffs are
 not removed from existing histories or full-history forks.
 
 ### Skill catalogs without a managed relay
 
-On connections without a managed inference relay, the eligible OpenClaw skill
+On connections without a managed inference relay, the eligible Paddy skill
 catalog uses thread developer instructions instead of the replaceable
 collaboration carrier. Native children can inherit this fallback catalog.
 Managed connections keep their existing parent-only request-local catalog;
@@ -109,7 +109,7 @@ skill changes do not resume their threads or write catalog history.
 For the fallback, a changed catalog cold-resumes the same persistent thread.
 A live incognito thread receives the complete current catalog through an
 injected developer message without changing its immutable generic policy.
-After automatic compaction, OpenClaw re-delivers edited or withdrawn catalogs.
+After automatic compaction, Paddy re-delivers edited or withdrawn catalogs.
 The immediate continuation can still use the creation-time catalog; restoration
 is guaranteed only for the following request. Standalone compaction invalidates
 the recorded delivery so the next turn refreshes it, including after a failed

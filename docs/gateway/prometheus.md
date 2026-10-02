@@ -1,14 +1,14 @@
 ---
-summary: "Expose OpenClaw diagnostics as Prometheus text metrics through the diagnostics-prometheus plugin"
+summary: "Expose Paddy diagnostics as Prometheus text metrics through the diagnostics-prometheus plugin"
 title: "Prometheus metrics"
 sidebarTitle: "Prometheus"
 read_when:
-  - You want Prometheus, Grafana, VictoriaMetrics, or another scraper to collect OpenClaw Gateway metrics
+  - You want Prometheus, Grafana, VictoriaMetrics, or another scraper to collect Paddy Gateway metrics
   - You need the Prometheus metric names and label policy for dashboards or alerts
   - You want metrics without running an OpenTelemetry collector
 ---
 
-OpenClaw can expose diagnostics metrics through the official
+Paddy can expose diagnostics metrics through the official
 `diagnostics-prometheus` plugin. It listens to trusted diagnostics plus
 internally tagged, dispatcher-owned diagnostic events (queue, memory, and
 session-recovery signals), and renders a Prometheus text endpoint at:
@@ -53,7 +53,7 @@ For traces, logs, OTLP push, and OpenTelemetry GenAI semantic attributes, see [O
       </Tab>
       <Tab title="CLI">
         ```bash
-        openclaw plugins enable diagnostics-prometheus
+        paddy plugins enable diagnostics-prometheus
         ```
       </Tab>
     </Tabs>
@@ -62,7 +62,7 @@ For traces, logs, OTLP push, and OpenTelemetry GenAI semantic attributes, see [O
     The HTTP route is registered at plugin startup, so reload after enabling.
 
     ```bash
-    openclaw gateway restart
+    paddy gateway restart
     ```
 
   </Step>
@@ -79,7 +79,7 @@ For traces, logs, OTLP push, and OpenTelemetry GenAI semantic attributes, see [O
     ```yaml
     # prometheus.yml
     scrape_configs:
-      - job_name: openclaw
+      - job_name: paddy
         scrape_interval: 30s
         metrics_path: /api/diagnostics/prometheus
         authorization:
@@ -329,7 +329,7 @@ Use `60 * rate(openclaw_worker_started_total[5m])` for starts per minute by
 script. These counts share the registry coverage limits above; they do not
 measure resident memory released by an exit.
 
-`openclaw gateway call diagnostics.lanes --json` also reports `workerCount`,
+`paddy gateway call diagnostics.lanes --json` also reports `workerCount`,
 `workerPoolCount`, and `workerPools`. Each pool entry contains a process-local
 `poolId`, an allowlisted `script`, and its live `workerCount`. The response lists
 the 100 largest live pools; `workerPoolCount` includes all live pools. Counts
@@ -338,7 +338,7 @@ live Workers. Direct Workers contribute to `workerCount` without a pool entry.
 These are JavaScript Worker counts, not an operating-system thread census.
 
 `openclaw_child_process_spawn_total{family="..."}` counts successful launches
-through OpenClaw's shared spawn and exec owners, including brokered launches.
+through Paddy's shared spawn and exec owners, including brokered launches.
 Diagnostics must be enabled. The existing heartbeat publishes accumulated
 counts after at least one minute, with debug logs reporting counts and rates
 using the actual elapsed interval. Failed launches, direct calls bypassing
@@ -378,7 +378,7 @@ trigger, trace attribution or application payload is collected.
   <Accordion title="Bounded, low-cardinality labels">
     Prometheus labels stay bounded and low-cardinality. The exporter does not emit raw diagnostic identifiers such as `runId`, `sessionKey`, `sessionId`, `callId`, `toolCallId`, message IDs, chat IDs, or provider request IDs.
 
-    Label values are redacted and must match OpenClaw's low-cardinality character policy. Values that fail the policy are replaced with `unknown`, `other`, or `none`, depending on the metric. Labels that look like scoped agent session keys are also replaced with `unknown`.
+    Label values are redacted and must match Paddy's low-cardinality character policy. Values that fail the policy are replaced with `unknown`, `other`, or `none`, depending on the metric. Labels that look like scoped agent session keys are also replaced with `unknown`.
 
   </Accordion>
   <Accordion title="Series cap and overflow accounting">
@@ -453,12 +453,12 @@ increase(openclaw_gc_duration_seconds_count[5m])
 ```
 
 <Tip>
-Prefer `gen_ai_client_token_usage` for cross-provider dashboards: it follows the OpenTelemetry GenAI semantic conventions and is consistent with metrics from non-OpenClaw GenAI services.
+Prefer `gen_ai_client_token_usage` for cross-provider dashboards: it follows the OpenTelemetry GenAI semantic conventions and is consistent with metrics from non-Paddy GenAI services.
 </Tip>
 
 ## Choosing between Prometheus and OpenTelemetry export
 
-OpenClaw supports both surfaces independently. You can run either, both, or neither.
+Paddy supports both surfaces independently. You can run either, both, or neither.
 
 <Tabs>
   <Tab title="diagnostics-prometheus">
@@ -470,7 +470,7 @@ OpenClaw supports both surfaces independently. You can run either, both, or neit
 
   </Tab>
   <Tab title="diagnostics-otel">
-    - **Push** model: OpenClaw sends OTLP/HTTP to a collector or OTLP-compatible backend.
+    - **Push** model: Paddy sends OTLP/HTTP to a collector or OTLP-compatible backend.
     - Surface includes metrics, traces, and logs.
     - Bridges to Prometheus through an OpenTelemetry Collector (`prometheus` or `prometheusremotewrite` exporter) when you need both.
     - See [OpenTelemetry export](/gateway/opentelemetry) for the full catalog.
@@ -483,7 +483,7 @@ OpenClaw supports both surfaces independently. You can run either, both, or neit
 <AccordionGroup>
   <Accordion title="Empty response body">
     - Check that `diagnostics.enabled` is not set to `false` in config (it defaults to `true`).
-    - Confirm the plugin is enabled and loaded with `openclaw plugins list --enabled`.
+    - Confirm the plugin is enabled and loaded with `paddy plugins list --enabled`.
     - Generate some traffic; counters and histograms only emit lines after at least one event.
 
   </Accordion>

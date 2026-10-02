@@ -56,8 +56,8 @@ needed.
 Enable and load it:
 
 ```bash
-openclaw hooks info reset-greeting
-openclaw hooks enable reset-greeting
+paddy hooks info reset-greeting
+paddy hooks enable reset-greeting
 ```
 
 Send `/new` in a disposable conversation on a configured chat channel that can
@@ -65,7 +65,7 @@ route replies, such as a direct message to the bot. Expect **Reset hook ran.**
 in that conversation and `[reset-greeting] reset hook ran` in Gateway logs.
 `/reset` triggers the same example. Normal command authorization still applies.
 
-Use an ordinary OpenClaw conversation, not an ACP-bound thread; bound sessions
+Use an ordinary Paddy conversation, not an ACP-bound thread; bound sessions
 delegate reset handling to their owning runtime. Do not use Control UI/webchat
 or a `sessions.reset` RPC as the chat-reply check:
 those paths do not deliver this hook's `event.messages` to the UI. The log marker
@@ -75,7 +75,7 @@ can still show that a reset event ran. See
 Disable the example when finished:
 
 ```bash
-openclaw hooks disable reset-greeting
+paddy hooks disable reset-greeting
 ```
 
 Disabling leaves the files in place. To use a workspace directory instead, put

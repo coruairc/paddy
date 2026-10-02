@@ -257,7 +257,7 @@ describe("gateway register option collisions", () => {
       assert: () => {
         expectLocalGatewayCall("gateway.suspend.prepare", 19086);
         expect(defaultRuntime.log).toHaveBeenCalledWith(
-          "Resume with: openclaw gateway resume suspension-1 --port 19086",
+          "Resume with: paddy gateway resume suspension-1 --port 19086",
         );
       },
     },

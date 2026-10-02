@@ -7,6 +7,7 @@ import {
   type ReplyPayload,
 } from "../../auto-reply/reply-payload.js";
 import type { ReplyDispatchOperation } from "../../auto-reply/reply/reply-dispatcher.types.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { createOutboundPayloadPlan } from "../../infra/outbound/payloads.js";
 import { renderQrPngDataUrl } from "../../media/qr-image.js";
 import { renderQrTerminal } from "../../media/qr-terminal.js";
@@ -83,7 +84,7 @@ async function buildPairingQrAssistantContentBlock(
     type: "openclaw_pairing_qr",
     image_url: imageUrl,
     terminalText,
-    alt: "OpenClaw pairing QR code",
+    alt: `${PRODUCT_NAME} pairing QR code`,
     expiresAtMs: qr.expiresAtMs,
     sensitive: true,
   };

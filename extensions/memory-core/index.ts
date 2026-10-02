@@ -211,7 +211,7 @@ function createLazyMemoryRuntime(host: MemoryCoreRuntimeHost): MemoryPluginRunti
 
 export default definePluginEntry({
   id: "memory-core",
-  name: "OpenClaw Memory",
+  name: "Paddy Memory",
   description: "File-backed memory search tools and CLI",
   kind: "memory",
   register(api) {
@@ -247,8 +247,9 @@ export default definePluginEntry({
       runtime: memoryRuntime,
       publicArtifacts: {
         async listArtifacts(params) {
-          const { listMemoryCorePublicArtifacts } = await import("./src/public-artifacts.js");
-          return await listMemoryCorePublicArtifacts(params);
+          const { listMemoryHostPublicArtifacts } =
+            await import("openclaw/plugin-sdk/memory-host-core");
+          return await listMemoryHostPublicArtifacts(params);
         },
       },
     });

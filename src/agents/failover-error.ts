@@ -532,7 +532,7 @@ export function buildProviderReauthCommand(
     return undefined;
   }
   return formatCliCommand(
-    `openclaw models auth login --provider ${quotePosixShellArg(trimmed)} --force`,
+    `paddy models auth login --provider ${quotePosixShellArg(trimmed)} --force`,
     env,
   );
 }

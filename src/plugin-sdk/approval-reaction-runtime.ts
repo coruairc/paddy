@@ -1,5 +1,6 @@
 import { isRecord } from "../../packages/normalization-core/src/record-coerce.js";
 import { sanitizeForPromptLiteral } from "../agents/sanitize-for-prompt.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatApprovalDisplayPath } from "../infra/approval-display-paths.js";
 import { summarizeApprovalScope } from "../infra/approval-scope.js";
 import { normalizeApprovalRequest, type ChannelApprovalKind } from "../infra/approval-types.js";
@@ -417,7 +418,7 @@ function buildApprovalReactionPromptText(params: {
     sections.push(info.join("\n"));
   } else if (view.approvalKind === "system-agent") {
     const details = [
-      "**OpenClaw change requires approval**",
+      `**${PRODUCT_NAME} change requires approval**`,
       `**Change:** ${view.operationSummary}`,
     ];
     if (view.agentId) {

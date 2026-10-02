@@ -81,7 +81,7 @@ export function collectCronNativeToolAdvisories(params: {
       [
         `Automation "${name}" has an automatically captured tool list with no native file, command, or web tools.`,
         "Before the native-tool capture fix in 2026.9.x, scheduled jobs could omit these tools. A restricted creator session can produce the same list; deliberately restricted jobs can be left as is.",
-        `To change the list, run ${formatCliCommand('openclaw cron edit <id> --tools "<complete list>" --json')} from an authorized session that holds the tools. Include every tool the job should retain.`,
+        `To change the list, run ${formatCliCommand('paddy cron edit <id> --tools "<complete list>" --json')} from an authorized session that holds the tools. Include every tool the job should retain.`,
         "Doctor --fix does not add missing native tools to this list.",
       ].join("\n"),
     );

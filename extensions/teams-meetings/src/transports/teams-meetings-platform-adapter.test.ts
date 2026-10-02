@@ -831,7 +831,7 @@ describe("Microsoft Teams meeting platform adapter", () => {
         audioInputRouted: false,
         manualAction: {
           message:
-            "Select the OpenClaw virtual audio device as the Teams microphone and verify it is selected before enabling talk-back.",
+            "Select the Paddy virtual audio device as the Teams microphone and verify it is selected before enabling talk-back.",
           reason: "teams-audio-choice-required",
         },
       });

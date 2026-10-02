@@ -30,7 +30,7 @@ export async function runNonInteractiveRemoteSetup(params: {
     // Remote mode cannot infer a target gateway; fail before writing partial
     // remote config that would leave status/agent commands misconfigured.
     runtime.error(
-      `Missing --remote-url for remote mode. Example: ${formatCliCommand("openclaw onboard --non-interactive --mode remote --remote-url ws://127.0.0.1:3000")}.`,
+      `Missing --remote-url for remote mode. Example: ${formatCliCommand("paddy onboard --non-interactive --mode remote --remote-url ws://127.0.0.1:3000")}.`,
     );
     runtime.exit(1);
     return;

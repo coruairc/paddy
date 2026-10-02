@@ -1,13 +1,13 @@
 ---
-summary: "PixVerse video generation setup in OpenClaw"
+summary: "PixVerse video generation setup in Paddy"
 title: "PixVerse"
 read_when:
-  - You want to use PixVerse video generation in OpenClaw
+  - You want to use PixVerse video generation in Paddy
   - You need the PixVerse API key/env setup
   - You want to make PixVerse the default video provider
 ---
 
-OpenClaw provides `pixverse` as an official external plugin for hosted PixVerse video generation. The plugin registers the `pixverse` provider against the `videoGenerationProviders` contract.
+Paddy provides `pixverse` as an official external plugin for hosted PixVerse video generation. The plugin registers the `pixverse` provider against the `videoGenerationProviders` contract.
 
 | Property           | Value                                                                |
 | ------------------ | -------------------------------------------------------------------- |
@@ -34,7 +34,7 @@ OpenClaw provides `pixverse` as an official external plugin for hosted PixVerse 
   </Step>
   <Step title="Set the API key">
     ```bash
-    openclaw onboard --auth-choice pixverse-api-key
+    paddy onboard --auth-choice pixverse-api-key
     ```
 
     The wizard prompts for the International or CN endpoint (see API region
@@ -48,7 +48,7 @@ OpenClaw provides `pixverse` as an official external plugin for hosted PixVerse 
   </Step>
   <Step title="Switch an existing default video provider (optional)">
     ```bash
-    openclaw config set agents.defaults.mediaModels.video.primary "pixverse/v6"
+    paddy config set agents.defaults.mediaModels.video.primary "pixverse/v6"
     ```
   </Step>
   <Step title="Generate a video">
@@ -58,7 +58,7 @@ OpenClaw provides `pixverse` as an official external plugin for hosted PixVerse 
 
 ## Supported modes and models
 
-The provider exposes PixVerse generation models through OpenClaw's shared video tool.
+The provider exposes PixVerse generation models through Paddy's shared video tool.
 
 | Mode           | Models               | Reference input         |
 | -------------- | -------------------- | ----------------------- |
@@ -75,7 +75,7 @@ Local image references are uploaded to PixVerse before the image-to-video reques
 | Generated audio | `audio: true`                                                                                                                    |
 
 <Note>
-PixVerse image template generation is not exposed through `image_generate`. That API is template-id driven, while OpenClaw's shared image-generation contract has no PixVerse-specific typed option bag.
+PixVerse image template generation is not exposed through `image_generate`. That API is template-id driven, while Paddy's shared image-generation contract has no PixVerse-specific typed option bag.
 </Note>
 
 ## Provider options
@@ -118,7 +118,7 @@ The video provider accepts these optional provider-specific keys:
 
     Set `models.providers.pixverse.region` manually when your key belongs to a
     specific PixVerse platform region, or run
-    `openclaw onboard --auth-choice pixverse-api-key` to choose one in the
+    `paddy onboard --auth-choice pixverse-api-key` to choose one in the
     setup wizard:
 
     ```json5
@@ -156,7 +156,7 @@ The video provider accepts these optional provider-specific keys:
   </Accordion>
 
   <Accordion title="Task polling">
-    PixVerse returns a `video_id` from the generation request. OpenClaw polls
+    PixVerse returns a `video_id` from the generation request. Paddy polls
     `/openapi/v2/video/result/{video_id}` every 5 seconds until the task
     succeeds, fails, or hits the timeout (default 5 minutes; override with
     `agents.defaults.mediaModels.video.timeoutMs`).

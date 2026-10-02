@@ -34,14 +34,6 @@ vi.mock("../plugins/status.js", () => ({
   },
 }));
 
-vi.mock("../tasks/task-flow-runtime-internal.js", () => ({
-  listTaskFlowRecords: () => [],
-}));
-
-vi.mock("../tasks/runtime-internal.js", () => ({
-  listTasksForFlowId: () => [],
-}));
-
 const config: OpenClawConfig = {
   plugins: {
     entries: {
@@ -95,7 +87,7 @@ describe("official Codex plugin version drift doctor evidence", () => {
     try {
       noteWorkspaceStatus(config, { pluginVersionReadiness: readiness });
       expect(noteSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Running Gateway: OpenClaw 2026.5.30"),
+        expect.stringContaining("Running Gateway: Paddy 2026.5.30"),
         "Plugin restart readiness",
       );
     } finally {
@@ -118,7 +110,7 @@ describe("official Codex plugin version drift doctor evidence", () => {
       expect.objectContaining({
         requirement: "plugin-version-gateway-restart",
         message: expect.stringContaining(`running Gateway is ${runningGatewayVersion}`),
-        fixHint: "openclaw gateway restart",
+        fixHint: "paddy gateway restart",
       }),
     ]);
 
@@ -126,7 +118,7 @@ describe("official Codex plugin version drift doctor evidence", () => {
     try {
       noteWorkspaceStatus(config, { pluginVersionReadiness: readiness });
       expect(noteSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`Running Gateway: OpenClaw ${runningGatewayVersion}`),
+        expect.stringContaining(`Running Gateway: Paddy ${runningGatewayVersion}`),
         "Plugin restart readiness",
       );
     } finally {
@@ -167,11 +159,11 @@ describe("official Codex plugin version drift doctor evidence", () => {
         {
           checkId: "core/doctor/workspace-status",
           severity: "warning",
-          message: `Plugin codex is ${installedVersion}, but a Gateway restart will load OpenClaw ${gatewayVersion}. The confirmed plugin target is ${gatewayVersion}.`,
+          message: `Plugin codex is ${installedVersion}, but a Gateway restart will load Paddy ${gatewayVersion}. The confirmed plugin target is ${gatewayVersion}.`,
           path: "plugins.entries.codex",
           target: "codex",
           requirement: "plugin-version-drift",
-          fixHint: "openclaw plugins update @openclaw/codex@2026.6.1 && openclaw gateway restart",
+          fixHint: "paddy plugins update @openclaw/codex@2026.6.1 && paddy gateway restart",
         },
       ]);
 
@@ -185,13 +177,13 @@ describe("official Codex plugin version drift doctor evidence", () => {
         );
         expect(driftNotes).toHaveLength(1);
         expect(driftNotes[0]?.[0]).toContain(
-          `1 active official plugin not on post-restart OpenClaw ${gatewayVersion}`,
+          `1 active official plugin not on post-restart Paddy ${gatewayVersion}`,
         );
         expect(driftNotes[0]?.[0]).toContain(
           `codex: ${installedVersion} (npm) -> expected ${gatewayVersion}`,
         );
-        expect(driftNotes[0]?.[0]).toContain("openclaw plugins update @openclaw/codex@2026.6.1");
-        expect(driftNotes[0]?.[0]).toContain("openclaw gateway restart");
+        expect(driftNotes[0]?.[0]).toContain("paddy plugins update @openclaw/codex@2026.6.1");
+        expect(driftNotes[0]?.[0]).toContain("paddy gateway restart");
       } finally {
         noteSpy.mockRestore();
       }
@@ -290,7 +282,7 @@ describe("ClawHub plugin version drift doctor evidence", () => {
           expect(findings[0]?.fixHint).toBeUndefined();
           expect(output).toContain("already holds registry version 2026.9.3");
           expect(output).toContain("whatsapp: 2026.9.3 (clawhub) -> expected 2026.9.4");
-          expect(output).not.toContain("openclaw plugins update");
+          expect(output).not.toContain("paddy plugins update");
           expect(output).not.toContain("No install command generated");
         } else if (result === "resolved") {
           expect(findings[0]?.message).toContain(`confirmed plugin target is ${latestVersion}`);
@@ -299,15 +291,15 @@ describe("ClawHub plugin version drift doctor evidence", () => {
           );
           expect(output).not.toContain("expected 2026.9.4");
           expect(findings[0]?.fixHint).toBe(
-            "openclaw plugins update whatsapp && openclaw gateway restart",
+            "paddy plugins update whatsapp && paddy gateway restart",
           );
           expect(output).toContain(findings[0]?.fixHint);
         } else {
           expect(findings[0]?.message).toContain("requires plugin API >=2026.10.1");
           expect(output).toContain("requires plugin API >=2026.10.1");
           expect(output).toContain("No install command generated");
-          expect(output).not.toContain("openclaw plugins update");
-          expect(findings[0]?.fixHint).not.toContain("openclaw plugins update");
+          expect(output).not.toContain("paddy plugins update");
+          expect(findings[0]?.fixHint).not.toContain("paddy plugins update");
         }
       } finally {
         noteSpy.mockRestore();

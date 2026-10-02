@@ -1,4 +1,5 @@
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
+import { formatErrorMessage as formatError } from "../../../infra/errors.js";
 import { createDeferredCore } from "../../../shared/deferred.js";
 import { buildRealtimeVoiceAgentCancelProviderResult } from "../../../talk/agent-run-control-shared.js";
 import {
@@ -13,7 +14,6 @@ import type {
 import { resolveRealtimeVoiceBargeIn } from "../../../talk/realtime-session-policy.js";
 import type { TalkEvent } from "../../../talk/talk-session-controller.js";
 import { abortChatRunById } from "../../chat-abort.js";
-import { formatError } from "../../server-utils.js";
 import { decodeTalkRelayAudioBase64 } from "../relay-audio-base64.js";
 import {
   closeTalkRelaySessionsForConnection,
@@ -38,8 +38,7 @@ import {
   completeAfterToolResultSubmissions,
   submitFinalProviderToolResult,
   suppressedToolResultOptions,
-  trackAgentFinalToolResult,
-  trackPendingWorkingToolResult,
+  trackToolResultCompletion,
 } from "./provider-results.js";
 import {
   MAX_AUDIO_BASE64_BYTES,
@@ -54,6 +53,7 @@ import {
   type RelaySession,
 } from "./state.js";
 import { closeRelayVoiceSession, ensureRelayVoiceSession } from "./voice.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 
 export function adoptTalkRealtimeRelaySession(
   session: RelaySession,
@@ -184,7 +184,6 @@ export function closeRelaySession(
   return closing.completion;
 }
 
-/** Releases every realtime relay session owned by a disconnected gateway connection. */
 function closeTalkRealtimeRelaySessionsForConnection(connId: string): Promise<void> {
   return closeTalkRelaySessionsForConnection({
     sessions: [...relaySessions.values(), ...drainingRelaySessions],
@@ -208,7 +207,6 @@ function getRelaySession(relaySessionId: string, connId: string): RelaySession {
   });
 }
 
-/** Streams one base64-encoded browser audio frame into the owning relay. */
 export function sendTalkRealtimeRelayAudio(params: {
   relaySessionId: string;
   connId: string;
@@ -240,7 +238,6 @@ export function sendTalkRealtimeRelayAudio(params: {
   }
 }
 
-/** Confirms that an owning relay client finished playing through a provider mark. */
 export function acknowledgeTalkRealtimeRelayMark(params: {
   relaySessionId: string;
   connId: string;
@@ -249,7 +246,6 @@ export function acknowledgeTalkRealtimeRelayMark(params: {
   getRelaySession(params.relaySessionId, params.connId).bridge.acknowledgeMark(params.markName);
 }
 
-/** Delivers a tool result from the browser/client side back to the provider. */
 export function submitTalkRealtimeRelayToolResult(params: {
   relaySessionId: string;
   connId: string;
@@ -290,7 +286,7 @@ export function submitTalkRealtimeRelayToolResult(params: {
   if (cancelledAgentCall) {
     const cancellationEpoch = session.toolResultEpoch;
     const providerResult = buildRealtimeVoiceAgentCancelProviderResult(
-      "OpenClaw cancelled this consult before completion. Do not restart it.",
+      `${PRODUCT_NAME} cancelled this consult before completion. Do not restart it.`,
     );
     const submitCancellation = () => {
       if (
@@ -314,7 +310,7 @@ export function submitTalkRealtimeRelayToolResult(params: {
     const completion = pendingProvider
       ? pendingProvider.then(submitCancellation, submitCancellation)
       : submitCancellation();
-    return trackAgentFinalToolResult(session, params.callId, completion);
+    return trackToolResultCompletion(session.pendingFinalToolResults, params.callId, completion);
   }
   if (
     params.options?.suppressResponse === true &&
@@ -352,7 +348,7 @@ export function submitTalkRealtimeRelayToolResult(params: {
       options: params.options,
       onAccepted,
     });
-    return trackAgentFinalToolResult(session, params.callId, completion);
+    return trackToolResultCompletion(session.pendingFinalToolResults, params.callId, completion);
   }
   const submit = () =>
     session.bridge.submitToolResult(
@@ -374,14 +370,13 @@ export function submitTalkRealtimeRelayToolResult(params: {
         onAccepted();
       }
     });
-    return trackPendingWorkingToolResult(session, params.callId, completion);
+    return trackToolResultCompletion(session.pendingWorkingToolResults, params.callId, completion);
   }
   const submission = submit();
   const completion = completeAfterToolResultSubmissions(session, [submission], onAccepted);
-  return trackPendingWorkingToolResult(session, params.callId, completion);
+  return trackToolResultCompletion(session.pendingWorkingToolResults, params.callId, completion);
 }
 
-/** Tracks the chat run started for a realtime agent-consult tool call. */
 export function registerTalkRealtimeRelayAgentRun(params: {
   relaySessionId: string;
   connId: string;
@@ -485,7 +480,6 @@ export async function flushTalkRealtimeRelayVoiceWrites(params: {
   await getRelaySession(params.relaySessionId, params.connId).voiceTranscriptQueue.flush();
 }
 
-/** Applies realtime voice-control text to the active agent-consult chat run. */
 export async function steerTalkRealtimeRelayAgentRun(params: {
   relaySessionId: string;
   connId: string;
@@ -571,7 +565,6 @@ export function prepareTalkRealtimeRelayAgentControl(
   };
 }
 
-/** Cancels the active relay turn, aborts agent work, and clears provider audio. */
 export async function cancelTalkRealtimeRelayTurn(params: {
   relaySessionId: string;
   connId: string;
@@ -641,7 +634,7 @@ export async function cancelTalkRealtimeRelayTurn(params: {
     session.harness.forcedConsults.markCancelled(handle);
     session.forcedTerminalProviderResults.set(handle.id, {
       result: buildRealtimeVoiceAgentCancelProviderResult(
-        "OpenClaw cancelled this consult before completion. Do not restart it.",
+        `${PRODUCT_NAME} cancelled this consult before completion. Do not restart it.`,
       ),
       options: suppressedToolResultOptions(session),
       turnId,
@@ -721,7 +714,6 @@ export function resetTalkRealtimeRelayContinuity(
   return cancelled.ok ? cancelled.event : undefined;
 }
 
-/** Closes a realtime relay session owned by the current connection. */
 export function stopTalkRealtimeRelaySession(params: {
   relaySessionId: string;
   connId: string;

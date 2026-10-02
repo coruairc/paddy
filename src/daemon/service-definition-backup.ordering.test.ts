@@ -423,7 +423,7 @@ it("preserves typed pre-publication authority failure during central inspection"
   expect(install).not.toHaveBeenCalled();
   expect(warn).toHaveBeenCalledWith(
     expect.stringMatching(
-      /skipped;.*left unchanged.*openclaw --profile receipt-test gateway status --deep/u,
+      /skipped;.*left unchanged.*paddy --profile receipt-test gateway status --deep/u,
     ),
   );
   expect(await readServiceFileState(f.sourcePath)).toEqual(before);

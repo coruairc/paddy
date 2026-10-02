@@ -103,7 +103,7 @@ export function createTelegramGroupCommandContext(params?: {
       chat: {
         id: params?.chatId ?? -1001234567890,
         type: "supergroup" as const,
-        title: params?.title ?? "OpenClaw",
+        title: params?.title ?? "Paddy",
       },
       from: { id: params?.userId ?? 200, username: params?.username ?? "bob" },
     },

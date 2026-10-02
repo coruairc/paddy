@@ -1,6 +1,6 @@
-# Tavily OpenClaw plugin
+# Tavily Paddy plugin
 
-Official OpenClaw plugin for Tavily.
+Official Paddy plugin for Tavily.
 
 ## Install
 

@@ -333,7 +333,7 @@ export function registerPackageRootRollbackTests(
         after: { version: "9999.1.1" },
         steps: [
           {
-            name: "openclaw doctor",
+            name: "paddy doctor",
             command: "doctor",
             cwd: candidateRoot,
             durationMs: 1,

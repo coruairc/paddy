@@ -59,7 +59,7 @@ applications are not adopted or cleared for portals.
 Portal routes use **Serve, never Funnel**, even when the Gateway uses Funnel.
 The operator's browser must be on the tailnet. Gateway access on port `443` does
 not prove access to the portal's separate HTTPS port: restrictive tailnet grants
-or ACLs must permit the port in the returned URL. OpenClaw does not edit those
+or ACLs must permit the port in the returned URL. Paddy does not edit those
 policies. Portal bearer authentication remains required; Gateway identity-header
 authentication does not grant portal access.
 
@@ -106,7 +106,7 @@ Set up the operator-owned reverse proxy as follows:
    including assets, navigation, and WebSocket live reload. A host-local fetch or
    successful Gateway connection is not this verification.
 
-OpenClaw does not install DNS records, issue certificates, configure the reverse
+Paddy does not install DNS records, issue certificates, configure the reverse
 proxy, or copy Gateway access policies to this namespace. A proxy on another
 machine needs a separately secured path to the loopback backend; that path is
 not created by this setting. Edge login pages or third-party cookie restrictions
@@ -279,8 +279,8 @@ Portals proxy only the selected development server on the Gateway host or a node
 ## Limitations
 
 - Older node bundles without portal-stream support cannot open worker portals. Update the node bundle, or move the session back to the Gateway with `sessions.move`.
-- SSH-backed `remote-exec` placements, including Codex sessions, do not run the OpenClaw worker tool loop, so the `portal` tool does not apply there. Move the session back to the Gateway with `sessions.move` when a Gateway-hosted portal is needed.
-- A Gateway-only proxy, SSH tunnel, or externally managed Serve route does not automatically create portal ingress. Configure private wildcard ingress or OpenClaw-managed Serve. The UI reports a remote loopback URL as requiring ingress; it does not invent a reachable URL.
+- SSH-backed `remote-exec` placements, including Codex sessions, do not run the Paddy worker tool loop, so the `portal` tool does not apply there. Move the session back to the Gateway with `sessions.move` when a Gateway-hosted portal is needed.
+- A Gateway-only proxy, SSH tunnel, or externally managed Serve route does not automatically create portal ingress. Configure private wildcard ingress or Paddy-managed Serve. The UI reports a remote loopback URL as requiring ingress; it does not invent a reachable URL.
 - Browser reachability probes check transport only. A response can be an authentication page or a waiting page, not a rendered application. A Content Security Policy-blocked probe says nothing about iframe reachability.
 - Portal ingress does not inherit Gateway trusted-proxy identities, Cloudflare Access policies, or tailnet ACL grants. Configure and verify those boundaries separately.
 - The prefix isolates cookies forwarded to each target; it does not create separate browser cookie jars. In direct/Serve mode, browser-side code can see non-`HttpOnly` cookies for sibling portals on the same hostname through `document.cookie`. Wildcard ingress separates hostnames, but portals under a common DNS suffix are not necessarily separate sites, and the cookie-name prefix still applies. Use `HttpOnly` for sensitive application cookies. Applications that manage cookies in browser code must account for the prefix; unprefixed cookies written directly by browser code are not forwarded to the target.

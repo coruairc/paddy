@@ -1,7 +1,10 @@
-// Doctor cron warnings for model overrides and stale WhatsApp crontab health scripts.
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
-import { normalizeOptionalString } from "../../../../packages/normalization-core/src/string-coerce.js";
+import {
+  normalizeOptionalString,
+  normalizeStringifiedOptionalString,
+} from "../../../../packages/normalization-core/src/string-coerce.js";
 import { note } from "../../../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 import { normalizeChatChannelId } from "../../../channels/ids.js";
 import { listReadOnlyChannelPluginsForConfig } from "../../../channels/plugins/read-only.js";
 import { formatCliCommand } from "../../../cli/command-format.js";
@@ -10,6 +13,7 @@ import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import { resolveCronDeliveryPlan } from "../../../cron/delivery-plan.js";
 import type { CronJob } from "../../../cron/types.js";
 import { runExec } from "../../../process/exec.js";
+import { countLabel as pluralize } from "../../doctor-state-integrity-format.js";
 
 type CrontabReader = () => Promise<{ stdout?: unknown; stderr?: unknown }>;
 
@@ -18,22 +22,6 @@ const LEGACY_WHATSAPP_HEALTH_SCRIPT_RE =
 const CRON_MODEL_OVERRIDE_EXAMPLE_LIMIT = 3;
 const CRON_DELIVERY_TARGET_ADVISORY_EXAMPLE_LIMIT = 3;
 const CRONTAB_READ_TIMEOUT_MS = 5_000;
-
-function pluralize(count: number, noun: string) {
-  return `${count} ${noun}${count === 1 ? "" : "s"}`;
-}
-
-function normalizeModelProvider(value: unknown): string | undefined {
-  const raw = normalizeOptionalString(value);
-  if (!raw) {
-    return undefined;
-  }
-  const slash = raw.indexOf("/");
-  if (slash <= 0 || slash >= raw.length - 1) {
-    return undefined;
-  }
-  return raw.slice(0, slash).trim().toLowerCase() || undefined;
-}
 
 function normalizeModelRef(value: unknown): string | undefined {
   const raw = normalizeOptionalString(value);
@@ -60,7 +48,6 @@ function formatSortedCounts(counts: Map<string, number>): string {
     .join(", ");
 }
 
-/** Emit a note when cron jobs pin models instead of inheriting the default model. */
 export function noteCronModelOverrides(params: {
   cfg: OpenClawConfig;
   jobs: Array<Record<string, unknown>>;
@@ -86,9 +73,10 @@ export function noteCronModelOverrides(params: {
       continue;
     }
     overrideCount += 1;
-    const provider = normalizeModelProvider(model) ?? "bare/alias";
+    const modelRef = normalizeModelRef(model);
+    const provider = modelRef?.split("/", 1)[0] ?? "bare/alias";
     providerCounts.set(provider, (providerCounts.get(provider) ?? 0) + 1);
-    const modelKey = normalizeModelMismatchKey(model);
+    const modelKey = modelRef ?? model.toLowerCase();
     if (defaultKey && modelKey && modelKey !== defaultKey) {
       mismatchCount += 1;
       if (mismatchExamples.length < CRON_MODEL_OVERRIDE_EXAMPLE_LIMIT) {
@@ -115,33 +103,26 @@ export function noteCronModelOverrides(params: {
     lines.push(`- Examples: ${mismatchExamples.join(", ")}`);
   }
   lines.push(
-    `Review with ${formatCliCommand("openclaw automations list")} and ${formatCliCommand("openclaw automations show <job-id>")}; remove \`payload.model\` from jobs that should inherit the default.`,
+    `Review with ${formatCliCommand("paddy automations list")} and ${formatCliCommand("paddy automations show <job-id>")}; remove \`payload.model\` from jobs that should inherit the default.`,
   );
 
   note(lines.join("\n"), "Cron");
 }
 
-/** Canonicalizes a channel id/alias for comparison, falling back to lowercase for external plugin ids. */
 function canonicalChannelKey(value: string): string {
   return normalizeChatChannelId(value) ?? value.trim().toLowerCase();
 }
 
-/** Concrete announce target a cron job pins ahead of run time, paired with its source job. */
 type ConcreteCronDeliveryTarget = { channel: string; job: Record<string, unknown> };
 
-/** Collects the concrete announce channels cron jobs pin, skipping pseudo/relative targets. */
 function listConcreteCronDeliveryTargets(
   jobs: Array<Record<string, unknown>>,
 ): ConcreteCronDeliveryTarget[] {
   const targets: ConcreteCronDeliveryTarget[] = [];
   for (const job of jobs) {
-    // Disabled jobs have no next scheduled run, so their delivery target cannot fail yet.
-    if (job.enabled === false) {
-      continue;
-    }
     // Only an explicit delivery object pins a concrete channel; without one the plan resolves
     // to the pseudo "last" route decided at run time, which doctor cannot validate ahead of time.
-    if (!isRecord(job.delivery)) {
+    if (job.enabled === false || !isRecord(job.delivery)) {
       continue;
     }
     const plan = resolveCronDeliveryPlan(job as unknown as CronJob);
@@ -154,17 +135,10 @@ function listConcreteCronDeliveryTargets(
   return targets;
 }
 
-/**
- * Builds an advisory when persisted cron jobs announce to a concrete channel whose plugin
- * is not active in the current config, so their next scheduled run will fail-closed on
- * delivery. Pseudo/relative targets (announce-to-`last`, webhook, `none`) are skipped because
- * they resolve at run time. Observer-only: it never repairs jobs or writes config. The channel
- * list is resolved lazily so doctor skips the read-only channel snapshot when no job can drift.
- * Returns `null` when no job pins a concrete target or every concrete target is active.
- */
+// Resolve the channel snapshot only when an enabled job pins a concrete delivery target.
 function collectCronDeliveryTargetAdvisory(params: {
+  cfg: OpenClawConfig;
   jobs: Array<Record<string, unknown>>;
-  resolveAvailableChannelIds: () => Iterable<string>;
 }): string | null {
   const concreteTargets = listConcreteCronDeliveryTargets(params.jobs);
   if (concreteTargets.length === 0) {
@@ -172,7 +146,12 @@ function collectCronDeliveryTargetAdvisory(params: {
   }
 
   const availableKeys = new Set<string>();
-  for (const id of params.resolveAvailableChannelIds()) {
+  // Setup fallback includes configured channels even when no Gateway is running.
+  const plugins = listReadOnlyChannelPluginsForConfig(params.cfg, {
+    includePersistedAuthState: false,
+    includeSetupFallbackPlugins: true,
+  });
+  for (const { id } of plugins) {
     const normalized = normalizeOptionalString(id);
     if (normalized) {
       availableKeys.add(canonicalChannelKey(normalized));
@@ -205,27 +184,17 @@ function collectCronDeliveryTargetAdvisory(params: {
     `- ${pluralize(unavailableCount, "job")} ${unavailableCount === 1 ? "announces" : "announce"} to a channel whose plugin is not active; the next scheduled run will fail to deliver`,
     `- Channels: ${formatSortedCounts(channelCounts)}`,
     `- Examples: ${examples.join(", ")}`,
-    `Reactivate the channel plugin or update the job's \`delivery.channel\` after reviewing with ${formatCliCommand("openclaw automations list")} and ${formatCliCommand("openclaw automations show <job-id>")}.`,
+    `Reactivate the channel plugin or update the job's \`delivery.channel\` after reviewing with ${formatCliCommand("paddy automations list")} and ${formatCliCommand("paddy automations show <job-id>")}.`,
   ].join("\n");
 }
 
-/** Emit a note when cron jobs announce to a concrete channel whose plugin is not active. */
 export function noteCronDeliveryTargetAdvisory(params: {
   cfg: OpenClawConfig;
   jobs: Array<Record<string, unknown>>;
 }): void {
   let advisory: string | null;
   try {
-    advisory = collectCronDeliveryTargetAdvisory({
-      jobs: params.jobs,
-      // Mirror the doctor channel lookup: setup-fallback materializes configured channels even
-      // when no gateway is running, so configured targets are not mistaken for unavailable ones.
-      resolveAvailableChannelIds: () =>
-        listReadOnlyChannelPluginsForConfig(params.cfg, {
-          includePersistedAuthState: false,
-          includeSetupFallbackPlugins: true,
-        }).map((plugin) => plugin.id),
-    });
+    advisory = collectCronDeliveryTargetAdvisory(params);
   } catch {
     // Channel resolution is best-effort; never let an advisory break the doctor cron flow.
     return;
@@ -235,39 +204,14 @@ export function noteCronDeliveryTargetAdvisory(params: {
   }
 }
 
-async function readUserCrontab(): Promise<{ stdout: string; stderr?: string }> {
-  const result = await runExec("crontab", ["-l"], {
-    logOutput: false,
-    timeoutMs: CRONTAB_READ_TIMEOUT_MS,
-  });
-  return {
-    stdout: result.stdout,
-    stderr: result.stderr,
-  };
-}
-
-function coerceCrontabText(crontab: unknown): string {
-  if (typeof crontab === "string") {
-    return crontab;
-  }
-  if (crontab == null) {
-    return "";
-  }
-  if (typeof crontab === "number" || typeof crontab === "boolean" || typeof crontab === "bigint") {
-    return String(crontab);
-  }
-  return "";
-}
-
 function findLegacyWhatsAppHealthCrontabLines(crontab: unknown): string[] {
-  return coerceCrontabText(crontab)
+  return (normalizeStringifiedOptionalString(crontab) ?? "")
     .split(/\r?\n/u)
     .map((line) => line.trim())
     .filter((line) => line.length > 0 && !line.startsWith("#"))
     .filter((line) => LEGACY_WHATSAPP_HEALTH_SCRIPT_RE.test(line));
 }
 
-/** Return a warning when the user's crontab still runs the old WhatsApp health script. */
 export async function collectLegacyWhatsAppCrontabHealthWarning(
   params: {
     platform?: NodeJS.Platform;
@@ -280,7 +224,11 @@ export async function collectLegacyWhatsAppCrontabHealthWarning(
 
   let crontab: unknown;
   try {
-    crontab = (await (params.readCrontab ?? readUserCrontab)()).stdout;
+    crontab = (
+      await (params.readCrontab
+        ? params.readCrontab()
+        : runExec("crontab", ["-l"], { logOutput: false, timeoutMs: CRONTAB_READ_TIMEOUT_MS }))
+    ).stdout;
   } catch {
     return null;
   }
@@ -292,13 +240,12 @@ export async function collectLegacyWhatsAppCrontabHealthWarning(
 
   return [
     "Legacy WhatsApp crontab health check detected.",
-    "`~/.openclaw/bin/ensure-whatsapp.sh` is not maintained by current OpenClaw and can misreport `Gateway inactive` from cron when the systemd user bus environment is missing.",
-    `Remove the stale crontab entry with ${formatCliCommand("crontab -e")}; use ${formatCliCommand("openclaw channels status --probe")}, ${formatCliCommand("openclaw doctor")}, and ${formatCliCommand("openclaw gateway status")} for current health checks.`,
+    `\`~/.openclaw/bin/ensure-whatsapp.sh\` is not maintained by current ${PRODUCT_NAME} and can misreport \`Gateway inactive\` from cron when the systemd user bus environment is missing.`,
+    `Remove the stale crontab entry with ${formatCliCommand("crontab -e")}; use ${formatCliCommand("paddy channels status --probe")}, ${formatCliCommand("paddy doctor")}, and ${formatCliCommand("paddy gateway status")} for current health checks.`,
     `Matched ${pluralize(legacyLines.length, "entry")}.`,
   ].join("\n");
 }
 
-/** Emit the legacy WhatsApp crontab warning when present. */
 export async function noteLegacyWhatsAppCrontabHealthCheck(
   params: {
     platform?: NodeJS.Platform;

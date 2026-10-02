@@ -134,7 +134,7 @@ describe("Talk client Gateway control owner", () => {
         sessionKey: sessionTarget.canonicalKey,
         active: true,
         aborted: true,
-        message: "Cancelled the active OpenClaw run.",
+        message: "Cancelled the active Paddy run.",
         speak: true,
         show: true,
         suppress: false,

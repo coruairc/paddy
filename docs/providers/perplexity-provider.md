@@ -37,13 +37,13 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
 <Steps>
   <Step title="Set the API key">
     ```bash
-    openclaw configure --section web
+    paddy configure --section web
     ```
 
     Or set the key directly:
 
     ```bash
-    openclaw config set plugins.entries.perplexity.config.webSearch.apiKey "pplx-xxxxxxxxxxxx"
+    paddy config set plugins.entries.perplexity.config.webSearch.apiKey "pplx-xxxxxxxxxxxx"
     ```
 
     A key exported as `PERPLEXITY_API_KEY` or `OPENROUTER_API_KEY` in the Gateway
@@ -55,7 +55,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
     credential; no further setup is required. To pin the provider explicitly:
 
     ```bash
-    openclaw config set tools.web.search.provider perplexity
+    paddy config set tools.web.search.provider perplexity
     ```
 
   </Step>
@@ -107,9 +107,16 @@ Native-only filters return a descriptive error on the chat-completions path.
 
   <Accordion title="OpenRouter proxy setup">
     To route Perplexity searches through OpenRouter, set an `OPENROUTER_API_KEY`
-    (prefix `sk-or-`) instead of a native Perplexity key. OpenClaw detects the
+    (prefix `sk-or-`) instead of a native Perplexity key. Paddy detects the
     key and switches to the Sonar transport automatically. Useful if you already
     have OpenRouter billing set up and want to consolidate providers there.
+  </Accordion>
+
+  <Accordion title="Integration header">
+    Requests to the Perplexity API (`api.perplexity.ai`) identify Paddy with
+    `X-Pplx-Integration: openclaw/<version>`. Searches routed through OpenRouter
+    send OpenRouter's app-attribution headers instead. A custom proxy `baseUrl`
+    gets neither.
   </Accordion>
 </AccordionGroup>
 

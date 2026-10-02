@@ -137,7 +137,7 @@ describe("update.run current owner authority", () => {
           reason: "owner_required",
           ackDelivered: false,
           message: expect.stringContaining(
-            `openclaw config set commands.ownerAllowFrom '${JSON.stringify(change === "revoked" ? ["slack:owner"] : ["replacement", "slack:owner"])}'`,
+            `paddy config set commands.ownerAllowFrom '${JSON.stringify(change === "revoked" ? ["slack:owner"] : ["replacement", "slack:owner"])}'`,
           ),
         });
         expect(listUpdateRuns()).toEqual([
@@ -204,7 +204,7 @@ describe("update.run current owner authority", () => {
         "hosting Gateway guidance",
       );
       const action = expectDefined(
-        guidance.match(/Update OpenClaw: `gateway` action ([\w.]+)/u)?.[1],
+        guidance.match(/Update Paddy: `gateway` action ([\w.]+)/u)?.[1],
         "prompt-advertised update action",
       );
       const result = await tool.execute("update", {
@@ -325,7 +325,7 @@ describe("update.run current owner authority", () => {
       reason: "owner_required",
       ackDelivered: true,
       message: expect.stringContaining(
-        'openclaw config set commands.ownerAllowFrom \'["replacement","slack:owner"]\'',
+        'paddy config set commands.ownerAllowFrom \'["replacement","slack:owner"]\'',
       ),
     });
     expect(startManagedServiceUpdateHandoffMock).not.toHaveBeenCalled();

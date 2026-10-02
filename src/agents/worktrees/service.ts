@@ -625,10 +625,10 @@ export class ManagedWorktreeService {
         base: sourceProfile?.commit ?? gitBase,
         sourceProfile,
         prepareCommit: async (commit) => {
-          gitBytes = await estimateWorktreeGitBytes(repository.repoRoot, commit, {
+          return (gitBytes = await estimateWorktreeGitBytes(repository.repoRoot, commit, {
             signal: params.signal,
             assertCurrent: params.commitGuard,
-          });
+          }));
         },
         requireSpace: (cloneBytes) =>
           this.requireAllocationSpace(
@@ -965,7 +965,7 @@ export class ManagedWorktreeService {
           throw new WorktreeRemovalLockError(
             state.kind === "live" ? "busy" : "foreign-lock",
             state.kind === "live"
-              ? `worktree is locked by live OpenClaw pid ${state.pid}`
+              ? `worktree is locked by live Paddy pid ${state.pid}`
               : `worktree has a foreign lock${state.reason ? `: ${state.reason}` : ""}`,
           );
         }

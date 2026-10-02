@@ -18,7 +18,7 @@ export function applyPluginDoctorCompatibilityMigration(params: {
       config: params.config,
       changes: [],
       warnings: [
-        `Plugin "${params.pluginId}" config repair failed: ${formatErrorMessage(error)}. Its config was preserved; run \`openclaw doctor --fix\` after repairing the plugin.`,
+        `Plugin "${params.pluginId}" config repair failed: ${formatErrorMessage(error)}. Its config was preserved; run \`paddy doctor --fix\` after repairing the plugin.`,
       ],
     };
   }

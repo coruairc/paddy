@@ -56,7 +56,7 @@ Native runtime selection and sending can offer **Continue for this chat** when a
 administrator explicitly chooses the native agent's own permissions. This
 combines the optional sandbox opt-out with Full access and consent bound to that
 chat and runtime. Optional native tool and workspace restrictions are then
-delegated to the native agent; OpenClaw-hosted tools keep their existing policy.
+delegated to the native agent; Paddy-hosted tools keep their existing policy.
 After a refused send, confirmation saves the permissions and retries that message
 once. Selection-only confirmation does not send the draft. Neither changes global
 settings. Native consent is cleared on reset or runtime change and is never
@@ -87,7 +87,7 @@ When original Guest access is revoked, registered background commands retain tha
 access dependency and are cancelled even after their foreground turn finishes.
 Closing the browser or stopping one turn does not revoke this retained access.
 
-OpenClaw also stops and verifies a Docker or Podman container when it created
+Paddy also stops and verifies a Docker or Podman container when it created
 that container under the original access and every use has remained with the
 same original invitation and profile. Multiple connections and sessions can
 share that private container. Revoking one device or source preserves it while
@@ -113,7 +113,7 @@ trusted profile workspace automatically.
 
 Non-shared runtime identity also includes the resolved agent workspace path. This prevents co-hosted workspaces that reuse the same agent or session keys from sharing Docker, browser, SSH, OpenShell, or plugin-provided sandbox state. `shared` scope intentionally remains workspace-independent.
 
-The first use after upgrading from an older release creates non-shared runtimes and sandbox workspaces under the workspace-qualified identity. Existing non-shared runtimes are not adopted; this is an intentional one-time reset. They can age out through configured prune settings or be removed with `openclaw sandbox recreate`; the next use provisions the current identity.
+The first use after upgrading from an older release creates non-shared runtimes and sandbox workspaces under the workspace-qualified identity. Existing non-shared runtimes are not adopted; this is an intentional one-time reset. They can age out through configured prune settings or be removed with `paddy sandbox recreate`; the next use provisions the current identity.
 
 **Backend** controls which runtime executes sandboxed tools. Docker and Podman share `agents.defaults.sandbox.docker`; SSH-specific config lives under `agents.defaults.sandbox.ssh`; OpenShell-specific config lives under `plugins.entries.openshell.config`; Crabbox lease settings live under `plugins.entries.crabbox.config.sandbox` (see [Crabbox backend](/gateway/sandboxing/crabbox-backend)).
 

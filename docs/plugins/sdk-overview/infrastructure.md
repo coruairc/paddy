@@ -21,7 +21,7 @@ background services, plus the SDK helpers those surfaces depend on. Part of the
 | `api.registerGatewayMethod(name, handler, opts?)` | Gateway RPC method                                                     |
 | `api.registerGatewayDiscoveryService(service)`    | Local Gateway discovery advertiser                                     |
 | `api.registerCli(registrar, opts?)`               | CLI subcommand                                                         |
-| `api.registerNodeCliFeature(registrar, opts?)`    | Node feature CLI under `openclaw nodes`                                |
+| `api.registerNodeCliFeature(registrar, opts?)`    | Node feature CLI under `paddy nodes`                                   |
 | `api.registerService(service)`                    | Background service                                                     |
 | `api.registerInteractiveHandler(registration)`    | Interactive handler                                                    |
 | `api.registerAgentToolResultMiddleware(...)`      | Runtime tool-result middleware                                         |
@@ -32,11 +32,11 @@ background services, plus the SDK helpers those surfaces depend on. Part of the
 | `api.registerMcpServerConnectionResolver(...)`    | Per-requester MCP transport (`url`/`headers`) for a static server name |
 | `api.registerTextTransforms(transforms)`          | Plugin-owned prompt/message compatibility text rewrites                |
 | `api.registerConfigMigration(migrate)`            | Lightweight config migration run before plugin runtime loads           |
-| `api.registerMigrationProvider(provider)`         | Importer for `openclaw migrate`                                        |
+| `api.registerMigrationProvider(provider)`         | Importer for `paddy migrate`                                           |
 | `api.registerAutoEnableProbe(probe)`              | Config probe that can auto-enable this plugin                          |
 | `api.registerReload(registration)`                | Restart/hot/noop config-prefix policy for reload handling              |
 | `api.registerNodeInvokePolicy(policy)`            | Allowlist/approval policy for node-invoked commands                    |
-| `api.registerSecurityAuditCollector(collector)`   | Findings collector for `openclaw security audit`                       |
+| `api.registerSecurityAuditCollector(collector)`   | Findings collector for `paddy security audit`                          |
 
 Gateway methods default to `profileAccess: "required"`, so authenticated-profile verification fails closed before plugin dispatch. Set `profileAccess: "independent"` only for an audited method that neither reads nor mutates durable user or session state. Operator scope remains a separate authorization requirement.
 
@@ -49,6 +49,30 @@ forward directory-scan errors through the same error event. Use the result in
 the watcher lifecycle owner to stop native retries and select an existing
 refresh path.
 
+### Filesystem observation and worker notifications
+
+`resolveFsObservationMode(env?)` and `resolveFsObservationIntervalMs(env?)` from
+`openclaw/plugin-sdk/file-access-runtime` share the host's preserved
+[`CHOKIDAR_*` environment contract](/help/environment#filesystem-observation).
+Use `admitObservationRoot`, `watch`, and their types from the same SDK entrypoint,
+including `ObservationRoot`, `WatchOptions`, and `WatchSubscription`. These
+operations share the host's fs-safe instance; a plugin's separate dependency
+copy cannot observe those Roots.
+Pass the resolved mode and `pollIntervalMs` to `watch` so
+automatic fallback preserves the polling interval. Keep parsing, settling,
+retries, and indexing in the consumer. With fs-safe, classify native watch capacity through
+`health.failure.operation === "watch"` and `health.failure.code === "watch-limit"`;
+`getFileWatchCapacityCode` retains its existing Node watch-error contract.
+
+For same-version observation workers, `createFileWatchNotifier(output, onFailure)`
+from the same SDK entrypoint sends JSON lines through a borrowed writable stream.
+Call `send("change" | "unavailable" | "available")` for invalidation and
+availability updates. It coalesces pending notifications, keeps one write in
+flight, and calls `onFailure` when output fails or closes unexpectedly. Await
+`close()` to stop accepting notifications and join accepted writes before
+retiring the worker; the stream remains caller-owned. This carries current
+observation state, not a complete history of filesystem events.
+
 ### Streaming file verification
 
 `sha256File(pathOrHandle, { maxBytes, signal })` from
@@ -59,6 +83,25 @@ offset; the caller owns admission and close. Path inputs reject final symlinks
 and close their owned handle. Cancellation settles pending work before rejecting.
 The optional native helper hashes off the JavaScript event loop; the fallback
 uses bounded buffers. Neither route provides a snapshot of concurrent writes.
+
+### Browser lifecycle cleanup
+
+`closeTrackedBrowserTabsForSessions` from `openclaw/plugin-sdk/browser-maintenance`
+accepts an optional `prepareCurrent(): Promise<boolean>` check after plugin
+activation and before each new cleanup claim. Returning `false` skips new claims;
+the existing `isCurrent()` callback remains a synchronous owner check after awaited
+preparation. A host-supplied `sessionEntryCurrent` check restricts native claim and
+pre-claim state writes using current session facts; it does not grant store access.
+Supplying `sessionEntryCurrent` also requires `prepareCurrent`, which checks
+process-local tabs before they acquire a cleanup reservation. Unpaired checks are
+refused with a warning before tab cleanup begins.
+Official plugins share the `SessionEntryCurrentPreparation` and
+`SessionEntryCurrentCheck` types through `openclaw/plugin-sdk/plugin-state-runtime`.
+Once a tab is claimed, closing and retiring that tab finish under its captured
+Browser authority even if the cleanup caller subsequently changes.
+Artifacts advertise this contract with `supportsSessionEntryCurrent: true`.
+Guarded cleanup against an older artifact leaves tabs untouched and reports an
+update warning; callers using only the existing synchronous guard remain supported.
 
 ### SQLite write admission
 
@@ -166,7 +209,7 @@ returns the corresponding output promise. The host currently rejects calls from
 other application workers, which need a shared host-broker connection.
 
 This first host supports filesystem-backed databases only. Empty paths, SQLite
-URIs, `:memory:`, and OpenClaw's reserved incognito database basename are refused
+URIs, `:memory:`, and Paddy's reserved incognito database basename are refused
 before normalization or worker admission. In-memory and incognito ownership
 remain pending; these locators must never become disk filenames.
 
@@ -267,20 +310,25 @@ cleanup. Body byte limits and read timeouts remain separate from transport clean
 For a custom error representation after a response-first body read, await
 `sendHttpRequestRejection(req, res, statusCode, body, contentType?)` instead of
 calling `res.end()` and destroying the request. It preserves security headers,
-frames the complete error, then on Node closes the write side while keeping application
+frames the complete error, then on Node and Node-compatible Bun HTTP transports closes the write side while keeping application
 body readers paused. Node's request backpressure bounds residual input buffering;
 cleanup allows at most one second, not another body-read timeout. A disconnected peer, malformed HTTP, or an
 exhausted cleanup budget can prevent delivery. Committed responses are closed
 without appending a replacement error or completing a partial successful body.
 
-On Node, transport-owned rejections emit response `close` without `finish`.
+On these transports, rejections emit response `close` without `finish`.
 Use `close` for terminal cleanup or selected-error diagnostics; it does not prove
 delivery. Keep successful-response activity on `finish`, with the caller's
 success-status check, so an aborted request cannot report healthy activity.
 
-Bun uses its native HTTP response completion because its raw socket operations
-do not flush the HTTP response. Bun can still report client connection resets
-during large outstanding uploads, even after delivering the complete error.
+Older Bun HTTP transports use native response completion because their raw socket
+operations do not flush the HTTP response. Paddy detects the native HTTP
+`destroySoon` implementation introduced by Bun's Node compatibility rework rather
+than relying on version labels shared by different canary builds. Queued HEAD
+rejections on newer Bun wait for response socket assignment, including builds
+without HTTP response-finish diagnostics. Older Bun can still report client
+connection resets during large outstanding uploads, even after delivering the
+complete error.
 
 Gateway HTTP requests run in order on each connection, including their response
 lifetimes. A closing connection cannot admit later requests or upgrades. Queued
@@ -461,7 +509,7 @@ Contract notes:
   senders change. Before any requester resolves, no scoped specs are advertised.
 - Unauthenticated requesters on a shared-thread harness still see the advertised
   scoped tools; calling one returns a clean not-connected tool error for that
-  requester. OpenClaw never falls back to another requester's credentials.
+  requester. Paddy never falls back to another requester's credentials.
 
 Memory prompt supplement builders receive optional `agentId`,
 `agentSessionKey`, and `sandboxed` context. Memory corpus supplement `search`
@@ -475,13 +523,13 @@ Use `registerMemoryPromptPreparation(...)` when prompt text depends on async
 plugin state. The callback runs once before each full agent prompt and receives
 the same tool, agent, session, and sandbox context as synchronous memory prompt
 builders. Validate the current storage-owner instance before loading persisted
-state, then return only lines for that run. OpenClaw freezes those lines and
+state, then return only lines for that run. Paddy freezes those lines and
 hands the immutable result to synchronous prompt assembly. Keep persistence,
 atomic replacement, and owner-removal deletion inside the owning plugin; do not
 poll or read files from a prompt builder.
 
 Telegram interactive handlers can return `{ submitText }` to route text through
-Telegram's normal inbound agent path after the handler succeeds. OpenClaw keeps
+Telegram's normal inbound agent path after the handler succeeds. Paddy keeps
 the callback button when inbound policy skips the text or processing fails, so
 the user can retry after the blocking condition changes. This result field is
 Telegram-specific; other channels keep their own interactive result contracts.

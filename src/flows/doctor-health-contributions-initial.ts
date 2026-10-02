@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { runInitialConfigWriteHealth } from "./doctor-health-contribution-runners.config.js";
 import {
   runClaudeCliHealth,
@@ -325,6 +326,20 @@ export function resolveInitialDoctorHealthContributions(params: {
       run: runRetainedUpdateRuntimesHealth,
     }),
     createDoctorHealthContribution({
+      id: "doctor:update-snapshots",
+      label: "Retained update database snapshots",
+      updateWork: { kind: "standalone" },
+      healthChecks: {
+        description: "Retained npm update database snapshots need operator review before removal.",
+        defaultEnabled: true,
+        async detect(ctx) {
+          const { collectUpdateSnapshotHealthFindings } =
+            await import("../commands/doctor-update-snapshots.js");
+          return collectUpdateSnapshotHealthFindings(ctx.env);
+        },
+      },
+    }),
+    createDoctorHealthContribution({
       id: "doctor:ui-protocol-freshness",
       label: "UI protocol freshness",
       healthCheckIds: ["core/doctor/ui-protocol-freshness"],
@@ -342,7 +357,7 @@ export function resolveInitialDoctorHealthContributions(params: {
       id: "doctor:disk-space",
       label: "Disk space",
       healthChecks: {
-        description: "Low disk space around the OpenClaw state directory is a finding.",
+        description: `Low disk space around the ${PRODUCT_NAME} state directory is a finding.`,
         defaultEnabled: false,
         async detect() {
           const { collectDiskSpaceHealthFindings } =

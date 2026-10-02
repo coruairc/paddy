@@ -1,4 +1,5 @@
 ---
+doc-schema-version: 1
 summary: "Auto-reply queue modes, shared background capacity, and per-session overrides"
 read_when:
   - Changing auto-reply execution or concurrency
@@ -7,7 +8,7 @@ read_when:
 title: "Command queue"
 ---
 
-OpenClaw serializes inbound auto-reply runs (all channels) through a tiny in-process queue to prevent multiple agent runs from colliding, while still allowing safe parallelism across sessions.
+Paddy serializes inbound auto-reply runs (all channels) through a tiny in-process queue to prevent multiple agent runs from colliding, while still allowing safe parallelism across sessions.
 
 ## Why
 
@@ -32,13 +33,13 @@ When unset, all inbound channel surfaces use:
 - `cap: 20`
 - `drop: "summarize"`
 
-Same-turn steering is the default. A prompt that arrives mid-run is injected into the active runtime when the run can accept steering, so no second session run is started. If the active run cannot accept steering, OpenClaw waits for the active run to finish before starting the prompt.
+Same-turn steering is the default. A prompt that arrives mid-run is injected into the active runtime when the run can accept steering, so no second session run is started. If the active run cannot accept steering, Paddy waits for the active run to finish before starting the prompt.
 
 ## Queue modes
 
 `/queue` controls what normal inbound messages do while a session already has an active run:
 
-- `steer`: inject messages into the active runtime, including while it is executing tools. OpenClaw lets an already-running tool finish, skips sequential calls that have not started, and makes the steer visible before the next tool launch or model decision. Parallel calls continue once their batch has crossed its launch checkpoint. Codex app-server receives one batched `turn/steer` and applies it at the next model boundary. If steering is unavailable, OpenClaw waits until the active run ends before starting the prompt.
+- `steer`: inject messages into the active runtime, including while it is executing tools. Paddy lets an already-running tool finish, skips sequential calls that have not started, and makes the steer visible before the next tool launch or model decision. Parallel calls continue once their batch has crossed its launch checkpoint. Codex app-server receives one batched `turn/steer` and applies it at the next model boundary. If steering is unavailable, Paddy waits until the active run ends before starting the prompt.
 - `followup`: do not steer. Enqueue each message for a later agent turn after the current run ends.
 - `collect`: do not steer. Coalesce queued messages into a **single** followup turn after the quiet window. If messages target different channels/threads, they drain individually to preserve routing.
 - `interrupt`: abort the active run for that session, then run the newest message.
@@ -91,24 +92,24 @@ When channel streaming is `partial` or `block`, steering can look like several s
 - `block`: draft-sized blocks can create the same sequential appearance.
 - Without streaming, steering falls back to a followup after the active run when the runtime cannot accept same-turn steering.
 
-`steer` does not abort in-flight tools. Skipped OpenClaw tool calls receive synthetic paired error results so the transcript remains valid. Use `/queue interrupt` when the newest message should abort the current run.
+`steer` does not abort in-flight tools. Skipped Paddy tool calls receive synthetic paired error results so the transcript remains valid. Use `/queue interrupt` when the newest message should abort the current run.
 
 ## Answering a pending question
 
 A plain-text answer to a pending agent question goes to that question before
 ordinary queue handling, including when a native CLI cannot accept steering.
-OpenClaw checks the answer against the question creator's permissions and active
+Paddy checks the answer against the question creator's permissions and active
 run, not the model selected for your next turn. Changed permissions or a closed
 creator produce an explicit refusal rather than starting another turn.
 
-If the answer may have committed but confirmation is lost, OpenClaw reports that
+If the answer may have committed but confirmation is lost, Paddy reports that
 uncertainty and does not resend it as steering or a followup. Check the conversation
 before retrying. A later delivery or source-cleanup failure does not make the
 answer replayable, and uncertainty alone does not cancel the original agent run.
 
 ## Precedence
 
-For mode selection, OpenClaw resolves:
+For mode selection, Paddy resolves:
 
 1. Inline or stored per-session `/queue` override.
 2. `messages.queue.byChannel.<channel>`.
@@ -143,12 +144,15 @@ overflow summary.
 - A queued request that expires or is cancelled before execution settles only
   that request. Its saved input stays marked cancelled; it does not end the
   active turn, pause its goal, or add an active-run failure to the conversation.
+- Removing a specific queued message in Control UI also hides that pending
+  prompt and its attachments. The cancellation record prevents replay after
+  reconnect. Stop and timeout cancellations keep their recovery messages.
 
-Gateway-backed clients (including `openclaw tui`) forward mid-run prompts and
+Gateway-backed clients (including `paddy tui`) forward mid-run prompts and
 let the Gateway apply the queue mode. Esc/`/stop` uses a session-scoped abort
 so lost local handles cannot leave a still-queued prompt running.
 
-`openclaw chat` and `openclaw tui --local` apply the same four modes in the
+`paddy chat` and `paddy tui --local` apply the same four modes in the
 embedded runtime. Local `steer` injects into an active embedded run when that
 runtime accepts steering and otherwise becomes a followup; `followup` and
 `collect` remain local pending work; `interrupt` aborts the active local run
@@ -186,7 +190,7 @@ does not repeat their effects.
 - Applies to auto-reply agent runs across all inbound channels that use the gateway reply pipeline (WhatsApp web, Telegram, Slack, Discord, Signal, iMessage, webchat, etc.).
 - Default lane (`main`) is process-wide for inbound turns; set `agents.defaults.maxConcurrent` to allow multiple sessions in parallel.
 - Heartbeat embedded runs use the bounded `cron-nested` lane for global admission so slow background work does not block inbound replies, while their configured heartbeat session lane still serializes work for that session.
-- Additional lanes may exist (e.g. `cron`, `cron-nested`, `nested`) so background jobs can run in parallel without blocking inbound replies. Isolated cron agent turns hold a `cron` slot while their inner agent execution uses `cron-nested`. Shared non-cron `nested` flows keep their own lane behavior. These detached runs are tracked as [background tasks](/automation/tasks).
+- Additional lanes may exist (e.g. `cron`, `cron-nested`, `nested`) so background jobs can run in parallel without blocking inbound replies. Isolated cron agent turns hold a `cron` slot while their inner agent execution uses `cron-nested`. Shared non-cron `nested` flows keep their own lane behavior. These detached runs remain owned by their native runtime.
 - Ordinary sub-agent execution uses `subagent:<immediate session>`. `agents.defaults.subagents.maxConcurrent` defaults to `8` for each session; independent sessions and nested orchestrators do not share those slots. The separate `maxChildrenPerAgent` admission limit still applies. [Codex-native subagents](/plugins/codex-harness) use Codex's own scheduler.
 - [Swarm](/tools/swarm) collector children use `subagent:swarm:<schedulerGroupKey>`, capped by the group's resolved `tools.swarm.maxConcurrent` (default `32`). They do not occupy their parent's ordinary sub-agent lane. An ordinary child spawned by a collector uses that collector's own session lane. Swarm's `maxChildrenPerGroup` and `maxTotalPerGroup` remain separate admission limits. Lane diagnostics identify the swarm lane and its group key.
 - Per-session lanes guarantee that only one agent run touches a given session at a time.

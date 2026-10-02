@@ -169,7 +169,7 @@ export async function inspectPluginMigrationAvailability(params: {
                 reason: params.deferInstallation
                   ? "Package convergence must wait until the updating parent releases its install records."
                   : "The configured plugin package is missing or has not converged.",
-                command: "openclaw update repair",
+                command: "paddy update repair",
               },
             ];
           });

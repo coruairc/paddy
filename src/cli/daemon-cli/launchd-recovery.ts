@@ -6,6 +6,7 @@ import {
   repairLaunchAgentBootstrap,
   resolveLaunchAgentLabel,
 } from "../../daemon/launchd.js";
+import { CLI_NAME } from "../cli-name.js";
 
 const LAUNCH_AGENT_RECOVERY_MESSAGE =
   "Gateway LaunchAgent was installed but not loaded; re-bootstrapped launchd service.";
@@ -50,7 +51,7 @@ export async function recoverInstalledLaunchAgent<
     }
     if (repaired.status === "gui-session-unavailable") {
       const actionHint =
-        params.result === "started" ? "openclaw gateway start" : "openclaw gateway restart";
+        params.result === "started" ? `${CLI_NAME} gateway start` : `${CLI_NAME} gateway restart`;
       throw new Error(
         formatLaunchAgentGuiSessionError({
           detail: repaired.detail,

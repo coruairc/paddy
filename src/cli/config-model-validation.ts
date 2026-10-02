@@ -27,6 +27,7 @@ import { migratePersistedImplicitMainRoster } from "../config/legacy.roster.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 import { formatConcreteConfigPath } from "../shared/dot-path.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 
 type TouchedModelRef = {
@@ -487,7 +488,7 @@ function formatModelRefError(
       ? "Unable to resolve authored model reference"
       : error;
   const detail = safeError.endsWith(".") ? safeError : `${safeError}.`;
-  return `Cannot set model reference "${authoredValue}" at ${ref.path}: ${detail} Run ${formatCliCommand("openclaw models list")} to list available models.`;
+  return `Cannot set model reference "${authoredValue}" at ${ref.path}: ${detail} Run ${formatCliCommand(`${CLI_NAME} models list`)} to list available models.`;
 }
 
 function materializeValidationRoster(config: OpenClawConfig): OpenClawConfig {

@@ -21,6 +21,7 @@ import {
   PACKAGE_LIFECYCLE_PENDING_RELATIVE_PATH,
 } from "../../../scripts/lib/package-lifecycle-marker.mjs";
 import { validateBundledPackageDependencyAlignment } from "../../../scripts/package-source-dependencies.mjs";
+import { PRODUCT_NAME } from "../../brand.js";
 import { racePromiseWithAbortSignal } from "../../infra/abort-signal.js";
 import { sha256File } from "../../infra/directory-durability.js";
 import { walkDirectory } from "../../infra/fs-safe.js";
@@ -157,6 +158,7 @@ type BootstrapImportScope = {
   prefix: string;
   files: string[];
   imports: PackageDistImport[];
+  packageJsons: Map<string, string>;
   patchedMcp?: { manifest: NodePackageManifest; hashes: Map<string, string> };
 };
 
@@ -242,7 +244,7 @@ async function prepareNodeBootstrapArtifact(
   const packageRoot = await fs.realpath(options.packageRoot);
   const sourcePackage = await readPackageManifest(packageRoot);
   if (sourcePackage.name !== "openclaw") {
-    throw new Error("Node bootstrap requires the running OpenClaw package root");
+    throw new Error(`Node bootstrap requires the running ${PRODUCT_NAME} package root`);
   }
   const buildInfoPath = path.join(packageRoot, "dist", "build-info.json");
   const buildInfo = await fs.readFile(buildInfoPath, "utf8").catch((cause: unknown) => {
@@ -260,6 +262,7 @@ async function prepareNodeBootstrapArtifact(
     prefix: "",
     files: [],
     imports: [],
+    packageJsons: new Map(),
   };
   const scopes: BootstrapImportScope[] = [];
   const entries = new Map<string, BootstrapEntry>();
@@ -428,6 +431,7 @@ async function prepareNodeBootstrapArtifact(
       prefix: `node_modules/${name}/`,
       files: [],
       imports: [],
+      packageJsons: new Map(),
       ...(name === PATCHED_MCP_NAME
         ? { patchedMcp: { manifest: bundled, hashes: new Map<string, string>() } }
         : {}),
@@ -458,7 +462,13 @@ async function prepareNodeBootstrapArtifact(
   const inventory = [...entries.keys()].filter((entry) => entry.startsWith("dist/")).toSorted();
   addGeneratedFile(PACKAGE_DIST_INVENTORY_RELATIVE_PATH, `${JSON.stringify(inventory)}\n`);
   addGeneratedFile(PACKAGE_LIFECYCLE_PENDING_RELATIVE_PATH, "pending\n");
-  const ordered = [...entries].toSorted(([left], [right]) => compareWorkerBundlePaths(left, right));
+  // Inspect package metadata before JavaScript, independent of each package's file layout.
+  const ordered = [...entries].toSorted(
+    ([left], [right]) =>
+      Number(path.posix.basename(right) === "package.json") -
+        Number(path.posix.basename(left) === "package.json") ||
+      compareWorkerBundlePaths(left, right),
+  );
   // Root imports may legitimately reach bundled node_modules files; their own
   // dist imports still receive a separate package-relative closure check.
   mainScope.files = ordered.map(([relative]) => relative);
@@ -511,6 +521,11 @@ async function prepareNodeBootstrapArtifact(
         const [relative, entry] = batch[index]!;
         const { contents, mode } = read.results[index]!;
         const importerPath = relative.slice(entry.scope.prefix.length);
+        if (path.posix.basename(relative) === "package.json") {
+          const text = contents.toString("utf8");
+          mainScope.packageJsons.set(relative, text);
+          entry.scope.packageJsons.set(importerPath, text);
+        }
         const identity = {
           path: `package/${relative}`,
           size: contents.byteLength,
@@ -528,6 +543,7 @@ async function prepareNodeBootstrapArtifact(
             ...(inspected?.imports ??
               collectPackageDistImports({
                 files: [importerPath],
+                packageJsons: entry.scope.packageJsons,
                 readText: () => contents.toString("utf8"),
               })),
           );
@@ -593,6 +609,7 @@ async function prepareNodeBootstrapArtifact(
   const archiveManifest =
     prebuiltManifest ??
     (await readWorkerBundleArchiveManifest(tarballPath, DEFAULT_WORKER_BUNDLE_ARCHIVE_LIMITS));
+  manifest.sort((left, right) => compareWorkerBundlePaths(left.path, right.path));
   if (hashWorkerBundleManifest(manifest) !== hashWorkerBundleManifest(archiveManifest)) {
     if (prebuiltManifest) {
       // Different builds or execution modes can select different plugin bytes. Re-enter the

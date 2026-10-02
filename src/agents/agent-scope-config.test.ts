@@ -38,7 +38,7 @@ describe("agent roster resolution", () => {
 
     expect(resolveConfiguredAgentId(cfg, "ops")).toBe("ops");
     expect(() => resolveConfiguredAgentId(cfg, "nope-zzz")).toThrow(
-      'Unknown agent id "nope-zzz". Run openclaw agents list to see configured agents.',
+      'Unknown agent id "nope-zzz". Run paddy agents list to see configured agents.',
     );
   });
 
@@ -49,7 +49,7 @@ describe("agent roster resolution", () => {
     try {
       // A hint the operator cannot paste back is worse than none, so the profile must survive.
       expect(() => resolveConfiguredAgentId(cfg, "nope-zzz")).toThrow(
-        "Run openclaw --profile testprof agents list to see configured agents.",
+        "Run paddy --profile testprof agents list to see configured agents.",
       );
     } finally {
       if (previous === undefined) {

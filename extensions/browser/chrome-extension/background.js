@@ -332,7 +332,7 @@ function failRelayAuthentication(ws, error) {
     return;
   }
   relayStatusHint =
-    "Relay authentication v2 failed. Update OpenClaw, or re-pair after a relay key rotation.";
+    "Relay authentication v2 failed. Update Paddy, or re-pair after a relay key rotation.";
   try {
     closeRelaySocket(
       4001,
@@ -466,7 +466,7 @@ async function connectRelay(isConnectionAllowed = () => true) {
           relayAuthenticatedSocket = null;
         } else if (!relayStatusHint) {
           relayStatusHint =
-            "Relay authentication v2 failed. Update OpenClaw, or re-pair after a relay key rotation.";
+            "Relay authentication v2 failed. Update Paddy, or re-pair after a relay key rotation.";
         }
         setBadge("error");
         scheduleReconnect();
@@ -506,7 +506,7 @@ function handleRelayOpeningDeadline() {
     // The socket may have changed state while the alarm event was queued.
   }
   setBadge("error");
-  relayStatusHint = "Relay authentication v2 timed out. Make sure OpenClaw is up to date.";
+  relayStatusHint = "Relay authentication v2 timed out. Make sure Paddy is up to date.";
   scheduleReconnect();
 }
 

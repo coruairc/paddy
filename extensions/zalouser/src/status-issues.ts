@@ -1,4 +1,3 @@
-// Zalouser plugin module implements status issues behavior.
 import type {
   ChannelAccountSnapshot,
   ChannelStatusIssue,
@@ -42,7 +41,7 @@ export function collectZalouserStatusIssues(
           channel: "zalouser",
           accountId,
           message: "Not authenticated (no saved Zalo session).",
-          fix: "Run: openclaw channels login --channel zalouser",
+          fix: "Run: paddy channels login --channel zalouser",
         }),
       );
       continue;

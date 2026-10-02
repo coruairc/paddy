@@ -26,7 +26,7 @@ describe("plugin tool hook matchers", () => {
 
   it.each(["Bash", "Write"])("rejects non-canonical provider spelling %s", (toolName) => {
     expect(() => normalizePluginToolMatcher([toolName])).toThrow(
-      "tool hook matcher entries must use canonical OpenClaw tool ids",
+      "tool hook matcher entries must use canonical Paddy tool ids",
     );
   });
 

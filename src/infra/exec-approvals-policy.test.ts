@@ -768,7 +768,7 @@ describe("exec approvals policy helpers", () => {
 
     expect(summary.askFallback).toEqual({
       effective: "deny",
-      source: "OpenClaw default (deny)",
+      source: "Paddy default (deny)",
     });
   });
 

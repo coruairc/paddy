@@ -1,5 +1,5 @@
 ---
-summary: Machine-checked security models for OpenClaw's highest-risk paths.
+summary: Machine-checked security models for Paddy's highest-risk paths.
 title: Formal verification (security models)
 read_when:
   - Reviewing formal security model guarantees or limits
@@ -7,7 +7,7 @@ read_when:
 permalink: /security/formal-verification/
 ---
 
-OpenClaw's formal security models (TLA+/TLC today) cover specific highest-risk paths: authorization, session isolation, tool gating, and misconfiguration safety. For each path, the models give a machine-checked argument that it enforces its intended policy, under explicit stated assumptions.
+Paddy's formal security models (TLA+/TLC today) cover specific highest-risk paths: authorization, session isolation, tool gating, and misconfiguration safety. For each path, the models give a machine-checked argument that it enforces its intended policy, under explicit stated assumptions.
 
 > Note: some older links may refer to the previous project name.
 
@@ -18,7 +18,7 @@ An executable, attacker-driven security regression suite:
 - Each claim has a runnable model-check over a finite state space.
 - Many claims have a paired negative model that produces a counterexample trace for a realistic bug class.
 
-This is **not** a proof that OpenClaw is secure in all respects, and it does not verify the full TypeScript implementation.
+This is **not** a proof that Paddy is secure in all respects, and it does not verify the full TypeScript implementation.
 
 ## Where the models live
 

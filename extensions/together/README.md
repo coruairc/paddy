@@ -1,6 +1,6 @@
 # Together AI
 
-Use Together AI's hosted chat models and video generation in OpenClaw. The
+Use Together AI's hosted chat models and video generation in Paddy. The
 plugin connects to Together's API and supplies models for agent conversations
 and the shared video generation feature.
 
@@ -9,11 +9,11 @@ and the shared video generation feature.
 Create a Together API key, then run:
 
 ```bash
-openclaw onboard --auth-choice together-api-key
+paddy onboard --auth-choice together-api-key
 ```
 
 You can also provide `TOGETHER_API_KEY` in the Gateway's environment. Browse chat
-models with `openclaw models list --provider together`.
+models with `paddy models list --provider together`.
 
 For video, set your preferred Together model under
 `agents.defaults.mediaModels.video`. Text-to-video and image-to-video support

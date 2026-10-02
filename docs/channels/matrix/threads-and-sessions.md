@@ -1,13 +1,13 @@
 ---
 summary: "Session routing, reply threading, ACP bindings, and room history context"
 read_when:
-  - Choosing how Matrix DM rooms map to OpenClaw sessions
+  - Choosing how Matrix DM rooms map to Paddy sessions
   - Binding a Matrix thread to an ACP session
 title: "Matrix threads and sessions"
 sidebarTitle: "Threads and sessions"
 ---
 
-How Matrix rooms, DMs, and threads map onto OpenClaw sessions, and how much room history each turn carries.
+How Matrix rooms, DMs, and threads map onto Paddy sessions, and how much room history each turn carries.
 
 ## Threads
 
@@ -15,7 +15,7 @@ Matrix supports native threads for both automatic replies and message-tool sends
 
 ### Session routing (`sessionScope`)
 
-`dm.sessionScope` decides how Matrix DM rooms map to OpenClaw sessions:
+`dm.sessionScope` decides how Matrix DM rooms map to Paddy sessions:
 
 - `"per-user"` (default): all DM rooms with the same routed peer share one session.
 - `"per-room"`: each Matrix DM room gets its own session key, even for the same peer.
@@ -32,7 +32,7 @@ Explicit conversation bindings always win over `sessionScope`; bound rooms and t
 
 `dm.threadReplies` overrides this for DMs only - for example, keep room threads isolated while keeping DMs flat.
 
-Selecting a reply target inside a thread preserves both the thread and the selected message. Ordinary threaded messages can carry reply metadata for older clients; OpenClaw does not treat that compatibility fallback as a quoted message in the agent's context.
+Selecting a reply target inside a thread preserves both the thread and the selected message. Ordinary threaded messages can carry reply metadata for older clients; Paddy does not treat that compatibility fallback as a quoted message in the agent's context.
 
 ### Mentions in bot-created threads
 
@@ -48,7 +48,7 @@ settings, an exact room entry replaces the wildcard entry; omitted fields in
 an exact entry fall back to the account, not the wildcard.
 
 Only a native `m.thread` relationship qualifies. An ordinary reply to a bot
-message does not. OpenClaw resolves the thread root using the receiving
+message does not. Paddy resolves the thread root using the receiving
 account and caches its verified author. Matrix content redaction does not change
 that author, so a redacted bot-authored root still qualifies. If the root's
 identity cannot be read or verified, the existing mention behavior applies.
@@ -58,12 +58,12 @@ Room access, sender restrictions, and `allowBots: "mentions"` still apply.
 
 - Inbound threaded messages include the thread root message as extra agent context.
 - Message-tool sends auto-inherit the current Matrix thread when targeting the same room (or the same DM user target), unless an explicit `threadId` is provided.
-- DM user-target reuse only kicks in when current session metadata proves the same DM peer on the same Matrix account; otherwise OpenClaw falls back to normal user-scoped routing.
+- DM user-target reuse only kicks in when current session metadata proves the same DM peer on the same Matrix account; otherwise Paddy falls back to normal user-scoped routing.
 - `/session unbind`, `/agents`, `/session idle`, `/session max-age`, and thread-bound `/acp spawn` all work in Matrix rooms and DMs.
 - `/acp spawn --thread auto` creates a new Matrix thread when `threadBindings.spawnSessions` is enabled.
 - Running `/acp spawn --thread here` inside an existing Matrix thread binds that thread in place.
 
-When OpenClaw detects a Matrix DM room colliding with another DM room on the same shared session, it posts a one-time `m.notice` suggesting `dm.sessionScope: "per-room"` to isolate the rooms. The notice only appears when thread bindings are enabled.
+When Paddy detects a Matrix DM room colliding with another DM room on the same shared session, it posts a one-time `m.notice` suggesting `dm.sessionScope: "per-room"` to isolate the rooms. The notice only appears when thread bindings are enabled.
 
 ## ACP conversation bindings
 
@@ -77,7 +77,7 @@ Fast operator flow:
 - `/new` and `/reset` reset the same bound ACP session in place.
 - `/acp close` closes the ACP session and removes the binding.
 
-`--bind here` does not create a child Matrix thread. `threadBindings.spawnSessions` gates `/acp spawn --thread auto|here`, where OpenClaw needs to create or bind a child thread.
+`--bind here` does not create a child Matrix thread. `threadBindings.spawnSessions` gates `/acp spawn --thread auto|here`, where Paddy needs to create or bind a child thread.
 
 ### Thread binding config
 
@@ -87,7 +87,7 @@ Matrix inherits global defaults from `session.threadBindings` and supports per-c
 - `threadBindings.idleHours`
 - `threadBindings.maxAgeHours`
 - `threadBindings.spawnSessions`: gates both subagent and ACP thread spawns.
-- Deprecated `threadBindings.spawnSubagentSessions` / `threadBindings.spawnAcpSessions` keys are migrated to `spawnSessions` by `openclaw doctor --fix`.
+- Deprecated `threadBindings.spawnSubagentSessions` / `threadBindings.spawnAcpSessions` keys are migrated to `spawnSessions` by `paddy doctor --fix`.
 - `threadBindings.defaultSpawnContext`
 
 Matrix thread-bound session spawns default on. Set `threadBindings.spawnSessions: false` to block native subagent and ACP thread spawns from creating/binding Matrix threads. Set `threadBindings.defaultSpawnContext: "isolated"` when native subagent thread spawns should not fork the parent transcript.
@@ -96,6 +96,6 @@ Matrix thread-bound session spawns default on. Set `threadBindings.spawnSessions
 
 - `channels.matrix.historyLimit` controls how many recent room messages are included as `InboundHistory` when a room message triggers the agent. Falls back to `messages.groupChat.historyLimit`; effective default `0` if both are unset (disabled).
 - Matrix room history is room-only; DMs keep using normal session history.
-- Room history is pending-only: OpenClaw buffers room messages that did not trigger a reply yet, then snapshots that window when a mention or other trigger arrives.
+- Room history is pending-only: Paddy buffers room messages that did not trigger a reply yet, then snapshots that window when a mention or other trigger arrives.
 - The current trigger message is not included in `InboundHistory`; it stays in the main inbound body for that turn.
 - Retries of the same Matrix event reuse the original history snapshot instead of drifting forward to newer room messages.

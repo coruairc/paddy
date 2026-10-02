@@ -13,25 +13,25 @@ read_when:
 Use when an update finishes but the Gateway is down, channels are empty, or model calls fail with 401s.
 
 ```bash
-openclaw status --all
-openclaw update status --json
-openclaw gateway status --deep
-openclaw doctor --fix
-openclaw gateway restart
+paddy status --all
+paddy update status --json
+paddy gateway status --deep
+paddy doctor --fix
+paddy gateway restart
 ```
 
 Look for:
 
-- `Update restart` in `openclaw status` / `openclaw status --all`. Pending or failed handoffs include the next command to run.
-- `plugin load failed: dependency tree corrupted; run openclaw doctor --fix` under Channels: the channel config still exists, but plugin registration failed before the channel could load.
-- Provider 401s after re-auth: `openclaw doctor --fix` checks for stale per-agent OAuth auth shadows and removes old copies so all agents resolve the current shared profile.
+- `Update restart` in `paddy status` / `paddy status --all`. Pending or failed handoffs include the next command to run.
+- `plugin load failed: dependency tree corrupted; run paddy doctor --fix` under Channels: the channel config still exists, but plugin registration failed before the channel could load.
+- Provider 401s after re-auth: `paddy doctor --fix` checks for stale per-agent OAuth auth shadows and removes old copies so all agents resolve the current shared profile.
 
 ## Prepared model runtime publication timeout
 
 If startup reports `prepared model runtime publication (...) timed out`, the
 parenthesized detail identifies the pending stage and, during workspace
 preparation, its agent. Collect that error together with
-`openclaw gateway status --deep` and the startup logs.
+`paddy gateway status --deep` and the startup logs.
 
 An `ambient credentials` stage can be waiting for a plugin's external login
 check even when the Gateway process uses little CPU. For Claude CLI, run
@@ -44,13 +44,13 @@ does not establish that model runtime publication completed.
 
 Use when a gateway service unexpectedly stops after an update, or logs show one `openclaw` binary is older than the version that last wrote `openclaw.json`.
 
-OpenClaw stamps config writes with `meta.lastTouchedVersion`. Read-only commands can inspect a config written by a newer OpenClaw, but process and service mutations refuse to run from an older binary. Blocked actions: gateway service start/stop/restart/uninstall, forced service reinstall, service-mode gateway startup, and `gateway --force` port cleanup.
+Paddy stamps config writes with `meta.lastTouchedVersion`. Read-only commands can inspect a config written by a newer Paddy, but process and service mutations refuse to run from an older binary. Blocked actions: gateway service start/stop/restart/uninstall, forced service reinstall, service-mode gateway startup, and `gateway --force` port cleanup.
 
 ```bash
-which openclaw
-openclaw --version
-openclaw gateway status --deep
-openclaw config get meta.lastTouchedVersion
+which paddy
+paddy --version
+paddy gateway status --deep
+paddy config get meta.lastTouchedVersion
 ```
 
 <Steps>
@@ -61,8 +61,8 @@ openclaw config get meta.lastTouchedVersion
     Reinstall the intended gateway service from the newer install:
 
     ```bash
-    openclaw gateway install --force
-    openclaw gateway restart
+    paddy gateway install --force
+    paddy gateway restart
     ```
 
   </Step>
@@ -83,23 +83,23 @@ the guard to run older code against migrated state.
 Use when logs keep printing `protocol mismatch` after a downgrade or rollback. An older Gateway is running, but a newer local client process is still reconnecting with a protocol range the older Gateway cannot speak.
 
 ```bash
-openclaw --version
-which -a openclaw
-openclaw gateway status --deep
-openclaw doctor --deep
-openclaw logs --follow
+paddy --version
+which -a paddy
+paddy gateway status --deep
+paddy doctor --deep
+paddy logs --follow
 ```
 
 Look for:
 
 - `protocol mismatch ... client=... v<version> min=<n> max=<n> expected=<n>` in Gateway logs.
-- `Established clients:` in `openclaw gateway status --deep` or `Gateway clients` in `openclaw doctor --deep`: active TCP clients connected to the Gateway port, with PIDs and command lines when the OS allows it.
-- A client process whose command line points at the newer OpenClaw install or wrapper you rolled back from.
+- `Established clients:` in `paddy gateway status --deep` or `Gateway clients` in `paddy doctor --deep`: active TCP clients connected to the Gateway port, with PIDs and command lines when the OS allows it.
+- A client process whose command line points at the newer Paddy install or wrapper you rolled back from.
 
 Fix:
 
-1. Stop or restart the stale OpenClaw client process shown by `gateway status --deep`.
-2. Restart apps or wrappers that embed OpenClaw: local dashboards, editors, app-server helpers, or long-running `openclaw logs --follow` shells.
-3. Re-run `openclaw gateway status --deep` or `openclaw doctor --deep` and confirm the stale client PID is gone.
+1. Stop or restart the stale Paddy client process shown by `gateway status --deep`.
+2. Restart apps or wrappers that embed Paddy: local dashboards, editors, app-server helpers, or long-running `paddy logs --follow` shells.
+3. Re-run `paddy gateway status --deep` or `paddy doctor --deep` and confirm the stale client PID is gone.
 
 Do not make an older Gateway accept a newer incompatible protocol. Protocol bumps protect the wire contract; rollback recovery is a process/version cleanup problem.

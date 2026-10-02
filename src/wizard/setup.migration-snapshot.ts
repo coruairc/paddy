@@ -6,6 +6,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { pathExists } from "@openclaw/fs-safe/advanced";
 import { isNotFoundPathError } from "@openclaw/fs-safe/path";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { FILE_LOCK_TIMEOUT_ERROR_CODE, withFileLock } from "../infra/file-lock.js";
 import { readJsonFile } from "../infra/json-files.js";
@@ -264,7 +265,7 @@ export async function withSetupMigrationTargetLock<T>(
   const activeStateDir = activeSetupMigrationTargetLock.getStore();
   if (activeStateDir) {
     if (activeStateDir !== resolvedStateDir) {
-      throw new Error("nested onboarding target lock cannot switch the OpenClaw state directory");
+      throw new Error(`nested onboarding target lock cannot switch the ${PRODUCT_NAME} state directory`);
     }
     return await fn();
   }
@@ -300,7 +301,7 @@ export function assertFreshSetupMigrationTarget(freshness: {
   }
   throw new SetupMigrationFreshnessError(
     [
-      "Migration import during onboarding requires a fresh OpenClaw setup.",
+      `Migration import during onboarding requires a fresh ${PRODUCT_NAME} setup.`,
       "Create a fresh setup or reset config, credentials, sessions, and workspace before importing.",
       "Backup plus overwrite/merge imports are feature-gated for now.",
       "Existing setup:",

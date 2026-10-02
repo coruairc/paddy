@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { resolveExpiresAtMsFromDurationMs } from "@openclaw/normalization-core/number-coercion";
+import { PRODUCT_NAME } from "../../brand.js";
 import { racePromiseWithAbortSignal } from "../../infra/abort-signal.js";
 import { isApprovalNotFoundError } from "../../infra/approval-errors.js";
 import { pruneMapToMaxSize } from "../../infra/map-size.js";
@@ -185,7 +186,7 @@ async function resolveNativeHookRelayPreToolUseApproval(
       handled: true,
       outcome: "denied",
       reason:
-        "OpenClaw tool policy rewrote Codex app-server approval params; refusing original request.",
+        `${PRODUCT_NAME} tool policy rewrote Codex app-server approval params; refusing original request.`,
     };
   }
   return { handled: true, outcome: "approved-once" };

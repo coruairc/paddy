@@ -34,12 +34,12 @@ Full release live media shards use
 commit, then pull it with `OPENCLAW_SKIP_DOCKER_BUILD=1` instead of rebuilding
 inside every shard.
 
-- `pnpm openclaw qa suite`
+- `pnpm paddy qa suite`
   - Runs repo-backed QA scenarios directly on the host.
   - Writes top-level `qa-evidence.json`, `qa-suite-summary.json`, and
     `qa-suite-report.md` artifacts for the selected scenario set, including
     mixed flow, Vitest, and Playwright scenario selections.
-  - When dispatched by `pnpm openclaw qa run --qa-profile <profile>`, embeds
+  - When dispatched by `pnpm paddy qa run --qa-profile <profile>`, embeds
     the selected taxonomy profile scorecard in the same `qa-evidence.json`.
     `smoke-ci` writes slim evidence (`evidenceMode: "slim"`, no per-entry
     `execution`). `release` covers the curated release-readiness slice; `all`
@@ -53,13 +53,21 @@ inside every shard.
     and config paths, so its CLI bootstrap cannot select the operator's installed
     Gateway service. Parent profiles and runtime environment patches do not
     override that worker identity.
+    Child temporary files and default compiler caches stay in the worker's
+    temporary root and are removed after its processes stop. Parent temporary
+    paths and runtime environment patches do not redirect this scratch storage.
+    `OPENCLAW_QA_KEEP_TEMP=1` retains that root for debugging.
+    If the controller dies, the current Gateway's parent watchdog exits without
+    deleting runtime files that descendants may still use. A surviving owner or
+    host maintenance must confirm that those writers stopped before removing the
+    retained roots.
   - Exits non-zero when any scenario fails. Use `--allow-failures` for
     artifacts without a failing exit code.
   - Supports provider modes `live-frontier`, `mock-openai`, and `aimock`.
     `aimock` starts a local AIMock-backed provider server for experimental
     fixture and protocol-mock coverage without replacing the scenario-aware
     `mock-openai` lane.
-- `pnpm openclaw qa coverage --match <query>`
+- `pnpm paddy qa coverage --match <query>`
   - Searches scenario IDs, titles, surfaces, coverage IDs, docs refs, code
     refs, plugins, and provider requirements, then prints matching suite
     targets.
@@ -86,7 +94,7 @@ inside every shard.
     gateway peg regression.
   - Runs against built `dist` artifacts; run a build first when the checkout
     does not already have fresh runtime output.
-- `pnpm openclaw qa suite --runner multipass`
+- `pnpm paddy qa suite --runner multipass`
   - Runs the same QA suite inside a disposable Multipass Linux VM, keeping
     the same scenario-selection and provider/model flags as `qa suite`.
   - Live runs forward the QA auth inputs practical for the guest:
@@ -108,12 +116,12 @@ inside every shard.
     lane with Discord.
 - `pnpm test:docker:session-runtime-context`
   - Runs a deterministic built-app Docker smoke for embedded runtime context
-    transcripts. Verifies hidden OpenClaw runtime context persists as a
+    transcripts. Verifies hidden Paddy runtime context persists as a
     non-display custom message instead of leaking into the visible user
     turn, then seeds an affected broken session JSONL and verifies
-    `openclaw doctor --fix` rewrites it to the active branch with a backup.
+    `paddy doctor --fix` rewrites it to the active branch with a backup.
 - `pnpm test:docker:npm-telegram-live`
-  - Installs an OpenClaw package candidate in Docker, runs installed-package
+  - Installs a Paddy package candidate in Docker, runs installed-package
     onboarding, configures Telegram through the installed CLI, then reuses
     the live Telegram QA lane with that installed package as the SUT
     Gateway.
@@ -138,7 +146,11 @@ inside every shard.
     fail immediately, while unknown or inapplicable ids fail canonical scenario
     validation. The package runner promotes the selected RTT scenario once to
     the first position before the remaining taxonomy-backed fail-fast release
-    scenarios.
+    scenarios. Probes continue in its most recently observed conversation and
+    thread, using the leased primary participant. The first sample starts a
+    new message; later samples chain their own replies rather than a reply
+    observed by another scenario participant. Delivery-only scenarios use their
+    observed outbound route and need no additional catalog metadata.
   - Uses the same Convex-leased Test Server userbot credentials as
     `pnpm openclaw qa telegram`. Set `OPENCLAW_QA_CONVEX_SITE_URL` and the
     secret for the selected role. The Docker wrapper selects Convex by default.
@@ -172,7 +184,7 @@ inside every shard.
     through `source=ref` or a verified tarball artifact. This scenario installs
     the baseline before leasing Test Server credentials, lets it spawn a
     thread-bound child that takes over the forum topic, and runs that
-    installation's normal `openclaw update` against the candidate. It checks that
+    installation's normal `paddy update` against the candidate. It checks that
     the topic routes back to the parent session after activation and another
     Gateway restart while the child session stays intact, including all three
     orderly shutdowns. Raw credential, session, and transport state stays in
@@ -222,7 +234,7 @@ gh workflow run package-acceptance.yml --ref main \
 ```
 
 - `pnpm test:docker:plugins`
-  - Packs and installs the current OpenClaw build in Docker, starts the
+  - Packs and installs the current Paddy build in Docker, starts the
     Gateway with OpenAI configured, then enables bundled channel/plugins via
     config edits.
   - Verifies setup discovery leaves unconfigured downloadable plugins
@@ -230,13 +242,13 @@ gh workflow run package-acceptance.yml --ref main \
     downloadable plugin explicitly, and a second restart does not run
     hidden dependency repair.
   - Also installs a known older npm baseline, enables Telegram before
-    running `openclaw update --tag <candidate>`, and verifies the
+    running `paddy update --tag <candidate>`, and verifies the
     candidate's post-update doctor cleans legacy plugin dependency debris
     without a harness-side postinstall repair.
 - `pnpm test:parallels:npm-update`
   - Runs the native packaged-install update smoke across Parallels guests.
     Each selected platform first installs the requested baseline package,
-    then runs the installed `openclaw update` command in the same guest and
+    then runs the installed `paddy update` command in the same guest and
     verifies the installed version, update status, gateway readiness, and
     one local agent turn.
   - Use `--platform macos`, `--platform windows`, or `--platform linux`
@@ -268,10 +280,10 @@ gh workflow run package-acceptance.yml --ref main \
     understanding load through bundled runtime APIs even when the agent
     turn itself only checks a simple text response.
 
-- `pnpm openclaw qa aimock`
+- `pnpm paddy qa aimock`
   - Starts only the local AIMock provider server for direct protocol smoke
     testing.
-- `pnpm openclaw qa buzz`
+- `pnpm paddy qa buzz`
   - Runs the Buzz live QA lane against a real relay room using dedicated driver
     and SUT identities.
   - Local runs use `--credential-file <path>` with `relayUrl`, `roomId`,
@@ -283,13 +295,13 @@ gh workflow run package-acceptance.yml --ref main \
   - Supports `--credential-source convex` with a pooled `kind: "buzz"` row.
     Both public keys must be relay/room members, and the SUT must have the
     **Bot** room role. Never use a human owner or admin private key.
-- `pnpm openclaw qa matrix`
+- `pnpm paddy qa matrix`
   - Runs the Matrix live QA lane against a disposable Docker-backed Tuwunel
     homeserver. Source-checkout only - packaged installs do not ship
     `qa-lab`.
   - Full CLI, profile/scenario catalog, env vars, and artifact layout:
     [Matrix smoke lanes](/concepts/qa-e2e-automation#matrix-live-lane).
-- `pnpm openclaw qa telegram`
+- `pnpm paddy qa telegram`
   - Runs the Telegram live QA lane on Telegram's Test Server with one
     Convex-leased SUT bot and one independent TDLib user session.
   - Uses `--credential-source convex` by default and rejects `env`. Provide
@@ -352,10 +364,10 @@ Maintainer admin commands (pool add/remove/list) require
 CLI helpers for maintainers:
 
 ```bash
-pnpm openclaw qa credentials doctor
-pnpm openclaw qa credentials add --kind telegram --payload-file qa/telegram-credential.json
-pnpm openclaw qa credentials list --kind telegram
-pnpm openclaw qa credentials remove --credential-id <credential-id>
+pnpm paddy qa credentials doctor
+pnpm paddy qa credentials add --kind telegram --payload-file qa/telegram-credential.json
+pnpm paddy qa credentials list --kind telegram
+pnpm paddy qa credentials remove --credential-id <credential-id>
 ```
 
 Use `doctor` before live runs to check the Convex site URL, broker secrets,
@@ -414,5 +426,5 @@ The architecture and scenario-helper names for new channel adapters live in
 [QA overview - Adding a channel](/concepts/qa-e2e-automation#adding-a-channel).
 The minimum bar: implement the transport runner on the shared `qa-lab` host
 seam, add an `adapterFactory` for shared scenarios, declare `qaRunners` in the
-plugin manifest, mount as `openclaw qa <runner>`, and author scenarios under
+plugin manifest, mount as `paddy qa <runner>`, and author scenarios under
 `qa/scenarios/`.

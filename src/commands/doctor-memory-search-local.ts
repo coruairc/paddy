@@ -33,7 +33,7 @@ export function resolveLocalProviderPolicyBlockGuidance(
     case "plugins-disabled":
       return {
         message: "Plugin loading is disabled for this config.",
-        fix: `Fix: ${formatCliCommand("openclaw config set plugins.enabled true --strict-json")}, or select another memory provider.`,
+        fix: `Fix: ${formatCliCommand("paddy config set plugins.enabled true --strict-json")}, or select another memory provider.`,
       };
     case "blocked-by-denylist":
       return {
@@ -43,7 +43,7 @@ export function resolveLocalProviderPolicyBlockGuidance(
     case "plugin-disabled":
       return {
         message: `Installed plugin "${pluginId}" is disabled for this config.`,
-        fix: `Fix: Enable it: ${formatCliCommand(`openclaw plugins enable ${pluginId} --accept-capabilities`)}, or select another memory provider.`,
+        fix: `Fix: Enable it: ${formatCliCommand(`paddy plugins enable ${pluginId} --accept-capabilities`)}, or select another memory provider.`,
       };
     case "not-in-allowlist":
       return {

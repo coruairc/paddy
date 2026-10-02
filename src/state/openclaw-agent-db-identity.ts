@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { statSync } from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 
 type AgentDatabaseOwner = { db: DatabaseSync };
@@ -37,7 +38,7 @@ export function registerOpenClawAgentDatabaseIdentity(db: DatabaseSync): void {
 export function readOpenClawAgentDatabaseIdentity(database: AgentDatabaseOwner) {
   const prepared = findOpenClawAgentDatabaseIdentity(database);
   if (prepared === undefined) {
-    throw new Error("OpenClaw agent database identity was not prepared at open");
+    throw new Error(`${PRODUCT_NAME} agent database identity was not prepared at open`);
   }
   return prepared;
 }
@@ -87,7 +88,7 @@ export function createOpenClawAgentDatabaseClaim(
     isCurrent,
     assertCurrent: () => {
       if (!isCurrent()) {
-        throw new Error("OpenClaw agent database claim is no longer current");
+        throw new Error(`${PRODUCT_NAME} agent database claim is no longer current`);
       }
     },
     release: () => {

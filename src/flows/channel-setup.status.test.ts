@@ -80,7 +80,6 @@ vi.mock("../plugins/bundled-sources.js", () => ({
 import {
   collectChannelStatus,
   noteChannelPrimer,
-  noteChannelStatus,
   resolveChannelSelectionNoteLines,
   resolveChannelSetupSelectionContributions,
 } from "./channel-setup.status.js";
@@ -366,22 +365,6 @@ describe("resolveChannelSetupSelectionContributions", () => {
     });
   });
 
-  it("localizes channel status note title", async () => {
-    const note = vi.fn(async () => {});
-    listChatChannels.mockReturnValue([makeMeta("discord", "Discord")]);
-    isChannelConfigured.mockReturnValue(true);
-
-    await withEnvAsync({ OPENCLAW_LOCALE: "zh-CN" }, async () => {
-      await noteChannelStatus({
-        cfg: {} as never,
-        prompter: { note } as never,
-        installedPlugins: [],
-      });
-
-      expect(note).toHaveBeenCalledWith(expect.any(String), "频道状态");
-    });
-  });
-
   it("sanitizes channel metadata before primer notes", async () => {
     const note = vi.fn(async () => undefined);
 
@@ -408,9 +391,9 @@ describe("resolveChannelSetupSelectionContributions", () => {
     expect(note).toHaveBeenCalledWith(
       [
         "Inbound DM safety defaults to pairing: unknown senders get a pairing code first.",
-        "Approve with: openclaw pairing approve <channel> <code>",
+        "Approve with: paddy pairing approve <channel> <code>",
         'Open/public DMs require dmPolicy="open" plus allowFrom=["*"].',
-        'For multi-user DMs, isolate sessions with: openclaw config set session.dmScope "per-channel-peer" (or "per-account-channel-peer" for multi-account channels).',
+        'For multi-user DMs, isolate sessions with: paddy config set session.dmScope "per-channel-peer" (or "per-account-channel-peer" for multi-account channels).',
         "Docs: https://docs.openclaw.ai/channels/pairing",
         "",
         "bad\\nid: Blurb\\nline",

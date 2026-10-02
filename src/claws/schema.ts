@@ -6,6 +6,7 @@ import {
   normalizeToolPolicyName,
   resolveToolProfilePolicy,
 } from "../agents/tool-policy-shared.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { parseDurationMs } from "../cli/parse-duration.js";
 import { computeNextRunAtMs } from "../cron/schedule.js";
 import { isDangerousHostEnvVarName } from "../infra/host-env-security.js";
@@ -160,7 +161,7 @@ const openClawProfileSchema = z
             profile: nonEmptyString
               .refine(
                 (value) => resolveToolProfilePolicy(value) !== undefined,
-                "Tool profile must name a registered OpenClaw built-in profile.",
+                `Tool profile must name a registered ${PRODUCT_NAME} built-in profile.`,
               )
               .optional(),
             allow: z
@@ -253,7 +254,7 @@ const openClawProfileSchema = z
                     code: "custom",
                     path: ["rememberAcrossConversations"],
                     message:
-                      "The sessions source requires rememberAcrossConversations: true in the OpenClaw profile.",
+                      `The sessions source requires rememberAcrossConversations: true in the ${PRODUCT_NAME} profile.`,
                   });
                 }
               })

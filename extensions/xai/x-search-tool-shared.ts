@@ -1,4 +1,3 @@
-// Xai plugin module implements x search tool shared behavior.
 import type { AgentToolResult } from "openclaw/plugin-sdk/agent-core";
 import { Type } from "typebox";
 
@@ -8,7 +7,7 @@ export function buildMissingXSearchApiKeyPayload() {
   return {
     error: "missing_xai_api_key",
     message:
-      "x_search needs xAI credentials. Run `openclaw onboard --auth-choice xai-oauth` to sign in with Grok, run `openclaw onboard --auth-choice xai-api-key`, set `XAI_API_KEY` in the Gateway environment, or configure `plugins.entries.xai.config.webSearch.apiKey`.",
+      "x_search needs xAI credentials. Run `paddy onboard --auth-choice xai-oauth` to sign in with Grok, run `paddy onboard --auth-choice xai-api-key`, set `XAI_API_KEY` in the Gateway environment, or configure `plugins.entries.xai.config.webSearch.apiKey`.",
     docs: "https://docs.openclaw.ai/tools/web",
   };
 }

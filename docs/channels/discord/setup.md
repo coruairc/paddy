@@ -1,7 +1,7 @@
 ---
 summary: "Create the Discord application, invite the bot, and set up a guild workspace"
 read_when:
-  - Setting up a Discord bot for OpenClaw for the first time
+  - Setting up a Discord bot for Paddy for the first time
   - Adding a Discord server to the guild allowlist
 title: "Discord setup"
 sidebarTitle: "Setup"
@@ -11,11 +11,11 @@ Everything needed to get a Discord bot running: create the application, grant in
 
 ## Quick setup
 
-Create a Discord application with a bot, add the bot to your server, and pair it with OpenClaw. Use a private server if you can; [create one first](https://support.discord.com/hc/en-us/articles/204849977-How-do-I-create-a-server) (**Create My Own > For me and my friends**) if needed.
+Create a Discord application with a bot, add the bot to your server, and pair it with Paddy. Use a private server if you can; [create one first](https://support.discord.com/hc/en-us/articles/204849977-How-do-I-create-a-server) (**Create My Own > For me and my friends**) if needed.
 
 <Steps>
   <Step title="Create a Discord application and bot">
-    In the [Discord Developer Portal](https://discord.com/developers/applications), click **New Application** and name it (for example "OpenClaw").
+    In the [Discord Developer Portal](https://discord.com/developers/applications), click **New Application** and name it (for example "Paddy").
 
     Open **Bot** in the sidebar and set the **Username** to your agent's name.
 
@@ -78,12 +78,12 @@ Create a Discord application with a bot, add the bot to your server, and pair it
   <Step title="Allow DMs from server members">
     For pairing to work, Discord must let the bot DM you. Right-click your **server icon** → **Privacy Settings** → toggle on **Direct Messages**.
 
-    Keep this on if you use Discord DMs with OpenClaw. If you only use guild channels, you can disable it after pairing.
+    Keep this on if you use Discord DMs with Paddy. If you only use guild channels, you can disable it after pairing.
 
   </Step>
 
   <Step title="Set your bot token securely (do not send it in chat)">
-    The bot token is a secret. Set it on the machine running OpenClaw before messaging your agent:
+    The bot token is a secret. Set it on the machine running Paddy before messaging your agent:
 
 ```bash
 export DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN"
@@ -97,22 +97,22 @@ cat > discord.patch.json5 <<'JSON5'
   },
 }
 JSON5
-openclaw config patch --file ./discord.patch.json5 --dry-run
-openclaw config patch --file ./discord.patch.json5
-openclaw gateway
+paddy config patch --file ./discord.patch.json5 --dry-run
+paddy config patch --file ./discord.patch.json5
+paddy gateway
 ```
 
-    If OpenClaw already runs as a background service, restart it via the OpenClaw Mac app or by stopping and restarting the `openclaw gateway run` process.
+    If Paddy already runs as a background service, restart it via the Paddy Mac app or by stopping and restarting the `paddy gateway run` process.
     For managed service installs, run `openclaw gateway install` from a shell where `DISCORD_BOT_TOKEN` is set, or store the variable in `~/.openclaw/.env` so the service can resolve the env SecretRef after restart.
     If your host is blocked or rate-limited by Discord's startup application lookup, set the application/client ID from the Developer Portal so startup can skip that REST call: `channels.discord.applicationId` for the default account, or `channels.discord.accounts.<accountId>.applicationId` per bot.
 
   </Step>
 
-  <Step title="Configure OpenClaw and pair">
+  <Step title="Configure Paddy and pair">
 
     <Tabs>
       <Tab title="Ask your agent">
-        Chat with your OpenClaw agent on an existing channel (for example Telegram) and tell it. If Discord is your first channel, use the CLI / config tab instead.
+        Chat with your Paddy agent on an existing channel (for example Telegram) and tell it. If Discord is your first channel, use the CLI / config tab instead.
 
         > "I already set my Discord bot token in config. Please finish Discord setup with User ID `<user_id>` and Server ID `<server_id>`."
       </Tab>
@@ -140,7 +140,7 @@ openclaw gateway
 DISCORD_BOT_TOKEN=...
 ```
 
-        For scripted or remote setup, write the same JSON5 block with `openclaw config patch --file ./discord.patch.json5 --dry-run`, then rerun without `--dry-run`. Plaintext `token` strings work too, and SecretRef values are supported for `channels.discord.token` across env/file/exec/store providers. See [Secrets Management](/gateway/secrets).
+        For scripted or remote setup, write the same JSON5 block with `paddy config patch --file ./discord.patch.json5 --dry-run`, then rerun without `--dry-run`. Plaintext `token` strings work too, and SecretRef values are supported for `channels.discord.token` across env/file/exec/store providers. See [Secrets Management](/gateway/secrets).
 
         For multiple Discord bots, keep each bot token and application ID under its account. A top-level `channels.discord.applicationId` is inherited by accounts, so only set it there when every account uses the same application ID.
 
@@ -181,8 +181,8 @@ DISCORD_BOT_TOKEN=...
       <Tab title="CLI">
 
 ```bash
-openclaw pairing list discord
-openclaw pairing approve discord <CODE>
+paddy pairing list discord
+paddy pairing approve discord <CODE>
 ```
 
       </Tab>
@@ -193,7 +193,7 @@ openclaw pairing approve discord <CODE>
   </Step>
 </Steps>
 
-If Discord cannot grant Message Content Intent, OpenClaw can still operate in DMs and in
+If Discord cannot grant Message Content Intent, Paddy can still operate in DMs and in
 guild channels where users explicitly mention the bot. Set
 `channels.discord.intents.messageContent: false` so the Gateway does not request the
 unavailable privileged intent, and keep `requireMention: true` on every configured guild
@@ -201,7 +201,7 @@ channel. Discord omits user-authored content from other guild messages in this m
 
 <Note>
 Token resolution is account-aware. Config token values win over the env fallback, and `DISCORD_BOT_TOKEN` is only used for the default account.
-If two enabled Discord accounts resolve to the same bot token, OpenClaw starts only one gateway monitor for that token: a config-sourced token wins over the env fallback; otherwise the first enabled account wins and the duplicate account is reported disabled with reason `duplicate bot token`.
+If two enabled Discord accounts resolve to the same bot token, Paddy starts only one gateway monitor for that token: a config-sourced token wins over the env fallback; otherwise the first enabled account wins and the duplicate account is reported disabled with reason `duplicate bot token`.
 For advanced outbound calls (message tool/channel actions), an explicit per-call `token` is used for that call. This applies to send and read/probe-style actions (read/search/fetch/thread/pins/permissions). Account policy/retry settings still come from the selected account in the active runtime snapshot.
 </Note>
 

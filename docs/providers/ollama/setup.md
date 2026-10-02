@@ -1,7 +1,7 @@
 ---
-summary: "Connect OpenClaw to Ollama: auth rules, onboarding, and cloud models through a local host"
+summary: "Connect Paddy to Ollama: auth rules, onboarding, and cloud models through a local host"
 read_when:
-  - You are connecting OpenClaw to Ollama for the first time
+  - You are connecting Paddy to Ollama for the first time
   - You need the auth rules for local, LAN, remote, or cloud hosts
   - You want cloud and local models served through one Ollama host
 title: "Ollama setup"
@@ -12,7 +12,7 @@ sidebarTitle: "Setup"
 
 <AccordionGroup>
   <Accordion title="Local and LAN hosts">
-    Loopback, private-network, `.local`, and bare-hostname Ollama URLs do not need a real bearer token. OpenClaw uses the `ollama-local` marker for these.
+    Loopback, private-network, `.local`, and bare-hostname Ollama URLs do not need a real bearer token. Paddy uses the `ollama-local` marker for these.
   </Accordion>
   <Accordion title="Remote and Ollama Cloud hosts">
     Public remote hosts and `https://ollama.com` require a real credential: `OLLAMA_API_KEY`, an auth profile, or the provider's `apiKey`. For direct hosted use, prefer the `ollama-cloud` provider.
@@ -21,7 +21,7 @@ sidebarTitle: "Setup"
     A custom provider with `api: "ollama"` follows the same rules. For example, an `ollama-remote` provider pointed at a private LAN host can use `apiKey: "ollama-local"`; sub-agents resolve that marker through the Ollama provider hook instead of treating it as a missing credential. `memory.search.provider` can also point at a custom provider id so embeddings use that Ollama endpoint.
   </Accordion>
   <Accordion title="Auth profiles">
-    SQLite auth stores hold the credential for a provider id; put endpoint settings (`baseUrl`, `api`, models, headers, timeouts) in `models.providers.<id>`. Older flat `auth-profiles.json` files such as `{ "ollama-windows": { "apiKey": "ollama-local" } }` are not a runtime format; `openclaw doctor --fix` imports them into SQLite as a canonical `ollama-windows:default` API-key profile with a backup. A `baseUrl` value in that legacy file is noise and should move to provider config.
+    SQLite auth stores hold the credential for a provider id; put endpoint settings (`baseUrl`, `api`, models, headers, timeouts) in `models.providers.<id>`. Older flat `auth-profiles.json` files such as `{ "ollama-windows": { "apiKey": "ollama-local" } }` are not a runtime format; `paddy doctor --fix` imports them into SQLite as a canonical `ollama-windows:default` API-key profile with a backup. A `baseUrl` value in that legacy file is noise and should move to provider config.
   </Accordion>
   <Accordion title="Memory embedding scope">
     Bearer auth for Ollama memory embeddings is scoped to the host it was declared for:
@@ -40,17 +40,17 @@ sidebarTitle: "Setup"
     <Steps>
       <Step title="Run onboarding">
         ```bash
-        openclaw onboard
+        paddy onboard
         ```
 
         Select **Ollama**, then pick a mode: **Cloud + Local**, **Cloud only**, or **Local only**.
 
-        On a fresh guided setup, OpenClaw first checks the default or configured
+        On a fresh guided setup, Paddy first checks the default or configured
         Ollama host. Automatic discovery considers only models already loaded in
         memory, as reported by `/api/ps`, with tool support and at least 16K of
         context confirmed by `/api/show`. An eligible model installed on disk but
         not loaded is not an automatic candidate. The selected route still needs
-        a real completion before OpenClaw saves it; discovery never pulls or
+        a real completion before Paddy saves it; discovery never pulls or
         loads an idle model.
 
         To use an installed but idle model in desktop Model Setup, choose
@@ -63,7 +63,7 @@ sidebarTitle: "Setup"
       </Step>
       <Step title="Verify">
         ```bash
-        openclaw models list --provider ollama
+        paddy models list --provider ollama
         ```
       </Step>
     </Steps>
@@ -71,7 +71,7 @@ sidebarTitle: "Setup"
     Non-interactive:
 
     ```bash
-    openclaw onboard --non-interactive --accept-risk --skip-health \
+    paddy onboard --non-interactive --accept-risk --skip-health \
       --auth-choice ollama \
       --custom-base-url "http://ollama-host:11434" \
       --custom-model-id "qwen3.5:27b"
@@ -111,12 +111,12 @@ sidebarTitle: "Setup"
         export OLLAMA_API_KEY="your-real-key"
         ```
 
-        Or in config: `openclaw config set models.providers.ollama.apiKey "OLLAMA_API_KEY"`.
+        Or in config: `paddy config set models.providers.ollama.apiKey "OLLAMA_API_KEY"`.
       </Step>
       <Step title="Select the model">
         ```bash
-        openclaw models list
-        openclaw models set ollama/gemma4
+        paddy models list
+        paddy models set ollama/gemma4
         ```
 
         Or in config:
@@ -142,21 +142,21 @@ sidebarTitle: "Setup"
 Ollama host — this is Ollama's hybrid flow and the mode to pick during setup
 when you want both.
 
-OpenClaw prompts for the base URL, discovers local models, and checks
+Paddy prompts for the base URL, discovers local models, and checks
 `ollama signin` status. When signed in, it suggests hosted defaults
 (`minimax-m2.7:cloud`, `minimax-m3:cloud`, `kimi-k3:cloud`, `glm-5.1:cloud`,
 `glm-5.2:cloud`). If not signed in, setup stays local-only until you run
 `ollama signin`.
 
-For cloud-only access without a local daemon, use `openclaw onboard --auth-choice ollama-cloud` and see [Ollama Cloud](/providers/ollama-cloud) — that path does not need `ollama signin` or a running server:
+For cloud-only access without a local daemon, use `paddy onboard --auth-choice ollama-cloud` and see [Ollama Cloud](/providers/ollama-cloud) — that path does not need `ollama signin` or a running server:
 
 ```bash
-openclaw onboard --auth-choice ollama-cloud
-openclaw models set ollama-cloud/minimax-m2.7:cloud
+paddy onboard --auth-choice ollama-cloud
+paddy models set ollama-cloud/minimax-m2.7:cloud
 ```
 
-The cloud model list shown during `openclaw onboard` is populated live from
+The cloud model list shown during `paddy onboard` is populated live from
 `https://ollama.com/api/tags`, capped at 500 entries, so the picker reflects
 the current hosted catalog. If `ollama.com` is unreachable or returns no
-models at setup time, OpenClaw falls back to its hardcoded suggested list so
+models at setup time, Paddy falls back to its hardcoded suggested list so
 onboarding still completes.

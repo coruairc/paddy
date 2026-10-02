@@ -1,5 +1,5 @@
 ---
-summary: "Where OpenClaw loads environment variables and the precedence order"
+summary: "Where Paddy loads environment variables and the precedence order"
 read_when:
   - You need to know which env vars are loaded, and in what order
   - You are debugging missing API keys in the Gateway
@@ -7,8 +7,8 @@ read_when:
 title: "Environment variables"
 ---
 
-OpenClaw pulls environment variables from multiple sources. The normal rule is **never override existing values**. For an OpenClaw-installed systemd service, the global `.env` may replace only service values that OpenClaw recorded as managed. Operator-owned service values still take precedence.
-Workspace `.env` files are a lower-trust source: OpenClaw ignores provider credentials and protected runtime controls from workspace `.env` before applying precedence.
+Paddy pulls environment variables from multiple sources. The normal rule is **never override existing values**. For a Paddy-installed systemd service, the global `.env` may replace only service values that Paddy recorded as managed. Operator-owned service values still take precedence.
+Workspace `.env` files are a lower-trust source: Paddy ignores provider credentials and protected runtime controls from workspace `.env` before applying precedence.
 
 Systemd startup preserves managed process values referenced by config, including
 `${VAR}` and `$VAR` SecretRef shorthand in `$include` files. This also covers
@@ -19,7 +19,7 @@ Gateway process environment.
 ## Precedence (highest to lowest)
 
 1. **Process environment** (what the Gateway process already has from the parent shell/daemon).
-2. **`.env` in the current working directory** (dotenv default). It does not override. OpenClaw ignores provider credentials and protected runtime controls from this file.
+2. **`.env` in the current working directory** (dotenv default). It does not override. Paddy ignores provider credentials and protected runtime controls from this file.
 3. **Global `.env`** at `~/.openclaw/.env`, also known as `$OPENCLAW_STATE_DIR/.env`. It is recommended for provider API keys. It does not override, except for recorded OpenClaw-managed systemd service values.
 4. **Config `env` block** in `~/.openclaw/openclaw.json` (applied only if missing).
 5. **Optional login-shell import** (`env.shellEnv.enabled` or `OPENCLAW_LOAD_SHELL_ENV=1`), applied only for missing expected keys.
@@ -90,12 +90,13 @@ the `openclaw` subtree are preserved.
 
 ### Gateway and authentication
 
-| Variable                    | Purpose                                                         |
-| --------------------------- | --------------------------------------------------------------- |
-| `OPENCLAW_GATEWAY_URL`      | Override the remote Gateway URL used by clients.                |
-| `OPENCLAW_GATEWAY_PORT`     | Override the local Gateway port.                                |
-| `OPENCLAW_GATEWAY_TOKEN`    | Supply token authentication for Gateway servers and clients.    |
-| `OPENCLAW_GATEWAY_PASSWORD` | Supply password authentication for Gateway servers and clients. |
+| Variable                                  | Purpose                                                                                                                                                                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `OPENCLAW_GATEWAY_URL`                    | Override the remote Gateway URL used by clients.                                                                                                                                                                         |
+| `OPENCLAW_GATEWAY_PORT`                   | Override the local Gateway port.                                                                                                                                                                                         |
+| `OPENCLAW_GATEWAY_TOKEN`                  | Supply token authentication for Gateway servers and clients.                                                                                                                                                             |
+| `OPENCLAW_GATEWAY_PASSWORD`               | Supply password authentication for Gateway servers and clients.                                                                                                                                                          |
+| `OPENCLAW_MAX_PREAUTH_CONNECTIONS_PER_IP` | Cap outstanding unauthenticated WebSocket connections per resolved client IP (default `128`; positive integer). See [pre-auth connection limits](/gateway/security/rate-limiting#unauthenticated-websocket-connections). |
 
 ### Provider credentials
 
@@ -103,7 +104,7 @@ Core and bundled provider plugins recognize the following credential and provide
 
 `AI_GATEWAY_API_KEY`, `ANTHROPIC_ADMIN_API_KEY`, `ANTHROPIC_ADMIN_KEY`, `ANTHROPIC_API_KEY`, `ANTHROPIC_OAUTH_TOKEN`, `ARCEEAI_API_KEY`, `AZURE_OPENAI_API_KEY`, `AZURE_SPEECH_API_KEY`, `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION`, `BASETEN_API_KEY`, `BRAVE_API_KEY`, `BYTEPLUS_API_KEY`, `BYTEPLUS_SEED_SPEECH_API_KEY`, `CEREBRAS_API_KEY`, `CHUTES_API_KEY`, `CHUTES_OAUTH_TOKEN`, `CLAWROUTER_API_KEY`, `CLOUDFLARE_AI_GATEWAY_API_KEY`, `CODEX_API_KEY`, `COHERE_API_KEY`, `COMFY_API_KEY`, `COMFY_CLOUD_API_KEY`, `COPILOT_GITHUB_TOKEN`, `DASHSCOPE_API_KEY`, `DEEPGRAM_API_KEY`, `DEEPINFRA_API_KEY`, `DEEPSEEK_API_KEY`, `ELEVENLABS_API_KEY`, `EXA_API_KEY`, `FAL_API_KEY`, `FAL_KEY`, `FEATHERLESS_API_KEY`, `FIRECRAWL_API_KEY`, `FIREWORKS_API_KEY`, `FISH_API_KEY`, `FISH_AUDIO_API_KEY`, `GCLOUD_PROJECT`, `GEMINI_API_KEY`, `GMI_API_KEY`, `GOOGLE_API_KEY`, `GOOGLE_APPLICATION_CREDENTIALS`, `GOOGLE_CLOUD_API_KEY`, `GOOGLE_CLOUD_LOCATION`, `GOOGLE_CLOUD_PROJECT`, `GRADIUM_API_KEY`, `GROQ_API_KEY`, `HF_TOKEN`, `HUGGINGFACE_HUB_TOKEN`, `INWORLD_API_KEY`, `KILOCODE_API_KEY`, `KIMICODE_API_KEY`, `KIMI_API_KEY`, `LITELLM_API_KEY`, `LLAMA_SERVER_API_KEY`, `LM_API_TOKEN`, `LONGCAT_API_KEY`, `MINIMAX_API_KEY`, `MINIMAX_CODE_PLAN_KEY`, `MINIMAX_CODING_API_KEY`, `MINIMAX_OAUTH_TOKEN`, `MISTRAL_API_KEY`, `MODELSTUDIO_API_KEY`, `MODEL_API_KEY`, `MOONSHOT_API_KEY`, `NOVITA_API_KEY`, `NVIDIA_API_KEY`, `OLLAMA_API_KEY`, `OPENAI_ADMIN_KEY`, `OPENAI_API_KEY`, `OPENCODE_API_KEY`, `OPENCODE_ZEN_API_KEY`, `OPENROUTER_API_KEY`, `PARALLEL_API_KEY`, `PERPLEXITY_API_KEY`, `PIXVERSE_API_KEY`, `QIANFAN_API_KEY`, `QWEN_API_KEY`, `QWEN_TOKEN_PLAN_API_KEY`, `RUNWAYML_API_SECRET`, `RUNWAY_API_KEY`, `SENSEAUDIO_API_KEY`, `SGLANG_API_KEY`, `SPEECH_KEY`, `SPEECH_REGION`, `STEPFUN_API_KEY`, `SYNTHETIC_API_KEY`, `TAVILY_API_KEY`, `TOGETHER_API_KEY`, `TOKENHUB_API_KEY`, `TOKENPLAN_API_KEY`, `VENICE_API_KEY`, `VLLM_API_KEY`, `VOLCANO_ENGINE_API_KEY`, `VOLCENGINE_TTS_API_KEY`, `VOLCENGINE_TTS_APPID`, `VOLCENGINE_TTS_TOKEN`, `VOYAGE_API_KEY`, `VYDRA_API_KEY`, `XAI_API_KEY`, `XIAOMI_API_KEY`, `XIAOMI_TOKEN_PLAN_API_KEY`, `XI_API_KEY`, `ZAI_API_KEY`, and `Z_AI_API_KEY`.
 
-Installed third-party plugins may declare additional credential variables in their plugin manifests. Those variables are contracts of the plugin that declares them, not core OpenClaw variables.
+Installed third-party plugins may declare additional credential variables in their plugin manifests. Those variables are contracts of the plugin that declares them, not core Paddy variables.
 
 ### Logging and diagnostics
 
@@ -134,6 +135,36 @@ Installed third-party plugins may declare additional credential variables in the
 | `OPENCLAW_ALLOW_MULTI_GATEWAY`       | Allow multiple Gateway processes while preserving per-state ownership locks.                 |
 | `OPENCLAW_SKIP_CHANNELS`             | Start the Gateway without channel transports for troubleshooting.                            |
 | `OPENCLAW_THEME`                     | Force the TUI palette to `light` or `dark`.                                                  |
+
+### Filesystem observation
+
+Config hot reload, skills refresh, memory indexing, and the development watch
+supervisor use `@openclaw/fs-safe/watch`. The existing `CHOKIDAR_*` variable
+names remain supported for Docker, virtual machines, and other deployments
+that need an observation preference:
+
+| Variable              | Value                                   | Behavior                                                                                           |
+| --------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `CHOKIDAR_USEPOLLING` | Unset, `false`, `0`, or an empty string | `auto`: prefer native events, with polling fallback when no event backend is available.            |
+| `CHOKIDAR_USEPOLLING` | Any other nonempty value                | Select `poll`. Values are case-insensitive.                                                        |
+| `CHOKIDAR_INTERVAL`   | Positive integer in milliseconds        | Polling interval, default `100`, minimum `20`. Applies to explicit polling and automatic fallback. |
+
+Native events are supported on Node.js on Linux, macOS, and Windows. In `auto`
+mode, Bun and runtimes without the native backend use polling with the same
+`CHOKIDAR_INTERVAL` setting as explicit polling. Native events retain fs-safe's
+30-second reconciliation interval. Invalid or nonpositive polling intervals use
+`100` ms; larger intervals are capped at `2147483647` ms.
+
+Recovery remains specific to each owner. Config hot reload retries a failed
+subscription with its existing backoff. With `CHOKIDAR_USEPOLLING` unset, native
+watch failures can additionally trigger a fresh polling subscription after those
+retries. Explicit overrides keep the existing retry limit. Memory indexing switches to
+refresh-on-search when native watch capacity is exhausted (`watch-limit`).
+Each Memory subscription admits up to 1,000,000 directories and 1,000,000
+examined entries per scan, including excluded entries. Larger trees also fall
+back to refresh-on-search after observation retries are exhausted.
+Skills refreshes during agent preparation after capacity exhaustion, and the
+development supervisor stops its child if observation fails.
 
 ## Provider credentials and workspace `.env`
 
@@ -221,9 +252,9 @@ For Bash, the import uses an interactive login shell (`bash -lic`) so `PS1` is i
 before login startup files run. Bash reads `/etc/profile` and the first available user login
 profile (`~/.bash_profile`, `~/.bash_login`, or `~/.profile`). Many login profiles also source
 `~/.bashrc`. Keep those files quiet and bounded because their output, long-running work, or
-failures can affect OpenClaw startup. Other shells use noninteractive login startup (`-l -c`).
+failures can affect Paddy startup. Other shells use noninteractive login startup (`-l -c`).
 The probe runs in its own session, detached from your terminal, so startup files get no job
-control and cannot take over the terminal that runs OpenClaw.
+control and cannot take over the terminal that runs Paddy.
 This interactive Bash mode is limited to explicit shell env imports. Automatic executable PATH
 discovery during ordinary Gateway commands remains noninteractive.
 
@@ -245,7 +276,7 @@ application tokens, proxies, runtime injection variables, or arbitrary applicati
 This boundary leaves the parent environment and normal agent, Gateway, and updater payload
 environments unchanged.
 
-OpenClaw also injects context markers into spawned child processes:
+Paddy also injects context markers into spawned child processes:
 
 - `OPENCLAW_SHELL=exec`: set for commands run through the `exec` tool.
 - `OPENCLAW_SHELL=acp-client`: set for `openclaw acp client` when it spawns the ACP bridge process.
@@ -259,7 +290,7 @@ to apply context-specific rules.
 
 - `OPENCLAW_THEME=light`: force the light TUI palette when your terminal has a light background.
 - `OPENCLAW_THEME=dark`: force the dark TUI palette.
-- `COLORFGBG`: if your terminal exports it, OpenClaw uses the background color hint to auto-pick the TUI palette.
+- `COLORFGBG`: if your terminal exports it, Paddy uses the background color hint to auto-pick the TUI palette.
 
 ## Env var substitution in config
 
@@ -289,7 +320,7 @@ Docker Compose follows its own [interpolation rules](https://docs.docker.com/com
 
 ## Secret refs vs `${ENV}` strings
 
-OpenClaw supports two env-driven patterns:
+Paddy supports two env-driven patterns:
 
 - `${VAR}` string substitution in config values.
 - SecretRef objects (`{ source: "env", provider: "default", id: "VAR" }`) for fields that support secrets references.
@@ -310,7 +341,7 @@ shorthand values.
 ## Agent helper tool downloads
 
 Set `OPENCLAW_OFFLINE=1` to prevent OpenClaw from downloading its pinned `fd`
-and `ripgrep` helper binaries. Existing helpers under the OpenClaw tools
+and `ripgrep` helper binaries. Existing helpers under the Paddy tools
 directory and working system binaries remain eligible. A missing helper stays
 unavailable instead of triggering a network request.
 
@@ -330,18 +361,18 @@ If Node.js was installed via **nvm** (not the system package manager), the built
 nvm's bundled CA store, which may be missing modern root CAs (ISRG Root X1/X2 for Let's Encrypt,
 DigiCert Global Root G2, etc.). This causes `web_fetch` to fail with `"fetch failed"` on most HTTPS sites.
 
-On Linux, OpenClaw automatically detects nvm and applies the fix in the actual startup environment:
+On Linux, Paddy automatically detects nvm and applies the fix in the actual startup environment:
 
-- `openclaw gateway install` writes `NODE_EXTRA_CA_CERTS` into the systemd service environment
+- `paddy gateway install` writes `NODE_EXTRA_CA_CERTS` into the systemd service environment
 - the `openclaw` CLI entrypoint re-execs itself with `NODE_EXTRA_CA_CERTS` set before Node startup
 
 **Manual fix (for older versions or direct `node ...` launches):**
 
-Export the variable before starting OpenClaw:
+Export the variable before starting Paddy:
 
 ```bash
 export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
-openclaw gateway run
+paddy gateway run
 ```
 
 Do not rely on writing only to `~/.openclaw/.env` for this variable. Node reads
@@ -349,11 +380,12 @@ Do not rely on writing only to `~/.openclaw/.env` for this variable. Node reads
 
 ## Legacy environment variables
 
-OpenClaw only reads `OPENCLAW_*` environment variables. The legacy
+OpenClaw-specific runtime controls use the `OPENCLAW_*` prefix. The legacy
 `CLAWDBOT_*` and `MOLTBOT_*` prefixes from earlier releases are silently
-ignored.
+ignored. Supported provider and filesystem-observation variables retain their
+documented names.
 
-If any are still set on the Gateway process at startup, OpenClaw emits a
+If any are still set on the Gateway process at startup, Paddy emits a
 single Node deprecation warning (`OPENCLAW_LEGACY_ENV_VARS`) listing the
 detected prefixes and the total count. Rename each value by replacing the
 legacy prefix with `OPENCLAW_` (for example `CLAWDBOT_GATEWAY_TOKEN` to

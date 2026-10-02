@@ -1,6 +1,6 @@
 ---
 name: acp-router
-description: Route plain-language requests for Claude Code, Cursor, Copilot, OpenClaw ACP, OpenCode, Gemini CLI, Qwen, Kiro, Kimi, iFlow, Factory Droid, Kilocode, or explicit ACP harness work into either OpenClaw ACP runtime sessions or direct acpx-driven sessions ("telephone game" flow). For coding-agent thread requests, read this skill first, then use only `sessions_spawn` for thread creation. Codex chat binding defaults to the native Codex app-server plugin unless ACP is explicit or background spawn needs ACP.
+description: Route plain-language requests for Claude Code, Cursor, Copilot, Paddy ACP, OpenCode, Gemini CLI, Qwen, Kiro, Kimi, iFlow, Factory Droid, Kilocode, or explicit ACP harness work into either Paddy ACP runtime sessions or direct acpx-driven sessions ("telephone game" flow). For coding-agent thread requests, read this skill first, then use only `sessions_spawn` for thread creation. Codex chat binding defaults to the native Codex app-server plugin unless ACP is explicit or background spawn needs ACP.
 user-invocable: false
 ---
 
@@ -12,9 +12,9 @@ Codex is special: plain chat/conversation binding and control should use the nat
 
 ## Intent detection
 
-Trigger this skill when the user asks OpenClaw to:
+Trigger this skill when the user asks Paddy to:
 
-- run something in Claude Code / Cursor / Copilot / OpenClaw / OpenCode / Gemini / Qwen / Kiro / Kimi / iFlow / Droid / Kilocode
+- run something in Claude Code / Cursor / Copilot / Paddy / OpenCode / Gemini / Qwen / Kiro / Kimi / iFlow / Droid / Kilocode
 - run Codex explicitly through ACP, `/acp`, or acpx
 - continue existing harness work
 - relay instructions to an external coding harness
@@ -23,20 +23,20 @@ Trigger this skill when the user asks OpenClaw to:
 Mandatory preflight for coding-agent thread requests:
 
 - Before creating any thread for ACP harness work, read this skill first in the same turn.
-- After reading, follow `OpenClaw ACP runtime path` below; do not use `message(action="thread-create")` for ACP harness thread spawn.
+- After reading, follow `Paddy ACP runtime path` below; do not use `message(action="thread-create")` for ACP harness thread spawn.
 
 ## Mode selection
 
 Choose one of these paths:
 
-1. OpenClaw ACP runtime path (default): use `sessions_spawn` / ACP runtime tools.
+1. Paddy ACP runtime path (default): use `sessions_spawn` / ACP runtime tools.
 2. Direct `acpx` path (telephone game): use `acpx` CLI through `exec` to drive the harness session directly.
 
 Use direct `acpx` when one of these is true:
 
 - user explicitly asks for direct `acpx` driving
 - ACP runtime/plugin path is unavailable or unhealthy
-- the task is "just relay prompts to harness" and no OpenClaw ACP lifecycle features are needed
+- the task is "just relay prompts to harness" and no Paddy ACP lifecycle features are needed
 
 Do not use:
 
@@ -66,7 +66,7 @@ These defaults match current acpx built-in aliases.
 
 If policy rejects the chosen id, report the policy error clearly and ask for the allowed ACP agent id.
 
-## OpenClaw ACP runtime path
+## Paddy ACP runtime path
 
 Required behavior:
 
@@ -208,9 +208,9 @@ ${ACPX_CMD} codex sessions close oc-codex-<conversationId>
 
 Defaults are:
 
-- `openclaw -> openclaw acp`
+- `paddy -> paddy acp`
 - `claude -> bundled @agentclientprotocol/claude-agent-acp@0.79.0`
-- `codex -> bundled @agentclientprotocol/codex-acp@1.12.0 through OpenClaw's isolated CODEX_HOME wrapper`
+- `codex -> bundled @agentclientprotocol/codex-acp@1.12.0 through Paddy's isolated CODEX_HOME wrapper`
 - `copilot -> copilot --acp --stdio`
 - `cursor -> cursor-agent acp`
 - `droid -> droid exec --output-format acp`

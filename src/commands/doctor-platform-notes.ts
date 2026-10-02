@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { resolveIsNixMode } from "../config/paths.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
@@ -67,8 +68,8 @@ export async function noteMacDisabledGatewayLaunchAgent(env: NodeJS.ProcessEnv =
     [
       `Gateway LaunchAgent ${label} is installed but unloaded and disabled in launchd.`,
       "A terminated update helper can leave it disabled across logins. Doctor does not automatically re-enable it.",
-      `After verifying the installation is safe to run, use ${labelEnv}${formatCliCommand("openclaw gateway start", env)} to re-enable and start it. Keep the same state/config overrides.`,
-      `If an update was interrupted or installation safety is uncertain, run ${formatCliCommand("openclaw update", env)} or ${formatCliCommand("openclaw doctor", env)} and ${formatCliCommand("openclaw triage", env)} before starting it.`,
+      `After verifying the installation is safe to run, use ${labelEnv}${formatCliCommand("paddy gateway start", env)} to re-enable and start it. Keep the same state/config overrides.`,
+      `If an update was interrupted or installation safety is uncertain, run ${formatCliCommand("paddy update", env)} or ${formatCliCommand("paddy doctor", env)} and ${formatCliCommand("paddy triage", env)} before starting it.`,
     ].join("\n"),
     "Gateway (macOS)",
   );
@@ -86,7 +87,7 @@ async function collectMacStaleOpenClawUpdateLaunchdJobsWarning(): Promise<string
   }
 
   return [
-    "- Stale OpenClaw updater launchd job(s) detected.",
+    `- Stale ${PRODUCT_NAME} updater launchd job(s) detected.`,
     ...jobs.map((job) => {
       const exitStatus =
         job.lastExitStatus !== undefined ? `, last exit ${job.lastExitStatus}` : "";
@@ -95,7 +96,7 @@ async function collectMacStaleOpenClawUpdateLaunchdJobsWarning(): Promise<string
     }),
     "- Fix after confirming no update is running:",
     "  launchctl remove <label>",
-    `  ${formatCliCommand("openclaw gateway restart")}`,
+    `  ${formatCliCommand("paddy gateway restart")}`,
   ].join("\n");
 }
 
@@ -120,15 +121,12 @@ async function launchctlGetenv(name: string): Promise<string | undefined> {
 }
 
 function hasConfigGatewayCreds(cfg: OpenClawConfig): boolean {
-  const localPassword = cfg.gateway?.auth?.password;
-  const remoteToken = cfg.gateway?.remote?.token;
-  const remotePassword = cfg.gateway?.remote?.password;
-  return (
-    hasConfiguredSecretInput(cfg.gateway?.auth?.token, cfg.secrets?.defaults) ||
-    hasConfiguredSecretInput(localPassword, cfg.secrets?.defaults) ||
-    hasConfiguredSecretInput(remoteToken, cfg.secrets?.defaults) ||
-    hasConfiguredSecretInput(remotePassword, cfg.secrets?.defaults)
-  );
+  return [
+    cfg.gateway?.auth?.token,
+    cfg.gateway?.auth?.password,
+    cfg.gateway?.remote?.token,
+    cfg.gateway?.remote?.password,
+  ].some((credential) => hasConfiguredSecretInput(credential, cfg.secrets?.defaults));
 }
 
 /** Returns a warning for host-wide launchctl gateway auth env overrides. */
@@ -209,24 +207,15 @@ export async function collectGatewayPlatformWarnings(
           issue.detail ? `${issue.message} (${issue.detail})` : issue.message,
           // Structured Doctor keeps this second line in fixHint, so triage
           // message truncation cannot discard the supported repair command.
-          `Run ${formatCliCommand("openclaw gateway install --force")} only after verification; inspect drop-ins separately.`,
+          `Run ${formatCliCommand("paddy gateway install --force")} only after verification; inspect drop-ins separately.`,
         ].join("\n"),
       );
   }
-  const warnings: string[] = [];
-  const launchAgentWarning = collectMacLaunchAgentOverrideWarning();
-  if (launchAgentWarning) {
-    warnings.push(launchAgentWarning);
-  }
-  const staleUpdateWarning = await collectMacStaleOpenClawUpdateLaunchdJobsWarning();
-  if (staleUpdateWarning) {
-    warnings.push(staleUpdateWarning);
-  }
-  const launchctlWarning = await collectMacLaunchctlGatewayEnvOverrideWarning(cfg);
-  if (launchctlWarning) {
-    warnings.push(launchctlWarning);
-  }
-  return warnings;
+  return [
+    collectMacLaunchAgentOverrideWarning(),
+    await collectMacStaleOpenClawUpdateLaunchdJobsWarning(),
+    await collectMacLaunchctlGatewayEnvOverrideWarning(cfg),
+  ].filter((warning): warning is string => Boolean(warning));
 }
 
 function isTmpCompileCachePath(cachePath: string): boolean {

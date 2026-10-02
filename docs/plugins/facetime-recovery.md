@@ -8,15 +8,15 @@ title: "FaceTime recovery and removal"
 
 This procedure removes the FaceTime plugin's native artifacts and describes
 the separate operator actions needed to restore the Mac's standard security
-posture. OpenClaw never changes SIP automatically.
+posture. Paddy never changes SIP automatically.
 
 ## Remove driver and helper artifacts
 
 End any active call, then run:
 
 ```bash
-openclaw gateway call facetime.uninstall --json
-openclaw plugins disable facetime
+paddy gateway call facetime.uninstall --json
+paddy plugins disable facetime
 ```
 
 The uninstall removes the HAL driver, cached driver output, staged and

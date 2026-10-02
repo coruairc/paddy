@@ -4,6 +4,7 @@ import type { Command } from "commander";
 import { formatDocsLink } from "../../../packages/terminal-core/src/links.js";
 import { theme } from "../../../packages/terminal-core/src/theme.js";
 import type { RuntimeEnv } from "../../runtime.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { runCommandWithRuntime } from "../cli-utils.js";
 import { hasExplicitOptions, listExplicitOptionFlagsExcept } from "../command-options.js";
 import { shouldStartLocalOnboarding } from "../fresh-install-config.js";
@@ -20,7 +21,7 @@ const BASELINE_OPTION_NAMES = new Set(["baseline", "workspace", "skipBootstrap",
 
 type SetupRoute = "onboarding" | "system-agent";
 
-export function resolveSetupCommandRoute(input: {
+function resolveSetupCommandRoute(input: {
   hasOnboardingFlag: boolean;
   hasSystemAgentRequest: boolean;
   configured: boolean;
@@ -89,7 +90,7 @@ async function runOnboardingEntry(
 
 function addSystemAgentOptions(command: Command): Command {
   return command
-    .option("-m, --message <text>", "Run one OpenClaw request")
+    .option("-m, --message <text>", `Run one ${PRODUCT_NAME} request`)
     .option("--yes", "Approve persistent config writes for one --message request", false)
     .option("--json", "Output system overview or onboarding summary as JSON", false);
 }
@@ -98,16 +99,16 @@ function addSystemAgentOptions(command: Command): Command {
 export function registerSetupCommand(program: Command): void {
   const command = program
     .command("setup")
-    .description("Chat with OpenClaw; onboard when setup is incomplete")
+    .description(`Chat with ${PRODUCT_NAME}; onboard when setup is incomplete`)
     .addHelpText(
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n` +
-        `  ${theme.command("openclaw setup")}\n` +
-        `    ${theme.muted("Chat with OpenClaw, or onboard when setup is incomplete.")}\n` +
-        `  ${theme.command('openclaw setup -m "status"')}\n` +
+        `  ${theme.command(`${CLI_NAME} setup`)}\n` +
+        `    ${theme.muted(`Chat with ${PRODUCT_NAME}, or onboard when setup is incomplete.`)}\n` +
+        `  ${theme.command(`${CLI_NAME} setup -m "status"`)}\n` +
         `    ${theme.muted("Run one system-agent request.")}\n` +
-        `  ${theme.command("openclaw setup --wizard")}\n` +
+        `  ${theme.command(`${CLI_NAME} setup --wizard`)}\n` +
         `    ${theme.muted("Run full onboarding.")}\n\n` +
         `${theme.muted("Docs:")} ${formatDocsLink("/cli/setup", "docs.openclaw.ai/cli/setup")}\n`,
     )
@@ -174,7 +175,7 @@ export function registerSetupCommand(program: Command): void {
   addSystemAgentOptions(
     program
       .command("crestodian", { hidden: true }) // hidden alias
-      .description("Deprecated: use openclaw setup"),
+      .description(`Deprecated: use ${CLI_NAME} setup`),
   ).action(async (options) => {
     const { defaultRuntime } = await import("../../runtime.js");
     await runCommandWithRuntime(defaultRuntime, async () => {

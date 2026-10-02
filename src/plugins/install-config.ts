@@ -189,13 +189,13 @@ async function recoverPluginInstallConfig(
 ): Promise<OpenClawConfig> {
   if (resolvePluginInstallInvalidConfigPolicy(request) !== "allow-plugin-recovery") {
     throw new PluginInstallConfigError(
-      "Config invalid; run `openclaw doctor --fix` before installing plugins.",
+      "Config invalid; run `paddy doctor --fix` before installing plugins.",
     );
   }
   const parsed = snapshot.parsed ?? {};
   if (!snapshot.exists || Object.keys(parsed).length === 0) {
     throw new PluginInstallConfigError(
-      "Config file could not be parsed; run `openclaw doctor` to repair it.",
+      "Config file could not be parsed; run `paddy doctor` to repair it.",
     );
   }
   const ownedLoadPaths = await resolveRequestedPluginInstallPaths(
@@ -211,7 +211,7 @@ async function recoverPluginInstallConfig(
   ) {
     const pluginLabel = request.bundledPluginId ?? "the requested plugin";
     throw new PluginInstallConfigError(
-      `Config invalid outside the plugin recovery path for ${pluginLabel}; run \`openclaw doctor --fix\` before reinstalling it.`,
+      `Config invalid outside the plugin recovery path for ${pluginLabel}; run \`paddy doctor --fix\` before reinstalling it.`,
     );
   }
   if (
@@ -219,7 +219,7 @@ async function recoverPluginInstallConfig(
     !supportsInstallConfigSingleTopLevelIncludeShape(isRecord(parsed) ? parsed.plugins : undefined)
   ) {
     throw new PluginInstallConfigError(
-      "Config plugin recovery uses an unsupported $include shape; use a single-file top-level plugins include or run `openclaw doctor --fix` before reinstalling it.",
+      "Config plugin recovery uses an unsupported $include shape; use a single-file top-level plugins include or run `paddy doctor --fix` before reinstalling it.",
     );
   }
   return removeOwnedMissingPluginLoadPaths(
@@ -257,10 +257,8 @@ export async function loadConfigForInstall(
     hookMutation,
     pluginMutation,
   };
-  if (!snapshot.valid || request.installKind === "plugin") {
-    if (pluginMutation.mode === "blocked") {
-      throw new PluginInstallConfigError(pluginMutation.reason, resolved);
-    }
+  if ((!snapshot.valid || request.installKind === "plugin") && pluginMutation.mode === "blocked") {
+    throw new PluginInstallConfigError(pluginMutation.reason, resolved);
   }
   return resolved;
 }
@@ -363,12 +361,9 @@ export function resolvePluginInstallRequestContext(params: {
   }
   const fileSpec = resolveFileNpmSpecToLocalPath(params.rawSpec);
   if (fileSpec && !fileSpec.ok) {
-    return {
-      ok: false,
-      error: fileSpec.error,
-    };
+    return fileSpec;
   }
-  const normalizedSpec = fileSpec && fileSpec.ok ? fileSpec.path : params.rawSpec;
+  const normalizedSpec = fileSpec?.path ?? params.rawSpec;
   const resolvedPath = resolveUserPath(params.localPath ?? normalizedSpec);
   const localPath = params.source
     ? params.source === "local" || params.source === "bundled"
@@ -398,8 +393,5 @@ export function resolvePluginInstallRequestContext(params: {
 export function resolvePluginInstallInvalidConfigPolicy(
   request: PluginInstallRequestContext | null,
 ): PluginInstallInvalidConfigPolicy {
-  if (!request) {
-    return "deny";
-  }
-  return request.allowInvalidConfigRecovery === true ? "allow-plugin-recovery" : "deny";
+  return request?.allowInvalidConfigRecovery === true ? "allow-plugin-recovery" : "deny";
 }

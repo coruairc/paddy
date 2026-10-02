@@ -37,7 +37,7 @@ describe("sandbox explain command", () => {
     [
       "unknown",
       "nope-agent",
-      'Unknown agent id "nope-agent". Run openclaw agents list to see configured agents.',
+      'Unknown agent id "nope-agent". Run paddy agents list to see configured agents.',
     ],
     ["blank", "", "--agent must not be blank"],
   ])("rejects an explicit %s agent", async (_label, agent, message) => {

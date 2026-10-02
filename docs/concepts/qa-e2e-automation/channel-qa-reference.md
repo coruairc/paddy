@@ -44,13 +44,13 @@ accept `--list-scenarios` to print selected scenario IDs and exit.
 ### Buzz QA
 
 ```bash
-pnpm openclaw qa buzz \
+pnpm paddy qa buzz \
   --credential-file /secure/path/buzz-qa-credentials.json
 ```
 
 Targets one real Buzz room with two dedicated Nostr identities. The driver
 publishes inbound room events; the SUT identity is configured in the child
-OpenClaw Gateway and its outbound events are observed from the relay. The
+Paddy Gateway and its outbound events are observed from the relay. The
 default `mock-openai` provider proves the real Buzz transport without requiring
 a model-provider credential.
 
@@ -78,7 +78,7 @@ the real Buzz relay path but omits credential values.
 ### Telegram QA
 
 ```bash
-pnpm openclaw qa telegram
+pnpm paddy qa telegram
 ```
 
 Targets one shared private group on Telegram's Test Server. One Convex lease
@@ -101,7 +101,7 @@ use production Telegram credentials or Bot-to-Bot Communication Mode.
 The `release` profile selects taxonomy-owned Telegram scenarios that declare
 the channel, use the flow execution kind, and match the requested provider and
 model lane. Explicit `--scenario` values narrow that same selection instead of
-bypassing its constraints. Use `pnpm openclaw qa telegram --list-scenarios
+bypassing its constraints. Use `pnpm paddy qa telegram --list-scenarios
 --provider-mode mock-openai` to print the current selection with regression
 refs. Supplying `--model` applies the same model constraint to listing and
 execution.
@@ -140,11 +140,11 @@ creating a separate RTT command or Telegram-specific summary format.
 ### Discord QA
 
 ```bash
-pnpm openclaw qa discord
+pnpm paddy qa discord
 ```
 
 Targets one real private Discord guild channel with two bots: a driver bot
-controlled by the harness and a SUT bot started by the child OpenClaw gateway
+controlled by the harness and a SUT bot started by the child Paddy gateway
 through the bundled Discord plugin. Verifies channel mention handling, that
 the SUT bot has registered the native `/help` command with Discord, and
 opt-in Mantis evidence scenarios.
@@ -155,8 +155,8 @@ through an existing authenticated Convex CLI; no bot tokens or broker secrets
 need to be copied:
 
 ```bash
-pnpm openclaw qa discord --doctor
-pnpm openclaw qa discord \
+pnpm paddy qa discord --doctor
+pnpm paddy qa discord \
   --scenario-file qa/scenarios/channels/discord-e2e-lifecycle.yaml
 ```
 
@@ -227,7 +227,7 @@ Discord YAML module scenarios (`qa/scenarios/channels/discord-*.yaml`):
 Run the Discord voice auto-join scenario explicitly:
 
 ```bash
-pnpm openclaw qa discord \
+pnpm paddy qa discord \
   --scenario discord-voice-autojoin \
   --provider-mode mock-openai
 ```
@@ -240,7 +240,7 @@ Run the transcript authorization scenario with a Convex lease whose payload
 contains the reserved QA room's `voiceChannelId`:
 
 ```bash
-pnpm openclaw qa discord \
+pnpm paddy qa discord \
   --scenario discord-transcripts-voice-authorization \
   --provider-mode live-frontier \
   --credential-source convex \
@@ -250,7 +250,7 @@ pnpm openclaw qa discord \
 Run the Mantis status-reaction scenario explicitly:
 
 ```bash
-pnpm openclaw qa discord \
+pnpm paddy qa discord \
   --scenario discord-status-reactions-tool-only \
   --provider-mode live-frontier \
   --model openai/gpt-5.6-luna \

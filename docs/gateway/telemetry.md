@@ -2,14 +2,14 @@
 summary: "Daily update requests, approximate location, optional anonymous feature statistics, and privacy controls"
 title: "Usage telemetry and update checks"
 read_when:
-  - Checking what OpenClaw sends and what the receiver stores
+  - Checking what Paddy sends and what the receiver stores
   - Deciding whether to share anonymous feature statistics
   - Enabling or disabling anonymous feature statistics
   - Disabling all automatic update-check requests
 ---
 
 **Automatic update checks send a daily request by default.** It asks whether a
-newer version exists and includes the OpenClaw version, operating system, Node.js
+newer version exists and includes the Paddy version, operating system, Node.js
 version, CPU architecture, and request surface.
 Anonymous feature statistics are opt-in.
 This page describes update-check telemetry, not requests made by configured
@@ -25,7 +25,7 @@ plugin invocations, messages, model requests, or active users. Anonymous usage a
 are available at
 [telemetry.openclaw.ai](https://telemetry.openclaw.ai).
 
-Declining is a completely normal choice and changes nothing about how OpenClaw
+Declining is a completely normal choice and changes nothing about how Paddy
 works for you.
 
 ## Inspect what is sent
@@ -33,7 +33,7 @@ works for you.
 Run this command before or after changing your preference:
 
 ```bash
-openclaw telemetry show
+paddy telemetry show
 ```
 
 Add `--json` to get the same state and payload as one machine-readable
@@ -59,13 +59,13 @@ GET https://telemetry.openclaw.ai/api/latest-version
 User-Agent: openclaw/2026.8.2 (darwin; node/26.0.1; arm64; gateway)
 ```
 
-The `User-Agent` contains the OpenClaw version, operating system, Node.js
+The `User-Agent` contains the Paddy version, operating system, Node.js
 version, CPU architecture, and whether the request came from the Gateway or
 CLI. It has no request body, install identifier, machine identifier, or random
 tracking identifier.
 
 The service responds with the latest version and, optionally, a short
-operator-facing note. OpenClaw displays an available update and its note through
+operator-facing note. Paddy displays an available update and its note through
 the existing update notice. Unreachable services, timeouts, oversized or invalid responses,
 and other failed checks do not interrupt startup or normal operation.
 
@@ -103,9 +103,9 @@ and processing or storage policies.
 
 Anonymous feature statistics are **off by default**. Interactive setup can offer a one-time
 opt-in with **No thanks** selected by default; guided Quick Start skips that
-prompt. OpenClaw records a prompt response so setup does not ask again.
+prompt. Paddy records a prompt response so setup does not ask again.
 Non-interactive and scripted installations do not opt in automatically, but
-operators can explicitly enable anonymous feature statistics with `openclaw telemetry on` or
+operators can explicitly enable anonymous feature statistics with `paddy telemetry on` or
 `telemetry.enabled: true`. The enabled setting, not the presence of a prompt
 response, controls whether anonymous feature statistics are included.
 
@@ -132,7 +132,7 @@ When you explicitly enable anonymous feature statistics, the same daily request 
 | Field                       | Meaning                                                                                           |
 | --------------------------- | ------------------------------------------------------------------------------------------------- |
 | `schema`                    | Payload format version, currently `1`.                                                            |
-| `version`                   | Installed OpenClaw version.                                                                       |
+| `version`                   | Installed Paddy version.                                                                          |
 | `platform`                  | Operating system and CPU architecture.                                                            |
 | `node`                      | Running Node.js version.                                                                          |
 | `surface`                   | Request surface: `gateway` or `cli`; the CLI preview uses `gateway`.                              |
@@ -157,7 +157,7 @@ The session count depends on locally recorded creation events that remain in
 the bounded event store. Missing or unreadable state produces zero. It is not
 a count of active sessions, messages, or all sessions that existed that day.
 
-The sender and `openclaw telemetry show` use the same payload builder, but their
+The sender and `paddy telemetry show` use the same payload builder, but their
 plugin registry, configuration, and collection time can differ. The CLI preview
 is not a guarantee of the exact next Gateway payload.
 
@@ -172,7 +172,7 @@ history or retention measure.
 Neither the update-check `User-Agent` nor the body containing anonymous feature
 statistics includes message content, prompts, model names, API keys, credentials, secret references,
 file paths, hostnames, account identifiers, user identifiers, or installation
-and machine identifiers. OpenClaw does not create a random UUID or other
+and machine identifiers. Paddy does not create a random UUID or other
 persistent client identifier for these requests.
 
 The hosted service's Analytics Engine rows exclude those direct identifiers and raw
@@ -192,8 +192,8 @@ Anonymous feature statistics are separate from optional, operator-configured
 Enable or disable anonymous feature statistics at any time:
 
 ```bash
-openclaw telemetry on
-openclaw telemetry off
+paddy telemetry on
+paddy telemetry off
 ```
 
 You can also configure the same preference directly:
@@ -208,12 +208,12 @@ You can also configure the same preference directly:
 
 Set `DO_NOT_TRACK=1` or `DO_NOT_TRACK=true` to force anonymous feature statistics off,
 even when `telemetry.enabled` is `true`. `DO_NOT_TRACK` does not disable the
-daily update check: OpenClaw sends the update-only `GET` request without a
+daily update check: Paddy sends the update-only `GET` request without a
 body containing anonymous feature statistics.
 
 ## Automated environments
 
-OpenClaw sends nothing when it detects an automated environment, meaning the
+Paddy sends nothing when it detects an automated environment, meaning the
 `CI` environment variable is set to a truthy value. Continuous integration jobs
 are not installations: they would outnumber real operators by orders of
 magnitude and make version and platform counts meaningless, and your pipeline

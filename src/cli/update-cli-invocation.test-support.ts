@@ -55,7 +55,7 @@ export function expectPluginCapabilityRetryNotice(
         warnings: expect.arrayContaining([
           expect.objectContaining({
             pluginId,
-            message: expect.stringContaining(`openclaw plugins update ${pluginId}`),
+            message: expect.stringContaining(`paddy plugins update ${pluginId}`),
           }),
         ]),
         npm: {

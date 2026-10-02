@@ -1,19 +1,19 @@
 ---
-summary: "CLI reference for `openclaw node` (headless node host)"
+summary: "CLI reference for `paddy node` (headless node host)"
 read_when:
   - Running the headless node host
   - Pairing a non-macOS node for system.run
 title: "Node"
 ---
 
-# `openclaw node`
+# `paddy node`
 
 Run a **headless node host** that connects to the Gateway WebSocket and exposes
 `system.run` / `system.which` on this machine by default. Use `--commands` to
 restrict the advertised surface, for example to read-only session sharing.
 
 On macOS, the menu bar app already embeds this node-host runtime into its own
-node connection and adds native Mac capabilities. Use `openclaw node run` on a
+node connection and adds native Mac capabilities. Use `paddy node run` on a
 Mac only when you intentionally want a headless node without the app. Running
 both creates two node identities for the same machine.
 
@@ -31,7 +31,7 @@ Common use cases:
 Execution is still guarded by **exec approvals** and per-agent allowlists on the
 node host, so you can keep command access scoped and explicit.
 
-`openclaw node run` can publish plugin or MCP-backed tools after it connects.
+`paddy node run` can publish plugin or MCP-backed tools after it connects.
 The Gateway trusts descriptors from the paired node by default, while requiring
 each descriptor's command to remain in the node's approved command surface. The
 agent sees each accepted descriptor as a normal plugin tool, but execution still
@@ -71,18 +71,18 @@ Disable it on the node if needed:
 
 ## Run (foreground)
 
-For one-paste onboarding, use [`openclaw connect`](/cli/connect). It accepts a
+For one-paste onboarding, use [`paddy connect`](/cli/connect). It accepts a
 single-use join URL or the same setup code forms as `--pair`, then runs this
 node-host runtime.
 
 ```bash
-openclaw node run --host <gateway-host> --port 18789
+paddy node run --host <gateway-host> --port 18789
 ```
 
 Or paste a short-lived node setup link from the Control UI Devices page:
 
 ```bash
-openclaw node run --pair "oc-pair://<setup-code>"
+paddy node run --pair "oc-pair://<setup-code>"
 ```
 
 Options:
@@ -113,7 +113,7 @@ Options:
 After pairing, reconnects use the durable device credential. Administrator-minted
 bootstrap enrollment approves the device and its first declared command surface,
 including `system.run` when declared. Later command, capability, or permission
-expansion still requires `openclaw nodes approve`. Gateway command policy and
+expansion still requires `paddy nodes approve`. Gateway command policy and
 the node host's [exec approvals](/tools/exec-approvals) remain separate gates.
 Local exec approvals default to `full` with `ask: "off"`; configure them before
 using a setup link if that access is too broad. `node install --pair` is
@@ -129,7 +129,7 @@ An expired setup code cannot enroll a new state directory or replace a revoked
 device token; provision a fresh code when needed. Explicit `--pair` still rejects
 expired setup codes.
 
-`openclaw node run` and `openclaw node install` resolve gateway auth from config/env (no `--token`/`--password` flags on node commands):
+`paddy node run` and `paddy node install` resolve gateway auth from config/env (no `--token`/`--password` flags on node commands):
 
 - `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD` are checked first.
 - When reconnecting to the saved Gateway endpoint with a paired node credential, use that credential and skip config auth. An explicit environment override supplies only its own credentials.
@@ -145,8 +145,8 @@ share its state directory with a local Gateway while reconnecting to a different
 paired Gateway, without sending the local Gateway's password on restart.
 
 For a Gateway behind Cloudflare Access, set `CF_ACCESS_CLIENT_ID` and
-`CF_ACCESS_CLIENT_SECRET` together before `openclaw connect`, `openclaw node
-run`, or `openclaw node install`. The node stores env SecretRefs under its
+`CF_ACCESS_CLIENT_SECRET` together before `paddy connect`, `paddy node
+run`, or `paddy node install`. The node stores env SecretRefs under its
 canonical `gateway.cloudflareAccess.clientId` and `clientSecret` connection
 keys. Installed services keep the values in the managed service environment
 file, not in service arguments or inline supervisor definitions. Access
@@ -160,7 +160,7 @@ trusted private-DNS names, set `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`; without
 it, node startup fails closed and asks you to use `wss://`, an SSH tunnel, or
 Tailscale. This is a process-environment opt-in, not an `openclaw.json` config
 key.
-`openclaw node install` persists it into the supervised node service when it is
+`paddy node install` persists it into the supervised node service when it is
 present in the install command environment.
 
 ## Service (background)
@@ -169,7 +169,7 @@ Install a headless node host as a user service (launchd on macOS, systemd on
 Linux, Windows Task Scheduler on Windows).
 
 ```bash
-openclaw node install --host <gateway-host> --port 18789
+paddy node install --host <gateway-host> --port 18789
 ```
 
 Options:
@@ -192,13 +192,13 @@ Options:
 
 The explicit pin is saved in machine-state metadata and retained
 across restarts and forced reinstalls. Replace it with another `--runtime-path`,
-or use `openclaw node install --runtime node --force` without `--runtime-path`
+or use `paddy node install --runtime node --force` without `--runtime-path`
 to return to automatic selection. An unavailable or unsupported pin fails
 instead of silently selecting another runtime. Quote paths containing spaces.
 
 Set `OPENCLAW_WRAPPER` to an executable wrapper file to use it instead of the
 selected runtime and CLI entrypoint. The wrapper receives `node run` and the
-connection arguments; it must launch OpenClaw and forward those arguments.
+connection arguments; it must launch Paddy and forward those arguments.
 
 If installation reports a runtime probe failure, check the executable and
 working directory named in the error. For example, when switching users with
@@ -209,35 +209,36 @@ advice is reserved for missing or unsupported runtimes.
 > **Linux (systemd user service):** Run `sudo loginctl enable-linger <user>` after
 > install. Without lingering, `systemd --user` tears down the node service when
 > your last SSH session ends, so the node silently goes offline after logout.
-> `openclaw node install` prints this warning when it detects lingering is
+> `paddy node install` prints this warning when it detects lingering is
 > disabled.
 
 Manage the service:
 
 ```bash
-openclaw node status
-openclaw node start
-openclaw node stop
-openclaw node restart
-openclaw node uninstall
+paddy node status
+paddy node start
+paddy node stop
+paddy node restart
+paddy node uninstall
 ```
 
-Use `openclaw node run` for a foreground node host (no service).
-To remove a saved command allowlist, run `openclaw node run --all-commands`
+Use `paddy node run` for a foreground node host (no service).
+To remove a saved command allowlist, run `paddy node run --all-commands`
 in the foreground, or reinstall the service with
-`openclaw node install --force --all-commands`. The reset is durable; the
+`paddy node install --force --all-commands`. The reset is durable; the
 replacement service arguments no longer carry `--commands`.
 
 Service commands accept `--json` for machine-readable output.
 `node start` and `node restart` print install hints and exit nonzero when no
-managed node service is installed; run `openclaw node install` first. Stopping
+managed node service is installed; run `paddy node install` first. Stopping
 an absent service remains a successful no-op.
 
 The node host retries Gateway restart and network closes in-process. If the
 Gateway reports a terminal token/password/bootstrap auth pause, the node host
 logs the close detail and exits non-zero so launchd/systemd/Task Scheduler can
-restart it with fresh config and credentials. Pairing-required pauses stay in
-the foreground flow so the pending request can be approved.
+restart it with fresh config and credentials. While device pairing is pending,
+the node keeps reconnecting with exponential backoff capped at 30 seconds and
+connects automatically after approval.
 
 ## Automatic updates
 
@@ -252,7 +253,7 @@ there is no deadline that interrupts busy work.
 Disable this on the node machine with:
 
 ```bash
-openclaw config set nodeHost.autoUpdate.enabled false
+paddy config set nodeHost.autoUpdate.enabled false
 ```
 
 `update.checkOnStart: false` and `OPENCLAW_NO_AUTO_UPDATE=1` also disable node
@@ -268,7 +269,7 @@ The first connection creates a pending device pairing request (`role: node`) on 
 
 When the Gateway host can SSH to the node host non-interactively (same user,
 trusted host key), the pending request is approved automatically: the Gateway
-runs `openclaw node identity --json` on the node host over SSH and approves on
+runs `paddy node identity --json` on the node host over SSH and approves on
 an exact device-key match. This is on by default; see
 [SSH-verified device auto-approval](/gateway/pairing#ssh-verified-device-auto-approval-default)
 for requirements and how to disable it (`gateway.nodes.pairing.sshVerify: false`).
@@ -276,21 +277,24 @@ for requirements and how to disable it (`gateway.nodes.pairing.sshVerify: false`
 Otherwise approve manually via:
 
 ```bash
-openclaw devices list
-openclaw devices approve <deviceRequestId>
+paddy devices list
+paddy devices approve <deviceRequestId>
 ```
 
-Device approval admits the connection, not its command surface. Restart an
-installed node with `openclaw node restart`, or stop and rerun the foreground
-`openclaw node run` command. A node paused on `PAIRING_REQUIRED` does not resume
-automatically after manual approval. This reconnect creates a separate
-command-surface request on the Gateway:
+Device approval admits the connection; the command surface needs separate
+approval. The node keeps reconnecting while device approval is pending, with
+exponential backoff capped at 30 seconds. After approval, its next reconnect
+creates a separate command-surface request on the Gateway:
 
 ```bash
-openclaw nodes pending
-openclaw nodes approve <nodeRequestId>
-openclaw nodes describe --node <idOrNameOrIp>
+paddy nodes pending
+paddy nodes approve <nodeRequestId>
+paddy nodes describe --node <idOrNameOrIp>
 ```
+
+If an older client already reports that reconnect is paused, restart the
+installed node with `paddy node restart`, or stop and rerun its foreground
+`paddy node run` command once.
 
 The device and node request IDs are distinct. An initial unapproved surface has
 no effective commands. SSH-verified and bootstrap enrollment can approve the
@@ -301,7 +305,7 @@ expansion waits.
 Inspect the local node identity the Gateway verifies against:
 
 ```bash
-openclaw node identity --json
+paddy node identity --json
 ```
 
 It prints the device ID and public key from the `primary` row in
@@ -328,17 +332,17 @@ Gateway trusts. Operator/browser clients, Control UI, WebChat, and role,
 scope, metadata, or public-key upgrades still require manual approval.
 
 Trusted-network device approval does not approve the node's command surface.
-Inspect `openclaw nodes pending` and approve the separate surface request.
+Inspect `paddy nodes pending` and approve the separate surface request.
 
 If the node retries pairing with changed auth details (role/scopes/public key),
 the previous pending request is superseded and a new `requestId` is created.
-Run `openclaw devices list` again before approval.
+Run `paddy devices list` again before approval.
 
 ### Identity and pairing state
 
 The headless node separates its client instance ID from the signed device
 identity that the Gateway uses for pairing and routing. This state lives in the
-OpenClaw state directory (`~/.openclaw` by default, or `$OPENCLAW_STATE_DIR`
+Paddy state directory (`~/.openclaw` by default, or `$OPENCLAW_STATE_DIR`
 when set):
 
 | State                                                                   | Purpose                                                                                                                          |
@@ -354,32 +358,32 @@ on the same machine. Listing or describing nodes does not create identity creden
 
 `--node-id` changes only the client instance ID in shared SQLite state. It does
 not change the cryptographic device ID or clear pairing auth. Migrating a retired
-`node.json` with `openclaw doctor --fix` likewise does not reset pairing. To
+`node.json` with `paddy doctor --fix` likewise does not reset pairing. To
 revoke and re-pair a node:
 
-1. On the Gateway, run `openclaw nodes remove --node <id|name|ip>`.
-2. On the node, restart the installed service with `openclaw node restart`, or
-   stop and rerun the foreground `openclaw node run` command. This starts the
-   device-pairing flow. If `openclaw devices list` does not show a request
+1. On the Gateway, run `paddy nodes remove --node <id|name|ip>`.
+2. On the node, restart the installed service with `paddy node restart`, or
+   stop and rerun the foreground `paddy node run` command. This starts the
+   device-pairing flow. If `paddy devices list` does not show a request
    and the node reports `AUTH_DEVICE_TOKEN_MISMATCH`, restart or rerun it once
    more. The rejected attempt clears the now-revoked local token; the next
    attempt can request pairing.
-3. On the Gateway, run `openclaw devices list`, then
-   `openclaw devices approve <deviceRequestId>`.
-4. Restart or rerun the node again. A client paused for pairing does not resume
-   automatically after approval; this reconnect creates the separate
-   command-surface request.
-5. On the Gateway, run `openclaw nodes pending`, then
-   `openclaw nodes approve <nodeRequestId>`.
+3. On the Gateway, run `paddy devices list`, then
+   `paddy devices approve <deviceRequestId>`.
+4. Wait for the node's automatic reconnect, which creates the separate
+   command-surface request. If an older client already paused for pairing,
+   restart or rerun it once.
+5. On the Gateway, run `paddy nodes pending`, then
+   `paddy nodes approve <nodeRequestId>`.
 
 The two request IDs are distinct. An applicable trusted-CIDR policy can
 auto-approve the first-time device-pairing step; command-surface approval remains
 a separate check.
 
-Older OpenClaw releases stored node-host state in `node.json`, the signed
+Older Paddy releases stored node-host state in `node.json`, the signed
 identity in `identity/device.json`, and paired auth in
 `identity/device-auth.json`. Stop the node host and run
-`openclaw doctor --fix` once; Doctor validates the retired inputs, imports and
+`paddy doctor --fix` once; Doctor validates the retired inputs, imports and
 verifies their canonical SQLite rows, then removes the old files. Node startup,
 including the macOS app's worker, leaves these inputs for Doctor. Pending device
 auth or exec approvals stop startup before capabilities are prepared. A missing
@@ -396,11 +400,11 @@ it contains the device keypair and auth tokens.
 - `$OPENCLAW_STATE_DIR/state/openclaw.sqlite#exec_approvals_config`, or
   `~/.openclaw/state/openclaw.sqlite#exec_approvals_config` when the variable is unset
 - [Exec approvals](/tools/exec-approvals)
-- From the Gateway, inspect with `openclaw approvals get --node <id|name|ip>` or
-  replace with `openclaw approvals set --node <id|name|ip> --file <path>`; see the
+- From the Gateway, inspect with `paddy approvals get --node <id|name|ip>` or
+  replace with `paddy approvals set --node <id|name|ip> --file <path>`; see the
   [Approvals CLI](/cli/approvals).
 
-For approved async node exec, OpenClaw prepares a canonical `systemRunPlan`
+For approved async node exec, Paddy prepares a canonical `systemRunPlan`
 before prompting. The later approved `system.run` forward reuses that stored
 plan, so edits to command/cwd/session fields after the approval request was
 created are rejected instead of changing what the node executes.

@@ -393,7 +393,7 @@ export function buildHeadlessExecApprovalDeniedMessage(params: {
     '- set tools.exec.mode="full" and align host approvals to security="full" and ask="off" for trusted local automation',
     "- keep allowlist mode and add an explicit allowlist entry for this command",
     approvalSurfaceFix,
-    `Tip: run "openclaw doctor" and "openclaw approvals get ${approvalTarget}" to inspect the effective policy.`,
+    `Tip: run "paddy doctor" and "paddy approvals get ${approvalTarget}" to inspect the effective policy.`,
   ].join("\n");
 }
 

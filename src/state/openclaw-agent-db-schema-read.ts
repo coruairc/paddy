@@ -1,6 +1,8 @@
 import type { DatabaseSync } from "node:sqlite";
 import { normalizeAgentId } from "@openclaw/normalization-core/agent-id";
+import { PRODUCT_NAME } from "../brand.js";
 import { getAdmittedSqliteSchemaFacts } from "../infra/sqlite-schema-facts.js";
+import { SqliteSchemaMismatchError } from "../infra/sqlite-schema-issues.js";
 import {
   createNewerSqliteSchemaVersionError,
   readSqliteUserVersion,
@@ -21,7 +23,7 @@ export function assertSupportedAgentSchemaVersion(db: DatabaseSync, pathname: st
   const userVersion = getAdmittedSqliteSchemaFacts(db)?.userVersion ?? readSqliteUserVersion(db);
   if (userVersion > OPENCLAW_AGENT_SCHEMA_VERSION) {
     throw createNewerSqliteSchemaVersionError(
-      "OpenClaw agent database",
+      `${PRODUCT_NAME} agent database`,
       pathname,
       userVersion,
       OPENCLAW_AGENT_SCHEMA_VERSION,
@@ -45,8 +47,8 @@ export function assertCanonicalAgentPersistenceVersion(
     throw new OpenClawAgentDatabaseMediaMigrationRequiredError(pathname, userVersion);
   }
   if (userVersion < OPENCLAW_AGENT_SCHEMA_VERSION && !isNewUnownedDatabase) {
-    throw new Error(
-      `OpenClaw agent database ${pathname} uses schema version ${userVersion}; stop active agents and run openclaw doctor --fix to migrate session identities before using it.`,
+    throw new SqliteSchemaMismatchError(
+      `${PRODUCT_NAME} agent database ${pathname} uses schema version ${userVersion}; stop active agents and run paddy doctor --fix to migrate session identities before using it.`,
     );
   }
 }
@@ -61,16 +63,18 @@ export function assertExistingAgentSchemaOwner(
   }
   // Agent DB files are not interchangeable; opening another role/id would corrupt ownership.
   if (existing.role !== "agent") {
-    throw new Error(
-      `OpenClaw agent database ${pathname} has schema role ${existing.role ?? "unknown"}; expected agent.`,
+    throw new SqliteSchemaMismatchError(
+      `Paddy agent database ${pathname} has schema role ${existing.role ?? "unknown"}; expected agent. Run paddy doctor --fix to inspect and repair its ownership.`,
     );
   }
   if (!existing.agentId) {
-    throw new Error(`OpenClaw agent database ${pathname} has no agent owner.`);
+    throw new SqliteSchemaMismatchError(
+      `Paddy agent database ${pathname} has no agent owner. Run paddy doctor --fix to inspect and repair its ownership.`,
+    );
   }
   if (normalizeAgentId(existing.agentId) !== agentId) {
-    throw new Error(
-      `OpenClaw agent database ${pathname} belongs to agent ${existing.agentId}; requested agent ${agentId}.`,
+    throw new SqliteSchemaMismatchError(
+      `${PRODUCT_NAME} agent database ${pathname} belongs to agent ${existing.agentId}; requested agent ${agentId}.`,
     );
   }
 }

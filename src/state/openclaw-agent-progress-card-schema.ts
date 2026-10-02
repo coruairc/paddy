@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { extractSqliteTableSchema } from "../infra/sqlite-schema-sql.js";
 import { OPENCLAW_AGENT_SCHEMA_WITHOUT_BOARD_SQL } from "./openclaw-agent-board-schema.js";
 
@@ -9,7 +10,7 @@ export const AGENT_PROGRESS_CARD_SCHEMA_SQL = extractSqliteTableSchema(
   {
     endMarker: "CREATE TABLE IF NOT EXISTS heartbeat_outcomes (",
     includeEndMarker: false,
-    errorMessage: "OpenClaw agent progress-card schema markers are missing.",
+    errorMessage: `${PRODUCT_NAME} agent progress-card schema markers are missing.`,
   },
 );
 export const AGENT_SCHEMA_WITHOUT_PROGRESS_CARD_SQL =

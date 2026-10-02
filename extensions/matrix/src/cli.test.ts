@@ -568,7 +568,7 @@ describe("matrix CLI verification commands", () => {
 
     expect(listMatrixVerificationsMock).toHaveBeenCalledWith({ accountId: "default", cfg: {} });
     expect(consoleLogMock).toHaveBeenCalledWith("Verification id: incoming-1");
-    expect(consoleLogMock).toHaveBeenCalledWith("Initiated by OpenClaw: no");
+    expect(consoleLogMock).toHaveBeenCalledWith("Initiated by Paddy: no");
   });
 
   it("sanitizes remote Matrix verification metadata before printing it", async () => {
@@ -1042,7 +1042,7 @@ describe("matrix CLI verification commands", () => {
       accountId: "poe",
       cfg: {},
     });
-    expect(console.log).toHaveBeenCalledWith("Deleted stale OpenClaw devices: BritdXC6iL");
+    expect(console.log).toHaveBeenCalledWith("Deleted stale Paddy devices: BritdXC6iL");
     expect(console.log).toHaveBeenCalledWith("Current device: A7hWrQ70ea");
     expect(console.log).toHaveBeenCalledWith("Remaining devices: 1");
   });
@@ -1069,7 +1069,7 @@ describe("matrix CLI verification commands", () => {
     expect(replaceArg.afterWrite).toEqual({ mode: "auto" });
     expect(console.log).toHaveBeenCalledWith("Saved matrix account: ops");
     expect(console.log).toHaveBeenCalledWith(
-      "Bind this account to an agent: openclaw agents bind --agent <id> --bind matrix:ops",
+      "Bind this account to an agent: paddy agents bind --agent <id> --bind matrix:ops",
     );
   });
 
@@ -1550,7 +1550,7 @@ describe("matrix CLI verification commands", () => {
     );
     expect(console.log).toHaveBeenCalledWith("Backup version: 7");
     expect(console.log).toHaveBeenCalledWith(
-      "Matrix device hygiene warning: stale OpenClaw devices detected (BritdXC6iL). Run openclaw matrix devices prune-stale --account ops.",
+      "Matrix device hygiene warning: stale Paddy devices detected (BritdXC6iL). Run openclaw matrix devices prune-stale --account ops.",
     );
   });
 
@@ -1771,7 +1771,7 @@ describe("matrix CLI verification commands", () => {
       expectedExitCode: 1,
       expectedLogs: [
         "Device issue: current Matrix device is missing from the homeserver device list",
-        "- This Matrix device is no longer listed on the homeserver. Create a new OpenClaw Matrix device with openclaw matrix account add --homeserver '<url>' --user-id '<@user:server>' --password '<password>' --device-name OpenClaw-Gateway. If you use token auth, create a fresh Matrix access token in your Matrix client or admin UI, then run openclaw matrix account add --homeserver '<url>' --access-token '<token>'.",
+        "- This Matrix device is no longer listed on the homeserver. Create a new Paddy Matrix device with openclaw matrix account add --homeserver '<url>' --user-id '<@user:server>' --password '<password>' --device-name Paddy-Gateway. If you use token auth, create a fresh Matrix access token in your Matrix client or admin UI, then run openclaw matrix account add --homeserver '<url>' --access-token '<token>'.",
       ],
     },
     {

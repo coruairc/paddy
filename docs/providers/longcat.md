@@ -2,12 +2,12 @@
 summary: "LongCat API setup for LongCat-2.0"
 title: "LongCat"
 read_when:
-  - You want to use LongCat-2.0 with OpenClaw
+  - You want to use LongCat-2.0 with Paddy
   - You need the LongCat API key or model limits
 ---
 
 [LongCat](https://longcat.ai) provides a hosted API for LongCat-2.0, a
-reasoning model built for coding and agentic workloads. OpenClaw provides the
+reasoning model built for coding and agentic workloads. Paddy provides the
 official LongCat plugin for LongCat's OpenAI-compatible endpoint.
 
 | Property   | Value                              |
@@ -42,12 +42,12 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
   </Step>
   <Step title="Run onboarding">
     ```bash
-    openclaw onboard --auth-choice longcat-api-key
+    paddy onboard --auth-choice longcat-api-key
     ```
   </Step>
   <Step title="Verify the model">
     ```bash
-    openclaw models list --provider longcat
+    paddy models list --provider longcat
     ```
   </Step>
 </Steps>
@@ -58,7 +58,7 @@ primary model is already configured.
 ### Non-interactive setup
 
 ```bash
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --mode local \
   --auth-choice longcat-api-key \
   --longcat-api-key "$LONGCAT_API_KEY"
@@ -66,12 +66,12 @@ openclaw onboard --non-interactive --accept-risk --skip-health \
 
 ## Reasoning behavior
 
-LongCat exposes binary thinking control. OpenClaw maps enabled thinking levels
+LongCat exposes binary thinking control. Paddy maps enabled thinking levels
 to `thinking: { type: "enabled" }` and `/think off` to
-`thinking: { type: "disabled" }`. OpenClaw removes `reasoning_effort`
+`thinking: { type: "disabled" }`. Paddy removes `reasoning_effort`
 from LongCat requests.
 
-LongCat returns reasoning in `reasoning_content`. OpenClaw preserves that field
+LongCat returns reasoning in `reasoning_content`. Paddy preserves that field
 when replaying assistant tool-call turns so multi-turn agent sessions retain
 the provider's expected message shape.
 
@@ -86,7 +86,7 @@ and your billing records are authoritative.
 
 The `longcat` provider targets LongCat's hosted API. For the open weights on
 [Hugging Face](https://huggingface.co/meituan-longcat/LongCat-2.0), serve the
-model through an OpenAI-compatible runtime and use OpenClaw's existing
+model through an OpenAI-compatible runtime and use Paddy's existing
 [vLLM](/providers/vllm) or [SGLang](/providers/sglang) provider instead.
 
 Keep the runtime's exact model identifier in the self-hosted provider catalog;
@@ -108,8 +108,8 @@ do not route a local deployment through `longcat/LongCat-2.0`.
   </Accordion>
 
   <Accordion title="The model does not appear">
-    Run `openclaw plugins list` and confirm the `longcat` plugin is
-    enabled, then run `openclaw models list --provider longcat`.
+    Run `paddy plugins list` and confirm the `longcat` plugin is
+    enabled, then run `paddy models list --provider longcat`.
   </Accordion>
 </AccordionGroup>
 

@@ -27,7 +27,7 @@ export function findSecretStoreRedactedValueFindings(params: {
         severity: "error" as const,
         file: params.database.path ?? resolveOpenClawStateSqlitePath(params.database.env),
         jsonPath: `secret_store_entries.${entry.name}`,
-        message: `Secret store entry "${entry.name}" contains a redaction placeholder and is unavailable. Run openclaw doctor --fix to repair a store-backed Gateway token; replace other entries with real credentials.`,
+        message: `Secret store entry "${entry.name}" contains a redaction placeholder and is unavailable. Run paddy doctor --fix to repair a store-backed Gateway token; replace other entries with real credentials.`,
       },
     ];
   });

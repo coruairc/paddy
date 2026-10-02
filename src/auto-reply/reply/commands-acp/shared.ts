@@ -7,6 +7,7 @@ import {
   normalizeOptionalString,
 } from "@openclaw/normalization-core/string-coerce";
 import { type AcpRuntimeError, toAcpRuntimeErrorText } from "../../../acp/runtime/errors.js";
+import { PRODUCT_NAME } from "../../../brand.js";
 import { supportsAutomaticThreadBindingSpawn } from "../../../channels/thread-bindings-policy.js";
 import type { AcpSessionRuntimeOptions } from "../../../config/sessions/types.js";
 import { normalizeAgentId } from "../../../routing/session-key.js";
@@ -369,7 +370,7 @@ export function resolveAcpHelpText(): string {
     "/acp sessions",
     "",
     "Notes:",
-    "- /acp spawn harness-id is an ACP runtime harness alias (for example codex), not an OpenClaw agents.list id.",
+    `- /acp spawn harness-id is an ACP runtime harness alias (for example codex), not a ${PRODUCT_NAME} agents.list id.`,
     "- Use --bind here to pin the current conversation to the ACP session without creating a child thread.",
     "- /session unbind detaches this conversation without closing its ACP session.",
     "- ACP dispatch of normal thread messages is controlled by acp.dispatch.enabled.",

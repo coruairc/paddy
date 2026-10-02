@@ -537,7 +537,7 @@ describe("Zoom meeting platform adapter", () => {
       audioInputRouted: false,
       manualAction: {
         message:
-          "Verify the OpenClaw virtual audio device is selected as both the Zoom microphone and speaker before starting talk-back.",
+          "Verify the Paddy virtual audio device is selected as both the Zoom microphone and speaker before starting talk-back.",
         reason: "zoom-audio-choice-required",
       },
     });
@@ -554,7 +554,7 @@ describe("Zoom meeting platform adapter", () => {
         audioInputRouted: false,
         manualAction: {
           message:
-            "Verify the OpenClaw virtual audio device is selected as both the Zoom microphone and speaker before starting talk-back.",
+            "Verify the Paddy virtual audio device is selected as both the Zoom microphone and speaker before starting talk-back.",
           reason: "zoom-audio-choice-required",
         },
       });

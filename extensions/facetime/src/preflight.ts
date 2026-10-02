@@ -193,8 +193,8 @@ export async function runFaceTimePreflight(params: {
   const audioDevices = profiler.code === 0 ? parseCoreAudioDevices(profiler.stdout ?? "") : [];
   const deviceNames = new Set(audioDevices.map((device) => device.name));
   for (const [id, label, deviceName] of [
-    ["paired-driver-mic", "OpenClaw microphone device", FACETIME_MIC_DEVICE_NAME],
-    ["paired-driver-feed", "OpenClaw feed device", FACETIME_FEED_DEVICE_NAME],
+    ["paired-driver-mic", "Paddy microphone device", FACETIME_MIC_DEVICE_NAME],
+    ["paired-driver-feed", "Paddy feed device", FACETIME_FEED_DEVICE_NAME],
   ] as const) {
     const found = deviceNames.has(deviceName);
     pushCheck(checks, {
@@ -203,7 +203,7 @@ export async function runFaceTimePreflight(params: {
       ok: found,
       message: found
         ? deviceName
-        : `missing ${deviceName}; run openclaw gateway call facetime.installDriver --json`,
+        : `missing ${deviceName}; run paddy gateway call facetime.installDriver --json`,
     });
   }
 

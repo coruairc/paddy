@@ -7,6 +7,7 @@ import {
 import type { UpdateRunResult } from "../../infra/update-runner-types.js";
 import type { PluginPayloadSmokeFailure } from "../../plugins/payload-verification.js";
 import type { PluginUpdateOutcome } from "../../plugins/update.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatCliCommand } from "../command-format.js";
 import { createUpdateConfigFailure } from "./update-command-config-failure.js";
 
@@ -163,10 +164,10 @@ export function createPluginUpdateWarning(params: {
 }): PluginUpdateWarning {
   const command = formatCliCommand(
     params.kind === "load"
-      ? "openclaw doctor --fix"
+      ? `${CLI_NAME} doctor --fix`
       : params.pluginId
-        ? `openclaw plugins update ${params.pluginId}`
-        : "openclaw update repair",
+        ? `${CLI_NAME} plugins update ${params.pluginId}`
+        : `${CLI_NAME} update repair`,
     params.env,
   );
   const nextAction = `Run \`${command}\` to ${params.kind === "load" ? "check and repair the load problem" : "retry"}.`;
@@ -221,7 +222,7 @@ export function buildInvalidConfigPostCoreUpdateResult(snapshot: ConfigFileSnaps
   const failure = createUpdateConfigFailure(snapshot);
   const guidance = [
     ...(failure.nextAction ? [failure.nextAction] : []),
-    "Once the config loads successfully, rerun `openclaw update repair`.",
+    `Once the config loads successfully, rerun \`${CLI_NAME} update repair\`.`,
   ];
   const message = `Plugin post-update convergence skipped; refusing to restart the gateway with an unverified plugin set.\n${failure.message}`;
   return {

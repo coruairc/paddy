@@ -45,7 +45,7 @@ function resolveMigrationBackupPath(
 async function runApprovalMigration(options: MigrationOptions): Promise<void> {
   const prepared = await readConfigFileSnapshotForWrite();
   if (!prepared.snapshot.valid) {
-    throw new Error("OpenClaw config is invalid; fix it before migrating file-transfer approvals");
+    throw new Error("Paddy config is invalid; fix it before migrating file-transfer approvals");
   }
   const sourceRoot = asNullableRecord(prepared.snapshot.sourceConfig);
   if (asNullableRecord(sourceRoot?.gateway)?.mode === "remote") {
@@ -66,7 +66,7 @@ async function runApprovalMigration(options: MigrationOptions): Promise<void> {
       status: "needs-input",
       changed: false,
       items,
-      command: "openclaw file-transfer approvals migrate",
+      command: "paddy file-transfer approvals migrate",
     };
     if (options.json) {
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
@@ -74,7 +74,7 @@ async function runApprovalMigration(options: MigrationOptions): Promise<void> {
       return;
     }
     throw new Error(
-      "File-transfer permissions need interactive review. Run `openclaw file-transfer approvals migrate` in a terminal.",
+      "File-transfer permissions need interactive review. Run `paddy file-transfer approvals migrate` in a terminal.",
     );
   }
 
@@ -112,7 +112,7 @@ async function runApprovalMigration(options: MigrationOptions): Promise<void> {
     "Migration plan",
   );
   await prompt.note(
-    "Older OpenClaw versions cannot read the migrated format. To downgrade, restore the adjacent config backup shown after migration before starting the older version.",
+    "Older Paddy versions cannot read the migrated format. To downgrade, restore the adjacent config backup shown after migration before starting the older version.",
     "Downgrade",
   );
   if (options.dryRun) {

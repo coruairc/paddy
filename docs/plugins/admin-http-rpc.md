@@ -9,7 +9,7 @@ title: "Admin HTTP RPC plugin"
 
 The bundled `admin-http-rpc` plugin exposes an allowlisted set of Gateway control-plane methods over HTTP, for trusted host automation that cannot keep a Gateway WebSocket connection open.
 
-It ships with OpenClaw but is disabled by default; when disabled, the route is not registered. When enabled, it adds `POST /api/v1/admin/rpc` on the same listener as the Gateway (`http://<gateway-host>:<port>/api/v1/admin/rpc`).
+It ships with Paddy but is disabled by default; when disabled, the route is not registered. When enabled, it adds `POST /api/v1/admin/rpc` on the same listener as the Gateway (`http://<gateway-host>:<port>/api/v1/admin/rpc`).
 
 Enable it only for private host tooling, tailnet automation, or a trusted internal ingress. Never expose this route directly to the public internet.
 
@@ -22,7 +22,7 @@ Admin HTTP RPC is a full operator control-plane surface: any caller that passes 
 - The route is reachable only on loopback, a tailnet, or a private authenticated ingress.
 - You have reviewed the allowed methods and they match the automation you plan to run.
 
-For OpenClaw clients and interactive tools that can keep a Gateway WebSocket connection open, use WebSocket RPC instead.
+For Paddy clients and interactive tools that can keep a Gateway WebSocket connection open, use WebSocket RPC instead.
 
 ## Enable
 
@@ -31,7 +31,7 @@ Enable the bundled plugin:
 <Tabs>
   <Tab title="CLI">
     ```bash
-    openclaw plugins enable admin-http-rpc
+    paddy plugins enable admin-http-rpc
     ```
   </Tab>
   <Tab title="Config">
@@ -50,13 +50,13 @@ Enable the bundled plugin:
 Enablement applies to a running Gateway automatically. If it is offline, start
 it to register the route. With the default hybrid reload mode, plugin config and
 load-path changes also apply automatically. After source or manifest edits, run
-`openclaw plugins reload admin-http-rpc`. See
+`paddy plugins reload admin-http-rpc`. See
 [Apply changes and inspect](/plugins/manage-plugins#apply-changes-and-inspect).
 
 Disable it when you no longer need the HTTP surface:
 
 ```bash
-openclaw plugins disable admin-http-rpc
+paddy plugins disable admin-http-rpc
 ```
 
 ## Verify the route
@@ -181,14 +181,13 @@ HTTP status follows the error code:
 - cron: `cron.status`, `cron.list`, `cron.get`, `cron.runs`, `cron.add`, `cron.update`, `cron.remove`, `cron.run`
 - devices: `device.pair.list`, `device.pair.approve`, `device.pair.reject`, `device.pair.remove`
 - nodes: `node.list`, `node.describe`, `node.pair.list`, `node.pair.approve`, `node.pair.reject`, `node.pair.remove`, `node.rename`
-- tasks: `tasks.list`, `tasks.get`, `tasks.cancel`
 - diagnostics: `doctor.memory.status`, `update.status`
 
 Other Gateway methods are blocked until they are intentionally added.
 
 ## WebSocket comparison
 
-The normal Gateway WebSocket RPC path remains the preferred control-plane API for OpenClaw clients. Use admin HTTP RPC only for host tooling that needs a request/response HTTP surface.
+The normal Gateway WebSocket RPC path remains the preferred control-plane API for Paddy clients. Use admin HTTP RPC only for host tooling that needs a request/response HTTP surface.
 
 Shared-token WebSocket clients without a trusted device identity cannot self-declare admin scopes during connect. Admin HTTP RPC deliberately follows the existing trusted HTTP operator model: when the plugin is enabled, shared-secret bearer auth is treated as full operator access for this admin surface.
 

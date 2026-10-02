@@ -285,7 +285,7 @@ describe("repairCanonicalSqliteIndexes", () => {
 
       expect(() =>
         verifyAndRepairCanonicalSqliteIndexes(db, "test database", CANONICAL_SCHEMA),
-      ).toThrow(/integrity_check failed.*openclaw doctor --fix/iu);
+      ).toThrow(/integrity_check failed.*paddy doctor --fix/iu);
       expect(db.prepare("PRAGMA integrity_check").get()?.integrity_check).not.toBe("ok");
     } finally {
       db.close();
@@ -380,7 +380,7 @@ describe("repairCanonicalSqliteIndexes", () => {
       ).toEqual([]);
 
       expect(() => repairCanonicalSqliteIndexes(db, "test database", CANONICAL_SCHEMA)).toThrow(
-        /integrity_check failed.*openclaw doctor --fix/iu,
+        /integrity_check failed.*paddy doctor --fix/iu,
       );
       expect(db.prepare("PRAGMA integrity_check").get()?.integrity_check).not.toBe("ok");
     } finally {

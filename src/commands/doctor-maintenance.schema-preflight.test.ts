@@ -89,7 +89,9 @@ it("admits a supported legacy registry without weakening runtime target validati
   try {
     expect(maintenance).toBeDefined();
     expect(fs.readFileSync(fixture.databasePath)).toEqual(before);
-    expect(resolveRuntimeTargets).toThrow("legacy agent database registry schema");
+    expect(() => maintenance?.run(resolveRuntimeTargets)).toThrow(
+      "legacy agent database registry schema",
+    );
   } finally {
     await maintenance?.release();
   }
@@ -220,7 +222,7 @@ it.each(["missing-index", "wrong-index", "missing-table"] as const)(
             [
               "Doctor could not complete repair because persisted database readiness could not be verified:",
               `state ${initial.path}: SQLite schema is incomplete or noncanonical for ${initial.path}: missing table task_runs; run openclaw doctor --fix to repair it.`,
-              "Stop OpenClaw processes, then restore the affected database from a verified backup.",
+              "Stop Paddy processes, then restore the affected database from a verified backup.",
             ].join("\n"),
           );
           expect(mocks.outro).not.toHaveBeenCalledWith("Doctor complete.");

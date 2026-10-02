@@ -3,7 +3,6 @@
 import {
   defineLegacyConfigMigration,
   getRecord,
-  type LegacyConfigMigrationContext,
   type LegacyConfigMigrationSpec,
   type LegacyConfigRule,
 } from "../../../config/legacy.shared.js";
@@ -11,16 +10,15 @@ import {
 const UNSUPPORTED_OTEL_GRPC_PROTOCOL_RULE: LegacyConfigRule = {
   path: ["diagnostics", "otel", "protocol"],
   message:
-    'diagnostics.otel.protocol = "grpc" is no longer accepted because gRPC export is not implemented. Run "openclaw doctor --fix", then configure an OTLP/HTTP collector before re-enabling telemetry.',
+    'diagnostics.otel.protocol = "grpc" is no longer accepted because gRPC export is not implemented. Run "paddy doctor --fix", then configure an OTLP/HTTP collector before re-enabling telemetry.',
   match: (value) => value === "grpc",
 };
 
 function hasLegacyGrpcOtlpSignals(otel: Record<string, unknown>): boolean {
-  const logsExporter = typeof otel.logsExporter === "string" ? otel.logsExporter : undefined;
   return (
     otel.traces !== false ||
     otel.metrics !== false ||
-    (otel.logs === true && logsExporter !== "stdout")
+    (otel.logs === true && otel.logsExporter !== "stdout")
   );
 }
 
@@ -30,7 +28,7 @@ export const LEGACY_CONFIG_MIGRATIONS_RUNTIME_DIAGNOSTICS: LegacyConfigMigration
     id: "diagnostics.otel.grpc-protocol",
     describe: "Remove unsupported diagnostics.otel.protocol grpc configs",
     legacyRules: [UNSUPPORTED_OTEL_GRPC_PROTOCOL_RULE],
-    apply: (raw, changes, context?: LegacyConfigMigrationContext) => {
+    apply: (raw, changes, context) => {
       const otel = getRecord(getRecord(raw.diagnostics)?.otel);
       const resolvedRoot = getRecord(context?.resolvedRaw ?? raw);
       const resolvedOtel = getRecord(getRecord(resolvedRoot?.diagnostics)?.otel);

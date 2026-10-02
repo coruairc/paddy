@@ -1,5 +1,5 @@
 ---
-summary: "Route channel accounts and conversations to the right OpenClaw agent"
+summary: "Route channel accounts and conversations to the right Paddy agent"
 title: "Agent bindings"
 doc-schema-version: 1
 read_when:
@@ -8,7 +8,7 @@ read_when:
   - Deciding whether one agent is sufficient
 ---
 
-When a message arrives on a channel, OpenClaw has to decide which agent answers it. An agent binding makes that choice for a slice of your traffic — each binding names an `agentId` and matches channel facts such as the account, peer, guild, team, or Discord roles, and the matched agent owns the resulting session.
+When a message arrives on a channel, Paddy has to decide which agent answers it. An agent binding makes that choice for a slice of your traffic — each binding names an `agentId` and matches channel facts such as the account, peer, guild, team, or Discord roles, and the matched agent owns the resulting session.
 
 Bindings only pick the agent. They do not create channel accounts and they do not grant access — a binding is consulted only after the channel has already accepted the message through its normal pairing, allowlist, and account rules.
 
@@ -69,8 +69,8 @@ Older configurations may still contain one `default: true` marker. [Doctor migra
 Valid binding changes apply automatically under the default `hybrid` [reload mode](/gateway/configuration/hot-reload). If `gateway.reload.mode` is `off`, restart the Gateway to apply them. Then verify the roster and channel accounts:
 
 ```bash
-openclaw agents list --bindings
-openclaw channels status --probe
+paddy agents list --bindings
+paddy channels status --probe
 ```
 
 ## Match a specific conversation

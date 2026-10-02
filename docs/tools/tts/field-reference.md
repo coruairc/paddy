@@ -28,13 +28,13 @@ and resolved values still fail startup or reject the update.
       Auto-TTS mode. `inbound` only sends audio after an inbound voice message; `tagged` only sends audio when the reply includes `[[tts:...]]` directives or a `[[tts:text]]` block.
     </ParamField>
     <ParamField path="enabled" type="boolean" deprecated>
-      Legacy toggle. `openclaw doctor --fix` migrates this to `auto`.
+      Legacy toggle. `paddy doctor --fix` migrates this to `auto`.
     </ParamField>
     <ParamField path="mode" type='"final" | "all"' default="final">
       `"all"` includes tool/block replies in addition to final replies.
     </ParamField>
     <ParamField path="provider" type="string">
-      Speech provider id. When unset, OpenClaw uses the first configured provider in registry auto-select order. Legacy `provider: "edge"` is rewritten to `"microsoft"` by `openclaw doctor --fix`.
+      Speech provider id. When unset, Paddy uses the first configured provider in registry auto-select order. Legacy `provider: "edge"` is rewritten to `"microsoft"` by `paddy doctor --fix`.
     </ParamField>
     <ParamField path="persona" type="string">
       Active persona id from `personas`. Normalized to lowercase.
@@ -49,7 +49,7 @@ and resolved values still fail startup or reject the update.
       Allow the model to emit TTS directives. `enabled` defaults to `true`; `allowProvider` defaults to `false`.
     </ParamField>
     <ParamField path="providers.<id>" type="object">
-      Provider-owned settings keyed by speech provider id. Legacy direct blocks (`tts.openai`, `.elevenlabs`, `.microsoft`, `.edge`) are rewritten by `openclaw doctor --fix`; commit only `tts.providers.<id>`.
+      Provider-owned settings keyed by speech provider id. Legacy direct blocks (`tts.openai`, `.elevenlabs`, `.microsoft`, `.edge`) are rewritten by `paddy doctor --fix`; commit only `tts.providers.<id>`.
     </ParamField>
     <ParamField path="maxTextLength" type="number" default="4096">
       Hard cap for TTS input characters. `/tts audio`, `tts.convert`, and `tts.speak` fail if exceeded.
@@ -83,12 +83,13 @@ and resolved values still fail startup or reject the update.
 
   <Accordion title="Google Gemini">
     <ParamField path="apiKey" type="string">Falls back to `GEMINI_API_KEY` / `GOOGLE_API_KEY`. If omitted, TTS can reuse `models.providers.google.apiKey` before env fallback.</ParamField>
-    <ParamField path="model" type="string">Gemini TTS model. Default `gemini-3.1-flash-tts-preview`.</ParamField>
+    <ParamField path="model" type="string">Gemini TTS model. Default `gemini-3.1-flash-tts-preview`. Set `gemini-3.8-flash-tts` or `gemini-3.8-flash-lite-tts` to opt in to Gemini 3.8, which Paddy sends through the Interactions API. `gemini-2.5-flash-preview-tts` and `gemini-2.5-pro-preview-tts` also work.</ParamField>
     <ParamField path="speakerVoice" type="string">Gemini prebuilt voice name. Default `Kore`. Legacy aliases: `voiceName`, `voice`.</ParamField>
-    <ParamField path="audioProfile" type="string">Natural-language style prompt prepended before spoken text.</ParamField>
-    <ParamField path="speakerName" type="string">Optional speaker label prepended before spoken text when your prompt uses a named speaker.</ParamField>
-    <ParamField path="promptTemplate" type='"audio-profile-v1"'>Set to `audio-profile-v1` to wrap active persona prompt fields in a deterministic Gemini TTS prompt structure.</ParamField>
-    <ParamField path="personaPrompt" type="string">Google-specific extra persona prompt text appended to the template's Director's Notes.</ParamField>
+    <ParamField path="audioProfile" type="string">Natural-language delivery style. Gemini 3.8 sends it as `speech_metadata.style`. Gemini 3.1 and 2.5 preview models prepend it to the spoken text.</ParamField>
+    <ParamField path="speakerName" type="string">Optional speaker label. Gemini 3.8 sends it as the structured `speech_metadata.speaker` label alongside the single configured voice. Older preview models prepend `Speaker name:` before the spoken text.</ParamField>
+    <ParamField path="speakers" type="array">Exactly two `{ speaker, voice, style? }` entries. On Gemini 3.8, lines that start with one of the two configured names and a colon (with or without a following space) become conversational turns and the name is not spoken; any other line, including other `Word: text` prose, stays inside the current turn. Transcripts without configured labels stay single-voice.</ParamField>
+    <ParamField path="promptTemplate" type='"audio-profile-v1"'>On Gemini 3.1 and 2.5 preview models, wrap active persona fields in a deterministic prompt. On Gemini 3.8, `personaPrompt` is sent as `speech_metadata.style` and is not read aloud; the persona label is not sent.</ParamField>
+    <ParamField path="personaPrompt" type="string">Google-specific persona direction. Gemini 3.8 sends it as style metadata. Older preview models append it to the audio-profile template's Director's Notes.</ParamField>
     <ParamField path="baseUrl" type="string">Only `https://generativelanguage.googleapis.com` is accepted.</ParamField>
   </Accordion>
 
@@ -117,20 +118,20 @@ and resolved values still fail startup or reject the update.
     <ParamField path="cwd" type="string">Optional command working directory.</ParamField>
     <ParamField path="env" type="Record<string, string>">Optional environment overrides for the command.</ParamField>
 
-    Command stdout and generated or converted audio are limited to 50 MiB. Diagnostic stderr is limited to 1 MiB. OpenClaw terminates the command and fails synthesis when either limit is exceeded.
+    Command stdout and generated or converted audio are limited to 50 MiB. Diagnostic stderr is limited to 1 MiB. Paddy terminates the command and fails synthesis when either limit is exceeded.
 
   </Accordion>
 
   <Accordion title="Microsoft (no API key)">
     <ParamField path="enabled" type="boolean" default="true">Allow Microsoft speech usage.</ParamField>
-    <ParamField path="speakerVoice" type="string">Microsoft neural voice name (e.g. `en-US-MichelleNeural`). Legacy alias: `voice`. If the default English voice is in effect and reply text is CJK-dominant, OpenClaw auto-switches to `zh-CN-XiaoxiaoNeural`.</ParamField>
+    <ParamField path="speakerVoice" type="string">Microsoft neural voice name (e.g. `en-US-MichelleNeural`). Legacy alias: `voice`. If the default English voice is in effect and reply text is CJK-dominant, Paddy auto-switches to `zh-CN-XiaoxiaoNeural`.</ParamField>
     <ParamField path="lang" type="string">Language code (e.g. `en-US`).</ParamField>
     <ParamField path="outputFormat" type="string">Microsoft output format. Default `audio-24khz-48kbitrate-mono-mp3`. Not all formats are supported by the bundled Edge-backed transport.</ParamField>
     <ParamField path="rate / pitch / volume" type="string">Percent strings (e.g. `+10%`, `-5%`).</ParamField>
     <ParamField path="saveSubtitles" type="boolean">Write JSON subtitles alongside the audio file.</ParamField>
     <ParamField path="proxy" type="string">Proxy URL for Microsoft speech requests.</ParamField>
     <ParamField path="timeoutMs" type="number">Request timeout override (ms).</ParamField>
-    <ParamField path="edge.*" type="object" deprecated>Legacy alias. Run `openclaw doctor --fix` to rewrite persisted config to `providers.microsoft`.</ParamField>
+    <ParamField path="edge.*" type="object" deprecated>Legacy alias. Run `paddy doctor --fix` to rewrite persisted config to `providers.microsoft`.</ParamField>
   </Accordion>
 
   <Accordion title="MiniMax">
@@ -148,7 +149,7 @@ and resolved values still fail startup or reject the update.
     <ParamField path="model" type="string">OpenAI TTS model id. Default `gpt-4o-mini-tts`.</ParamField>
     <ParamField path="speakerVoice" type="string">Voice name (e.g. `alloy`, `cedar`). Default `coral`. Legacy alias: `voice`.</ParamField>
     <ParamField path="instructions" type="string">Explicit OpenAI `instructions` field. When set, persona prompt fields are **not** auto-mapped.</ParamField>
-    <ParamField path="responseFormat" type='"mp3" | "opus" | "wav"'>Explicit response format. When omitted, OpenClaw selects Opus for voice-note targets and MP3 otherwise. Use `wav` for compatible local endpoints that do not encode compressed audio.</ParamField>
+    <ParamField path="responseFormat" type='"mp3" | "opus" | "wav"'>Explicit response format. When omitted, Paddy selects Opus for voice-note targets and MP3 otherwise. Use `wav` for compatible local endpoints that do not encode compressed audio.</ParamField>
     <ParamField path="extraBody / extra_body" type="Record<string, unknown>">Extra JSON fields merged into `/audio/speech` request bodies after generated OpenAI TTS fields. Use this for OpenAI-compatible endpoints such as Kokoro that require provider-specific keys like `lang`; unsafe prototype keys are ignored.</ParamField>
     <ParamField path="baseUrl" type="string">
       Override the OpenAI TTS endpoint. Resolution order: config → `OPENAI_TTS_BASE_URL` → `https://api.openai.com/v1`. Non-default values are treated as OpenAI-compatible TTS endpoints, so custom model and voice names are accepted, and `speed` loses its `0.25..4.0` range check.
@@ -178,7 +179,7 @@ and resolved values still fail startup or reject the update.
   <Accordion title="xAI">
     <ParamField path="apiKey" type="string">Env: `XAI_API_KEY`.</ParamField>
     <ParamField path="baseUrl" type="string">Default `https://api.x.ai/v1`. Env: `XAI_BASE_URL`.</ParamField>
-    <ParamField path="speakerVoiceId" type="string">Default `eve`. With auth, `openclaw infer tts voices --provider xai` fetches the current built-in catalog; without auth it lists offline fallbacks `ara`, `eve`, `leo`, `rex`, and `sal`. Account custom voice IDs are forwarded even when absent from the built-in list. Legacy alias: `voiceId`.</ParamField>
+    <ParamField path="speakerVoiceId" type="string">Default `eve`. With auth, `paddy infer tts voices --provider xai` fetches the current built-in catalog; without auth it lists offline fallbacks `ara`, `eve`, `leo`, `rex`, and `sal`. Account custom voice IDs are forwarded even when absent from the built-in list. Legacy alias: `voiceId`.</ParamField>
     <ParamField path="language" type="string">BCP-47 language code or `auto`. Default `en`.</ParamField>
     <ParamField path="responseFormat" type='"mp3" | "wav" | "pcm" | "mulaw" | "alaw"'>Default `mp3`.</ParamField>
     <ParamField path="speed" type="number">Provider-native speed override, `0.7..1.5`.</ParamField>
@@ -190,6 +191,6 @@ and resolved values still fail startup or reject the update.
     <ParamField path="model" type="string">Default `mimo-v2.5-tts`. Env: `XIAOMI_TTS_MODEL`. Also supports `mimo-v2.5-tts-voicedesign`.</ParamField>
     <ParamField path="speakerVoice" type="string">Default `mimo_default` for preset-voice models. Env: `XIAOMI_TTS_VOICE`. Legacy alias: `voice`. Not sent for `mimo-v2.5-tts-voicedesign`.</ParamField>
     <ParamField path="format" type='"mp3" | "wav"'>Default `mp3`. Env: `XIAOMI_TTS_FORMAT`.</ParamField>
-    <ParamField path="style" type="string">Optional natural-language style instruction sent as the user message; not spoken. For `mimo-v2.5-tts-voicedesign`, this is the voice-design prompt; OpenClaw supplies a default when omitted.</ParamField>
+    <ParamField path="style" type="string">Optional natural-language style instruction sent as the user message; not spoken. For `mimo-v2.5-tts-voicedesign`, this is the voice-design prompt; Paddy supplies a default when omitted.</ParamField>
   </Accordion>
 </AccordionGroup>

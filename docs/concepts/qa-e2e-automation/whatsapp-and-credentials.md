@@ -10,11 +10,11 @@ title: "WhatsApp QA and credentials"
 ## WhatsApp QA
 
 ```bash
-pnpm openclaw qa whatsapp
+pnpm paddy qa whatsapp
 ```
 
 Targets two dedicated WhatsApp Web accounts: a driver account controlled by
-the harness and a SUT account started by the child OpenClaw gateway through
+the harness and a SUT account started by the child Paddy gateway through
 the bundled WhatsApp plugin.
 
 Required env when `--credential-source env`:

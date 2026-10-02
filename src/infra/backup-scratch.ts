@@ -209,7 +209,7 @@ async function cleanupBackupScratchDirectory(
     if (await wasScratchReclaimed(directory)) {
       return { status: "already-reclaimed", directory };
     }
-    const warning = `Backup scratch cleanup failed at ${directory}: ${formatErrorMessage(error)}. Run \`openclaw doctor --fix\` to retry cleanup.`;
+    const warning = `Backup scratch cleanup failed at ${directory}: ${formatErrorMessage(error)}. Run \`paddy doctor --fix\` to retry cleanup.`;
     reportScratchMessage(warning, log);
     return { status: "failed", warning };
   }

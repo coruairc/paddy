@@ -8,6 +8,7 @@ import {
   type SystemChangesListParams,
   type SystemChangesListResult,
 } from "../../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   CONFIG_AUDIT_MAX_ENTRIES,
   CONFIG_AUDIT_SCOPE,
@@ -172,7 +173,7 @@ function configWriteSummary(
         : source === "plugin-install"
           ? "Plugin installation updated configuration"
           : source === "system-agent"
-            ? "OpenClaw updated configuration"
+            ? `${PRODUCT_NAME} updated configuration`
             : source === "cli"
               ? "CLI updated configuration"
               : "Configuration updated";
@@ -211,7 +212,7 @@ function toConfigCandidate(
         at: recordTime(value.ts, record.createdAt),
         kind: "external-edit",
         source: "external",
-        summary: summarizePaths("Configuration edited outside OpenClaw", changedPaths),
+        summary: summarizePaths(`Configuration edited outside ${PRODUCT_NAME}`, changedPaths),
         ...(changedPaths ? { changedPaths } : {}),
         ...(!value.valid ? { invalid: true } : {}),
         ...(value.opaqueChange ? { opaqueChange: true } : {}),

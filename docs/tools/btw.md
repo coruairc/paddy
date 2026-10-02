@@ -8,7 +8,7 @@ title: "BTW side questions"
 
 `/btw` (alias `/side`) asks a quick side question about the **current
 session** without adding it to conversation history. It is modeled after
-Claude Code's `/btw`, adapted to OpenClaw's Gateway and multi-channel
+Claude Code's `/btw`, adapted to Paddy's Gateway and multi-channel
 architecture.
 
 The two side-question contracts are deliberately separate. BTW is a one-shot question on the session's actual model, preserving harness behavior and Codex thread-fork continuity for channel ingress (WhatsApp, Telegram, and Discord), the TUI, and embedded `tui --local`; the TUI stays on BTW by design. Side chat uses a persistent, read-only RPC thread for Control UI-class clients. Its first question lazily prepares bounded visible context from the selected session; a temporary history failure remains retryable and does not run as an empty session. Channels cannot use Side chat because they do not have an RPC connection.
@@ -51,10 +51,10 @@ everything before it is inherited reference context, not active instructions,
 and that only messages after the boundary are live. `/btw` requires an
 existing Codex thread; send a normal message first.
 
-Eligible Codex side questions can use the same OpenClaw Gateway shell tools as
+Eligible Codex side questions can use the same Paddy Gateway shell tools as
 the main thread. Canceling a side question or reaching its timeout stops native
 background terminals owned by the side thread before releasing it. Main-thread
-terminals and OpenClaw-managed background jobs keep their existing lifetime.
+terminals and Paddy-managed background jobs keep their existing lifetime.
 
 For CLI runtime aliases, BTW invokes the owning CLI backend in one-shot
 side-question mode: it seeds sanitized conversation context into a fresh CLI

@@ -440,7 +440,7 @@ export async function runPostSessionPluginDoctorStateRepairs(params: {
           ...warnings,
           ...collected.plans.flatMap((plan) => plan.preview),
           ...(collected.plans.length
-            ? ['Run "openclaw doctor --fix" to repair plugin session ownership.']
+            ? ['Run "paddy doctor --fix" to repair plugin session ownership.']
             : []),
         ],
       };

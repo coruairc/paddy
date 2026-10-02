@@ -2,6 +2,7 @@
 import type { Command } from "commander";
 import { detectCurrentSqliteCapabilities, nodeRuntimeFailure } from "../../../node-sqlite.mjs";
 import { defaultRuntime, ExitError } from "../../runtime.js";
+import { CLI_NAME } from "../cli-name.js";
 import { formatErrorMessage as formatError, runCommandWithRuntime } from "../cli-utils.js";
 import { hasExplicitOptions } from "../command-options.js";
 import { isDoctorMachineOutput } from "../doctor-output-mode.js";
@@ -123,7 +124,7 @@ export function registerMaintenanceCommands(
       }
       if (hasSessionSqliteOnlyDoctorOptions(opts)) {
         return exitDoctorError(
-          "doctor session SQLite options require --session-sqlite. Use `openclaw doctor --session-sqlite dry-run ...`.",
+          `doctor session SQLite options require --session-sqlite. Use \`${CLI_NAME} doctor --session-sqlite dry-run ...\`.`,
           opts.json === true || (opts.lint === true && !process.stdout.isTTY),
         );
       }
@@ -182,7 +183,7 @@ export function registerMaintenanceCommands(
       }
       if (opts.lint !== true && hasLintOnlyDoctorOptions(opts)) {
         return exitDoctorError(
-          "doctor lint options require --lint. Use `openclaw doctor --lint ...`.",
+          `doctor lint options require --lint. Use \`${CLI_NAME} doctor --lint ...\`.`,
           opts.json === true,
         );
       }

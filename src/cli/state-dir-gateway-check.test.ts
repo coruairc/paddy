@@ -66,7 +66,7 @@ describe("state-dir-gateway-check", () => {
         gatewayConfigPath,
         source: "live Gateway",
         mode: "refuse",
-        command: "openclaw configure",
+        command: "paddy configure",
       }),
     ).toEqual({ kind: "allow" });
   });
@@ -129,7 +129,7 @@ describe("state-dir-gateway-check", () => {
       });
 
       await expect(
-        checkCliGatewayStateDir({ command: "openclaw configure", config: {} }),
+        checkCliGatewayStateDir({ command: "paddy configure", config: {} }),
       ).resolves.toMatchObject({
         kind: "refuse",
         message: expect.stringContaining(path.join(serviceRuntimeHome, ".openclaw")),
@@ -181,7 +181,7 @@ describe("state-dir-gateway-check", () => {
 
   it("allows an offline command and does not probe an ordinary transport failure", async () => {
     await expect(
-      checkCliGatewayStateDir({ command: "openclaw configure", config: {} }),
+      checkCliGatewayStateDir({ command: "paddy configure", config: {} }),
     ).resolves.toEqual({ kind: "allow" });
     expect(mocks.probeGateway).not.toHaveBeenCalled();
   });
@@ -189,7 +189,7 @@ describe("state-dir-gateway-check", () => {
   it("warns for a remote Gateway without local inspection", async () => {
     await expect(
       checkCliGatewayStateDir({
-        command: "openclaw configure",
+        command: "paddy configure",
         config: { gateway: { mode: "remote", remote: { url: "wss://gateway.example" } } },
       }),
     ).resolves.toMatchObject({ kind: "warn" });
@@ -201,7 +201,7 @@ describe("state-dir-gateway-check", () => {
     const error = new Error("private-service-inspection-canary");
     mocks.readServiceCommand.mockRejectedValue(error);
 
-    const result = await checkCliGatewayStateDir({ command: "openclaw configure", config: {} });
+    const result = await checkCliGatewayStateDir({ command: "paddy configure", config: {} });
     expect(result).toMatchObject({
       kind: "warn",
       message: expect.stringContaining("could not be verified"),
@@ -216,13 +216,13 @@ describe("state-dir-gateway-check", () => {
     });
 
     await expect(
-      checkCliGatewayStateDir({ command: "openclaw configure", config: {} }),
+      checkCliGatewayStateDir({ command: "paddy configure", config: {} }),
     ).resolves.toMatchObject({ kind: "warn" });
   });
 
   it("redacts credentials in remote target warnings", async () => {
     const result = await checkCliGatewayStateDir({
-      command: "openclaw configure",
+      command: "paddy configure",
       config: {
         gateway: {
           mode: "remote",

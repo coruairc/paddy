@@ -87,7 +87,7 @@ export async function verifyBuzzAfterSetup(params: {
     );
     if (!hasSuccessfulBuzzProbe(status, params.accountId, params.target)) {
       params.runtime.log(
-        `Buzz config was saved and applied, but the Gateway did not confirm authenticated membership in ${params.target}. Run \`openclaw channels status --probe\` before sending.`,
+        `Buzz config was saved and applied, but the Gateway did not confirm authenticated membership in ${params.target}. Run \`paddy channels status --probe\` before sending.`,
       );
       return;
     }
@@ -96,12 +96,12 @@ export async function verifyBuzzAfterSetup(params: {
     );
   } catch (error) {
     if (isGatewayNotRunningError(error)) {
-      params.runtime.log("Buzz config was saved. Start OpenClaw to connect: openclaw gateway");
+      params.runtime.log("Buzz config was saved. Start Paddy to connect: paddy gateway");
       return;
     }
     const message = error instanceof Error ? error.message : String(error);
     params.runtime.log(
-      `Buzz config was saved, but post-setup verification did not complete: ${message}. Run \`openclaw channels status --probe\` after the Gateway reloads.`,
+      `Buzz config was saved, but post-setup verification did not complete: ${message}. Run \`paddy channels status --probe\` after the Gateway reloads.`,
     );
   }
 }

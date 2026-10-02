@@ -1,4 +1,5 @@
 // Defines gateway lifecycle ownership shared by service, restart, and update paths.
+import { PRODUCT_NAME } from "../brand.js";
 import { isDefaultInstallIdentity, resolveNativeServiceProfileConflict } from "../config/paths.js";
 import { resolveGatewayNativeServiceIdentityConflict } from "../daemon/constants.js";
 
@@ -13,14 +14,14 @@ export function isGatewayExternallySupervised(env: NodeJS.ProcessEnv = process.e
 
 export function formatExternalSupervisorActionRequired(action: string): string {
   return [
-    `OpenClaw gateway lifecycle is managed by an external supervisor (${GATEWAY_SUPERVISOR_MODE_ENV}=external).`,
+    `${PRODUCT_NAME} gateway lifecycle is managed by an external supervisor (${GATEWAY_SUPERVISOR_MODE_ENV}=external).`,
     `Use that supervisor to ${action}.`,
   ].join(" ");
 }
 
 export function formatExternalSupervisorUpdateRequired(): string {
   return [
-    `OpenClaw self-update is disabled while gateway lifecycle is managed by an external supervisor (${GATEWAY_SUPERVISOR_MODE_ENV}=external).`,
+    `${PRODUCT_NAME} self-update is disabled while gateway lifecycle is managed by an external supervisor (${GATEWAY_SUPERVISOR_MODE_ENV}=external).`,
     "Use the external supervisor's update workflow so it can stop the gateway, update and finalize the runtime, then restart it safely.",
   ].join(" ");
 }
@@ -49,12 +50,12 @@ export function assertGatewayServiceMutationAllowed(
     const platformName =
       process.platform === "darwin" ? "macOS" : process.platform === "win32" ? "Windows" : "Linux";
     throw new Error(
-      `service management skipped: named profiles cannot override ${serviceIdentityConflict.envKey} for ${platformName} service management. Unset ${serviceIdentityConflict.envKey} so OpenClaw derives the native service identity from OPENCLAW_PROFILE to ${action}, or keep this profile runtime-only without a native service.`,
+      `service management skipped: named profiles cannot override ${serviceIdentityConflict.envKey} for ${platformName} service management. Unset ${serviceIdentityConflict.envKey} so ${PRODUCT_NAME} derives the native service identity from OPENCLAW_PROFILE to ${action}, or keep this profile runtime-only without a native service.`,
     );
   }
   if (!isDefaultInstallIdentity(env)) {
     throw new Error(
-      `${NON_DEFAULT_INSTALL_SERVICE_SKIP_REASON}. Rerun with HOME set to the OS account home, without OPENCLAW_HOME, and with OPENCLAW_STATE_DIR and OPENCLAW_CONFIG_PATH either unset or pointing at the canonical paths for that account home and profile to ${action}.`,
+      `${NON_DEFAULT_INSTALL_SERVICE_SKIP_REASON}. Rerun with HOME set to the OS account home, OPENCLAW_HOME either unset or pointing at that same home, and OPENCLAW_STATE_DIR and OPENCLAW_CONFIG_PATH either unset or pointing at the canonical paths for that account home and profile to ${action}.`,
     );
   }
 }

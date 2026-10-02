@@ -19,23 +19,23 @@ examples, and provider-neutral plugin API.
 
 ## Setup
 
-The decision-provider API was added after released OpenClaw `2026.9.5`.
+The decision-provider API was added after released Paddy `2026.9.5`.
 Packaged ONNX installs require a host and plugin API of at least `2026.9.6`;
 the installer rejects `2026.9.5` before loading the plugin. The native runtime
 belongs to the plugin package and is not bundled into core.
 
 ### Current development checkout
 
-Until a supporting release is available, use an OpenClaw source checkout that
+Until a supporting release is available, use a Paddy source checkout that
 contains both the decision-provider API and `extensions/onnx`. Build that
 checkout with `pnpm install --frozen-lockfile` and `pnpm build`, then enable the
 plugin and select its model using the configuration below. Run commands from
 the checkout:
 
 ```sh
-pnpm openclaw onnx models
-pnpm openclaw onnx download gliclass-edge-v3.0
-pnpm openclaw onnx probe gliclass-edge-v3.0
+pnpm paddy onnx models
+pnpm paddy onnx download gliclass-edge-v3.0
+pnpm paddy onnx probe gliclass-edge-v3.0
 ```
 
 The checkout's co-versioned source plugins use the host's development API. This
@@ -46,10 +46,10 @@ does not make a packaged plugin compatible with a released `2026.9.5` host.
 On a compatible host, install the locally built package and prepare a model:
 
 ```sh
-openclaw plugins install npm-pack:/path/to/openclaw-onnx.tgz
-openclaw onnx models
-openclaw onnx download gliclass-edge-v3.0
-openclaw onnx probe gliclass-edge-v3.0
+paddy plugins install npm-pack:/path/to/paddy-onnx.tgz
+paddy onnx models
+paddy onnx download gliclass-edge-v3.0
+paddy onnx probe gliclass-edge-v3.0
 ```
 
 ### Configuration
@@ -76,7 +76,7 @@ The default artifact directory is `<stateDir>/models/onnx`. Set the plugin's
 `modelDir` to use another directory; the download, verify, and probe commands also
 accept `--model-dir <path>`. Artifacts are grouped by model ID. Downloads use fixed
 repository revisions, sizes, and SHA256 hashes. Existing mismatched files are
-refused rather than overwritten. `openclaw onnx verify <model>` checks an installation.
+refused rather than overwritten. `paddy onnx verify <model>` checks an installation.
 Verification and cached-download checks stream the files, so checking a large
 graph does not require a graph-sized memory buffer. Inference still loads
 verified graph bytes into its worker.
@@ -97,17 +97,17 @@ The hosted presets use FP32 graphs. Model licenses and conversion sources are
 linked from the original [GLiClass](https://github.com/Knowledgator/GLiClass),
 [GLiNER2](https://github.com/fastino-ai/GLiNER2), and
 [DeBERTa model](https://huggingface.co/MoritzLaurer/deberta-v3-base-zeroshot-v2.0)
-pages. Downloaded weights remain separate from OpenClaw's package.
+pages. Downloaded weights remain separate from Paddy's package.
 
 For Instruct models, use the installed plugin's `dist/scripts/export-gliclass-instruct.py`
 helper with the pinned Python packages listed by `--help`. Supply a local copy of
-the exact official checkpoint revision printed by `openclaw onnx models`:
+the exact official checkpoint revision printed by `paddy onnx models`:
 
 ```sh
 python export-gliclass-instruct.py --model edge \
   --source /path/to/checkpoint \
   --output /path/to/models/gliclass-instruct-edge-v1.0
-openclaw onnx verify gliclass-instruct-edge-v1.0 --model-dir /path/to/models
+paddy onnx verify gliclass-instruct-edge-v1.0 --model-dir /path/to/models
 ```
 
 The helper verifies the source files, runs without remote model code or downloads,

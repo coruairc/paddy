@@ -18,7 +18,7 @@ Symptom-first fixes for the iMessage channel, plus the configuration reference l
     ```bash
     imsg rpc --help
     imsg status --json
-    openclaw channels status --probe
+    paddy channels status --probe
     ```
 
     If the probe reports RPC unsupported, update `imsg`. If private API actions are unavailable, run `imsg launch` in the logged-in macOS user session and probe again. If the Gateway is not running on macOS, use the [Remote Mac over SSH](/channels/imessage/setup#remote-mac-over-ssh) setup instead of the default local `imsg` path.
@@ -26,7 +26,7 @@ Symptom-first fixes for the iMessage channel, plus the configuration reference l
   </Accordion>
 
   <Accordion title="Messages send but inbound iMessages do not arrive">
-    First prove whether the message reached the local Mac. If `chat.db` does not change, OpenClaw cannot receive the message even when `imsg status --json` reports a healthy bridge.
+    First prove whether the message reached the local Mac. If `chat.db` does not change, Paddy cannot receive the message even when `imsg status --json` reports a healthy bridge.
 
 ```bash
 imsg chats --limit 10 --json
@@ -35,7 +35,7 @@ sqlite3 ~/Library/Messages/chat.db \
   "select datetime(max(date)/1000000000 + 978307200, 'unixepoch', 'localtime'), max(ROWID) from message;"
 ```
 
-    If phone-sent messages create no new rows, repair the macOS Messages and Apple Push layer before changing OpenClaw config. A one-shot service refresh is often enough:
+    If phone-sent messages create no new rows, repair the macOS Messages and Apple Push layer before changing Paddy config. A one-shot service refresh is often enough:
 
 ```bash
 launchctl kickstart -k system/com.apple.apsd
@@ -43,10 +43,10 @@ launchctl kickstart -k gui/$(id -u)/com.apple.CommCenter
 launchctl kickstart -k gui/$(id -u)/com.apple.identityservicesd
 launchctl kickstart -k gui/$(id -u)/com.apple.imagent
 imsg launch
-openclaw gateway restart
+paddy gateway restart
 ```
 
-    Send a fresh iMessage from the phone and confirm a new `chat.db` row or `imsg watch` event before debugging OpenClaw sessions. Do not run this as a periodic bridge-relaunch loop; repeated `imsg launch` plus gateway restarts during active work can interrupt deliveries and strand in-flight channel runs.
+    Send a fresh iMessage from the phone and confirm a new `chat.db` row or `imsg watch` event before debugging Paddy sessions. Do not run this as a periodic bridge-relaunch loop; repeated `imsg launch` plus gateway restarts during active work can interrupt deliveries and strand in-flight channel runs.
 
   </Accordion>
 
@@ -61,7 +61,7 @@ exec ssh -T messages-mac imsg "$@"
     Then run:
 
 ```bash
-openclaw channels status --probe --channel imessage
+paddy channels status --probe --channel imessage
 ```
 
   </Accordion>
@@ -71,7 +71,7 @@ openclaw channels status --probe --channel imessage
 
     - `channels.imessage.dmPolicy`
     - `channels.imessage.allowFrom`
-    - pairing approvals (`openclaw pairing list imessage`)
+    - pairing approvals (`paddy pairing list imessage`)
 
   </Accordion>
 
@@ -104,7 +104,7 @@ openclaw channels status --probe --channel imessage
     imsg send <handle> "test"
     ```
 
-    Confirm Full Disk Access + Automation are granted for the process context that runs OpenClaw/`imsg`.
+    Confirm Full Disk Access + Automation are granted for the process context that runs Paddy/`imsg`.
 
   </Accordion>
 </AccordionGroup>

@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import { cloneEnvWithPlatformSemantics } from "../config/config-env-vars.js";
 import type { ConfigSnapshotReadMeasure, ConfigSnapshotReadOptions } from "../config/io.js";
 import type { ConfigFileSnapshot } from "../config/types.js";
@@ -15,7 +16,10 @@ import {
   type ConfigPreflightSnapshotRead,
 } from "./config-preflight-snapshot.js";
 import { refreshStartupPluginQuarantine } from "./doctor-config-preflight-plugin-verification.js";
-import { throwStartupMigrationGuardRejected } from "./doctor-startup-migration-refusal.js";
+import {
+  rethrowStartupConfigFailure,
+  throwStartupMigrationGuardRejected,
+} from "./doctor-startup-migration-refusal.js";
 import { cleanupStartupPluginSourceCaptures } from "./startup-plugin-source-captures.js";
 
 export type StartupConfigPreflightOptions = {
@@ -37,7 +41,14 @@ export async function runStartupConfigPreflight(
   options: StartupConfigPreflightOptions,
 ): Promise<StartupConfigPreflightResult> {
   const { withSqliteReadOnlyWorkerScope } = await import("../infra/sqlite-readonly-worker.js");
-  return await withSqliteReadOnlyWorkerScope(() => prepareStartupConfig(options));
+  try {
+    return await withSqliteReadOnlyWorkerScope(() => prepareStartupConfig(options));
+  } catch (error) {
+    if (options.gateway) {
+      rethrowStartupConfigFailure(error);
+    }
+    throw error;
+  }
 }
 
 async function prepareStartupConfig(
@@ -108,7 +119,7 @@ async function prepareStartupConfig(
           heartbeatError =
             error instanceof Error
               ? error
-              : new Error("OpenClaw startup lease heartbeat failed.", { cause: error });
+              : new Error(`${PRODUCT_NAME} startup lease heartbeat failed.`, { cause: error });
         }
       }, 60_000);
       heartbeat.unref();

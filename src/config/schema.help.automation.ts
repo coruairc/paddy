@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 // Defines user-facing config field help text for docs and UI surfaces.
 export const AUTOMATION_FIELD_HELP: Record<string, string> = {
   session:
@@ -142,7 +143,7 @@ export const AUTOMATION_FIELD_HELP: Record<string, string> = {
   "transcripts.autoStart[].meetingUrl":
     "Optional meeting URL for providers that join by URL instead of channel id. Use only trusted meeting links because auto-start may join and capture that meeting.",
   hooks:
-    "Inbound webhook automation surface for mapping external events into wake or agent actions in OpenClaw. Keep this locked down with explicit token/session/agent controls before exposing it beyond trusted networks.",
+    `Inbound webhook automation surface for mapping external events into wake or agent actions in ${PRODUCT_NAME}. Keep this locked down with explicit token/session/agent controls before exposing it beyond trusted networks.`,
   "hooks.enabled":
     "Enables the hooks endpoint and mapping execution pipeline for inbound webhook requests. Keep disabled unless you are actively routing external events into the gateway.",
   "hooks.path":
@@ -312,8 +313,6 @@ export const AUTOMATION_FIELD_HELP: Record<string, string> = {
     "Provider API key used by that speech provider when its plugin requires authenticated TTS access.", // pragma: allowlist secret
   channels:
     "Channel provider configurations plus shared defaults that control access policies, heartbeat visibility, and per-surface behavior. Keep defaults centralized and override per provider only where required.",
-  "channels.mattermost":
-    "Mattermost channel provider configuration for bot credentials, base URL, and message trigger modes. Keep mention/trigger rules strict in high-volume team channels.",
   "channels.defaults":
     "Default channel behavior applied across providers when provider-specific settings are not set. Use this to enforce consistent baseline policy before per-provider tuning.",
   "channels.defaults.groupPolicy":
@@ -350,8 +349,6 @@ export const AUTOMATION_FIELD_HELP: Record<string, string> = {
     'Controls whether heartbeat delivery may target direct/DM chats: "allow" (default) permits DM delivery and "block" suppresses direct-target sends.',
   "agents.entries.*.heartbeat.directPolicy":
     'Per-agent override for heartbeat direct/DM delivery policy; use "block" for agents that should only send heartbeat alerts to non-DM destinations.',
-  "channels.mattermost.configWrites":
-    "Allow Mattermost to write config in response to channel events/commands (default: true).",
   "channels.modelByChannel":
     "Map provider -> channel id / DM peer id -> model override (values are provider/model or aliases).",
   "messages.ackReaction": "Emoji reaction used to acknowledge inbound messages (empty disables).",

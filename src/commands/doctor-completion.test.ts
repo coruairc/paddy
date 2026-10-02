@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as noteModule from "../../packages/terminal-core/src/note.js";
 import { useAutoCleanupTempDirTracker } from "../../test/helpers/temp-dir.js";
+import { CLI_NAME } from "../cli/cli-name.js";
 import {
   COMPLETION_SKIP_PLUGIN_COMMANDS_ENV,
   formatCompletionReloadCommand,
@@ -194,7 +195,7 @@ describe("shell completion health mapping", () => {
       expect.objectContaining({
         severity: "info",
         message: expect.stringContaining("cache is missing"),
-        fixHint: expect.stringContaining("openclaw doctor --fix"),
+        fixHint: expect.stringContaining("paddy doctor --fix"),
       }),
     ]);
     expect(shellCompletionStatusToRepairEffects(current)).toEqual([
@@ -287,7 +288,7 @@ describe("doctorShellCompletion", () => {
 
     await doctorShellCompletion(mockPrompter());
 
-    expect(installCompletionMock).toHaveBeenCalledWith("bash", true, "openclaw");
+    expect(installCompletionMock).toHaveBeenCalledWith("bash", true, "paddy");
     expect(noteSpy).toHaveBeenCalledWith(
       expect.stringContaining("source ~/.bash_profile"),
       "Shell completion",
@@ -314,7 +315,7 @@ describe("doctorShellCompletion", () => {
 
     await doctorShellCompletion(mockPrompter());
 
-    expect(installCompletionMock).toHaveBeenCalledWith(testCase.shell, true, "openclaw");
+    expect(installCompletionMock).toHaveBeenCalledWith(testCase.shell, true, "paddy");
     expect(noteSpy).toHaveBeenCalledWith(
       expect.stringContaining(`source '${path.join(configDir, testCase.profile)}'`),
       "Shell completion",
@@ -365,7 +366,7 @@ describe("doctorShellCompletion", () => {
 
     const command = formatCompletionReloadCommand(
       "bash",
-      resolveCompletionCachePath("bash", "openclaw"),
+      resolveCompletionCachePath("bash", CLI_NAME),
     );
     expect(noteSpy).toHaveBeenCalledWith(expect.stringContaining(command), "Shell completion");
     expect(noteSpy).toHaveBeenCalledWith(

@@ -1,12 +1,12 @@
 ---
-summary: "Use Qwen Cloud through its OpenClaw plugin"
+summary: "Use Qwen Cloud through its Paddy plugin"
 read_when:
-  - You want to use Qwen with OpenClaw
+  - You want to use Qwen with Paddy
   - You have an Alibaba Cloud Token Plan subscription
 title: "Qwen"
 ---
 
-Qwen Cloud is an official external OpenClaw provider plugin with canonical id `qwen`. It targets Qwen Cloud / Alibaba DashScope Standard and Coding Plan endpoints, exposes Token Plan as `qwen-token-plan`, keeps `modelstudio` as a compatibility alias, and independently owns Alibaba's documented `bailian-token-plan` custom-provider id.
+Qwen Cloud is an official external Paddy provider plugin with canonical id `qwen`. It targets Qwen Cloud / Alibaba DashScope Standard and Coding Plan endpoints, exposes Token Plan as `qwen-token-plan`, keeps `modelstudio` as a compatibility alias, and independently owns Alibaba's documented `bailian-token-plan` custom-provider id.
 
 | Property               | Value                                      |
 | ---------------------- | ------------------------------------------ |
@@ -51,13 +51,13 @@ Choose your plan type and follow the setup steps.
         For the **Global** endpoint:
 
         ```bash
-        openclaw onboard --auth-choice qwen-api-key
+        paddy onboard --auth-choice qwen-api-key
         ```
 
         For the **China** endpoint:
 
         ```bash
-        openclaw onboard --auth-choice qwen-api-key-cn
+        paddy onboard --auth-choice qwen-api-key-cn
         ```
       </Step>
       <Step title="Set a default model">
@@ -73,7 +73,7 @@ Choose your plan type and follow the setup steps.
       </Step>
       <Step title="Verify the model is available">
         ```bash
-        openclaw models list --provider qwen
+        paddy models list --provider qwen
         ```
       </Step>
     </Steps>
@@ -100,13 +100,13 @@ Choose your plan type and follow the setup steps.
         For the **Global** endpoint:
 
         ```bash
-        openclaw onboard --auth-choice qwen-standard-api-key
+        paddy onboard --auth-choice qwen-standard-api-key
         ```
 
         For the **China** endpoint:
 
         ```bash
-        openclaw onboard --auth-choice qwen-standard-api-key-cn
+        paddy onboard --auth-choice qwen-standard-api-key-cn
         ```
       </Step>
       <Step title="Set a default model">
@@ -122,7 +122,7 @@ Choose your plan type and follow the setup steps.
       </Step>
       <Step title="Verify the model is available">
         ```bash
-        openclaw models list --provider qwen
+        paddy models list --provider qwen
         ```
       </Step>
     </Steps>
@@ -149,25 +149,25 @@ Choose your plan type and follow the setup steps.
         For the **Global / International** endpoint in Singapore:
 
         ```bash
-        openclaw onboard --auth-choice qwen-token-plan
+        paddy onboard --auth-choice qwen-token-plan
         ```
 
         For the **China** endpoint in Beijing:
 
         ```bash
-        openclaw onboard --auth-choice qwen-token-plan-cn
+        paddy onboard --auth-choice qwen-token-plan-cn
         ```
       </Step>
       <Step title="Verify the provider">
         ```bash
-        openclaw models list --provider qwen-token-plan
-        openclaw agent --model qwen-token-plan/qwen3.7-plus --message "Reply with: token plan ready"
+        paddy models list --provider qwen-token-plan
+        paddy agent --model qwen-token-plan/qwen3.7-plus --message "Reply with: token plan ready"
         ```
       </Step>
     </Steps>
 
     <Note>
-    Alibaba's OpenClaw guide uses `bailian-token-plan` for a manual custom
+    Alibaba's Paddy guide uses `bailian-token-plan` for a manual custom
     provider. The plugin registers that id as a compatibility owner, but new
     configs should use `qwen-token-plan`. An exact custom
     `models.providers.bailian-token-plan` entry keeps ownership of its configured
@@ -175,7 +175,7 @@ Choose your plan type and follow the setup steps.
     </Note>
 
     <Warning>
-    Use Token Plan only for interactive OpenClaw sessions. Do not select it for
+    Use Token Plan only for interactive Paddy sessions. Do not select it for
     cron jobs, unattended scripts, or application backends. Alibaba states that
     non-interactive use can suspend the subscription or revoke its API key.
     </Warning>
@@ -219,7 +219,7 @@ Override with a custom `baseUrl` in config.
 Setup keeps connection settings and model aliases, including `modelstudio` aliases, without copying generated catalog rows into your config.
 Explicit `models.mode: "replace"` keeps catalog seeding enabled; custom model rows stay intact.
 
-OpenClaw discovers models from the configured endpoint's authenticated `/models`
+Paddy discovers models from the configured endpoint's authenticated `/models`
 API. The plugin keeps the following seed metadata for offline discovery and for
 endpoints that return only model IDs. Coding Plan configs omit models that are
 not included in that plan; a Standard model listing does not establish Token
@@ -276,7 +276,7 @@ controls, including Token Plan tool-choice and reasoning-replay requirements.
 `qwen3.8-max` and `qwen3.8-flash` support `off`, `low`, `medium`, and `xhigh`
 thinking, with `xhigh` as the default. `minimal` maps to `low`; `high` and `max`
 map to `xhigh`. This applies to Standard and Token Plan. Both models support
-131,072 output tokens. OpenClaw preserves returned reasoning in its separate
+131,072 output tokens. Paddy preserves returned reasoning in its separate
 `reasoning_content` replay field during tool use, rather than placing it in
 visible answer text.
 
@@ -286,14 +286,14 @@ mapped `reasoning_effort`: Qwen rejects requests containing both. See the
 
 `qwen3.7-max`, `qwen3.7-plus`, `qwen3.6-flash`, and `qwen3.6-plus` are
 reasoning-enabled in the built-in catalog. For reasoning models on the `qwen`
-family, the provider maps OpenClaw thinking levels to DashScope's top-level
+family, the provider maps Paddy thinking levels to DashScope's top-level
 `enable_thinking` request flag: disabled thinking sends `enable_thinking: false`,
 any other level sends `enable_thinking: true`. Custom models can opt into an
 alternate chat-template thinking payload by setting
 `compat.thinkingFormat: "qwen-chat-template"` on the model entry.
 
 Token Plan models are also marked reasoning-capable. `kimi-k2.7-code` and
-`MiniMax-M2.5` are thinking-only, so OpenClaw keeps thinking enabled even when
+`MiniMax-M2.5` are thinking-only, so Paddy keeps thinking enabled even when
 the session requests `/think off`. DeepSeek V4 maps `minimal` through `high` to
 the service's `high` effort and maps `xhigh` or `max` to `max`. GLM 5.2 accepts
 the full `minimal` through `max` range; GLM 5.1 and GLM 5 accept through
@@ -312,7 +312,10 @@ Media understanding is auto-resolved from the configured Qwen auth; no extra
 config is needed. Make sure you are on a Standard (pay-as-you-go) endpoint for
 media understanding to work.
 
-To make Qwen the default video provider:
+### Video generation
+
+Use `QWEN_API_KEY` from a Standard endpoint. To make Qwen the default video
+provider:
 
 ```json5
 {
@@ -324,7 +327,10 @@ To make Qwen the default video provider:
 }
 ```
 
-Each Wan model advertises only its matching runtime mode:
+With exactly one reference image and no video, `wan2.6-t2v` automatically
+uses `wan2.6-i2v`; the result reports the resolved model. This routing applies
+only when a same-generation image-to-video sibling exists in the known model
+catalog. Other requests use the selected model's mode:
 
 | Mode                         | Models                           | Reference limits                      | Max duration | Supported controls                                                   |
 | ---------------------------- | -------------------------------- | ------------------------------------- | ------------ | -------------------------------------------------------------------- |
@@ -338,9 +344,12 @@ documented exact `size`. Wan 2.6 image-to-video sends the `resolution` tier and
 uses the input image's aspect ratio. Wan 2.7 reference-to-video sends
 `media`, `resolution`, and `ratio` and always generates audio.
 
-Reference image/video inputs require remote http(s) URLs; local file paths are
-rejected up front because the DashScope video endpoint does not accept uploaded
-local buffers for those references.
+Image-to-video and Wan 2.7 reference images accept local files or remote
+`http(s)` URLs. Local images are sent as base64 data URIs with a maximum of
+20 MB per image before encoding, matching the [Wan image input
+limit](https://www.alibabacloud.com/help/en/model-studio/image-to-video-api-reference).
+Reference videos and Wan 2.6 reference-to-video images still require remote
+`http(s)` URLs.
 
 <Note>
 See [Video generation](/tools/video-generation) for shared tool parameters, provider selection, and failover behavior.
@@ -355,14 +364,14 @@ See [Video generation](/tools/video-generation) for shared tool parameters, prov
     - China: `dashscope.aliyuncs.com/compatible-mode/v1`
     - Global: `dashscope-intl.aliyuncs.com/compatible-mode/v1`
 
-    OpenClaw omits these models from Coding Plan catalogs. If a Coding Plan
+    Paddy omits these models from Coding Plan catalogs. If a Coding Plan
     endpoint returns an "unsupported model" error, switch to the matching
     Standard or Token Plan endpoint and its dedicated key.
 
   </Accordion>
 
   <Accordion title="Video generation region routing">
-    OpenClaw maps the configured Qwen region to the matching DashScope AIGC host
+    Paddy maps the configured Qwen region to the matching DashScope AIGC host
     before submitting a video job:
 
     - Global/Intl: `https://dashscope-intl.aliyuncs.com`

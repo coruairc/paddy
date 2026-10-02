@@ -1,5 +1,6 @@
 import { asNullableRecord } from "@openclaw/normalization-core/record-coerce";
 import { ErrorCodes } from "../../../packages/gateway-protocol/src/schema/error-codes.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { formatErrorMessage } from "../../infra/errors.js";
 
 export function isStaleGatewayAgentRuntimeIdentityRejection(error: unknown): boolean {
@@ -44,8 +45,8 @@ export function isStaleGatewayNodeInvokeTurnSourceRejection(error: unknown): boo
 export function staleGatewayAgentRuntimeIdentityError(cause: unknown): Error {
   return new Error(
     [
-      "The running Gateway is from an older OpenClaw build and rejected current agent runtime connection metadata.",
-      "Restart the Gateway with `openclaw gateway restart`, then retry.",
+      `The running Gateway is from an older ${PRODUCT_NAME} build and rejected current agent runtime connection metadata.`,
+      "Restart the Gateway with `paddy gateway restart`, then retry.",
     ].join(" "),
     { cause },
   );

@@ -6,11 +6,14 @@ import type { UpdateRunResult } from "./update-runner-types.js";
 
 it.each([
   ["inside-gateway-service", "independent terminal outside the service"],
-  ["service-membership-unverified", "restoring native process inspection"],
+  [
+    "service-membership-unverified",
+    "paddy gateway stop && paddy update --yes && paddy gateway start",
+  ],
   ["inside-gateway-process-tree", "a terminal outside the Gateway process tree"],
   ["service-not-offline", "Stop it through its service owner"],
   ["service-definition-not-writable", "writable service definition"],
-  ["service-context-changed", "Retry openclaw update"],
+  ["service-context-changed", "Retry paddy update"],
 ])("reports the managed-service refusal %s without private diagnostics", async (code, guidance) => {
   const step = {
     name: "managed-service-preflight",

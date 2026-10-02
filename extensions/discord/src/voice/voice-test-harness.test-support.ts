@@ -35,7 +35,7 @@ const {
   createAudioResourceMock,
   resolveAgentRouteMock,
   agentCommandMock,
-  resolveRealtimeBootstrapContextInstructionsMock,
+  resolveRealtimeVoiceAgentContextInstructionsMock,
   resolveVoiceIngressWithParticipantsMock,
   syntheticVoiceAdmissions,
   transcribeAudioFileMock,
@@ -89,8 +89,10 @@ function buildVoiceTestHarness() {
     resolveAgentRouteMock.mockReturnValue({ agentId: "agent-1", sessionKey: "discord:g1:c1" });
     agentCommandMock.mockReset();
     agentCommandMock.mockResolvedValue({ payloads: [] });
-    resolveRealtimeBootstrapContextInstructionsMock.mockReset();
-    resolveRealtimeBootstrapContextInstructionsMock.mockResolvedValue(undefined);
+    resolveRealtimeVoiceAgentContextInstructionsMock.mockReset();
+    resolveRealtimeVoiceAgentContextInstructionsMock.mockResolvedValue(
+      "Agent context: shared voice agent context.",
+    );
     resolveVoiceIngressWithParticipantsMock.mockReset();
     transcribeAudioFileMock.mockReset();
     transcribeAudioFileMock.mockResolvedValue({ text: "hello from voice" });
@@ -162,7 +164,7 @@ function buildVoiceTestHarness() {
       active: false,
       queued: false,
       reason: "no_active_run",
-      message: "There is no active OpenClaw run to steer.",
+      message: "There is no active Paddy run to steer.",
       speak: true,
       show: true,
       suppress: false,
@@ -650,7 +652,7 @@ function buildVoiceTestHarness() {
     createAudioResourceMock,
     resolveAgentRouteMock,
     agentCommandMock,
-    resolveRealtimeBootstrapContextInstructionsMock,
+    resolveRealtimeVoiceAgentContextInstructionsMock,
     resolveVoiceIngressWithParticipantsMock,
     transcribeAudioFileMock,
     resolveAudioInputBudgetMock,

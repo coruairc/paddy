@@ -52,7 +52,7 @@ templates, seeds, and voice settings.
         fallbackPolicy: "preserve-persona",
         providers: {
           google: {
-            model: "gemini-3.1-flash-tts-preview",
+            model: "gemini-3.8-flash-tts",
             speakerVoice: "Algieba",
             promptTemplate: "audio-profile-v1",
           },
@@ -92,7 +92,7 @@ Provider selection runs explicit-first:
 4. `tts.provider`.
 5. Registry auto-select.
 
-For each provider attempt, OpenClaw merges configs in this order:
+For each provider attempt, Paddy merges configs in this order:
 
 1. `tts.providers.<id>`
 2. `tts.personas.<persona>.providers.<id>`

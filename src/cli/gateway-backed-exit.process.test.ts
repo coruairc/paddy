@@ -560,7 +560,7 @@ describe("gateway-backed CLI process exit", () => {
       ok: false,
       error: {
         type: "cli_error",
-        message: expect.stringContaining("OpenClaw config is invalid:"),
+        message: expect.stringContaining("Paddy config is invalid:"),
       },
       issues: [
         {
@@ -570,7 +570,7 @@ describe("gateway-backed CLI process exit", () => {
         },
       ],
     });
-    expect(result.stderr).toContain("OpenClaw config is invalid");
+    expect(result.stderr).toContain("Paddy config is invalid");
     expect(result.stderr).toContain("gateway.mode");
     expect(gateway.calls).toEqual([]);
     await expect(fs.stat(path.join(stateDir, "state", "openclaw.sqlite"))).rejects.toMatchObject({
@@ -814,7 +814,7 @@ describe("gateway-backed CLI process exit", () => {
       const result = await runIsolatedGatewayCli({ args, root, stateDir, configPath });
 
       const message =
-        "Automation not found: missing-job. Run `openclaw cron list` to see recent automation ids.";
+        "Automation not found: missing-job. Run `paddy cron list` to see recent automation ids.";
       expect(result).toMatchObject({ code: 1, signal: null });
       if (machineOutput) {
         expect(JSON.parse(result.stdout)).toEqual({

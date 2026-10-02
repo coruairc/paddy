@@ -65,6 +65,8 @@ vi.mock("../../daemon/runtime-paths.js", async (importOriginal) => ({
 }));
 
 const daemonExec = await import("../../daemon/exec-file.js");
+const runtimePinState = await import("../../daemon/runtime-pin-state.js");
+const configMachineState = await import("../../state/config-machine-state.js");
 const { runDaemonInstall } = await import("./install.js");
 const { clearConfigCache, clearRuntimeConfigSnapshot, readConfigFileSnapshot } =
   await import("../../config/config.js");
@@ -156,6 +158,58 @@ describe("runDaemonInstall integration", () => {
     clearConfigCache();
   });
 
+  it.each(["transient-read", "definition-changed", "validation"] as const)(
+    "reports a saved runtime pin failure during %s without installing",
+    async (failure) => {
+      const runtimePath = path.join(tempHome, "missing", "node");
+      serviceMock.readCommand.mockResolvedValue({
+        programArguments: [runtimePath, "/opt/openclaw/openclaw.mjs", "gateway"],
+      });
+      if (failure === "transient-read") {
+        vi.spyOn(configMachineState, "readConfigMachineState").mockImplementation(() => {
+          throw Object.assign(new Error("EIO: pin state read failed"), { code: "EIO" });
+        });
+      } else if (failure === "definition-changed") {
+        vi.spyOn(configMachineState, "readConfigMachineState").mockReturnValue({
+          version: 1,
+          pin: { runtime: "node", path: runtimePath },
+          definition: "previous-service-definition",
+        });
+      } else {
+        const readRuntimePin = runtimePinState.readDaemonRuntimePinForInstall;
+        vi.spyOn(runtimePinState, "readDaemonRuntimePinForInstall").mockImplementation(
+          (...args) => ({
+            ...readRuntimePin(...args),
+            stored: true,
+            pin: { runtime: "node", path: runtimePath },
+          }),
+        );
+      }
+
+      await expect(runDaemonInstall({ json: true, force: true })).rejects.toThrow("__exit__:1");
+
+      expect(defaultRuntime.exit).toHaveBeenCalledExactlyOnceWith(1);
+      expect(runtimeLogs).toEqual([
+        JSON.stringify(
+          {
+            action: "install",
+            ok: false,
+            error:
+              failure === "transient-read"
+                ? "Runtime pin inspection failed: Error: EIO: pin state read failed"
+                : failure === "definition-changed"
+                  ? "Runtime pin inspection failed: Error: Managed service changed since its runtime pin was saved. Reinstall with an explicit --runtime or --runtime-path to select runtime intent."
+                  : `Invalid runtime pin: Error: Pinned runtime is not executable: ${runtimePath}; reinstall with an explicit --runtime or --runtime-path to replace the saved runtime pin.`,
+          },
+          null,
+          2,
+        ),
+      ]);
+      expect(runtimeErrors).toEqual([]);
+      expect(serviceMock.install).not.toHaveBeenCalled();
+    },
+  );
+
   it.each([false, true])(
     "orders Gateway mode warning, installed result, and reinstall hint (json=%s)",
     async (json) => {
@@ -194,7 +248,7 @@ describe("runDaemonInstall integration", () => {
                 2,
               ),
             ]
-          : [warning, message, "Reinstall with: openclaw gateway install --force"],
+          : [warning, message, "Reinstall with: paddy gateway install --force"],
       );
       expect(runtimeErrors).toEqual([]);
       expect(serviceMock.install).not.toHaveBeenCalled();
@@ -226,7 +280,7 @@ describe("runDaemonInstall integration", () => {
 
       const warnings = ["", "repeat", "repeat"];
       const message =
-        "Gateway service installed. Runtime readiness has not been checked; startup may still be in progress. Check with openclaw gateway status and openclaw health.";
+        "Gateway service installed. Runtime readiness has not been checked; startup may still be in progress. Check with paddy gateway status and paddy health.";
       expect(runtimeLogs).toEqual(
         json
           ? [

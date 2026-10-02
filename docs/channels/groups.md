@@ -7,13 +7,13 @@ title: "Groups"
 sidebarTitle: "Groups"
 ---
 
-OpenClaw applies the same group rules across group-capable channels, including Discord, iMessage, Matrix, Microsoft Teams, QQBot, Signal, Slack, Telegram, WhatsApp, and Zalo.
+Paddy applies the same group rules across group-capable channels, including Discord, iMessage, Matrix, Microsoft Teams, QQBot, Signal, Slack, Telegram, WhatsApp, and Zalo.
 
 For always-on rooms that should provide quiet context unless the agent explicitly sends a visible message, see [Ambient room events](/channels/ambient-room-events).
 
 ## Beginner intro (2 minutes)
 
-OpenClaw "lives" on your own messaging accounts. There is no separate WhatsApp bot user: if **you** are in a group, OpenClaw can see that group and respond there.
+Paddy "lives" on your own messaging accounts. There is no separate WhatsApp bot user: if **you** are in a group, Paddy can see that group and respond there.
 
 Default behavior:
 
@@ -21,7 +21,7 @@ Default behavior:
 - Replies require a mention unless you disable mention gating for a group.
 - Final reply text posts to the room automatically (`visibleReplies: "automatic"`).
 
-Translation: allowlisted senders can trigger OpenClaw by mentioning it.
+Translation: allowlisted senders can trigger Paddy by mentioning it.
 
 <Note>
 **TL;DR**
@@ -108,11 +108,11 @@ These rules govern new message admissions. An already admitted turn keeps its
 captured policy; changing mention rules or sender allowlists does not suppress
 its reply.
 
-The transport must deliver unmentioned messages before OpenClaw can apply the
+The transport must deliver unmentioned messages before Paddy can apply the
 policy:
 
 - Discord needs [Message Content Intent](/channels/discord/setup#quick-setup)
-  enabled in both the Developer Portal and the OpenClaw account configuration.
+  enabled in both the Developer Portal and the Paddy account configuration.
 - Microsoft Teams needs the [`ChannelMessage.Read.Group` RSC permission](/channels/msteams/access-control#mentions-in-bot-created-threads).
 - Slack needs channel membership and the matching [`message.channels` or `message.groups` event subscription](/channels/slack/manifest-and-scopes#manifest-and-scope-checklist).
 - Telegram needs [privacy mode disabled or group-admin status](/channels/telegram/setup#privacy-mode-and-group-visibility).
@@ -125,13 +125,13 @@ the shared [thread mention policy](/plugins/sdk-channel-plugins/mention-policy).
 
 ## Visible replies
 
-For normal group/channel requests, OpenClaw defaults to `messages.groupChat.visibleReplies: "automatic"`: the final assistant text posts to the room as the visible reply.
+For normal group/channel requests, Paddy defaults to `messages.groupChat.visibleReplies: "automatic"`: the final assistant text posts to the room as the visible reply.
 
-Use `messages.groupChat.visibleReplies: "message_tool"` when visible answers must go through `message(action=send)`. This selects the delivery method, not whether a reply is required. It works best with models that reliably follow tool-only delivery. If the model misses the tool and returns substantive final text, OpenClaw keeps that text private and attempts a bounded delivery recovery rather than posting it directly.
+Use `messages.groupChat.visibleReplies: "message_tool"` when visible answers must go through `message(action=send)`. This selects the delivery method, not whether a reply is required. It works best with models that reliably follow tool-only delivery. If the model misses the tool and returns substantive final text, Paddy keeps that text private and attempts a bounded delivery recovery rather than posting it directly.
 
 Use `"automatic"` for models or runtimes that do not reliably follow tool-only delivery: normal text finals post directly to the room, and the agent may still call `message(action=send)` for files, images, or other attachments that cannot ride along with the final text.
 
-If the message tool is unavailable under the active tool policy, OpenClaw falls back to automatic visible replies instead of silently suppressing the response. `openclaw doctor` warns about this mismatch.
+If the message tool is unavailable under the active tool policy, Paddy falls back to automatic visible replies instead of silently suppressing the response. `paddy doctor` warns about this mismatch.
 
 For direct chats and any other source event, `messages.visibleReplies: "message_tool"` applies the same tool-only behavior globally; `messages.groupChat.visibleReplies` remains the more specific override for group/channel rooms. Internal WebChat direct turns default to automatic final-reply delivery so Pi and Codex receive the same visible-reply contract.
 
@@ -190,7 +190,7 @@ Two different controls are involved in group safety:
 - **Trigger authorization**: who can trigger the agent (`groupPolicy`, `groups`, `groupAllowFrom`, channel-specific allowlists).
 - **Context visibility**: what supplemental context is injected into the model (reply/quote text, thread history, forwarded metadata).
 
-By default OpenClaw keeps context as received: allowlists decide who can trigger actions, not what quoted or historical snippets the model sees. To also filter supplemental context, set `contextVisibility`:
+By default Paddy keeps context as received: allowlists decide who can trigger actions, not what quoted or historical snippets the model sees. To also filter supplemental context, set `contextVisibility`:
 
 | Mode                | Behavior                                                                         |
 | ------------------- | -------------------------------------------------------------------------------- |
@@ -466,7 +466,7 @@ Each fact defaults to enabled when the channel produces it. Among bundled channe
 
 Configured `mentionPatterns` are regex fallback triggers. Use them when the
 platform does not expose a native bot mention, or when you want plain text such
-as `openclaw:` to count as a mention. Native platform mentions are separate:
+as `paddy:` to count as a mention. Native platform mentions are separate:
 when Discord, Slack, Telegram, Matrix, Signal, or another channel can prove the message
 explicitly mentioned the bot, that native mention still triggers even if
 configured regex patterns are denied.
@@ -554,7 +554,7 @@ Account-level channel configs can set the same policy under `channels.<channel>.
 Some channel configs support restricting which tools are available **inside a specific group/room/channel**.
 
 - `tools`: allow/deny tools for the whole group (`allow`, `alsoAllow`, `deny`; deny wins).
-- `toolsBySender`: per-sender overrides within the group. Use explicit key prefixes: `channel:<channelId>:<senderId>`, `id:<senderId>`, `e164:<phone>`, `username:<handle>`, `name:<displayName>`, and `"*"` wildcard. Channel ids use canonical OpenClaw channel ids; aliases such as `teams` normalize to `msteams`. Legacy unprefixed keys are still accepted, matched as `id:` only, and log a deprecation warning.
+- `toolsBySender`: per-sender overrides within the group. Use explicit key prefixes: `channel:<channelId>:<senderId>`, `id:<senderId>`, `e164:<phone>`, `username:<handle>`, `name:<displayName>`, and `"*"` wildcard. Channel ids use canonical Paddy channel ids; aliases such as `teams` normalize to `msteams`. Legacy unprefixed keys are still accepted, matched as `id:` only, and log a deprecation warning.
 
 Resolution order (most specific wins):
 

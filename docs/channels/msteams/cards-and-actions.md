@@ -8,11 +8,11 @@ title: "Microsoft Teams cards and actions"
 sidebarTitle: "Cards and actions"
 ---
 
-The Adaptive Card surfaces OpenClaw sends to Teams, the Graph-backed roster lookup, and the target formats that address them.
+The Adaptive Card surfaces Paddy sends to Teams, the Graph-backed roster lookup, and the target formats that address them.
 
 ## Member info action
 
-OpenClaw exposes a Graph-backed `member-info` action for Microsoft Teams so agents and automations can resolve verified roster details for a configured conversation.
+Paddy exposes a Graph-backed `member-info` action for Microsoft Teams so agents and automations can resolve verified roster details for a configured conversation.
 
 Requirements:
 
@@ -45,7 +45,7 @@ satisfy the configured access policy and the action's membership requirements.
 
 ## Native approval cards
 
-Microsoft Teams can deliver exec and plugin approval requests as Adaptive Cards in the originating conversation. Each card describes the requested command or plugin action and provides only the decisions allowed for that request, such as **Approve once**, **Always allow**, and **Deny**. After a decision or expiration, OpenClaw updates the original card with its final status.
+Microsoft Teams can deliver exec and plugin approval requests as Adaptive Cards in the originating conversation. Each card describes the requested command or plugin action and provides only the decisions allowed for that request, such as **Approve once**, **Always allow**, and **Deny**. After a decision or expiration, Paddy updates the original card with its final status.
 
 Enable the existing top-level approval forwarding settings for each approval type you want to receive:
 
@@ -63,17 +63,17 @@ Enable the existing top-level approval forwarding settings for each approval typ
 }
 ```
 
-`approvals.exec` and `approvals.plugin` are independent; enabling one does not enable the other. Native card delivery also requires a configured Teams bot and at least one approver resolved from `channels.msteams.allowFrom` or `channels.msteams.defaultTo`. Approvers must be stable AAD object IDs; display names, email addresses, group entries, and conversation IDs do not grant approval access. OpenClaw checks the clicking user's AAD object ID before resolving the request.
+`approvals.exec` and `approvals.plugin` are independent; enabling one does not enable the other. Native card delivery also requires a configured Teams bot and at least one approver resolved from `channels.msteams.allowFrom` or `channels.msteams.defaultTo`. Approvers must be stable AAD object IDs; display names, email addresses, group entries, and conversation IDs do not grant approval access. Paddy checks the clicking user's AAD object ID before resolving the request.
 
 No Teams-specific approval configuration is required. The existing `/approve <id> <decision>` command remains available as a text fallback when native delivery is unavailable. For forwarding modes and supported decisions, see [Approval forwarding to chat channels](/tools/exec-approvals-advanced#approval-forwarding-to-chat-channels).
 
 ## Polls (Adaptive Cards)
 
-OpenClaw sends Teams polls as Adaptive Cards (there is no native Teams poll API).
+Paddy sends Teams polls as Adaptive Cards (there is no native Teams poll API).
 
-- CLI: `openclaw message poll --channel msteams --target conversation:<id> --poll-question "..." --poll-option "..." --poll-option "..."`.
-- Votes are recorded by the gateway in OpenClaw plugin-state SQLite under `state/openclaw.sqlite`.
-- For existing `msteams-polls.json` files, run `openclaw doctor --fix` on 2026.9.5 before upgrading to latest. See [Upgrading very old versions](/install/updating#upgrading-very-old-versions).
+- CLI: `paddy message poll --channel msteams --target conversation:<id> --poll-question "..." --poll-option "..." --poll-option "..."`.
+- Votes are recorded by the gateway in Paddy plugin-state SQLite under `state/openclaw.sqlite`.
+- For existing `msteams-polls.json` files, run `paddy doctor --fix` on 2026.9.5 before upgrading to latest. See [Upgrading very old versions](/install/updating#upgrading-very-old-versions).
 - The gateway must stay online to record votes.
 - Polls do not auto-post result summaries, and there is no poll-results CLI.
 
@@ -82,9 +82,9 @@ A poll already submitted to Teams retains its accepted ID and normal vote tracki
 
 ## Presentation cards
 
-Send semantic presentation payloads to Teams users or conversations using the `message` tool, CLI, or normal reply delivery. OpenClaw renders them as Teams Adaptive Cards from the generic presentation contract.
+Send semantic presentation payloads to Teams users or conversations using the `message` tool, CLI, or normal reply delivery. Paddy renders them as Teams Adaptive Cards from the generic presentation contract.
 
-The `presentation` parameter accepts semantic blocks. When `presentation` is provided, the message text is optional. Buttons render as Adaptive Card submit or URL actions. Select menus are not native in the Teams renderer, so OpenClaw downgrades them to readable text before delivery.
+The `presentation` parameter accepts semantic blocks. When `presentation` is provided, the message text is optional. Buttons render as Adaptive Card submit or URL actions. Select menus are not native in the Teams renderer, so Paddy downgrades them to readable text before delivery.
 
 **Agent tool:**
 
@@ -103,7 +103,7 @@ The `presentation` parameter accepts semantic blocks. When `presentation` is pro
 **CLI:**
 
 ```bash
-openclaw message send --channel msteams \
+paddy message send --channel msteams \
   --target "conversation:19:abc...@thread.tacv2" \
   --presentation '{"title":"Hello","blocks":[{"type":"text","text":"Hello!"}]}'
 ```
@@ -125,16 +125,16 @@ MSTeams targets use prefixes to distinguish between users and conversations:
 
 ```bash
 # Send to a user by ID
-openclaw message send --channel msteams --target "user:40a1a0ed-..." --message "Hello"
+paddy message send --channel msteams --target "user:40a1a0ed-..." --message "Hello"
 
 # Send to a user by display name (triggers Graph API lookup)
-openclaw message send --channel msteams --target "user:John Smith" --message "Hello"
+paddy message send --channel msteams --target "user:John Smith" --message "Hello"
 
 # Send to a group chat or channel
-openclaw message send --channel msteams --target "conversation:19:abc...@thread.tacv2" --message "Hello"
+paddy message send --channel msteams --target "conversation:19:abc...@thread.tacv2" --message "Hello"
 
 # Send a presentation card to a conversation
-openclaw message send --channel msteams --target "conversation:19:abc...@thread.tacv2" \
+paddy message send --channel msteams --target "conversation:19:abc...@thread.tacv2" \
   --presentation '{"title":"Hello","blocks":[{"type":"text","text":"Hello"}]}'
 ```
 
@@ -167,5 +167,5 @@ Without the `user:` prefix, names default to group or team resolution. Always us
 
 ## Proactive messaging
 
-- Proactive messages are only possible **after** a user has interacted, because OpenClaw stores conversation references at that point.
+- Proactive messages are only possible **after** a user has interacted, because Paddy stores conversation references at that point.
 - See [/gateway/configuration](/gateway/configuration) for `dmPolicy` and allowlist gating.

@@ -1,6 +1,7 @@
 import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import type { MediaUnderstandingModelConfig } from "../config/types.tools.js";
 import { resolveEnvironmentValue } from "../infra/process-env.js";
 import { runExec } from "../process/exec.js";
@@ -414,7 +415,7 @@ export async function inspectLocalAudioSelection(
       resolvedCommand: sherpaCommand ?? undefined,
       ready: sherpaReady,
       requestedBackend: "cpu",
-      evidence: "OpenClaw auto args omit --provider, so sherpa-onnx uses its CPU default",
+      evidence: `${PRODUCT_NAME} auto args omit --provider, so sherpa-onnx uses its CPU default`,
       reason: sherpaReady ? undefined : "SHERPA_ONNX_MODEL_DIR is missing required model files",
       args: sherpaArgs,
     },

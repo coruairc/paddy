@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { openNodeSqliteDatabase } from "../infra/node-sqlite.js";
+import { SqliteSchemaMismatchError } from "../infra/sqlite-schema-issues.js";
 import { extractSqliteTableSchema, quoteSqliteIdentifier } from "../infra/sqlite-schema-sql.js";
 import {
   canRepairLegacyAuditEventsSchema,
@@ -32,6 +33,7 @@ import {
   resolveOpenClawStateDirForDatabasePath,
 } from "./openclaw-state-db.paths.js";
 import { OPENCLAW_STATE_SCHEMA_SQL } from "./openclaw-state-schema.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 export function dropLegacyStateTables(db: DatabaseSync): void {
   // Unreleased transient history; drop, do not migrate.
@@ -91,7 +93,7 @@ export function migrateWorkerPlacementExecutionModeSchema(
     currentColumns.length !== canonicalColumns.length ||
     currentColumns.some((column) => !expected.has(column))
   ) {
-    throw new Error("OpenClaw v7 worker placement columns are not canonical");
+    throw new Error(`${PRODUCT_NAME} v7 worker placement columns are not canonical`);
   }
   const unexpectedObjects = db
     .prepare(
@@ -107,11 +109,11 @@ export function migrateWorkerPlacementExecutionModeSchema(
     )
     .all();
   if (unexpectedObjects.length > 0) {
-    throw new Error("OpenClaw v7 worker placement schema has unsupported attached objects");
+    throw new Error(`${PRODUCT_NAME} v7 worker placement schema has unsupported attached objects`);
   }
   const migrationTable = "worker_session_placements_migration_v8";
   if (tableExists(db, migrationTable)) {
-    throw new Error(`OpenClaw worker placement migration table already exists: ${migrationTable}`);
+    throw new Error(`${PRODUCT_NAME} worker placement migration table already exists: ${migrationTable}`);
   }
   const migrationSchema = placementSchema.replace(
     "CREATE TABLE IF NOT EXISTS worker_session_placements",
@@ -178,7 +180,7 @@ export function migrateAgentDatabaseRelativePaths(
     const agentId = row.agent_id;
     const registeredPath = row.path;
     if (typeof agentId !== "string" || typeof registeredPath !== "string") {
-      throw new Error("OpenClaw v8 agent database registry paths are not canonical");
+      throw new Error(`${PRODUCT_NAME} v8 agent database registry paths are not canonical`);
     }
     if (!path.isAbsolute(registeredPath)) {
       continue;
@@ -329,16 +331,16 @@ export function assertCanonicalStateSchemaShape(db: DatabaseSync, pathname: stri
         pathname,
       );
     }
-    throw new Error(
-      `OpenClaw state database ${pathname} has a noncanonical agent database registry schema that cannot be repaired automatically; restore the canonical agent_databases shape before retrying.`,
+    throw new SqliteSchemaMismatchError(
+      `${PRODUCT_NAME} state database ${pathname} has a noncanonical agent database registry schema that cannot be repaired automatically; restore the canonical agent_databases shape before retrying.`,
     );
   }
   if (!hasCanonicalAuditEventsSchema(db)) {
     if (canRepairLegacyAuditEventsSchema(db)) {
       throw new OpenClawStateDatabaseSchemaMigrationRequiredError("audit-events-v2", pathname);
     }
-    throw new Error(
-      `OpenClaw state database ${pathname} has a noncanonical audit event schema that cannot be repaired automatically; restore the canonical audit_events shape before retrying.`,
+    throw new SqliteSchemaMismatchError(
+      `${PRODUCT_NAME} state database ${pathname} has a noncanonical audit event schema that cannot be repaired automatically; restore the canonical audit_events shape before retrying.`,
     );
   }
 }

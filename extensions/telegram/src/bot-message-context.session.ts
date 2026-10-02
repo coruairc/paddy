@@ -731,7 +731,7 @@ export async function buildTelegramInboundContextPayload(params: {
       historyLimit: isGroup ? historyLimit : dmHistoryLimit,
       beforeTimestampMs: options?.receivedAtMs ?? (msg.date ? msg.date * 1000 : undefined),
       minTimestampMs: options?.promptContextMinTimestampMs,
-      senderLabels: { assistant: "OpenClaw", user: "User" },
+      senderLabels: { assistant: "Paddy", user: "User" },
     },
     access: {
       commands: {
@@ -748,19 +748,13 @@ export async function buildTelegramInboundContextPayload(params: {
       mentions: mentionFacts,
     },
     command:
-      commandSource === "native"
+      commandSource === "native" || commandSource === "text"
         ? {
-            kind: "native",
+            kind: commandSource === "native" ? "native" : "text-slash",
             authorized: commandAuthorized,
             body: commandBody,
           }
-        : commandSource === "text"
-          ? {
-              kind: "text-slash",
-              authorized: commandAuthorized,
-              body: commandBody,
-            }
-          : undefined,
+        : undefined,
     media: currentMediaFacts,
     supplemental: {
       quote:

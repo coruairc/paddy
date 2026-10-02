@@ -2,7 +2,7 @@
 summary: "Groq setup (auth + model selection + Whisper transcription)"
 title: "Groq"
 read_when:
-  - You want to use Groq with OpenClaw
+  - You want to use Groq with Paddy
   - You need the API key env var or CLI auth choice
   - You are configuring Whisper audio transcription on Groq
 ---
@@ -54,7 +54,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
   </Step>
   <Step title="Verify the catalog is reachable">
     ```bash
-    openclaw models list --provider groq
+    paddy models list --provider groq
     ```
   </Step>
 </Steps>
@@ -74,7 +74,7 @@ on the next startup. See [Apply changes and inspect](/plugins/manage-plugins#app
 
 ## Built-in catalog
 
-OpenClaw ships a manifest-backed Groq catalog with both reasoning and non-reasoning entries. Run `openclaw models list --provider groq` to see the static rows for your installed version, or check [console.groq.com/docs/models](https://console.groq.com/docs/models) for Groq's authoritative list.
+Paddy ships a manifest-backed Groq catalog with both reasoning and non-reasoning entries. Run `paddy models list --provider groq` to see the static rows for your installed version, or check [console.groq.com/docs/models](https://console.groq.com/docs/models) for Groq's authoritative list.
 
 | Model ref                           | Name               | Reasoning | Input        | Context |
 | ----------------------------------- | ------------------ | --------- | ------------ | ------- |
@@ -88,14 +88,14 @@ OpenClaw ships a manifest-backed Groq catalog with both reasoning and non-reason
 The manifest also retains `groq/llama-3.1-8b-instant` and `groq/llama-3.3-70b-versatile` as hidden deprecated compatibility rows after Groq's August 16, 2026 shutdown. Use `groq/openai/gpt-oss-20b` and `groq/openai/gpt-oss-120b`, respectively, for new configurations.
 
 <Tip>
-  The catalog evolves with each OpenClaw release. `openclaw models list --provider groq` shows the rows known to your installed version; cross-check with [console.groq.com/docs/models](https://console.groq.com/docs/models) for newly-added or deprecated models.
+  The catalog evolves with each Paddy release. `paddy models list --provider groq` shows the rows known to your installed version; cross-check with [console.groq.com/docs/models](https://console.groq.com/docs/models) for newly-added or deprecated models.
 </Tip>
 
 ## Reasoning models
 
-Groq reasoning models (`reasoning: true` in the table above) map OpenClaw's shared `/think` levels onto `reasoning_effort` values of `low`, `medium`, or `high`. `/think off` or `/think none` omits `reasoning_effort` from the request rather than sending a disabled value.
+Groq reasoning models (`reasoning: true` in the table above) map Paddy's shared `/think` levels onto `reasoning_effort` values of `low`, `medium`, or `high`. `/think off` or `/think none` omits `reasoning_effort` from the request rather than sending a disabled value.
 
-See [Thinking modes](/tools/thinking) for the shared `/think` levels and how OpenClaw translates them per provider.
+See [Thinking modes](/tools/thinking) for the shared `/think` levels and how Paddy translates them per provider.
 
 ## Audio transcription
 
@@ -132,7 +132,7 @@ To make Groq the default audio backend:
   </Accordion>
 
   <Accordion title="Custom Groq model ids">
-    OpenClaw accepts any Groq model id at runtime. Use the exact id shown by Groq and prefix it with `groq/`. The static catalog covers the common cases; uncatalogued ids fall through to the default OpenAI-compatible template.
+    Paddy accepts any Groq model id at runtime. Use the exact id shown by Groq and prefix it with `groq/`. The static catalog covers the common cases; uncatalogued ids fall through to the default OpenAI-compatible template.
 
     ```json5
     {

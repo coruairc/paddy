@@ -20,8 +20,8 @@ Every DM-capable channel supports `dmPolicy` (or `*.dm.policy`), which gates inb
 | `disabled`  | Inbound DMs ignored entirely.                                                                                                                                                                                        |
 
 ```bash
-openclaw pairing list <channel>
-openclaw pairing approve <channel> <code>
+paddy pairing list <channel>
+paddy pairing approve <channel> <code>
 ```
 
 Details + files on disk: [Pairing](/channels/pairing)
@@ -32,7 +32,7 @@ Prefer pairing + allowlists for DMs. For groups, decide by membership, not by ch
 
 - **DM allowlist** (`allowFrom` / `channels.discord.allowFrom` / `channels.slack.allowFrom`; legacy: `channels.discord.dm.allowFrom`, `channels.slack.dm.allowFrom`): who can DM the bot. When `dmPolicy="pairing"`, approvals write to `~/.openclaw/credentials/<channel>-allowFrom.json` (default account) or `<channel>-<accountId>-allowFrom.json` (non-default accounts), merged with config allowlists.
 - **Group allowlist** (channel-specific): which groups/channels/guilds the bot accepts at all.
-  - `channels.whatsapp.groups`, `channels.telegram.groups`, `channels.imessage.groups`: per-group defaults like `requireMention`; when set, also acts as a group allowlist (include `"*"` to keep allow-all behavior). Customize mention triggers with `agents.entries.*.groupChat.mentionPatterns` (for example `["@openclaw", "@mybot"]`) so `requireMention` gates on your own bot names.
+  - `channels.whatsapp.groups`, `channels.telegram.groups`, `channels.imessage.groups`: per-group defaults like `requireMention`; when set, also acts as a group allowlist (include `"*"` to keep allow-all behavior). Customize mention triggers with `agents.entries.*.groupChat.mentionPatterns` (for example `["@paddy", "@mybot"]`) so `requireMention` gates on your own bot names.
   - `groupPolicy="allowlist"` + `groupAllowFrom`: restrict who can trigger the bot inside a group session (WhatsApp/Telegram/Signal/iMessage/Microsoft Teams).
   - `channels.discord.guilds` / `channels.slack.channels`: per-surface allowlists + mention defaults.
   - Check order: `groupPolicy`/group allowlists first, then mention/reply activation. Replying to a bot message (implicit mention) does **not** bypass `groupAllowFrom`.
@@ -41,7 +41,7 @@ Details: [Configuration](/gateway/configuration) and [Groups](/channels/groups)
 
 ### DM session isolation (multi-user mode)
 
-By default, OpenClaw routes all DMs into the main session for cross-device continuity. If multiple people can DM the bot (open DMs or a multi-person allowlist), isolate DM sessions:
+By default, Paddy routes all DMs into the main session for cross-device continuity. If multiple people can DM the bot (open DMs or a multi-person allowlist), isolate DM sessions:
 
 ```json5
 { session: { dmScope: "per-channel-peer" } }
@@ -56,7 +56,7 @@ By default, OpenClaw routes all DMs into the main session for cross-device conti
 | `per-account-channel-peer` | Like above, split further by account (multi-account channels).         |
 | `per-peer`                 | Each sender gets one session across all channels of the same type.     |
 
-Local CLI onboarding preserves an explicit `session.dmScope` and otherwise leaves it unset, so the `"main"` default applies: all direct messages across channels share the agent's rolling main session (the personal-agent default). For shared or multi-user inboxes, set `session.dmScope: "per-channel-peer"`; `openclaw security audit` recommends isolation when it detects multi-user DM traffic.
+Local CLI onboarding preserves an explicit `session.dmScope` and otherwise leaves it unset, so the `"main"` default applies: all direct messages across channels share the agent's rolling main session (the personal-agent default). For shared or multi-user inboxes, set `session.dmScope: "per-channel-peer"`; `paddy security audit` recommends isolation when it detects multi-user DM traffic.
 
 This is a messaging-context boundary, not a host-admin boundary. If users are mutually adversarial and share the same Gateway host/config, run separate gateways per trust boundary instead.
 

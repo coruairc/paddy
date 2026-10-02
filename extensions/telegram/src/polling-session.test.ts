@@ -2165,12 +2165,12 @@ describe("TelegramPollingSession", () => {
       expect(createTelegramTransport).toHaveBeenCalledTimes(1);
       expect(transport1.close).toHaveBeenCalledOnce();
       expect(transport2.close).toHaveBeenCalledOnce();
-      expectLogIncludes(log, "Another OpenClaw gateway, script, or Telegram poller");
+      expectLogIncludes(log, "Another Paddy gateway, script, or Telegram poller");
       expect(
         statusPatches(setStatus).some(
           (patch) =>
             patch.connected === false &&
-            String(patch.lastError).includes("Another OpenClaw gateway"),
+            String(patch.lastError).includes("Another Paddy gateway"),
         ),
       ).toBe(true);
     } finally {

@@ -104,6 +104,13 @@ export default definePluginEntry({
   list operation below closes. Prepare the facts needed by late host mapping
   before that boundary.
 
+  `sessionEntries.revision`, when present, is an opaque token for immutable local
+  entry facts, including configuration and selection scope. Providers may weakly
+  cache derived metadata by that token, together with their own query and config
+  inputs. A new token invalidates those facts; an absent token requires reading
+  the entries again. Do not retain the snapshot or entry objects after listing,
+  or use this token as current authorization or as a revision of native host data.
+
   Providers with a multi-step fill can implement the optional
   `SessionCatalogProvider.createListOperation(params)` hook. Its synchronous
   factory returns `{ next, close }` without starting source work. The Gateway
@@ -228,7 +235,7 @@ export default definePluginEntry({
   validation messages into `parseReadParams(...)` and `parseListParams(...)`.
 
   `resolveCreateSession({ agentId })` must return a config-derived model/runtime
-  target before OpenClaw advertises model-chat creation. Native terminal readiness
+  target before Paddy advertises model-chat creation. Native terminal readiness
   is independent of this target.
   Use
   [`api.runtime.agent.resolveSessionCatalogCreateTarget(...)`](/plugins/sdk-runtime#api-runtime-agent)
@@ -284,11 +291,11 @@ export default definePluginEntry({
   `"context-engine"`) in the `openclaw.plugin.json` manifest `kind` field
   instead. Runtime-entry `kind` remains only as a compatibility fallback for
   older plugins.
-- `configSchema` can be a function for lazy evaluation. OpenClaw resolves and
+- `configSchema` can be a function for lazy evaluation. Paddy resolves and
   memoizes the schema on first access, so expensive schema builders only run
   once.
 - A `nodeHostCommands` descriptor can define `isAvailable({ config, env })`.
   Returning `false` omits that command and its capability from the headless
-  node's Gateway declaration. OpenClaw evaluates it against the node-local
+  node's Gateway declaration. Paddy evaluates it against the node-local
   startup config; command handlers should still validate availability when
   invoked.

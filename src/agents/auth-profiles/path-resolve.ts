@@ -4,6 +4,7 @@
  */
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveStateDir } from "../../config/paths.js";
 import { readConfigMachineState } from "../../state/config-machine-state.js";
 import { isArtifactPreservingStateRead } from "../../state/openclaw-state-db-readonly.js";
@@ -35,12 +36,12 @@ const sharedAuthStoreOwnershipByDatabasePath = new Map<string, SharedAuthStoreOw
 
 class InvalidSharedAuthStoreOwnershipError extends Error {
   readonly code = "INVALID_SHARED_AUTH_STORE_OWNERSHIP" as const;
-  readonly action = "openclaw doctor --fix" as const;
+  readonly action = "paddy doctor --fix" as const;
   readonly stateKey = SHARED_AUTH_STORE_STATE_KEY;
 
   constructor(value: unknown) {
     super(
-      `Config machine state ${SHARED_AUTH_STORE_STATE_KEY} has an invalid shared auth store location (${JSON.stringify(value)}); run openclaw doctor --fix.`,
+      `Config machine state ${SHARED_AUTH_STORE_STATE_KEY} has an invalid shared auth store location (${JSON.stringify(value)}); run paddy doctor --fix.`,
     );
     this.name = "InvalidSharedAuthStoreOwnershipError";
   }
@@ -71,7 +72,7 @@ export function resolveSharedAuthStoreOwnership(
   }
   if (sharedAuthStoreOwnershipByDatabasePath.size >= SHARED_AUTH_STORE_OWNERSHIP_CACHE_LIMIT) {
     throw new Error(
-      "Shared auth store ownership cache exceeded its process root limit; restart OpenClaw.",
+      `Shared auth store ownership cache exceeded its process root limit; restart ${PRODUCT_NAME}.`,
     );
   }
   const ownership = parseSharedAuthStoreOwnership(
@@ -107,7 +108,7 @@ export async function resolveSharedAuthStoreOwnershipAsync(
   }
   if (sharedAuthStoreOwnershipByDatabasePath.size >= SHARED_AUTH_STORE_OWNERSHIP_CACHE_LIMIT) {
     throw new Error(
-      "Shared auth store ownership cache exceeded its process root limit; restart OpenClaw.",
+      `Shared auth store ownership cache exceeded its process root limit; restart ${PRODUCT_NAME}.`,
     );
   }
   const ownership = parseSharedAuthStoreOwnership(value);

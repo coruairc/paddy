@@ -493,7 +493,7 @@ describe("sandbox/tool-policy", () => {
     expect(message).not.toContain(`Session: ${sessionKey}`);
     expect(message).toContain("Session: agent:… -rf /");
     expect(message).toContain(
-      "openclaw sandbox explain --session 'agent:main:weird session;rm -rf /'",
+      "paddy sandbox explain --session 'agent:main:weird session;rm -rf /'",
     );
   });
 
@@ -544,7 +544,7 @@ describe("sandbox/tool-policy", () => {
       expect(sessionLabel).not.toMatch(
         /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u,
       );
-      expect(message).toContain(`openclaw sandbox explain --session '${sessionKey}'`);
+      expect(message).toContain(`paddy sandbox explain --session '${sessionKey}'`);
     },
   );
 
@@ -575,7 +575,7 @@ describe("sandbox/tool-policy", () => {
     expect(sessionLine).toBe("Session: agent:…\\n12345");
     expect(sessionLine).not.toContain(sessionKey);
     expect(sessionLine).toContain("\\n");
-    expect(message).toContain("openclaw sandbox explain --agent main");
+    expect(message).toContain("paddy sandbox explain --agent main");
     expect(message).not.toContain("--session");
   });
 });

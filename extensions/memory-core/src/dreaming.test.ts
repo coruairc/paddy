@@ -719,7 +719,7 @@ describe("dreaming service reconciliation", () => {
       expect(harness.mutationCalls).toEqual([]);
       expect(removeStaleJobFamily).not.toHaveBeenCalled();
       expect(logger.error).not.toHaveBeenCalled();
-      expectLogContains(logger.warn, "openclaw doctor --fix");
+      expectLogContains(logger.warn, "paddy doctor --fix");
     },
   );
 
@@ -757,7 +757,7 @@ describe("dreaming service reconciliation", () => {
       if (hasLegacy) {
         expect(harness.jobs).toEqual(before);
         expect(harness.mutationCalls).toEqual([]);
-        expectLogContains(logger.warn, "openclaw doctor --fix");
+        expectLogContains(logger.warn, "paddy doctor --fix");
         return;
       }
       expect(harness.removeCalls).toEqual(["job-duplicate"]);
@@ -1023,7 +1023,7 @@ describe("dreaming service reconciliation", () => {
       expect(harness.jobs).toEqual([legacyJob]);
       expect(harness.addCalls).toHaveLength(0);
       expectLogContains(logger.info, "removed 1 managed dreaming cron job");
-      expectLogContains(logger.warn, "openclaw doctor --fix");
+      expectLogContains(logger.warn, "paddy doctor --fix");
     } finally {
       await triggerDreamingServiceStop(api);
       vi.useRealTimers();

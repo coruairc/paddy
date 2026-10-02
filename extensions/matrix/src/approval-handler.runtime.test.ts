@@ -548,7 +548,7 @@ describe("matrixApprovalNativeRuntime", () => {
 
       expect(result).toEqual({
         kind: "update",
-        payload: `OpenClaw change: ${label}\n\nChange\n\`\`\`\nrestart the Gateway\n\`\`\``,
+        payload: `Paddy change: ${label}\n\nChange\n\`\`\`\nrestart the Gateway\n\`\`\``,
       });
     },
   );

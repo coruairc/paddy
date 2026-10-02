@@ -29,7 +29,7 @@ describe("telegramApprovalNativeRuntime", () => {
         },
         fallbackApprovalId: "system-agent:cancelled",
       }),
-    ).toBe("⚠️ OpenClaw change was cancelled because its run ended. No change was made. Retry.");
+    ).toBe("⚠️ Paddy change was cancelled because its run ended. No change was made. Retry.");
   });
 
   it("builds the Control UI link with its configured base path and encoded approval ID", async () => {
@@ -234,7 +234,7 @@ describe("telegramApprovalNativeRuntime", () => {
       decision: "allow-once",
       applicationStatus: "applied",
       summary: "set config gateway.port to 19001",
-      expected: "✅ OpenClaw change approved and applied: set config gateway.port to 19001",
+      expected: "✅ Paddy change approved and applied: set config gateway.port to 19001",
     },
     {
       name: "completion unconfirmed after an approved write",
@@ -242,21 +242,21 @@ describe("telegramApprovalNativeRuntime", () => {
       applicationStatus: "not-applied",
       summary: "set config gateway.port to 19001",
       expected:
-        "⚠️ OpenClaw change approved, but completion could not be confirmed. Check the current settings before retrying.",
+        "⚠️ Paddy change approved, but completion could not be confirmed. Check the current settings before retrying.",
     },
     {
       name: "denied and not applied",
       decision: "deny",
       applicationStatus: "not-applied",
       summary: "set config gateway.port to 19001",
-      expected: "❌ OpenClaw change denied. No change was made.",
+      expected: "❌ Paddy change denied. No change was made.",
     },
     {
       name: "applied with a bounded UTF-16 summary",
       decision: "allow-once",
       applicationStatus: "applied",
       summary: ` ${"x".repeat(2798)}😀tail `,
-      expected: `✅ OpenClaw change approved and applied: ${"x".repeat(2798)}…`,
+      expected: `✅ Paddy change approved and applied: ${"x".repeat(2798)}…`,
     },
   ] as const)(
     "renders exact system-agent terminal receipts: $name",

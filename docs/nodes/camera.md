@@ -7,7 +7,7 @@ read_when:
 title: "Camera capture"
 ---
 
-OpenClaw supports camera capture for agent workflows on paired **iOS**, **Android**, **macOS**, and **Linux** nodes: capture a photo (`jpg`) or a short video clip (`mp4`, with optional audio) via Gateway `node.invoke`.
+Paddy supports camera capture for agent workflows on paired **iOS**, **Android**, **macOS**, and **Linux** nodes: capture a photo (`jpg`) or a short video clip (`mp4`, with optional audio) via Gateway `node.invoke`.
 
 When a capture request includes `deviceId`, the selected camera must match that ID exactly. An unknown ID fails instead of capturing from a different camera; run `camera.list` to refresh device IDs, which change when cameras are reconnected.
 
@@ -57,11 +57,11 @@ The iOS node only allows `camera.*` commands in the **foreground**. Background i
 The easiest way to get media files is via the CLI helper, which writes decoded media to a temp file and prints the saved path.
 
 ```bash
-openclaw nodes camera snap --node <id>                 # default: one node-selected photo
-openclaw nodes camera snap --node <id> --facing front
-openclaw nodes camera snap --node <id> --facing both   # front then back (2 saved paths)
-openclaw nodes camera clip --node <id> --duration 10s
-openclaw nodes camera clip --node <id> --no-audio
+paddy nodes camera snap --node <id>                 # default: one node-selected photo
+paddy nodes camera snap --node <id> --facing front
+paddy nodes camera snap --node <id> --facing both   # front then back (2 saved paths)
+paddy nodes camera clip --node <id> --duration 10s
+paddy nodes camera clip --node <id> --no-audio
 ```
 
 `--duration` accepts a bare number of milliseconds (`3000`) or a unit suffix
@@ -118,27 +118,27 @@ The macOS companion app exposes a checkbox:
 Use the main `openclaw` CLI to invoke camera commands on the macOS node.
 
 ```bash
-openclaw nodes camera list --node <id>                     # list camera ids
-openclaw nodes camera snap --node <id>                     # prints saved path
-openclaw nodes camera snap --node <id> --max-width 1280
-openclaw nodes camera snap --node <id> --delay-ms 2000
-openclaw nodes camera snap --node <id> --device-id <id>
-openclaw nodes camera clip --node <id> --duration 10s       # prints saved path
-openclaw nodes camera clip --node <id> --device-id <id>
-openclaw nodes camera clip --node <id> --no-audio
+paddy nodes camera list --node <id>                     # list camera ids
+paddy nodes camera snap --node <id>                     # prints saved path
+paddy nodes camera snap --node <id> --max-width 1280
+paddy nodes camera snap --node <id> --delay-ms 2000
+paddy nodes camera snap --node <id> --device-id <id>
+paddy nodes camera clip --node <id> --duration 10s       # prints saved path
+paddy nodes camera clip --node <id> --device-id <id>
+paddy nodes camera clip --node <id> --no-audio
 ```
 
-- `openclaw nodes camera snap` defaults to `maxWidth=1600` unless overridden.
+- `paddy nodes camera snap` defaults to `maxWidth=1600` unless overridden.
 - `camera.snap` waits `delayMs` (default 2000ms, clamped to `[0, 10000]`) after warm-up/exposure settle before capturing.
 - Photo payloads are recompressed to keep base64 under 5MB.
 
-If a macOS external camera starts a photo session in portrait, OpenClaw selects an advertised landscape format with transposed dimensions and the same encoding, when one exists. Already-landscape, built-in, and Continuity Camera formats are unchanged. Without an exact counterpart, or if the camera cannot be reconfigured, capture keeps the negotiated format. `--max-width` still only limits the returned JPEG width; it does not choose a camera format.
+If a macOS external camera starts a photo session in portrait, Paddy selects an advertised landscape format with transposed dimensions and the same encoding, when one exists. Already-landscape, built-in, and Continuity Camera formats are unchanged. Without an exact counterpart, or if the camera cannot be reconfigured, capture keeps the negotiated format. `--max-width` still only limits the returned JPEG width; it does not choose a camera format.
 
 ### macOS physical PTZ
 
 Physical PTZ is implemented by the Mac app for USB cameras that expose standard UVC absolute pan/tilt or zoom controls. It uses the same **Allow Camera** setting as capture. Other node platforms do not advertise these commands.
 
-Always pass an explicit `deviceId` returned by `camera.list`. OpenClaw never chooses a default camera for physical movement.
+Always pass an explicit `deviceId` returned by `camera.list`. Paddy never chooses a default camera for physical movement.
 
 - `camera.ptz.status` reads the current position without moving the camera. Request: `{ "deviceId": "<camera-id>" }`.
   - The response contains only executable `pan`, `tilt`, and `zoom` axes under `axes`.
@@ -154,7 +154,7 @@ Always pass an explicit `deviceId` returned by `camera.list`. OpenClaw never cho
 
 Both PTZ commands briefly open a live camera stream because supported cameras only service UVC controls while streaming. This activates the camera and its privacy indicator for the duration, including when `camera.ptz.status` only reads the position. Frames are not retained, and no photo, video, or file is produced.
 
-Pan/tilt and zoom use separate hardware writes and cannot be atomic. OpenClaw verifies the resulting position through a fresh control connection. If a later write or final status read fails, or an axis does not reach its requested position within the camera's reported resolution, `CAMERA_PTZ_PARTIAL` names the acknowledged control groups, includes the independently observed state when readable, and tells the caller to run `camera.ptz.status` before retrying. Position failures also report the requested and observed values; check that a video stream reaches the camera and disable on-camera AI framing or tracking that can override UVC controls.
+Pan/tilt and zoom use separate hardware writes and cannot be atomic. Paddy verifies the resulting position through a fresh control connection. If a later write or final status read fails, or an axis does not reach its requested position within the camera's reported resolution, `CAMERA_PTZ_PARTIAL` names the acknowledged control groups, includes the independently observed state when readable, and tells the caller to run `camera.ptz.status` before retrying. Position failures also report the requested and observed values; check that a video stream reaches the camera and disable on-camera AI framing or tracking that can override UVC controls.
 
 `camera.ptz.control` is dangerous and remains disarmed until the operator explicitly adds it to `gateway.nodes.commands.allow`:
 
@@ -168,13 +168,13 @@ Pan/tilt and zoom use separate hardware writes and cannot be atomic. OpenClaw ve
 }
 ```
 
-The allow entry alone does not widen an existing node approval. After the updated Mac reconnects and declares PTZ control, run `openclaw nodes pending`, then approve the widened surface with `openclaw nodes approve <requestId>`.
+The allow entry alone does not widen an existing node approval. After the updated Mac reconnects and declares PTZ control, run `paddy nodes pending`, then approve the widened surface with `paddy nodes approve <requestId>`.
 
 In the agent `nodes` tool, use `action: "camera_ptz"`, the selected Mac node, `deviceId`, and `ptzOperation: "status" | "set" | "move" | "home"`. Axis inputs are `panDegrees`, `tiltDegrees`, and `zoomPercent`.
 
 ## Linux node host
 
-The bundled Linux Node plugin adds camera capture to the CLI `openclaw node` service. It works on a headless host and does not require the Linux desktop app.
+The bundled Linux Node plugin adds camera capture to the CLI `paddy node` service. It works on a headless host and does not require the Linux desktop app.
 
 Camera access defaults to off. Enable it under the plugin entry, then restart the node service so its Gateway advertisement is rebuilt:
 
@@ -198,7 +198,7 @@ Requirements:
 - a `/dev/video*` device readable by the node-service user; on common distributions, add that user to the `video` group
 - for clips with the default `includeAudio: true`, a working PulseAudio server or PipeWire PulseAudio compatibility layer with a default source
 
-Linux returns capture-capable, readable V4L2 device paths from `camera.list`; FFmpeg probes each `/dev/video*` candidate and omits metadata or output-only nodes. Device `position` is `unknown`, so facing requests without `deviceId` produce one `unknown`-position photo or clip instead of claiming a front or back camera. Use `deviceId` when a host has multiple cameras. `camera.snap` uses FFmpeg input warm-up for `delayMs` and preserves aspect ratio while limiting width. `camera.clip` records microphone audio as the MP4 audio track; OpenClaw deliberately exposes no standalone microphone command.
+Linux returns capture-capable, readable V4L2 device paths from `camera.list`; FFmpeg probes each `/dev/video*` candidate and omits metadata or output-only nodes. Device `position` is `unknown`, so facing requests without `deviceId` produce one `unknown`-position photo or clip instead of claiming a front or back camera. Use `deviceId` when a host has multiple cameras. `camera.snap` uses FFmpeg input warm-up for `delayMs` and preserves aspect ratio while limiting width. `camera.clip` records microphone audio as the MP4 audio track; Paddy deliberately exposes no standalone microphone command.
 
 The plugin uses `libx264` for MP4 video and does not silently change codecs. An FFmpeg build without the required input or encoders returns `CAMERA_UNAVAILABLE`. Photos and clips that would exceed the 25MB base64 payload budget fail with `PAYLOAD_TOO_LARGE`.
 
@@ -214,7 +214,7 @@ The plugin uses `libx264` for MP4 video and does not silently change codecs. An 
 For _screen_ video (not camera), use the macOS companion:
 
 ```bash
-openclaw nodes screen record --node <id> --duration 10s --fps 15   # prints saved path
+paddy nodes screen record --node <id> --duration 10s --fps 15   # prints saved path
 ```
 
 Requires macOS **Screen Recording** permission (TCC).

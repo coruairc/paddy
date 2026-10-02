@@ -630,7 +630,7 @@ function createProviderResolutionTasks(params: {
             source: group.source,
             provider: group.providerName,
             refId: ref.id,
-            message: `Secret reference "${group.source}:${group.providerName}:${ref.id}" resolves to a redaction placeholder. Run openclaw doctor --fix to repair a store-backed Gateway token; supply a real credential for other secrets.`,
+            message: `Secret reference "${group.source}:${group.providerName}:${ref.id}" resolves to a redaction placeholder. Run paddy doctor --fix to repair a store-backed Gateway token; supply a real credential for other secrets.`,
           }),
         );
       }

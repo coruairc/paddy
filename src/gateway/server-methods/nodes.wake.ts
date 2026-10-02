@@ -1,4 +1,5 @@
 import { resolveTimerTimeoutMs } from "@openclaw/normalization-core/number-coercion";
+import { PRODUCT_NAME } from "../../brand.js";
 import { getRuntimeConfig } from "../../config/io.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import type { NodePairingGeneration } from "../../infra/device-pairing-node-state.js";
@@ -12,6 +13,7 @@ import {
   sendApnsBackgroundWake,
   shouldClearStoredApnsRegistration,
 } from "../../infra/push-apns.js";
+import { sleep } from "../../utils/sleep.js";
 import type { NodeSession } from "../node-registry.js";
 import type { NodeWakeAttempt } from "../node-wake-state-store.js";
 import {
@@ -62,12 +64,6 @@ async function clearStaleApnsRegistrationIfNeeded(
   await clearApnsRegistrationIfCurrent({
     nodeId,
     registration,
-  });
-}
-
-async function delayMs(ms: number): Promise<void> {
-  await new Promise<void>((resolve) => {
-    setTimeout(resolve, ms);
   });
 }
 
@@ -226,8 +222,8 @@ export async function maybeSendNodeWakeNudge(
           const result = await sendApnsAlert({
             ...transport.transport,
             nodeId,
-            title: "OpenClaw needs a quick reopen",
-            body: "Tap to reopen OpenClaw and restore the node connection.",
+            title: `${PRODUCT_NAME} needs a quick reopen`,
+            body: `Tap to reopen ${PRODUCT_NAME} and restore the node connection.`,
             signal: lifecycle,
             isCurrent: isAttemptCurrent,
           });
@@ -285,7 +281,8 @@ export async function waitForNodeReconnect(params: {
   const pollMs = resolveTimerTimeoutMs(params.pollMs, NODE_WAKE_RECONNECT_POLL_MS, 50);
   const deadline = performance.now() + timeoutMs;
 
-  while (performance.now() < deadline) {
+  for (;;) {
+    const beforeDeadline = performance.now() < deadline;
     if (
       params.lifecycle &&
       !isNodeWakeLifecycleCurrent(params.nodeId, params.lifecycle, params.pairingGeneration)
@@ -298,16 +295,9 @@ export async function waitForNodeReconnect(params: {
     if (resolveDispatchableNodeSession(session)) {
       return true;
     }
-    await delayMs(Math.min(pollMs, Math.max(0, deadline - performance.now())));
+    if (!beforeDeadline) {
+      return false;
+    }
+    await sleep(Math.min(pollMs, Math.max(0, deadline - performance.now())));
   }
-  if (
-    params.lifecycle &&
-    !isNodeWakeLifecycleCurrent(params.nodeId, params.lifecycle, params.pairingGeneration)
-  ) {
-    return false;
-  }
-  const session = params.pairingGeneration
-    ? params.context.nodeRegistry.getForPairingGeneration(params.nodeId, params.pairingGeneration)
-    : params.context.nodeRegistry.get(params.nodeId);
-  return Boolean(resolveDispatchableNodeSession(session));
 }

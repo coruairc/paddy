@@ -186,7 +186,7 @@ const RealtimeToolSchema = z
   .strict();
 type RealtimeToolConfig = z.infer<typeof RealtimeToolSchema>;
 
-const VoiceCallRealtimeProvidersConfigSchema = z
+const VoiceCallProvidersConfigSchema = z
   .record(z.string(), z.record(z.string(), z.unknown()))
   .default({});
 
@@ -221,9 +221,9 @@ const VoiceCallRealtimeFastContextConfigSchema = z
   });
 const VoiceCallRealtimeAgentContextConfigSchema = z
   .object({
-    /** Inject a compact agent persona/context capsule into realtime voice instructions. */
+    /** Include configured identity and selected profile files alongside the always-on agent context. */
     enabled: z.boolean().default(false),
-    /** Maximum number of characters from the generated capsule to append. */
+    /** Maximum number of characters in the generated profile-file block. */
     maxChars: z.number().int().positive().default(6000),
     /** Include configured agent identity fields. */
     includeIdentity: z.boolean().default(true),
@@ -253,10 +253,6 @@ const VoiceCallRealtimeConsultThinkingLevelSchema = z.enum([
   "ultra",
 ]);
 
-const VoiceCallStreamingProvidersConfigSchema = z
-  .record(z.string(), z.record(z.string(), z.unknown()))
-  .default({});
-
 const VoiceCallRealtimeConfigSchema = z
   .object({
     /** Enable realtime voice-to-voice mode. */
@@ -282,7 +278,7 @@ const VoiceCallRealtimeConfigSchema = z
     /** Bounded agent persona/context injection for the fast realtime voice path. */
     agentContext: VoiceCallRealtimeAgentContextConfigSchema,
     /** Provider-owned raw config blobs keyed by provider id. */
-    providers: VoiceCallRealtimeProvidersConfigSchema,
+    providers: VoiceCallProvidersConfigSchema,
   })
   .strict()
   .default({
@@ -318,7 +314,7 @@ const VoiceCallStreamingConfigSchema = z
     /** WebSocket path for media stream connections */
     streamPath: z.string().min(1).default("/voice/stream"),
     /** Provider-owned raw config blobs keyed by provider id. */
-    providers: VoiceCallStreamingProvidersConfigSchema,
+    providers: VoiceCallProvidersConfigSchema,
     /**
      * Close unauthenticated media stream sockets if no valid `start` frame arrives in time.
      * Protects against pre-auth idle connection hold attacks.
@@ -808,11 +804,6 @@ export function resolveVoiceCallConfig(config: VoiceCallConfigInput): VoiceCallC
       resolved.plivo.authToken ?? resolveSpeechProviderApiKey(process.env.PLIVO_AUTH_TOKEN);
   }
 
-  // Tunnel Config
-  resolved.tunnel = resolved.tunnel ?? {
-    provider: "none",
-    allowNgrokFreeTierLoopbackBypass: false,
-  };
   resolved.tunnel.allowNgrokFreeTierLoopbackBypass =
     resolved.tunnel.allowNgrokFreeTierLoopbackBypass ?? false;
   resolved.tunnel.ngrokAuthToken =
@@ -820,12 +811,6 @@ export function resolveVoiceCallConfig(config: VoiceCallConfigInput): VoiceCallC
   resolved.tunnel.ngrokDomain =
     resolved.tunnel.ngrokDomain ?? resolveSpeechProviderApiKey(process.env.NGROK_DOMAIN);
 
-  // Webhook Security Config
-  resolved.webhookSecurity = resolved.webhookSecurity ?? {
-    allowedHosts: [],
-    trustForwardingHeaders: false,
-    trustedProxyIPs: [],
-  };
   resolved.webhookSecurity.allowedHosts = resolved.webhookSecurity.allowedHosts ?? [];
   resolved.webhookSecurity.trustForwardingHeaders =
     resolved.webhookSecurity.trustForwardingHeaders ?? false;

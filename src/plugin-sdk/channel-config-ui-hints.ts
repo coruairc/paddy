@@ -1,4 +1,5 @@
 /** Shared UI-hint groups for channel config schemas. */
+import { PRODUCT_NAME } from "../brand.js";
 import type { ChannelConfigUiHint } from "../channels/plugins/types.config.js";
 
 type HintMap = Record<string, ChannelConfigUiHint>;
@@ -122,7 +123,7 @@ function createChannelProgressUiHints(params: {
       label: `${channelLabel} Progress Label Pool`,
       help:
         params.labels === "openclaw"
-          ? 'Candidate labels for streaming.progress.label="auto". Leave unset to use OpenClaw built-in progress labels.'
+          ? `Candidate labels for streaming.progress.label="auto". Leave unset to use ${PRODUCT_NAME} built-in progress labels.`
           : 'Candidate labels for streaming.progress.label="auto". Leave unset to use the built-in "Working" label.',
     },
     "streaming.progress.maxLines": {

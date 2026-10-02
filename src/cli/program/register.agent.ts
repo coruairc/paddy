@@ -3,6 +3,7 @@ import type { Command } from "commander";
 import { formatDocsLink } from "../../../packages/terminal-core/src/links.js";
 import { theme } from "../../../packages/terminal-core/src/theme.js";
 import { createLazyRuntimeModule } from "../../shared/lazy-runtime.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { hasExplicitOptions } from "../command-options.js";
 import { formatHelpExamples } from "../help-format.js";
 import { collectOption } from "./helpers.js";
@@ -209,14 +210,20 @@ export function registerAgentsCommands(program: Command): void {
         `
 ${theme.heading("Examples:")}
 ${formatHelpExamples([
-  ['openclaw agents set-identity --agent main --name "OpenClaw" --emoji "🦞"', "Set name + emoji."],
-  ["openclaw agents set-identity --agent main --avatar avatars/openclaw.png", "Set avatar path."],
   [
-    "openclaw agents set-identity --workspace ~/.openclaw/workspace --from-identity",
+    `${CLI_NAME} agents set-identity --agent main --name "${PRODUCT_NAME}" --emoji "🦞"`,
+    "Set name + emoji.",
+  ],
+  [
+    `${CLI_NAME} agents set-identity --agent main --avatar avatars/openclaw.png`,
+    "Set avatar path.",
+  ],
+  [
+    `${CLI_NAME} agents set-identity --workspace ~/.openclaw/workspace --from-identity`,
     "Load from IDENTITY.md.",
   ],
   [
-    "openclaw agents set-identity --identity-file ~/.openclaw/workspace/IDENTITY.md --agent main",
+    `${CLI_NAME} agents set-identity --identity-file ~/.openclaw/workspace/IDENTITY.md --agent main`,
     "Use a specific IDENTITY.md.",
   ],
 ])}

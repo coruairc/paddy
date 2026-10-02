@@ -1,20 +1,20 @@
 ---
-summary: "Run OpenClaw Gateway 24/7 on an Azure Linux VM with durable state"
+summary: "Run Paddy Gateway 24/7 on an Azure Linux VM with durable state"
 read_when:
-  - You want OpenClaw running 24/7 on Azure with Network Security Group hardening
-  - You want a production-grade, always-on OpenClaw Gateway on your own Azure Linux VM
+  - You want Paddy running 24/7 on Azure with Network Security Group hardening
+  - You want a production-grade, always-on Paddy Gateway on your own Azure Linux VM
   - You want secure administration with Azure Bastion SSH
 title: "Azure"
 ---
 
-Set up an Azure Linux VM with the Azure CLI, apply Network Security Group (NSG) hardening, configure Azure Bastion for SSH access, and install OpenClaw.
+Set up an Azure Linux VM with the Azure CLI, apply Network Security Group (NSG) hardening, configure Azure Bastion for SSH access, and install Paddy.
 
 ## What you will do
 
 - Create Azure networking (VNet, subnets, NSG) and compute resources with the Azure CLI
 - Apply NSG rules so VM SSH is allowed only from Azure Bastion
 - Use Azure Bastion for SSH access (no public IP on the VM)
-- Install OpenClaw with the installer script
+- Install Paddy with the installer script
 - Verify the gateway
 
 ## What you need
@@ -232,7 +232,7 @@ Set up an Azure Linux VM with the Azure CLI, apply Network Security Group (NSG) 
   </Step>
 </Steps>
 
-## Install OpenClaw
+## Install Paddy
 
 <Steps>
   <Step title="SSH into the VM through Azure Bastion">
@@ -250,14 +250,14 @@ Set up an Azure Linux VM with the Azure CLI, apply Network Security Group (NSG) 
 
   </Step>
 
-  <Step title="Install OpenClaw (in the VM shell)">
+  <Step title="Install Paddy (in the VM shell)">
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh -o /tmp/install.sh
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh -o /tmp/install.sh
     bash /tmp/install.sh
     rm -f /tmp/install.sh
     ```
 
-    The installer installs Node and dependencies if not already present, installs OpenClaw, and launches onboarding. See [Install](/install) for details.
+    The installer installs Node and dependencies if not already present, installs Paddy, and launches onboarding. See [Install](/install) for details.
 
   </Step>
 
@@ -265,8 +265,8 @@ Set up an Azure Linux VM with the Azure CLI, apply Network Security Group (NSG) 
     After onboarding completes:
 
     ```bash
-    openclaw doctor --json
-    openclaw gateway status
+    paddy doctor --json
+    paddy gateway status
     ```
 
     If your organization already has GitHub Copilot licenses, you can choose the GitHub Copilot provider during onboarding instead of a separate model API key. See [GitHub Copilot provider](/providers/github-copilot).

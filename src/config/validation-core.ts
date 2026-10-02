@@ -369,7 +369,7 @@ function collectSandboxContainerEnvIssues(
             path: issuePath,
             message:
               `${backendName} sandbox backend requires portable environment names and single-line, non-NUL values because the secure env-file transport is line-delimited. ` +
-              `${remediation} SSH/OpenShell backends may keep multiline values. Run openclaw doctor to report the invalid path; manual remediation is required.`,
+              `${remediation} SSH/OpenShell backends may keep multiline values. Run paddy doctor to report the invalid path; manual remediation is required.`,
           },
           pathSegments,
         ),
@@ -471,21 +471,16 @@ export function validateConfigObjectRaw(
       issues: [{ path: "agents.entries", message: formatDuplicateAgentDirError(duplicates) }],
     };
   }
-  const avatarIssues = validateIdentityAvatar(validatedConfig, opts?.env);
-  if (avatarIssues.length > 0) {
-    return { ok: false, issues: avatarIssues };
-  }
-  const gatewayTailscaleBindIssues = validateGatewayTailscaleBind(validatedConfig);
-  if (gatewayTailscaleBindIssues.length > 0) {
-    return { ok: false, issues: gatewayTailscaleBindIssues };
-  }
-  const gatewayTailscaleAuthIssues = validateGatewayTailscaleAuth(validatedConfig);
-  if (gatewayTailscaleAuthIssues.length > 0) {
-    return { ok: false, issues: gatewayTailscaleAuthIssues };
-  }
-  const modelPolicyAllowIssues = collectModelPolicyAllowIssues(validatedConfig);
-  if (modelPolicyAllowIssues.length > 0) {
-    return { ok: false, issues: modelPolicyAllowIssues };
+  for (const validate of [
+    () => validateIdentityAvatar(validatedConfig, opts?.env),
+    () => validateGatewayTailscaleBind(validatedConfig),
+    () => validateGatewayTailscaleAuth(validatedConfig),
+    () => collectModelPolicyAllowIssues(validatedConfig),
+  ]) {
+    const issues = validate();
+    if (issues.length > 0) {
+      return { ok: false, issues };
+    }
   }
   return { ok: true, config: validatedConfig };
 }

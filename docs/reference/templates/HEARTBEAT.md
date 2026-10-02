@@ -7,18 +7,18 @@ read_when:
 
 # HEARTBEAT.md is retired
 
-OpenClaw no longer creates `HEARTBEAT.md` in new workspaces or reads it at runtime. Heartbeat instructions now live in the system-owned monitor scratch in the shared state database.
+Paddy no longer creates `HEARTBEAT.md` in new workspaces or reads it at runtime. Heartbeat instructions now live in the system-owned monitor scratch in the shared state database.
 
-Manage the current monitor scratch with the monitor job id from `openclaw automations list --all`:
+Manage the current monitor scratch with the monitor job id from `paddy automations list --all`:
 
 ```bash
-openclaw automations scratch <jobId>
-openclaw automations scratch <jobId> --set "..."
-openclaw automations scratch <jobId> --file notes.md
-openclaw automations scratch <jobId> --unset
+paddy automations scratch <jobId>
+paddy automations scratch <jobId> --set "..."
+paddy automations scratch <jobId> --file notes.md
+paddy automations scratch <jobId> --unset
 ```
 
-If an older workspace still contains `HEARTBEAT.md`, run `openclaw doctor --fix`. Doctor imports its instructions into monitor scratch, converts valid legacy `tasks:` entries into cron jobs, archives the original under the state directory, and removes the workspace file.
+If an older workspace still contains `HEARTBEAT.md`, run `paddy doctor --fix`. Doctor imports its instructions into monitor scratch, converts valid legacy `tasks:` entries into cron jobs, archives the original under the state directory, and removes the workspace file.
 
 ## Related
 

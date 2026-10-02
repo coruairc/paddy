@@ -44,8 +44,8 @@ include update step summaries and command output tails.
 Example partial patch:
 
 ```bash
-openclaw gateway call config.get --params '{}'  # capture payload.hash
-openclaw gateway call config.patch --params '{
+paddy gateway call config.get --params '{}'  # capture payload.hash
+paddy gateway call config.patch --params '{
   "raw": "{ channels: { telegram: { groups: { \"*\": { requireMention: false } } } } }",
   "baseHash": "<hash>"
 }'
@@ -83,7 +83,7 @@ patch may return a no-op, which does not reapply the saved config. Follow the er
 with a rollback outcome do not include this receipt.
 
 `channels.status` reports active-work deferrals in `statusIssues`, alongside
-channel policy diagnostics shown in the Control UI and `openclaw channels status`.
+channel policy diagnostics shown in the Control UI and `paddy channels status`.
 `channels.start` also returns a diagnostic when that channel's reload is deferred;
 manual stop/start continues to use the published runtime configuration. Wait for
 active work to finish and refresh status. These diagnostics describe deferred

@@ -3,6 +3,7 @@ import {
   errorShape,
   GatewayErrorDetailCodes,
 } from "../../../packages/gateway-protocol/src/schema/error-codes.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveStateDir } from "../../config/paths.js";
 import {
   getGatewayRestartDrainSignal,
@@ -17,7 +18,7 @@ import {
 import type { RespondFn } from "./types.js";
 
 const SETUP_ADMISSION_BUSY_MESSAGE =
-  "OpenClaw setup is already in progress; try again when it finishes.";
+  `${PRODUCT_NAME} setup is already in progress; try again when it finishes.`;
 
 let wizardSessionInProgress = false;
 const wizardSessionAdmissionSettlements = new WeakMap<object, Promise<unknown>>();

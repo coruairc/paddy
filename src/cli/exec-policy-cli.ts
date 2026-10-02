@@ -31,6 +31,7 @@ import {
   type ExecTarget,
 } from "../infra/exec-approvals.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import {
   buildExecPolicyToolAccess,
   formatExecPolicyCommandApprovals,
@@ -280,7 +281,7 @@ async function buildLocalExecPolicyShowPayload(
   if (!hasExplicitTarget && listAgentIds(config).length === 0) {
     payload.toolAccessSelectionRequired = {
       agentIds: [],
-      hint: "Configure an agent with openclaw agents add to inspect terminal tool access.",
+      hint: `Configure an agent with ${CLI_NAME} agents add to inspect terminal tool access.`,
     };
     return payload;
   }

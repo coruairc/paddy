@@ -156,7 +156,7 @@ describe("Git-backed SQLite snapshots", () => {
       path.join(stateAlias, "backup"),
     ]) {
       await expect(initializeGitBackupRepository({ repositoryPath, stateDir })).rejects.toThrow(
-        `Git backup repository must be outside the OpenClaw state directory: ${stateDir}`,
+        `Git backup repository must be outside the Paddy state directory: ${stateDir}`,
       );
     }
   });
@@ -370,7 +370,7 @@ describe("Git-backed SQLite snapshots", () => {
 
     await expect(
       createGitBackup({ repositoryPath, stateDir, databases: [database] }),
-    ).rejects.toThrow(/repository must be dedicated to OpenClaw backups/u);
+    ).rejects.toThrow(/repository must be dedicated to Paddy backups/u);
     await expect(fs.readFile(operatorFile, "utf8")).resolves.toBe("operator-owned\n");
   });
 
@@ -400,7 +400,7 @@ describe("Git-backed SQLite snapshots", () => {
 
     await expect(
       createGitBackup({ repositoryPath, stateDir, databases: [database], all: true }),
-    ).rejects.toThrow(/repository must be dedicated to OpenClaw backups/u);
+    ).rejects.toThrow(/repository must be dedicated to Paddy backups/u);
     await expect(fs.readFile(unownedFile, "utf8")).resolves.toBe("operator-owned\n");
     await expect(
       fs.readFile(path.join(ownedAgentPath, "manifest.json"), "utf8"),

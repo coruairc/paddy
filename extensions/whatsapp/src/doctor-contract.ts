@@ -33,23 +33,23 @@ export const legacyConfigRules: ChannelDoctorLegacyConfigRule[] = [
   {
     path: ["channels", "whatsapp", "ackReaction"],
     message:
-      'channels.whatsapp.ackReaction moved to global message acknowledgement settings. Run "openclaw doctor --fix".',
+      'channels.whatsapp.ackReaction moved to global message acknowledgement settings. Run "paddy doctor --fix".',
   },
   {
     path: ["channels", "whatsapp", "accounts"],
     message:
-      'channels.whatsapp.accounts.<id>.ackReaction moved to global message acknowledgement settings. Run "openclaw doctor --fix".',
+      'channels.whatsapp.accounts.<id>.ackReaction moved to global message acknowledgement settings. Run "paddy doctor --fix".',
     match: (value) => hasLegacyAccountStreamingAliases(value, hasAckReaction),
   },
   {
     path: ["channels", "whatsapp", "exposeErrorText"],
     message:
-      'channels.whatsapp.exposeErrorText is retired and ignored. Run "openclaw doctor --fix".',
+      'channels.whatsapp.exposeErrorText is retired and ignored. Run "paddy doctor --fix".',
   },
   {
     path: ["channels", "whatsapp", "accounts"],
     message:
-      'channels.whatsapp.accounts.<id>.exposeErrorText is retired and ignored. Run "openclaw doctor --fix".',
+      'channels.whatsapp.accounts.<id>.exposeErrorText is retired and ignored. Run "paddy doctor --fix".',
     match: (value) => hasLegacyAccountStreamingAliases(value, hasExposeErrorText),
   },
 ];

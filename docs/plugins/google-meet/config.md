@@ -12,7 +12,7 @@ Plugin config defaults, optional overrides, and voice-provider examples. Part of
 
 ## Config
 
-The common Chrome agent path only needs the plugin enabled, BlackHole, SoX, a realtime provider key, and a configured OpenClaw TTS provider:
+The common Chrome agent path only needs the plugin enabled, BlackHole, SoX, a realtime provider key, and a configured Paddy TTS provider:
 
 ```json5
 {
@@ -36,7 +36,7 @@ The common Chrome agent path only needs the plugin enabled, BlackHole, SoX, a re
 | `chromeNode.node`                 | unset                                    | Node id/name/IP for `chrome-node`; required when more than one capable node may be connected                                                                                                                                                     |
 | `chrome.launch`                   | `true`                                   | Launch Chrome for the join; set `false` only when reusing an already-open session                                                                                                                                                                |
 | `chrome.audioBackend`             | `"auto"`                                 | Selects `blackhole-2ch` on macOS or `pipewire-pulse` on Linux; set an explicit backend when a paired Chrome node uses a different OS than the Gateway                                                                                            |
-| `chrome.guestName`                | `"OpenClaw Agent"`                       | Shown on the signed-out Meet guest screen                                                                                                                                                                                                        |
+| `chrome.guestName`                | `"Paddy Agent"`                          | Shown on the signed-out Meet guest screen                                                                                                                                                                                                        |
 | `chrome.autoJoin`                 | `true`                                   | Best-effort guest-name fill and Join Now click on `chrome-node`                                                                                                                                                                                  |
 | `chrome.reuseExistingTab`         | `true`                                   | Activates an existing Meet tab instead of opening duplicates                                                                                                                                                                                     |
 | `chrome.waitForInCallMs`          | `20000`                                  | Wait for the Meet tab to report in-call before the talk-back intro fires                                                                                                                                                                         |
@@ -55,22 +55,22 @@ The common Chrome agent path only needs the plugin enabled, BlackHole, SoX, a re
 | `realtime.toolPolicy`             | `"safe-read-only"`                       | See [Agent and bidi modes](/plugins/google-meet/tool-and-modes#agent-and-bidi-modes)                                                                                                                                                             |
 | `realtime.instructions`           | brief spoken-reply instructions          | Tells the model to speak briefly and use `openclaw_agent_consult` for deeper answers                                                                                                                                                             |
 | `realtime.introMessage`           | `"Say exactly: I'm here and listening."` | Spoken once when the realtime bridge connects; set to `""` to join silently                                                                                                                                                                      |
-| `realtime.agentId`                | `"main"`                                 | OpenClaw agent id used for function-tool consults and native Live delegation.                                                                                                                                                                    |
+| `realtime.agentId`                | `"main"`                                 | Paddy agent id used for function-tool consults and native Live delegation.                                                                                                                                                                       |
 | `voiceCall.enabled`               | `true`                                   | Delegates the Twilio PSTN call, DTMF, and intro greeting to the Voice Call plugin                                                                                                                                                                |
 | `voiceCall.dtmfDelayMs`           | `12000`                                  | Leading wait before playing a PIN-derived DTMF sequence over Twilio                                                                                                                                                                              |
 | `voiceCall.postDtmfSpeechDelayMs` | `5000`                                   | Delay before requesting the realtime intro greeting after Voice Call starts the Twilio leg                                                                                                                                                       |
 
 `chrome.audioBridgeCommand` and `chrome.audioBridgeHealthCommand` let an external bridge own the whole local audio path instead of `chrome.audioInputCommand`/`chrome.audioOutputCommand`; see [Notes](/plugins/google-meet#notes) for the constraint on which mode can use them.
 
-An `openclaw doctor --fix` migration exists for the legacy `realtime.provider: "google"` shape: it moves that intent to `realtime.voiceProvider: "google"` plus `realtime.transcriptionProvider: "openai"` when those fields are not already set.
+An `paddy doctor --fix` migration exists for the legacy `realtime.provider: "google"` shape: it moves that intent to `realtime.voiceProvider: "google"` plus `realtime.transcriptionProvider: "openai"` when those fields are not already set.
 
 ### GPT-Live with Cove
 
 Select `bidi` mode for GPT-Live speech. `agent` mode continues to use realtime
-transcription and regular OpenClaw TTS; changing the realtime voice model does
+transcription and regular Paddy TTS; changing the realtime voice model does
 not change that mode's voice.
 
-Sign in on the Gateway host with `openclaw models auth login --provider openai`,
+Sign in on the Gateway host with `paddy models auth login --provider openai`,
 then configure the existing model and provider fields:
 
 ```json5
@@ -121,7 +121,7 @@ and model/voice compatibility.
     defaultProfile: "openclaw",
   },
   chrome: {
-    guestName: "OpenClaw Agent",
+    guestName: "Paddy Agent",
     waitForInCallMs: 30000,
     bargeInInputCommand: [
       "sox",

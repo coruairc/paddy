@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveGatewayInstallEntrypoint } from "../daemon/gateway-entrypoint.js";
 import { isNodeRuntime } from "../daemon/runtime-binary.js";
 import type { UpdateRepairValidation } from "../infra/update-repair-protocol.js";
@@ -25,7 +26,7 @@ export async function validateTriageDoctor(params: {
   const entrypoint = await resolveGatewayInstallEntrypoint(installRoot);
   signal.throwIfAborted();
   if (!entrypoint) {
-    throw new Error("The installed OpenClaw entrypoint is unavailable.");
+    throw new Error(`The installed ${PRODUCT_NAME} entrypoint is unavailable.`);
   }
   // A fresh child reads the repaired installation and can be cancelled without
   // leaving Doctor's temporary process-global state active in this CLI.

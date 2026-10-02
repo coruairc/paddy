@@ -1,7 +1,7 @@
 ---
 summary: "Build a third-party operator or WebChat client for the Gateway WebSocket protocol"
 read_when:
-  - Building an operator, dashboard, or WebChat client outside the OpenClaw repository
+  - Building an operator, dashboard, or WebChat client outside the Paddy repository
   - Implementing Gateway reconnect, history, approvals, or device pairing
   - Updating a third-party client for a new Gateway wire version
 title: "Building a Gateway client"
@@ -28,7 +28,7 @@ If an existing lockfile still pins either package to the reserved `0.0.0`
 artifact, rerun the command above to replace it. Those reserved artifacts have no
 runnable entrypoint or TypeScript declarations.
 
-Package versions follow the OpenClaw release train and are separate from the wire
+Package versions follow the Paddy release train and are separate from the wire
 protocol version. The `2026.8.1` packages export wire version `4`; that does not
 guarantee compatibility with every Gateway release. The root `openclaw` CLI has
 its own package versions and dist-tags. Pin and test the client and Gateway
@@ -70,8 +70,8 @@ The [operator scopes reference](/gateway/operator-scopes)
 defines the complete method and approval-time rules.
 
 Do not create a per-client bearer token by hand-editing `openclaw.json`. Configure
-the Gateway's shared bootstrap authentication with `openclaw configure --section
-gateway` or the `openclaw onboard --gateway-auth ...` options, then let device
+the Gateway's shared bootstrap authentication with `paddy configure --section
+gateway` or the `paddy onboard --gateway-auth ...` options, then let device
 pairing mint the client token:
 
 1. Persist an Ed25519 device identity in the client.
@@ -83,8 +83,8 @@ pairing mint the client token:
    `connect.challenge` existed may use local time only on their no-challenge path.
 3. If the Gateway returns structured `PAIRING_REQUIRED` details, show the request
    ID and pause or retry according to `error.details.recommendedNextStep`.
-4. On the Gateway host, review the request with `openclaw devices list`, then
-   approve that exact current request with `openclaw devices approve <requestId>`.
+4. On the Gateway host, review the request with `paddy devices list`, then
+   approve that exact current request with `paddy devices approve <requestId>`.
 5. Reconnect and persist `hello-ok.auth.deviceToken` with the negotiated role and
    scopes. Use that device token for later connections.
 
@@ -343,6 +343,6 @@ before each upgrade.
 ## Related
 
 - [Gateway protocol](/gateway/protocol)
-- [Embedding OpenClaw](/gateway/embedding)
+- [Embedding Paddy](/gateway/embedding)
 - [Gateway RPC reference](/reference/rpc)
 - [Gateway integrations for external apps](/gateway/external-apps)

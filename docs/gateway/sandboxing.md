@@ -1,12 +1,12 @@
 ---
-summary: "How OpenClaw sandboxing works: modes, scopes, workspace access, and images"
+summary: "How Paddy sandboxing works: modes, scopes, workspace access, and images"
 title: "Sandboxing"
 sidebarTitle: "Sandboxing"
 read_when: "You want a dedicated explanation of sandboxing or need to tune agents.defaults.sandbox."
 status: active
 ---
 
-OpenClaw can run tool execution inside a sandbox backend to reduce blast radius. Sandboxing is off by default and controlled by `agents.defaults.sandbox` (global), `agents.entries.*.sandbox` (per-agent), or a required creator-role sandbox policy. The Gateway process always stays on the host; only tool execution moves into the sandbox when enabled.
+Paddy can run tool execution inside a sandbox backend to reduce blast radius. Sandboxing is off by default and controlled by `agents.defaults.sandbox` (global), `agents.entries.*.sandbox` (per-agent), or a required creator-role sandbox policy. The Gateway process always stays on the host; only tool execution moves into the sandbox when enabled.
 
 <Note>
 This is not a perfect security boundary, but it materially limits filesystem and process access when the model does something dumb.
@@ -67,9 +67,9 @@ Tool allow/deny policies still apply before sandbox rules. If a tool is denied g
 
 Debugging:
 
-- `openclaw sandbox list` shows sandbox containers, status, image match, age, idle time, and associated session/agent.
-- `openclaw sandbox explain [--session <key>] [--agent <id>]` inspects effective sandbox mode, host workspace, runtime workdir, Docker mounts, tool policy, and fix-it config keys. Its `workspaceRoot` field remains the configured sandbox root; `effectiveHostWorkspaceRoot` shows where the active workspace actually lives.
-- `openclaw sandbox recreate [--all | --session <key> | --agent <id>] [--browser] [--force]` removes containers/environments so they get recreated with current config on next use.
+- `paddy sandbox list` shows sandbox containers, status, image match, age, idle time, and associated session/agent.
+- `paddy sandbox explain [--session <key>] [--agent <id>]` inspects effective sandbox mode, host workspace, runtime workdir, Docker mounts, tool policy, and fix-it config keys. Its `workspaceRoot` field remains the configured sandbox root; `effectiveHostWorkspaceRoot` shows where the active workspace actually lives.
+- `paddy sandbox recreate [--all | --session <key> | --agent <id>] [--browser] [--force]` removes containers/environments so they get recreated with current config on next use.
 - See [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) for the "why is this blocked?" mental model.
 
 ## Multi-agent overrides
@@ -99,5 +99,5 @@ Each agent can override sandbox + tools: `agents.entries.*.sandbox` and `agents.
 - [Sandbox configuration](/gateway/config-agents/sandbox#agentsdefaultssandbox)
 - [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) -- debugging "why is this blocked?"
 - [Security](/gateway/security)
-- [`openclaw sandbox`](/cli/sandbox) — manage sandbox runtimes and inspect the effective sandbox policy
+- [`paddy sandbox`](/cli/sandbox) — manage sandbox runtimes and inspect the effective sandbox policy
 - [Cloud Workers](/gateway/cloud-workers) — dispatching session work to throwaway cloud machines; its managed workspace is not an OS sandbox

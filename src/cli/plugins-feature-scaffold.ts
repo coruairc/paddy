@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { VERSION } from "../version.js";
+import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 
 export function writeFeaturePluginScaffold(params: {
   rootDir: string;
@@ -23,9 +24,9 @@ export function writeFeaturePluginScaffold(params: {
         type: "module",
         private: true,
         scripts: {
-          build: "tsc -p tsconfig.json && openclaw plugins build",
-          validate: "openclaw plugins validate --json",
-          pack: "openclaw plugins pack --json",
+          build: "tsc -p tsconfig.json && paddy plugins build",
+          validate: "paddy plugins validate --json",
+          pack: "paddy plugins pack --json",
         },
         files: ["dist", "openclaw.plugin.json", "README.md"],
         peerDependencies: { openclaw: `>=${VERSION}` },
@@ -176,7 +177,7 @@ export default defineControlUiPlugin({
     ),
     "README.md": `# ${params.name}
 
-This OpenClaw feature plugin includes a typed draft-analysis operation, a model tool, a native page, and a composer replacement. The browser entry owns its DOM and uses the host's canonical draft and send operations.
+This ${PRODUCT_NAME} feature plugin includes a typed draft-analysis operation, a model tool, a native page, and a composer replacement. The browser entry owns its DOM and uses the host's canonical draft and send operations.
 
 ## Build and install
 
@@ -184,7 +185,7 @@ This OpenClaw feature plugin includes a typed draft-analysis operation, a model 
 npm install
 npm run build
 npm run validate
-openclaw plugins install .
+${CLI_NAME} plugins install .
 \`\`\`
 
 Installation applies the plugin in the running local Gateway. If the Gateway is stopped, start it to load the saved installation.
@@ -195,7 +196,7 @@ Select ${params.name} in the Control UI sidebar. Open **Plugins > Customize UI**
 
 For agent-requested activation, run \`npm run pack\`. The receipt contains the exact archive path and SHA-256 digest for \`plugin_activate_artifact\`. Approval applies to those bundled bytes and does not enable Custom plugin UI. The archive has no install scripts or package dependencies; backend activation applies through the running Gateway.
 
-After browser-only changes, run the build again and use **Plugins > Customize UI > Reload plugin UI** as an administrator. After editing installed backend source, run \`openclaw plugins reload ${params.id}\`. Rebuild compiled code before reloading; for a copied installation, reinstall the rebuilt package. Plugin install and update commands apply changes through the running Gateway. Native plugins run trusted code in the Gateway and browser; install only code you trust.
+After browser-only changes, run the build again and use **Plugins > Customize UI > Reload plugin UI** as an administrator. After editing installed backend source, run \`${CLI_NAME} plugins reload ${params.id}\`. Rebuild compiled code before reloading; for a copied installation, reinstall the rebuilt package. Plugin install and update commands apply changes through the running Gateway. Native plugins run trusted code in the Gateway and browser; install only code you trust.
 
 Keep browser imports on the browser-safe \`control-ui\` and \`feature-contract\` SDK entrypoints. Bundle framework dependencies with the plugin. Return a dispose handle for DOM, subscriptions, and other resources; check the view's abort signal after asynchronous work.
 `,

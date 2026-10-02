@@ -119,7 +119,7 @@ describe("channel pairing account isolation", () => {
     });
     await expect(listChannelPairingRequests("other", env, "beta")).resolves.toEqual([]);
     expect(replies).toHaveLength(1);
-    expect(replies[0]).toContain(`openclaw pairing approve demo ${stored.code}`);
+    expect(replies[0]).toContain(`paddy pairing approve demo ${stored.code}`);
     await expect(pairing.issueChallenge(challenge)).resolves.toEqual({ created: false });
     expect(replies).toHaveLength(1);
     await expect(

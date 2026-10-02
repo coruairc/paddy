@@ -68,7 +68,7 @@ describe("browser control availability diagnostics", () => {
     {
       name: "allowlist exclusion",
       config: { plugins: { allow: ["telegram"] } },
-      contains: ['"browser" is not in plugins.allow', "Add", "openclaw plugins enable browser"],
+      contains: ['"browser" is not in plugins.allow', "Add", "paddy plugins enable browser"],
     },
     {
       name: "global plugin disablement",
@@ -76,18 +76,18 @@ describe("browser control availability diagnostics", () => {
       contains: [
         "plugins.enabled=false",
         "plugins.enabled=true",
-        "openclaw plugins enable browser",
+        "paddy plugins enable browser",
       ],
     },
     {
       name: "plugin denylist",
       config: { plugins: { deny: ["browser"] } },
-      contains: ["plugins.deny", "Remove", "openclaw plugins enable browser"],
+      contains: ["plugins.deny", "Remove", "paddy plugins enable browser"],
     },
     {
       name: "explicit plugin disablement",
       config: { plugins: { entries: { browser: { enabled: false } } } },
-      contains: ["plugins.entries.browser.enabled=false", "openclaw plugins enable browser"],
+      contains: ["plugins.entries.browser.enabled=false", "paddy plugins enable browser"],
     },
     {
       name: "browser config disablement",
@@ -97,7 +97,7 @@ describe("browser control availability diagnostics", () => {
     {
       name: "unrecorded availability",
       config: {},
-      contains: ["openclaw doctor"],
+      contains: ["paddy doctor"],
     },
   ])("explains $name at the local dispatch boundary", async ({ config, contains }) => {
     mocks.loadConfig.mockReturnValue(config);
@@ -114,7 +114,7 @@ describe("browser control availability diagnostics", () => {
     mocks.sourceConfig = { plugins: { allow: ["telegram"] } };
 
     await expectThrownBrowserFetchError(() => fetchBrowserJson("/tabs"), {
-      contains: ['"browser" is not in plugins.allow', "openclaw plugins enable browser"],
+      contains: ['"browser" is not in plugins.allow', "paddy plugins enable browser"],
       omits: ["Restart"],
     });
   });
@@ -129,7 +129,7 @@ describe("browser control availability diagnostics", () => {
     await expectThrownBrowserFetchError(() => fetchBrowserJson("/tabs"), {
       contains: [
         record.status === "error" ? record.error : record.activationReason,
-        "openclaw doctor",
+        "paddy doctor",
         "Do NOT retry the browser tool",
       ],
       omits: ["Restart", "Retry the browser tool once"],

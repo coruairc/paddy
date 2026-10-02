@@ -137,7 +137,7 @@ describe("renderChatAvatar", () => {
       { agentId, name: "System", avatar: "blob:configured-image", textAvatar: "🦉" },
     ]);
     expect(image?.matches("img.chat-avatar.assistant")).toBe(true);
-    expect(image?.getAttribute("src")).toBe("/favicon.svg");
+    expect(image?.getAttribute("src")).toBe("/paddy-icon.jpg");
     expect(image?.getAttribute("alt")).toBe("System");
   });
 

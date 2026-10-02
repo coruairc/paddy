@@ -46,6 +46,6 @@ export async function waitForGatewayDiagnostic(
     kind: "timeout",
     timeoutMs,
     connectionDetails: await buildGatewayProbeConnectionDetails(opts),
-    message: `${!readiness || readiness.healthy ? "Gateway diagnostic budget exhausted" : "Gateway not reachable"} after waiting ${Math.round((performance.now() - startedAtMs) / 1000)} s.\n${sanitizeTerminalText(readiness?.probeError ?? readiness?.startupPhase ?? "Readiness could not be confirmed.")}\nRun openclaw gateway status --deep to diagnose.`,
+    message: `${!readiness || readiness.healthy ? "Gateway diagnostic budget exhausted" : "Gateway not reachable"} after waiting ${Math.round((performance.now() - startedAtMs) / 1000)} s.\n${sanitizeTerminalText(readiness?.probeError ?? readiness?.startupPhase ?? "Readiness could not be confirmed.")}\nRun paddy gateway status --deep to diagnose.`,
   });
 }

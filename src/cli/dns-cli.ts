@@ -14,6 +14,7 @@ import {
   resolveWideAreaDiscoveryDomain,
 } from "../infra/widearea-dns.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME, PRODUCT_NAME } from "./cli-name.js";
 import { formatDocsHelp } from "./help-format.js";
 
 type RunOpts = { allowFailure?: boolean; inherit?: boolean; timeoutMs?: number };
@@ -124,7 +125,7 @@ export function registerDnsCli(program: Command) {
     .description(
       "Set up CoreDNS to serve your discovery domain for unicast DNS-SD (Wide-Area Bonjour)",
     )
-    .option("--domain <domain>", "Wide-area discovery domain (e.g. openclaw.internal)")
+    .option("--domain <domain>", `Wide-area discovery domain (e.g. ${CLI_NAME}.internal)`)
     .option(
       "--apply",
       "Install/update CoreDNS config and (re)start the service (requires sudo)",
@@ -243,7 +244,7 @@ export function registerDnsCli(program: Command) {
         const serial = `${y}${m}${d}01`;
 
         const zoneLines = [
-          `; created by openclaw dns setup (will be overwritten by the gateway when wide-area discovery is enabled)`,
+          `; created by ${CLI_NAME} dns setup (will be overwritten by the gateway when wide-area discovery is enabled)`,
           `$ORIGIN ${wideAreaDomain}`,
           `$TTL 60`,
           `@ IN SOA ns1 hostmaster ${serial} 7200 3600 1209600 60`,
@@ -266,7 +267,7 @@ export function registerDnsCli(program: Command) {
         defaultRuntime.log("");
         defaultRuntime.log(
           theme.muted(
-            "Note: set discovery.wideArea.domain in the active OpenClaw config ($OPENCLAW_CONFIG_PATH, default ~/.openclaw/openclaw.json) on the gateway and restart the gateway so it writes the DNS-SD zone.",
+            `Note: set discovery.wideArea.domain in the active ${PRODUCT_NAME} config ($OPENCLAW_CONFIG_PATH, default ~/.openclaw/openclaw.json) on the gateway and restart the gateway so it writes the DNS-SD zone.`,
           ),
         );
       }

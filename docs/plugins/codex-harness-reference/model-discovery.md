@@ -14,7 +14,7 @@ How the Codex model catalog is discovered, and what happens when discovery fails
 
 By default, the Codex plugin asks the app-server for available models. Model
 availability is owned by Codex app-server, so the list can change when
-OpenClaw upgrades the bundled `@openai/codex` version or when a deployment
+Paddy upgrades the bundled `@openai/codex` version or when a deployment
 points `appServer.command` at a different Codex binary. Availability can also
 be account-scoped. Use `/codex models` on a running gateway to see the live
 catalog for that harness and account.
@@ -35,16 +35,16 @@ client leaves native models unavailable until discovery succeeds again.
 
 Use the Models page **Refresh** action (`models.list` with `view: "all"` and
 `refresh: true`) to publish the full catalog for the selected agent. Prepared-only
-reads do not start discovery. Native configuration changes outside OpenClaw
+reads do not start discovery. Native configuration changes outside Paddy
 require the native owner's supported reload/restart and a catalog refresh;
-OpenClaw does not poll native home files for readiness. Authored host routes and
+Paddy does not poll native home files for readiness. Authored host routes and
 explicit profile selections retain their existing auth and compatibility checks.
 
 Native catalog identifiers are runtime identifiers, not privacy labels. A
 deployment using a broker-owned alias must supply an alias-safe native catalog
 before starting app-server: both `id` and `model` in `model/list` must be the
 alias, with the desired `displayName`. Different native runtime identifiers are
-preserved in OpenClaw model parameters. Renaming the picker label does not hide
+preserved in Paddy model parameters. Renaming the picker label does not hide
 those identifiers from requests or session state.
 
 Codex's startup `model_catalog_json` setting can supply a native catalog; a
@@ -77,27 +77,25 @@ response remains authoritative even if it contains no visible models; HTTP
 `401` and `403` return an empty catalog rather than exposing fallback models.
 
 <Note>
-The current bundled harness is `@openai/codex` `0.155.1`. A live `model/list`
-probe against that app-server, using an isolated Codex home authenticated with
-a ChatGPT account, returned this public subset of catalog metadata:
+The current bundled harness is `@openai/codex` `0.158.0`. A live `model/list`
+probe against that app-server, authenticated with a ChatGPT account, returned
+this public subset of catalog metadata on September 28, 2026:
 
 | Model id        | Input modalities | Reasoning efforts                    | Default effort |
 | --------------- | ---------------- | ------------------------------------ | -------------- |
-| `gpt-6-astra`   | text, image      | low, medium, high, xhigh, max, ultra | medium         |
+| `gpt-6-astra`   | text, image      | low, medium, high, xhigh, max, ultra | low            |
 | `gpt-6-sol`     | text, image      | low, medium, high, xhigh, max, ultra | medium         |
 | `gpt-6-luna`    | text, image      | low, medium, high, xhigh, max        | medium         |
 | `gpt-5.6-luna`  | text, image      | low, medium, high, xhigh, max        | medium         |
-| `gpt-5.6-sol`   | text, image      | low, medium, high, xhigh, max, ultra | low            |
+| `gpt-5.6-sol`   | text, image      | low, medium, high, xhigh, max, ultra | medium         |
 | `gpt-5.6-terra` | text, image      | low, medium, high, xhigh, max, ultra | medium         |
 
-The check reused the same isolated home and catalog cache from `0.154.0`,
-without clearing the cache. The earlier app-server omitted GPT-6 Sol and Luna;
-`0.155.1` listed both for the same account. This snapshot does not establish
-access for other accounts. Available model IDs, input modalities, and reasoning
-efforts remain account-scoped. Run `/codex models` after starting or upgrading
-the gateway to inspect the actual public picker for your account.
+This snapshot does not establish access for other accounts or attribute catalog
+changes to the app-server version. Available model IDs, input modalities, and
+reasoning efforts remain account-scoped. Run `/codex models` after starting or
+upgrading the gateway to inspect the actual public picker for your account.
 
-OpenClaw reasoning controls preserve supported native levels, including `ultra`.
+Paddy reasoning controls preserve supported native levels, including `ultra`.
 Codex owns Ultra's proactive delegation and model-specific inference effort;
 Platform API effort metadata does not downgrade the selected runtime mode.
 Hidden models can also appear in the app-server catalog for internal or
@@ -105,6 +103,11 @@ specialized flows without being normal model-picker choices.
 </Note>
 
 Tune discovery under `plugins.entries.codex.config.discovery`:
+
+The default budget is 10 seconds. It allows Codex's five-second remote catalog
+refresh to finish or return its native cached/bundled catalog, with time left for
+transport and the account read. Setting a shorter budget can cancel that native
+fallback and leave native models unavailable until discovery succeeds.
 
 ```json5
 {
@@ -115,7 +118,7 @@ Tune discovery under `plugins.entries.codex.config.discovery`:
         config: {
           discovery: {
             enabled: true,
-            timeoutMs: 2500,
+            timeoutMs: 10000,
           },
         },
       },

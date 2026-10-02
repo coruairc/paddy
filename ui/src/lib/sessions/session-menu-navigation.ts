@@ -137,8 +137,7 @@ async function copySessionMarkdown<TRouteId extends string>(
     }
   }
   const assistantName =
-    context.agents.state.agentsList?.agents.find((agent) => agent.id === agentId)?.name ??
-    "OpenClaw";
+    context.agents.state.agentsList?.agents.find((agent) => agent.id === agentId)?.name ?? "Paddy";
   const markdown = buildChatMarkdown(pages.toReversed().flat(), assistantName);
   if (!markdown) {
     throw new Error(t("chat.commandResults.emptyExport"));

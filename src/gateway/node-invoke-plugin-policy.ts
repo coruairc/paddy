@@ -5,6 +5,7 @@ import { asOptionalRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { filterStringEntries } from "@openclaw/normalization-core/string-normalization";
 import { recordRuntimeActionDecision } from "../audit/runtime-action-decision.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { PluginRegistry } from "../plugins/registry-types.js";
 import { getActivePluginGatewayNodePolicyRegistry } from "../plugins/runtime-state.js";
 import { getPluginRuntimeGatewayRequestScope } from "../plugins/runtime/gateway-request-scope.js";
@@ -591,14 +592,14 @@ export async function applyPluginNodeInvokePolicy(params: {
       coverageState: result.ok ? "unknown" : "enforced",
       reasonCode: result.ok ? "node_action_callback_missing" : "node_plugin_policy_denied",
       summary: result.ok
-        ? "The plugin policy returned without invoking the expected OpenClaw node callback."
+        ? `The plugin policy returned without invoking the expected ${PRODUCT_NAME} node callback.`
         : "The registered plugin policy denied node transport dispatch.",
       missingEvidence: result.ok ? ["node.action_callback"] : [],
       remediation: result.ok
         ? [
             {
               code: "add_node_action_callback",
-              text: "Route the native action through the provided OpenClaw node callback.",
+              text: `Route the native action through the provided ${PRODUCT_NAME} node callback.`,
             },
           ]
         : [],

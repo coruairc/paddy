@@ -165,12 +165,12 @@ when authentication shares the request budget, and call its `cleanup` in
     non-secret plan metadata from the resolved profile into
     `fetchUsageSnapshot`). Return
     `{ handled: true }` only when the provider has definitively handled usage
-    auth but has no usable usage token, and OpenClaw must skip generic
+    auth but has no usable usage token, and Paddy must skip generic
     API-key/OAuth fallback. Return `null` or `undefined` when the provider did
-    not handle the request and OpenClaw should continue with generic fallback.
+    not handle the request and Paddy should continue with generic fallback.
 
     Declare the provider id in `contracts.usageProviders`. When that manifest
-    contract and **both** hooks are present, OpenClaw automatically includes
+    contract and **both** hooks are present, Paddy automatically includes
     the provider in usage collection without loading unrelated provider
     plugins. No core allowlist update is required.
     `fetchUsageSnapshot` returns the shared provider-neutral shape:
@@ -185,7 +185,7 @@ when authentication shares the request budget, and call its `cleanup` in
     Keep currency semantics exact. A provider credit is not USD unless the
     upstream contract says so. A plugin that implements only
     `fetchUsageSnapshot` remains available for explicit/synthetic callers but
-    is not auto-discovered, because OpenClaw cannot resolve its usage credential.
+    is not auto-discovered, because Paddy cannot resolve its usage credential.
 
   </Tab>
 </Tabs>
@@ -196,7 +196,7 @@ system-prompt boundary. Use `splitSystemPromptCacheBoundary` from
 `openclaw/plugin-sdk/provider-transport-runtime` to checkpoint the stable
 prefix separately, and consume the marker before sending any payload.
 Use `stripSystemPromptCacheBoundary` when caching is disabled. By default,
-OpenClaw strips the marker before invoking a custom transport.
+Paddy strips the marker before invoking a custom transport.
 
 For custom `createStreamFn` transports that accumulate JSON tool arguments,
 use `createToolArgumentPreviewSchedule()` from `openclaw/plugin-sdk/llm`.
@@ -208,19 +208,19 @@ Keep emitting every raw delta and validate the complete arguments at the
 transport's terminal boundary, even when the last preview was not refreshed.
 
 <Accordion title="Common provider hooks">
-  OpenClaw calls hooks in roughly this order for model/provider plugins.
+  Paddy calls hooks in roughly this order for model/provider plugins.
   Most providers only use 2-3. This is not the full `ProviderPlugin`
   contract - see [Internals: Provider Runtime
   Hooks](/plugins/architecture-internals#provider-runtime-hooks) for the
   complete, currently-accurate hook list and fallback notes.
-  Compatibility-only provider fields that OpenClaw no longer calls, such as
+  Compatibility-only provider fields that Paddy no longer calls, such as
   `ProviderPlugin.capabilities` and `suppressBuiltInModel`, are not listed
   here.
 
 Keep `resolveSyntheticAuth` synchronous and bounded. External process/network login
 checks belong in `prepareSyntheticAuth`, which receives the captured config,
 environment, and cancellation signal and returns a synthetic auth result or
-no result. OpenClaw retains completed availability within that preparation
+no result. Paddy retains completed availability within that preparation
 generation. Read-only workers receive the final provider-ref outcome (including
 unavailable), preserving alias precedence without rerunning external checks.
 Cancelled preparation must reject after cleanup, not report a missing login.
@@ -275,7 +275,7 @@ Cancelled preparation must reject after cleanup, not report a missing login.
 
 `reconcileLocalService` is called only for a configured local service,
 including a healthy process reused by a restarted Gateway. Honor its
-abort signal and reject when reconciliation fails; OpenClaw blocks the
+abort signal and reject when reconciliation fails; Paddy blocks the
 provider request and releases the request lease.
 
 Runtime fallback notes:
@@ -284,7 +284,7 @@ Runtime fallback notes:
 - Error classification uses the prepared provider owner or already loaded provider hooks. `matchesContextOverflowError` and `classifyFailoverReason` never trigger plugin discovery while handling an error; provider preparation owns loading those hooks.
 - `normalizeConfig` resolves one owning plugin per provider id (bundled providers first, then the matched runtime plugin) and calls only that hook - there is no scan across other providers. Google's own `normalizeConfig` hook is what normalizes `google` / `google-vertex` / `google-antigravity` config entries; it is not a separate core fallback.
 - `resolveConfigApiKey` uses the provider hook when exposed. Amazon Bedrock keeps AWS env-marker resolution in its provider plugin; runtime auth itself still uses the AWS SDK default chain when configured with `auth: "aws-sdk"`.
-- `resolveThinkingProfile(ctx)` receives the selected `provider`, `modelId`, optional merged `reasoning` catalog hint, and optional merged model `compat` facts. Use `compat` only to select the provider's thinking UI/profile.
+- `resolveThinkingProfile(ctx)` receives the selected `provider`, `modelId`, optional catalog route facts `api` and `baseUrl`, optional merged `reasoning` catalog hint, and optional merged model `compat` facts. Use `compat` only to select the provider's thinking UI/profile.
 - `normalizeResolvedModel(ctx)` can set `compactionThinkingDefault` on the returned `ProviderRuntimeModel` when the provider has a preferred embedded-summary effort. This is prepared runtime metadata, not an operator setting or catalog field. Explicit `agents.defaults.compaction.thinkingLevel` takes precedence; otherwise the host uses this preference and then `low`. The chosen effort is still clamped to the actual compaction candidate.
 - `resolveSystemPromptContribution` lets a provider inject cache-aware system-prompt guidance for a model family. Prefer it over the legacy plugin-wide `before_prompt_build` hook when the behavior belongs to one provider/model family and should preserve the stable/dynamic cache split.
 

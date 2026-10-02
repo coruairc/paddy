@@ -19,7 +19,7 @@ Gateway's SQLite state database:
   reject pending requests.
 
 The former standalone node pairing store (`nodes/paired.json` with a per-node
-token, retired from the connect path in January 2026) is gone: `openclaw doctor --fix`
+token, retired from the connect path in January 2026) is gone: `paddy doctor --fix`
 folds remaining rows into the device records and archives the
 legacy files with a `.migrated` suffix. Legacy TCP bridge support has been
 removed.
@@ -77,7 +77,7 @@ In the Control UI Devices page, open the pairing dialog, choose **Node host**,
 and copy the generated command to the device:
 
 ```bash
-openclaw node run --pair "oc-pair://<setup-code>"
+paddy node run --pair "oc-pair://<setup-code>"
 ```
 
 The setup link carries the Gateway endpoint, a short-lived single-use bootstrap
@@ -103,28 +103,32 @@ configure them before using a link if that access is too broad.
 For manual device admission, first run on the Gateway:
 
 ```bash
-openclaw devices list
-openclaw devices approve <deviceRequestId>
+paddy devices list
+paddy devices approve <deviceRequestId>
 ```
 
-Restart the installed node with `openclaw node restart`, or stop and rerun its
-foreground command. A node paused on `PAIRING_REQUIRED` does not resume after
-manual approval. Its reconnect creates the separate command-surface request:
+Headless node hosts keep reconnecting while device approval is pending, with
+exponential backoff capped at 30 seconds. After approval, the next reconnect
+creates the separate command-surface request:
 
 ```bash
-openclaw nodes pending
-openclaw nodes approve <nodeRequestId>
-openclaw nodes status
-openclaw nodes describe --node <idOrNameOrIp>
+paddy nodes pending
+paddy nodes approve <nodeRequestId>
+paddy nodes status
+paddy nodes describe --node <idOrNameOrIp>
 ```
+
+If an older client already reports that reconnect is paused, restart the
+installed node with `paddy node restart`, or stop and rerun its foreground
+command once.
 
 The device and node request IDs are distinct. To reject a surface request or
 manage an existing node instead:
 
 ```bash
-openclaw nodes reject <nodeRequestId>
-openclaw nodes remove --node <id|name|ip>
-openclaw nodes rename --node <id|name|ip> --name "Living Room iPad"
+paddy nodes reject <nodeRequestId>
+paddy nodes remove --node <id|name|ip>
+paddy nodes rename --node <id|name|ip> --name "Living Room iPad"
 ```
 
 `nodes status` shows paired/connected nodes and their capabilities.
@@ -258,7 +262,7 @@ do not create approval churn.
 First-time `role: node` device pairing from a private/CGNAT address is
 auto-approved when the gateway can **prove machine ownership over SSH**: it
 connects back to the pairing host (`BatchMode`, `StrictHostKeyChecking=yes`),
-runs `openclaw node identity --json` there, and approves only when the remote
+runs `paddy node identity --json` there, and approves only when the remote
 device id and public key match the pending request exactly. The key match is
 what makes this safe: reachability alone never approves, so NAT co-tenants,
 other users on a shared host, and LAN spoofing all fall through to the normal
@@ -275,10 +279,10 @@ Enabled by default. Requirements for it to fire:
 - Same eligibility floor as trusted-CIDR approval: fresh scopeless node
   pairing only; upgrades, browsers, Control UI, and WebChat always prompt.
 
-While a probe is running, the node client is told to keep retrying
-(`wait_then_retry`) instead of pausing for manual approval; if the probe
-fails, the next attempt falls back to the normal prompt flow. Failed targets
-get a short cooldown (5 minutes after a key mismatch).
+While device approval is pending, the node client is told to keep retrying
+(`wait_then_retry`), including while an SSH probe is running. If the probe fails,
+the request remains available for manual approval and the node keeps retrying.
+Failed SSH targets get a short cooldown (5 minutes after a key mismatch).
 
 Pairing settings hot-apply without restarting the Gateway. Automatic approvals
 recheck the current policy immediately before granting access, even if an SSH
@@ -311,7 +315,7 @@ Harden or disable:
 
 ## Manual approval (macOS app)
 
-The macOS app shows node and device requests in one OpenClaw approval panel.
+The macOS app shows node and device requests in one Paddy approval panel.
 Each request keeps the name, platform, source address, and all requested access
 visible. System-command execution and device admin access are highlighted.
 Node requests that Gateway classifies as requiring administrator approval also
@@ -368,7 +372,7 @@ Security boundary:
 - Only a fresh `role: node` device pairing request with no requested scopes is
   eligible.
 - This approves the device only. Its first command surface still needs
-  `openclaw nodes pending` and `openclaw nodes approve <nodeRequestId>`.
+  `paddy nodes pending` and `paddy nodes approve <nodeRequestId>`.
 - Operator, browser, Control UI, and WebChat clients stay manual.
 - Role, scope, metadata, and public-key upgrades stay manual.
 - Same-host loopback trusted-proxy header paths are not eligible, because that
@@ -397,7 +401,7 @@ Boundaries:
   eligible, as trigger and as target. Trusted-CIDR and SSH-verified pairings
   cross hosts where display metadata is not a machine identity, so they are
   never removed automatically — use the Control UI cleanup or
-  `openclaw nodes remove` for those.
+  `paddy nodes remove` for those.
 - Owner-approved and QR/setup-code (bootstrap) pairings are never removed
   automatically. Records approved before provenance existed stay protected,
   even after a later silent re-approval of the same device id.
@@ -411,7 +415,7 @@ Boundaries:
 ## Metadata-upgrade auto-approval
 
 When an already-paired device reconnects with only non-sensitive metadata
-changes (for example display name or client platform hints), OpenClaw treats
+changes (for example display name or client platform hints), Paddy treats
 that as a `metadata-upgrade`. Silent auto-approval is narrow: it applies only
 to trusted non-browser local reconnects that already proved possession of
 local or shared credentials, including same-host native app reconnects after
@@ -449,7 +453,7 @@ database under the Gateway state directory (default `~/.openclaw`):
   requests, and bootstrap tokens)
 
 If you override `OPENCLAW_STATE_DIR`, the database moves with it. Stop the Gateway
-and run `openclaw doctor --fix` to import stores from older releases. Doctor leaves
+and run `paddy doctor --fix` to import stores from older releases. Doctor leaves
 `devices/*.json.migrated` and `nodes/*.json.migrated` archives behind. It imports
 device approvals before folding node capabilities; existing SQLite approvals
 take precedence. Normal Gateway startup reports pending legacy stores without
@@ -458,7 +462,7 @@ changing them.
 Security notes:
 
 - Device tokens are secrets; treat the state database as sensitive.
-- Rotating a device token uses `openclaw devices rotate` /
+- Rotating a device token uses `paddy devices rotate` /
   `device.token.rotate`.
 
 ## Transport behavior

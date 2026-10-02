@@ -27,11 +27,11 @@ export function createPolicyDataAuthChecks(deps: PolicyDoctorCheckDeps): readonl
     ],
     [
       CHECK_IDS.policySecretsUnmanagedProvider,
-      "OpenClaw config SecretRefs use configured secret providers when policy requires managed providers.",
+      "Paddy config SecretRefs use configured secret providers when policy requires managed providers.",
     ],
     [
       CHECK_IDS.policySecretsDeniedProviderSource,
-      "OpenClaw config secret providers and SecretRefs do not use sources denied by policy.",
+      "Paddy config secret providers and SecretRefs do not use sources denied by policy.",
     ],
     [
       CHECK_IDS.policySecretsInsecureProvider,
@@ -39,11 +39,11 @@ export function createPolicyDataAuthChecks(deps: PolicyDoctorCheckDeps): readonl
     ],
     [
       CHECK_IDS.policyAuthProfileInvalidMetadata,
-      "OpenClaw config auth profiles declare required provider and mode metadata.",
+      "Paddy config auth profiles declare required provider and mode metadata.",
     ],
     [
       CHECK_IDS.policyAuthProfileUnapprovedMode,
-      "OpenClaw config auth profile modes stay within the policy allowlist.",
+      "Paddy config auth profile modes stay within the policy allowlist.",
     ],
   ]);
 }

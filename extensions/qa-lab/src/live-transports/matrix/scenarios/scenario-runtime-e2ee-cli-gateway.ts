@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import { createMatrixQaClient } from "../substrate/client.js";
-import { createMatrixQaE2eeScenarioClient } from "../substrate/e2ee-client.js";
 import { buildMatrixQaE2eeScenarioRoomKey } from "./scenario-contract.js";
 import {
   patchMatrixQaGatewayMatrixAccount,
@@ -24,8 +23,8 @@ import {
 } from "./scenario-runtime-e2ee-cli-shared.js";
 import { buildMatrixE2eeReplyArtifact } from "./scenario-runtime-e2ee-room.js";
 import {
+  createMatrixQaE2eeAccountClient,
   ensureMatrixQaE2eeOwnDeviceVerified,
-  requireMatrixQaE2eeOutputDir,
   requireMatrixQaGatewayConfigPath,
 } from "./scenario-runtime-e2ee-shared.js";
 import {
@@ -45,13 +44,13 @@ export async function runMatrixQaE2eeCliEncryptionSetupMultiAccountScenario(
   const decoyAccountId = "cli-multi-decoy";
   const account = await registerMatrixQaCliE2eeAccount({
     context,
-    deviceName: "OpenClaw Matrix QA CLI Multi Account Owner",
+    deviceName: "Paddy Matrix QA CLI Multi Account Owner",
     scenarioId: "matrix-e2ee-cli-encryption-setup-multi-account",
   });
   const cliDevice = await loginMatrixQaCliDevice(
     context.baseUrl,
     account,
-    "OpenClaw Matrix QA CLI Multi Account Target Device",
+    "Paddy Matrix QA CLI Multi Account Target Device",
     "Matrix E2EE CLI multi-account setup",
   );
   const cli = await createMatrixQaCliE2eeSetupRuntime({
@@ -164,12 +163,12 @@ export async function runMatrixQaE2eeCliSetupThenGatewayReplyScenario(
   const roomKey = buildMatrixQaE2eeScenarioRoomKey(scenarioId);
   const account = await registerMatrixQaCliE2eeAccount({
     context,
-    deviceName: "OpenClaw Matrix QA CLI Setup Gateway",
+    deviceName: "Paddy Matrix QA CLI Setup Gateway",
     scenarioId,
   });
   const driverAccount = await registerMatrixQaCliE2eeAccount({
     context,
-    deviceName: "OpenClaw Matrix QA CLI Setup Driver",
+    deviceName: "Paddy Matrix QA CLI Setup Driver",
     scenarioId,
   });
   const driverApi = createMatrixQaClient({
@@ -276,16 +275,12 @@ export async function runMatrixQaE2eeCliSetupThenGatewayReplyScenario(
     await context.waitGatewayAccountReady?.(accountId, {
       timeoutMs: context.timeoutMs,
     });
-    const driverClient = await createMatrixQaE2eeScenarioClient({
+    const driverClient = await createMatrixQaE2eeAccountClient(context, {
       accessToken: driverAccount.accessToken,
       actorId: `driver-cli-setup-gateway-${randomUUID().slice(0, 8)}`,
-      baseUrl: context.baseUrl,
       deviceId: driverAccount.deviceId,
-      observedEvents: context.observedEvents,
-      outputDir: requireMatrixQaE2eeOutputDir(context),
       password: driverAccount.password,
       scenarioId,
-      timeoutMs: context.timeoutMs,
       userId: driverAccount.userId,
     });
     const replied = await (async () => {

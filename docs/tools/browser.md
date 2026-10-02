@@ -1,14 +1,14 @@
 ---
-summary: "Index of the OpenClaw browser documentation, one page per reader job"
+summary: "Index of the Paddy browser documentation, one page per reader job"
 read_when:
   - Adding agent-controlled browser automation
   - Debugging why openclaw is interfering with your own Chrome
   - Implementing browser settings + lifecycle in the macOS app
   - You are looking for the Browser page that matches your task
-title: "Browser (OpenClaw-managed)"
+title: "Browser (Paddy-managed)"
 ---
 
-OpenClaw can run a **dedicated Chrome/Brave/Edge/Chromium profile** that the agent controls. It runs through a small local control service inside the Gateway (loopback only) and is isolated from your personal browser.
+Paddy can run a **dedicated Chrome/Brave/Edge/Chromium profile** that the agent controls. It runs through a small local control service inside the Gateway (loopback only) and is isolated from your personal browser.
 
 - Think of it as a **separate, agent-only browser**. The `openclaw` profile never touches your personal browser profile.
 - The agent opens tabs, reads pages, clicks, and types in this isolated lane.
@@ -45,7 +45,7 @@ one per reader job. Open the page that matches your task.
 This browser is **not** your daily driver. It is a safe, isolated surface for
 agent automation and verification.
 
-On macOS, you can explicitly copy cookies from a Chrome-family system profile into a separate managed profile. The managed browser still uses its own user data directory. Only the selected cookies are copied, and local storage and IndexedDB stay behind. See [Profiles](/tools/browser/existing-session#profiles-multi-browser) or the [`openclaw browser` CLI reference](/cli/browser) for import commands and limitations.
+On macOS, you can explicitly copy cookies from a Chrome-family system profile into a separate managed profile. The managed browser still uses its own user data directory. Only the selected cookies are copied, and local storage and IndexedDB stay behind. See [Profiles](/tools/browser/existing-session#profiles-multi-browser) or the [`paddy browser` CLI reference](/cli/browser) for import commands and limitations.
 
 ## Where each section moved
 

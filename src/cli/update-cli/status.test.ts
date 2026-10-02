@@ -30,6 +30,7 @@ import {
 } from "../../infra/update-run-ledger.js";
 import { ABANDONED_UPDATE_RUN_MS } from "../../infra/update-run-timeouts.js";
 import {
+  closeOpenClawStateDatabaseAsync,
   closeOpenClawStateDatabaseForTest,
   openOpenClawStateDatabase,
 } from "../../state/openclaw-state-db.js";
@@ -253,6 +254,7 @@ describe("update status Node runtime findings", () => {
     "preserves diagnostics with stored=$stored SQLite $sqliteVersion (JSON: $json)",
     async ({ json, stored, sqliteVersion, unavailable }) => {
       const recorded = stored ? createUpdateRun({ trigger: "cli" }) : undefined;
+      await closeOpenClawStateDatabaseAsync();
       closeOpenClawStateDatabaseForTest();
       vi.resetModules();
       const sqlitePrototype: {
@@ -288,10 +290,21 @@ describe("update status Node runtime findings", () => {
       });
       const command = await import("./status.js");
       const ledger = await import("../../infra/update-run-ledger.js");
+      const readOwner = await import("../../state/openclaw-state-db-readonly.js");
+      const workerRead = vi.spyOn(readOwner, "executeExistingOpenClawStateRead");
       if (unavailable) {
-        expect(() => ledger.findActiveUpdateRun()).toThrow(
-          "SQLite support is unavailable or unsafe",
-        );
+        let nativeFailure: unknown;
+        expect(() => {
+          try {
+            ledger.findActiveUpdateRun();
+          } catch (error) {
+            nativeFailure = error;
+            throw error;
+          }
+        }).toThrow("SQLite support is unavailable or unsafe");
+        // The host SQLite spy cannot cross threads; deliver the same runtime refusal
+        // through the async read owner without replacing status or diagnostic logic.
+        workerRead.mockRejectedValue(nativeFailure);
       }
       await expect(command.updateStatusCommand({ json })).resolves.toBeUndefined();
       if (json) {
@@ -312,7 +325,7 @@ describe("update status Node runtime findings", () => {
         expect(result).not.toHaveProperty("abandonedRun");
       } else {
         const output = runtime.log.mock.calls.flat().join("\n");
-        expect(output).toContain("OpenClaw update status");
+        expect(output).toContain("Paddy update status");
         expect(output.includes("Update run status unavailable:")).toBe(unavailable);
         if (sqliteVersion === "3.51.2") {
           expect(output).toContain("SQLite 3.51.2");
@@ -322,6 +335,7 @@ describe("update status Node runtime findings", () => {
       if (!stored) {
         expect(prepare).not.toHaveBeenCalled();
       }
+      workerRead.mockRestore();
       prepare.mockRestore();
       expect(recorded && ledger.getUpdateRun(recorded.runId)).toEqual(recorded);
     },
@@ -427,7 +441,8 @@ describe("update status Node runtime findings", () => {
   });
 });
 
-afterEach(() => {
+afterEach(async () => {
+  await closeOpenClawStateDatabaseAsync();
   closeOpenClawStateDatabaseForTest();
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
@@ -466,7 +481,7 @@ describe("update status readiness outcome", () => {
       expect(output.includes("Let the current update or repair finish")).toBe(!finished);
       if (!finished) {
         expect(output).toContain("in progress · validating");
-        expect(output.trim()).toMatch(/Check progress with openclaw update status\.$/);
+        expect(output.trim()).toMatch(/Check progress with paddy update status\.$/);
       }
       await updateStatusCommand({ json: true });
       expect(runtime.writeJson.mock.lastCall?.[0]).toMatchObject({
@@ -599,7 +614,7 @@ describe("update status abandoned-run reporting", () => {
         expect(result).not.toHaveProperty("migrationWarnings");
       } else {
         const output = runtime.log.mock.calls.flat().join("\n");
-        expect(output).toContain("OpenClaw update status");
+        expect(output).toContain("Paddy update status");
         expect(output).toContain("Pending migration status unavailable:");
       }
     },
@@ -729,7 +744,7 @@ describe("update status abandoned-run reporting", () => {
         expect(output).toContain("update-activation-timeout");
         expect(output).toContain("openclaw doctor");
         expect(output).toContain("Wait for the owning updater and its child processes to stop");
-        expect(output).toContain("openclaw update repair");
+        expect(output).toContain("paddy update repair");
         expect(output).not.toContain("Abandoned update detected");
       }
       expect(getUpdateRun(created.runId)).toEqual(finished);
@@ -748,7 +763,7 @@ describe("update status abandoned-run reporting", () => {
       });
       vi.stubEnv("OPENCLAW_SUPERVISOR_MODE", "");
       if (surface === "status") {
-        const rows = buildStatusUpdateRows(null);
+        const rows = await buildStatusUpdateRows(null);
         expect(rows).toContainEqual(
           expect.objectContaining({
             Item: "Update run",
@@ -829,7 +844,7 @@ describe("update status abandoned-run reporting", () => {
       }
       let output: string;
       if (surface === "status") {
-        output = JSON.stringify(buildStatusUpdateRows(null));
+        output = JSON.stringify(await buildStatusUpdateRows(null));
       } else {
         await updateStatusCommand({ json: surface === "json" });
         output =
@@ -897,7 +912,7 @@ describe("update status abandoned-run reporting", () => {
         }
       } else {
         const output = runtime.log.mock.calls.flat().join("\n");
-        expect(output).toContain("OpenClaw update status");
+        expect(output).toContain("Paddy update status");
         expect(output).toContain("Update run status unavailable:");
         expect(output).not.toContain(active.runId);
       }
@@ -965,7 +980,7 @@ describe("update status abandoned-run reporting", () => {
     } else {
       const output = runtime.log.mock.calls.map(([line]) => String(line)).join("\n");
       expect(output).toContain("Abandoned update detected;");
-      expect(output).toContain("openclaw update repair");
+      expect(output).toContain("paddy update repair");
       expect(output).not.toContain("update in progress:");
       expect(output).not.toContain("update failed:");
     }

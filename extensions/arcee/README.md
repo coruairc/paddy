@@ -1,12 +1,12 @@
-# OpenClaw Arcee AI Provider
+# Paddy Arcee AI Provider
 
-Official OpenClaw provider plugin for Arcee AI.
+Official Paddy provider plugin for Arcee AI.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/arcee-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/arcee> for setup and configuration.

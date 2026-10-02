@@ -131,7 +131,7 @@ Configures inbound media understanding (image/audio/video):
     **CLI entry** (`type: "cli"`):
 
     - `command`: executable to run
-    - `args`: templated args (supports `{{AttachmentPath}}`, `{{AttachmentUrl}}`, `{{AttachmentContentType}}`, `{{AttachmentDir}}`, `{{AttachmentIndex}}`, `{{Prompt}}`, `{{MaxChars}}`, etc.; `openclaw doctor --fix` migrates deprecated `{input}` placeholders to `{{AttachmentPath}}`). The older `{{MediaPath}}`, `{{MediaUrl}}`, `{{MediaType}}`, and `{{MediaDir}}` aliases remain available during their compatibility window but are deprecated.
+    - `args`: templated args (supports `{{AttachmentPath}}`, `{{AttachmentUrl}}`, `{{AttachmentContentType}}`, `{{AttachmentDir}}`, `{{AttachmentIndex}}`, `{{Prompt}}`, `{{MaxChars}}`, etc.; `paddy doctor --fix` migrates deprecated `{input}` placeholders to `{{AttachmentPath}}`). The older `{{MediaPath}}`, `{{MediaUrl}}`, `{{MediaType}}`, and `{{MediaDir}}` aliases remain available during their compatibility window but are deprecated.
 
     **Common fields:**
 
@@ -163,4 +163,4 @@ Kill switch for `progress_card`, the durable plan and status note used for non-t
 - The tool description tells the model to keep the plan current, use at most one `in_progress` step, and add Markdown only when it contributes information beyond the steps.
 - Use `progress_card` in new `tools.allow` and `tools.deny` policies. Existing policies that name `update_plan` map to `progress_card`, so shipped allowlists and denylists keep their meaning.
 
-Older configs used `tools.experimental.planTool`. Run `openclaw doctor --fix` to move the value to `tools.updatePlan`.
+Older configs used `tools.experimental.planTool`. Run `paddy doctor --fix` to move the value to `tools.updatePlan`.

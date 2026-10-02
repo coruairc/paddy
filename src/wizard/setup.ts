@@ -1,5 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { resolveOnboardingSetupTarget } from "../commands/onboard-agent-target.js";
 import * as firstAgentOnboarding from "../commands/onboard-first-agent.js";
@@ -46,7 +47,7 @@ import {
   type WizardConfigWriteOptions,
 } from "./setup.shared.js";
 import type { QuickstartGatewayDefaults, WizardFlow } from "./setup.types.js";
-import { resolveSetupWorkspaceSelection } from "./setup.workspace.js";
+import { resolveSetupWorkspaceSelection, validateSetupWorkspacePath } from "./setup.workspace.js";
 
 type SetupFlowChoice = WizardFlow | "import" | "keep-model" | `import:${string}`;
 
@@ -116,7 +117,7 @@ async function runSetupWizardOnce(
       );
     }
     await prompter.outro(
-      `Config invalid. Run \`${formatCliCommand("openclaw doctor --fix")}\` to apply supported repairs, then re-run setup.`,
+      `Config invalid. Run \`${formatCliCommand("paddy doctor --fix")}\` to apply supported repairs, then re-run setup.`,
     );
     runtime.exit(1);
     return;
@@ -138,15 +139,15 @@ async function runSetupWizardOnce(
           ? [`- ... +${compatibilityNotices.length - 4} more`]
           : []),
         "",
-        `Review: ${formatCliCommand("openclaw doctor")}`,
-        `Inspect: ${formatCliCommand("openclaw plugins inspect --all")}`,
+        `Review: ${formatCliCommand("paddy doctor")}`,
+        `Inspect: ${formatCliCommand("paddy plugins inspect --all")}`,
       ].join("\n"),
       t("wizard.setup.pluginCompatibilityTitle"),
     );
   }
 
   const quickstartHint = t("wizard.setup.flowQuickstartHint", {
-    command: formatCliCommand("openclaw configure"),
+    command: formatCliCommand("paddy configure"),
   });
   const manualHint = t("wizard.setup.flowAdvancedHint");
   const hasExistingModelConfig =
@@ -165,7 +166,7 @@ async function runSetupWizardOnce(
     normalizedExplicitFlow !== "import"
   ) {
     runtime.error(
-      "Invalid --flow. Use quickstart, manual, advanced, or import. Example: openclaw onboard --flow quickstart",
+      "Invalid --flow. Use quickstart, manual, advanced, or import. Example: paddy onboard --flow quickstart",
     );
     runtime.exit(1);
     return;
@@ -244,7 +245,7 @@ async function runSetupWizardOnce(
           const latest = await readSetupConfigFileSnapshot();
           if (!latest.valid) {
             throw new Error(
-              "Migration target config became invalid. Run `openclaw doctor --fix` to apply supported repairs.",
+              "Migration target config became invalid. Run `paddy doctor --fix` to apply supported repairs.",
             );
           }
           const latestConfig = latest.exists ? (latest.sourceConfig ?? latest.config) : {};
@@ -282,7 +283,7 @@ async function runSetupWizardOnce(
     const migratedSnapshot = await readSetupConfigFileSnapshot();
     if (!migratedSnapshot.valid) {
       throw new Error(
-        "Migration produced an invalid OpenClaw config. Run `openclaw doctor --fix` to apply supported repairs.",
+        `Migration produced an invalid ${PRODUCT_NAME} config. Run \`${CLI_NAME} doctor --fix\` to apply supported repairs.`,
       );
     }
     currentSetupSnapshot = migratedSnapshot;
@@ -421,6 +422,7 @@ async function runSetupWizardOnce(
         url: remoteUrl,
         config: baseConfig,
         originScopedDeviceAuth: true,
+        configuredRemote: !remoteUrlChanged,
         token: remoteProbeAuth?.auth.token,
         ...(remoteProbeAuth?.auth.password ? { password: remoteProbeAuth.auth.password } : {}),
       })
@@ -479,6 +481,8 @@ async function runSetupWizardOnce(
       : await prompter.text({
           message: t("wizard.setup.workspaceDirectory"),
           initialValue: baseConfig.agents?.defaults?.workspace ?? onboardHelpers.DEFAULT_WORKSPACE,
+          validate: (value) =>
+            validateSetupWorkspacePath(value.trim() || onboardHelpers.DEFAULT_WORKSPACE),
         }));
 
   const requestedWorkspaceDir = resolveUserPath(
@@ -584,8 +588,7 @@ async function runSetupWizardOnce(
     await prompter.note(t("wizard.setup.skipChannels"), t("wizard.setup.channelsTitle"));
   } else {
     const { listChannelPlugins } = await import("../channels/plugins/index.js");
-    const { createChannelSetupHooks, setupChannels } =
-      await import("../commands/onboard-channels.js");
+    const { createChannelSetupHooks, setupChannels } = await import("../flows/channel-setup.js");
     const channelSetup = createChannelSetupHooks({ runtime });
     const quickstartAllowFromChannels =
       flow === "quickstart"

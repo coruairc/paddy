@@ -1,4 +1,5 @@
 // Resolves cleanup inputs from current OpenClaw config and state paths.
+import { PRODUCT_NAME } from "../brand.js";
 import {
   readConfigFileSnapshot,
   readSourceConfigBestEffort,
@@ -39,7 +40,7 @@ export async function resolveCleanupPlanForRemoval(runtime: RuntimeEnv) {
     const issues = snapshot.valid ? workspaceWarnings : snapshot.issues;
     const issueSummary = formatConfigIssueSummary(issues) ?? "configuration read failed";
     runtime.error(
-      `Cannot safely remove OpenClaw state because workspace configuration could not be resolved: ${issueSummary}. Fix the configuration and retry.`,
+      `Cannot safely remove ${PRODUCT_NAME} state because workspace configuration could not be resolved: ${issueSummary}. Fix the configuration and retry.`,
     );
     return undefined;
   }

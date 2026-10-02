@@ -11,9 +11,9 @@ doc-schema-version: 1
 # Hooks
 
 Internal hooks are small JavaScript or TypeScript handlers that run in the
-Gateway process when OpenClaw emits an event. Use them to save session context,
+Gateway process when Paddy emits an event. Use them to save session context,
 log reset commands, or perform short side effects during message and session
-lifecycle events. OpenClaw includes [bundled hooks](/automation/hooks/bundled-hooks)
+lifecycle events. Paddy includes [bundled hooks](/automation/hooks/bundled-hooks)
 for common tasks; you do not need to write a plugin to use them.
 
 ## Choose the right surface
@@ -42,14 +42,14 @@ you a concrete file to inspect. Run these commands on the **Gateway host**, with
 the same profile and config as that Gateway:
 
 ```bash
-openclaw hooks list
-openclaw hooks info command-logger
-openclaw hooks enable command-logger
+paddy hooks list
+paddy hooks info command-logger
+paddy hooks enable command-logger
 ```
 
 The default `hybrid` [reload mode](/gateway/configuration#reload-modes) applies
 hook config changes without a restart. With reload mode `off`, run
-`openclaw gateway restart`, or restart a foreground Gateway yourself. Add
+`paddy gateway restart`, or restart a foreground Gateway yourself. Add
 `--agent <id>` when your configuration has multiple agents and no implicit owner.
 
 In a conversation you can safely reset, send `/new` or `/reset` as an authorized
@@ -62,13 +62,13 @@ tail -n 5 ~/.openclaw/logs/commands.log
 Look for a new JSON line with `"action":"new"` or `"action":"reset"`, a recent
 `timestamp`, and that conversation's `sessionKey`. With a custom state directory,
 read `<stateDir>/logs/commands.log` instead. This proves that a handler ran;
-`openclaw hooks check` alone does not.
+`paddy hooks check` alone does not.
 
 The log contains session and sender identifiers. Disable the hook after trying
 it if you do not want to retain those records:
 
 ```bash
-openclaw hooks disable command-logger
+paddy hooks disable command-logger
 ```
 
 ### Eligible, enabled, and loaded
@@ -153,7 +153,7 @@ with an explicit shutdown lifecycle, not a request/event handler.
 
 ## CLI reference
 
-See [`openclaw hooks`](/cli/hooks) for every public report and toggle option,
+See [`paddy hooks`](/cli/hooks) for every public report and toggle option,
 JSON output fields, exit behavior, and install/update aliases.
 
 ## Detailed topics

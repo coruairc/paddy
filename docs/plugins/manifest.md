@@ -1,12 +1,12 @@
 ---
 summary: "Plugin manifest + JSON schema requirements (strict config validation)"
 read_when:
-  - You are building an OpenClaw plugin
+  - You are building a Paddy plugin
   - You need to ship a plugin config schema or debug plugin validation errors
 title: "Plugin manifest"
 ---
 
-This page covers the **native OpenClaw plugin manifest**, `openclaw.plugin.json`. For compatible bundle layouts (Agent Plugins, Codex, Claude, Cursor), see [Plugin bundles](/plugins/bundles).
+This page covers the **native Paddy plugin manifest**, `openclaw.plugin.json`. For compatible bundle layouts (Agent Plugins, Codex, Claude, Cursor), see [Plugin bundles](/plugins/bundles).
 
 Compatible bundle formats use their own manifest files instead:
 
@@ -15,15 +15,15 @@ Compatible bundle formats use their own manifest files instead:
 - Claude bundle: `.claude-plugin/plugin.json`, or the default Claude component layout with no manifest
 - Cursor bundle: `.cursor-plugin/plugin.json`
 
-OpenClaw auto-detects those layouts but does not validate them against the `openclaw.plugin.json` schema below. For a compatible bundle, OpenClaw reads bundle metadata, declared skill roots, Claude command roots, Claude `settings.json` defaults, Claude LSP defaults, and supported hook packs, when the layout matches OpenClaw's runtime expectations.
+Paddy auto-detects those layouts but does not validate them against the `openclaw.plugin.json` schema below. For a compatible bundle, Paddy reads bundle metadata, declared skill roots, Claude command roots, Claude `settings.json` defaults, Claude LSP defaults, and supported hook packs, when the layout matches Paddy's runtime expectations.
 
-Every native OpenClaw plugin **must** ship `openclaw.plugin.json` in the **plugin root**. OpenClaw reads it to validate configuration **without executing plugin code**. A missing or invalid manifest blocks config validation and is treated as a plugin error.
+Every native Paddy plugin **must** ship `openclaw.plugin.json` in the **plugin root**. Paddy reads it to validate configuration **without executing plugin code**. A missing or invalid manifest blocks config validation and is treated as a plugin error.
 
 See [Plugins](/tools/plugin) for the full plugin system guide, and [Capability model](/plugins/architecture#public-capability-model) for the native capability model and current external-compatibility guidance.
 
 ## What this file does
 
-`openclaw.plugin.json` is metadata OpenClaw reads **before loading your plugin code**. Everything in it must be cheap enough to inspect without booting plugin runtime.
+`openclaw.plugin.json` is metadata Paddy reads **before loading your plugin code**. Everything in it must be cheap enough to inspect without booting plugin runtime.
 
 **Use it for:**
 
@@ -36,7 +36,7 @@ See [Plugins](/tools/plugin) for the full plugin system guide, and [Capability m
 - dashboard widget data bindings and action verbs
 - static MCP servers that should exist while the plugin is enabled
 - durable and regenerable state- or agent-relative backup resources
-- QA runner metadata the shared [`openclaw qa`](/concepts/qa-e2e-automation) host can inspect
+- QA runner metadata the shared [`paddy qa`](/concepts/qa-e2e-automation) host can inspect
 - channel-specific config metadata merged into catalog and validation surfaces
 
 **Do not use it for:** registering native runtime hooks, declaring the full plugin runtime entrypoint, or npm install metadata. Those belong in your plugin code and `package.json`.
@@ -54,7 +54,7 @@ The anchors from the single-page version still resolve here.
 - <a id="modelcatalog-reference"></a>[`modelCatalog`](/plugins/manifest/models#modelcatalog-reference)
 - <a id="modelidnormalization-reference"></a>[`modelIdNormalization`](/plugins/manifest/models#modelidnormalization-reference)
 - <a id="modelpricing-reference"></a>[`modelPricing`](/plugins/manifest/models#modelpricing-reference)
-- <a id="openclaw-provider-index"></a>[OpenClaw Provider Index](/plugins/manifest/models#openclaw-provider-index)
+- <a id="openclaw-provider-index"></a>[Paddy Provider Index](/plugins/manifest/models#openclaw-provider-index)
 
 ### Provider fields
 
@@ -118,7 +118,7 @@ The anchors from the single-page version still resolve here.
 [Manifest versus package.json](/plugins/manifest/package-json) — Which pre-runtime metadata lives in package.json, and which duplicate plugin id wins.
 
 - <a id="manifest-versus-package.json"></a><a id="manifest-versus-package-json"></a>[Manifest versus `package.json`](/plugins/manifest/package-json#manifest-versus-package-json)
-- <a id="package.json-fields-that-affect-discovery"></a><a id="package-json-fields-that-affect-discovery"></a>[`package.json#openclaw` fields](/plugins/manifest/package-json#package-json-fields-that-affect-discovery)
+- <a id="package.json-fields-that-affect-discovery"></a><a id="package-json-fields-that-affect-discovery"></a>[`package.json#paddy` fields](/plugins/manifest/package-json#package-json-fields-that-affect-discovery)
 - <a id="discovery-precedence-(duplicate-plugin-ids)"></a><a id="discovery-precedence-duplicate-plugin-ids"></a>[Discovery precedence](/plugins/manifest/package-json#discovery-precedence-duplicate-plugin-ids)
 
 ## Minimal example
@@ -240,8 +240,8 @@ The anchors from the single-page version still resolve here.
 | `syntheticAuthRefs`                  | No       | `string[]`                   | Provider or CLI backend refs whose plugin-owned synthetic auth hook should be probed during cold model discovery before runtime loads.                                                                                                                                                                                                                                                           |
 | `nonSecretAuthMarkers`               | No       | `string[]`                   | Bundled-plugin-owned placeholder API key values that represent non-secret local, OAuth, or ambient credential state.                                                                                                                                                                                                                                                                             |
 | `commandAliases`                     | No       | `object[]`                   | Command names owned by this plugin that should produce plugin-aware config and CLI diagnostics before runtime loads.                                                                                                                                                                                                                                                                             |
-| `cliCommands`                        | No       | `object[]`                   | Root CLI commands shown in `openclaw --help` before plugin code loads. Each row requires `name`, `description`, and `hasSubcommands`.                                                                                                                                                                                                                                                            |
-| `providerUsageAuthEnvVars`           | No       | `Record<string, string[]>`   | Usage/billing-only provider credentials. OpenClaw uses these names for usage discovery and secret scrubbing but never for inference auth.                                                                                                                                                                                                                                                        |
+| `cliCommands`                        | No       | `object[]`                   | Root CLI commands shown in `paddy --help` before plugin code loads. Each row requires `name`, `description`, and `hasSubcommands`.                                                                                                                                                                                                                                                               |
+| `providerUsageAuthEnvVars`           | No       | `Record<string, string[]>`   | Usage/billing-only provider credentials. Paddy uses these names for usage discovery and secret scrubbing but never for inference auth.                                                                                                                                                                                                                                                           |
 | `providerAuthAliases`                | No       | `Record<string, AuthAlias>`  | Provider ids that reuse another provider for auth lookup. A `baseUrls` condition applies only when that provider's configured endpoint matches; stored credentials retain their provider identity.                                                                                                                                                                                               |
 | `providerAuthChoices`                | No       | `object[]`                   | Cheap auth-choice metadata for onboarding pickers, preferred-provider resolution, and simple CLI flag wiring.                                                                                                                                                                                                                                                                                    |
 | `activation`                         | No       | `object`                     | Cheap activation planner metadata for startup, provider, command, channel, route, and capability-triggered loading. Metadata only; plugin runtime still owns actual behavior.                                                                                                                                                                                                                    |
@@ -250,7 +250,7 @@ The anchors from the single-page version still resolve here.
 | `doctorContract`                     | No       | `object`                     | Declares which dynamic doctor-contract surfaces the plugin artifact exports so doctor loads only relevant modules.                                                                                                                                                                                                                                                                               |
 | `doctorHealthChecks`                 | No       | `boolean`                    | Declares health-check registration in the selected plugin's public API. Read by the Codex doctor health API.                                                                                                                                                                                                                                                                                     |
 | `sessionRouteStateOwners`            | No       | `object[]`                   | Static session-route ownership for doctor cleanup. Each entry declares an `id`, `label`, and optional `providerIds`, `runtimeIds`, `cliSessionKeys`, and `authProfilePrefixes`.                                                                                                                                                                                                                  |
-| `qaRunners`                          | No       | `object[]`                   | Cheap QA runner descriptors used by the shared `openclaw qa` host before plugin runtime loads.                                                                                                                                                                                                                                                                                                   |
+| `qaRunners`                          | No       | `object[]`                   | Cheap QA runner descriptors used by the shared `paddy qa` host before plugin runtime loads.                                                                                                                                                                                                                                                                                                      |
 | `uiCapabilities`                     | No       | `string[]`                   | Static UI contribution kinds displayed in the plugin’s Capabilities section without activation. Omission means unspecified; `[]` declares none. See [UI capabilities](/plugins/manifest/surfaces#ui-capabilities).                                                                                                                                                                               |
 | `dashboard`                          | No       | `object`                     | Dashboard widget data bindings and action verbs. Each entry is validated against a Gateway method registered by this plugin with the required read or write scope. See [dashboard reference](/plugins/manifest/surfaces#dashboard-reference).                                                                                                                                                    |
 | `mcpServers`                         | No       | `Record<string, object>`     | Static MCP server definitions contributed while this plugin is enabled. Relative command arguments and working directories resolve from the plugin root. Operator `mcp.servers` entries override or disable definitions with the same name. See [MCP server reference](/plugins/manifest/surfaces#mcp-server-reference).                                                                         |
@@ -288,11 +288,24 @@ For example, an agent execution backend belongs in `agent-runtimes`, document ex
 belongs in `documents-files`, and a messaging adapter belongs in `channels` even when
 it also provides workspace tools.
 
-Bundled OpenClaw plugins declare exactly one active category. New ClawHub publications
+Bundled Paddy plugins declare exactly one active category. New ClawHub publications
 also accept exactly one declared category, using the same array shape, or omit the
 field for ClawHub to generate a category.
 
-OpenClaw's manifest reader continues to accept one to three unique, ordered categories
+Paddy catalog browsing also derives Media membership from an enabled, locally known plugin’s
+`imageGenerationProviders`, `videoGenerationProviders`, or `musicGenerationProviders`
+contracts. This lets a Models plugin remain discoverable under Media without adding
+a second purpose category to its manifest. The Gateway carries these display-only
+memberships as `capabilityCategories`, separately from the declared `categories`,
+and combines them when joining local entries with hosted catalog cards. The same
+join applies on later pages; category ranks, identities, and the hosted cursor remain
+with their existing owners. Remote-only entries without local manifest facts retain
+the registry’s categories. Speech or transcription alone does not add Media membership.
+
+Disabled plugins keep only their declared categories. These memberships do not
+install or enable a plugin, grant permissions, or change provider selection.
+
+Paddy's manifest reader continues to accept one to three unique, ordered categories
 so previously installed and published packages remain readable. When reading older
 multiple-category declarations, the first remains primary and all remain searchable.
 The stricter new-publication rule does not invalidate an installed plugin's manifest.
@@ -331,7 +344,7 @@ active categories for new declarations; legacy values are not automatically
 translated into a different category.
 
 Omission remains valid for external plugin compatibility. When an external catalog supplies a
-derived fallback, an explicit package declaration takes precedence. Bundled OpenClaw plugins must
+derived fallback, an explicit package declaration takes precedence. Bundled Paddy plugins must
 declare exactly one active category.
 
 ## JSON Schema requirements
@@ -382,7 +395,7 @@ catalog requests do not poll files for changes.
 ### Configuration validation
 
 - Required-field errors identify every missing field after schema defaults are applied. For dependencies on multiple fields, the error reports the dependency condition without claiming that fields already present are missing.
-- Unknown `channels.*` keys are **errors**, unless the channel id is declared by a plugin manifest. If the same id also appears in `plugins.allow`, `plugins.entries`, or `plugins.installs` (a plugin that is referenced but not currently discoverable), OpenClaw downgrades this to a **warning** instead.
+- Unknown `channels.*` keys are **errors**, unless the channel id is declared by a plugin manifest. If the same id also appears in `plugins.allow`, `plugins.entries`, or `plugins.installs` (a plugin that is referenced but not currently discoverable), Paddy downgrades this to a **warning** instead.
 - `plugins.entries.<id>`, `plugins.allow`, and `plugins.deny` referencing unknown plugin ids are **warnings** ("stale config entry ignored"), not errors, so upgrades and removed/renamed plugins do not block gateway startup. An exact `{ enabled: false }` plugin entry is an intentional uninstall marker, so validation and Doctor keep it without a stale-config warning.
 - `plugins.slots.memory` referencing an unknown plugin id is an **error**, except for the known `memory-lancedb` official external plugin, which warns instead.
 - If a plugin is installed but has a broken or missing manifest or schema, validation fails and Doctor reports the plugin error.
@@ -392,7 +405,7 @@ See [Configuration reference](/gateway/configuration-reference#plugins) for the 
 
 ## Notes
 
-- The manifest is **required for native OpenClaw plugins**, including local filesystem loads. Runtime still loads the plugin module separately; the manifest is only for discovery + validation.
+- The manifest is **required for native Paddy plugins**, including local filesystem loads. Runtime still loads the plugin module separately; the manifest is only for discovery + validation.
 - Native manifests are parsed with JSON5, so comments, trailing commas, and unquoted keys are accepted as long as the final value is still an object.
 - Only documented manifest fields are read by the manifest loader. Avoid custom top-level keys.
 - `channels`, `providers`, `cliBackends`, and `skills` can all be omitted when a plugin does not need them.

@@ -365,7 +365,7 @@ describe("resolveInitialTuiAgentId", () => {
   it("keeps an ownerless explicit fleet selection-required", () => {
     const retained = retainLegacyDefaultAgentId(structuredClone(cfg), "ops");
     expect(() => resolveInitialTuiAgentId({ cfg: retained, cwd: "/var/tmp/unrelated" })).toThrow(
-      "Multiple agents are configured, but TUI startup has no explicit owner. Pass an agent-scoped --session key (e.g., 'openclaw tui --session agent:agentname:main').",
+      "Multiple agents are configured, but TUI startup has no explicit owner. Pass an agent-scoped --session key (e.g., 'paddy tui --session agent:agentname:main').",
     );
   });
 
@@ -465,7 +465,7 @@ describe("resolveGatewayDisconnectState", () => {
     expect(state.connectionStatus).toContain("pairing required");
     expect(state.activityStatus).toBe("device approval needed: preview latest request");
     expect(state.remediation).toContain("openclaw devices approve --latest");
-    expect(state.remediation).toContain("openclaw devices approve <requestId>");
+    expect(state.remediation).toContain("paddy devices approve <requestId>");
     expect(state.remediation).toContain("--url");
     expect(state.remediation).toContain("--token/--password");
     // Must steer users to `devices`, not the unrelated chat-DM `pairing` command.

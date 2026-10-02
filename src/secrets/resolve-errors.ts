@@ -1,4 +1,5 @@
 /** Typed errors for SecretRef provider and ref-level resolution failures. */
+import { PRODUCT_NAME } from "../brand.js";
 import type { SecretRef, SecretRefSource } from "../config/types.secrets.js";
 
 type SecretRefResolutionCode =
@@ -131,7 +132,7 @@ export function describeSecretResolutionOperatorDiagnostic(value: unknown): stri
 /** Sanitized recovery action suitable for operator-facing diagnostics. */
 export function describeSecretResolutionOperatorRecovery(value: unknown): string | undefined {
   if (value instanceof SecretRefResolutionError && value.code === "SECRET_REF_REDACTED_VALUE") {
-    return "Run openclaw doctor --fix to repair a store-backed Gateway token; supply a real credential for other secrets, then restart the Gateway and reconnect or re-pair clients";
+    return "Run paddy doctor --fix to repair a store-backed Gateway token; supply a real credential for other secrets, then restart the Gateway and reconnect or re-pair clients";
   }
   if (
     !(value instanceof SecretProviderResolutionError) ||
@@ -140,8 +141,8 @@ export function describeSecretResolutionOperatorRecovery(value: unknown): string
     return undefined;
   }
   return value.source === "exec"
-    ? "Restore Windows path security verification, or use an existing provider command whose owner and ACLs OpenClaw can verify"
-    : "Restore Windows path security verification, or use an existing secret file whose owner and ACLs OpenClaw can verify";
+    ? `Restore Windows path security verification, or use an existing provider command whose owner and ACLs ${PRODUCT_NAME} can verify`
+    : `Restore Windows path security verification, or use an existing secret file whose owner and ACLs ${PRODUCT_NAME} can verify`;
 }
 
 export function providerResolutionError(params: {

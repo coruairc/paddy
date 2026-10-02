@@ -1,5 +1,6 @@
 /** Model-facing child task, runtime rules, and requester receipt for one resolved spawn. */
 import { normalizeUniqueStringEntries } from "@openclaw/normalization-core/string-normalization";
+import { PRODUCT_NAME } from "../../../brand.js";
 import {
   DEFAULT_SUBAGENT_MAX_SPAWN_DEPTH,
   isSubagentSpawnDepthAllowed,
@@ -104,7 +105,7 @@ export function buildSubagentSpawnEnvelope(params: {
             ...(params.acpEnabled
               ? [
                   "ACP harness: use the available ACP spawn capability; set `agentId` unless default. Codex only explicit ACP/acpx.",
-                  "Local subagent list/status tools cover OpenClaw runtime=subagent only; ACP ids come from `acp.allowedAgents`.",
+                  `Local subagent list/status tools cover ${PRODUCT_NAME} runtime=subagent only; ACP ids come from \`acp.allowedAgents\`.`,
                   "Never ask the user for slash/CLI or exec openclaw/acpx when delegation tools can act.",
                 ]
               : []),

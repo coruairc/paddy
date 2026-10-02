@@ -383,7 +383,7 @@ module.exports = {
         ),
         isError: true,
       });
-      expect(missingAuthReply?.text).toContain("openclaw models auth paste-api-key");
+      expect(missingAuthReply?.text).toContain("paddy models auth paste-api-key");
       expect(requests).toHaveLength(requestCount);
       expect(
         await send(sessionKey, "Continue after the missing native auth.", "acp-after-missing-auth"),

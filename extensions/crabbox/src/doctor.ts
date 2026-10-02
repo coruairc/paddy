@@ -14,7 +14,6 @@ import { WARM_IMAGE_MAX_ENTRIES } from "./crabbox-worker-warm-image-records.js";
 import {
   crabboxWarmImageRecoveryHint,
   CRABBOX_WARM_IMAGE_WAIT_HINT,
-  isCrabboxWarmImageCaptureUncertain,
   projectCrabboxWarmImage,
   type WarmProfileRecord,
 } from "./crabbox-worker-warm-image-store.js";
@@ -53,6 +52,7 @@ function createCrabboxCloudWorkerProfileCheck(openclawRoot: string): HealthCheck
         }
         return pending;
       };
+      let managed: ReturnType<typeof managedBinary.findManagedCrabboxBinary> | undefined;
       const findings: HealthFinding[] = [];
       for (const [profileId, profile] of profiles) {
         const explicitBinary = nonEmptyString(readRecord(profile.settings)?.binary);
@@ -65,9 +65,11 @@ function createCrabboxCloudWorkerProfileCheck(openclawRoot: string): HealthCheck
         if (result?.status === "supported") {
           continue;
         }
-        let managedPath: string;
         try {
-          managedPath = managedBinary.resolveManagedCrabboxBinaryPath(ctx.env);
+          managed ??= managedBinary.findManagedCrabboxBinary({ env: ctx.env });
+          if (await managed) {
+            continue;
+          }
         } catch (error) {
           findings.push({
             checkId: CRABBOX_CLOUD_WORKER_PROFILE_CHECK_ID,
@@ -76,10 +78,6 @@ function createCrabboxCloudWorkerProfileCheck(openclawRoot: string): HealthCheck
             target: profileId,
             message: error instanceof Error ? error.message : "Crabbox host is unsupported",
           });
-          continue;
-        }
-        const installed = findCrabboxBinary({ explicit: managedPath, openclawRoot });
-        if (installed && (await probe(installed)).status === "supported") {
           continue;
         }
         const reason = !result
@@ -91,12 +89,12 @@ function createCrabboxCloudWorkerProfileCheck(openclawRoot: string): HealthCheck
           checkId: CRABBOX_CLOUD_WORKER_PROFILE_CHECK_ID,
           severity: "warning",
           source: "crabbox",
-          message: `Cloud worker profile "${profileId}" ${reason}. OpenClaw will install its managed Crabbox before use.`,
+          message: `Cloud worker profile "${profileId}" ${reason}. Paddy will install its managed Crabbox before use.`,
           ...((binary ?? explicitBinary) ? { path: binary ?? explicitBinary } : {}),
           ocPath: `cloudWorkers.profiles.${profileId}.settings.binary`,
           target: profileId,
           requirement: `Crabbox ${managedBinary.CRABBOX_MIN_VERSION} or newer`,
-          fixHint: `Run \`openclaw doctor --fix\` to install the managed Crabbox now, or provision Crabbox ${managedBinary.CRABBOX_MIN_VERSION} or newer using \`cloudWorkers.profiles.${profileId}.settings.binary\`. The existing executable and profile configuration are preserved.`,
+          fixHint: `Run \`paddy doctor --fix\` to install the managed Crabbox now, or provision Crabbox ${managedBinary.CRABBOX_MIN_VERSION} or newer using \`cloudWorkers.profiles.${profileId}.settings.binary\`. The existing executable and profile configuration are preserved.`,
         });
       }
       return findings;
@@ -166,7 +164,7 @@ export function registerCrabboxWorkerProviderDoctorChecks(
             target: image.profileKey,
           } as const;
           if (image.capture) {
-            const uncertain = isCrabboxWarmImageCaptureUncertain(image.capture);
+            const uncertain = image.capture.phase === "uncertain";
             findings.push({
               ...details,
               severity: uncertain || image.capture.stale ? "warning" : "info",
@@ -185,7 +183,7 @@ export function registerCrabboxWorkerProviderDoctorChecks(
               ...details,
               message: `Warm-image checkpoint ${image.retirement.checkpointId}${display} is still awaiting deletion.`,
               fixHint:
-                "Cleanup retries during the next warm-image capture or worker teardown. Inspect `openclaw crabbox warm-images --json` and resolve provider deletion errors if it remains pending.",
+                "Cleanup retries during the next warm-image capture or worker teardown. Inspect `paddy crabbox warm-images --json` and resolve provider deletion errors if it remains pending.",
             });
           }
         }

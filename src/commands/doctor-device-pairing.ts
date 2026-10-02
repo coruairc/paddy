@@ -377,11 +377,11 @@ async function collectLegacyPairingStoreFindings(cfg: OpenClawConfig): Promise<H
   return (await listLegacyPairingStoreFiles()).map((filePath): HealthFinding => ({
     checkId: DEVICE_PAIRING_CHECK_ID,
     severity: "warning",
-    message: `Legacy pairing store ${filePath} has not been imported into SQLite. Stop the Gateway and run openclaw doctor --fix. Unreadable sources remain in place for repair.`,
+    message: `Legacy pairing store ${filePath} has not been imported into SQLite. Stop the Gateway and run paddy doctor --fix. Unreadable sources remain in place for repair.`,
     path: "devices.legacy-store",
     requirement: "pairing-store-legacy-file",
     fixHint:
-      "Stop the Gateway and run openclaw doctor --fix to import and archive the legacy pairing stores.",
+      "Stop the Gateway and run paddy doctor --fix to import and archive the legacy pairing stores.",
   }));
 }
 
@@ -396,7 +396,7 @@ export async function collectDevicePairingHealthFindings(params: {
   // Report this debt even without a reachable remote Gateway or local identity.
   const deviceAuth = detectLegacyDeviceAuth({ stateDir: resolveStateDir(params.env) });
   if (deviceAuth.sourcePresent) {
-    const fixCommand = formatCliCommand("openclaw doctor --fix", params.env);
+    const fixCommand = formatCliCommand("paddy doctor --fix", params.env);
     const fixHint = `Stop the Gateway and run ${fixCommand} to finish migration or cleanup.`;
     legacyStoreFindings.push({
       checkId: DEVICE_PAIRING_CHECK_ID,

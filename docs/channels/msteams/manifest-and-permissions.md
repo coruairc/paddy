@@ -44,14 +44,14 @@ Minimal, valid example with the required fields. Replace IDs and URLs.
   manifestVersion: "1.23",
   version: "1.0.0",
   id: "00000000-0000-0000-0000-000000000000",
-  name: { short: "OpenClaw" },
+  name: { short: "Paddy" },
   developer: {
     name: "Your Org",
     websiteUrl: "https://example.com",
     privacyUrl: "https://example.com/privacy",
     termsOfUseUrl: "https://example.com/terms",
   },
-  description: { short: "OpenClaw in Teams", full: "OpenClaw in Teams" },
+  description: { short: "Paddy in Teams", full: "Paddy in Teams" },
   icons: { outline: "outline.png", color: "color.png" },
   accentColor: "#5B6DEF",
   bots: [

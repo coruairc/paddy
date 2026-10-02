@@ -92,7 +92,7 @@ async function buildCodexMemoryItems(params: {
       }
       if (isPathInside(source, destination) || isPathInside(destination, source)) {
         throw new Error(
-          "Codex memory source and OpenClaw import destination must be separate paths.",
+          "Codex memory source and Paddy import destination must be separate paths.",
         );
       }
     }
@@ -110,7 +110,7 @@ async function buildCodexMemoryItems(params: {
           : targetConflict
             ? MIGRATION_REASON_TARGET_EXISTS
             : undefined,
-        message: "Copy consolidated Codex memory into the OpenClaw memory index.",
+        message: "Copy consolidated Codex memory into the Paddy memory index.",
         details: {
           sourceType: "codex-memory",
           sourceLabel: memory.label,
@@ -168,7 +168,7 @@ async function buildCodexSkillItems(params: {
           : conflict
             ? MIGRATION_REASON_TARGET_EXISTS
             : undefined,
-        message: `Copy ${item.skill.sourceLabel} into this OpenClaw agent workspace.`,
+        message: `Copy ${item.skill.sourceLabel} into this Paddy agent workspace.`,
         details: { skillName: item.name, sourceLabel: item.skill.sourceLabel },
       });
     }),
@@ -195,12 +195,9 @@ function hasExistingCodexPluginEntry(
   if (existingEntry !== undefined) {
     return !isLegacyDestructivePolicyRepair(existingEntry, nextEntry);
   }
-  return Object.values(existingEntries).some((entry) => {
-    if (!isRecord(entry)) {
-      return false;
-    }
-    return entry.pluginName === pluginName;
-  });
+  return Object.values(existingEntries).some(
+    (entry) => isRecord(entry) && entry.pluginName === pluginName,
+  );
 }
 
 function isLegacyDestructivePolicyRepair(
@@ -278,7 +275,7 @@ function buildPluginItems(
           applyPhase: "after-promotion",
           source: plugin.source,
           target: `plugins.entries.codex.config.codexPlugins.plugins.${configKey}`,
-          message: `Install Codex plugin "${plugin.pluginName}" in the OpenClaw-managed Codex app-server runtime.`,
+          message: `Install Codex plugin "${plugin.pluginName}" in the Paddy-managed Codex app-server runtime.`,
           details: {
             configKey,
             marketplaceName: CODEX_PLUGINS_MARKETPLACE_NAME,
@@ -328,7 +325,7 @@ function buildPluginItems(
           plugin.message ??
           `Codex native plugin "${plugin.name}" was found but not activated automatically.`,
         recommendation:
-          "Review the plugin bundle first, then install trusted compatible plugins with openclaw plugins install <path> --force.",
+          "Review the plugin bundle first, then install trusted compatible plugins with paddy plugins install <path> --force.",
       }),
     );
   }
@@ -420,16 +417,15 @@ export function buildCodexPluginsConfigValue(
         ]),
     ),
   };
-  const pluginConfig: Record<string, unknown> = {
-    codexPlugins: {
-      enabled: true,
-      allow_destructive_actions: readExistingAllowDestructiveActions(config) ?? true,
-      plugins,
-    },
-  };
   return {
     enabled: true,
-    config: pluginConfig,
+    config: {
+      codexPlugins: {
+        enabled: true,
+        allow_destructive_actions: readExistingAllowDestructiveActions(config) ?? true,
+        plugins,
+      },
+    },
   };
 }
 
@@ -510,7 +506,7 @@ function buildPluginConfigItem(
     reason: conflict ? MIGRATION_REASON_TARGET_EXISTS : undefined,
     applyPhase: "after-promotion",
     message:
-      "Enable OpenClaw's Codex plugin integration and record migrated source-installed curated plugins.",
+      "Enable Paddy's Codex plugin integration and record migrated source-installed curated plugins.",
     details: {
       path: [...CODEX_PLUGIN_CONFIG_PATH],
       value,
@@ -605,8 +601,8 @@ export async function buildCodexMigrationPlan(
     nextSteps: memoryOnly
       ? []
       : [
-          "Run openclaw doctor after applying the migration.",
-          "Review skipped or auth-required Codex plugin/config/hook items before exposing them in OpenClaw sessions.",
+          "Run paddy doctor after applying the migration.",
+          "Review skipped or auth-required Codex plugin/config/hook items before exposing them in Paddy sessions.",
         ],
     metadata: {
       agentDir: targets.agentDir,

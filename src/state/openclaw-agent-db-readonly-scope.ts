@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { DatabaseSync } from "node:sqlite";
 import { normalizeAgentId } from "@openclaw/normalization-core/agent-id";
+import { PRODUCT_NAME } from "../brand.js";
 import { enableNodeSqliteKyselyStatementCache } from "../infra/kysely-sync-cache-state.js";
 import { SQLITE_IDLE_HANDLE_TTL_MS } from "../infra/sqlite-handle-lifecycle.js";
 import {
@@ -208,7 +209,7 @@ export class OpenClawAgentDatabaseReadOnlyScope {
     const requestedAgentId = normalizeAgentId(options.agentId);
     if (this.database.agentId !== requestedAgentId) {
       throw new Error(
-        `OpenClaw agent database ${this.database.path} belongs to agent ${this.database.agentId}; requested agent ${requestedAgentId}.`,
+        `${PRODUCT_NAME} agent database ${this.database.path} belongs to agent ${this.database.agentId}; requested agent ${requestedAgentId}.`,
       );
     }
     observeOpenClawDatabaseMaintenanceResource(this.unregisterResource);

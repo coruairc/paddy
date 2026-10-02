@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import {
   attachPluginInstallOwnerMigrations,
@@ -38,7 +39,7 @@ export function recordPluginUpdateFailure(params: {
     options.installedPayloadRunnable === true;
   if (params.disableOnFailure && !params.dryRun && !preserveInstalledPayload) {
     const message =
-      `Disabled "${params.pluginId}" after plugin update failure; OpenClaw will continue without it. ` +
+      `Disabled "${params.pluginId}" after plugin update failure; ${PRODUCT_NAME} will continue without it. ` +
       params.message;
     params.logger.warn?.(message);
     params.outcomes.push({

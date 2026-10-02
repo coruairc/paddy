@@ -11,7 +11,7 @@ read_when:
   - You see a memory file-watching pressure warning
 ---
 
-This page lists every configuration knob for OpenClaw memory search. For conceptual overviews, see:
+This page lists every configuration knob for Paddy memory search. For conceptual overviews, see:
 
 <CardGroup cols={2}>
   <Card title="Memory overview" href="/concepts/memory">
@@ -73,10 +73,10 @@ override. Any configured DM isolation defaults it off. An explicit `true` or
 `false` always wins. Enabling it implies session transcript indexing and adds
 `sessions` to the agent's resolved memory sources.
 
-OpenClaw's built-in memory provider supports this protected path. Alternate memory providers can keep using their own
+Paddy's built-in memory provider supports this protected path. Alternate memory providers can keep using their own
 recall hooks and advanced Active Memory tools, but this setting is skipped
 unless the current provider supports protected private transcript recall.
-`openclaw doctor` reports an unsupported provider or an explicit Active Memory
+`paddy doctor` reports an unsupported provider or an explicit Active Memory
 `toolsAllow` list that omits `memory_search`.
 
 The retrieval boundary is narrower than general session search:
@@ -104,7 +104,7 @@ reply.
 | `model`    | `string`  | provider default | Embedding model name                                                                                                                                                                                                                                                                        |
 | `fallback` | `string`  | `"none"`         | Fallback adapter ID when the primary fails                                                                                                                                                                                                                                                  |
 
-When `provider` is not set, OpenClaw uses OpenAI embeddings. Set `provider`
+When `provider` is not set, Paddy uses OpenAI embeddings. Set `provider`
 explicitly to use Bedrock, DeepInfra, Gemini, GitHub Copilot, Mistral, Ollama,
 Voyage, a local GGUF model, or an OpenAI-compatible `/v1/embeddings` endpoint.
 Legacy configs that still say `provider: "auto"` resolve to `openai`.
@@ -112,10 +112,10 @@ Legacy configs that still say `provider: "auto"` resolve to `openai`.
 <Warning>
 Changing the embedding provider, model, provider settings, sources, scope,
 chunking, or tokenizer can make the existing SQLite vector index incompatible.
-OpenClaw pauses vector search and reports an index identity warning instead of
+Paddy pauses vector search and reports an index identity warning instead of
 automatically re-embedding everything. Rebuild when you are ready with
-`openclaw memory status --index --agent <id>` or
-`openclaw memory index --force --agent <id>`.
+`paddy memory status --index --agent <id>` or
+`paddy memory index --force --agent <id>`.
 </Warning>
 
 When `provider` is unset, legacy `provider: "auto"` is present, or
@@ -132,7 +132,7 @@ provider/auth configuration, switch to a reachable provider, or set
 
 ### Custom provider ids
 
-`memory.search.provider` can point at a custom `models.providers.<id>` entry for memory-specific provider adapters such as `ollama`, or for OpenAI-compatible model APIs such as `openai-responses` / `openai-completions`. OpenClaw resolves that provider's `api` owner for the embedding adapter while preserving the custom provider id for endpoint, auth, and model-prefix handling. This lets multi-GPU or multi-host setups dedicate memory embeddings to a specific local endpoint:
+`memory.search.provider` can point at a custom `models.providers.<id>` entry for memory-specific provider adapters such as `ollama`, or for OpenAI-compatible model APIs such as `openai-responses` / `openai-completions`. Paddy resolves that provider's `api` owner for the embedding adapter while preserving the custom provider id for endpoint, auth, and model-prefix handling. This lets multi-GPU or multi-host setups dedicate memory embeddings to a specific local endpoint:
 
 ```json5
 {
@@ -171,7 +171,7 @@ Remote embeddings require an API key. Bedrock uses the AWS SDK default credentia
 | Voyage         | `VOYAGE_API_KEY`                                    | `models.providers.voyage.apiKey`    |
 
 For custom OpenAI-compatible providers, `models.providers.<id>.apiKey` can name
-an API-key or bearer-token profile saved with [`openclaw models auth`](/cli/models#auth-profiles),
+an API-key or bearer-token profile saved with [`paddy models auth`](/cli/models#auth-profiles),
 such as `my-embeddings:default`. Literal keys keep their configured value even
 when other profiles are saved for the provider. Empty keys do not select a saved profile.
 
@@ -226,7 +226,7 @@ Use `provider: "openai-compatible"` for a generic OpenAI-compatible
     migration to the stable model.
 
     <Warning>
-    Changing model or `outputDimensionality` changes the index identity. OpenClaw
+    Changing model or `outputDimensionality` changes the index identity. Paddy
     pauses vector search until you explicitly rebuild the memory index.
 
     Upgrading any existing configuration that already uses
@@ -239,8 +239,8 @@ Use `provider: "openai-compatible"` for a generic OpenAI-compatible
     default `gemini-embedding-001` keeps its existing identity when this setting
     is absent; an explicitly configured value that 2026.8.1 no longer ignores
     also changes the identity. For either path, check the affected agent with
-    `openclaw memory status --deep --agent <id>`, then rebuild when ready with
-    `openclaw memory index --force --agent <id>`.
+    `paddy memory status --deep --agent <id>`, then rebuild when ready with
+    `paddy memory index --force --agent <id>`.
     </Warning>
 
   </Accordion>
@@ -276,7 +276,7 @@ Use `provider: "openai-compatible"` for a generic OpenAI-compatible
   <Accordion title="Bedrock">
     ### Bedrock embedding config
 
-    Bedrock uses the AWS SDK default credential chain plus an OpenClaw-checked bearer token, so no API keys are stored in config. If OpenClaw runs on EC2 with a Bedrock-enabled instance role, just set the provider and model:
+    Bedrock uses the AWS SDK default credential chain plus a Paddy-checked bearer token, so no API keys are stored in config. If Paddy runs on EC2 with a Bedrock-enabled instance role, just set the provider and model:
 
     ```json5
     {
@@ -313,7 +313,7 @@ Use `provider: "openai-compatible"` for a generic OpenAI-compatible
 
     **Region:** resolved in this order: the `memory.search.remote.baseUrl` override, the `models.providers.amazon-bedrock.baseUrl` config, `AWS_REGION`, `AWS_DEFAULT_REGION`, then a default of `us-east-1`.
 
-    **Authentication:** OpenClaw checks for `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` or `AWS_BEARER_TOKEN_BEDROCK` first, then falls through to the standard AWS SDK default credential provider chain:
+    **Authentication:** Paddy checks for `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` or `AWS_BEARER_TOKEN_BEDROCK` first, then falls through to the standard AWS SDK default credential provider chain:
 
     1. Environment variables (`AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`), unless `AWS_PROFILE` is also set
     2. SSO (only when SSO fields are configured)
@@ -345,18 +345,18 @@ Use `provider: "openai-compatible"` for a generic OpenAI-compatible
     | `local.modelPath` | `string` | auto-downloaded | Path to GGUF model file |
 
     Install the official [llama.cpp provider](/plugins/llama-cpp), then choose llama.cpp once in
-    interactive setup. OpenClaw installs a pinned, verified `llama-server` and
+    interactive setup. Paddy installs a pinned, verified `llama-server` and
     writes its loopback `localService` configuration. Default model:
     `embeddinggemma-300m-qat-Q8_0.gguf` (~0.3 GB, auto-downloaded).
 
     Use the standalone CLI to verify the same provider path the Gateway uses:
 
     ```bash
-    openclaw memory status --deep --agent main
-    openclaw memory index --force --agent main
+    paddy memory status --deep --agent main
+    paddy memory index --force --agent main
     ```
 
-    Cache placement is provider-owned. `openclaw memory status --deep` reports
+    Cache placement is provider-owned. `paddy memory status --deep` reports
     server build, model path, capability, and endpoint facts observed from the
     managed server after it has handled an embedding request.
 
@@ -370,7 +370,7 @@ Use `provider: "openai-compatible"` for a generic OpenAI-compatible
 ## Indexing behavior
 
 Memory engines own synchronization, batching, watch, and post-compaction
-indexing heuristics. OpenClaw keeps these behaviors enabled with maintained
+indexing heuristics. Paddy keeps these behaviors enabled with maintained
 defaults rather than exposing per-install timing switches.
 
 ### File-watcher pressure
@@ -381,6 +381,9 @@ Remove unnecessary `memory.search.extraPaths` entries or narrow their directory
 roots. Global entries and `agents.entries.<id>.memory.search.extraPaths` entries
 are combined: an empty per-agent list does not remove global roots. Changing only
 an entry's `pattern` filters indexed files, not the directory tree being watched.
+Events outside every applicable pattern are ignored when they cannot affect an
+indexed file or directory. Events with no path or an unknown entry type remain
+conservative when indexed content could have changed.
 
 Removing extra-path entries does not exclude files that still belong to the
 default `MEMORY.md`, `USER.md`, or `memory/` roots. If reducing extra paths is
@@ -388,7 +391,7 @@ insufficient, review file-watch and open-file limits on the Gateway host. There 
 `memory.search.sync.watch` setting.
 
 After changes, restart the Gateway. To refresh the affected index, run
-`openclaw memory index --force --agent <id>` on the Gateway host using its profile
+`paddy memory index --force --agent <id>` on the Gateway host using its profile
 and environment, including any `OPENCLAW_STATE_DIR` or `OPENCLAW_CONFIG_PATH`
 overrides. Use the affected agent's ID; the command printed in the warning includes
 it and the active profile or container hint. See [memory index](/cli/memory#memory-index).
@@ -454,18 +457,20 @@ auto-injected.
 
 Paths can be absolute or workspace-relative. Directories are scanned recursively for supported
 files. Object entries narrow a directory with a root-relative glob using `/` separators; direct
-file entries are indexed exactly. The builtin engine skips symlinks. When a configured root is a
-symlink, `openclaw memory status` names the skipped root in text and JSON output and recommends
+file entries are indexed exactly. Entries with the same resolved directory share one scan, and
+scans skip subdirectories that their patterns can prove irrelevant. Complex patterns retain
+conservative traversal. The builtin engine skips symlinks. When a configured root is a
+symlink, `paddy memory status` names the skipped root in text and JSON output and recommends
 configuring its canonical absolute directory instead.
 
 For shared notes, keep each workspace's `memory/` directory local and add the shared directory's
 canonical path to `extraPaths`. This setting indexes notes; it does not authorize legacy host-event
 migration through a symlink.
 
-If `openclaw doctor --fix` reports an unsafe Memory Core host-event source, check the named path and
+If `paddy doctor --fix` reports an unsafe Memory Core host-event source, check the named path and
 permissions. Back up the legacy journal before replacing any symlink. To import it, preserve its
 contents at `memory/.dreams/events.jsonl` as a regular file under regular directories inside the intended
-workspace, then rerun `openclaw doctor --fix`. Doctor leaves rejected sources untouched. A symlink to
+workspace, then rerun `paddy doctor --fix`. Doctor leaves rejected sources untouched. A symlink to
 the workspace root itself is supported. Symlinks below that root are refused when a legacy event
 source, import claim, or migrated archive is present; directories without those sources need no repair.
 
@@ -535,7 +540,7 @@ Internal dreaming-narrative, cron, and heartbeat session transcripts are not
 indexed, including retained compressed narrative archives whose live session
 metadata is gone. They may quote fragments from user conversations but are not
 searchable memory sources. Sessions purged with
-[`openclaw memory forget`](/cli/memory#memory-forget) are also durably excluded,
+[`paddy memory forget`](/cli/memory#memory-forget) are also durably excluded,
 even though their source transcripts remain in the session store. A forced
 reindex removes stale transcript records without readmitting either group.
 Ordinary user-session transcripts, including retained, reset, and
@@ -549,7 +554,7 @@ both `memory` and `sessions`, resulting in overlapping search results and
 additional embedding work. For hook-only recall, set `sources: ["memory"]` and
 `rememberAcrossConversations: false`; `sources` alone is insufficient because
 cross-conversation recall automatically adds `sessions`. For full-transcript
-recall instead, run `openclaw hooks disable session-memory`. Enable both only
+recall instead, run `paddy hooks disable session-memory`. Enable both only
 when you intentionally want both representations.
 </Note>
 
@@ -571,7 +576,7 @@ separate runtime-only authorization limited to same-agent private
 transcripts during the bounded Active Memory pass.
 
 An explicit `memory_search` request for the `sessions` corpus requires session
-search to be enabled for that agent. If it is unavailable, OpenClaw explains
+search to be enabled for that agent. If it is unavailable, Paddy explains
 how to enable session indexing instead of silently searching memory files.
 
 The examples below place these settings under top-level `memory.search`. You can also
@@ -606,13 +611,13 @@ default `all`:
 
 For Bun on macOS, install Homebrew SQLite to enable extension loading; see [Bun SQLite setup](/install/bun-compatibility#sqlite-library-selection) for automatic discovery and the `OPENCLAW_SQLITE_LIBRARY` library override.
 
-When sqlite-vec is unavailable, OpenClaw falls back to in-process cosine similarity automatically.
+When sqlite-vec is unavailable, Paddy falls back to in-process cosine similarity automatically.
 
 ---
 
 ## Index storage
 
-Built-in memory indexes live in each agent's OpenClaw SQLite database at
+Built-in memory indexes live in each agent's Paddy SQLite database at
 `agents/<agentId>/agent/openclaw-agent.sqlite`.
 
 | Key                   | Type     | Default     | Description                               |

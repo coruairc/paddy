@@ -2,6 +2,7 @@
 import path from "node:path";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { sanitizeForLog } from "../../packages/terminal-core/src/ansi.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
 import { resolveUserPath } from "../utils.js";
@@ -49,6 +50,7 @@ import {
 } from "./plugin-cache-files.js";
 import type { PluginOrigin } from "./plugin-origin.types.js";
 import { normalizePluginPolicyId } from "./plugin-policy-id.js";
+import { groupPluginRecords } from "./record-groups.js";
 
 type SeenIdEntry = {
   candidate: PluginCandidate;
@@ -68,16 +70,10 @@ function rejectCaseFoldedIdCollisions(
   records: readonly PluginManifestRecord[],
   diagnostics: PluginDiagnostic[],
 ): PluginManifestRecord[] {
-  const recordsByPolicyId = new Map<string, PluginManifestRecord[]>();
-  for (const record of records) {
-    const policyId = normalizePluginPolicyId(record.id);
-    const matches = recordsByPolicyId.get(policyId) ?? [];
-    matches.push(record);
-    recordsByPolicyId.set(policyId, matches);
-  }
-
   const rejected = new Set<PluginManifestRecord>();
-  for (const [policyId, matches] of recordsByPolicyId) {
+  for (const [policyId, matches] of groupPluginRecords(records, (record) =>
+    normalizePluginPolicyId(record.id),
+  )) {
     const declaredIds = [...new Set(matches.map((record) => record.id))].toSorted();
     if (declaredIds.length < 2) {
       continue;
@@ -330,7 +326,7 @@ export function buildPluginManifestRegistry(
         level: "error",
         pluginId: candidate.idHint,
         source: candidate.source,
-        message: `plugin manifest id "${candidate.idHint}" is reserved by OpenClaw core`,
+        message: `plugin manifest id "${candidate.idHint}" is reserved by ${PRODUCT_NAME} core`,
       });
       continue;
     }
@@ -405,8 +401,8 @@ export function buildPluginManifestRegistry(
             minHostVersionCheck.kind === "invalid"
               ? `plugin manifest invalid | ${minHostVersionCheck.error}`
               : minHostVersionCheck.kind === "unknown_host_version"
-                ? `plugin requires OpenClaw >=${minHostVersionCheck.requirement.minimumLabel}, but this host version could not be determined; skipping load`
-                : `plugin requires OpenClaw >=${minHostVersionCheck.requirement.minimumLabel}, but this host is ${minHostVersionCheck.currentVersion}; skipping load`,
+                ? `plugin requires ${PRODUCT_NAME} >=${minHostVersionCheck.requirement.minimumLabel}, but this host version could not be determined; skipping load`
+                : `plugin requires ${PRODUCT_NAME} >=${minHostVersionCheck.requirement.minimumLabel}, but this host is ${minHostVersionCheck.currentVersion}; skipping load`,
         });
         continue;
       }
@@ -427,6 +423,7 @@ export function buildPluginManifestRegistry(
       ) {
         diagnostics.push({
           level: "warn",
+          configDisposition: "preserve",
           pluginId: effectivePluginId,
           source: packageManifestSource,
           message: `plugin requires plugin API ${packagePluginApiRange}, but this host is ${currentHostVersion}; skipping load (check "openclaw --version", OPENCLAW_COMPATIBILITY_HOST_VERSION, or run "openclaw doctor")`,
@@ -572,7 +569,7 @@ export function buildPluginManifestRegistry(
         pluginId: effectivePluginId,
         source: overriddenCandidate.source,
         message: staleForeignPin
-          ? `stale plugin install record: "${effectivePluginId}" is pinned to ${overriddenCandidate.rootDir}, which belongs to a different OpenClaw installation. This installation's bundled plugin is being used instead. No uninstall is needed to use the bundled plugin. Uninstalling, even with \`--keep-files\`, removes plugin configuration; re-enabling does not restore it.`
+          ? `stale plugin install record: "${effectivePluginId}" is pinned to ${overriddenCandidate.rootDir}, which belongs to a different ${PRODUCT_NAME} installation. This installation's bundled plugin is being used instead. No uninstall is needed to use the bundled plugin. Uninstalling, even with \`--keep-files\`, removes plugin configuration; re-enabling does not restore it.`
           : explicitOverride
             ? `duplicate plugin id resolved by explicit config-selected plugin; ${overriddenCandidate.origin} plugin will be overridden by config plugin (${winnerCandidate.source})`
             : `duplicate plugin id detected; ${overriddenCandidate.origin} plugin will be overridden by ${winnerCandidate.origin} plugin (${winnerCandidate.source})`,
@@ -596,8 +593,7 @@ export function buildPluginManifestRegistry(
     }
     pushNonBundledChannelConfigDescriptorDiagnostic({ record, diagnostics, normalized });
   }
-  const registry = { plugins, diagnostics: dedupePluginDiagnostics(diagnostics, discovered) };
-  return registry;
+  return { plugins, diagnostics: dedupePluginDiagnostics(diagnostics, discovered) };
 }
 
 /** Load manifest metadata from the bundled/source plugin tree without consulting operator state. */

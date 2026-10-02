@@ -241,6 +241,9 @@ export function buildAssistantText(input: ResponsesInputItem[], body: Record<str
     return `Protocol note: I checked memory and the project codename is ${orbitCode}.`;
   }
   if (isSnackRecallPrompt(prompt) && snackPreference) {
+    if (prompt.includes("Reply with only the snack preference, verbatim")) {
+      return snackPreference;
+    }
     return `Protocol note: you usually want ${snackPreference} for QA movie night.`;
   }
   if (isSnackRecallPrompt(prompt)) {
@@ -261,7 +264,7 @@ export function buildAssistantText(input: ResponsesInputItem[], body: Record<str
       : buildStrandedFinalRecoveryText();
   }
   if (/tool continuity check/i.test(prompt) && toolOutput) {
-    return `Protocol note: model switch handoff confirmed on ${model || "the requested model"}. QA mission from QA_KICKOFF_TASK.md still applies: understand this OpenClaw repo from source + docs before acting.`;
+    return `Protocol note: model switch handoff confirmed on ${model || "the requested model"}. QA mission from QA_KICKOFF_TASK.md still applies: understand this Paddy repo from source + docs before acting.`;
   }
   if ((toolOutput || allInputText) && /repo contract followthrough check/i.test(allInputText)) {
     const repoEvidenceText = [scenarioToolOutput, allInputText].filter(Boolean).join("\n");

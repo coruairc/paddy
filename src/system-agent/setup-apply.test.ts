@@ -898,7 +898,7 @@ describe("applySystemAgentSetup transaction boundaries", () => {
     expect(result.lines).toEqual(
       expect.arrayContaining([
         "Workspace files: workspace exploded",
-        "OpenClaw exec approval: approval exploded; local model harnesses may ask again.",
+        "Paddy exec approval: approval exploded; local model harnesses may ask again.",
         "Gateway service: service exploded",
       ]),
     );

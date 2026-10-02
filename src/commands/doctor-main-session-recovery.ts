@@ -1,5 +1,6 @@
 import { uniqueStrings } from "@openclaw/normalization-core/string-normalization";
 import { transitionMainSessionRecovery } from "../agents/main-session-recovery/main-session-recovery-state.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { InternalSessionEntry, SessionEntry } from "../config/sessions.js";
 import {
   applySessionEntryReplacements,
@@ -49,7 +50,7 @@ export async function noteMainSessionRecoveryIntegrity(
   params.warnings.push(
     [
       `- Found ${wedgedCount} with automatic restart recovery tombstoned.`,
-      "  OpenClaw will not auto-resume these sessions again; inspect the failed turn, then use /new or reset to replace the session.",
+      `  ${PRODUCT_NAME} will not auto-resume these sessions again; inspect the failed turn, then use /new or reset to replace the session.`,
       `  Examples: ${wedged
         .slice(0, 3)
         .map(({ key }) => key)

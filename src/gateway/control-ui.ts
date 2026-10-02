@@ -190,7 +190,7 @@ function respondControlUiAssetsUnavailable(res: ServerResponse, root?: ControlUi
     root?.kind === "preparing"
       ? "Control UI assets are being prepared. Try again shortly."
       : root?.kind === "failed"
-        ? "Control UI assets could not be prepared. Check the Gateway logs or run `openclaw doctor --fix`."
+        ? "Control UI assets could not be prepared. Check the Gateway logs or run `paddy doctor --fix`."
         : root?.kind === "invalid" && root.path
           ? `Control UI assets not found at ${root.path}. Build them with \`pnpm ui:build\` (auto-installs UI deps), or update gateway.controlUi.root.`
           : CONTROL_UI_ASSETS_MISSING_MESSAGE;

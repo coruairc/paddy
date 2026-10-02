@@ -43,15 +43,15 @@ Principles:
 
 ## Concepts
 
-| Concept             | Definition                                                                                                                                                                                                                                                                                              |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Session (thread)    | Existing gateway session, keyed by stable `sessionKey`. Owned by an agent.                                                                                                                                                                                                                              |
-| Board               | The widget board of one session. Exists iff the session has widgets/tabs. Survives `/new`/`/reset` (attached to `sessionKey`, not the transcript).                                                                                                                                                      |
-| Tab                 | A presentation page of a board: which widgets and their arrangement. Boards start with one implicit tab.                                                                                                                                                                                                |
-| Widget              | Named content cell owned by the session: a native report, HTML/JS, MCP App, or plugin widget. Addressed as `sessionKey` + `name`.                                                                                                                                                                       |
-| Capability manifest | Per-widget declaration of reach: `data` (read bindings), `actions` (allowlisted verbs), `prompt` (send to session), `net` (allowed origins).                                                                                                                                                            |
-| Pin (widget)        | Moving a transcript widget onto the session's board (user affordance or agent tool arg). Unpin removes it from the board.                                                                                                                                                                               |
-| Pin (session)       | Root sessions and ordinary Home-linked dashboard sessions can be pinned; spawned, subagent, and nested-child sessions reject pin requests. Subagent runs appear in transcript activity and Tasks views, outside sidebar navigation. Opening a pinned session restores that browser's saved task layout. |
+| Concept             | Definition                                                                                                                                                                                                                                                                              |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Session (thread)    | Existing gateway session, keyed by stable `sessionKey`. Owned by an agent.                                                                                                                                                                                                              |
+| Board               | The widget board of one session. Exists iff the session has widgets/tabs. Survives `/new`/`/reset` (attached to `sessionKey`, not the transcript).                                                                                                                                      |
+| Tab                 | A presentation page of a board: which widgets and their arrangement. Boards start with one implicit tab.                                                                                                                                                                                |
+| Widget              | Named content cell owned by the session: a native report, HTML/JS, MCP App, or plugin widget. Addressed as `sessionKey` + `name`.                                                                                                                                                       |
+| Capability manifest | Per-widget declaration of reach: `data` (read bindings), `actions` (allowlisted verbs), `prompt` (send to session), `net` (allowed origins).                                                                                                                                            |
+| Pin (widget)        | Moving a transcript widget onto the session's board (user affordance or agent tool arg). Unpin removes it from the board.                                                                                                                                                               |
+| Pin (session)       | Root sessions and ordinary Home-linked dashboard sessions can be pinned; spawned, subagent, and nested-child sessions reject pin requests. Subagent runs appear in session transcripts, outside sidebar navigation. Opening a pinned session restores that browser's saved task layout. |
 
 ## UX flows
 
@@ -131,8 +131,9 @@ sandbox proxy described below.
 - **Board widgets** are session state: bytes live in the owning agent's SQLite
   DB (`board_widgets`), served by a core gateway route
   (`/__openclaw__/board/<agentId>/<sessionKey>/<name>/`) that reads the DB.
-  Pinning a transcript widget copies the bytes. Caps: 256 KB per document,
-  8KB per native widget's JSON props, and 48 widgets per board.
+  Pinning a transcript widget copies the bytes. Caps: 10 MiB of UTF-8 HTML per
+  document including the wrapper, 256 KiB per registered widget's source,
+  8 KiB per native widget's JSON props, and 48 widgets per board.
 - **Update in place:** re-emitting a widget with the same `name` and content
   owner replaces its content, bumps `revision`, and broadcasts `board.changed`.
   Live views update that cell. Document widgets reload that iframe only.
@@ -145,7 +146,7 @@ sandbox proxy described below.
 
 ### Widgets host content; MCP apps are one content kind
 
-The **widget is the OpenClaw primitive**: the named, pinned, sized,
+The **widget is the Paddy primitive**: the named, pinned, sized,
 session-owned board cell with a grant record. What renders inside it is a
 content kind:
 
@@ -160,7 +161,7 @@ content kind:
 
 MCP apps do not define the widget model. Widgets gained the ability to host
 them. Identity, placement, pinning, grants, and the author-facing API stay
-OpenClaw's — so `show_widget` code stays as short as it is today and never
+Paddy's — so `show_widget` code stays as short as it is today and never
 needs to know the MCP Apps spec exists.
 
 Registered kinds use a small runtime Plugin SDK seam. A registration owns the
@@ -283,7 +284,7 @@ Older renderers show the ordinary unavailable-widget state for this unknown kind
 The Control UI renders an HTTPS website in its own sandboxed frame, with scripts,
 same-origin website storage, forms, and popups enabled. It rejects URLs containing
 userinfo and refuses the Control UI and connected Gateway hostnames across ports,
-since browser cookies share a hostname boundary. OpenClaw injects no Gateway token,
+since browser cookies share a hostname boundary. Paddy injects no Gateway token,
 capability ticket, message bridge, or parent-navigation
 permission. Its own HTTP headers and browser cookie rules still apply. The Gateway
 never fetches or relays its content. Passive gallery previews never mount the frame.
@@ -363,7 +364,7 @@ and `dashboard.actionVerbs` in `openclaw.plugin.json`. Plugin-local ids become
 grant names prefixed by the plugin id, such as `workboard.cards.list` and
 `workboard.dispatch`. `%` and `.` in the plugin-id segment are escaped so a
 different plugin/local-id split cannot inherit the same persisted grant. During
-plugin registration, OpenClaw verifies that every binding targets an RPC
+plugin registration, Paddy verifies that every binding targets an RPC
 registered by the same plugin with `operator.read` and every action targets one
 with `operator.write`. Invalid declarations fail the plugin load. The validated
 registry is rebuilt only with plugin lifecycle changes, while widget grants
@@ -425,8 +426,8 @@ does not implement it. Scriptable widgets can therefore use WebRTC data
 channels for egress without CSP enforcement of that directive. This residual
 also applies to inline chat widgets and the MCP Apps host.
 
-**Accepted tradeoff:** OpenClaw does not gate scriptable widgets on this
-residual. Widget content gains access to sensitive OpenClaw data only through
+**Accepted tradeoff:** Paddy does not gate scriptable widgets on this
+residual. Widget content gains access to sensitive Paddy data only through
 policy-granted, byte-frozen data bindings, and the sandbox Permissions Policy
 blocks camera and microphone access.
 

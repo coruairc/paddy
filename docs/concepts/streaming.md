@@ -7,7 +7,7 @@ read_when:
 title: "Streaming and chunking"
 ---
 
-OpenClaw has two independent streaming layers, and there is **no true
+Paddy has two independent streaming layers, and there is **no true
 token-delta streaming** to channel messages:
 
 - **Block streaming (channels):** emit completed **blocks** as the assistant
@@ -68,7 +68,7 @@ exceeds the limit.
 Bundled channels spell these overrides as
 `channels.<id>.streaming.{chunkMode,block.enabled,block.coalesce}`. The flat
 `*.chunkMode` / `*.blockStreaming` / `*.blockStreamingCoalesce` spellings are
-rejected by validation. Run `openclaw doctor --fix` to migrate legacy configs into
+rejected by validation. Run `paddy doctor --fix` to migrate legacy configs into
 the nested shape before starting the Gateway. See the
 [Doctor migration guidance](/gateway/doctor#detailed-behavior-and-rationale).
 
@@ -97,12 +97,12 @@ as separately delivered captions.
 
 Streaming media must use structured payload fields such as `mediaUrl` or
 `mediaUrls`; streamed text is not parsed as an attachment command. When block
-streaming sends media early, OpenClaw remembers that delivery for the turn. If
+streaming sends media early, Paddy remembers that delivery for the turn. If
 the final assistant payload repeats the same media URL, final delivery strips
 the duplicate media instead of sending the attachment again.
 
 Exact duplicate final payloads are suppressed. If the final payload adds
-distinct text around media that was already streamed, OpenClaw still sends the
+distinct text around media that was already streamed, Paddy still sends the
 new text while keeping the media single-delivery. This prevents duplicate voice
 notes or files on channels such as Telegram.
 
@@ -116,13 +116,17 @@ Block chunking is implemented by `EmbeddedBlockChunker`:
   whitespace -> hard break.
 - **Code fences:** never split inside fences; when forced at `maxChars`, close
   and reopen the fence to keep Markdown valid.
+- **Tables:** a Markdown table that fits in `maxChars` is kept in one chunk,
+  even if that means breaking before it below `minChars`, so channels that
+  render tables see the header and rows together. Larger tables split at row
+  boundaries.
 
 `maxChars` is clamped to the channel `textChunkLimit`, so you cannot exceed
 per-channel caps.
 
 ## Coalescing (merge streamed blocks)
 
-When block streaming is enabled, OpenClaw can **merge consecutive block
+When block streaming is enabled, Paddy can **merge consecutive block
 chunks** before sending them, reducing single-line spam while still providing
 progressive output.
 
@@ -177,7 +181,7 @@ delivery still applies.
 ## Preview streaming modes
 
 Canonical key: `channels.<channel>.streaming` (nested `{ mode, ... }`; legacy
-top-level boolean/string spellings are rewritten by `openclaw doctor --fix`).
+top-level boolean/string spellings are rewritten by `paddy doctor --fix`).
 
 | Mode       | Behavior                                                              |
 | ---------- | --------------------------------------------------------------------- |
@@ -202,13 +206,13 @@ instead of being overwritten in one editable draft.
 Discord defaults to `off` when `streaming` is unset, Telegram and Slack default
 to `progress`, and Mattermost and MS Teams default to `partial`.
 
-| Channel    | `off`         | `partial` | `block` | `progress`                        |
-| ---------- | ------------- | --------- | ------- | --------------------------------- |
-| Telegram   | Yes           | Yes       | Yes     | editable progress draft (default) |
-| Discord    | Yes (default) | Yes       | Yes     | editable progress draft (opt-in)  |
-| Slack      | Yes           | Yes       | Yes     | Block Kit session card (default)  |
-| Mattermost | Yes           | Yes       | Yes     | Yes                               |
-| MS Teams   | Yes           | Yes       | Yes     | native progress stream            |
+| Channel    | `off`         | `partial` | `block` | `progress`                                    |
+| ---------- | ------------- | --------- | ------- | --------------------------------------------- |
+| Telegram   | Yes           | Yes       | Yes     | editable progress draft (default)             |
+| Discord    | Yes (default) | Yes       | Yes     | editable progress draft (opt-in)              |
+| Slack      | Yes           | Yes       | Yes     | native card in threads; quiet outside threads |
+| Mattermost | Yes           | Yes       | Yes     | Yes                                           |
+| MS Teams   | Yes           | Yes       | Yes     | native progress stream                        |
 
 Preview chunk config (`streaming.preview.chunk.*`, e.g. under
 `channels.discord.streaming` or `channels.telegram.streaming`) defaults to
@@ -226,14 +230,14 @@ Slack-only:
 
 ### Legacy key migration
 
-| Channel  | Legacy keys                                                 | Status                                                                                                                                               |
-| -------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Telegram | `streamMode`, scalar/boolean `streaming`                    | Rewritten to `streaming.mode` by `openclaw doctor --fix`; not read at runtime                                                                        |
-| Discord  | `streamMode`, boolean `streaming`                           | Rewritten to `streaming.mode` by `openclaw doctor --fix`; not read at runtime                                                                        |
-| Slack    | `streamMode`; boolean `streaming`; legacy `nativeStreaming` | Rewritten to `streaming.mode` (and `streaming.nativeTransport` for the boolean/legacy forms) by `openclaw doctor --fix`; not read at runtime         |
-| Matrix   | scalar/boolean `streaming`                                  | Rewritten to `streaming.mode` (including Matrix's `"quiet"` mode) by `openclaw doctor --fix`; not read at runtime                                    |
-| Feishu   | boolean `streaming`                                         | Rewritten to `streaming.mode` by `openclaw doctor --fix`; not read at runtime                                                                        |
-| QQ Bot   | boolean `streaming`; `streaming.c2cStreamApi`               | Rewritten to `streaming.mode` (and `streaming.nativeTransport` for the boolean/`c2cStreamApi` forms) by `openclaw doctor --fix`; not read at runtime |
+| Channel  | Legacy keys                                                 | Status                                                                                                                                            |
+| -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Telegram | `streamMode`, scalar/boolean `streaming`                    | Rewritten to `streaming.mode` by `paddy doctor --fix`; not read at runtime                                                                        |
+| Discord  | `streamMode`, boolean `streaming`                           | Rewritten to `streaming.mode` by `paddy doctor --fix`; not read at runtime                                                                        |
+| Slack    | `streamMode`; boolean `streaming`; legacy `nativeStreaming` | Rewritten to `streaming.mode` (and `streaming.nativeTransport` for the boolean/legacy forms) by `paddy doctor --fix`; not read at runtime         |
+| Matrix   | scalar/boolean `streaming`                                  | Rewritten to `streaming.mode` (including Matrix's `"quiet"` mode) by `paddy doctor --fix`; not read at runtime                                    |
+| Feishu   | boolean `streaming`                                         | Rewritten to `streaming.mode` by `paddy doctor --fix`; not read at runtime                                                                        |
+| QQ Bot   | boolean `streaming`; `streaming.c2cStreamApi`               | Rewritten to `streaming.mode` (and `streaming.nativeTransport` for the boolean/`c2cStreamApi` forms) by `paddy doctor --fix`; not read at runtime |
 
 ## Runtime behavior
 
@@ -257,14 +261,14 @@ Slack-only:
 - Plan previews use native checkboxes when `channels.telegram.richMessages`
   is `true`; otherwise they use readable HTML checklists. Completed steps are
   checked, and the active step is marked "in progress".
-- If the final edit fails before the completed text is confirmed, OpenClaw uses
+- If the final edit fails before the completed text is confirmed, Paddy uses
   normal final delivery and cleans up the stale preview.
 - Preview streaming is skipped when Telegram block streaming is explicitly
   enabled, to avoid double-streaming.
 - `/reasoning stream` can write reasoning to a transient preview that is
   deleted after final delivery.
 - Telegram selected quote replies are an exception: when `replyToMode` is not
-  `"off"` and selected quote text is present, OpenClaw skips the answer preview
+  `"off"` and selected quote text is present, Paddy skips the answer preview
   stream for that turn (the final answer must go through the native quote-reply
   path) so tool-progress preview lines cannot render. Current-message replies
   without selected quote text still keep preview streaming. See
@@ -305,7 +309,7 @@ Slack-only:
 - `partial` can use Slack native streaming (`chat.startStream`/`append`/`stop`)
   when available.
 - `block` uses append-style draft previews.
-- `progress` streams Slack's native agent card by default: one message carries
+- In reply threads, `progress` streams Slack's native agent card by default: one message carries
   narration, the live plan card (authored milestones, or one work-summary row
   until `streaming.progress.toolProgress: true` gives each tool call a row),
   and the final answer. Routine progress updates coalesce at one-second
@@ -314,10 +318,18 @@ Slack-only:
   `streaming.progress.nativeTaskCards: false` falls back to the Block Kit
   session card, which finalizes to success or error and posts the assistant's
   final text as a separate message.
-- Cards include **Open in OpenClaw** only when the session is actually openable:
+- Cards include **Open in Paddy** only when the session is actually openable:
   `gateway.publicOrigin` is set and `gateway.controlUi.enabled` is not `false`.
-- Top-level DMs without a reply thread use draft preview posts and edits
-  instead of Slack native streaming.
+- Without a reply thread, default `progress` turns leave only the final answer
+  and use a temporary `hourglass_flowing_sand` typing reaction during work.
+  Configured `typingReaction` wins; `""` disables it. Any explicit
+  `streaming.progress` setting opts top-level turns into a preview, including
+  `commentary: true` or a custom `label`. The sole exception is
+  `nativeTaskCards: true`, which only affects threads. Empty progress settings
+  stay quiet. The rule uses the merged root and account settings.
+  This includes plain top-level DMs; Agent View and
+  Assistant View keep their threaded behavior. Explicit `off`, `partial`, and
+  `block` modes are unchanged.
 - Native and draft preview streaming suppress block replies for that turn, so a
   Slack reply is streamed by one delivery path only.
 - A successful turn with no visible reply still deletes its draft card. A
@@ -387,7 +399,7 @@ Supported surfaces:
   set `streaming.preview.commandText` or `streaming.progress.commandText` to
   `"status"` (the default). Set either option to `"raw"` to opt into command
   text. This policy is shared by draft/progress channels
-  that use OpenClaw's compact progress renderer, including Discord, Matrix,
+  that use Paddy's compact progress renderer, including Discord, Matrix,
   Microsoft Teams, Mattermost, Slack session cards, and Telegram. To disable
   preview edits entirely, set `streaming.mode` to `off`.
 

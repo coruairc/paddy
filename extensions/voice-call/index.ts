@@ -51,7 +51,7 @@ const VoiceCallToolSchema = Type.Union([
     to: Type.Optional(Type.String({ description: "Call target" })),
     message: Type.String({ description: "Intro message" }),
     mode: Type.Optional(Type.Union([Type.Literal("notify"), Type.Literal("conversation")])),
-    sessionKey: Type.Optional(Type.String({ description: "OpenClaw session key for the call" })),
+    sessionKey: Type.Optional(Type.String({ description: "Paddy session key for the call" })),
     dtmfSequence: Type.Optional(Type.String({ description: "DTMF digits to play before connect" })),
   }),
   Type.Object({
@@ -82,7 +82,7 @@ const VoiceCallToolSchema = Type.Union([
     to: Type.Optional(Type.String({ description: "Call target" })),
     sid: Type.Optional(Type.String({ description: "Call SID" })),
     message: Type.Optional(Type.String({ description: "Optional intro message" })),
-    sessionKey: Type.Optional(Type.String({ description: "OpenClaw session key for the call" })),
+    sessionKey: Type.Optional(Type.String({ description: "Paddy session key for the call" })),
     dtmfSequence: Type.Optional(Type.String({ description: "DTMF digits to play before connect" })),
   }),
 ]);

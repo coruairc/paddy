@@ -4,6 +4,7 @@ import type { StartupConfigPreflightResult } from "../../commands/startup-config
 import { readConfigFileSnapshot, setRuntimeConfigSnapshot } from "../../config/config.js";
 import {
   configFailureHeading,
+  createConfigReadError,
   createInvalidConfigError,
   isConfigReadFailure,
 } from "../../config/io.invalid-config.js";
@@ -20,6 +21,7 @@ import {
   isExistingOpenClawStateSchema,
 } from "../../state/openclaw-state-db-schema-policy.js";
 import { resolveOpenClawStateSqlitePath } from "../../state/openclaw-state-db.paths.js";
+import { CLI_NAME } from "../cli-name.js";
 import type { InvalidConfigRecoveryDeps } from "../invalid-config-recovery.js";
 
 const ALLOWED_INVALID_COMMANDS = new Set(["audit", "doctor", "logs", "health", "help", "status"]);
@@ -36,7 +38,6 @@ const ALLOWED_INVALID_GATEWAY_SUBCOMMANDS = new Set([
   "stop",
   "restart",
 ]);
-const ALLOWED_INVALID_TASK_SUBCOMMANDS = new Set(["list", "audit"]);
 let didRunStartupConfigPreflight = false;
 let configSnapshotPromise: Promise<Awaited<ReturnType<typeof readConfigFileSnapshot>>> | null =
   null;
@@ -150,7 +151,8 @@ export async function ensureConfigReady(
                   mode: snapshot.config.gateway?.mode,
                 });
                 if (errors.length > 0) {
-                  throw new Error(errors.join("\n"));
+                  params.runtime.error(errors.join("\n"));
+                  throw new ExitError(78);
                 }
               },
             }
@@ -195,13 +197,9 @@ export async function ensureConfigReady(
     preflightResult?.snapshot ?? (await getConfigSnapshot(configSnapshotOptions, params.measure));
   const isBareGatewayForegroundRun =
     commandName === "gateway" && (subcommandName === undefined || subcommandName.trim() === "");
-  const isReadOnlyTaskStateCommand =
-    commandName === "tasks" &&
-    (subcommandName === undefined || ALLOWED_INVALID_TASK_SUBCOMMANDS.has(subcommandName));
   const allowInvalid = commandName
     ? params.allowInvalid === true ||
       ALLOWED_INVALID_COMMANDS.has(commandName) ||
-      isReadOnlyTaskStateCommand ||
       isBareGatewayForegroundRun ||
       (commandName === "gateway" &&
         subcommandName &&
@@ -278,17 +276,17 @@ export async function ensureConfigReady(
         ? (await import("../../config/config-write-guard.js")).createConfigMutationError({
             configPath: snapshot.path,
           }).message
-        : commandText(formatCliCommand("openclaw doctor --fix"));
+        : commandText(formatCliCommand(`${CLI_NAME} doctor --fix`));
     params.runtime.error(`${muted("Fix:")} ${fixHint}`);
   }
   params.runtime.error(
-    `${muted("Inspect:")} ${commandText(formatCliCommand("openclaw config validate"))}`,
+    `${muted("Inspect:")} ${commandText(formatCliCommand(`${CLI_NAME} config validate`))}`,
   );
   params.runtime.error(
     muted(
       readFailure
-        ? "Audit, status, health, logs, tasks list/audit, and doctor commands still run when config cannot be read."
-        : "Audit, status, health, logs, tasks list/audit, and doctor commands still run with invalid config.",
+        ? "Audit, status, health, logs, and doctor commands still run when config cannot be read."
+        : "Audit, status, health, logs, and doctor commands still run with invalid config.",
     ),
   );
   if (
@@ -323,7 +321,10 @@ export async function ensureConfigReady(
           : await getConfigSnapshot(configSnapshotOptions, params.measure);
         if (retrySnapshot.exists && !retrySnapshot.valid) {
           const retryIssues = renderConfigValidationIssueLines(retrySnapshot);
-          throw createInvalidConfigError(
+          const createError = isConfigReadFailure(retrySnapshot)
+            ? createConfigReadError
+            : createInvalidConfigError;
+          throw createError(
             retrySnapshot.path,
             retryIssues.join("\n") || "Unknown validation issue.",
           );
@@ -341,7 +342,8 @@ export async function ensureConfigReady(
     return;
   }
   if (mustBlockInvalid) {
-    params.runtime.exit(isGatewayStartup ? 78 : 1);
+    // EX_CONFIG parks supervised Gateways; a failed read has not proven config invalid.
+    params.runtime.exit(isGatewayStartup && !readFailure ? 78 : 1);
   }
 }
 

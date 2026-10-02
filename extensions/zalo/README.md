@@ -1,11 +1,11 @@
 # @openclaw/zalo
 
-Zalo channel plugin for OpenClaw (Bot API).
+Zalo channel plugin for Paddy (Bot API).
 
 ## Install (local checkout)
 
 ```bash
-openclaw plugins install ./path/to/local/zalo-plugin
+paddy plugins install ./path/to/local/zalo-plugin
 ```
 
 ## Install (npm)

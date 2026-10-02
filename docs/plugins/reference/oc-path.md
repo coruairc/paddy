@@ -1,5 +1,5 @@
 ---
-summary: "Adds the openclaw path CLI for oc:// workspace file addressing."
+summary: "Adds the paddy path CLI for oc:// workspace file addressing."
 read_when:
   - You are installing, configuring, or auditing the oc-path plugin
 title: "Oc Path plugin reference"
@@ -10,12 +10,12 @@ Run `pnpm plugins:inventory:gen` to rebuild it. Hand-written text survives only
 between the openclaw-plugin-reference:manual-start and
 openclaw-plugin-reference:manual-end comment markers. -->
 
-Adds the openclaw path CLI for oc:// workspace file addressing.
+Adds the paddy path CLI for oc:// workspace file addressing.
 
 ## Distribution
 
 - Package: `@openclaw/oc-path`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 

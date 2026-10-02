@@ -8,7 +8,7 @@ read_when:
 
 Checks 18-20 close a doctor run. The Control UI Dreams actions are documented
 here too because they use doctor-style RPC methods but are not part of the
-`openclaw doctor` CLI run.
+`paddy doctor` CLI run.
 
 ## Checks 18-20
 
@@ -23,9 +23,9 @@ here too because they use doctor-style RPC methods but are not part of the
 
   </Accordion>
   <Accordion title="20. Repointed workspace aliases">
-    If you move a workspace folder and update its symlink, OpenClaw refuses to use the new target until you confirm the move. Incoming messages receive a repair notice instead of remaining stuck in retries.
+    If you move a workspace folder and update its symlink, Paddy refuses to use the new target until you confirm the move. Incoming messages receive a repair notice instead of remaining stuck in retries.
 
-    Run `openclaw doctor --fix` and confirm only if the destination contains the same workspace. Doctor coordinates an owned managed Gateway; stop a foreground or externally managed Gateway through its owner first. For unattended recovery, `openclaw doctor --fix --force --non-interactive` supplies that confirmation; ordinary non-interactive `--fix` does not. Plain `openclaw doctor` reports the problem without transferring records. Keep the workspace paths and configuration unchanged until Doctor finishes.
+    Run `paddy doctor --fix` and confirm only if the destination contains the same workspace. Doctor coordinates an owned managed Gateway; stop a foreground or externally managed Gateway through its owner first. For unattended recovery, `paddy doctor --fix --force --non-interactive` supplies that confirmation; ordinary non-interactive `--fix` does not. Plain `paddy doctor` reports the problem without transferring records. Keep the workspace paths and configuration unchanged until Doctor finishes.
 
     The repair preserves setup completion, file-verification history, and migration records without changing workspace files. It removes stale path associations so later cleanup of the old location cannot delete the moved workspace's records. Start any Gateway you stopped manually, then send a message to check recovery.
 
@@ -38,7 +38,7 @@ here too because they use doctor-style RPC methods but are not part of the
 
 ## Dreams UI backfill and reset
 
-The Control UI Dreams scene includes **Backfill**, **Reset**, and **Clear Grounded** actions for the grounded dreaming workflow. These use gateway doctor-style RPC methods but are **not** part of `openclaw doctor` CLI repair/migration.
+The Control UI Dreams scene includes **Backfill**, **Reset**, and **Clear Grounded** actions for the grounded dreaming workflow. These use gateway doctor-style RPC methods but are **not** part of `paddy doctor` CLI repair/migration.
 
 | Action         | What it does                                                                                                                                                      |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -49,7 +49,7 @@ The Control UI Dreams scene includes **Backfill**, **Reset**, and **Clear Ground
 None of these edit `MEMORY.md`, run full doctor migrations, or stage grounded candidates into the live short-term promotion store on their own. To feed grounded historical replay into the normal deep promotion lane, use the CLI flow instead:
 
 ```bash
-openclaw memory rem-backfill --path ./memory --stage-short-term
+paddy memory rem-backfill --path ./memory --stage-short-term
 ```
 
 That stages grounded durable candidates into the short-term dreaming store while `DREAMS.md` stays the review surface.

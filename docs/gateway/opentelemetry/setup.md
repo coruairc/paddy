@@ -3,8 +3,8 @@ summary: "Install and enable diagnostics-otel, see which processes export, check
 title: "Set up OpenTelemetry export"
 sidebarTitle: "Setup"
 read_when:
-  - You want to send OpenClaw model usage, message flow, or session metrics to an OpenTelemetry collector
-  - You need to know whether a Gateway run, a one-shot local run, or `openclaw agent exec` exports telemetry
+  - You want to send Paddy model usage, message flow, or session metrics to an OpenTelemetry collector
+  - You need to know whether a Gateway run, a one-shot local run, or `paddy agent exec` exports telemetry
   - You are checking exporter health, or turning the export pipeline off
 ---
 
@@ -39,7 +39,7 @@ openclaw plugins install clawhub:@openclaw/diagnostics-otel
 }
 ```
 
-Or enable the plugin from the CLI: `openclaw plugins enable diagnostics-otel`.
+Or enable the plugin from the CLI: `paddy plugins enable diagnostics-otel`.
 
 With the plugin loaded, changes to `diagnostics.otel` hot-reload only its exporter
 service. The previous generation unsubscribes and flushes before the replacement
@@ -59,7 +59,7 @@ transport: these changes do not shut down or reconfigure the host SDK.
 `diagnostics.otel.protocol` accepts only `http/protobuf`. If a persisted config,
 including a value supplied through `${VAR}` interpolation, still resolves this
 field to the retired `grpc` value, run
-[`openclaw doctor --fix`](/cli/doctor). Doctor repairs directly authored values
+[`paddy doctor --fix`](/cli/doctor). Doctor repairs directly authored values
 and the deepest internal single-file include that solely owns the changed
 `diagnostics.otel` keys, including an unambiguous nested include chain. For root
 includes, actual array-entry includes, include arrays, sibling overrides,
@@ -85,9 +85,9 @@ transport selection and are not rejected by this plugin.
 ## Which processes export
 
 - **Gateway** starts the exporter at startup and exports from the Gateway
-  process for every run it executes, including `openclaw agent` turns
+  process for every run it executes, including `paddy agent` turns
   dispatched to it.
-- **One-shot local runs** (`openclaw agent --local`) execute in the CLI
+- **One-shot local runs** (`paddy agent --local`) execute in the CLI
   process. When OTel export is configured and
   the plugin is enabled, that same CLI process starts one exporter instance for
   the run and flushes buffered spans, metrics, and logs before the process exits.
@@ -100,14 +100,14 @@ transport selection and are not rejected by this plugin.
   In JSON output mode, these one-shot runs suppress only the stdout JSONL log
   sink so command stdout stays reserved for the JSON response; OTLP traces,
   metrics, and logs continue when configured.
-- `openclaw agent exec` also runs the agent embedded in the CLI process, but
+- `paddy agent exec` also runs the agent embedded in the CLI process, but
   does not start this exporter, so its runs export no telemetry. Dispatch
-  through the Gateway, or use `openclaw agent --local`, when you need traces
+  through the Gateway, or use `paddy agent --local`, when you need traces
   from a headless run.
 
 ## Exporter health
 
-`openclaw doctor` and `openclaw status --all` show a bounded, redacted snapshot
+`paddy doctor` and `paddy status --all` show a bounded, redacted snapshot
 of the running Gateway's latest trusted exporter state for each signal and
 transport. For `diagnostics-otel`, the snapshot distinguishes:
 
@@ -170,11 +170,11 @@ redacted by the always-on log redaction policy. Full guide:
 ```
 
 Or leave `diagnostics-otel` out of `plugins.allow`, or run
-`openclaw plugins disable diagnostics-otel`.
+`paddy plugins disable diagnostics-otel`.
 
 When the plugin would otherwise own NodeSDK, keep propagation available while
 disabling every plugin-owned exporter, listener, health route, and stdout sink:
 
 ```bash
-OTEL_SDK_DISABLED=true openclaw gateway
+OTEL_SDK_DISABLED=true paddy gateway
 ```

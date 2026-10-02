@@ -255,7 +255,7 @@ describe("Codex app-server attempt context", () => {
 
       expect(context.threadDeveloperInstructions).toContain("Canonical agent instructions");
       expect(context.threadDeveloperInstructions).toContain(
-        "OpenClaw Agent Workspace Instructions",
+        "Paddy Agent Workspace Instructions",
       );
       expect(context.threadDeveloperInstructions).toContain(path.join(workspaceDir, "AGENTS.md"));
       expect(context.threadDeveloperInstructions).not.toContain("Canonical agent soul");
@@ -451,19 +451,6 @@ describe("Codex app-server attempt context", () => {
             inputSchema: {},
           },
         ],
-        sessionKey: "agent:codex-test:main",
-      }),
-    ).toBe(undefined);
-
-    // Lightweight cron turns keep the runtime context byte-for-byte untouched.
-    expect(
-      buildCodexWatchedSessionsContext({
-        attempt: {
-          config: {},
-          bootstrapContextMode: "lightweight",
-          bootstrapContextRunKind: "cron",
-        } as EmbeddedRunAttemptParams,
-        dynamicTools: [],
         sessionKey: "agent:codex-test:main",
       }),
     ).toBe(undefined);

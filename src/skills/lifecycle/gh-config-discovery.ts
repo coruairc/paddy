@@ -1,4 +1,5 @@
 import { posix as posixPath, win32 as win32Path } from "node:path";
+import { PRODUCT_NAME } from "../../brand.js";
 
 function pathFor(platform: NodeJS.Platform) {
   return platform === "win32" ? win32Path : posixPath;
@@ -144,7 +145,7 @@ export function detectGhConfigDirMismatch(input: GhConfigDiscoveryInput): GhConf
 
 export function formatGhConfigDirMismatchHint(mismatch: GhConfigDirMismatch): string[] {
   const lines: string[] = [
-    "GitHub CLI auth was found at a different HOME than the one this OpenClaw process uses.",
+    `GitHub CLI auth was found at a different HOME than the one this ${PRODUCT_NAME} process uses.`,
     `  Process gh config dir: ${mismatch.effectiveConfigDir}`,
     `  Authenticated config:  ${mismatch.alternateConfigDir} (contains ${HOSTS_FILE})`,
   ];
@@ -152,7 +153,7 @@ export function formatGhConfigDirMismatchHint(mismatch: GhConfigDirMismatch): st
     lines.push(`  Authenticated HOME:    ${mismatch.alternateHomeHint}`);
   }
   lines.push(
-    `  Fix: set GH_CONFIG_DIR=${mismatch.suggestedEnvValue} on the OpenClaw service environment, then restart the gateway.`,
+    `  Fix: set GH_CONFIG_DIR=${mismatch.suggestedEnvValue} on the ${PRODUCT_NAME} service environment, then restart the gateway.`,
   );
   return lines;
 }

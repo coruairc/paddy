@@ -29,6 +29,7 @@ import {
   webPushTargetClient,
   webPushSessionAccess,
 } from "./web-push-authority.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const EVENT_PUSH_TTL_SECONDS = 5 * 60;
 const defaultLog = createSubsystemLogger("gateway/web-push");
@@ -65,7 +66,7 @@ function resolveEventWebPushNotification(
     const questionId = normalizeOptionalString(value.id);
     return {
       category: "agent-question",
-      title: "OpenClaw needs an answer",
+      title: `${PRODUCT_NAME} needs an answer`,
       body: "An agent has a question for you.",
       tag: `openclaw-question-${id}`,
       ...(questionId ? { path: `ask/${encodeURIComponent(questionId)}` } : {}),
@@ -80,24 +81,9 @@ function resolveEventWebPushNotification(
     const runId = normalizeWebPushDisplayLabel(value.runId) ?? "finished";
     return {
       category: "agent-finished",
-      title: "OpenClaw agent finished",
+      title: `${PRODUCT_NAME} agent finished`,
       body: "An agent completed its response.",
       tag: `openclaw-agent-finished-${runId}`,
-    };
-  }
-  if (event === "task" && value.action === "upserted") {
-    const task = isRecord(value.task) ? value.task : null;
-    if ((task?.status !== "failed" && task?.status !== "timed_out") || task.runtime === "cron") {
-      return null;
-    }
-    const taskId = normalizeWebPushDisplayLabel(task.id) ?? "failed";
-    const taskTitle = normalizeWebPushDisplayLabel(task.title);
-    return {
-      category: "background-task-failed",
-      title: "OpenClaw background task failed",
-      body: "A background task needs attention.",
-      ...(taskTitle ? { identifiedBody: `${taskTitle} needs attention.` } : {}),
-      tag: `openclaw-task-failed-${taskId}`,
     };
   }
   if (event === "cron" && value.action === "finished" && value.status === "error") {
@@ -121,7 +107,7 @@ function resolveEventWebPushNotification(
     }
     return {
       category: "scheduled-task-failed",
-      title: "OpenClaw scheduled task failed",
+      title: `${PRODUCT_NAME} scheduled task failed`,
       body: "A scheduled task needs attention.",
       ...(jobName ? { identifiedBody: `${jobName} needs attention.` } : {}),
       tag: `openclaw-cron-failed-${jobTag}`,
@@ -177,10 +163,7 @@ export function createEventWebPushDelivery(params: {
           if (mention && !sessionPath) {
             return undefined;
           }
-          const path =
-            notification.path ??
-            sessionPath?.slice(1) ??
-            (notification.category === "background-task-failed" ? "tasks" : "sessions");
+          const path = notification.path ?? sessionPath?.slice(1) ?? "sessions";
           const url = resolveControlUiWebPushUrl(cfg, path);
           const targets = listCurrentWebPushTargets({
             ...authority,
@@ -303,7 +286,7 @@ export function createEventWebPushDelivery(params: {
       deliver(
         {
           category: "human-mentioned",
-          title: "OpenClaw mention",
+          title: `${PRODUCT_NAME} mention`,
           body: "Someone mentioned you in a conversation.",
           identifiedBody: `${senderLabel} mentioned you${sessionTitle ? ` in ${sessionTitle}` : ""}.`,
           tag: `openclaw-mention-${id}`,

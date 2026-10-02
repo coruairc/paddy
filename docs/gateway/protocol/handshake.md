@@ -128,6 +128,10 @@ Validating before send:
 `pluginSurfaceUrls` is optional and maps plugin surface names (e.g.
 `canvas`) to scoped hosted URLs; it may expire, so nodes call
 `node.pluginSurface.refresh` with `{ "surface": "canvas" }` for a fresh entry.
+The Control UI uses `plugin.surface.refresh` only when the hello's granted scopes
+satisfy `operator.read` (including `operator.write` and `operator.admin`). A
+`FORBIDDEN` response stops automatic renewal retries for the current lease;
+reconnecting evaluates the new hello's grants.
 The deprecated `canvasHostUrl` / `canvasCapability` / `node.canvas.capability.refresh`
 path is not supported; use plugin surfaces.
 The `sessions.observer.ask` method was removed; use `sessions.companion.ask`.
@@ -216,7 +220,7 @@ existing token's role and scopes before any local-backend pairing exception.
 ### Worker role and closed protocol
 
 A Gateway-owned launcher starts the worker process through
-[`openclaw worker`](/cli/worker); it is not a manual registration command.
+[`paddy worker`](/cli/worker); it is not a manual registration command.
 Workers use a closed protocol through either the public
 `/__openclaw__/worker` WebSocket path on the main TLS endpoint or the dedicated
 loopback ingress reached through the gateway-owned, host-key-pinned SSH tunnel.
@@ -252,6 +256,8 @@ Operator clients may advertise optional capabilities in `connect.params.caps`:
 
 - `tool-events`: accepts structured tool lifecycle events.
 - `inline-widgets`: can render hosted inline widget tool results.
+- `chat-only-assistant-text`: renders assistant text from `chat` and omits the
+  redundant assistant-text `agent` stream. See [event families](/gateway/protocol/rpc-bootstrap-and-events#common-event-families).
 
 Client capabilities describe the connected client, not authorization. Agent tools may declare required capabilities; the Gateway omits those tools unless every requirement appears in the originating client's `caps`. Channel-originated runs have no Gateway client capabilities, so capability-gated tools are unavailable even when tool policy explicitly allows them.
 

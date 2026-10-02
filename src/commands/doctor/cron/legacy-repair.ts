@@ -35,7 +35,6 @@ import {
 } from "../shared/retired-model-ref-repair.js";
 import { migrateLegacyNotifyFallback } from "./legacy-notify.js";
 import {
-  archiveLegacyCronQuarantineForMigration,
   loadLegacyCronQuarantineForMigration,
   type LegacyCronQuarantine,
 } from "./legacy-quarantine-migration.js";
@@ -44,6 +43,7 @@ import {
   migrateLegacyCronRunLogsToSqlite,
 } from "./legacy-run-log-migration.js";
 import {
+  archiveLegacyCronFile,
   archiveLegacyCronStoreForMigration,
   assertLegacyCronMigrationSourceCurrent,
   legacyCronStoreFilesExist,
@@ -309,7 +309,7 @@ export async function applyLegacyCronStoreRepair(params: {
           : tryResolveAmbientOwnerAgentId(params.cfg));
       if (!agentId && params.repairRetiredModelRefs) {
         warnings.push(
-          `Skipped retired model repair for cron job "${jobId}": select its owning agent, then rerun openclaw doctor --fix.`,
+          `Skipped retired model repair for cron job "${jobId}": select its owning agent, then rerun paddy doctor --fix.`,
         );
       }
       const beforeChanges = retirementChanges.length;
@@ -324,7 +324,7 @@ export async function applyLegacyCronStoreRepair(params: {
       if (retirementChanges.length > beforeChanges && asOptionalRecord(job.state)?.autoDisabled) {
         const jobName = normalizeOptionalString(job.name) ?? jobId;
         retirementChanges.push(
-          `Automation "${jobName}" remains auto-disabled. Run openclaw automations enable ${jobId} to resume it after this repair.`,
+          `Automation "${jobName}" remains auto-disabled. Run paddy automations enable ${jobId} to resume it after this repair.`,
         );
       }
     }
@@ -408,7 +408,7 @@ export async function applyLegacyCronStoreRepair(params: {
       rethrowSqliteSchemaVersionError(err);
       const failure =
         err instanceof CronJobsStoreChangedError
-          ? `Cron store at ${shortenHomePath(state.storePath)} changed while doctor was waiting, so no rows were rewritten; re-run ${formatCliCommand("openclaw doctor --fix")} to repair from a fresh snapshot.`
+          ? `Cron store at ${shortenHomePath(state.storePath)} changed while doctor was waiting, so no rows were rewritten; re-run ${formatCliCommand("paddy doctor --fix")} to repair from a fresh snapshot.`
           : `Failed writing migrated cron store at ${shortenHomePath(state.storePath)}: ${errorMessage(err)}`;
       return { changes, warnings: [...warnings, failure] };
     }
@@ -427,14 +427,17 @@ export async function applyLegacyCronStoreRepair(params: {
   }
 
   if (state.legacyQuarantine) {
-    const archiveResult = await archiveLegacyCronQuarantineForMigration(state.legacyQuarantine);
+    const archiveResult = await archiveLegacyCronFile(
+      state.legacyQuarantine.path,
+      state.legacyQuarantine.sourceSha256,
+    );
     if (archiveResult.ok) {
       changes.push(
         `Cron quarantine migrated to SQLite from ${shortenHomePath(state.legacyQuarantine.path)}.`,
       );
     } else {
       warnings.push(
-        `Migrated quarantined automations to SQLite but could not archive the legacy cron file at ${shortenHomePath(state.legacyQuarantine.path)}: ${archiveResult.reason}. Remove it manually or rerun ${formatCliCommand("openclaw doctor --fix")} to retry.`,
+        `Migrated quarantined automations to SQLite but could not archive the legacy cron file at ${shortenHomePath(state.legacyQuarantine.path)}: ${archiveResult.reason}. Remove it manually or rerun ${formatCliCommand("paddy doctor --fix")} to retry.`,
       );
     }
   }
@@ -476,7 +479,7 @@ export async function applyLegacyCronStoreRepair(params: {
       // claiming a finished migration; doctor re-detects the leftover and retries.
       for (const failure of archiveResult.failures) {
         warnings.push(
-          `Migrated automations to SQLite but could not archive the legacy cron file at ${shortenHomePath(failure.path)}: ${failure.reason}. Remove it manually or rerun ${formatCliCommand("openclaw doctor --fix")} to retry.`,
+          `Migrated automations to SQLite but could not archive the legacy cron file at ${shortenHomePath(failure.path)}: ${failure.reason}. Remove it manually or rerun ${formatCliCommand("paddy doctor --fix")} to retry.`,
         );
       }
     }
@@ -601,15 +604,7 @@ export async function repairCronCodexModelRefsAfterConfigWrite(params: {
     }
     const state = await loadLegacyCronRepairState({ cfg: params.cfg });
     return state
-      ? await applyLegacyCronStoreRepair({
-          cfg: params.cfg,
-          retiredModelRefConfig: params.retiredModelRefConfig,
-          authProfileIdMap: params.authProfileIdMap,
-          state,
-          migrateCodexModelRefs: params.migrateCodexModelRefs,
-          repairRetiredModelRefs: params.repairRetiredModelRefs,
-          blockedModelIdentities: params.blockedModelIdentities,
-        })
+      ? await applyLegacyCronStoreRepair({ ...params, state })
       : { changes: [], warnings: [] };
   } catch (err) {
     rethrowSqliteSchemaVersionError(err);

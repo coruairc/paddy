@@ -142,7 +142,7 @@ describe("runPluginsListCommand", () => {
     await runPluginsListCommand({ enabled: true }, createJsonRuntime(writes));
 
     expect(writes).toEqual([
-      "No enabled plugins found. Run formatted(openclaw plugins list) to inspect installed plugins.",
+      "No enabled plugins found. Run formatted(paddy plugins list) to inspect installed plugins.",
     ]);
   });
 
@@ -157,7 +157,7 @@ describe("runPluginsListCommand", () => {
     await runPluginsListCommand({ enabled: true, verbose: true }, createJsonRuntime(writes));
 
     expect(writes).toEqual([
-      "No enabled plugins found. Plugins are globally disabled. Run formatted(openclaw plugins list) to inspect installed plugins.",
+      "No enabled plugins found. Plugins are globally disabled. Run formatted(paddy plugins list) to inspect installed plugins.",
     ]);
   });
 
@@ -170,7 +170,7 @@ describe("runPluginsListCommand", () => {
     await runPluginsListCommand({ enabled: true }, createJsonRuntime(writes));
 
     expect(writes).toEqual([
-      "No plugins found. Run formatted(openclaw plugins install <plugin>) to add one, or formatted(openclaw plugins list --json) to inspect raw discovery state.",
+      "No plugins found. Run formatted(paddy plugins install <plugin>) to add one, or formatted(paddy plugins list --json) to inspect raw discovery state.",
     ]);
   });
 
@@ -194,7 +194,7 @@ describe("runPluginsListCommand", () => {
     expect(writes).toEqual([
       `Warning: ${message}`,
       "",
-      "No plugins found. Run formatted(openclaw plugins install <plugin>) to add one, or formatted(openclaw plugins list --json) to inspect raw discovery state.",
+      "No plugins found. Run formatted(paddy plugins install <plugin>) to add one, or formatted(paddy plugins list --json) to inspect raw discovery state.",
     ]);
   });
 

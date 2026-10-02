@@ -50,7 +50,7 @@ describe("web_fetch proxy doctor diagnostic", () => {
     expect(diagnostic).toContain("web_fetch still uses direct connections");
     expect(diagnostic).toContain("tools.web.fetch.useTrustedEnvProxy is not enabled");
     expect(diagnostic).toContain("Direct TLS connectivity to docs.openclaw.ai:443 failed");
-    expect(diagnostic).toContain("openclaw config set tools.web.fetch.useTrustedEnvProxy true");
+    expect(diagnostic).toContain("paddy config set tools.web.fetch.useTrustedEnvProxy true");
     expect(diagnostic).not.toContain(proxyUrl);
     expect(diagnostic).not.toContain("proxy-value-marker");
   });
@@ -183,9 +183,9 @@ describe("managed proxy loopback doctor diagnostic", () => {
       "Managed proxy loopback",
     );
     const message = String(noteFn.mock.calls[0]?.[0]);
-    expect(message).toContain("openclaw config get proxy");
-    expect(message).toContain("openclaw config set proxy.enabled false");
-    expect(message).toContain("openclaw gateway restart");
+    expect(message).toContain("paddy config get proxy");
+    expect(message).toContain("paddy config set proxy.enabled false");
+    expect(message).toContain("paddy gateway restart");
     expect(message).not.toContain("private-value");
     expect(message).not.toContain("proxy.example");
   });
@@ -214,8 +214,8 @@ describe("managed proxy loopback doctor diagnostic", () => {
       });
 
       expect(diagnostic).toContain(`proxy.loopbackMode=${loopbackMode}`);
-      expect(diagnostic).toContain("openclaw config set proxy.loopbackMode gateway-only");
-      expect(diagnostic).not.toContain("openclaw config set proxy.enabled false");
+      expect(diagnostic).toContain("paddy config set proxy.loopbackMode gateway-only");
+      expect(diagnostic).not.toContain("paddy config set proxy.enabled false");
     },
   );
 

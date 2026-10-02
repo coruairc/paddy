@@ -126,7 +126,7 @@ async function startSessionGatewayForOnboarding(params: {
         t("wizard.finalize.sessionGatewayStartFailed"),
         formatErrorMessage(error),
         t("wizard.finalize.startGatewayNow", {
-          command: formatCliCommand("openclaw gateway run"),
+          command: formatCliCommand("paddy gateway run"),
         }),
       ].join("\n"),
       "Gateway",
@@ -172,8 +172,8 @@ function buildGatewayRecoveryProjection(params: {
     const service = params.serviceLabel ?? t("wizard.finalize.gatewayService");
     const detail = t("wizard.finalize.managedGatewayUnreachable", {
       service,
-      statusCommand: formatCliCommand("openclaw gateway status --deep"),
-      recoveryCommand: formatCliCommand("openclaw gateway restart"),
+      statusCommand: formatCliCommand("paddy gateway status --deep"),
+      recoveryCommand: formatCliCommand("paddy gateway restart"),
     });
     return { detail, summary: `${notDetected} ${detail.replaceAll("\n", " ")}` };
   }
@@ -182,8 +182,8 @@ function buildGatewayRecoveryProjection(params: {
     const detail = t("wizard.finalize.managedGatewaySetupFailed", {
       service,
       error: gateway.error,
-      statusCommand: formatCliCommand("openclaw gateway status --deep"),
-      recoveryCommand: formatCliCommand("openclaw gateway install --force"),
+      statusCommand: formatCliCommand("paddy gateway status --deep"),
+      recoveryCommand: formatCliCommand("paddy gateway install --force"),
     });
     return {
       detail,
@@ -195,7 +195,7 @@ function buildGatewayRecoveryProjection(params: {
     gateway.reason === "external"
       ? formatExternalSupervisorActionRequired("start the gateway")
       : t("wizard.finalize.startGatewayNow", {
-          command: formatCliCommand("openclaw gateway run"),
+          command: formatCliCommand("paddy gateway run"),
         });
   const summary = [notDetected, startGuidance].join(" ");
   if (gateway.reason === "external") {
@@ -207,10 +207,10 @@ function buildGatewayRecoveryProjection(params: {
       t("wizard.finalize.noBackgroundGatewayExpected"),
       startGuidance,
       t("wizard.finalize.rerunInstallDaemon", {
-        command: formatCliCommand("openclaw onboard --install-daemon"),
+        command: formatCliCommand("paddy onboard --install-daemon"),
       }),
       t("wizard.finalize.skipHealthNextTime", {
-        command: formatCliCommand("openclaw onboard --skip-health"),
+        command: formatCliCommand("paddy onboard --skip-health"),
       }),
     ].join("\n"),
     summary,
@@ -421,6 +421,8 @@ export async function ensureGatewayServiceForOnboarding(params: {
           env: selection.env,
           port: settings.port,
           runtime: selection.runtime,
+          runtimeExplicit: selection.runtimeExplicit,
+          runtimePath: selection.runtimePath,
           pinnedRuntimePath: selection.pinnedRuntimePath,
           existingCommand,
           warn: (message, title) => {
@@ -429,6 +431,16 @@ export async function ensureGatewayServiceForOnboarding(params: {
           config: nextConfig,
         });
         await flushInstallWarnings();
+        if (flow === "quickstart" && !selection.pinnedRuntimePath) {
+          await prompter.note(
+            t(
+              plan.runtime === "bun"
+                ? "wizard.finalize.quickstartBunRuntime"
+                : "wizard.finalize.quickstartNodeRuntime",
+            ),
+            t("wizard.finalize.daemonRuntime"),
+          );
+        }
 
         progress.update(t("wizard.finalize.gatewayServiceInstalling"));
         await service.install({
@@ -525,10 +537,11 @@ export async function finalizeSetupWizard(
         token: settings.authMode === "token" ? settings.gatewayToken : undefined,
         password: settings.authMode === "password" ? resolvedGatewayPassword : undefined,
       };
-      // A failed replacement may leave the old Gateway alive. Observe it once;
-      // only successful install/restart needs the startup grace period.
+      // Nothing started (declined or failed install): probe once. A reused running
+      // Gateway keeps a bounded wait because the config just written can make it
+      // reload; started Gateways use the full startup timing.
       gatewayProbe =
-        gateway.status === "failed"
+        gateway.status === "failed" || (gateway.status === "skipped" && !sessionGateway)
           ? await probeGatewayReachable(probeOptions)
           : await waitForGatewayReachable({
               ...probeOptions,
@@ -706,7 +719,7 @@ export async function finalizeSetupWizard(
       { resolveDefaultModelAuthStatus, resolveDefaultModelCatalogFacts },
       { loadPreparedModelCatalogSnapshot },
     ] = await Promise.all([
-      import("../commands/auth-choice.js"),
+      import("../commands/auth-choice.model-check.js"),
       import("../agents/prepared-model-catalog.js"),
     ]);
     const modelCatalog = await loadPreparedModelCatalogSnapshot({
@@ -768,7 +781,7 @@ export async function finalizeSetupWizard(
           [
             t("wizard.finalize.noModelAuth", { provider: modelAuthStatus.provider }),
             t("wizard.finalize.noModelAuthNext", {
-              command: formatCliCommand("openclaw configure --section model"),
+              command: formatCliCommand("paddy configure --section model"),
             }),
           ].join("\n"),
           t("wizard.finalize.noModelAuthTitle"),
@@ -780,13 +793,13 @@ export async function finalizeSetupWizard(
           t("wizard.finalize.gatewayTokenShared"),
           t("wizard.finalize.gatewayTokenStored"),
           t("wizard.finalize.gatewayTokenView", {
-            command: formatCliCommand("openclaw gateway auth-token --show"),
+            command: formatCliCommand("paddy gateway auth-token --show"),
           }),
           t("wizard.finalize.gatewayTokenGenerate", {
-            command: formatCliCommand("openclaw doctor --generate-gateway-token"),
+            command: formatCliCommand("paddy doctor --generate-gateway-token"),
           }),
           t("wizard.finalize.dashboardOpenAnytime", {
-            command: formatCliCommand("openclaw dashboard --no-open"),
+            command: formatCliCommand("paddy dashboard --no-open"),
           }),
         ].filter(Boolean);
         await prompter.note(tokenNotes.join("\n"), "Token");
@@ -849,7 +862,7 @@ export async function finalizeSetupWizard(
         webSearchLines = [
           t("wizard.finalize.webSearchProviderUnavailable", { provider: label }),
           t("wizard.finalize.webSearchUnavailableAction"),
-          `  ${formatCliCommand("openclaw configure --section web")}`,
+          `  ${formatCliCommand("paddy configure --section web")}`,
           "",
         ];
       } else if (webSearchEnabled !== false && entry.requiresCredential === false) {
@@ -871,7 +884,7 @@ export async function finalizeSetupWizard(
         webSearchLines = [
           t("wizard.finalize.webSearchNoKey", { provider: label }),
           t("wizard.finalize.webSearchNeedsKey"),
-          `  ${formatCliCommand("openclaw configure --section web")}`,
+          `  ${formatCliCommand("paddy configure --section web")}`,
           "",
           t("wizard.finalize.webSearchGetKey", {
             url: entry?.signupUrl ?? "https://docs.openclaw.ai/tools/web",
@@ -881,7 +894,7 @@ export async function finalizeSetupWizard(
         webSearchLines = [
           t("wizard.finalize.webSearchDisabled", { provider: label }),
           t("wizard.finalize.webSearchReenable", {
-            command: formatCliCommand("openclaw configure --section web"),
+            command: formatCliCommand("paddy configure --section web"),
           }),
           "",
         ];
@@ -902,7 +915,7 @@ export async function finalizeSetupWizard(
       } else {
         webSearchLines = [
           t("wizard.finalize.webSearchSkipped"),
-          `  ${formatCliCommand("openclaw configure --section web")}`,
+          `  ${formatCliCommand("paddy configure --section web")}`,
           "",
         ];
       }
@@ -935,7 +948,7 @@ export async function finalizeSetupWizard(
           }).summary
         : gatewayHealthCheckFailed
           ? t("wizard.finalize.outroHealthCheckFailed", {
-              command: formatCliCommand("openclaw health"),
+              command: formatCliCommand("paddy health"),
             })
           : dashboardReady
             ? t("wizard.finalize.outroDashboardLink")
@@ -943,7 +956,7 @@ export async function finalizeSetupWizard(
               ? [
                   t("wizard.guided.complete"),
                   t("wizard.finalize.dashboardWhenReady", {
-                    command: formatCliCommand("openclaw dashboard"),
+                    command: formatCliCommand("paddy dashboard"),
                   }),
                 ].join(" ")
               : t("wizard.guided.complete"),

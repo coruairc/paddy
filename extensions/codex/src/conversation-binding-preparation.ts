@@ -84,9 +84,13 @@ import {
   resolveCodexDefaultWorkspaceDir,
   type CodexAppServerConversationBindingData,
 } from "./conversation-binding-data.js";
+import {
+  buildCodexConversationAgentLookup,
+  resolveThreadRequestModelProvider,
+} from "./conversation-control.js";
 
 const NATIVE_CONVERSATION_INTERACTIVE_APPROVALS_UNAVAILABLE =
-  "OpenClaw native Codex conversation binding cannot route interactive approvals yet; use the Codex harness or explicit /acp spawn codex for that workflow.";
+  "Paddy native Codex conversation binding cannot route interactive approvals yet; use the Codex harness or explicit /acp spawn codex for that workflow.";
 
 export type CodexConversationConfig = CodexAppServerAuthProfileLookup["config"];
 export async function resolveConversationAppServerRuntime(params: {
@@ -206,7 +210,7 @@ export async function resolveConversationAppServerRuntime(params: {
 }
 
 export const CODEX_CONVERSATION_THREAD_DEVELOPER_INSTRUCTIONS =
-  "This Codex thread is bound to an OpenClaw conversation. Answer normally; OpenClaw will deliver your final response back to the conversation.";
+  "This Codex thread is bound to a Paddy conversation. Answer normally; Paddy will deliver your final response back to the conversation.";
 
 type CodexThreadBindingParams = {
   pluginConfig?: unknown;
@@ -239,12 +243,14 @@ async function resolveThreadBindingRuntime(params: CodexThreadBindingParams) {
     modelProvider: params.modelProvider,
     ...agentLookup,
   });
-  const modelSelection = resolveOptionalThreadRequestModelSelection({
-    model: params.model,
-    modelProvider,
-    authProfileId: params.authProfileId,
-    ...agentLookup,
-  });
+  const modelSelection = params.model?.trim()
+    ? resolveCodexAppServerRequestModelSelection({
+        model: params.model,
+        modelProvider,
+        authProfileId: params.authProfileId,
+        ...agentLookup,
+      })
+    : undefined;
   const reviewerModelProvider = resolveModelBackedReviewerPolicyProvider({
     authProfileId: params.authProfileId,
     modelProvider: params.modelProvider,
@@ -641,41 +647,6 @@ async function projectConversationSourceHistory(
   }
 }
 
-function resolveThreadRequestModelProvider(params: {
-  authProfileId?: string;
-  modelProvider?: string;
-  agentDir?: string;
-  config?: CodexAppServerAuthProfileLookup["config"];
-}): string | undefined {
-  const modelProvider = params.modelProvider?.trim();
-  if (!modelProvider || modelProvider.toLowerCase() === "codex") {
-    return undefined;
-  }
-  if (isCodexAppServerNativeAuthProfile(params) && modelProvider.toLowerCase() === "openai") {
-    return undefined;
-  }
-  return modelProvider.toLowerCase() === "openai" ? "openai" : modelProvider;
-}
-
-function resolveOptionalThreadRequestModelSelection(params: {
-  model?: string;
-  modelProvider?: string;
-  authProfileId?: string;
-  agentDir?: string;
-  config?: CodexAppServerAuthProfileLookup["config"];
-}): { model: string; modelProvider?: string } | undefined {
-  if (!params.model?.trim()) {
-    return undefined;
-  }
-  return resolveCodexAppServerRequestModelSelection({
-    model: params.model,
-    modelProvider: params.modelProvider,
-    authProfileId: params.authProfileId,
-    agentDir: params.agentDir,
-    config: params.config,
-  });
-}
-
 export function resolveModelBackedReviewerPolicyProvider(params: {
   authProfileId?: string;
   modelProvider?: string;
@@ -687,15 +658,4 @@ export function resolveModelBackedReviewerPolicyProvider(params: {
     return modelProvider.toLowerCase() === "openai" ? "openai" : modelProvider;
   }
   return isCodexAppServerNativeAuthProfile(params) ? "openai" : undefined;
-}
-
-export function buildCodexConversationAgentLookup(params: {
-  agentDir?: string;
-  config?: CodexAppServerAuthProfileLookup["config"];
-}): Pick<CodexAppServerAuthProfileLookup, "agentDir" | "config"> {
-  const agentDir = params.agentDir?.trim();
-  return {
-    ...(agentDir ? { agentDir } : {}),
-    ...(params.config ? { config: params.config } : {}),
-  };
 }

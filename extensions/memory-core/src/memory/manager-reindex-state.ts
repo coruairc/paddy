@@ -74,18 +74,8 @@ export function resolveConfiguredSourcesForMeta(sources: Iterable<MemorySource>)
 }
 
 function normalizeMetaSources(meta: MemoryIndexMeta): MemorySource[] {
-  if (!Array.isArray(meta.sources)) {
-    // Backward compatibility for older indexes that did not persist sources.
-    return ["memory"];
-  }
-  const normalized = Array.from(
-    new Set(
-      meta.sources.filter(
-        (source): source is MemorySource => source === "memory" || source === "sessions",
-      ),
-    ),
-  ).toSorted((left, right) => left.localeCompare(right));
-  return normalized.length > 0 ? normalized : ["memory"];
+  // Older indexes without sources retain the same default as empty configuration.
+  return resolveConfiguredSourcesForMeta(new Set(Array.isArray(meta.sources) ? meta.sources : []));
 }
 
 function configuredMetaSourcesDiffer(params: {
@@ -250,7 +240,7 @@ export function resolveMemoryIndexIdentityState(
       (meta.provenanceVersion ?? 0) > MEMORY_INDEX_PROVENANCE_VERSION
         ? "provenance_version"
         : "chunking_version",
-      "the index was written by a newer OpenClaw version; upgrade OpenClaw or reindex explicitly",
+      "the index was written by a newer Paddy version; upgrade Paddy or reindex explicitly",
       "newer",
     );
   }

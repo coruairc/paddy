@@ -1,7 +1,7 @@
 ---
-summary: "Run OpenClaw with LM Studio"
+summary: "Run Paddy with LM Studio"
 read_when:
-  - You want to run OpenClaw with open source models via LM Studio
+  - You want to run Paddy with open source models via LM Studio
   - You want to set up and configure LM Studio
 title: "LM Studio"
 ---
@@ -40,12 +40,15 @@ daemon. For install and product docs, see [lmstudio.ai](https://lmstudio.ai/).
   </Step>
   <Step title="Run onboarding">
     ```bash
-    openclaw onboard
+    paddy onboard
     ```
 
     Choose `LM Studio`, then pick a model at the `Default model` prompt.
 
-    On a fresh guided setup, OpenClaw first queries `/api/v1/models` on the
+    The server URL prompt also accepts host shorthand such as `localhost:1234`.
+    Invalid URLs stay in the prompt so you can correct them before model discovery.
+
+    On a fresh guided setup, Paddy first queries `/api/v1/models` on the
     default or configured LM Studio host. An existing LLM is offered automatically
     only when LM Studio reports tool training and at least 16K of effective
     context. For loaded models, the loaded instance context takes precedence over
@@ -59,10 +62,10 @@ daemon. For install and product docs, see [lmstudio.ai](https://lmstudio.ai/).
 Change the default model later:
 
 ```bash
-openclaw models set lmstudio/qwen/qwen3.5-9b
+paddy models set lmstudio/qwen/qwen3.5-9b
 ```
 
-LM Studio model keys use an `author/model-name` format (e.g. `qwen/qwen3.5-9b`); OpenClaw model refs
+LM Studio model keys use an `author/model-name` format (e.g. `qwen/qwen3.5-9b`); Paddy model refs
 prepend the provider: `lmstudio/qwen/qwen3.5-9b`. Find the exact key for a model by running the
 command below and looking at the `key` field:
 
@@ -73,13 +76,13 @@ curl http://localhost:1234/api/v1/models
 ## Non-interactive onboarding
 
 ```bash
-openclaw onboard --non-interactive --accept-risk --skip-health --auth-choice lmstudio
+paddy onboard --non-interactive --accept-risk --skip-health --auth-choice lmstudio
 ```
 
 Or specify base URL, model, and API key explicitly:
 
 ```bash
-openclaw onboard \
+paddy onboard \
   --non-interactive \
   --accept-risk \
   --skip-health \
@@ -91,11 +94,15 @@ openclaw onboard \
 
 `--custom-model-id` takes the model key as returned by LM Studio (e.g. `qwen/qwen3.5-9b`), without
 the `lmstudio/` provider prefix. Pass `--lmstudio-api-key` (or set `LM_API_TOKEN`) for authenticated
-servers; omit it for unauthenticated servers and OpenClaw stores a local non-secret marker instead.
+servers; omit it for unauthenticated servers and Paddy stores a local non-secret marker instead.
 `--custom-api-key` is still accepted for compatibility, but `--lmstudio-api-key` is preferred.
 
 This writes `models.providers.lmstudio` and sets the default model to `lmstudio/<custom-model-id>`.
 Providing an API key also writes the `lmstudio:default` auth profile.
+
+Add `--json` for a machine-readable result. Connection, HTTP, and model-selection
+failures return a JSON error with the same recovery guidance as human output and
+exit nonzero without applying the proposed provider configuration.
 
 Interactive setup can additionally prompt for a preferred load context length and applies it across
 the discovered models it saves to config.
@@ -104,7 +111,7 @@ the discovered models it saves to config.
 
 ### Streaming usage compatibility
 
-LM Studio doesn't always emit an OpenAI-shaped `usage` object on streamed responses. OpenClaw
+LM Studio doesn't always emit an OpenAI-shaped `usage` object on streamed responses. Paddy
 recovers token counts from llama.cpp-style `timings.prompt_n` / `timings.predicted_n` metadata
 instead. Any OpenAI-compatible endpoint resolved as a local endpoint (loopback host) gets this same
 fallback, which covers other local backends such as vLLM, SGLang, llama.cpp, LocalAI, Jan, TabbyAPI,
@@ -112,10 +119,10 @@ and text-generation-webui.
 
 ### Thinking compatibility
 
-When LM Studio's `/api/v1/models` discovery reports model-specific reasoning options, OpenClaw
+When LM Studio's `/api/v1/models` discovery reports model-specific reasoning options, Paddy
 exposes matching `reasoning_effort` values (`none`, `minimal`, `low`, `medium`, `high`, `xhigh`) in
 model compat metadata. Some LM Studio builds advertise a binary UI option (`allowed_options: ["off",
-"on"]`) while rejecting those literal values on `/v1/chat/completions`; OpenClaw normalizes that
+"on"]`) while rejecting those literal values on `/v1/chat/completions`; Paddy normalizes that
 binary shape to the six-level scale before sending requests, including for older saved config that
 still has `off`/`on` reasoning maps.
 
@@ -148,7 +155,7 @@ still has `off`/`on` reasoning maps.
 
 ### Model instances and context
 
-With preload enabled, OpenClaw routes chat requests to a loaded instance with
+With preload enabled, Paddy routes chat requests to a loaded instance with
 enough context for the selected model budget. A newly loaded instance is addressed by the
 identifier returned by LM Studio. Your configured model reference and conversation model identity
 keep the canonical model key.
@@ -160,10 +167,10 @@ loading is disabled. Embedding model and cache identity keep the canonical model
 
 ### Disabling preload
 
-LM Studio supports just-in-time (JIT) model loading, loading models on first request. OpenClaw
+LM Studio supports just-in-time (JIT) model loading, loading models on first request. Paddy
 preloads models through LM Studio's native load endpoint by default, which helps when JIT is
 disabled. To let LM Studio's JIT, idle TTL, and auto-evict behavior own model lifecycle instead,
-disable OpenClaw's preload step:
+disable Paddy's preload step:
 
 ```json5
 {
@@ -211,7 +218,7 @@ the default trust.
 
 ### Model discovery failures
 
-When a configured server cannot list models, OpenClaw reports an unavailable catalog or a
+When a configured server cannot list models, Paddy reports an unavailable catalog or a
 catalog authentication rejection. A refresh can keep the last successful inventory when the
 connection and credentials still match. A successful empty response clears discovered models;
 explicitly configured models remain available without discovery. Restore the server connection

@@ -2,6 +2,7 @@ import path from "node:path";
 import { asNullableRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeNullableString } from "@openclaw/normalization-core/string-coerce";
 import { detectCurrentSqliteCapabilities, nodeRuntimeFailure } from "../../node-sqlite.mjs";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveSystemNodeInfo } from "../daemon/runtime-paths.js";
 import { tryReadJson } from "./json-files.js";
 import { nodeVersionSatisfiesEngine } from "./runtime-guard.js";
@@ -65,7 +66,7 @@ export async function checkGitCandidateNodeRuntime(root: string): Promise<Update
     nodeVersionSatisfiesEngine(systemNode.version, engine) !== false
   ) {
     systemDiagnostic =
-      "OpenClaw did not select or activate another runtime. " +
+      `${PRODUCT_NAME} did not select or activate another runtime. ` +
       `Existing compatible Node ${systemNode.version}: ${systemNode.path}`;
   } else {
     systemDiagnostic = "No compatible existing system Node was found.";

@@ -29,7 +29,7 @@ type PendingRelayEnsure = {
 const pendingRelayEnsures = new WeakMap<ProfileRuntimeState, PendingRelayEnsure>();
 
 export const EXTENSION_PAIRING_HINT =
-  "Run `openclaw browser extension install`, load the printed unpacked directory once, and wait for automatic setup.";
+  "Run `paddy browser extension install`, load the printed unpacked directory once, and wait for automatic setup.";
 
 function applyInternalRelayToken(
   state: BrowserServerState,

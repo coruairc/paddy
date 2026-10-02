@@ -1,6 +1,7 @@
 // Safe loader for the conventional package-local OpenClaw profile.
 import { asOptionalRecord as record } from "@openclaw/normalization-core/record-coerce";
 import type { ToolProfileId } from "../agents/tool-policy-shared.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { FsSafeError, root as fsSafeRoot } from "../infra/fs-safe.js";
 import { isSafeClawRelativePath } from "./schema-portability.js";
 import { parseClawOpenClawProfile } from "./schema.js";
@@ -94,17 +95,6 @@ function migrateLegacyDynamicToolProfile(value: unknown): {
   };
 }
 
-async function readProfileFile(packageRoot: string, path: string): Promise<Buffer> {
-  const packageFiles = await fsSafeRoot(packageRoot);
-  const read = await packageFiles.read(path, {
-    hardlinks: "reject",
-    maxBytes: MAX_PROFILE_BYTES,
-    nonBlockingRead: true,
-    symlinks: "reject",
-  });
-  return read.buffer;
-}
-
 /**
  * Resolves the OpenClaw profile for a package.
  *
@@ -180,7 +170,14 @@ export async function readClawOpenClawProfile(params: {
 
   let raw: Buffer;
   try {
-    raw = await readProfileFile(params.packageRoot, declaredPath);
+    const profileFiles = await fsSafeRoot(params.packageRoot);
+    const read = await profileFiles.read(declaredPath, {
+      hardlinks: "reject",
+      maxBytes: MAX_PROFILE_BYTES,
+      nonBlockingRead: true,
+      symlinks: "reject",
+    });
+    raw = read.buffer;
   } catch (error) {
     const unsafe =
       error instanceof FsSafeError &&
@@ -196,9 +193,9 @@ export async function readClawOpenClawProfile(params: {
               ? "openclaw_profile_too_large"
               : "openclaw_profile_read_failed",
           unsafe
-            ? "The OpenClaw profile must be a regular, non-symlinked, non-hardlinked file."
+            ? `The ${PRODUCT_NAME} profile must be a regular, non-symlinked, non-hardlinked file.`
             : tooLarge
-              ? `The OpenClaw profile exceeds ${MAX_PROFILE_BYTES} bytes.`
+              ? `The ${PRODUCT_NAME} profile exceeds ${MAX_PROFILE_BYTES} bytes.`
               : `Could not read ${declaredPath}: ${(error as Error).message}`,
           diagnosticPath,
         ),

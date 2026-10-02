@@ -33,8 +33,8 @@ the new bridge leaves that active call connected.
 Run setup from the same environment that runs the Gateway:
 
 ```bash
-openclaw voicecall setup
-openclaw voicecall setup --json
+paddy voicecall setup
+paddy voicecall setup --json
 ```
 
 For `twilio`, `telnyx`, and `plivo`, `webhook-exposure` must be green. A
@@ -74,8 +74,8 @@ Config changes apply automatically with the default hybrid reload mode (see
 [Hot reload](/gateway/configuration/hot-reload)). After application, run:
 
 ```bash
-openclaw voicecall setup
-openclaw voicecall smoke
+paddy voicecall setup
+paddy voicecall smoke
 ```
 
 `voicecall smoke` is a dry run unless you pass `--yes`.
@@ -113,15 +113,15 @@ Twilio Console:
 Media Streams `stop`/WebSocket close handling is the primary auto-end path and
 does not depend on the HTTP status callback. Twilio's optional `<Stream
 statusCallback>` is a separate stream-diagnostic signal and is not required for
-teardown. `openclaw voicecall setup` validates local configuration and webhook
+teardown. `paddy voicecall setup` validates local configuration and webhook
 exposure; it cannot inspect or change Twilio Console settings.
 
 Then inspect runtime state:
 
 ```bash
-openclaw voicecall status --call-id <id>
-openclaw voicecall tail
-openclaw logs --follow
+paddy voicecall status --call-id <id>
+paddy voicecall tail
+paddy logs --follow
 ```
 
 Common causes:
@@ -142,7 +142,7 @@ under your control.
 
 Twilio and Plivo URL signatures use `publicUrl` when it is configured: its
 scheme, host, and path are preserved, while the request query is applied.
-Without `publicUrl`, OpenClaw reconstructs the URL from the request. Telnyx
+Without `publicUrl`, Paddy reconstructs the URL from the request. Telnyx
 signatures do not include the request URL. If signatures fail:
 
 - Confirm the provider webhook URL exactly matches `publicUrl`, including scheme, host, and path.
@@ -156,14 +156,14 @@ Google Meet uses this plugin for Twilio dial-in joins. First verify Voice
 Call:
 
 ```bash
-openclaw voicecall setup
-openclaw voicecall smoke --to "+15555550123"
+paddy voicecall setup
+paddy voicecall smoke --to "+15555550123"
 ```
 
 Then verify the Google Meet transport explicitly:
 
 ```bash
-openclaw googlemeet setup --transport twilio
+paddy googlemeet setup --transport twilio
 ```
 
 If Voice Call is green but the Meet participant never joins, check the Meet
@@ -176,7 +176,7 @@ plugin's `voiceCall.dtmfDelayMs` (default **12000 ms**) as leading Twilio
 wait digits, because Meet dial-in prompts can arrive late. Voice Call then
 redirects back to realtime handling before the intro greeting is requested.
 
-Use `openclaw logs --follow` for the live phase trace. A healthy Twilio Meet
+Use `paddy logs --follow` for the live phase trace. A healthy Twilio Meet
 join logs this order:
 
 - Google Meet delegates the Twilio join to Voice Call.
@@ -185,7 +185,7 @@ join logs this order:
 - Voice Call serves realtime TwiML for the Twilio call.
 - Google Meet requests intro speech with `voicecall.speak` after the post-DTMF delay.
 
-`openclaw voicecall tail` still shows persisted call records; useful for
+`paddy voicecall tail` still shows persisted call records; useful for
 call state and transcripts, but not every webhook/realtime transition
 appears there.
 
@@ -199,4 +199,4 @@ For realtime Twilio/Telnyx calls, also verify:
 - A realtime provider plugin is loaded and registered.
 - `realtime.provider` is unset or names a registered provider.
 - The provider API key is available to the Gateway process.
-- `openclaw logs --follow` shows realtime TwiML served, the realtime bridge started, and the initial greeting queued.
+- `paddy logs --follow` shows realtime TwiML served, the realtime bridge started, and the initial greeting queued.

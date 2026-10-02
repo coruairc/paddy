@@ -315,31 +315,15 @@ export function canonicalizeSessionStore(params: {
     if (!isCanonical) {
       legacyKeys.push(key);
     }
-    const existing = canonical[canonicalKey];
-    if (!existing) {
-      canonical[canonicalKey] = entry;
-      meta.set(canonicalKey, { isCanonical, updatedAt: resolveUpdatedAt(entry) });
-      continue;
-    }
-
     const existingMeta = meta.get(canonicalKey);
     const incomingUpdated = resolveUpdatedAt(entry);
-    const existingUpdated = existingMeta?.updatedAt ?? resolveUpdatedAt(existing);
-    if (incomingUpdated > existingUpdated) {
+    if (
+      !existingMeta ||
+      incomingUpdated > existingMeta.updatedAt ||
+      (incomingUpdated === existingMeta.updatedAt && isCanonical && !existingMeta.isCanonical)
+    ) {
       canonical[canonicalKey] = entry;
       meta.set(canonicalKey, { isCanonical, updatedAt: incomingUpdated });
-      continue;
-    }
-    if (incomingUpdated < existingUpdated) {
-      continue;
-    }
-    if (existingMeta?.isCanonical && !isCanonical) {
-      continue;
-    }
-    if (!existingMeta?.isCanonical && isCanonical) {
-      canonical[canonicalKey] = entry;
-      meta.set(canonicalKey, { isCanonical, updatedAt: incomingUpdated });
-      continue;
     }
   }
 
@@ -374,15 +358,15 @@ export function aliasedSessionStoreMigrationWarning(params: {
   count: number;
   storePath: string;
 }): string {
-  return `Deferred ${params.subject} ${params.count} ambiguous session key(s) in aliased store ${params.storePath}; remove filesystem aliases or configure one canonical session.store path, then rerun openclaw doctor --fix`;
+  return `Deferred ${params.subject} ${params.count} ambiguous session key(s) in aliased store ${params.storePath}; remove filesystem aliases or configure one canonical session.store path, then rerun paddy doctor --fix`;
 }
 
 export function unresolvedSessionStoreIdentityWarning(subject: string, storePath: string): string {
-  return `Deferred ${subject} for ${storePath}; filesystem identity could not be established for every configured store path. Restore path access or configure one canonical session.store path, then rerun openclaw doctor --fix`;
+  return `Deferred ${subject} for ${storePath}; filesystem identity could not be established for every configured store path. Restore path access or configure one canonical session.store path, then rerun paddy doctor --fix`;
 }
 
 export function distinctSessionStoreAliasWarning(subject: string, storePath: string): string {
-  return `Deferred ${subject} in aliased store ${storePath}; atomic replacement cannot update distinct filesystem aliases as one operation. Remove filesystem aliases or configure one canonical session.store path, then rerun openclaw doctor --fix`;
+  return `Deferred ${subject} in aliased store ${storePath}; atomic replacement cannot update distinct filesystem aliases as one operation. Remove filesystem aliases or configure one canonical session.store path, then rerun paddy doctor --fix`;
 }
 
 export function resolveStaleLegacySessionFile(params: {
@@ -434,9 +418,8 @@ export function resolveStaleLegacySessionFile(params: {
   if (!migrationFileExists(targetSessionFile) || typeof entry.sessionId !== "string") {
     return undefined;
   }
-  const readFirstLine = () => readFirstLineSync(targetSessionFile);
   try {
-    const firstLine = readFirstLine();
+    const firstLine = readFirstLineSync(targetSessionFile);
     const header = firstLine ? (JSON.parse(firstLine) as unknown) : undefined;
     if (!header || typeof header !== "object" || Array.isArray(header)) {
       return undefined;
@@ -634,18 +617,9 @@ export async function migrateOrphanedSessionKeys(params: {
     storeAliasCandidates.set(storePath, aliasCandidates);
     storeMap.set(storePath, (storeMap.get(storePath) ?? new Set<string>()).add(ownerId));
   };
-  // Configured ownership includes normal agents plus ACP runtime/default hints.
-  for (const configuredAgentId of listConfiguredSessionStoreAgentIds(params.cfg)) {
-    const id = normalizeAgentId(configuredAgentId);
-    const p = storeConfig
-      ? resolveStorePathFromTemplate(storeConfig, id, env)
-      : path.join(stateDir, "agents", id, "sessions", "sessions.json");
-    addToStoreMap(p, id);
-  }
-  // Plugins can route core sessions to agents that are not declared in
-  // agents.list. A templated path proves ownership for those stores too.
-  for (const pluginAgentId of pluginAgentIds) {
-    const id = normalizeAgentId(pluginAgentId);
+  // Plugin-owned agents can be absent from config; retain configured-owner order.
+  for (const agentId of [...listConfiguredSessionStoreAgentIds(params.cfg), ...pluginAgentIds]) {
+    const id = normalizeAgentId(agentId);
     const p = storeConfig
       ? resolveStorePathFromTemplate(storeConfig, id, env)
       : path.join(stateDir, "agents", id, "sessions", "sessions.json");
@@ -747,7 +721,7 @@ export async function migrateOrphanedSessionKeys(params: {
     }
     if (storeAliases.hasFinalSymlink) {
       warnings.push(
-        `Deferred session key migration in final-component symlink store ${storePath}; configure one canonical session.store path, then rerun openclaw doctor --fix`,
+        `Deferred session key migration in final-component symlink store ${storePath}; configure one canonical session.store path, then rerun paddy doctor --fix`,
       );
       continue;
     }
@@ -949,7 +923,7 @@ export async function migrateLegacyAcpSessionMetadata(params: {
     }
     if (hasLegacyAcpMetadata && storeAliases.hasFinalSymlink) {
       warnings.push(
-        `Deferred ACP metadata migration in final-component symlink store ${storePath}; configure one canonical session.store path, then rerun openclaw doctor --fix`,
+        `Deferred ACP metadata migration in final-component symlink store ${storePath}; configure one canonical session.store path, then rerun paddy doctor --fix`,
       );
       continue;
     }
@@ -1126,10 +1100,7 @@ function resolveStorePathFromTemplate(
 ): string {
   const expand = (s: string) =>
     s.startsWith("~") ? expandHomePrefix(s, { env: env ?? process.env, homedir: os.homedir }) : s;
-  if (template.includes("{agentId}")) {
-    return path.resolve(expand(template.replaceAll("{agentId}", agentId)));
-  }
-  return path.resolve(expand(template));
+  return path.resolve(expand(template.replaceAll("{agentId}", agentId)));
 }
 
 export function mergeSessionStoreAliasPlans(

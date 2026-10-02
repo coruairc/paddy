@@ -5,6 +5,7 @@ import {
 } from "@openclaw/normalization-core/string-coerce";
 import { isWellFormedApprovalId } from "../../packages/gateway-protocol/src/schema/approval-id.js";
 import type { ReplyPayload } from "../auto-reply/types.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type {
   MessagePresentation,
   MessagePresentationAction,
@@ -103,13 +104,13 @@ function buildGenericNativeExecApprovalFallbackText(params?: {
     excludeChannel: params?.excludeChannel,
   });
   let manualRecovery =
-    "Print the Control UI URL with `openclaw dashboard --no-open`, open it in a browser, then use the approval inbox.";
+    "Print the Control UI URL with `paddy dashboard --no-open`, open it in a browser, then use the approval inbox.";
   if (params?.host === "node") {
     const nodeId = normalizeOptionalString(params.nodeId) ?? "<id|name|ip>";
-    manualRecovery += ` Inspect the node's effective exec policy with \`openclaw approvals get --node ${nodeId}\`.`;
+    manualRecovery += ` Inspect the node's effective exec policy with \`paddy approvals get --node ${nodeId}\`.`;
   }
   return clients
-    ? `Approve it from the Web UI, or enable a native chat approval client such as ${clients}. ${manualRecovery} If those accounts already know your owner ID via allowFrom or owner config, OpenClaw can often infer approvers automatically.`
+    ? `Approve it from the Web UI, or enable a native chat approval client such as ${clients}. ${manualRecovery} If those accounts already know your owner ID via allowFrom or owner config, ${PRODUCT_NAME} can often infer approvers automatically.`
     : `Approve it from the Web UI. ${manualRecovery}`;
 }
 

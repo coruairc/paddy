@@ -1,23 +1,23 @@
 ---
-summary: "CLI reference for `openclaw security` (audit and fix common security footguns)"
+summary: "CLI reference for `paddy security` (audit and fix common security footguns)"
 read_when:
   - You want to run a quick security audit on config/state
   - You want to apply safe "fix" suggestions (permissions, tighten defaults)
 title: "Security CLI"
 ---
 
-# `openclaw security`
+# `paddy security`
 
 Security tools: audit plus optional safe fixes. Related: [Security](/gateway/security).
 
 ```bash
-openclaw security audit
-openclaw security audit --deep
-openclaw security audit --deep --password <password>
-openclaw security audit --deep --token <token>
-openclaw security audit --auth password --password <password>
-openclaw security audit --fix
-openclaw security audit --json
+paddy security audit
+paddy security audit --deep
+paddy security audit --deep --password <password>
+paddy security audit --deep --token <token>
+paddy security audit --auth password --password <password>
+paddy security audit --fix
+paddy security audit --json
 ```
 
 ## Audit modes
@@ -32,7 +32,7 @@ If Gateway password auth is supplied only at startup, pass the same value with `
 
 - Warns when multiple DM senders share the main session and recommends secure DM mode: `session.dmScope="per-channel-peer"` (or `per-account-channel-peer` for multi-account channels) for shared inboxes. This is cooperative/shared-inbox hardening, not isolation for mutually untrusted operators; split trust boundaries with separate gateways (or separate OS users/hosts) for that.
 - Emits `security.trust_model.group_scope_main` when global `session.groupScope="main"` or a binding override merges group/channel rooms into the main session. Every member of each matched room shares that context, so reserve this for trusted rooms (see [Groups](/channels/groups#session-keys)).
-- Emits `security.trust_model.multi_user_heuristic` when config suggests likely shared-user ingress (for example open DM/group policy, configured group targets, or wildcard sender rules) — OpenClaw's default trust model is personal-assistant (one operator), not hostile multi-tenant isolation. For intentional shared-user setups: sandbox all sessions, keep filesystem access workspace-scoped, and keep personal/private identities or credentials off that runtime.
+- Emits `security.trust_model.multi_user_heuristic` when config suggests likely shared-user ingress (for example open DM/group policy, configured group targets, or wildcard sender rules) — Paddy's default trust model is personal-assistant (one operator), not hostile multi-tenant isolation. For intentional shared-user setups: sandbox all sessions, keep filesystem access workspace-scoped, and keep personal/private identities or credentials off that runtime.
 - Emits `security.trust_model.cross_agent_session_access_default` for cross-agent session reach that no config narrows.
   - Condition: two or more agents have `tools.sessions.visibility` resolving to `all` and agent-to-agent access enabled with an omitted or empty `tools.agentToAgent.allow` list, provided at least one agent retains a session tool in an unclamped context (unsandboxed sessions or `agents.defaults.sandbox.sessionToolsVisibility: "all"`). No finding is emitted if every agent is clamped or has no session tools.
   - Severity: `info` for plain multi-agent setups, escalating to `warn` when an agent is sandboxed, has agent-level tool restrictions, or shared-user ingress signals suggest different trust levels.
@@ -50,7 +50,7 @@ Startup logs a non-fatal security warning, and audit flags `hooks.token` reuse o
 - request `sessionKey` overrides are enabled
 - overrides are enabled without `hooks.allowedSessionKeyPrefixes`
 
-Run `openclaw doctor --fix` to rotate a persisted reused `hooks.token`, then update external hook senders to use the new token.
+Run `paddy doctor --fix` to rotate a persisted reused `hooks.token`, then update external hook senders to use the new token.
 
 ### Sandbox/tools
 
@@ -66,7 +66,7 @@ Run `openclaw doctor --fix` to rotate a persisted reused `hooks.token`, then upd
 
 - Warns when sandbox browser uses Docker `bridge` network without `sandbox.browser.cdpSourceRange`.
 - Flags dangerous sandbox Docker network modes, including `host` and `container:*` namespace joins.
-- Warns when existing sandbox browser Docker containers have missing/stale hash labels (for example pre-migration containers missing `openclaw.browserConfigEpoch`) and recommends `openclaw sandbox recreate --browser --all`.
+- Warns when existing sandbox browser Docker containers have missing/stale hash labels (for example pre-migration containers missing `paddy.browserConfigEpoch`) and recommends `paddy sandbox recreate --browser --all`.
 
 ### Network/discovery
 
@@ -116,14 +116,14 @@ Because suppressions can hide standing risk, adding or removing them through age
 ## JSON output
 
 ```bash
-openclaw security audit --json | jq '.summary'
-openclaw security audit --deep --json | jq '.findings[] | select(.severity=="critical") | .checkId'
+paddy security audit --json | jq '.summary'
+paddy security audit --deep --json | jq '.findings[] | select(.severity=="critical") | .checkId'
 ```
 
 With `--fix --json`, output includes both fix actions and the final report:
 
 ```bash
-openclaw security audit --fix --json | jq '{fix: .fix.ok, summary: .report.summary}'
+paddy security audit --fix --json | jq '{fix: .fix.ok, summary: .report.summary}'
 ```
 
 ## What `--fix` changes

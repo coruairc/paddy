@@ -672,9 +672,7 @@ describe("renderUpdates", () => {
       ),
       container,
     );
-    expect(row("Installed").textContent).toContain(
-      "Unknown · recorded after the next successful update",
-    );
+    expect(row("Installed").querySelector(".settings-row__value")?.textContent).toBe("Unknown");
   });
 
   it.each([
@@ -740,7 +738,7 @@ describe("renderUpdates", () => {
     );
     expect(row("Status").querySelector(".settings-status--danger")).not.toBeNull();
     expect(row("Recovery").textContent).toContain("Retry update");
-    expect(row("CLI fallback").textContent).toContain("openclaw triage");
+    expect(row("CLI fallback").textContent).toContain("paddy triage");
   });
 
   it.each([
@@ -797,9 +795,9 @@ describe("renderUpdates", () => {
         await view.updateComplete;
         expect(view.querySelector(".update-run-view__report")?.textContent).toContain(
           reconciled
-            ? "OpenClaw abandoned update reconciled."
+            ? "Paddy abandoned update reconciled."
             : status === "succeeded"
-              ? "OpenClaw updated to 2026.9.2"
+              ? "Paddy updated to 2026.9.2"
               : `OpenClaw update ${status}`,
         );
         if (recovery) {
@@ -808,10 +806,10 @@ describe("renderUpdates", () => {
           actions.querySelectorAll<HTMLButtonElement>("button")[1]?.click();
           expect(onCheckStatus).toHaveBeenCalledOnce();
           expect(onUpdateNow).toHaveBeenCalledOnce();
-          expect(row("CLI fallback").querySelector("code")?.textContent).toBe("openclaw triage");
+          expect(row("CLI fallback").querySelector("code")?.textContent).toBe("paddy triage");
         } else {
           expect(container.textContent).not.toContain("Retry update");
-          expect(container.textContent).not.toContain("openclaw triage");
+          expect(container.textContent).not.toContain("paddy triage");
         }
         if (reconciled) {
           expect(view.querySelector(".update-run-view__report--failed")).toBeNull();
@@ -856,7 +854,7 @@ describe("renderUpdates", () => {
       expect(row("Status").textContent).toContain(reason);
       expect(container.textContent?.includes("Retry update")).toBe(recovery);
       expect(container.textContent?.includes("CLI fallback")).toBe(recovery);
-      expect(container.textContent?.includes("openclaw triage")).toBe(recovery);
+      expect(container.textContent?.includes("paddy triage")).toBe(recovery);
     },
   );
 

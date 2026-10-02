@@ -5,6 +5,7 @@
  * routes to interactive or non-interactive onboarding.
  */
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { readConfigFileSnapshot, resolveGatewayPort } from "../config/config.js";
 import { resolveStateDir } from "../config/paths.js";
@@ -13,7 +14,6 @@ import { isValidEnvSecretRefId } from "../config/types.secrets.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { assertSupportedRuntime } from "../infra/runtime-guard.js";
 import { resolveProviderMatch } from "../plugins/provider-auth-choice-helpers.js";
-import { resolvePluginProviders } from "../plugins/provider-auth-choice.runtime.js";
 import {
   type ProviderAuthChoiceMetadata,
   resolveManifestProviderAuthChoices,
@@ -30,18 +30,8 @@ import { resolveLegacyOnboardAuthChoice } from "./auth-choice-legacy.js";
 import { formatAuthChoiceChoicesForCli } from "./auth-choice-options.js";
 import { GENERIC_PROVIDER_AUTH_CHOICES } from "./auth-choice-options.static.js";
 import { resolveOnboardingSetupTarget } from "./onboard-agent-target.js";
-import {
-  applyCustomApiConfig,
-  CustomApiError,
-  parseNonInteractiveCustomApiFlags,
-  resolveCustomProviderId,
-} from "./onboard-custom-config.js";
-import { runGuidedOnboarding } from "./onboard-guided.js";
 import { DEFAULT_WORKSPACE, handleReset } from "./onboard-helpers.js";
 import { hasInteractiveOnboardingTty } from "./onboard-interactive-runner.js";
-import { runInteractiveSetup } from "./onboard-interactive.js";
-import { runNonInteractiveSetup } from "./onboard-non-interactive.js";
-import { resolveNonInteractiveApiKey as resolveNonInteractiveCredential } from "./onboard-non-interactive/api-keys.js";
 import { inferAuthChoiceFromFlags } from "./onboard-non-interactive/local/auth-choice-inference.js";
 import { applyNonInteractiveGatewayConfig } from "./onboard-non-interactive/local/gateway-config.js";
 import {
@@ -58,7 +48,7 @@ function validatePreflightOptions(opts: OnboardOptions, runtime: RuntimeEnv): bo
     return rejectOption(
       opts,
       runtime,
-      `Invalid --mode "${String(opts.mode)}". Use "local" or "remote", or run ${formatCliCommand("openclaw onboard")} for interactive setup.`,
+      `Invalid --mode "${String(opts.mode)}". Use "local" or "remote", or run ${formatCliCommand("paddy onboard")} for interactive setup.`,
     );
   }
   const remoteOnlyFlags = [
@@ -154,7 +144,7 @@ function validatePreflightOptions(opts: OnboardOptions, runtime: RuntimeEnv): bo
       return rejectOption(
         opts,
         runtime,
-        `Environment variable "${gatewayTokenRefEnv}" is missing or empty. Export it first, then rerun ${formatCliCommand("openclaw onboard")}.`,
+        `Environment variable "${gatewayTokenRefEnv}" is missing or empty. Export it first, then rerun ${formatCliCommand("paddy onboard")}.`,
       );
     }
   }
@@ -162,7 +152,7 @@ function validatePreflightOptions(opts: OnboardOptions, runtime: RuntimeEnv): bo
     return rejectOption(
       opts,
       runtime,
-      `Missing --remote-url for remote mode. Example: ${formatCliCommand("openclaw onboard --non-interactive --accept-risk --mode remote --remote-url ws://127.0.0.1:3000")}.`,
+      `Missing --remote-url for remote mode. Example: ${formatCliCommand("paddy onboard --non-interactive --accept-risk --mode remote --remote-url ws://127.0.0.1:3000")}.`,
     );
   }
   if (opts.nonInteractive && opts.mode === "remote" && opts.remoteUrl?.trim()) {
@@ -179,7 +169,7 @@ function validatePreflightOptions(opts: OnboardOptions, runtime: RuntimeEnv): bo
     return rejectOption(
       opts,
       runtime,
-      `--import-from is required for non-interactive migration import. Run ${formatCliCommand("openclaw migrate list")} to choose a provider.`,
+      `--import-from is required for non-interactive migration import. Run ${formatCliCommand("paddy migrate list")} to choose a provider.`,
     );
   }
   return true;
@@ -232,7 +222,7 @@ async function validateResetAuthChoice(params: {
     return rejectOption(
       params.opts,
       params.runtime,
-      `Auth choice "${authChoice}" was not matched to a provider setup flow. Run ${formatCliCommand("openclaw onboard")} to choose interactively.`,
+      `Auth choice "${authChoice}" was not matched to a provider setup flow. Run ${formatCliCommand("paddy onboard")} to choose interactively.`,
     );
   }
   const providerAuthChoices: Array<ProviderAuthChoiceMetadata & { providerAliases?: string[] }> = [
@@ -303,6 +293,8 @@ async function validateResetAuthChoice(params: {
   if (!params.opts.nonInteractive || authChoice === "skip") {
     return true;
   }
+  const { resolveNonInteractiveApiKey: resolveNonInteractiveCredential } =
+    await import("./onboard-non-interactive/api-keys.js");
   const target = resolveOnboardingSetupTarget(
     params.baseConfig,
     params.opts.agentName || params.opts.team
@@ -318,6 +310,12 @@ async function validateResetAuthChoice(params: {
       : undefined,
   );
   if (authChoice === "custom-api-key") {
+    const {
+      applyCustomApiConfig,
+      CustomApiError,
+      parseNonInteractiveCustomApiFlags,
+      resolveCustomProviderId,
+    } = await import("./onboard-custom-config.js");
     try {
       const custom = parseNonInteractiveCustomApiFlags({
         baseUrl: params.opts.customBaseUrl,
@@ -365,7 +363,7 @@ async function validateResetAuthChoice(params: {
   } else {
     const runtimeProvider = providerAuthChoice
       ? resolveProviderMatch(
-          resolvePluginProviders({
+          (await import("../plugins/provider-auth-choice.runtime.js")).resolvePluginProviders({
             config: params.baseConfig,
             workspaceDir: params.workspaceDir,
             mode: "setup",
@@ -534,6 +532,14 @@ export async function setupWizardCommand(
   if (!validatePreflightOptions(normalizedOpts, runtime)) {
     return;
   }
+  if (normalizedOpts.workspace?.trim()) {
+    const { validateSetupWorkspacePath } = await import("../wizard/setup.workspace.js");
+    const error = validateSetupWorkspacePath(normalizedOpts.workspace.trim());
+    if (error) {
+      rejectOption(normalizedOpts, runtime, `Invalid --workspace: ${error}`);
+      return;
+    }
+  }
   if (
     normalizedOpts.team &&
     (normalizedOpts.mode === "remote" ||
@@ -573,7 +579,7 @@ export async function setupWizardCommand(
     rejectOption(
       normalizedOpts,
       runtime,
-      `Invalid --secret-input-mode. Use "plaintext" or "ref", or run ${formatCliCommand("openclaw onboard")} for the interactive setup.`,
+      `Invalid --secret-input-mode. Use "plaintext" or "ref", or run ${formatCliCommand("paddy onboard")} for the interactive setup.`,
     );
     return;
   }
@@ -582,7 +588,7 @@ export async function setupWizardCommand(
     rejectOption(
       normalizedOpts,
       runtime,
-      `Invalid --reset-scope. Use "config", "config+creds+sessions", or "full". Run ${formatCliCommand("openclaw onboard --reset --reset-scope config")} for a config-only reset.`,
+      `Invalid --reset-scope. Use "config", "config+creds+sessions", or "full". Run ${formatCliCommand("paddy onboard --reset --reset-scope config")} for a config-only reset.`,
     );
     return;
   }
@@ -590,7 +596,7 @@ export async function setupWizardCommand(
     rejectOption(
       normalizedOpts,
       runtime,
-      `--reset-scope requires --reset. Re-run with ${formatCliCommand(`openclaw onboard --reset --reset-scope ${normalizedOpts.resetScope}`)}.`,
+      `--reset-scope requires --reset. Re-run with ${formatCliCommand(`paddy onboard --reset --reset-scope ${normalizedOpts.resetScope}`)}.`,
     );
     return;
   }
@@ -604,7 +610,7 @@ export async function setupWizardCommand(
       [
         "Non-interactive setup requires explicit risk acknowledgement.",
         "Read: https://docs.openclaw.ai/security",
-        `Re-run with: ${formatCliCommand("openclaw onboard --non-interactive --accept-risk ...")}`,
+        `Re-run with: ${formatCliCommand("paddy onboard --non-interactive --accept-risk ...")}`,
       ].join("\n"),
     );
     return;
@@ -620,7 +626,7 @@ export async function setupWizardCommand(
   if (process.platform === "win32") {
     runtime.log(
       [
-        "Windows detected - OpenClaw runs great on WSL2!",
+        `Windows detected - ${PRODUCT_NAME} runs great on WSL2!`,
         "Native Windows might be trickier.",
         "Quick setup: wsl --install (one command, one reboot)",
         "Guide: https://docs.openclaw.ai/windows",
@@ -629,10 +635,10 @@ export async function setupWizardCommand(
   }
 
   const runSetup = normalizedOpts.nonInteractive
-    ? runNonInteractiveSetup
+    ? (await import("./onboard-non-interactive.js")).runNonInteractiveSetup
     : wantsClassicInteractiveSetup(normalizedOpts)
-      ? runInteractiveSetup
-      : runGuidedOnboarding;
+      ? (await import("./onboard-interactive.js")).runInteractiveSetup
+      : (await import("./onboard-guided.js")).runGuidedOnboarding;
 
   const runSetupAfterOptionalReset = async () => {
     if (normalizedOpts.reset) {

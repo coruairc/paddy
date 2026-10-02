@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { resolveOpenClawPackageRootSync } from "../../infra/openclaw-root.js";
+import { PRODUCT_NAME } from "../cli-name.js";
 
 const PRIVATE_QA_DIST_RELATIVE_PATH = path.join("dist", "plugin-sdk", "qa-lab.js");
 const SOURCE_CHECKOUT_MARKER_RELATIVE_PATHS = [".git", "pnpm-workspace.yaml"] as const;
@@ -60,7 +61,7 @@ export function loadPrivateQaCliModule(params?: {
 }): Promise<Record<string, unknown>> {
   const specifier = resolvePrivateQaSourceModuleSpecifier(params);
   if (!specifier) {
-    throw new Error("Private QA CLI is only available from an OpenClaw source checkout.");
+    throw new Error(`Private QA CLI is only available from a ${PRODUCT_NAME} source checkout.`);
   }
   const importModule = params?.importModule;
   return importModule ? importModule(specifier) : import(specifier);

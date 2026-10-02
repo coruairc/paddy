@@ -9,8 +9,8 @@ import { useAutoCleanupTempDirTracker } from "../../../test/helpers/temp-dir.js"
 import { cronOwnerHardeningEntrypoints } from "../../cron/owner-hardening-runtime.test-support.js";
 import { resolvePathViaExistingAncestorSync } from "../../infra/boundary-path.js";
 import { collectNestedErrorCandidates } from "../../infra/error-graph-internal.js";
+import { GatewayStateOwnerContentionError } from "../../infra/gateway-state-owner.js";
 import { resolveRuntimeWorkerUrl } from "../../infra/runtime-worker-url.js";
-import { StateDatabaseCoordinatorContentionError } from "../../infra/state-database-coordinator.js";
 import { triageTestRuntimeEntrypoints } from "../../infra/triage-runtime.test-support.js";
 import { UPDATE_RUN_ID_ENV } from "../../infra/update-control-plane-sentinel.js";
 import type { UpdateDoctorLintFinding } from "../../infra/update-doctor-lint-schema.js";
@@ -464,7 +464,7 @@ it.each([
     const reportPath = path.join(env.OPENCLAW_STATE_DIR, "update-reports", `${run.runId}.md`);
     let savedAtPublication: string | undefined;
     const log = vi.spyOn(defaultRuntime, "log").mockImplementation((value) => {
-      if (String(value).includes("OpenClaw update failed")) {
+      if (String(value).includes("Paddy update failed")) {
         savedAtPublication = fs.readFileSync(reportPath, "utf8");
       }
     });
@@ -515,7 +515,7 @@ it.each([
       );
     }
     expect(savedAtPublication).toContain("Candidate validation unexpectedly stopped.");
-    expect(savedAtPublication).toContain("OpenClaw update failed");
+    expect(savedAtPublication).toContain("Paddy update failed");
     if (json) {
       expect(output).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({ status: "error", runId: run.runId, reportPath }),
@@ -525,7 +525,7 @@ it.each([
       );
     } else {
       const text = log.mock.calls.flat().join("\n");
-      expect(text).toContain("OpenClaw update failed");
+      expect(text).toContain("Paddy update failed");
       expect(text).toContain("Candidate validation unexpectedly stopped.");
       expect(text).toContain(`Report: ${reportPath}`);
     }
@@ -604,7 +604,7 @@ it.each(["ok", "error"] as const)(
     }
     expect(JSON.stringify(savedAtPublication)).not.toContain(secret);
     expect(savedAtPublication?.markdown).toContain(
-      status === "error" ? "doctor-failed" : "OpenClaw updated",
+      status === "error" ? "doctor-failed" : "Paddy updated",
     );
   },
 );
@@ -810,7 +810,7 @@ it.each([false, true])(
 it.each(["in_progress", "completed"] as const)(
   "identifies a progress ledger failure at preflight worktree (%s)",
   (status) => {
-    const cause = new StateDatabaseCoordinatorContentionError("state-lifecycle");
+    const cause = new GatewayStateOwnerContentionError("/synthetic/openclaw.sqlite");
     const record = vi.spyOn(updateRunLedger, "recordUpdateRunStep").mockImplementation(() => {
       throw cause;
     });

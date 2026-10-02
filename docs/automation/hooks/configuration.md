@@ -72,7 +72,7 @@ examples.
 
 <Warning>
 `hooks.internal.handlers` is retired and fails normal config validation. Before
-running `openclaw doctor --fix`, migrate each registered module into a managed or
+running `paddy doctor --fix`, migrate each registered module into a managed or
 workspace hook directory with `HOOK.md` and a handler. Doctor removes the old
 registrations; it does not create executable files. For a legacy-only config
 with `hooks.internal.enabled: true`, it also removes that flag to avoid broad
@@ -86,7 +86,7 @@ Directory discovery merges hooks by **name** using these rules:
 
 | Source            | Location and collision behavior                                                                                                                                         |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bundled           | Shipped with OpenClaw.                                                                                                                                                  |
+| Bundled           | Shipped with Paddy.                                                                                                                                                     |
 | Plugin            | Hook directories declared by active plugins; can replace bundled names.                                                                                                 |
 | Managed           | `<stateDir>/hooks/`, normally `~/.openclaw/hooks/`; can replace bundled and plugin names.                                                                               |
 | Extra directories | `hooks.internal.load.extraDirs`; same source policy as managed hooks. Later extra directories win over earlier ones; the managed directory wins over extra directories. |
@@ -137,7 +137,7 @@ A hook pack is a package whose `package.json` declares hook directories in
 unified installer:
 
 ```bash
-openclaw plugins install <path-or-spec>
+paddy plugins install <path-or-spec>
 ```
 
 Installation and update flags, npm restrictions, linked-root behavior and trust, and

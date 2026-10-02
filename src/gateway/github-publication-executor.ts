@@ -633,8 +633,9 @@ export async function executeGitHubPublication<Row extends PublicationRow>(param
       const participantCredit = contributorCredit
         ? `\n\n## Worked on by\n\n${contributorCredit}`
         : "";
+      // Wording must match the legacy-strip pattern above so re-publication stays idempotent.
       const footer = sessionUrl?.startsWith("https://")
-        ? `\n\n---\n[View the OpenClaw team session](${sessionUrl})`
+        ? `\n\n---\n[View the Paddy team session](${sessionUrl})`
         : "";
       const body = `${description}${participantCredit}\n\n${pullRequestMarker}${footer}`;
       identity = await refreshIdentity();

@@ -66,7 +66,7 @@ import {
 const CODEX_PLUGIN_AUTH_REQUIRED_REASON = "auth_required";
 const CODEX_PLUGIN_NOT_SELECTED_REASON = "not selected for migration";
 const CODEX_PLUGIN_LOAD_WARNING =
-  "Some Codex plugins could not be migrated. Run `openclaw migrate codex` after onboarding.";
+  "Some Codex plugins could not be migrated. Run `paddy migrate codex` after onboarding.";
 const TARGET_CODEX_MARKETPLACE_DISCOVERY_POLL_MS = 250;
 const TARGET_CODEX_MARKETPLACE_DISCOVERY_TIMEOUT_MS = 30_000;
 const TARGET_CODEX_MARKETPLACE_DISCOVERY_TIMEOUT_ENV =
@@ -129,7 +129,6 @@ export async function applyCodexMigrationPlan(params: {
       : plan.source;
   const authSource: CodexAuthSource = {
     codexHome,
-    authPath: path.join(codexHome, "auth.json"),
     modelsCachePath: path.join(codexHome, "models_cache.json"),
   };
   const runtime = withCachedMigrationConfigRuntime(
@@ -339,10 +338,7 @@ function targetCodexMarketplaceDiscoveryTimeoutMs(env: NodeJS.ProcessEnv = proce
   const configured = parseStrictNonNegativeInteger(
     env[TARGET_CODEX_MARKETPLACE_DISCOVERY_TIMEOUT_ENV],
   );
-  if (configured !== undefined) {
-    return configured;
-  }
-  return TARGET_CODEX_MARKETPLACE_DISCOVERY_TIMEOUT_MS;
+  return configured ?? TARGET_CODEX_MARKETPLACE_DISCOVERY_TIMEOUT_MS;
 }
 
 function isCodexPluginLoadWarningItem(item: MigrationItem): boolean {
@@ -385,14 +381,14 @@ async function applyCodexPluginConfigItem(
   item: MigrationItem,
   appliedItems: readonly MigrationItem[],
 ): Promise<MigrationItem> {
-  const incompletePluginItems = appliedItems.filter(
+  const hasIncompletePlugin = appliedItems.some(
     (candidate) =>
       candidate.kind === "plugin" &&
       candidate.action === "install" &&
       readCodexPluginPolicy(candidate) !== undefined &&
       !isCodexPluginConfigTerminal(candidate),
   );
-  if (incompletePluginItems.length > 0) {
+  if (hasIncompletePlugin) {
     return {
       ...item,
       status: "warning",

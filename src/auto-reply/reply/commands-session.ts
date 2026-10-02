@@ -11,6 +11,7 @@ import {
   normalizeOptionalString,
 } from "@openclaw/normalization-core/string-coerce";
 import { formatFastModeCurrentStatus, resolveFastModeState } from "../../agents/fast-mode.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   setChannelConversationBindingIdleTimeoutBySessionKeyAsync,
   setChannelConversationBindingMaxAgeBySessionKeyAsync,
@@ -520,7 +521,7 @@ export const handleRestartCommand: CommandHandler = defineGatewayControlCommand(
         },
       });
       return sessionCommandReply(
-        "⚙️ Restarting OpenClaw in-process (SIGUSR2); back in a few seconds.",
+        `⚙️ Restarting ${PRODUCT_NAME} in-process (SIGUSR2); back in a few seconds.`,
       );
     }
     let sentinelRevision: number | undefined;
@@ -550,7 +551,7 @@ export const handleRestartCommand: CommandHandler = defineGatewayControlCommand(
       return sessionCommandReply(`⚠️ Restart failed (${restartMethod.method}).${detail}`);
     }
     return sessionCommandReply(
-      `⚙️ Restarting OpenClaw via ${restartMethod.method}; give me a few seconds to come back online.`,
+      `⚙️ Restarting ${PRODUCT_NAME} via ${restartMethod.method}; give me a few seconds to come back online.`,
     );
   },
 );

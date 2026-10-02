@@ -1,6 +1,7 @@
 /** Gateway config reads and operator-authorized self-updates. */
 import { readStringValue } from "@openclaw/normalization-core/string-coerce";
 import { Type } from "typebox";
+import { PRODUCT_NAME } from "../../brand.js";
 import { formatCommandOwnerHint } from "../../commands/doctor-command-owner.js";
 import { GatewayClientRequestError } from "../../gateway/client.js";
 import {
@@ -137,7 +138,7 @@ export function createGatewayTool(options?: {
     name: "gateway",
     description: allowConfigReads
       ? "Read gateway config/schema. update.run: owner request or operator schedule; automatic restart + completion notice. Never via shell."
-      : "Update OpenClaw with update.run on an explicit owner request or an operator-scheduled automation. Restart and completion notice are automatic. Never via shell.",
+      : `Update ${PRODUCT_NAME} with update.run on an explicit owner request or an operator-scheduled automation. Restart and completion notice are automatic. Never via shell.`,
     parameters: allowConfigReads ? GatewayToolSchema : GatewayUpdateToolSchema,
     execute: async (_toolCallId, args, signal) => {
       const params = args as Record<string, unknown>;

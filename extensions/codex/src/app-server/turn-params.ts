@@ -40,7 +40,7 @@ type CodexCurrentSender = {
 
 function readCodexCurrentSender(params: EmbeddedRunAttemptParams): CodexCurrentSender | undefined {
   const metadata = asOptionalRecord(
-    asOptionalRecord(params.userTurnTranscriptRecorder?.message as unknown)?.["__openclaw"],
+    asOptionalRecord(params.userTurnTranscriptRecorder?.message)?.["__openclaw"],
   );
   const recorded = [
     normalizeOptionalString(metadata?.["senderId"]),
@@ -73,7 +73,7 @@ export function buildCodexHistoryProvenancePrefix(
   // when OpenClaw supplied a stable sender id, matching generic compaction.
   return sender?.id
     ? neutralizeCodexExplicitMentionSigils(
-        `[OpenClaw conversation info: sender=${JSON.stringify(sender)}]\n`,
+        `[Paddy conversation info: sender=${JSON.stringify(sender)}]\n`,
       )
     : undefined;
 }
@@ -311,7 +311,7 @@ function buildDefaultCollaborationInstructions(): string {
 
 function buildCronCollaborationInstructions(): string {
   return [
-    "This is an OpenClaw cron automation turn. Apply these instructions only to this scheduled job; ordinary chat turns should stay in Codex Default mode.",
+    "This is a Paddy cron automation turn. Apply these instructions only to this scheduled job; ordinary chat turns should stay in Codex Default mode.",
     "Execute the cron payload directly. If it asks you to run an exact command, run that command before doing any investigation, planning, memory review, or workspace bootstrap.",
     "Use context already provided by the runtime, but do not spend time loading or re-reading workspace bootstrap, memory, or project-doc files before executing the cron payload. Inspect those files only if the payload asks for them or the command fails and they are needed to diagnose it.",
     "Keep output concise and automation-oriented. Prefer the final command result or a short failure summary over status narration.",

@@ -4,7 +4,6 @@ import {
   errorShape,
   validateMcpAuthLoginParams,
 } from "../../../packages/gateway-protocol/src/index.js";
-import { partitionMcpServersByConnectionScope } from "../../agents/mcp-connection-resolver.js";
 import { operatorMcpOAuthIdentity } from "../../agents/mcp-oauth-identity.js";
 import type { McpOAuthLoginLifecycle } from "../../agents/mcp-oauth-provider.js";
 import {
@@ -12,7 +11,7 @@ import {
   completeOAuthCallback,
   startMcpOAuthAuthorization,
 } from "../../agents/mcp-oauth.js";
-import { resolveMcpTransportConfig } from "../../agents/mcp-transport-config.js";
+import { resolveOperatorMcpOAuthConfig } from "../../agents/mcp-operator-auth.js";
 import { getPluginRuntimeGatewayRequestScope } from "../../plugins/runtime/gateway-request-scope.js";
 import { WizardSession } from "../../wizard/session.js";
 import { createProviderBrowserAuthSession } from "../provider-browser-auth.js";
@@ -36,36 +35,23 @@ export const mcpAuthLoginHandlers: GatewayRequestHandlers = {
       return;
     }
     const server = context.getRuntimeConfig().mcp?.servers?.[params.serverName];
-    const config = resolveMcpTransportConfig(params.serverName, server, { logWarnings: false });
+    const config = resolveOperatorMcpOAuthConfig(params.serverName, server);
     const methodRegistry = context.getGatewayMethodRegistry?.();
     const isOperatorOwned = () => {
       const current = context.getRuntimeConfig().mcp?.servers?.[params.serverName];
       return (
         getPluginRuntimeGatewayRequestScope()?.pluginRegistry === methodRegistry?.pluginRegistry &&
-        current &&
-        Object.hasOwn(
-          partitionMcpServersByConnectionScope({ [params.serverName]: current }).staticServers,
-          params.serverName,
-        )
+        resolveOperatorMcpOAuthConfig(params.serverName, current) !== undefined
       );
     };
-    if (
-      !server ||
-      server.enabled === false ||
-      config?.kind !== "http" ||
-      config.auth !== "oauth" ||
-      config.oauth?.authProfileId ||
-      !isOperatorOwned()
-    ) {
+    if (!config || !isOperatorOwned()) {
       reject(
         "This connector cannot use operator browser sign-in. Check its existing account settings.",
       );
       return;
     }
     if (!client.browserOrigin) {
-      reject(
-        "Open Settings on this Gateway to sign in, or use openclaw mcp login in its terminal.",
-      );
+      reject("Open Settings on this Gateway to sign in, or use paddy mcp login in its terminal.");
       return;
     }
     const initialServer = structuredClone(server);
@@ -130,7 +116,7 @@ export const mcpAuthLoginHandlers: GatewayRequestHandlers = {
               new Error(
                 saved
                   ? "Authentication saved, but sign-in cleanup did not finish. Close this dialog and check the connector before trying again."
-                  : "Sign-in did not finish. Check the connector settings and try again, or run openclaw mcp login with this connector's name in this Gateway's terminal.",
+                  : "Sign-in did not finish. Check the connector settings and try again, or run paddy mcp login with this connector's name in this Gateway's terminal.",
               );
             try {
               try {

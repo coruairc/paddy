@@ -436,7 +436,9 @@ const npmCliPath = resolveNpmCliPath();
 const installedBinPath = ${params.installedBinPath ? JSON.stringify(params.installedBinPath) : "undefined"};
 let defaultCommand;
 let defaultArgs;
-if (installedBinPath) {
+// Plugin capture/install directories are disposable: a durable wrapper can
+// outlive the path it captured, so re-check the target before trusting it.
+if (installedBinPath && existsSync(installedBinPath)) {
   defaultCommand = process.execPath;
   defaultArgs = [installedBinPath];
 } else if (npmCliPath) {
@@ -641,7 +643,7 @@ if (openClawCodexConfigs.length > 0) {
         typeof parsedOpenClawCodexConfig !== "object" ||
         Array.isArray(parsedOpenClawCodexConfig)
       ) {
-        throw new Error("invalid OpenClaw Codex config");
+        throw new Error("invalid Paddy Codex config");
       }
       existingCodexConfig = mergeCodexConfig(existingCodexConfig, parsedOpenClawCodexConfig);
     } catch {

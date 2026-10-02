@@ -1,5 +1,5 @@
 ---
-summary: "OpenClaw Gateway CLI (`openclaw gateway`) — run, query, and discover gateways"
+summary: "Paddy Gateway CLI (`paddy gateway`) — run, query, and discover gateways"
 read_when:
   - Running the Gateway from the CLI (dev or servers)
   - Debugging Gateway auth, bind modes, and connectivity
@@ -9,16 +9,16 @@ title: "Gateway"
 sidebarTitle: "Gateway"
 ---
 
-The Gateway is OpenClaw's WebSocket server (channels, nodes, sessions, hooks). All subcommands on the pages listed here live under `openclaw gateway ...`.
+The Gateway is Paddy's WebSocket server (channels, nodes, sessions, hooks). All subcommands on the pages listed here live under `paddy gateway ...`.
 
-`openclaw daemon ...` is a legacy alias for the service-control subcommands; see [`openclaw daemon`](/cli/daemon).
+`paddy daemon ...` is a legacy alias for the service-control subcommands; see [`paddy daemon`](/cli/daemon).
 
 <CardGroup cols={3}>
   <Card title="Bonjour discovery" href="/gateway/bonjour">
     Local mDNS + wide-area DNS-SD setup.
   </Card>
   <Card title="Discovery overview" href="/gateway/discovery">
-    How OpenClaw advertises and finds gateways.
+    How Paddy advertises and finds gateways.
   </Card>
   <Card title="Configuration" href="/gateway/configuration">
     Top-level gateway config keys.
@@ -27,7 +27,7 @@ The Gateway is OpenClaw's WebSocket server (channels, nodes, sessions, hooks). A
 
 ## Gateway CLI pages
 
-This page is an index. Five pages document `openclaw gateway`, one per reader
+This page is an index. Five pages document `paddy gateway`, one per reader
 job. Open the page that matches your task.
 
 | Page                                                            | Read it when                                                                       |
@@ -38,7 +38,7 @@ job. Open the page that matches your task.
 | [Manage the Gateway service](/cli/gateway/service)              | You are installing, starting, stopping, or repairing the native service.           |
 | [Discover gateways (Bonjour)](/cli/gateway/discovery)           | You are looking for gateways over mDNS or wide-area DNS-SD.                        |
 
-`openclaw gateway install` installs and starts the service. `--force` reinstalls an existing install and may restart a running Gateway. Finish offline configuration and runtime repairs before installation.
+`paddy gateway install` installs and starts the service. `--force` reinstalls an existing install and may restart a running Gateway. Finish offline configuration and runtime repairs before installation.
 
 ## Where each section moved
 

@@ -178,7 +178,7 @@ function buildPendingPayload(params: {
     view.approvalKind === "plugin"
       ? "Plugin Approval Required"
       : view.approvalKind === "system-agent"
-        ? "OpenClaw Change Requires Approval"
+        ? "Paddy Change Requires Approval"
         : "Exec Approval Required";
   const subtitle = `Expires in ${Math.max(0, Math.ceil((view.expiresAtMs - nowMs) / 1000))}s`;
   const card: GoogleChatCardV2 = {
@@ -216,7 +216,7 @@ function buildFinalPayload(
     view.approvalKind === "plugin"
       ? "Plugin"
       : view.approvalKind === "system-agent"
-        ? "OpenClaw Change"
+        ? "Paddy Change"
         : "Exec";
   return {
     cardsV2: [
@@ -240,10 +240,8 @@ export const googleChatApprovalNativeRuntime = createChannelApprovalNativeRuntim
 >({
   eventKinds: ["exec", "plugin", "system-agent"],
   availability: {
-    isConfigured: ({ cfg, accountId }) =>
-      isGoogleChatNativeApprovalClientEnabled({ cfg, accountId }),
-    shouldHandle: ({ cfg, accountId, approvalKind, request }) =>
-      shouldHandleGoogleChatNativeApprovalRequest({ cfg, accountId, approvalKind, request }),
+    isConfigured: isGoogleChatNativeApprovalClientEnabled,
+    shouldHandle: shouldHandleGoogleChatNativeApprovalRequest,
   },
   presentation: {
     buildPendingPayload: ({ cfg, accountId, context, nowMs, view }) =>

@@ -1,12 +1,12 @@
-# OpenClaw Vydra Provider
+# Paddy Vydra Provider
 
-Official OpenClaw provider plugin for Vydra image, video, and speech generation.
+Official Paddy provider plugin for Vydra image, video, and speech generation.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/vydra-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 Set `VYDRA_API_KEY`, then configure an image, video, or speech model. See

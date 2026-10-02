@@ -8,7 +8,7 @@ title: "Accept and watch policy state"
 sidebarTitle: "Attestation"
 ---
 
-Recording a clean check as durable audit evidence, and detecting drift. Part of the [`openclaw policy`](/cli/policy) reference.
+Recording a clean check as durable audit evidence, and detecting drift. Part of the [`paddy policy`](/cli/policy) reference.
 
 ## Accept policy state
 
@@ -143,7 +143,7 @@ Example JSON output:
 ```
 
 `attestation.policy.hash` identifies the authored rule artifact. `evidence`
-records the observed OpenClaw state used by the checks, and
+records the observed Paddy state used by the checks, and
 `workspace.hash` identifies that evidence payload. `findingsHash` identifies
 the exact finding set. `checkedAt` records when the check ran.
 `attestationHash` identifies the stable claim (policy hash, evidence hash,
@@ -159,10 +159,10 @@ stable hash.
 Lifecycle for accepting policy state:
 
 1. Author or review `policy.jsonc`.
-2. Run `openclaw policy check --json`.
+2. Run `paddy policy check --json`.
 3. If clean, record `attestation.policy.hash` as `expectedHash`.
 4. Record `attestation.attestationHash` as `expectedAttestationHash`.
-5. Re-run `openclaw doctor --lint` in CI or release gates.
+5. Re-run `paddy doctor --lint` in CI or release gates.
 
 If policy rules change intentionally, update both accepted hashes from a
 clean check. If only workspace settings change (policy stays the same),
@@ -173,12 +173,12 @@ to the workspace hash and attestation hash; review the new evidence and
 refresh accepted attestation hashes after enabling. Enabling or upgrading
 tool posture rules adds `toolPosture` evidence the same way.
 
-`openclaw policy watch` re-runs the check and reports when current evidence no
+`paddy policy watch` re-runs the check and reports when current evidence no
 longer matches `expectedAttestationHash`:
 
 ```bash
-openclaw policy watch --json
-openclaw policy watch --agent ops --json
+paddy policy watch --json
+paddy policy watch --agent ops --json
 ```
 
 Use `--once` in CI or scripts that need a single drift evaluation. Without

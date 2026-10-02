@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../brand.js";
 import { extractSqliteTableSchema } from "../infra/sqlite-schema-sql.js";
 import { runSqliteImmediateTransactionSync } from "../infra/sqlite-transaction.js";
 import { OPENCLAW_AGENT_SCHEMA_SQL } from "./openclaw-agent-schema.js";
@@ -17,7 +18,7 @@ export function ensureSessionGoalOperationsSchema(db: DatabaseSync): void {
     {
       endMarker: "CREATE TABLE IF NOT EXISTS transcript_events (",
       includeEndMarker: false,
-      errorMessage: "OpenClaw Goal operation schema markers are missing.",
+      errorMessage: `${PRODUCT_NAME} Goal operation schema markers are missing.`,
     },
   );
   runSqliteImmediateTransactionSync(db, () => {

@@ -1,4 +1,5 @@
 import { listAgentEntries } from "../agents/agent-scope.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { ConfigFileSnapshot, OpenClawConfig } from "../config/types.openclaw.js";
 import { normalizeAgentId } from "../routing/session-key.js";
 import { shortenHomePath } from "../utils.js";
@@ -12,7 +13,7 @@ export function requireValidSystemAgentSetupSnapshot(snapshot: ConfigFileSnapsho
     const issue = snapshot.issues?.[0];
     const detail = issue ? ` (${issue.path ? `${issue.path}: ` : ""}${issue.message})` : "";
     throw new Error(
-      `OpenClaw config ${shortenHomePath(snapshot.path)} is invalid${detail}. Fix it before running setup.`,
+      `${PRODUCT_NAME} config ${shortenHomePath(snapshot.path)} is invalid${detail}. Fix it before running setup.`,
     );
   }
   const sourceConfig = snapshot.exists ? (snapshot.sourceConfig ?? snapshot.config) : {};

@@ -760,7 +760,7 @@ describe("OpenClaw Codex sandbox exec-server", () => {
     for (const method of ["fs/walk", "unsupported/method"]) {
       await expect(rpc(socket, method, {})).rejects.toMatchObject({
         code: -32601,
-        message: `Unsupported OpenClaw sandbox exec-server method: ${method}`,
+        message: `Unsupported Paddy sandbox exec-server method: ${method}`,
       });
     }
     await expect(

@@ -1,5 +1,6 @@
 import type { DatabaseSync } from "node:sqlite";
 import type { Selectable } from "kysely";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   executeSqliteQuerySync,
   executeSqliteQueryTakeFirstSync,
@@ -14,11 +15,8 @@ import {
 } from "../state/openclaw-state-db.js";
 import { OPENCLAW_STATE_SCHEMA_SQL } from "../state/openclaw-state-schema.js";
 import type { NodeWorkerSupervisorIdentity } from "../worker/node-supervisor-protocol.js";
-import {
-  nodeWorkerTurnMatchesIdentity,
-  type NodeWorkerLaunchClaim,
-  type NodeWorkerTurnReceipt,
-} from "./node-worker-journal.types.js";
+import { nodeWorkerTurnMatchesIdentity } from "../worker/node-supervisor-protocol.js";
+import type { NodeWorkerLaunchClaim, NodeWorkerTurnReceipt } from "./node-worker-journal.types.js";
 import {
   isNodeWorkerTerminalState,
   type NodeWorkerLaunchReceipt,
@@ -46,7 +44,7 @@ function ensureTurnSchema(database: DatabaseSync): void {
   database.exec(
     extractSqliteTableSchema(OPENCLAW_STATE_SCHEMA_SQL, "node_worker_turns", {
       endMarker: "\n  WHERE state = 'running';",
-      errorMessage: "OpenClaw node worker turn schema marker is missing.",
+      errorMessage: `${PRODUCT_NAME} node worker turn schema marker is missing.`,
     }),
   );
 }

@@ -131,6 +131,7 @@ self.addEventListener("fetch", (event) => {
   // Dynamic reads must reach their authority owner, including after an edge
   // login expires. Never replay previously cached metadata or media tickets.
   const cacheable = !(
+    event.request.cache === "no-store" ||
     pathname.startsWith("/__openclaw__/") ||
     pathname.startsWith("/api/") ||
     pathname.startsWith("/rpc") ||
@@ -160,10 +161,10 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data.json();
   } catch {
-    data = { title: "OpenClaw", body: event.data.text() };
+    data = { title: "Paddy", body: event.data.text() };
   }
 
-  const title = data.title || "OpenClaw";
+  const title = data.title || "Paddy";
   const options = {
     body: data.body || "",
     icon: "./apple-touch-icon.png",

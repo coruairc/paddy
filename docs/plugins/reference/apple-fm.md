@@ -15,7 +15,7 @@ On-device Apple Intelligence inference for lightweight setup and short tasks.
 ## Distribution
 
 - Package: `@openclaw/apple-fm-provider`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 

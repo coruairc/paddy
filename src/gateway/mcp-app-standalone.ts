@@ -4,6 +4,7 @@ import { peekSessionMcpRuntime } from "../agents/agent-bundle-mcp-manager-api.js
 import { runWithSessionMcpRequestSignal } from "../agents/agent-bundle-mcp-request-context.js";
 import { buildMcpAppSandboxPath, resolveMcpAppSandboxPort } from "../agents/mcp-app-sandbox.js";
 import { getMcpAppViewLease, type McpAppViewLease } from "../agents/mcp-ui-resource.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { safeEqualSecret } from "../security/secret-equal.js";
 import { respondPlainText } from "./control-ui-http-utils.js";
@@ -258,7 +259,7 @@ function standaloneHostHtml(): { html: string; scriptHash: string } {
     html: `<!doctype html>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>OpenClaw MCP App</title>
+<title>${PRODUCT_NAME} MCP App</title>
 <style>html,body{height:100%;margin:0;background:#fff;color:#111;font:14px system-ui,sans-serif}main{height:100%}iframe{display:block;width:100%;height:600px;border:0}.error{padding:16px;color:#b91c1c}</style>
 <main id="host" aria-live="polite"></main>
 <script>${escapedSource}</script>`,

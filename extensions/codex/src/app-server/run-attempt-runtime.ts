@@ -276,7 +276,7 @@ export async function prepareCodexAttemptRuntime(connection: CodexAttemptConnect
       connection.assertCurrent();
       // Choose the existing sandbox-backed tools before their catalog and prompt are built.
       nativeToolSurfaceEnabled = false;
-      embeddedAgentLog.info("Codex managed-only hooks require sandbox-backed OpenClaw tools");
+      embeddedAgentLog.info("Codex managed-only hooks require sandbox-backed Paddy tools");
     } finally {
       if (attemptClientFactory === createIsolatedCodexAppServerClient) {
         await client.closeAndWait();

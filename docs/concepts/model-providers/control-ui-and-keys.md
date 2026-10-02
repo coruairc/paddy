@@ -10,7 +10,7 @@ title: "Control UI and API keys"
 ## Configure providers in the Control UI
 
 Open **Settings → Models** in the Control UI to add, replace, or remove provider
-API keys. The page and `openclaw models auth paste-api-key` use the same credential
+API keys. The page and `paddy models auth paste-api-key` use the same credential
 writer: key material stays in the auth store, and configured providers reference
 the saved profile. Environment-provided keys remain managed by the Gateway
 process environment. The page shows credential sources without revealing keys.
@@ -30,11 +30,11 @@ Use **Test connection** to run a live provider probe and see latency or a catego
 
 The **Defaults** card manages the primary model, utility model, first fallback, thinking level, and Fast mode from the configured model catalog. Changes save automatically to the existing `agents.defaults` settings. For the utility model, **Auto** leaves the setting unset and **Disabled** stores an empty string to turn utility routing off.
 
-The fallback selector edits the first model in the ordered fallback chain. Replacing it preserves any later fallbacks already configured; selecting **No fallback model** clears the chain. Use `openclaw models fallbacks` to manage the full ordered list.
+The fallback selector edits the first model in the ordered fallback chain. Replacing it preserves any later fallbacks already configured; selecting **No fallback model** clears the chain. Use `paddy models fallbacks` to manage the full ordered list.
 
 ## Plugin-owned provider behavior
 
-Most provider-specific logic lives in provider plugins (`registerProvider(...)`) while OpenClaw keeps the generic inference loop. Plugins own onboarding, model catalogs, auth env-var mapping, transport/config normalization, tool-schema cleanup, failover classification, OAuth refresh, usage reporting, thinking/reasoning profiles, and more.
+Most provider-specific logic lives in provider plugins (`registerProvider(...)`) while Paddy keeps the generic inference loop. Plugins own onboarding, model catalogs, auth env-var mapping, transport/config normalization, tool-schema cleanup, failover classification, OAuth refresh, usage reporting, thinking/reasoning profiles, and more.
 
 The full list of provider-SDK hooks and bundled-plugin examples lives in [Provider plugins](/plugins/sdk-provider-plugins). A provider that needs a totally custom request executor is a separate, deeper extension surface.
 

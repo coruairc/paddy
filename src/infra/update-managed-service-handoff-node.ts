@@ -1,4 +1,5 @@
 import path from "node:path";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { UpdatePreMutationError } from "../cli/update-cli/shared.js";
 import { isNodeRuntime } from "../daemon/runtime-binary.js";
 import { resolveNodeRuntimeInfo, resolveSystemNodeInfo } from "../daemon/runtime-paths.js";
@@ -11,7 +12,7 @@ import {
 import type { RespawnSupervisor } from "./supervisor-markers.js";
 
 const RUNTIME_RECOVERY_ACTION =
-  "Inspect the service with `openclaw gateway status --deep` and refresh its definition under the installation owner (for a standard OpenClaw-managed service: `openclaw gateway install --force`). Then retry the update. The serving Gateway has not been stopped.";
+  `Inspect the service with \`${CLI_NAME} gateway status --deep\` and refresh its definition under the installation owner (for a standard ${PRODUCT_NAME}-managed service: \`${CLI_NAME} gateway install --force\`). Then retry the update. The serving Gateway has not been stopped.`;
 
 class ManagedHandoffNodeUnavailableError extends UpdatePreMutationError {
   constructor() {

@@ -30,12 +30,16 @@ root `openclaw` CLI release.
 For application lifecycle guidance, see
 [Building a Gateway client](/gateway/clients). For apps
 that supervise the Gateway as a child process, see
-[Embedding OpenClaw](/gateway/embedding).
+[Embedding Paddy](/gateway/embedding).
 
 ## Transport and framing
 
 - WebSocket, text frames, JSON payloads.
 - First frame **must** be a `connect` request.
+- The default budget allows 128 outstanding unauthenticated connections per
+  resolved client IP. Successful authentication or closure releases the slot.
+  See [pre-auth connection limits](/gateway/security/rate-limiting#unauthenticated-websocket-connections)
+  for shared-NAT behavior and the environment override.
 - Pre-connect frames are capped at 64 KiB (`MAX_PREAUTH_PAYLOAD_BYTES`). After
   handshake, follow `hello-ok.policy.maxPayload` and
   `hello-ok.policy.maxBufferedBytes`. With diagnostics enabled, oversized

@@ -6,7 +6,7 @@ read_when:
 title: "Grok search"
 ---
 
-OpenClaw supports Grok as a `web_search` provider, using xAI web-grounded
+Paddy supports Grok as a `web_search` provider, using xAI web-grounded
 responses to produce AI-synthesized answers backed by live search results
 with citations.
 
@@ -14,7 +14,7 @@ Grok web search prefers an existing xAI OAuth sign-in when one is available.
 If no OAuth profile exists, the same xAI API key also powers the built-in
 `x_search` tool for X (formerly Twitter) post search and the `code_execution`
 tool. Storing the key at `plugins.entries.xai.config.webSearch.apiKey` also
-lets OpenClaw reuse it as a fallback for the bundled xAI model provider.
+lets Paddy reuse it as a fallback for the bundled xAI model provider.
 
 For post-level X metrics (reposts, replies, bookmarks, views), use
 [`x_search`](/tools/web#x_search) with the exact post URL or status ID
@@ -22,11 +22,11 @@ instead of a broad search query.
 
 ## Onboarding and configure
 
-Choosing **Grok** during `openclaw onboard` or `openclaw configure --section
-web` lets OpenClaw reuse an existing xAI OAuth profile without prompting for
+Choosing **Grok** during `paddy onboard` or `paddy configure --section
+web` lets Paddy reuse an existing xAI OAuth profile without prompting for
 a separate web-search key. Without OAuth, it falls back to xAI API-key setup.
 
-OpenClaw then offers a follow-up step to enable `x_search` with the same xAI
+Paddy then offers a follow-up step to enable `x_search` with the same xAI
 credential. That follow-up:
 
 - only appears after you choose Grok for `web_search`
@@ -37,8 +37,8 @@ Skip it to enable or change `x_search` later in config.
 
 ## Sign in or get an API key
 
-The `xai` plugin that provides Grok web search ships with OpenClaw, so there is
-no `openclaw plugins install` step. Start at the credential you already have.
+The `xai` plugin that provides Grok web search ships with Paddy, so there is
+no `paddy plugins install` step. Start at the credential you already have.
 
 <Steps>
   <Step title="Use xAI OAuth">
@@ -46,8 +46,8 @@ no `openclaw plugins install` step. Start at the credential you already have.
     Grok as the `web_search` provider. No separate API key is required:
 
     ```bash
-    openclaw onboard --auth-choice xai-oauth
-    openclaw config set tools.web.search.provider grok
+    paddy onboard --auth-choice xai-oauth
+    paddy config set tools.web.search.provider grok
     ```
 
   </Step>
@@ -59,7 +59,7 @@ no `openclaw plugins install` step. Start at the credential you already have.
     Set `XAI_API_KEY` in the Gateway environment, or configure via:
 
     ```bash
-    openclaw configure --section web
+    paddy configure --section web
     ```
 
   </Step>
@@ -91,7 +91,7 @@ no `openclaw plugins install` step. Start at the credential you already have.
 }
 ```
 
-**Credential alternatives:** `openclaw models auth login --provider xai
+**Credential alternatives:** `paddy models auth login --provider xai
 --method oauth`, `XAI_API_KEY` in the Gateway environment, or
 `plugins.entries.xai.config.webSearch.apiKey`. For a gateway install, put env
 vars in `~/.openclaw/.env`.
@@ -114,13 +114,13 @@ recovery. Override it with `tools.web.search.timeoutSeconds`.
 
 OAuth refresh failures remain authentication errors rather than being reported
 as a missing API key. If a refresh cannot recover, sign in again with
-`openclaw models auth login --provider xai --method oauth`; increasing the search
+`paddy models auth login --provider xai --method oauth`; increasing the search
 timeout does not repair an unavailable credential.
 
 ## Base URL overrides
 
 Set `plugins.entries.xai.config.webSearch.baseUrl` to route Grok web search
-through an operator proxy or xAI-compatible Responses endpoint. OpenClaw
+through an operator proxy or xAI-compatible Responses endpoint. Paddy
 posts to `<baseUrl>/responses` after trimming trailing slashes. `x_search`
 falls back to the same `webSearch.baseUrl` unless
 `plugins.entries.xai.config.xSearch.baseUrl` is set.

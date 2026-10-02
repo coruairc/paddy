@@ -1,5 +1,5 @@
 ---
-summary: "How to contribute to the OpenClaw threat model"
+summary: "How to contribute to the Paddy threat model"
 title: "Contributing to the threat model"
 read_when:
   - You want to contribute security findings or threat scenarios

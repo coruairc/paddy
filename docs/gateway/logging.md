@@ -10,7 +10,7 @@ title: "Gateway logging"
 
 For a user-facing overview (CLI + Control UI + config), see [/logging](/logging).
 
-OpenClaw has two log surfaces:
+Paddy has two log surfaces:
 
 - **Console output** - what you see in the terminal.
 - **File logs** - JSON lines written by the gateway logger.
@@ -62,7 +62,7 @@ payloads or credentials; see [secret egress proxy](/gateway/secrets/secret-store
 The Control UI Logs tab tails this file via the gateway (`logs.tail`). The CLI does the same:
 
 ```bash
-openclaw logs --follow
+paddy logs --follow
 ```
 
 If a tail read observes that the active file has disappeared, the Control UI clears its previous records and follows the recreated file. Missing files still return an empty tail. Filesystem read errors, including a log path that points to a directory, remain visible while the Control UI keeps the last successfully read records as stale data.
@@ -94,7 +94,7 @@ remain errors.
 ### Slow agent database opens
 
 A completed physical agent-database open taking at least one second emits
-`slow OpenClaw agent database open`. The record retains total elapsed time and
+`slow Paddy agent database open`. The record retains total elapsed time and
 the `open`, `validation`, `configuration`, `schema`, and `registration` phases.
 For a yielded integrity check, it also includes `integrityGateMs` and
 `integrityGateOutcome` (`healthy` or `failed`). The gate includes the check plus
@@ -215,13 +215,13 @@ the configured file log level.
 Tune console verbosity independently:
 
 - `logging.consoleLevel` (default `info`)
-- `logging.consoleStyle` (`pretty` | `json`). When unset, output is `pretty` on a TTY and the automatic `compact` style otherwise. `compact` is no longer a settable value. `openclaw doctor --fix` maps a stored one to `pretty`.
+- `logging.consoleStyle` (`pretty` | `json`). When unset, output is `pretty` on a TTY and the automatic `compact` style otherwise. `compact` is no longer a settable value. `paddy doctor --fix` maps a stored one to `pretty`.
 
 ## Redaction
 
-OpenClaw masks sensitive tokens before log or transcript output leaves the process. This redaction policy applies at console, file-log, OTLP log-record, and session transcript text sinks. Matching secret values are masked before JSONL lines or messages are written to disk.
+Paddy masks sensitive tokens before log or transcript output leaves the process. This redaction policy applies at console, file-log, OTLP log-record, and session transcript text sinks. Matching secret values are masked before JSONL lines or messages are written to disk.
 
-The OpenClaw harness masks finalized tool-result text after middleware, before
+The Paddy harness masks finalized tool-result text after middleware, before
 it enters live model context, including exec output and tool errors. Media bytes
 and the original execution arguments stay intact; later replay reuses the masked
 result. Model-visible tool-result text preserves ambiguous source assignments such as
@@ -270,11 +270,11 @@ Profile and run-registry publications refresh their derived display facts withou
 rereading session entries. Worker environment and placement publications refresh
 only the selected rows' worker facts on their next presentation. Stored session
 writes publish exact keys; broad list notifications do not schedule an all-row
-drain. Sidebar preferences and other projection-neutral config commits retain
-session rows. Agent identity edits refresh display facts on presentation; store
-admission reconciles physical generations and retains unchanged rows. Session
-policy, roster, sharing, and adopted model catalog changes still refresh affected
-live rows before lists respond. Archived rows stay cold until selected.
+drain. Sidebar preferences, `talk.realtime.model`, and other projection-neutral
+config commits retain session rows. Agent identity edits refresh display facts on
+presentation; store admission reconciles physical generations and retains unchanged
+rows. Session policy, roster, sharing, and adopted model catalog changes still
+refresh affected live rows before lists respond. Archived rows stay cold until selected.
 
 Transcript-only row refreshes use a one-second window per resident session: the
 first notification refreshes promptly, and further notifications collapse into a
@@ -323,7 +323,7 @@ request behavior or diagnostic collection settings.
 
 ### WS log style
 
-`openclaw gateway` supports a per-gateway style switch:
+`paddy gateway` supports a per-gateway style switch:
 
 - `--ws-log auto` (default): normal mode is optimized. Verbose mode uses compact output.
 - `--ws-log compact`: compact output (paired request/response) when verbose.
@@ -332,13 +332,13 @@ request behavior or diagnostic collection settings.
 
 ```bash
 # optimized (only errors/slow)
-openclaw gateway
+paddy gateway
 
 # show all WS traffic (paired)
-openclaw gateway --verbose --ws-log compact
+paddy gateway --verbose --ws-log compact
 
 # show all WS traffic (full meta)
-openclaw gateway --verbose --ws-log full
+paddy gateway --verbose --ws-log full
 ```
 
 ## Console formatting (subsystem logging)
@@ -362,4 +362,4 @@ This keeps file logs stable while making interactive output scannable.
 - [Logging](/logging)
 - [OpenTelemetry export](/gateway/opentelemetry)
 - [Diagnostics export](/gateway/diagnostics)
-- [`openclaw logs`](/cli/logs) — tail Gateway logs over RPC from the CLI
+- [`paddy logs`](/cli/logs) — tail Gateway logs over RPC from the CLI

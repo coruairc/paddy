@@ -2,14 +2,14 @@
 
 Generate videos with Wan models on Alibaba Model Studio. The plugin supplies
 text-to-video, image-to-video, and reference-to-video capabilities through
-OpenClaw's shared video generation feature.
+Paddy's shared video generation feature.
 
 ## Get started
 
 Add your Model Studio API key:
 
 ```bash
-openclaw onboard --auth-choice alibaba-model-studio-api-key
+paddy onboard --auth-choice alibaba-model-studio-api-key
 ```
 
 The Gateway also accepts `MODELSTUDIO_API_KEY`, `DASHSCOPE_API_KEY`, or

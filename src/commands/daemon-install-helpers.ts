@@ -632,6 +632,7 @@ export async function buildGatewayInstallPlan(params: {
   port: number;
   allowUnconfigured?: boolean;
   runtime: GatewayDaemonRuntime;
+  runtimeExplicit?: boolean;
   existingEnvironment?: Record<string, string | undefined>;
   existingCommand?: GatewayServiceCommandConfig | null;
   devMode?: boolean;
@@ -663,20 +664,22 @@ export async function buildGatewayInstallPlan(params: {
   if (wrapperPointsAtGeneratedScript) {
     params.warn?.(
       platform === "win32"
-        ? `Ignoring ${OPENCLAW_WRAPPER_ENV_KEY} because it points to the Windows task script; using the OpenClaw gateway entrypoint directly to avoid a recursive gateway.cmd wrapper.`
-        : `Ignoring ${OPENCLAW_WRAPPER_ENV_KEY} because it points to the generated LaunchAgent environment wrapper; using the OpenClaw gateway entrypoint directly to avoid a self-referencing wrapper.`,
+        ? `Ignoring ${OPENCLAW_WRAPPER_ENV_KEY} because it points to the Windows task script; using the Paddy gateway entrypoint directly to avoid a recursive gateway.cmd wrapper.`
+        : `Ignoring ${OPENCLAW_WRAPPER_ENV_KEY} because it points to the generated LaunchAgent environment wrapper; using the Paddy gateway entrypoint directly to avoid a self-referencing wrapper.`,
     );
   }
   const wrapperPath = wrapperPointsAtGeneratedScript
     ? undefined
     : await resolveOpenClawWrapperPath(wrapperInput);
-  const { devMode, runtimePath } = await resolveDaemonInstallRuntimeInputs({
+  const { devMode, runtime, runtimePath } = await resolveDaemonInstallRuntimeInputs({
     env: params.env,
     runtime: params.runtime,
+    runtimeExplicit: params.runtimeExplicit,
     devMode: params.devMode,
     runtimePath: params.runtimePath,
     pinnedRuntimePath: params.pinnedRuntimePath,
     wrapperPath,
+    warn: params.warn,
   });
   const serviceInputEnv = { ...params.env };
   if (wrapperPath) {
@@ -693,14 +696,14 @@ export async function buildGatewayInstallPlan(params: {
           "--allow-unconfigured",
         ) === true),
     dev: devMode,
-    runtime: params.runtime,
+    runtime,
     runtimePath,
     wrapperPath,
     ...(params.existingCommand ? { existingCommand: params.existingCommand } : {}),
   });
   await emitNodeRuntimeWarning({
     env: params.env,
-    runtime: params.runtime,
+    runtime,
     nodeProgram: programArguments[0],
     warn: params.warn,
     title: "Gateway runtime",
@@ -708,7 +711,7 @@ export async function buildGatewayInstallPlan(params: {
   const serviceEnvironment = buildServiceEnvironment({
     env: serviceInputEnv,
     port: params.port,
-    runtime: params.runtime,
+    runtime,
     existingNodeOptions: resolveManagedGatewayServiceCommand(params.existingCommand)?.environment
       ?.NODE_OPTIONS,
     launchdLabel:
@@ -736,6 +739,7 @@ export async function buildGatewayInstallPlan(params: {
 
   // Lowest to highest: preserved custom vars, durable config, SecretRef env, generated service env.
   return {
+    runtime,
     programArguments,
     workingDirectory:
       workingDirectory ||
@@ -760,6 +764,6 @@ function normalizeServicePathForCompare(
 export function gatewayInstallErrorHint(platform = process.platform): string {
   return platform === "win32"
     ? "Tip: native Windows now falls back to a per-user Startup-folder login item when Scheduled Task creation is denied; if install still fails, rerun from an elevated PowerShell or skip service install."
-    : `Tip: rerun \`${formatCliCommand("openclaw gateway install")}\` after fixing the error.`;
+    : `Tip: rerun \`${formatCliCommand("paddy gateway install")}\` after fixing the error.`;
 }
 /* oxlint-disable max-lines -- TODO: split this grandfathered oversized file. */

@@ -204,7 +204,7 @@ if(-not $expression){throw 'Setup did not install a browser launcher'}
 $browserExecutable=$fixture.browser
 $source=& ([scriptblock]::Create('return '+$expression))
 # Map only the lease-owned filesystem root; execute the installed script unchanged otherwise.
-$source=$source.Replace('C:\ProgramData\OpenClaw\cloud-workers\cbx_fixture\desktop\browser-profile',(Join-Path $fixture.root 'profile data'))
+$source=$source.Replace('C:\ProgramData\Paddy\cloud-workers\cbx_fixture\desktop\browser-profile',(Join-Path $fixture.root 'profile data'))
 $launcher=Join-Path $fixture.root 'browser.ps1'
 [IO.File]::WriteAllText($launcher,$source)
 $env:BROWSER=$fixture.browser
@@ -400,7 +400,7 @@ function Start-Process {
   return $child
 }
 function Stop-Process { $global:kills++; $global:app=$null }
-$source=$fixture.setup.Replace('C:\ProgramData\OpenClaw\cloud-workers\cbx_fixture\desktop',(Join-Path $fixture.root 'desktop')).Replace('C:\ProgramData\crabbox',$fixture.root)
+$source=$fixture.setup.Replace('C:\ProgramData\Paddy\cloud-workers\cbx_fixture\desktop',(Join-Path $fixture.root 'desktop')).Replace('C:\ProgramData\crabbox',$fixture.root)
 $source=$source.Replace('[Security.Principal.WindowsIdentity]::GetCurrent().User.Value',('$sid')).Replace('[Diagnostics.Process]::GetCurrentProcess().SessionId','2')
 $setup=Join-Path $fixture.root 'setup.ps1'
 [IO.File]::WriteAllText($setup,$source)

@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import { tempWorkspace, type TempWorkspace } from "@openclaw/fs-safe/temp";
 import { clean as cleanSemver } from "semver";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveInstallWorkTimeoutMs } from "../infra/install-mode-options.js";
 import {
   installPackageDir,
@@ -14,6 +15,7 @@ import {
   type NpmIntegrityDrift,
   type NpmSpecResolution,
 } from "../infra/install-source-utils.js";
+import { resolveNpmCommand } from "../infra/npm-command.js";
 import {
   listMissingRequiredPlatformPackages,
   readManagedNpmRootInstalledDependency,
@@ -187,7 +189,7 @@ export async function installPluginFromManagedNpmRoot(
         logger,
       });
       if (repairedOpenClawPeer) {
-        logger.info?.(`Repaired stale openclaw peer dependency in ${npmRoot}`);
+        logger.info?.(`Repaired stale paddy peer dependency in ${npmRoot}`);
       }
     }
     const managedOverrides = await readOpenClawManagedNpmRootOverrides();
@@ -200,7 +202,7 @@ export async function installPluginFromManagedNpmRoot(
       } catch (error) {
         return {
           ok: false,
-          error: `${cause.error}, but OpenClaw could not quarantine ${npmRoot} for rebuild: ${String(error)}`,
+          error: `${cause.error}, but ${PRODUCT_NAME} could not quarantine ${npmRoot} for rebuild: ${String(error)}`,
         };
       }
       logger.warn?.(
@@ -242,8 +244,7 @@ export async function installPluginFromManagedNpmRoot(
     if (!initialPeerSync.ok) {
       return { ok: false, error: initialPeerSync.error };
     }
-    const npmInstallArgs = [
-      "npm",
+    const npmInstallArgs = resolveNpmCommand([
       ...createSafeNpmInstallArgs({
         omitDev: true,
         omitPeer: true,
@@ -252,7 +253,7 @@ export async function installPluginFromManagedNpmRoot(
         noAudit: true,
         noFund: true,
       }),
-    ];
+    ]);
     const npmInstallOptions = {
       cwd: npmRoot,
       timeoutMs: resolveInstallWorkTimeoutMs(workTimeoutMs, Math.max(timeoutMs, 300_000)),
@@ -451,7 +452,7 @@ export async function installPluginFromManagedNpmRoot(
     } catch (error) {
       return {
         ok: false,
-        error: `Failed to repair openclaw peer links after npm install: ${String(error)}`,
+        error: `Failed to repair paddy peer links after npm install: ${String(error)}`,
       };
     }
     if (await auditDeclaredOpenClawHostDependency({ packageDir: installRoot })) {
@@ -606,7 +607,7 @@ export async function installPluginFromManagedNpmRoot(
         copyErrorPrefix: "Failed to publish managed npm project",
         beforePersistentApply: () => {
           params.signal?.throwIfAborted();
-          params.beforePersistentApply?.();
+          return params.beforePersistentApply?.();
         },
         hasDeps: false,
         sourceHardlinks: "package-manager",

@@ -31,7 +31,7 @@ export default definePluginEntry({
   configSchema: { jsonSchema: { ...ConfigSchema } },
   register(api) {
     if (!api.runtimeSource) {
-      throw new Error("ONNX requires runtime entrypoint metadata from its OpenClaw host.");
+      throw new Error("ONNX requires runtime entrypoint metadata from its Paddy host.");
     }
     const workerUrl = new URL(
       `./src/inference.worker${path.extname(api.runtimeSource)}`,
@@ -57,7 +57,7 @@ export default definePluginEntry({
           );
         } catch {
           context.logger.warn(
-            "ONNX models are not ready. Run openclaw onnx models and verify/download the selected artifacts.",
+            "ONNX models are not ready. Run paddy onnx models and verify/download the selected artifacts.",
           );
         }
       },

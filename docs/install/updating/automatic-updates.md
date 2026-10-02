@@ -14,7 +14,7 @@ when a new version can restart each process. Part of the [Updating](/install/upd
 ## Headless node updates
 
 Long-running packaged headless nodes update automatically by default. This
-includes foreground `openclaw node run` and installed node services. After its
+includes foreground `paddy node run` and installed node services. After its
 first authenticated connection, the node checks for a newer release and repeats
 the check hourly. It prepares a separate copy of its program
 files and dependencies, and activates it only when the node is idle. The global
@@ -30,7 +30,7 @@ forces a busy node to restart.
 Plugins must explicitly report that their retained work is idle. An older plugin
 without the idle-work callback postpones automatic activation, even after its
 last command returns. Update that plugin to a compatible version, or finish its
-work and use `openclaw update` followed by a node restart.
+work and use `paddy update` followed by a node restart.
 
 The replacement process reconnects with the same identity, pairing, settings,
 and launch options. The separate runtime changes program files, not the node's
@@ -74,16 +74,16 @@ The shared opt-outs `update.checkOnStart: false` and
 activation. `update.auto.enabled` controls Gateway updates; it does not control
 this node-specific default.
 
-To check the connected node's runtime version, run `openclaw nodes status --json`
+To check the connected node's runtime version, run `paddy nodes status --json`
 from a CLI connected to its Gateway and inspect `nodes[].version`.
-`openclaw --version` reports that CLI's installed version, which can differ
+`paddy --version` reports that CLI's installed version, which can differ
 after a node update.
 
 Look in the foreground node's stderr or its service logs for update preparation,
 busy deferral, activation, and fallback messages. If an update is deferred for
-schema migration or repair, run `openclaw update` on the node machine. Then
-restart its service with `openclaw node restart`, or relaunch the foreground
-`openclaw node run` command.
+schema migration or repair, run `paddy update` on the node machine. Then
+restart its service with `paddy node restart`, or relaunch the foreground
+`paddy node run` command.
 
 If the launcher reports a stale `node-runtime/activation.lock`, confirm that no
 node update is running before removing the exact lock path from the message.
@@ -126,7 +126,7 @@ install time until their next verified successful update.
 Automatic installation requires a managed Gateway service that can hand off
 the update and restart safely. A Gateway running directly in a terminal can
 still show update hints, but it does not automatically replace its running
-installation. Stop that Gateway, run `openclaw update`, and launch it again
+installation. Stop that Gateway, run `paddy update`, and launch it again
 afterward, or [install a managed service](/cli/gateway#manage-the-gateway-service) for
 unattended updates.
 
@@ -181,7 +181,7 @@ automatic installation, handoff, restart, stable delay/jitter, or beta polling.
 Package-manager updates requested through the live Gateway control-plane
 (`update.run`) do not replace the package tree inside the running Gateway
 process. On managed service installs, the Gateway starts a detached handoff
-that runs the normal `openclaw update --yes --json` CLI path. The old Gateway
+that runs the normal `paddy update --yes --json` CLI path. The old Gateway
 keeps serving through candidate validation; the helper parks it only for
 activation. The CLI swaps the package, applies required migrations, refreshes
 service metadata, starts and verifies the Gateway, and recovers an
@@ -225,7 +225,7 @@ the dialog and **Settings → Updates**. See [Control UI updates](/web/control-u
 
 In the signed macOS app, a local app-owned Gateway changes that card to
 **Update Mac app + Gateway**. Sparkle updates the app first; after relaunch, the
-app runs `openclaw update --tag <app-version> --json`, restarts its Gateway,
+app runs `paddy update --tag <app-version> --json`, restarts its Gateway,
 and verifies health in a setup-style progress window. The window appears only
 when that managed Gateway needs update, repair, or installation; app-only updates relaunch
 directly into the app. Failure details stay visible with Retry, [Update guide](/install/updating), and

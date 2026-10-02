@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../../brand.js";
 import { prepareActiveNodeContext } from "../../infra/active-node-context.js";
 /**
  * Selects and invokes native agent harnesses for embedded run attempts.
@@ -137,7 +138,7 @@ export async function runAgentHarnessSettledTurnFinalization(
     throw new Error(`Agent harness ${harness.id} cannot safely finalize a settled tool turn.`);
   }
   if (internalParams.systemAgentTool && !isSystemAgentOnlyAllowlist(internalParams.toolsAllow)) {
-    throw new Error('OpenClaw host authority requires toolsAllow: ["openclaw"]');
+    throw new Error(`${PRODUCT_NAME} host authority requires toolsAllow: ["openclaw"]`);
   }
   const builtIn = isBuiltInOpenClawAgentHarness(harness);
   const operatorAuthority = assertHarnessModelPolicySupport(harness, params);
@@ -286,7 +287,7 @@ export async function runAgentHarnessAttempt(
     };
   }
   if (internalParams.systemAgentTool && !isSystemAgentOnlyAllowlist(internalParams.toolsAllow)) {
-    throw new Error('OpenClaw host authority requires toolsAllow: ["openclaw"]');
+    throw new Error(`${PRODUCT_NAME} host authority requires toolsAllow: ["openclaw"]`);
   }
   const ringZeroTools = internalParams.systemAgentTool
     ? [
@@ -494,7 +495,7 @@ async function runAgentHarnessOperation<T>(
   params: EmbeddedRunAttemptParams,
   execute: () => Promise<T>,
 ): Promise<T> {
-  await prepareActiveNodeContext();
+  await prepareActiveNodeContext(readRunOperatorAuthority(params)?.profileId);
   resolveAdmittedRunActiveAssertion(params.admittedRunContext, params.abortSignal)?.();
   const activeTrace = getActiveDiagnosticTraceContext();
   const harnessTrace = freezeDiagnosticTraceContext(
@@ -507,7 +508,7 @@ async function runAgentHarnessOperation<T>(
   try {
     return await runWithDiagnosticTraceContext(harnessTrace, execute);
   } catch (error) {
-    log.warn(`${harness.label} failed; not falling back to embedded OpenClaw backend`, {
+    log.warn(`${harness.label} failed; not falling back to embedded ${PRODUCT_NAME} backend`, {
       harnessId: harness.id,
       provider: params.provider,
       modelId: params.modelId,
@@ -610,6 +611,7 @@ function withoutPluginHarnessPrivateState(
     runtimePluginToolGrant: _runtimePluginToolGrant,
     assistantErrorTranscript: _assistantErrorTranscript,
     compactionCountOwner: _compactionCountOwner,
+    completionCheck: _completionCheck,
     onContextAccountingEvent: _onContextAccountingEvent,
     onCompactionRequestBudget: _onCompactionRequestBudget,
     contextEngineLogicalTurnLease: _contextEngineLogicalTurnLease,
@@ -672,11 +674,7 @@ function applyPluginHarnessDenyAllToolPolicy(
   params: import("./types.js").AgentHarnessAttemptParamsV2,
   policies: ResolvedPluginHarnessToolPolicies,
 ): import("./types.js").AgentHarnessAttemptParamsV2 {
-  if (
-    isHostScopedAgentToolActive("openclaw") &&
-    params.toolsAllow?.length === 1 &&
-    normalizeToolPolicyName(params.toolsAllow[0] ?? "") === "openclaw"
-  ) {
+  if (isHostScopedAgentToolActive("openclaw") && isSystemAgentOnlyAllowlist(params.toolsAllow)) {
     return params;
   }
   const prompt = resolvePluginHarnessDenyAllToolPolicyPrompt(policies);

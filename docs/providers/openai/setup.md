@@ -1,7 +1,7 @@
 ---
-summary: "Connect OpenAI with an API key, Codex subscription, or Sign in with ChatGPT"
+summary: "Connect OpenAI with an API key, Codex subscription, or Sign in with ChatGPT (Beta)"
 read_when:
-  - You are connecting OpenAI to OpenClaw for the first time
+  - You are connecting OpenAI to Paddy for the first time
   - You want Codex subscription auth instead of API keys
   - You are recovering a broken Codex OAuth route or a long-context budget
 title: "OpenAI setup"
@@ -23,18 +23,18 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
       </Step>
       <Step title="Run onboarding">
         ```bash
-        openclaw onboard --auth-choice openai-api-key
+        paddy onboard --auth-choice openai-api-key
         ```
 
         Or pass the key directly:
 
         ```bash
-        openclaw onboard --openai-api-key "$OPENAI_API_KEY"
+        paddy onboard --openai-api-key "$OPENAI_API_KEY"
         ```
       </Step>
       <Step title="Verify the model is available">
         ```bash
-        openclaw models list --provider openai
+        paddy models list --provider openai
         ```
       </Step>
     </Steps>
@@ -46,7 +46,7 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
     | `openai/gpt-5.6` | unset/`auto`, exact official HTTPS native route, no request override | Codex may be selected     | Ordered API-key auth profile      |
     | `openai/gpt-5.6` | provider/model `agentRuntime.id: "openclaw"`                  | OpenClaw embedded runtime | Selected `openai` API-key profile |
     | `openai/gpt-5.5` | explicit provider/model `agentRuntime.id`                     | Selected agent runtime    | Selected OpenAI API-key profile   |
-    | `openai/*`       | authored Completions, custom, or request override | OpenClaw embedded runtime | Credential type remains unchanged |
+    | `openai/*`       | authored Completions, custom, or request override | Paddy embedded runtime | Credential type remains unchanged |
     | `openai/*`       | plaintext official HTTP endpoint                  | Rejected                 | Credential is not sent             |
 
     <Note>
@@ -54,7 +54,7 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
     route may select the Codex app-server harness implicitly. For API-key auth
     on an agent model, create an `openai` API-key auth profile and order it with
     `auth.order.openai`; `OPENAI_API_KEY` remains the direct fallback for
-    non-agent OpenAI API surfaces. Run `openclaw doctor --fix` to migrate older
+    non-agent OpenAI API surfaces. Run `paddy doctor --fix` to migrate older
     legacy Codex auth-order entries.
     </Note>
 
@@ -85,11 +85,11 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
     `openai/gpt-6-astra`. The bare direct-API `openai/gpt-5.6` alias remains
     supported and resolves to Sol. Existing
     explicit primaries, including `openai/gpt-5.5`, remain unchanged. The
-    `chat-latest` alias only accepts `medium` text verbosity; OpenClaw forces
+    `chat-latest` alias only accepts `medium` text verbosity; Paddy forces
     any other requested verbosity to `medium` for this model.
 
     <Warning>
-    OpenClaw does **not** expose `gpt-5.3-codex-spark` on the direct OpenAI
+    Paddy does **not** expose `gpt-5.3-codex-spark` on the direct OpenAI
     API-key route. It is available only through Codex subscription catalog
     entries when your signed-in account exposes it.
     </Warning>
@@ -104,13 +104,13 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
     <Steps>
       <Step title="Run Codex OAuth">
         ```bash
-        openclaw onboard --auth-choice openai
+        paddy onboard --auth-choice openai
         ```
 
         Or run OAuth directly:
 
         ```bash
-        openclaw models auth login --provider openai
+        paddy models auth login --provider openai
         ```
 
         For headless or callback-hostile setups, add `--device-code` to sign
@@ -118,22 +118,22 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
         callback:
 
         ```bash
-        openclaw models auth login --provider openai --device-code
+        paddy models auth login --provider openai --device-code
         ```
       </Step>
       <Step title="Use the canonical OpenAI model route">
         ```bash
-        openclaw config set agents.defaults.model.primary openai/gpt-6-astra
+        paddy config set agents.defaults.model.primary openai/gpt-6-astra
         ```
 
         No runtime config is required for this exact official HTTPS native
         route. It may select the Codex app-server runtime automatically, and
-        OpenClaw installs or repairs the bundled Codex plugin when that runtime
+        Paddy installs or repairs the bundled Codex plugin when that runtime
         is chosen.
       </Step>
       <Step title="Verify Codex auth is available">
         ```bash
-        openclaw models list --provider openai
+        paddy models list --provider openai
         ```
 
         After the gateway is running, send `/codex status` or `/codex models`
@@ -150,7 +150,7 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
     | `openai/gpt-5.6-luna`    | unset/`auto`, exact official HTTPS native route, no request override | Codex may be selected                                    | Codex sign-in when the catalog exposes Luna        |
     | `openai/gpt-6-astra`     | provider/model `agentRuntime.id: "openclaw"`                  | OpenClaw embedded runtime, internal Codex-auth transport | Selected `openai` OAuth profile                    |
     | `openai/gpt-5.5`         | explicit provider/model `agentRuntime.id`                     | Selected agent runtime                                   | Selected OpenAI auth profile                       |
-    | `openai/*`               | authored Completions, custom, or request override | OpenClaw embedded runtime                                | Credential requirement remains route-specific      |
+    | `openai/*`               | authored Completions, custom, or request override | Paddy embedded runtime                                | Credential requirement remains route-specific      |
     | `openai/*`               | plaintext official HTTP endpoint                  | Rejected                                                 | Credential is not sent                              |
     | Legacy Codex GPT-5.5 ref | repaired by doctor                                            | Rewritten to `openai/gpt-5.5`                            | Migrated OpenAI OAuth profile                      |
     | `codex-cli/gpt-5.5`      | repaired by doctor                                            | Rewritten to `openai/gpt-5.5`                            | Codex app-server auth                              |
@@ -159,8 +159,8 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
     Fresh subscription-backed setup uses exact `openai/gpt-6-astra`; the
     native Codex catalog may also expose exact Terra or Luna refs. If the
     account does not expose Astra, select an available model explicitly. Older
-    Codex GPT refs are legacy OpenClaw routes, not the native Codex runtime
-    path; run `openclaw doctor --fix` to migrate them without upgrading an
+    Codex GPT refs are legacy Paddy routes, not the native Codex runtime
+    path; run `paddy doctor --fix` to migrate them without upgrading an
     existing explicit GPT-5.5 selection. `gpt-5.3-codex-spark` stays limited
     to accounts whose Codex subscription catalog advertises it; direct OpenAI
     API-key and Azure refs for it stay suppressed.
@@ -185,7 +185,7 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
     ```
 
     With an API-key backup, keep the selected model under `openai/*` and put
-    the auth order under `openai`. OpenClaw tries the subscription first, then
+    the auth order under `openai`. Paddy tries the subscription first, then
     the API key, while staying on the Codex harness:
 
     ```json5
@@ -209,51 +209,51 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
 
     <Note>
     Onboarding no longer imports OAuth material from `~/.codex`. Sign in with
-    browser OAuth (default) or the device-code flow above; OpenClaw manages the
+    browser OAuth (default) or the device-code flow above; Paddy manages the
     resulting credentials in its own agent auth store.
     </Note>
 
     ### Check and recover Codex OAuth routing
 
     ```bash
-    openclaw models status
-    openclaw models auth list --provider openai
-    openclaw config get agents.defaults.model --json
-    openclaw config get models.providers.openai.agentRuntime --json
+    paddy models status
+    paddy models auth list --provider openai
+    paddy config get agents.defaults.model --json
+    paddy config get models.providers.openai.agentRuntime --json
     ```
 
     For a specific agent, add `--agent <id>`:
 
     ```bash
-    openclaw models status --agent <id>
-    openclaw models auth list --agent <id> --provider openai
+    paddy models status --agent <id>
+    paddy models auth list --agent <id> --provider openai
     ```
 
     If an older config still has legacy Codex GPT refs, or a stale OpenAI
     runtime session pin without explicit runtime config, repair it:
 
     ```bash
-    openclaw doctor --fix
-    openclaw config validate
+    paddy doctor --fix
+    paddy config validate
     ```
 
     If `models auth list --provider openai` shows no usable profile, sign in
     again:
 
     ```bash
-    openclaw models auth login --provider openai
-    openclaw models status --probe --probe-provider openai
+    paddy models auth login --provider openai
+    paddy models status --probe --probe-provider openai
     ```
 
     Use `--profile-id` for multiple Codex OAuth logins in the same agent, then
     control them via auth ordering or `/model ...@<profileId> -s`:
 
     ```bash
-    openclaw models auth login --provider openai --profile-id openai:ritsuko
-    openclaw models auth login --provider openai --profile-id openai:lain
+    paddy models auth login --provider openai --profile-id openai:ritsuko
+    paddy models auth login --provider openai --profile-id openai:lain
     ```
 
-    Run `openclaw doctor --fix` to migrate older legacy OpenAI Codex prefix
+    Run `paddy doctor --fix` to migrate older legacy OpenAI Codex prefix
     profile ids and order entries before relying on profile ordering.
 
     ### Status indicator
@@ -266,16 +266,16 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
     ### Doctor warning
 
     If legacy Codex model refs or stale OpenAI runtime pins remain in config
-    or session state, `openclaw doctor --fix` rewrites them to `openai/*` with
-    the Codex runtime unless OpenClaw is explicitly configured.
+    or session state, `paddy doctor --fix` rewrites them to `openai/*` with
+    the Codex runtime unless Paddy is explicitly configured.
 
     ### Context window defaults and long-context opt-in
 
-    OpenClaw treats native model capacity and the active runtime budget as
+    Paddy treats native model capacity and the active runtime budget as
     separate values:
 
     - `contextWindow` declares the model's native window.
-    - `contextTokens` caps how much of that window OpenClaw uses for active input.
+    - `contextTokens` caps how much of that window Paddy uses for active input.
 
     ChatGPT/Codex OAuth follows the live Codex account catalog. The current
     catalog commonly advertises a `272000` token active window for GPT-5.6.
@@ -297,14 +297,14 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
 
     `922000` is a derived operating budget, not a separate provider-published
     input limit. The two runtimes translate that budget differently: embedded
-    OpenClaw sends Responses compaction controls, while native Codex owns its
+    Paddy sends Responses compaction controls, while native Codex owns its
     catalog window and automatic compaction. See the official
     [model comparison](https://developers.openai.com/api/docs/models/compare)
     and [GPT-5.5 model page](https://developers.openai.com/api/docs/models/gpt-5.5).
 
-    #### Embedded OpenClaw translation
+    #### Embedded Paddy translation
 
-    This example pins the exact Sol model to the embedded OpenClaw runtime,
+    This example pins the exact Sol model to the embedded Paddy runtime,
     enables OpenAI API Fast mode through the shared runtime control, and asks OpenAI Responses
     to compact at `700000` active tokens:
 
@@ -345,13 +345,13 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
 
     OpenAI Responses automatic compaction emits an encrypted `compaction`
     output item. A stateless client carries the newest item into the next
-    request and may drop every earlier input item. OpenClaw persists that item
+    request and may drop every earlier input item. Paddy persists that item
     opaquely, fences reuse by route, session, and auth, replays it, prunes the
     replaced prefix, carries it through worker transcript commits, and removes
     it from display and diagnostics. Never print, log, or expose the encrypted
     content.
 
-    A process-owned isolated-Gateway run on OpenClaw 2026.8.1 verified this exact
+    A process-owned isolated-Gateway run on Paddy 2026.8.1 verified this exact
     `openai/gpt-5.6-sol` configuration. Dense turns reached `295098`, `586562`,
     and `863664` prompt tokens. Turn three emitted and persisted a first-class
     server compaction item; the next request replayed that exact opaque item,
@@ -363,7 +363,7 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
 
     #### Native Codex translation
 
-    Keep the same OpenClaw model selection, but make Codex the explicit runtime
+    Keep the same Paddy model selection, but make Codex the explicit runtime
     and do not add Responses compaction params to this model entry:
 
     ```json5
@@ -393,7 +393,7 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
 
     These examples are two explicit runtime choices, not one auto-selecting
     configuration. The model-scoped `agentRuntime` and runtime-owned compaction
-    settings must change together. OpenClaw can retain both choices only when
+    settings must change together. Paddy can retain both choices only when
     their model refs or agent configurations are distinguishable; otherwise,
     switch the model runtime and its matching config as one atomic change. Then
     restart the Gateway and native Codex app-server, run `/model default -s`,
@@ -416,9 +416,9 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
 
     ### Catalog recovery
 
-    OpenClaw uses upstream Codex catalog metadata for `gpt-5.5` when it is
+    Paddy uses upstream Codex catalog metadata for `gpt-5.5` when it is
     present. If live Codex discovery omits the `gpt-5.5` row while the account
-    is authenticated, OpenClaw synthesizes that OAuth model row so cron,
+    is authenticated, Paddy synthesizes that OAuth model row so cron,
     sub-agent, and configured default-model runs do not fail with
     `Unknown model`.
 
@@ -427,32 +427,37 @@ choose based on model access, hosted plugins, usage tracking, and permissions.
 
 <a id="chatgpt-token-sharing-preview" />
 
-## Sign in with ChatGPT (preview)
+<a id="sign-in-with-chatgpt-preview" />
 
-Use Sign in with ChatGPT (SIWC) for app-specific permissions, usage tracking,
-and token limits per OpenClaw instance while eligible Responses API requests use
-your Codex allowance.
+## Sign in with ChatGPT (Beta)
+
+Use Sign in with ChatGPT (SIWC) for app-specific authorization to spend your
+Codex allowance on eligible Responses API requests. Check shared allowance
+usage in [ChatGPT Settings → Usage](https://chatgpt.com/settings/usage). Paddy
+does not show SIWC quota or per-app usage, and does not set per-app limits;
+ChatGPT may offer app-specific controls for your account.
+
 Your account and workspace must have SIWC registration and token sharing enabled
 by OpenAI.
 
 SIWC does not support OpenAI-hosted plugins or connected apps yet. Those require
 a Codex credential with connector invocation scope, which device-code login does
-not grant. OpenClaw tools and locally configured plugins can still use their own
+not grant. Paddy tools and locally configured plugins can still use their own
 credentials. See
 [OpenAI authentication](/providers/openai/authentication) to compare the methods.
 
-Run this on the computer running OpenClaw:
+Run this on the computer running Paddy:
 
 ```bash
-openclaw models auth login --provider openai --method siwc
+paddy models auth login --provider openai --method siwc
 ```
 
 Approve token sharing during sign-in to enable model calls. If you grant identity
-permissions only, OpenClaw saves the account but asks you to enable sharing or
+permissions only, Paddy saves the account but asks you to enable sharing or
 choose another credential before inference.
 
 The browser returns to `http://localhost:8080/auth/callback`. If your browser runs
-on another computer, forward its port 8080 to OpenClaw's IPv4 loopback before
+on another computer, forward its port 8080 to Paddy's IPv4 loopback before
 starting sign-in. For an SSH host, keep this command running on your browser's
 computer:
 
@@ -469,13 +474,29 @@ workspace** in the sign-in prompt.
 ### Current limitations
 
 - Developer function tools and web search are supported. OpenAI-hosted plugins,
-  connected apps, hosted MCP tools, tool search, and file-backed inputs are not
-  supported yet.
+  connected apps, hosted MCP tools, tool search, and hosted image generation are
+  not supported yet.
+- Text, images, and files can be inputs when the selected Responses model accepts
+  them. This does not grant access to the Files upload API, audio or video input,
+  or the transcription API.
+- SIWC credentials do not authorize image generation, audio transcription,
+  speech synthesis, or memory embeddings. Configure a separate
+  compatible credential for those tools. Onboarding continues with the agent's
+  emoji when no image-generation provider is available; an avatar is optional.
 - Responses requests use HTTP streaming. WebSocket inference and SIWC quota
-  reporting in OpenClaw are not available.
+  reporting in Paddy are not available.
 - With the Codex runtime, SIWC requires a managed local process and an isolated
   agent home. Automatic context summarization is supported; manual `/compact`,
   remote execution, and supervised sessions are unavailable with this credential.
+
+Paddy discovers SIWC model choices from the selected account through
+`GET https://api.openai.com/v1/models`, using the same profile's access token as
+inference. Only models marked for display are offered, with their account-specific
+names and order. Switching profiles uses that profile's catalog. A successful
+empty list stays empty; a rejected credential does not fall back to static model
+access. If discovery is temporarily unavailable, Paddy retains static hints
+and marks discovery unavailable. Codex app-server's bundled or cached model list
+is not proof of current SIWC account access.
 
 Model and allowance eligibility are enforced by OpenAI. SIWC does not import
 ChatGPT conversations or Codex history.

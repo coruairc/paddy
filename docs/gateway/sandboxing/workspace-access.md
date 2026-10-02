@@ -16,7 +16,7 @@ What `workspaceAccess` exposes to the sandbox, how a role-required sandbox caps 
 | `ro`             | Mounts the agent workspace read-only at `/agent` (disables `write`/`edit`/`apply_patch`).                                 |
 | `rw`             | Mounts the agent workspace read/write at `/workspace`.                                                                    |
 
-For a role-required sandbox, OpenClaw caps configured `rw` workspace access at
+For a role-required sandbox, Paddy caps configured `rw` workspace access at
 `ro` and logs an `agent/sandbox` warning. The guest keeps a separate sandbox
 workspace, while the shared agent workspace is available only as a read-only
 mount. This prevents guests from sharing the writable agent workspace; `none`
@@ -66,7 +66,7 @@ Other sandbox backends cannot use this local managed-project projection and
 fail with an explanation rather than falling back to host execution.
 
 The managed worktree remains the canonical workspace for files, snapshots, and
-publication. OpenClaw pauses the exact execution and browser runtimes that mount
+publication. Paddy pauses the exact execution and browser runtimes that mount
 this checkout while capturing or applying changes, records pending results and
 rollback journals in SQLite, and resumes
 only after settlement. Captured workspace authority is checked again after

@@ -17,11 +17,11 @@ read_when:
   debugging and compatibility. Profiles configured with `driver: "extension"`
   can also return a runtime-scoped numeric `webExtensionTabId` for Chrome
   WebExtensions API calls. It is omitted for other drivers and must not replace
-  `suggestedTargetId` or `tabId` in OpenClaw browser actions.
+  `suggestedTargetId` or `tabId` in Paddy browser actions.
 
 ## Browser selection
 
-When launching locally, OpenClaw picks the first available:
+When launching locally, Paddy picks the first available:
 
 1. Chrome
 2. Brave
@@ -43,6 +43,6 @@ Platforms:
 ## Control API (optional)
 
 For scripting and debugging, the Gateway exposes a small **loopback-only HTTP
-control API** plus a matching `openclaw browser` CLI (snapshots, refs, wait
+control API** plus a matching `paddy browser` CLI (snapshots, refs, wait
 power-ups, JSON output, debug workflows). See
 [Browser control API](/tools/browser-control) for the full reference.

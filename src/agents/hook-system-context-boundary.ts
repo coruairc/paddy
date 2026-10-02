@@ -2,11 +2,12 @@
  * Wraps plugin-provided system context in stable prompt-cache boundaries.
  */
 import { normalizeStructuredPromptSection } from "@openclaw/ai/internal/shared";
+import { PRODUCT_NAME } from "../brand.js";
 
 // Labels plugin-provided system context so harness prompt compaction and user-facing
 // transcript views can distinguish it from real workspace files or chat content.
 const HOOK_SYSTEM_CONTEXT_HEADER =
-  "OpenClaw plugin-injected system context. This block is not workspace file content.";
+  `${PRODUCT_NAME} plugin-injected system context. This block is not workspace file content.`;
 
 /** Normalizes and fences plugin-injected system context before it enters prompts. */
 export function wrapPluginSystemContextSection(value?: string): string | undefined {

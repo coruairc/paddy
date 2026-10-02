@@ -13,25 +13,25 @@ OpenClaw can host **PeekabooBridge** as a local, permission-aware UI automation 
 ## What this is (and is not)
 
 - **Host**: OpenClaw.app can act as a PeekabooBridge host.
-- **Client**: the `peekaboo` CLI, installed from [peekaboo.sh](https://peekaboo.sh/) (there is no separate `openclaw ui ...` surface).
-- **UI**: visual overlays stay in Peekaboo.app. OpenClaw is a thin broker host.
+- **Client**: the `peekaboo` CLI, installed from [peekaboo.sh](https://peekaboo.sh/) (there is no separate `paddy ui ...` surface).
+- **UI**: visual overlays stay in Peekaboo.app. Paddy is a thin broker host.
 
 ## Relationship to other desktop-control paths
 
-OpenClaw has four desktop-control paths that intentionally stay separate:
+Paddy has four desktop-control paths that intentionally stay separate:
 
 - **PeekabooBridge host**: OpenClaw.app hosts the local PeekabooBridge socket. The `peekaboo` CLI is the client and uses OpenClaw.app's macOS permissions for screenshots, clicks, menus, dialogs, Dock actions, and window management.
 - **Agent-driven computer use (`computer.act`)**: the gateway agent's built-in `computer` tool captures screenshots via `screen.snapshot`. It drives the pointer and keyboard through the dangerous `computer.act` node command. A macOS node fulfills `computer.act` in-process. It uses the embedded Peekaboo automation services this bridge exposes, plus narrow CoreGraphics primitives. It does not go through the PeekabooBridge socket or the `peekaboo` CLI. See [Computer use](/nodes/computer-use).
-- **Codex Computer Use**: the bundled `codex` plugin checks and can install Codex's `computer-use` MCP plugin (`extensions/codex/src/app-server/computer-use.ts`). Codex then owns native desktop-control tool calls during Codex-mode turns. OpenClaw does not proxy those actions through PeekabooBridge.
-- **Direct `cua-driver` MCP**: OpenClaw can register TryCua's upstream `cua-driver mcp` server as a normal MCP server. This gives agents the CUA driver's own schemas and pid/window/element-index workflow. It does not route through the Codex marketplace or the PeekabooBridge socket.
+- **Codex Computer Use**: the bundled `codex` plugin checks and can install Codex's `computer-use` MCP plugin (`extensions/codex/src/app-server/computer-use.ts`). Codex then owns native desktop-control tool calls during Codex-mode turns. Paddy does not proxy those actions through PeekabooBridge.
+- **Direct `cua-driver` MCP**: Paddy can register TryCua's upstream `cua-driver mcp` server as a normal MCP server. This gives agents the CUA driver's own schemas and pid/window/element-index workflow. It does not route through the Codex marketplace or the PeekabooBridge socket.
 
-Use Peekaboo for the broad macOS automation surface via OpenClaw.app's permission-aware bridge host. Use agent-driven computer use when the gateway agent should see and control the desktop. It does this through a uniform `computer.act` node command that any vision model can drive. Use Codex Computer Use when a Codex-mode agent should rely on Codex's native plugin. Use direct `cua-driver mcp` to expose the CUA driver to any OpenClaw-managed runtime as a normal MCP server.
+Use Peekaboo for the broad macOS automation surface via Paddy.app's permission-aware bridge host. Use agent-driven computer use when the gateway agent should see and control the desktop. It does this through a uniform `computer.act` node command that any vision model can drive. Use Codex Computer Use when a Codex-mode agent should rely on Codex's native plugin. Use direct `cua-driver mcp` to expose the CUA driver to any Paddy-managed runtime as a normal MCP server.
 
 ## Enable the bridge
 
 In the macOS app, open **Dashboard → Settings → This Mac → Capabilities** and enable **Peekaboo Bridge**. The bridge requires **Computer Control** to be on, since both grant local UI automation. With Computer Control off, the host does not run. To drive Peekaboo without Computer Control, run Peekaboo's own Mac app as the host instead.
 
-When enabled (and Computer Control is on), OpenClaw starts a local UNIX socket server at `~/Library/Application Support/OpenClaw/<socket-name>`. If disabled, the host stops and `peekaboo` falls back to other available hosts. The coordinator also maintains legacy socket symlinks (`clawdbot`, `clawdis`, `moltbot` under Application Support) pointing at the current socket for older `peekaboo` installs.
+When enabled (and Computer Control is on), Paddy starts a local UNIX socket server at `~/Library/Application Support/Paddy/<socket-name>`. If disabled, the host stops and `peekaboo` falls back to other available hosts. The coordinator also maintains legacy socket symlinks (`clawdbot`, `clawdis`, `moltbot` under Application Support) pointing at the current socket for older `peekaboo` installs.
 
 For a one-off unattended run, `--attach-only --background-only` suppresses automatic windows and GUI-owned Keychain
 loading. The persistent elevation host is a managed-deployment path for OpenClaw Foundation release operators. Its
@@ -136,7 +136,7 @@ export PEEKABOO_BRIDGE_SOCKET=/path/to/bridge.sock
 
 ## Security and permissions
 
-- The bridge checks **caller code signatures**. The production OpenClaw host accepts only the exact Peekaboo CLI
+- The bridge checks **caller code signatures**. The production Paddy host accepts only the exact Peekaboo CLI
   bundle (`boo.peekaboo.peekaboo`) signed by Peekaboo's canonical current/legacy release signer set (`FWJYW4S8P8`
   and `Y5PE65HELJ`). Sharing the app's UID or using another client signed by the app's development team is not
   sufficient.

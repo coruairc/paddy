@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { truncateUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import { sanitizeForLog } from "../../packages/terminal-core/src/ansi.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { quoteCliArg } from "../cli/quote-cli-arg.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { isMissingPathError } from "../infra/errors.js";
@@ -305,7 +306,7 @@ function formatSystemLaunchDaemonOwnershipError(ownership: SystemLaunchDaemonCon
   return [
     formatSystemLaunchDaemonOwnershipSummary(ownership),
     "Refusing to create or activate a user LaunchAgent for the same label because duplicate KeepAlive managers can restart-loop the gateway.",
-    "OpenClaw does not manage system LaunchDaemons, and --force does not override system ownership.",
+    `${PRODUCT_NAME} does not manage system LaunchDaemons, and --force does not override system ownership.`,
     recovery,
   ].join("\n");
 }

@@ -35,7 +35,7 @@ function resolveProviderAuthLoginCommand(params: {
     return undefined;
   }
   const providerId = normalizeProviderIdForAuth(choice.providerId, aliases);
-  return formatCliCommand(`openclaw models auth login --provider ${providerId}`);
+  return formatCliCommand(`paddy models auth login --provider ${providerId}`);
 }
 
 /** Build a concise user-facing hint for recovering provider authentication. */

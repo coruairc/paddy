@@ -460,7 +460,7 @@ describe("session target resolution", () => {
       }),
     );
     await expect(resolveSessionTarget({ raw: "gateway.example/main/a1166b81" })).rejects.toThrow(
-      "openclaw devices approve --latest",
+      "paddy devices approve --latest",
     );
 
     callGatewayMock.mockRejectedValueOnce(
@@ -489,7 +489,7 @@ describe("session target resolution", () => {
     } catch (caught) {
       pairingError = caught;
     }
-    expect(String(pairingError)).toContain("openclaw devices approve --latest");
+    expect(String(pairingError)).toContain("paddy devices approve --latest");
     expect(String(pairingError)).not.toContain("Could not reach gateway");
 
     callGatewayMock.mockRejectedValueOnce(

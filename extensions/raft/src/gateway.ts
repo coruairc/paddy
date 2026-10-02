@@ -247,7 +247,7 @@ export async function startRaftGatewayAccount(
     throw new Error(`Raft account "${ctx.accountId}" is missing a CLI profile.`);
   }
   if (!ctx.channelRuntime) {
-    throw new Error("Raft requires OpenClaw channel runtime support. Update OpenClaw and retry.");
+    throw new Error("Raft requires Paddy channel runtime support. Update Paddy and retry.");
   }
 
   const wakeQueue = new KeyedAsyncQueue();

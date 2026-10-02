@@ -10,6 +10,8 @@ import * as tempRoot from "../../infra/tmp-openclaw-dir.js";
 import { createUpdateRun, getUpdateRun } from "../../infra/update-run-ledger.js";
 import type { UpdateRunResult } from "../../infra/update-runner-types.js";
 import { closeOpenClawStateDatabaseForTest } from "../../state/openclaw-state-db.js";
+import * as restartHealth from "../daemon-cli/restart-health.js";
+import * as launchAgentRecovery from "./update-command-launch-agent-recovery.js";
 import type { PostCorePluginUpdateResult } from "./update-command-plugins.js";
 import { testing as updateCommandPluginsTesting } from "./update-command-plugins.test-support.js";
 import { resolvePostCoreUpdateChildStdio } from "./update-command-post-core.js";
@@ -81,7 +83,7 @@ describe("applyPostPluginConfigValidation", () => {
       reason: "post-plugin-doctor-invalid-config",
       warnings: [
         {
-          guidance: ["Run `openclaw doctor --fix`, then rerun `openclaw update repair`."],
+          guidance: ["Run `paddy doctor --fix`, then rerun `paddy update repair`."],
         },
       ],
     });
@@ -661,9 +663,9 @@ describe("formatPostUpdateGatewayRecoveryInstructions", () => {
     );
 
     expect(line).toContain("the systemd user service");
-    expect(line).toContain("openclaw gateway restart");
-    expect(line).toContain("openclaw gateway install --force");
-    expect(line).toContain("openclaw gateway status --deep");
+    expect(line).toContain("paddy gateway restart");
+    expect(line).toContain("paddy gateway install --force");
+    expect(line).toContain("paddy gateway status --deep");
     expect(line).not.toContain("Linux reports");
     expect(line).not.toContain("macOS");
     expect(line).not.toContain("LaunchAgent");
@@ -836,11 +838,15 @@ describe("recoverLaunchAgentAndRecheckGatewayHealth", () => {
           : outcome === "failed"
             ? ({ attempted: true, recovered: false, detail: "Bootstrap failed." } as const)
             : ({ attempted: false, recovered: false } as const);
-      const recoverLaunchAgent = vi.fn(async () => recovery);
-      const waitForHealthy = vi.fn(async () => {
-        expect(getUpdateRun(runId, { env })?.repair).toMatchObject([{ status: "succeeded" }]);
-        return healthy;
-      });
+      vi.spyOn(launchAgentRecovery, "recoverInstalledLaunchAgentAfterUpdate").mockResolvedValue(
+        recovery,
+      );
+      const waitForHealthy = vi
+        .spyOn(restartHealth, "waitForGatewayHealthyRestart")
+        .mockImplementation(async () => {
+          expect(getUpdateRun(runId, { env })?.repair).toMatchObject([{ status: "succeeded" }]);
+          return healthy;
+        });
       const startedAtMs = Date.now();
 
       await expect(
@@ -852,7 +858,6 @@ describe("recoverLaunchAgentAndRecheckGatewayHealth", () => {
           expectedVersion: "2026.5.3",
           expectedBuildId: "new-build",
           env,
-          deps: { recoverLaunchAgent, waitForHealthy },
         }),
       ).resolves.toEqual({
         health: outcome === "recovered" ? healthy : unhealthy,
@@ -905,19 +910,18 @@ describe("recoverLaunchAgentAndRecheckGatewayHealth", () => {
       ...unhealthySnapshot,
       waitOutcome: "timeout",
     } as never;
-    const recoverLaunchAgent = vi.fn(async () => ({
+    vi.spyOn(launchAgentRecovery, "recoverInstalledLaunchAgentAfterUpdate").mockResolvedValue({
       attempted: true as const,
       recovered: true as const,
       message: "Gateway LaunchAgent was installed but not loaded; re-bootstrapped launchd service.",
-    }));
-    const waitForHealthy = vi.fn(async () => stillUnhealthy);
+    });
+    vi.spyOn(restartHealth, "waitForGatewayHealthyRestart").mockResolvedValue(stillUnhealthy);
 
     const result = await updateCommandServiceTesting.recoverLaunchAgentAndRecheckGatewayHealth({
       health: unhealthy,
       service,
       port: 18790,
       expectedVersion: "2026.5.3",
-      deps: { recoverLaunchAgent, waitForHealthy },
     });
     expect(result.health.healthy).toBe(false);
     expect(result.health.waitOutcome).toBe("timeout");

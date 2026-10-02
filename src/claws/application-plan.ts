@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { stableStringify } from "@openclaw/normalization-core";
+import { PRODUCT_NAME } from "../brand.js";
 import { inspectModelReference } from "../commands/models/model-reference-validation.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type {
@@ -151,8 +152,8 @@ function extensionCapabilityChange(params: {
     action: params.preflight.action === "reuse" ? ("reuse" as const) : ("install" as const),
     reason:
       params.preflight.action === "reuse"
-        ? "The OpenClaw profile requires access to an existing native extension."
-        : "The OpenClaw profile requires installation of native extension content or executable code.",
+        ? `The ${PRODUCT_NAME} profile requires access to an existing native extension.`
+        : `The ${PRODUCT_NAME} profile requires installation of native extension content or executable code.`,
     effect,
   };
   return clawAddCapabilityChange(change);

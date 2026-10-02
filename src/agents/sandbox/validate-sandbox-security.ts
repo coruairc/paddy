@@ -8,6 +8,7 @@
 import os from "node:os";
 import path from "node:path";
 import { normalizeOptionalLowercaseString } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import { resolveRequiredHomeDir, resolveRequiredOsHomeDir } from "../../infra/home-dir.js";
 import { splitSandboxBindSpec } from "./bind-spec.js";
 import { SANDBOX_AGENT_WORKSPACE_MOUNT } from "./constants.js";
@@ -274,7 +275,7 @@ function formatBindBlockedError(params: { bind: string; reason: BlockedBindReaso
   if (params.reason.kind === "reserved_target") {
     return new Error(
       `Sandbox security: bind mount "${params.bind}" targets reserved container path "${params.reason.reservedPath}" ` +
-        `(resolved target: "${params.reason.targetPath}"). This can shadow OpenClaw sandbox mounts. ` +
+        `(resolved target: "${params.reason.targetPath}"). This can shadow ${PRODUCT_NAME} sandbox mounts. ` +
         "Use a dangerous override only when you fully trust this runtime.",
     );
   }

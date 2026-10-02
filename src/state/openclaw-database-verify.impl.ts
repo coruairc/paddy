@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { toStructuredErrorObject } from "@openclaw/normalization-core/error-coercion";
+import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { runtimeProcessEntrypoints } from "../infra/runtime-process-entrypoints.js";
 import { resolveRuntimeWorkerUrl } from "../infra/runtime-worker-url.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
@@ -22,16 +23,14 @@ import {
   recordOpenClawStateDatabaseOpenFailure,
 } from "./openclaw-state-db.js";
 import { resolveOpenClawStateSqlitePath } from "./openclaw-state-db.paths.js";
+import { PRODUCT_NAME } from "../brand.js";
 
 const log = createSubsystemLogger("state/database-verify");
 const DATABASE_VERIFY_CHILD_ARG = "--openclaw-database-verify-child";
 
-function isVerifyResult(value: unknown): value is OpenClawDatabaseVerifyResult {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return false;
-  }
-  const result = value as Record<string, unknown>;
+function isVerifyResult(result: unknown): result is OpenClawDatabaseVerifyResult {
   return (
+    isRecord(result) &&
     typeof result.path === "string" &&
     typeof result.ok === "boolean" &&
     (result.error === undefined || typeof result.error === "string") &&
@@ -206,7 +205,7 @@ export function collectOpenClawDatabaseVerifyTargets(options: {
   const targets = new Map<string, OpenClawDatabaseVerifyTarget>();
   const statePath = path.resolve(resolveOpenClawStateSqlitePath(options.env));
   if (existsSync(statePath)) {
-    targets.set(statePath, { kind: "state", label: "OpenClaw state database", path: statePath });
+    targets.set(statePath, { kind: "state", label: `${PRODUCT_NAME} state database`, path: statePath });
   }
   let registeredDatabases: ReturnType<typeof listOpenClawRegisteredAgentDatabases> = [];
   try {
@@ -223,7 +222,7 @@ export function collectOpenClawDatabaseVerifyTargets(options: {
     }
     targets.set(agentPath, {
       kind: "agent",
-      label: `OpenClaw agent database ${registered.agentId}`,
+      label: `${PRODUCT_NAME} agent database ${registered.agentId}`,
       path: agentPath,
     });
   }

@@ -89,7 +89,7 @@ export function appendGatewayLifecycleAuditLog(
     ];
     fs.appendFileSync(
       logPath,
-      `[${new Date().toISOString()}] openclaw gateway lifecycle ${fields.join(" ")}\n`,
+      `[${new Date().toISOString()}] paddy gateway lifecycle ${fields.join(" ")}\n`,
       "utf8",
     );
   } catch {

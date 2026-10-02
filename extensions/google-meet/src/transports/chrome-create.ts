@@ -5,6 +5,13 @@ import {
 } from "openclaw/plugin-sdk/meeting-runtime";
 import type { PluginRuntime } from "openclaw/plugin-sdk/plugin-runtime";
 import { sleep } from "openclaw/plugin-sdk/runtime-env";
+import {
+  asRecord,
+  asOptionalObjectRecord,
+  readStringValue,
+  filterStringEntries,
+  asFiniteNumber,
+} from "openclaw/plugin-sdk/string-coerce-runtime";
 import { GoogleMeetBrowserManualActionError } from "../browser-manual-action-error.js";
 import type { GoogleMeetConfig } from "../config.js";
 import { callBrowserProxyOnNode, resolveChromeNode } from "./chrome-browser-proxy.js";
@@ -100,17 +107,8 @@ async function focusBrowserTab(params: {
   });
 }
 
-function readStringArray(value: unknown): string[] | undefined {
-  return Array.isArray(value)
-    ? value.filter((entry): entry is string => typeof entry === "string")
-    : undefined;
-}
-
 function readBrowserManualAction(value: unknown): GoogleMeetBrowserManualActionState | undefined {
-  if (!value || typeof value !== "object") {
-    return undefined;
-  }
-  const action = value as Record<string, unknown>;
+  const action = asRecord(value);
   return typeof action.reason === "string" && typeof action.message === "string"
     ? {
         reason: action.reason as GoogleMeetBrowserManualActionState["reason"],
@@ -120,21 +118,15 @@ function readBrowserManualAction(value: unknown): GoogleMeetBrowserManualActionS
 }
 
 function readBrowserCreateResult(result: unknown): BrowserCreateStepResult {
-  const record = result && typeof result === "object" ? (result as Record<string, unknown>) : {};
-  const nested =
-    record.result && typeof record.result === "object"
-      ? (record.result as Record<string, unknown>)
-      : record;
+  const record = asRecord(result);
+  const nested = asOptionalObjectRecord(record.result) ?? record;
   return {
-    meetingUri: typeof nested.meetingUri === "string" ? nested.meetingUri : undefined,
-    browserUrl: typeof nested.browserUrl === "string" ? nested.browserUrl : undefined,
-    browserTitle: typeof nested.browserTitle === "string" ? nested.browserTitle : undefined,
+    meetingUri: readStringValue(nested.meetingUri),
+    browserUrl: readStringValue(nested.browserUrl),
+    browserTitle: readStringValue(nested.browserTitle),
     manualAction: readBrowserManualAction(nested.manualAction),
-    notes: readStringArray(nested.notes),
-    retryAfterMs:
-      typeof nested.retryAfterMs === "number" && Number.isFinite(nested.retryAfterMs)
-        ? nested.retryAfterMs
-        : undefined,
+    notes: Array.isArray(nested.notes) ? filterStringEntries(nested.notes) : undefined,
+    retryAfterMs: asFiniteNumber(nested.retryAfterMs),
   };
 }
 
@@ -166,7 +158,7 @@ const CREATE_MEET_FROM_BROWSER_SCRIPT = `async () => {
   };
   if (!current().startsWith("https://meet.google.com/")) {
     return {
-      manualAction: manualActionFor("google-login-required", "Sign in to Google in the OpenClaw browser profile, then retry meeting creation."),
+      manualAction: manualActionFor("google-login-required", "Sign in to Google in the Paddy browser profile, then retry meeting creation."),
       browserUrl: current(),
       browserTitle: document.title,
       notes,
@@ -192,7 +184,7 @@ const CREATE_MEET_FROM_BROWSER_SCRIPT = `async () => {
   }
   if (/do you want people to hear you in the meeting/i.test(pageText)) {
     return {
-      manualAction: manualActionFor("meet-audio-choice-required", "Meet is showing the microphone choice. Click Use microphone in the OpenClaw browser profile, then retry meeting creation."),
+      manualAction: manualActionFor("meet-audio-choice-required", "Meet is showing the microphone choice. Click Use microphone in the Paddy browser profile, then retry meeting creation."),
       browserUrl: href,
       browserTitle: document.title,
       notes,
@@ -200,7 +192,7 @@ const CREATE_MEET_FROM_BROWSER_SCRIPT = `async () => {
   }
   if (/allow.*(microphone|camera)|blocked.*(microphone|camera)|permission.*(microphone|camera)/i.test(pageText)) {
     return {
-      manualAction: manualActionFor("meet-permission-required", "Allow microphone/camera permissions for Meet in the OpenClaw browser profile, then retry meeting creation."),
+      manualAction: manualActionFor("meet-permission-required", "Allow microphone/camera permissions for Meet in the Paddy browser profile, then retry meeting creation."),
       browserUrl: href,
       browserTitle: document.title,
       notes,
@@ -208,7 +200,7 @@ const CREATE_MEET_FROM_BROWSER_SCRIPT = `async () => {
   }
   if (/couldn't create|unable to create/i.test(pageText)) {
     return {
-      manualAction: manualActionFor("browser-control-unavailable", "Resolve the Google Meet page prompt in the OpenClaw browser profile, then retry meeting creation."),
+      manualAction: manualActionFor("browser-control-unavailable", "Resolve the Google Meet page prompt in the Paddy browser profile, then retry meeting creation."),
       browserUrl: href,
       browserTitle: document.title,
       notes,
@@ -216,7 +208,7 @@ const CREATE_MEET_FROM_BROWSER_SCRIPT = `async () => {
   }
   if (location.hostname.toLowerCase() === "accounts.google.com" || /use your google account|to continue to google meet|choose an account|sign in to (join|continue)/i.test(pageText)) {
     return {
-      manualAction: manualActionFor("google-login-required", "Sign in to Google in the OpenClaw browser profile, then retry meeting creation."),
+      manualAction: manualActionFor("google-login-required", "Sign in to Google in the Paddy browser profile, then retry meeting creation."),
       browserUrl: href,
       browserTitle: document.title,
       notes,

@@ -5,6 +5,7 @@ import {
   LEGACY_MODEL_POLICY_ALLOW_CONFIG_PATH,
   resolveConfiguredModelPolicyAllow,
 } from "../../agents/model-selection-shared.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import { logConfigUpdated } from "../../config/logging.js";
 import { normalizeAgentModelRefForConfig } from "../../config/model-input.js";
 import { materializeModelPolicyAllowlist } from "../../config/model-policy-allowlist-migration.js";
@@ -15,7 +16,7 @@ import {
   type RuntimeConfigWriteApplicationStatus,
 } from "../../config/runtime-write-application.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
-import { applyDefaultModel } from "../../plugins/provider-auth-choice-helpers.js";
+import { applyPrimaryModel } from "../../plugins/provider-model-primary.js";
 import { captureGatewayRootWorkAdmissionContinuationScope } from "../../process/gateway-work-admission.js";
 import type { RuntimeEnv } from "../../runtime.js";
 import type { WizardPrompter, WizardSelectParams } from "../../wizard/prompts.js";
@@ -37,7 +38,7 @@ export function applyProviderLoginDefaultModel(
   config: OpenClawConfig,
   model: string,
 ): OpenClawConfig {
-  const next = applyDefaultModel(config, model);
+  const next = applyPrimaryModel(config, model);
   if (
     resolveConfiguredModelPolicyAllow({ cfg: config }).configPath ===
     LEGACY_MODEL_POLICY_ALLOW_CONFIG_PATH
@@ -176,8 +177,8 @@ export async function completeProviderModelAccess(params: {
     status === "applied"
       ? `All ${prepared.providerLabel} models are now visible.`
       : application.claimed
-        ? "Model access was saved, but OpenClaw has not confirmed it is active. Open Settings and select Apply changes, then send /models."
-        : "Model access saved. Application by the running Gateway is not confirmed. Run `openclaw gateway restart` to apply it.";
+        ? `Model access was saved, but ${PRODUCT_NAME} has not confirmed it is active. Open Settings and select Apply changes, then send /models.`
+        : "Model access saved. Application by the running Gateway is not confirmed. Run `paddy gateway restart` to apply it.";
   params.runtime.log(message);
   return { kind: "saved", application: status, message };
 }

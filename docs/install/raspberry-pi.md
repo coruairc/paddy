@@ -1,13 +1,13 @@
 ---
-summary: "Host OpenClaw on a Raspberry Pi for always-on self-hosting"
+summary: "Host Paddy on a Raspberry Pi for always-on self-hosting"
 read_when:
-  - Setting up OpenClaw on a Raspberry Pi
-  - Running OpenClaw on ARM devices
+  - Setting up Paddy on a Raspberry Pi
+  - Running Paddy on ARM devices
   - Building a cheap always-on personal AI
 title: "Raspberry Pi"
 ---
 
-Run a persistent, always-on OpenClaw Gateway on a Raspberry Pi. Since the Pi is just the gateway (models run in the cloud via API), even a modest Pi handles the workload well -- typical hardware cost is **$35-80 one-time**, no monthly fees.
+Run a persistent, always-on Paddy Gateway on a Raspberry Pi. Since the Pi is just the gateway (models run in the cloud via API), even a modest Pi handles the workload well -- typical hardware cost is **$35-80 one-time**, no monthly fees.
 
 ## Hardware compatibility
 
@@ -90,15 +90,15 @@ Run a persistent, always-on OpenClaw Gateway on a Raspberry Pi. Since the Pi is 
 
   </Step>
 
-  <Step title="Install OpenClaw">
+  <Step title="Install Paddy">
     ```bash
-    curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
+    curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash -s -- --no-onboard
     ```
   </Step>
 
   <Step title="Run onboarding">
     ```bash
-    openclaw onboard --install-daemon
+    paddy onboard --install-daemon
     ```
 
     Follow the wizard. API keys are recommended over OAuth for headless devices. Telegram is the easiest channel to start with.
@@ -107,7 +107,7 @@ Run a persistent, always-on OpenClaw Gateway on a Raspberry Pi. Since the Pi is 
 
   <Step title="Verify">
     ```bash
-    openclaw status
+    paddy status
     systemctl --user status openclaw-gateway.service
     journalctl --user -u openclaw-gateway.service -f
     ```
@@ -117,7 +117,7 @@ Run a persistent, always-on OpenClaw Gateway on a Raspberry Pi. Since the Pi is 
     On your computer, get a dashboard URL from the Pi:
 
     ```bash
-    ssh user@gateway-host 'openclaw dashboard --no-open'
+    ssh user@gateway-host 'paddy dashboard --no-open'
     ```
 
     Then create an SSH tunnel in another terminal:
@@ -155,7 +155,7 @@ echo 'gpu_mem=16' | sudo tee -a /boot/config.txt
 sudo systemctl disable bluetooth
 ```
 
-**systemd drop-in for host-specific startup tuning** -- The managed unit owns the generic restart policy (`Restart=always`, `RestartSec=5`). If this Pi is mostly running OpenClaw, add a service drop-in for host-specific startup settings only:
+**systemd drop-in for host-specific startup tuning** -- The managed unit owns the generic restart policy (`Restart=always`, `RestartSec=5`). If this Pi is mostly running Paddy, add a service drop-in for host-specific startup settings only:
 
 ```bash
 systemctl --user edit openclaw-gateway.service
@@ -189,11 +189,11 @@ Since the Pi only runs the gateway, use cloud-hosted API models -- do not run lo
 
 ## ARM binary notes
 
-Most OpenClaw features work on ARM64 without changes (Node.js, Telegram, WhatsApp/Baileys, Chromium). The binaries that occasionally lack ARM builds are typically optional Go/Rust CLI tools shipped by skills. Verify architecture with `uname -m` (should show `aarch64`), then check a missing binary's release page for `linux-arm64` / `aarch64` artifacts before falling back to building from source.
+Most Paddy features work on ARM64 without changes (Node.js, Telegram, WhatsApp/Baileys, Chromium). The binaries that occasionally lack ARM builds are typically optional Go/Rust CLI tools shipped by skills. Verify architecture with `uname -m` (should show `aarch64`), then check a missing binary's release page for `linux-arm64` / `aarch64` artifacts before falling back to building from source.
 
 ## Persistence and backups
 
-OpenClaw state lives under:
+Paddy state lives under:
 
 - `~/.openclaw/` -- `openclaw.json`, shared and per-agent SQLite auth stores, channel/provider state, sessions.
 - `~/.openclaw/workspace/` -- agent workspace (SOUL.md, memory, artifacts).
@@ -201,8 +201,8 @@ OpenClaw state lives under:
 These survive reboots and benefit from SSD over SD card for both performance and longevity. Create a backup archive with:
 
 ```bash
-openclaw backup create
-openclaw backup restore <archive.tar.gz> --target <fresh-directory>
+paddy backup create
+paddy backup restore <archive.tar.gz> --target <fresh-directory>
 ```
 
 Absolute symbolic links keep their original target locations, including links
@@ -229,7 +229,7 @@ for the rollback warnings and activation sequence.
 
 - [Channels](/channels) -- connect Telegram, WhatsApp, Discord, and more
 - [Gateway configuration](/gateway/configuration) -- all config options
-- [Updating](/install/updating) -- keep OpenClaw up to date
+- [Updating](/install/updating) -- keep Paddy up to date
 
 ## Related
 

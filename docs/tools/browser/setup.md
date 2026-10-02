@@ -2,20 +2,20 @@
 summary: "Quick start commands, plugin enablement, agent tool policy, and the missing-command fix"
 title: "Browser setup"
 read_when:
-  - You are starting the OpenClaw browser for the first time
+  - You are starting the Paddy browser for the first time
   - The agent reports the browser tool as unavailable
-  - The `openclaw browser` command is missing after an upgrade
+  - The `paddy browser` command is missing after an upgrade
 ---
 
 ## Quick start
 
 ```bash
-openclaw browser --browser-profile openclaw doctor
-openclaw browser --browser-profile openclaw doctor --deep
-openclaw browser --browser-profile openclaw status
-openclaw browser --browser-profile openclaw start
-openclaw browser --browser-profile openclaw open https://example.com
-openclaw browser --browser-profile openclaw snapshot
+paddy browser --browser-profile paddy doctor
+paddy browser --browser-profile paddy doctor --deep
+paddy browser --browser-profile paddy status
+paddy browser --browser-profile paddy start
+paddy browser --browser-profile paddy open https://example.com
+paddy browser --browser-profile paddy snapshot
 ```
 
 "Browser disabled" means the plugin or `browser.enabled` is off; see
@@ -23,11 +23,11 @@ openclaw browser --browser-profile openclaw snapshot
 
 Browser control errors name the recorded policy refusal or plugin load failure.
 If `browser` is excluded from `plugins.allow`, add it to the existing list before
-running `openclaw plugins enable browser`; restarting alone cannot repair that
+running `paddy plugins enable browser`; restarting alone cannot repair that
 policy. Follow the error's enablement or Doctor command. If no availability
-reason is recorded, run `openclaw doctor` and check the Gateway logs.
+reason is recorded, run `paddy doctor` and check the Gateway logs.
 
-If `openclaw browser` is missing entirely, or the agent says the browser tool
+If `paddy browser` is missing entirely, or the agent says the browser tool
 is unavailable, jump to [Missing browser command or tool](#missing-browser-command-or-tool).
 
 ## Plugin control
@@ -46,7 +46,7 @@ The default `browser` tool is a bundled plugin. Disable it to replace it with an
 }
 ```
 
-Defaults need both `plugins.entries.browser.enabled` **and** `browser.enabled=true`. Disabling only the plugin removes the `openclaw browser` CLI, `browser.request` gateway method, agent tool, and control service as one unit; your `browser.*` config stays intact for a replacement.
+Defaults need both `plugins.entries.browser.enabled` **and** `browser.enabled=true`. Disabling only the plugin removes the `paddy browser` CLI, `browser.request` gateway method, agent tool, and control service as one unit; your `browser.*` config stays intact for a replacement.
 
 Profiles, launch settings, snapshot defaults, tab cleanup, and
 `browser.allowSystemProfileImport` hot-reload. Import permission changes apply to
@@ -95,7 +95,7 @@ action discovery; they intentionally omit most non-interactive prose.
 
 ## Missing browser command or tool
 
-If `openclaw browser` is unknown after an upgrade, `browser.request` is missing, or the agent reports the browser tool as unavailable, the usual cause is a `plugins.allow` list that omits `browser` and no root `browser` config block exists. Add it:
+If `paddy browser` is unknown after an upgrade, `browser.request` is missing, or the agent reports the browser tool as unavailable, the usual cause is a `plugins.allow` list that omits `browser` and no root `browser` config block exists. Add it:
 
 ```json5
 {

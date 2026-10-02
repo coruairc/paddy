@@ -7,6 +7,7 @@ import {
 } from "@openclaw/normalization-core/string-coerce";
 import { normalizeStringEntries } from "@openclaw/normalization-core/string-normalization";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatPortRangeHint } from "../cli/error-format.js";
 import { resolveGatewayPort } from "../config/config.js";
 import type { GatewayTrustedProxyConfig } from "../config/types.gateway.js";
@@ -230,7 +231,7 @@ export async function promptGatewayConfig(
         }),
         id: envVarName,
       };
-      note(`Validated ${envVarName}. OpenClaw will store a token SecretRef.`, "Gateway token");
+      note(`Validated ${envVarName}. ${PRODUCT_NAME} will store a token SecretRef.`, "Gateway token");
     } else {
       const tokenInput = guardCancel(
         await password({
@@ -259,7 +260,7 @@ export async function promptGatewayConfig(
   if (authMode === "trusted-proxy") {
     note(
       [
-        "Trusted proxy mode: OpenClaw trusts user identity from a reverse proxy.",
+        `Trusted proxy mode: ${PRODUCT_NAME} trusts user identity from a reverse proxy.`,
         "The proxy must authenticate users and pass identity via headers.",
         "Only requests from specified proxy IPs will be trusted.",
         "",

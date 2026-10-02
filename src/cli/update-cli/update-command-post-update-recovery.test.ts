@@ -61,7 +61,7 @@ const mocks = vi.hoisted(() => ({
     vi.fn<
       typeof import("./update-command-service.js").maybeRestartServiceAfterFailedMutableUpdate
     >(),
-  restoreWindowsAutoStart: vi.fn(async () => true),
+  restoreWindowsAutoStart: vi.fn(async () => {}),
   freshProcess: vi.fn(),
   writeSentinel: vi.fn<
     typeof import("./update-command-result.js").writeControlPlaneUpdateRestartSentinelBestEffort
@@ -106,7 +106,6 @@ vi.mock("./update-command-service-maintenance.js", async (importOriginal) => ({
 vi.mock("./update-command-service.js", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./update-command-service.js")>()),
   maybeRestartServiceAfterFailedMutableUpdate: mocks.restart,
-  maybeResumeWindowsTaskAutoStartAfterPackageUpdate: mocks.restoreWindowsAutoStart,
   maybeRestartService: mocks.restartCandidate,
   maybeStopManagedServiceBeforeMutableUpdate: mocks.stopCandidate,
   resolveUpdatedGatewayRestartPort: async () => 19101,
@@ -262,6 +261,15 @@ describe("skipped update exit status", () => {
 });
 
 describe("failed update recovery restart", () => {
+  const windowsTaskAutoStartRecovery = {
+    suspended: Promise.resolve(true),
+    beginMutation: () => {},
+    assertRecoveryCurrent: () => {},
+    restore: mocks.restoreWindowsAutoStart,
+    handoff: () => {},
+    complete: async () => {},
+    interrupted: () => false,
+  };
   beforeEach(() => {
     vi.resetAllMocks();
     vi.spyOn(defaultRuntime, "exit").mockImplementation(() => undefined as never);
@@ -422,6 +430,7 @@ describe("failed update recovery restart", () => {
           windowsTaskAutoStartRecovery: {
             suspended: Promise.resolve(true),
             beginMutation: () => {},
+            assertRecoveryCurrent: () => {},
             restore,
             handoff: () => {},
             complete,
@@ -487,6 +496,7 @@ describe("failed update recovery restart", () => {
       const failure = await finishFailedUpdate(result, {
         json: true,
         stopped,
+        windowsTaskAutoStartRecovery,
         ...(original ? { failure: { cause: original, detail: formatErrorMessage(original) } } : {}),
       });
       expect(failure.exitCode).toBe(expected);
@@ -529,7 +539,7 @@ describe("failed update recovery restart", () => {
       });
       const failure = await finishFailedUpdate(
         { status: "ok", mode: "npm", root: "/repo", steps: [], durationMs: 1 },
-        { json: true },
+        { json: true, windowsTaskAutoStartRecovery },
       );
       expect(failure.exitCode).toBe(79);
       expect(failure.detail).toBe(detail);
@@ -561,7 +571,7 @@ describe("failed update recovery restart", () => {
 
       const nextAction = getUpdateRun(run.runId, { env })?.origin.nextAction;
       expect(mocks.restart).not.toHaveBeenCalled();
-      expect(nextAction).toContain("Run `openclaw --profile work triage`");
+      expect(nextAction).toContain("Run `paddy --profile work triage`");
       expect(nextAction?.includes("Keep the gateway stopped")).toBe(stopped);
       expect(mocks.printResult.mock.lastCall?.[2]).toEqual({ nextAction });
     },
@@ -861,7 +871,7 @@ describe("failed package update recovery safety", () => {
       // Cleanup is pre-terminal; rollback is recorded only after completion settles.
       expect(cleanupStatus).toBe("running");
       expect(recorded.status).toBe("rolled-back");
-      expect(renderUpdateRunReport(recorded).headline).toContain("↩️ OpenClaw update rolled back");
+      expect(renderUpdateRunReport(recorded).headline).toContain("↩️ Paddy update rolled back");
       expect(await fs.readFile(configPath, "utf8")).toBe(original);
       if (process.platform !== "win32") {
         expect((await fs.stat(configPath)).mode & 0o777).toBe(0o600);

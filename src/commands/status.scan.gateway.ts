@@ -168,7 +168,7 @@ export async function scanStatusJsonGateway(
         ...(!status
           ? [
               {
-                fields: ["agents", "sessions", "heartbeat", "tasks", "taskAudit", "channelSummary"],
+                fields: ["agents", "sessions", "heartbeat", "channelSummary"],
                 reason: projectionError,
               },
             ]
@@ -177,7 +177,7 @@ export async function scanStatusJsonGateway(
                 {
                   fields: ["channelSummary"],
                   reason:
-                    "Online status skips channel summaries; an empty channelSummary was not collected. Use openclaw channels status, or openclaw channels status --probe for live account checks.",
+                    "Online status skips channel summaries; an empty channelSummary was not collected. Use paddy channels status, or paddy channels status --probe for live account checks.",
                 },
               ]
             : []),

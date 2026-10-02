@@ -90,11 +90,11 @@ Existing installs keep receiving callbacks on port `3978` when no listener setti
 was written. An explicitly configured `webhook.port` moves to `legacyWebhook.port`
 through Doctor's normal config backup and write flow. Both implicit and explicit
 compatibility listeners forward into the same Gateway route and JWT validation;
-OpenClaw does not silently remove either listener.
+Paddy does not silently remove either listener.
 
 The deprecated TypeScript `webhook.port` input remains source-compatible until
 the next Plugin SDK major. Runtime config uses `legacyWebhook`; run
-`openclaw doctor --fix` to migrate the old key.
+`paddy doctor --fix` to migrate the old key.
 
 After confirming a delivery through the Gateway port, set
 `channels.msteams.legacyWebhook: false` and remove any old firewall or Compose

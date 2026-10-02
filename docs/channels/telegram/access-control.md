@@ -20,7 +20,7 @@ registration still refresh the channel.
 
 ### Group bot identity
 
-In groups and forum topics, an explicit mention of the configured bot handle addresses the selected OpenClaw agent. An example handle is `@my_bot`. This holds even when the agent persona name differs from the Telegram username. Group silence policy still applies to unrelated traffic, but the bot handle itself is never "someone else."
+In groups and forum topics, an explicit mention of the configured bot handle addresses the selected Paddy agent. An example handle is `@my_bot`. This holds even when the agent persona name differs from the Telegram username. Group silence policy still applies to unrelated traffic, but the bot handle itself is never "someone else."
 
 <Tabs>
   <Tab title="DM policy">
@@ -36,8 +36,8 @@ In groups and forum topics, an explicit mention of the configured bot handle add
     `channels.telegram.allowFrom` accepts numeric Telegram user IDs. `telegram:` / `tg:` prefixes are accepted and normalized.
     In multi-account configs, a restrictive top-level `channels.telegram.allowFrom` is a safety boundary. An account-level `allowFrom: ["*"]` does not make that account public unless the merged effective allowlist still contains an explicit wildcard.
     `dmPolicy: "allowlist"` with empty `allowFrom` blocks all DMs and is rejected by config validation.
-    Setup asks for numeric user IDs only. Older setups may have `@username` allowlist entries. Run `openclaw doctor --fix` to resolve them to numeric IDs. That resolution is best-effort and requires a Telegram bot token.
-    If you previously relied on pairing-store allowlist files, `openclaw doctor --fix` can recover entries into `channels.telegram.allowFrom` for allowlist flows. One such case is a `dmPolicy: "allowlist"` that has no explicit IDs yet.
+    Setup asks for numeric user IDs only. Older setups may have `@username` allowlist entries. Run `paddy doctor --fix` to resolve them to numeric IDs. That resolution is best-effort and requires a Telegram bot token.
+    If you previously relied on pairing-store allowlist files, `paddy doctor --fix` can recover entries into `channels.telegram.allowFrom` for allowlist flows. One such case is a `dmPolicy: "allowlist"` that has no explicit IDs yet.
 
     For one-owner bots, prefer `dmPolicy: "allowlist"` with explicit numeric `allowFrom` IDs over depending on previous pairing approvals.
 
@@ -59,11 +59,11 @@ In groups and forum topics, an explicit mention of the configured bot handle add
 }
 ```
 
-    A matching `toolsBySender` entry replaces `tools` for that DM. An exact chat entry replaces the whole `"*"` entry; it does not inherit wildcard fields. Account-level `direct` replaces the root `direct` map when present and inherits it only when omitted. The selected direct policy, global policy, per-agent policy, `tools.toolsBySender`, and `agents.<id>.tools.toolsBySender` apply as intersecting layers; a deny in any layer still blocks the tool. Codex uses policy-filtered OpenClaw tools for explicitly restricted turns and keeps its native tool surface for default profile narrowing. ACP-bound sessions reject a restrictive direct policy when their runtime cannot enforce it.
+    A matching `toolsBySender` entry replaces `tools` for that DM. An exact chat entry replaces the whole `"*"` entry; it does not inherit wildcard fields. Account-level `direct` replaces the root `direct` map when present and inherits it only when omitted. The selected direct policy, global policy, per-agent policy, `tools.toolsBySender`, and `agents.<id>.tools.toolsBySender` apply as intersecting layers; a deny in any layer still blocks the tool. Codex uses policy-filtered Paddy tools for explicitly restricted turns and keeps its native tool surface for default profile narrowing. ACP-bound sessions reject a restrictive direct policy when their runtime cannot enforce it.
 
     ### Finding your Telegram user ID
 
-    Safer (no third-party bot): with DM policy `pairing`, DM your bot and read `Your Telegram user id` in its pairing reply. You can also run `openclaw logs --follow` and read `senderUserId` in the `telegram pairing request` entry. Both come from the incoming message's `from.id`.
+    Safer (no third-party bot): with DM policy `pairing`, DM your bot and read `Your Telegram user id` in its pairing reply. You can also run `paddy logs --follow` and read `senderUserId` in the `telegram pairing request` entry. Both come from the incoming message's `from.id`.
 
     Use your numeric user ID for `allowFrom`, not a phone number, username, chat/group ID, or the bot's ID. Stop following once you have the ID and keep unrelated log content private. If your current policy prevents this flow, use an already verified ID; do not broaden access just to discover it.
 
@@ -198,13 +198,13 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 }
 ```
 
-    This option applies only when OpenClaw knows that the receiving bot created the forum topic. A topic's `requireMentionInBotThreads` overrides the selected group setting. Set it to `true` to require a mention in those topics, even when ordinary `requireMention` is `false` or the message replies to the bot. Native and authorized control commands keep their existing behavior. Omit the option to preserve the existing mention policy.
+    This option applies only when Paddy knows that the receiving bot created the forum topic. A topic's `requireMentionInBotThreads` overrides the selected group setting. Set it to `true` to require a mention in those topics, even when ordinary `requireMention` is `false` or the message replies to the bot. Native and authorized control commands keep their existing behavior. Omit the option to preserve the existing mention policy.
 
     Telegram must deliver ordinary group messages for `false` to work: disable privacy mode or make the bot a group admin. See [Privacy mode and group visibility](/channels/telegram/setup#privacy-mode-and-group-visibility). Group and sender authorization, group silence policy, and visible-reply policy still apply. See [Bot-created forum topics](/channels/telegram/threads-and-sessions#bot-created-forum-topics) for ownership tracking and its limits.
 
-    Group history context is bounded by `historyLimit` (default 50). Set `channels.telegram.historyLimit: 0` to disable the automatic window without deleting retained group messages or disabling explicit history reads. Permitted unmentioned messages are recorded without starting agent turns when mentions are required. See [Retained group history](/channels/telegram/messaging#retained-group-history). `openclaw doctor --fix` removes the retired `includeGroupHistoryContext` key.
+    Group history context is bounded by `historyLimit` (default 50). Set `channels.telegram.historyLimit: 0` to disable the automatic window without deleting retained group messages or disabling explicit history reads. Permitted unmentioned messages are recorded without starting agent turns when mentions are required. See [Retained group history](/channels/telegram/messaging#retained-group-history). `paddy doctor --fix` removes the retired `includeGroupHistoryContext` key.
 
-    Getting the group chat ID: forward a group message to `@userinfobot` / `@getidsbot`, read `chat.id` from `openclaw logs --follow`, inspect Bot API `getUpdates`, or (once the group is allowed) run `/whoami@<bot_username>`.
+    Getting the group chat ID: forward a group message to `@userinfobot` / `@getidsbot`, read `chat.id` from `paddy logs --follow`, inspect Bot API `getUpdates`, or (once the group is allowed) run `/whoami@<bot_username>`.
 
   </Tab>
 </Tabs>

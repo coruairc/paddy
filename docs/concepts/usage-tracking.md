@@ -16,19 +16,19 @@ title: "Usage tracking"
 
 - `/status` in chats: status card with session tokens and estimated cost (API key models only). Provider usage shows for the **current model provider** when available, as a normalized `X% left` window or provider summary text.
 - `/usage off|tokens|full` in chats: per-response usage footer.
-- `/usage cost` in chats: local cost summary aggregated from OpenClaw session logs.
-- CLI: `openclaw status --usage` prints a full per-provider usage/quota breakdown.
-- CLI: `openclaw models status` lists OAuth/token auth profiles and shows a usage-window summary next to each provider that has one.
-- Control UI: **Usage** shows provider plan and billing cards above OpenClaw's session-derived token and estimated-cost analysis. Anthropic and OpenAI Admin API credentials add provider-reported today, 7-day, and 30-day spend, daily trends, token totals, top models, and cost categories.
+- `/usage cost` in chats: local cost summary aggregated from Paddy session logs.
+- CLI: `paddy status --usage` prints a full per-provider usage/quota breakdown.
+- CLI: `paddy models status` lists OAuth/token auth profiles and shows a usage-window summary next to each provider that has one.
+- Control UI: **Usage** shows provider plan and billing cards above Paddy's session-derived token and estimated-cost analysis. Anthropic and OpenAI Admin API credentials add provider-reported today, 7-day, and 30-day spend, daily trends, token totals, top models, and cost categories.
 - Control UI: the chat composer's context ring popover shows **plan usage** for subscription providers — per-window bars (5-hour, weekly, model-scoped) with reset times, the provider plan when known (for example `Max (20x)`), and extra-usage credits. Sessions billed through a plan hide per-token dollar estimates; API-billed sessions keep `Est. cost` and the cost-by-type breakdown. Claude Code CLI (`claude-cli`) setups reuse the same Anthropic subscription usage.
 - macOS menu bar: a root "Usage" section appears below Context when provider usage snapshots are available. See [Menu bar](/platforms/mac/menu-bar).
 
-Since v2026.5.7, `openclaw channels list` no longer prints provider usage; it points users to `openclaw status` or `openclaw models list` instead.
+Since v2026.5.7, `paddy channels list` no longer prints provider usage; it points users to `paddy status` or `paddy models list` instead.
 
 `/usage cost` warns that the **Today** and **Last 30d** totals may be incomplete
 if their aggregate cache is refreshing, partial, or stale, and suggests running
 the command again later. The **Session** total is loaded separately. The CLI
-`openclaw gateway usage-cost` also reports the recorded cache state before its
+`paddy gateway usage-cost` also reports the recorded cache state before its
 totals.
 
 The Control UI checks incomplete usage totals again after 5, 10, and 20 seconds.
@@ -78,9 +78,9 @@ instead of sending a blank value.
 Subscription quota and API billing are different provider surfaces:
 
 - Anthropic subscription/setup credentials continue to show Claude quota windows and optional extra-usage budgets. Set `ANTHROPIC_ADMIN_KEY` or `ANTHROPIC_ADMIN_API_KEY` to show organization Usage and Cost API history instead. An Anthropic provider credential beginning with `sk-ant-admin` is detected automatically.
-- OpenAI ChatGPT/Codex OAuth continues to show plan, quota windows, and credit balance. Set `OPENAI_ADMIN_KEY` to show organization cost and completions-usage history instead; optionally set `OPENAI_PROJECT_ID` to scope it to one project. OpenClaw never sends inference credentials from `OPENAI_API_KEY`, provider config, or auth profiles to organization APIs because those keys may belong to custom endpoints.
+- OpenAI ChatGPT/Codex OAuth continues to show plan, quota windows, and credit balance. Set `OPENAI_ADMIN_KEY` to show organization cost and completions-usage history instead; optionally set `OPENAI_PROJECT_ID` to scope it to one project. Paddy never sends inference credentials from `OPENAI_API_KEY`, provider config, or auth profiles to organization APIs because those keys may belong to custom endpoints.
 
-Admin credentials take precedence because they provide actual organization billing. OpenClaw does not combine these provider-reported totals with its local session estimates; the two sections intentionally answer different questions.
+Admin credentials take precedence because they provide actual organization billing. Paddy does not combine these provider-reported totals with its local session estimates; the two sections intentionally answer different questions.
 
 ## Default usage footer mode
 
@@ -146,7 +146,7 @@ With no config the prior behavior holds (footer off until `/usage`). Use
 ## Custom `/usage full` footer
 
 `/usage tokens` renders a plain `Usage: X in / Y out` line with cache counters
-when available. Missing input or output counts stay `?`; OpenClaw does not infer
+when available. Missing input or output counts stay `?`; Paddy does not infer
 the split from a total. When neither direction is reported, a known total appears
 as `Usage: 1.3k total`. Cache counters remain visible even when input, output, and
 total counts are unavailable. This mode never estimates cost. Only `/usage full`
@@ -344,7 +344,7 @@ renders e.g. `claude-sonnet-4-6 🌗 🐌 | 📚 [⣿⣿⣿⣿⣧]272k`.
 
 ## Providers + credentials
 
-Usage is hidden when no usable provider usage auth can be resolved. OpenClaw
+Usage is hidden when no usable provider usage auth can be resolved. Paddy
 automatically discovers enabled provider plugins that declare
 `contracts.usageProviders` and implement both `resolveUsageAuth` and
 `fetchUsageSnapshot`; there is no separate core provider allowlist. The static
@@ -366,7 +366,7 @@ provider-neutral for CLI, app, and Control UI consumers.
 - **DeepSeek**: API key via env/config/auth store (`DEEPSEEK_API_KEY`).
   Shows each provider-reported currency balance.
 - **GitHub Copilot**: OAuth tokens in auth profiles.
-- **MiniMax**: API key or MiniMax OAuth auth profile. OpenClaw treats
+- **MiniMax**: API key or MiniMax OAuth auth profile. Paddy treats
   `minimax`, `minimax-cn`, and `minimax-portal` as the same MiniMax quota
   surface, prefers stored MiniMax OAuth when present, and otherwise falls back
   to `MINIMAX_CODE_PLAN_KEY`, `MINIMAX_CODING_API_KEY`, or `MINIMAX_API_KEY`.
@@ -374,18 +374,18 @@ provider-neutral for CLI, app, and Control UI consumers.
   or `models.providers.minimax.baseUrl` when configured, and otherwise uses the
   MiniMax CN host.
   MiniMax's raw `usage_percent` / `usagePercent` fields mean **remaining**
-  quota, so OpenClaw inverts them before display; count-based fields win when
+  quota, so Paddy inverts them before display; count-based fields win when
   present.
   - Window labels come from provider hours/minutes fields when present, then
     fall back to the `start_time` / `end_time` span.
-  - If the coding-plan endpoint returns `model_remains`, OpenClaw prefers the
+  - If the coding-plan endpoint returns `model_remains`, Paddy prefers the
     chat-model entry, derives the window label from timestamps when explicit
     `window_hours` / `window_minutes` fields are absent, and includes the model
     name in the plan label.
 - **OpenAI (Codex/ChatGPT plan)**: OAuth tokens in auth profiles (`ChatGPT-Account-Id`
   header sent when an account id is present). Shows the ChatGPT plan, resettable
   Codex windows, and a credit balance when reported. Credits remain provider
-  credits; OpenClaw does not label them as dollars. `OPENAI_ADMIN_KEY` adds
+  credits; Paddy does not label them as dollars. `OPENAI_ADMIN_KEY` adds
   30-day organization cost and completions-usage history when the key has Usage
   Dashboard access. Inference credentials are never forwarded to organization APIs.
 - **OpenRouter**: API key or OAuth-backed API key (`OPENROUTER_API_KEY` or an auth

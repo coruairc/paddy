@@ -16,6 +16,7 @@ import { defaultRuntime } from "../runtime.js";
 import { OPENCLAW_STATE_SCHEMA_VERSION } from "../state/openclaw-state-db-contract.js";
 import { closeOpenClawStateDatabaseForTest } from "../state/openclaw-state-db.js";
 import { resolveOpenClawStateSqlitePath } from "../state/openclaw-state-db.paths.js";
+import { cliRecoveryEntrypoints } from "./cli-entrypoint.test-support.js";
 import { finishUpdateRun, recordUpdateRunDiagnostic } from "./daemon-cli.js";
 import { printResult } from "./update-cli/progress.js";
 
@@ -55,11 +56,7 @@ function finishFromPublishedDriver(
   options: { env: NodeJS.ProcessEnv },
   contention?: { lockPath: string; observed: () => void },
 ): Promise<string> {
-  const entry = resolveRuntimeWorkerUrl({
-    currentModuleUrl: import.meta.url,
-    sourceWorkerName: "daemon-cli",
-    distWorkerPath: "cli/daemon-cli.js",
-  });
+  const entry = resolveRuntimeWorkerUrl(cliRecoveryEntrypoints.daemon);
   // Published managed drivers call this stable export without awaiting it.
   // Their child exits naturally after the finalizer's filesystem work settles.
   const child = spawn(
@@ -106,7 +103,7 @@ it("exports the terminal-safe update diagnostic writer for installed-runtime fin
   const { options, run, reportPath } = fixture();
   await finishUpdateRun(run.runId, { status: "failed", reason: "post-update-failed" }, options);
   expect(await fs.readFile(reportPath, "utf8")).toContain(
-    "OpenClaw update failed: post-update-failed",
+    "Paddy update failed: post-update-failed",
   );
 
   recordUpdateRunDiagnostic(
@@ -167,8 +164,8 @@ it.each(["awaited", "published driver", "settled child"] as const)(
       verification: {},
     });
     const saved = await fs.readFile(reportPath, "utf8");
-    expect(saved).toContain(`OpenClaw update failed: ${reason}`);
-    expect(saved).toContain("Run openclaw triage");
+    expect(saved).toContain(`Paddy update failed: ${reason}`);
+    expect(saved).toContain("Run paddy triage");
     expect(saved).toContain("Complete Doctor lint findings (1)");
     expect(saved).toContain(lintMessage);
     expect(saved).not.toContain("in progress");
@@ -266,7 +263,7 @@ it.each(["contention observed", "helper wait exhausted"] as const)(
       expect(stderr).not.toContain("Update report could not be saved:");
     }
     const saved = await fs.readFile(reportPath, "utf8");
-    expect(saved).toContain("OpenClaw update failed: managed-service-handoff-failed");
+    expect(saved).toContain("Paddy update failed: managed-service-handoff-failed");
     expect(saved).not.toContain("in progress");
   },
 );
@@ -304,7 +301,7 @@ it.each(["terminal", "custom", "captured"] as const)(
     const saved = await fs.readFile(reportPath, "utf8");
     if (kind === "captured") {
       expect(error).not.toHaveBeenCalled();
-      expect(saved).toContain("OpenClaw update failed: helper-first-failure");
+      expect(saved).toContain("Paddy update failed: helper-first-failure");
       expect(saved).toContain("Captured terminal recovery instructions.");
     } else {
       expect(error).toHaveBeenCalledWith(expect.stringContaining("history unavailable"));

@@ -1,5 +1,6 @@
 /** Explicit doctor maintenance for the canonical shared state SQLite database. */
 import fs from "node:fs";
+import { PRODUCT_NAME } from "../brand.js";
 import { resolveSqliteDatabaseFilePaths } from "../infra/sqlite-files.js";
 import { clearOpenClawDatabaseQuarantine } from "../state/openclaw-quarantine-store.js";
 import {
@@ -9,10 +10,7 @@ import {
   isOpenClawStateDatabaseOpen,
 } from "../state/openclaw-state-db.js";
 import { resolveOpenClawStateSqlitePath } from "../state/openclaw-state-db.paths.js";
-import {
-  assertOpenClawStateWriteAllowed,
-  runWithOpenClawStateWriteAccess,
-} from "../state/openclaw-state-ownership.js";
+import { assertOpenClawStateWriteAllowed } from "../state/openclaw-state-ownership.js";
 import {
   compactDoctorSqliteFile,
   type DoctorSqliteCompactSnapshot,
@@ -62,49 +60,48 @@ export async function runDoctorStateSqliteCompact(
     };
   }
   if (!stat.isFile()) {
-    throw new Error(`Canonical OpenClaw state database is not a regular file: ${sqlitePath}`);
+    throw new Error(
+      `Canonical ${PRODUCT_NAME} state database is not a regular file: ${sqlitePath}`,
+    );
   }
   const withMaintenanceLock = deps.withMaintenanceLock ?? withDoctorSqliteMaintenanceLock;
   return await withMaintenanceLock({
     env,
     operation: "state SQLite compaction",
     protectedPaths: resolveSqliteDatabaseFilePaths(sqlitePath),
-    run: () =>
-      runWithOpenClawStateWriteAccess(
-        { databasePath: sqlitePath, env },
-        "state SQLite compaction",
-        () => {
-          if (isOpenClawStateDatabaseOpen()) {
+    run: (authority) => {
+      authority.assertCurrent();
+      if (isOpenClawStateDatabaseOpen()) {
+        throw new Error(
+          "The shared Paddy state database is already open in this process. Stop Paddy and retry.",
+        );
+      }
+
+      const compact = compactDoctorSqliteFile({
+        afterSuccess: () => {
+          if (!clearOpenClawDatabaseQuarantine(sqlitePath, { env })) {
             throw new Error(
-              "The shared OpenClaw state database is already open in this process. Stop OpenClaw and retry.",
+              `Paddy state database ${sqlitePath} was compacted, but its persisted quarantine record could not be cleared. Rerun paddy doctor --fix so the database is not refused again.`,
             );
           }
-
-          const compact = compactDoctorSqliteFile({
-            afterSuccess: () => {
-              if (!clearOpenClawDatabaseQuarantine(sqlitePath, { env })) {
-                throw new Error(
-                  `OpenClaw state database ${sqlitePath} was compacted, but its persisted quarantine record could not be cleared. Rerun openclaw doctor --fix so the database is not refused again.`,
-                );
-              }
-              clearOpenClawStateDatabaseOpenFailure(sqlitePath);
-              ensureOpenClawStatePermissions(sqlitePath, env);
-            },
-            ...(deps.busyTimeoutMs !== undefined ? { busyTimeoutMs: deps.busyTimeoutMs } : {}),
-            sqlitePath,
-            validateBeforeMutation: (database) => {
-              assertOpenClawStateWriteAllowed({ database, databasePath: sqlitePath, env });
-              assertOpenClawStateDatabaseForMaintenance(database, { pathname: sqlitePath });
-            },
-          });
-          return {
-            ...compact,
-            mode: "compact",
-            path: sqlitePath,
-            skipped: false,
-          };
+          clearOpenClawStateDatabaseOpenFailure(sqlitePath);
+          ensureOpenClawStatePermissions(sqlitePath, env);
         },
-      ),
+        ...(deps.busyTimeoutMs !== undefined ? { busyTimeoutMs: deps.busyTimeoutMs } : {}),
+        sqlitePath,
+        validateBeforeMutation: (database) => {
+          authority.assertCurrent();
+          assertOpenClawStateWriteAllowed({ database, databasePath: sqlitePath, env });
+          assertOpenClawStateDatabaseForMaintenance(database, { pathname: sqlitePath });
+        },
+      });
+      return {
+        ...compact,
+        mode: "compact",
+        path: sqlitePath,
+        skipped: false,
+      };
+    },
   });
 }
 

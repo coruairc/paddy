@@ -44,7 +44,7 @@ export async function canRepairRunningGatewayDefinition(params: {
     return true;
   }
   note(
-    `Gateway native-policy repair requires a running managed service. The existing definition and stop state were preserved; inspect it with \`${formatCliCommand("openclaw gateway status --deep", params.env)}\` before using \`${formatCliCommand("openclaw gateway install --force", params.env)}\`.`,
+    `Gateway native-policy repair requires a running managed service. The existing definition and stop state were preserved; inspect it with \`${formatCliCommand("paddy gateway status --deep", params.env)}\` before using \`${formatCliCommand("paddy gateway install --force", params.env)}\`.`,
     "Gateway service definition",
   );
   return false;
@@ -159,7 +159,7 @@ export async function assertGatewayServiceInstallationRepairAllowed(
   }
   if (verdict.kind !== "owned" || !verdict.requiresInstallRootRefresh) {
     throw new Error(
-      `Gateway service installation is controlled by another owner; automatic installation repair was skipped. Inspect it with \`${formatCliCommand("openclaw gateway status --deep", state.env)}\`.`,
+      `Gateway service installation is controlled by another owner; automatic installation repair was skipped. Inspect it with \`${formatCliCommand("paddy gateway status --deep", state.env)}\`.`,
     );
   }
 }
@@ -227,5 +227,5 @@ export async function resolveSystemdServiceRewriteBlock(
     return undefined;
   }
   issues.splice(0, issues.length, ...issues.filter((issue) => !isExecStartRepairIssue(issue)));
-  return `Gateway service ${unitName} is running; skipped command/entrypoint rewrites and leaving supervisor metadata unchanged. Stop the service first or use \`${formatCliCommand("openclaw gateway install --force")}\` when you want to replace the active launcher.`;
+  return `Gateway service ${unitName} is running; skipped command/entrypoint rewrites and leaving supervisor metadata unchanged. Stop the service first or use \`${formatCliCommand("paddy gateway install --force")}\` when you want to replace the active launcher.`;
 }

@@ -79,8 +79,8 @@ describe("browser doctor readiness", () => {
 
     expect(noteFn).toHaveBeenCalledWith(
       [
-        "- OpenClaw-managed browser profile(s) are configured: openclaw.",
-        "- No Chromium-based browser executable was found on this host for OpenClaw-managed launch.",
+        "- Paddy-managed browser profile(s) are configured: openclaw.",
+        "- No Chromium-based browser executable was found on this host for Paddy-managed launch.",
         "- Install Chrome, Chromium, Brave, Edge, or set browser.executablePath explicitly.",
       ].join("\n"),
       "Browser",
@@ -111,7 +111,7 @@ describe("browser doctor readiness", () => {
 
     expect(noteFn).toHaveBeenCalledWith(
       [
-        "- OpenClaw-managed browser profile(s) are configured: openclaw.",
+        "- Paddy-managed browser profile(s) are configured: openclaw.",
         "- No DISPLAY or WAYLAND_DISPLAY is set, and browser.headless is false. Managed browser launch needs a desktop session, Xvfb, or browser.headless: true.",
         "- The Gateway is running as root and browser.noSandbox is false. Chromium commonly requires browser.noSandbox: true in container/root runtimes.",
       ].join("\n"),
@@ -135,7 +135,7 @@ describe("browser doctor readiness", () => {
     expect(note).toContain("Legacy managed browser profile residue");
     expect(note).toContain("/tmp/openclaw-home/browser/clawd");
     expect(note).toContain("/tmp/openclaw-home/browser/openclaw/user-data");
-    expect(note).toContain("openclaw doctor --fix");
+    expect(note).toContain("paddy doctor --fix");
   });
 
   it("does not warn when clawd is still configured as a browser profile", async () => {

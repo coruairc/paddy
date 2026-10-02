@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { PluginInstallRecord } from "../config/types.plugins.js";
@@ -23,6 +24,7 @@ import { hasRetainedManagedNpmInstallMarker } from "../plugins/managed-npm-reten
 import { resolveInstalledManifestRegistryIndexFingerprint } from "../plugins/manifest-registry-installed.js";
 import { isExternallyDistributedPlugin } from "../plugins/official-external-plugin-catalog.js";
 import { withPluginLifecycleLease } from "../plugins/plugin-lifecycle-lease.js";
+import type { OpenClawPeerLinkAuditIssue } from "../plugins/plugin-peer-link.js";
 import { refreshPluginRegistry } from "../plugins/plugin-registry-refresh.js";
 import {
   listStaleLocalBundledPluginInstallRecords,
@@ -80,38 +82,17 @@ type PluginRegistryHealthIssue =
       kind: "registry-missing-or-stale";
       path: string;
     }
-  | {
-      kind: "stale-managed-npm-bundled-plugin";
-      pluginId: string;
-      packageName: string;
-      packageDir: string;
-      npmRoot: string;
-      version?: string;
-    }
+  | ({ kind: "stale-managed-npm-bundled-plugin" } & StaleManagedNpmBundledPlugin)
   | {
       kind: "stale-local-bundled-plugin-install-record";
       pluginId: string;
       stalePath: string;
     }
+  | ({
+      kind: "managed-npm-openclaw-peer-link" | "registered-npm-openclaw-host-link";
+    } & OpenClawPeerLinkAuditIssue)
   | {
-      kind: "managed-npm-openclaw-peer-link";
-      packageName: string;
-      packageDir: string;
-      reason: string;
-    }
-  | {
-      kind: "registered-npm-openclaw-host-link";
-      packageName: string;
-      packageDir: string;
-      reason: string;
-    }
-  | {
-      kind: "managed-npm-package-unreadable";
-      packageDir: string;
-      reason: string;
-    }
-  | {
-      kind: "registered-npm-package-unreadable";
+      kind: "managed-npm-package-unreadable" | "registered-npm-package-unreadable";
       packageDir: string;
       reason: string;
     }
@@ -322,7 +303,7 @@ export function maybeRepairStaleManagedNpmBundledPlugins(
           (plugin) =>
             `- ${plugin.pluginId}: ${plugin.packageName}${plugin.version ? `@${plugin.version}` : ""}`,
         ),
-        `Repair with ${formatCliCommand("openclaw doctor --fix")} to remove stale managed npm packages and rebuild the plugin registry.`,
+        `Repair with ${formatCliCommand("paddy doctor --fix")} to remove stale managed npm packages and rebuild the plugin registry.`,
       ].join("\n"),
       "Plugin registry",
     );
@@ -368,7 +349,7 @@ async function maybeRepairStaleLocalBundledPluginInstallRecords(
       [
         "Local bundled plugin install records shadow bundled plugins:",
         ...stale.map((record) => `- ${record.pluginId}: ${shortenHomePath(record.stalePath)}`),
-        `Repair with ${formatCliCommand("openclaw doctor --fix")} to remove stale local install records and rebuild the plugin registry.`,
+        `Repair with ${formatCliCommand("paddy doctor --fix")} to remove stale local install records and rebuild the plugin registry.`,
       ].join("\n"),
       "Plugin registry",
     );
@@ -409,14 +390,7 @@ export async function detectPluginRegistryHealthIssues(
     });
   }
   for (const plugin of listStaleManagedNpmBundledPlugins(params)) {
-    issues.push({
-      kind: "stale-managed-npm-bundled-plugin",
-      pluginId: plugin.pluginId,
-      packageName: plugin.packageName,
-      packageDir: plugin.packageDir,
-      npmRoot: plugin.npmRoot,
-      ...(plugin.version ? { version: plugin.version } : {}),
-    });
+    issues.push({ kind: "stale-managed-npm-bundled-plugin", ...plugin });
   }
   for (const record of await listStaleLocalBundledPluginInstallRecordShadows(params)) {
     issues.push({
@@ -428,34 +402,16 @@ export async function detectPluginRegistryHealthIssues(
   issues.push(...(await listStaleManagedNpmInstallGenerations(params)));
   const hostLinkAudit = await listPluginOpenClawHostLinkIssues(params);
   for (const issue of hostLinkAudit.peerLinkIssues) {
-    issues.push({
-      kind: "managed-npm-openclaw-peer-link",
-      packageName: issue.packageName,
-      packageDir: issue.packageDir,
-      reason: issue.reason,
-    });
+    issues.push({ kind: "managed-npm-openclaw-peer-link", ...issue });
   }
   for (const failure of hostLinkAudit.packageReadFailures) {
-    issues.push({
-      kind: "managed-npm-package-unreadable",
-      packageDir: failure.packageDir,
-      reason: failure.reason,
-    });
+    issues.push({ kind: "managed-npm-package-unreadable", ...failure });
   }
   for (const issue of hostLinkAudit.registeredPeerLinkIssues) {
-    issues.push({
-      kind: "registered-npm-openclaw-host-link",
-      packageName: issue.packageName,
-      packageDir: issue.packageDir,
-      reason: issue.reason,
-    });
+    issues.push({ kind: "registered-npm-openclaw-host-link", ...issue });
   }
   for (const failure of hostLinkAudit.registeredPackageReadFailures) {
-    issues.push({
-      kind: "registered-npm-package-unreadable",
-      packageDir: failure.packageDir,
-      reason: failure.reason,
-    });
+    issues.push({ kind: "registered-npm-package-unreadable", ...failure });
   }
   return issues;
 }
@@ -470,7 +426,7 @@ export function pluginRegistryIssueToHealthFinding(
         severity: "warning",
         message: "Persisted plugin registry is missing or stale.",
         path: issue.path,
-        fixHint: "Run `openclaw doctor --fix` to rebuild the plugin registry from enabled plugins.",
+        fixHint: "Run `paddy doctor --fix` to rebuild the plugin registry from enabled plugins.",
       };
     case "stale-managed-npm-bundled-plugin":
       return {
@@ -482,7 +438,7 @@ export function pluginRegistryIssueToHealthFinding(
         path: issue.packageDir,
         target: issue.pluginId,
         fixHint:
-          "Run `openclaw doctor --fix` to remove stale managed npm packages and rebuild the plugin registry.",
+          "Run `paddy doctor --fix` to remove stale managed npm packages and rebuild the plugin registry.",
       };
     case "stale-local-bundled-plugin-install-record":
       return {
@@ -492,25 +448,25 @@ export function pluginRegistryIssueToHealthFinding(
         path: issue.stalePath,
         target: issue.pluginId,
         fixHint:
-          "Run `openclaw doctor --fix` to remove stale local install records and rebuild the plugin registry.",
+          "Run `paddy doctor --fix` to remove stale local install records and rebuild the plugin registry.",
       };
     case "managed-npm-openclaw-peer-link":
       return {
         checkId: PLUGIN_REGISTRY_CHECK_ID,
         severity: "warning",
-        message: `Managed npm package ${issue.packageName} has a broken OpenClaw peer link: ${issue.reason}.`,
+        message: `Managed npm package ${issue.packageName} has a broken ${PRODUCT_NAME} peer link: ${issue.reason}.`,
         path: issue.packageDir,
         target: issue.packageName,
-        fixHint: "Run `openclaw doctor --fix` to relink managed npm plugin packages.",
+        fixHint: "Run `paddy doctor --fix` to relink managed npm plugin packages.",
       };
     case "registered-npm-openclaw-host-link":
       return {
         checkId: PLUGIN_REGISTRY_CHECK_ID,
         severity: "warning",
-        message: `Registered plugin ${issue.packageName} has a broken OpenClaw host link: ${issue.reason}.`,
+        message: `Registered plugin ${issue.packageName} has a broken ${PRODUCT_NAME} host link: ${issue.reason}.`,
         path: issue.packageDir,
         target: issue.packageName,
-        fixHint: "Run `openclaw doctor --fix` to relink the installed plugin package.",
+        fixHint: "Run `paddy doctor --fix` to relink the installed plugin package.",
       };
     case "managed-npm-package-unreadable":
       return {
@@ -518,7 +474,7 @@ export function pluginRegistryIssueToHealthFinding(
         severity: "warning",
         message: `Managed npm package could not be inspected: ${issue.reason}.`,
         path: issue.packageDir,
-        fixHint: "Restore access to the package files, then run `openclaw doctor` again.",
+        fixHint: "Restore access to the package files, then run `paddy doctor` again.",
       };
     case "registered-npm-package-unreadable":
       return {
@@ -526,7 +482,7 @@ export function pluginRegistryIssueToHealthFinding(
         severity: "warning",
         message: `Registered plugin package could not be inspected: ${issue.reason}.`,
         path: issue.packageDir,
-        fixHint: "Restore access to the package files, then run `openclaw doctor` again.",
+        fixHint: "Restore access to the package files, then run `paddy doctor` again.",
       };
     case "stale-managed-npm-install-generation":
       return staleManagedNpmInstallGenerationToHealthFinding(issue);
@@ -537,56 +493,34 @@ export function pluginRegistryIssueToHealthFinding(
 export function pluginRegistryIssueToRepairEffect(
   issue: PluginRegistryHealthIssue,
 ): HealthRepairEffect {
+  const effect = (
+    kind: HealthRepairEffect["kind"],
+    action: string,
+    target: string,
+  ): HealthRepairEffect => ({ kind, action, target, dryRunSafe: false });
   switch (issue.kind) {
     case "registry-missing-or-stale":
-      return {
-        kind: "state",
-        action: "would-rebuild-plugin-registry",
-        target: issue.path,
-        dryRunSafe: false,
-      };
+      return effect("state", "would-rebuild-plugin-registry", issue.path);
     case "stale-managed-npm-bundled-plugin":
-      return {
-        kind: "package",
-        action: "would-remove-stale-managed-npm-bundled-plugin",
-        target: issue.packageDir,
-        dryRunSafe: false,
-      };
+      return effect("package", "would-remove-stale-managed-npm-bundled-plugin", issue.packageDir);
     case "stale-local-bundled-plugin-install-record":
-      return {
-        kind: "state",
-        action: "would-remove-stale-local-bundled-plugin-install-record",
-        target: issue.pluginId,
-        dryRunSafe: false,
-      };
+      return effect(
+        "state",
+        "would-remove-stale-local-bundled-plugin-install-record",
+        issue.pluginId,
+      );
     case "managed-npm-openclaw-peer-link":
-      return {
-        kind: "package",
-        action: "would-relink-managed-npm-openclaw-peer",
-        target: issue.packageDir,
-        dryRunSafe: false,
-      };
+      return effect("package", "would-relink-managed-npm-openclaw-peer", issue.packageDir);
     case "registered-npm-openclaw-host-link":
-      return {
-        kind: "package",
-        action: "would-relink-registered-npm-openclaw-host",
-        target: issue.packageDir,
-        dryRunSafe: false,
-      };
+      return effect("package", "would-relink-registered-npm-openclaw-host", issue.packageDir);
     case "managed-npm-package-unreadable":
-      return {
-        kind: "package",
-        action: "requires-managed-npm-package-readability-repair",
-        target: issue.packageDir,
-        dryRunSafe: false,
-      };
+      return effect("package", "requires-managed-npm-package-readability-repair", issue.packageDir);
     case "registered-npm-package-unreadable":
-      return {
-        kind: "package",
-        action: "requires-registered-npm-package-readability-repair",
-        target: issue.packageDir,
-        dryRunSafe: false,
-      };
+      return effect(
+        "package",
+        "requires-registered-npm-package-readability-repair",
+        issue.packageDir,
+      );
     case "stale-managed-npm-install-generation":
       return staleManagedNpmInstallGenerationToRepairEffect(issue);
   }
@@ -662,7 +596,7 @@ async function inspectOrRepairPluginRegistryState(
       note(
         [
           "Persisted plugin registry is missing or stale.",
-          `Repair with ${formatCliCommand("openclaw doctor --fix")} to rebuild ${shortenHomePath(preflight.filePath)} from enabled plugins.`,
+          `Repair with ${formatCliCommand("paddy doctor --fix")} to rebuild ${shortenHomePath(preflight.filePath)} from enabled plugins.`,
         ].join("\n"),
         "Plugin registry",
       );

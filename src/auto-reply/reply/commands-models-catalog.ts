@@ -33,6 +33,7 @@ import { getPreparedModelRuntimeAuthStore } from "../../agents/prepared-model-ru
 import { PreparedModelRuntimePublicationSupersededError } from "../../agents/prepared-model-runtime.errors.js";
 import type { PreparedModelRuntimeSnapshot } from "../../agents/prepared-model-runtime.types.js";
 import { resolveDefaultAgentWorkspaceDir } from "../../agents/workspace.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { resolveProviderChannelLoginChoice } from "../../plugins/provider-login-options.js";
@@ -94,7 +95,7 @@ function buildRuntimeChoice(params: { cfg: OpenClawConfig; runtime: string }): M
     label,
     description:
       id === "openclaw"
-        ? "Use OpenClaw's built-in agent and tools."
+        ? `Use ${PRODUCT_NAME}'s built-in agent and tools.`
         : `Use ${label} to run this model.`,
   };
 }
@@ -207,6 +208,26 @@ async function projectPreparedModelsProviderData(
   // reintroduce a model that its provider route contract rejected.
   const incompatibleModelKeys = new Set<string>();
   const modelAvailability = new Map<string, ModelReadiness>();
+  const recordModelAvailability = (
+    entry: ModelCatalogEntry,
+    evaluation: ReturnType<typeof decisions.evaluateNative>,
+    provider = entry.provider,
+  ) => {
+    modelAvailability.set(`${normalizeProviderId(provider)}/${entry.id}`, {
+      availability: evaluation.availability,
+      unavailableReason: evaluation.unavailableReason,
+      runtimeAuth: evaluation.runtimeAuth,
+      runtimeId: resolveModelRuntimeRoute(provider)
+        ? resolveCatalogDecisionRuntime({
+            cfg,
+            agentId: owner.agentId ?? agentId ?? "main",
+            entry,
+            evaluation,
+            pluginRegistry: owner.pluginRegistry,
+          })?.id
+        : undefined,
+    });
+  };
   const hasAuth: ModelCatalogAuthChecker =
     options.view === "all"
       ? async () => true
@@ -240,20 +261,7 @@ async function projectPreparedModelsProviderData(
         entry,
         await selectionDecisions.evaluateEntry(entry, routeVariants),
       );
-      modelAvailability.set(`${normalizeProviderId(entry.provider)}/${entry.id}`, {
-        availability: evaluation.availability,
-        unavailableReason: evaluation.unavailableReason,
-        runtimeAuth: evaluation.runtimeAuth,
-        runtimeId: resolveModelRuntimeRoute(entry.provider)
-          ? resolveCatalogDecisionRuntime({
-              cfg,
-              agentId: owner.agentId ?? agentId ?? "main",
-              entry,
-              evaluation,
-              pluginRegistry: owner.pluginRegistry,
-            })?.id
-          : undefined,
-      });
+      recordModelAvailability(entry, evaluation);
       if (evaluation.routeResolution?.kind === "incompatible") {
         incompatibleModelKeys.add(resolveModelCatalogIdentityKey(entry));
       }
@@ -436,20 +444,7 @@ async function projectPreparedModelsProviderData(
             variants.length ? variants : [authEntry],
           ),
         );
-        modelAvailability.set(`${provider}/${model}`, {
-          availability: evaluation.availability,
-          unavailableReason: evaluation.unavailableReason,
-          runtimeAuth: evaluation.runtimeAuth,
-          runtimeId: resolveModelRuntimeRoute(provider)
-            ? resolveCatalogDecisionRuntime({
-                cfg,
-                agentId: owner.agentId ?? agentId ?? "main",
-                entry: authEntry,
-                evaluation,
-                pluginRegistry: owner.pluginRegistry,
-              })?.id
-            : undefined,
-        });
+        recordModelAvailability(authEntry, evaluation, provider);
       }
       if (!entry) {
         continue;

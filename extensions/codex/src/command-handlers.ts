@@ -143,7 +143,7 @@ export async function handleCodexSubcommand(
       return {
         text:
           "Codex sub-plugin management is not wired up (codexPluginsManagementIo dep is undefined). " +
-          "Edit ~/.openclaw/openclaw.json or use `openclaw config patch` until the runtime exposes the IO.",
+          "Edit ~/.openclaw/openclaw.json or use `paddy config patch` until the runtime exposes the IO.",
       };
     }
     let appServerScope: ReturnType<typeof resolveCommandAppServerScope> | undefined;
@@ -282,7 +282,7 @@ export async function handleCodexSubcommand(
     };
   }
   if (normalized === "model") {
-    return { text: await setConversationModel(deps, ctx, options.pluginConfig, rest) };
+    return { text: await setConversationModel(deps, ctx, rest) };
   }
   if (normalized === "fast") {
     if (isMenuVerb(rest)) {

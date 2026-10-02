@@ -416,7 +416,7 @@ describe("signal transport compatibility", () => {
     expect(result.config).toBe(cfg);
     expect(result.changes).toEqual([]);
     expect(result.warnings).toEqual([
-      "- channels.signal: legacy container transport requires an account number; add channels.signal.account (or the relevant channels.signal.accounts.*.account) and rerun openclaw doctor --fix.",
+      "- channels.signal: legacy container transport requires an account number; add channels.signal.account (or the relevant channels.signal.accounts.*.account) and rerun paddy doctor --fix.",
     ]);
   });
 
@@ -585,7 +585,7 @@ describe("signal transport compatibility", () => {
     expect(result.config).toBe(cfg);
     expect(result.changes).toEqual([]);
     expect(result.warnings).toEqual([
-      "- channels.signal: legacy container transport requires an account number; add channels.signal.account (or the relevant channels.signal.accounts.*.account) and rerun openclaw doctor --fix.",
+      "- channels.signal: legacy container transport requires an account number; add channels.signal.account (or the relevant channels.signal.accounts.*.account) and rerun paddy doctor --fix.",
     ]);
   });
 
@@ -764,7 +764,7 @@ describe("signal transport compatibility", () => {
     expect(result.config).toBe(cfg);
     expect(result.changes).toEqual([]);
     expect(result.warnings).toEqual([
-      "- channels.signal: legacy httpUrl is invalid; keep the current config, correct httpUrl, then run openclaw doctor --fix.",
+      "- channels.signal: legacy httpUrl is invalid; keep the current config, correct httpUrl, then run paddy doctor --fix.",
     ]);
   });
 
@@ -779,7 +779,7 @@ describe("signal transport compatibility", () => {
     expect(result.config).toBe(cfg);
     expect(result.changes).toEqual([]);
     expect(result.warnings).toEqual([
-      "- channels.signal: legacy httpPort must be an integer between 1 and 65535; correct httpPort, then run openclaw doctor --fix.",
+      "- channels.signal: legacy httpPort must be an integer between 1 and 65535; correct httpPort, then run paddy doctor --fix.",
     ]);
   });
 
@@ -794,7 +794,7 @@ describe("signal transport compatibility", () => {
     expect(result.config).toBe(cfg);
     expect(result.changes).toEqual([]);
     expect(result.warnings).toEqual([
-      "- channels.signal: legacy httpPort must be an integer between 1 and 65535; correct httpPort, then run openclaw doctor --fix.",
+      "- channels.signal: legacy httpPort must be an integer between 1 and 65535; correct httpPort, then run paddy doctor --fix.",
     ]);
   });
 
@@ -811,7 +811,7 @@ describe("signal transport compatibility", () => {
     expect(result.config).toBe(cfg);
     expect(result.changes).toEqual([]);
     expect(result.warnings).toEqual([
-      "- channels.signal: legacy httpHost is invalid; keep the current config, correct httpHost, then run openclaw doctor --fix.",
+      "- channels.signal: legacy httpHost is invalid; keep the current config, correct httpHost, then run paddy doctor --fix.",
     ]);
   });
 
@@ -892,7 +892,7 @@ describe("signal transport compatibility", () => {
     expect(result.config).toBe(cfg);
     expect(result.changes).toEqual([]);
     expect(result.warnings).toEqual([
-      "- channels.signal: legacy httpUrl is invalid; keep the current config, correct httpUrl, then run openclaw doctor --fix.",
+      "- channels.signal: legacy httpUrl is invalid; keep the current config, correct httpUrl, then run paddy doctor --fix.",
     ]);
   });
 
@@ -906,7 +906,7 @@ describe("signal transport compatibility", () => {
     expect(result.config).toBe(cfg);
     expect(result.changes).toEqual([]);
     expect(result.warnings).toEqual([
-      "- channels.signal: legacy auto transport is ambiguous while its endpoint is unavailable; bring the endpoint online and rerun openclaw doctor --fix, or replace the retired fields with an explicit account-owned transport in openclaw.json.",
+      "- channels.signal: legacy auto transport is ambiguous while its endpoint is unavailable; bring the endpoint online and rerun paddy doctor --fix, or replace the retired fields with an explicit account-owned transport in openclaw.json.",
     ]);
   });
 
@@ -935,9 +935,9 @@ describe("signal transport compatibility", () => {
 
 describe("Signal pending transport migration results", () => {
   const invalidPort =
-    "- channels.signal: legacy httpPort must be an integer between 1 and 65535; correct httpPort, then run openclaw doctor --fix.";
+    "- channels.signal: legacy httpPort must be an integer between 1 and 65535; correct httpPort, then run paddy doctor --fix.";
   const unavailable =
-    "- channels.signal: legacy auto transport is ambiguous while its endpoint is unavailable; bring the endpoint online and rerun openclaw doctor --fix, or replace the retired fields with an explicit account-owned transport in openclaw.json.";
+    "- channels.signal: legacy auto transport is ambiguous while its endpoint is unavailable; bring the endpoint online and rerun paddy doctor --fix, or replace the retired fields with an explicit account-owned transport in openclaw.json.";
   const cases: Array<
     [string, Record<string, unknown>, string, "unused" | "invalid-port" | "reject" | "missing"]
   > = [
@@ -949,7 +949,7 @@ describe("Signal pending transport migration results", () => {
         httpPort: 70_000,
         httpUrl: "http://[bad",
       },
-      "- channels.signal: invalid transport.socketPath configuration; correct the socket path and remove conflicting HTTP or receiveMode on-start options, then run openclaw doctor --fix.",
+      "- channels.signal: invalid transport.socketPath configuration; correct the socket path and remove conflicting HTTP or receiveMode on-start options, then run paddy doctor --fix.",
       "unused",
     ],
     [
@@ -961,13 +961,13 @@ describe("Signal pending transport migration results", () => {
     [
       "invalid derived host",
       { apiMode: "native", httpHost: "bad host" },
-      "- channels.signal: legacy httpHost is invalid; keep the current config, correct httpHost, then run openclaw doctor --fix.",
+      "- channels.signal: legacy httpHost is invalid; keep the current config, correct httpHost, then run paddy doctor --fix.",
       "unused",
     ],
     [
       "malformed URL",
       { apiMode: "native", httpUrl: "http://[bad" },
-      "- channels.signal: legacy httpUrl is invalid; keep the current config, correct httpUrl, then run openclaw doctor --fix.",
+      "- channels.signal: legacy httpUrl is invalid; keep the current config, correct httpUrl, then run paddy doctor --fix.",
       "unused",
     ],
     [
@@ -985,7 +985,7 @@ describe("Signal pending transport migration results", () => {
     [
       "accountless container after tentative migration",
       { apiMode: "container", httpUrl: "http://signal.test:8080" },
-      "- channels.signal: legacy container transport requires an account number; add channels.signal.account (or the relevant channels.signal.accounts.*.account) and rerun openclaw doctor --fix.",
+      "- channels.signal: legacy container transport requires an account number; add channels.signal.account (or the relevant channels.signal.accounts.*.account) and rerun paddy doctor --fix.",
       "unused",
     ],
     [

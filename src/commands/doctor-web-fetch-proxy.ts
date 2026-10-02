@@ -1,6 +1,7 @@
 /** Doctor diagnostics for managed loopback and web_fetch proxy routing. */
 import tls from "node:tls";
 import { note } from "../../packages/terminal-core/src/note.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { resolveGatewayService, type GatewayService } from "../daemon/service.js";
@@ -105,19 +106,15 @@ async function collectWebFetchProxyDiagnostic(params: {
     "- web_fetch still uses direct connections because tools.web.fetch.useTrustedEnvProxy is not enabled.",
     directProbe,
     "- If direct web_fetch requests time out and the proxy is operator-controlled, enable the explicit opt-in:",
-    `  ${formatCliCommand("openclaw config set tools.web.fetch.useTrustedEnvProxy true")}`,
-    "- Keep the opt-in disabled for untrusted proxies; enabling it lets the proxy resolve DNS after OpenClaw's hostname checks.",
+    `  ${formatCliCommand("paddy config set tools.web.fetch.useTrustedEnvProxy true")}`,
+    `- Keep the opt-in disabled for untrusted proxies; enabling it lets the proxy resolve DNS after ${PRODUCT_NAME}'s hostname checks.`,
   ].join("\n");
 }
 
 /** Emits a managed-loopback failure or the web_fetch proxy diagnostic when relevant. */
-export async function noteWebFetchProxyDiagnostic(params: {
-  cfg: OpenClawConfig;
-  env?: NodeJS.ProcessEnv;
-  service?: Pick<GatewayService, "readCommand">;
-  probeDirectConnectivity?: () => Promise<DirectConnectivity>;
-  noteFn?: typeof note;
-}): Promise<void> {
+export async function noteWebFetchProxyDiagnostic(
+  params: Parameters<typeof collectWebFetchProxyDiagnostic>[0] & { noteFn?: typeof note },
+): Promise<void> {
   if (params.cfg.gateway?.mode === "remote") {
     return;
   }
@@ -132,19 +129,19 @@ export async function noteWebFetchProxyDiagnostic(params: {
       loopbackMode === "proxy" || loopbackMode === "block"
         ? [
             `- proxy.loopbackMode=${loopbackMode} prevents direct local routing. Restore it with:`,
-            `  ${formatCliCommand("openclaw config set proxy.loopbackMode gateway-only")}`,
+            `  ${formatCliCommand("paddy config set proxy.loopbackMode gateway-only")}`,
           ]
         : [
             "- Temporarily disable managed routing to recover local connections:",
-            `  ${formatCliCommand("openclaw config set proxy.enabled false")}`,
+            `  ${formatCliCommand("paddy config set proxy.enabled false")}`,
             "- If external traffic requires a proxy, keep HTTP_PROXY/HTTPS_PROXY and set NO_PROXY=127.0.0.1,localhost,::1 in the Gateway service environment.",
           ];
     (params.noteFn ?? note)(
       [
         "- Managed proxy routing (proxy.enabled) is active, but a request to this process's loopback listener failed. This can cause WebChat/Codex handshake errors or 502 responses.",
-        `- Inspect the proxy configuration: ${formatCliCommand("openclaw config get proxy")}`,
+        `- Inspect the proxy configuration: ${formatCliCommand("paddy config get proxy")}`,
         ...repair,
-        `- Apply the change: ${formatCliCommand("openclaw gateway restart")}`,
+        `- Apply the change: ${formatCliCommand("paddy gateway restart")}`,
       ].join("\n"),
       "Managed proxy loopback",
     );

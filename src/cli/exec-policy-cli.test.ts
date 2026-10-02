@@ -579,7 +579,7 @@ describe("exec-policy CLI", () => {
       name: "no configured agents",
       entries: {},
       status: "NO AGENT CONFIGURED",
-      hint: "openclaw agents add",
+      hint: "paddy agents add",
       scopes: [
         { label: "tools.exec", facts: ["gateway", "allowlist", "ask on miss", "fallback deny"] },
       ],

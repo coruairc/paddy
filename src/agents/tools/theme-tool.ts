@@ -6,13 +6,21 @@ import {
   type ThemesMutationResult,
 } from "../../../packages/gateway-protocol/src/schema/themes.js";
 import { normalizeThemeDefinition } from "../../../packages/gateway-protocol/src/theme.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { AnyAgentTool } from "./common.js";
 import { asToolParamsRecord, jsonResult, readToolStringParam, ToolInputError } from "./common.js";
+import { withGatewayPersonalToolUser } from "./gateway-caller-context.js";
 import { callAgentToolGatewayRequest } from "./in-process-gateway.js";
 
 const ThemeToolSchema = Type.Object(
   {
     action: Type.String({ enum: ["list", "get", "set", "import"] }),
+    user: Type.Optional(
+      Type.String({
+        description:
+          "The person's requester_profile.id, required when several people have steered this turn.",
+      }),
+    ),
     id: Type.Optional(
       Type.Union([Type.String({ minLength: 1 }), Type.Null()], {
         description: "Theme ID; import uses a personal slug. Set null to clear the override.",
@@ -80,7 +88,7 @@ export function createThemeTool(): AnyAgentTool {
     label: "Theme",
     name: "theme",
     description:
-      "Read and change the requesting user's OpenClaw appearance. list includes available built-in, plugin, and personal themes with descriptions and current selection. get inspects the current theme or an id, including its editable definition when available. set selects an id and/or mode; null clears that profile override. import saves a custom definition under user/<id>; apply:true also activates it in the same call. Each supplied light/dark palette requires all listed colors; use hex colors and optional font-sans/font-mono. Plugin themes follow plugin hot reload without a Gateway restart. Set/import return the saved result, so no extra get is needed. Requires a trusted requesting profile for personal changes; no connected browser is required. Saved does not confirm browser rendering.",
+      `Read and change the requesting user's ${PRODUCT_NAME} appearance. list includes available built-in, plugin, and personal themes with descriptions and current selection. get inspects the current theme or an id, including its editable definition when available. set selects an id and/or mode; null clears that profile override. import saves a custom definition under user/<id>; apply:true also activates it in the same call. Each supplied light/dark palette requires all listed colors; use hex colors and optional font-sans/font-mono. Plugin themes follow plugin hot reload without a Gateway restart. Set/import return the saved result, so no extra get is needed. Requires a trusted requesting profile for personal changes; no connected browser is required. Saved does not confirm browser rendering.`,
     parameters: ThemeToolSchema,
     execute: async (_toolCallId, rawArgs, signal) => {
       const params = asToolParamsRecord(rawArgs);
@@ -90,16 +98,18 @@ export function createThemeTool(): AnyAgentTool {
         params: themeParams(action, params),
         signal,
       };
-      if (action === "list") {
-        const { themes, current } = await callAgentToolGatewayRequest<ThemesListResult>(request);
-        return jsonResult({ themes, current });
-      }
-      if (action === "get") {
-        return jsonResult(await callAgentToolGatewayRequest<ThemesGetResult>(request));
-      }
-      const { current, theme, application } =
-        await callAgentToolGatewayRequest<ThemesMutationResult>(request);
-      return jsonResult({ current, theme, application });
+      return await withGatewayPersonalToolUser(readToolStringParam(params, "user"), async () => {
+        if (action === "list") {
+          const { themes, current } = await callAgentToolGatewayRequest<ThemesListResult>(request);
+          return jsonResult({ themes, current });
+        }
+        if (action === "get") {
+          return jsonResult(await callAgentToolGatewayRequest<ThemesGetResult>(request));
+        }
+        const { current, theme, application } =
+          await callAgentToolGatewayRequest<ThemesMutationResult>(request);
+        return jsonResult({ current, theme, application });
+      });
     },
   };
 }

@@ -222,6 +222,16 @@ describe("status-overview-rows", () => {
     expect(findRowValue(rows, label)).toContain(params.summary[field]);
   });
 
+  it("surfaces a deleted Gateway Node path in the overview", () => {
+    const execPath = "/opt/homebrew/Cellar/node@24/24.20.0/bin/node";
+    const params = createStatusCommandOverviewRowsParams();
+    params.summary.childRuntime = { execPath, available: false };
+    const rows = buildStatusCommandOverviewRows(params);
+    expect(findRowValue(rows, "Gateway runtime")).toBe(
+      `warn(Gateway runtime is stale after Node upgrade: child workers are using ${execPath}, which no longer exists. Restart the Gateway.)`,
+    );
+  });
+
   it("builds status-all overview rows from the shared surface", () => {
     const summary = createStatusCommandOverviewRowsParams().summary;
     const rows = buildStatusAllOverviewRows({
@@ -277,7 +287,7 @@ describe("status-overview-rows", () => {
     expect(findRowValue(rows, "Gateway self")).toBe("gateway app 1.2.3");
     expect(findRowValue(rows, "Update")).toContain("behind 2");
     expect(findRowValue(rows, "Update restart")).toBe("restart pending health verification");
-    expect(findRowValue(rows, "Security")).toBe("Run: openclaw security audit --deep");
+    expect(findRowValue(rows, "Security")).toBe("Run: paddy security audit --deep");
     expect(findRowValue(rows, "Secret egress proxy")).toBe(
       "Check OpenSSL, then retry the request.",
     );

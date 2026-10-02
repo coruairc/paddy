@@ -406,7 +406,7 @@ describe("channel-auth", () => {
     expect(readFirstLogMessage(runtime)).toContain(`whatsapp/acct-1`);
     expect(readFirstLogMessage(runtime)).toContain(outcome.reason);
     expect(readFirstLogMessage(runtime)).toContain(
-      "openclaw channels status --channel whatsapp --probe",
+      "paddy channels status --channel whatsapp --probe",
     );
   });
 
@@ -663,7 +663,7 @@ describe("channel-auth", () => {
     });
 
     await expect(runChannelLogin({ channel: "whatsapp" }, runtime)).rejects.toThrow(
-      'Channel "whatsapp" does not support login. Run `openclaw channels status --channel whatsapp` to inspect supported actions.',
+      'Channel "whatsapp" does not support login. Run `paddy channels status --channel whatsapp` to inspect supported actions.',
     );
   });
 
@@ -868,7 +868,7 @@ describe("channel-auth", () => {
     });
 
     await expect(runChannelLogout({ channel: "whatsapp" }, runtime)).rejects.toThrow(
-      'Channel "whatsapp" does not support logout. Run `openclaw channels status --channel whatsapp` to inspect supported actions.',
+      'Channel "whatsapp" does not support logout. Run `paddy channels status --channel whatsapp` to inspect supported actions.',
     );
   });
 

@@ -28,7 +28,7 @@ export class SecretEgressSubstitutionError extends Error {
   ) {
     super(
       details
-        ? `Secret "${details.secretName}" is not allowed for host "${details.host}". Run: openclaw secrets store set ${details.secretName} --allow-host ${details.host}`
+        ? `Secret "${details.secretName}" is not allowed for host "${details.host}". Run: paddy secrets store set ${details.secretName} --allow-host ${details.host}`
         : "Secret egress proxy refused an unresolved secret sentinel",
     );
     this.name = "SecretEgressSubstitutionError";

@@ -144,7 +144,7 @@ describe("update progress", () => {
       ];
       await printResult(result, { run: context });
       const lines = log.mock.calls.flat();
-      expect(lines.join("\n")).toContain("OpenClaw update in progress: verifying.");
+      expect(lines.join("\n")).toContain("Paddy update in progress: verifying.");
       expect(lines.filter((line) => typeof line === "string" && line.startsWith("Phase:"))).toEqual(
         ["Phase: requested", "Phase: verifying"],
       );
@@ -242,7 +242,7 @@ describe("update progress", () => {
           lines.filter((line) => typeof line === "string" && line.startsWith("Phase:")),
         ).toEqual(present ? ["Phase: requested", "Phase: verifying"] : ["Phase: requested"]);
         expect(lines.join("\n")).toContain(
-          present ? "OpenClaw update in progress: verifying." : "OpenClaw updated.",
+          present ? "Paddy update in progress: verifying." : "Paddy updated.",
         );
         expect(log).not.toHaveBeenCalledWith("Phase: repairing");
       } finally {
@@ -259,7 +259,7 @@ describe("update progress", () => {
     });
     await printResult({ ...result, status: "error", reason: "doctor-failed" }, { run: context });
     const text = log.mock.calls.flat().join("\n");
-    expect(text).toContain("OpenClaw update failed: doctor-failed");
+    expect(text).toContain("Paddy update failed: doctor-failed");
     expect(text).toContain(`Report: ${reportPath}`);
   });
 
@@ -342,7 +342,7 @@ describe("update progress", () => {
       exitCode: 1,
       stdoutTail: JSON.stringify(envelope),
       stderrTail:
-        "[openclaw] The CLI command failed.\n[openclaw] Reason: Unable to load plugin\n[openclaw] Help: openclaw --help",
+        "[openclaw] The CLI command failed.\n[openclaw] Reason: Unable to load plugin\n[openclaw] Help: paddy --help",
       failureFacts: [{ check: "doctor", code: "doctor-failed", message: "Unable to load plugin" }],
     };
     presentation.progress.onStepComplete?.(failed);
@@ -356,7 +356,7 @@ describe("update progress", () => {
     );
     const report = log.mock.calls.flat().join("\n");
     expect(report.match(/Unable to load plugin/gu)).toHaveLength(1);
-    expect(report).not.toContain("Help: openclaw --help");
+    expect(report).not.toContain("Help: paddy --help");
     for (const stdoutTail of [
       "Additional diagnostic",
       JSON.stringify({ ...envelope, details: "Additional diagnostic" }),
@@ -380,7 +380,7 @@ describe("update progress", () => {
             ...failed,
             cwd: "/fixture",
             stdoutTail: "x".repeat(160),
-            stderrTail: `[openclaw] Reason: Unable to load plugin\nDistinct detail ${"y".repeat(160)}\n[openclaw] Help: openclaw --help\ndoctor: Candidate doctor failed (deadline exceeded) (1000ms)`,
+            stderrTail: `[paddy] Reason: Unable to load plugin\nDistinct detail ${"y".repeat(160)}\n[openclaw] Help: paddy --help\ndoctor: Candidate doctor failed (deadline exceeded) (1000ms)`,
           },
         ],
       },
@@ -425,7 +425,7 @@ describe("update progress", () => {
     const lines = log.mock.calls.flat();
     const finalPhase = lines.indexOf("Phase: finished");
     const report = lines.findIndex(
-      (line) => typeof line === "string" && line.includes("OpenClaw updated to 2026.9.3"),
+      (line) => typeof line === "string" && line.includes("Paddy updated to 2026.9.3"),
     );
     expect(finalPhase).toBeGreaterThan(-1);
     expect(report).toBeGreaterThan(finalPhase);
@@ -508,8 +508,8 @@ describe("update progress", () => {
       const output = log.mock.calls.flat().join("\n");
       expect(output).toContain(
         rolledBack
-          ? "OpenClaw update rolled back to 2026.9.4: doctor-failed"
-          : "OpenClaw update failed: doctor-failed",
+          ? "Paddy update rolled back to 2026.9.4: doctor-failed"
+          : "Paddy update failed: doctor-failed",
       );
       const identity = rolledBack ? "version verified" : "version mismatch";
       expect(output).toContain(identity);
@@ -660,7 +660,7 @@ describe("update progress", () => {
     await printResult(stale, { run: context }, { record: captured });
 
     const output = log.mock.calls.flat().join("\n");
-    expect(output).toContain("OpenClaw updated to 2026.9.5");
+    expect(output).toContain("Paddy updated to 2026.9.5");
     expect(output).toContain("Recovery: verified serving 2026.9.5.");
     expect(output).not.toContain("stale-readiness-failure");
     expect(output).not.toContain("state-migration-started");

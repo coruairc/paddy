@@ -7,6 +7,7 @@ import {
 import { hasNonEmptyString as isNonEmptyString } from "@openclaw/normalization-core/string-coerce";
 import { listAgentRoles } from "../agents/agent-roles.js";
 import type { CommandContext } from "../auto-reply/reply/commands-types.js";
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { createCorePluginStateSyncKeyedStore } from "../plugin-state/plugin-state-store.js";
 import type { RuntimeEnv } from "../runtime.js";
@@ -47,6 +48,24 @@ type SystemAgentRescueMessageInput = {
 const SYSTEM_AGENT_COMMAND = "/openclaw";
 const RESCUE_PENDING_NAMESPACE = "rescue-pending";
 const RESCUE_PENDING_MAX_ENTRIES = 1_024;
+const RESCUE_OPERATION_FIELDS = new Map<
+  string,
+  { required?: readonly string[]; optional?: readonly string[] }
+>([
+  ["set-default-model", { required: ["model"], optional: ["agentId"] }],
+  ["config-set", { required: ["path", "value"] }],
+  ["config-set-ref", { required: ["path", "source", "id"], optional: ["provider"] }],
+  ["setup", { optional: ["workspace", "model"] }],
+  ["plugin-install", { required: ["spec"] }],
+  [
+    "create-agent",
+    { required: ["agentId"], optional: ["name", "purpose", "workspace", "model", "role"] },
+  ],
+  ["create-team", { optional: ["coordinatorId", "prefix", "workspaceRoot"] }],
+  ["gateway-start", {}],
+  ["gateway-stop", {}],
+  ["gateway-restart", {}],
+]);
 
 function createCaptureRuntime(): { runtime: RuntimeEnv; read: () => string } {
   const lines: string[] = [];
@@ -58,7 +77,7 @@ function createCaptureRuntime(): { runtime: RuntimeEnv; read: () => string } {
       log: push,
       error: push,
       exit: (code) => {
-        throw new Error(`OpenClaw operation exited with code ${code}`);
+        throw new Error(`${PRODUCT_NAME} operation exited with code ${code}`);
       },
     },
     read: () => lines.join("\n").trim(),
@@ -110,20 +129,22 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
   );
 }
 
-function hasExactKeys(
+function hasOperationFields(
   value: Record<string, unknown>,
-  required: readonly string[],
+  required: readonly string[] = [],
   optional: readonly string[] = [],
 ): boolean {
-  const allowed = new Set([...required, ...optional]);
+  const allowed = new Set(["kind", ...required, ...optional]);
   return (
-    required.every((key) => Object.hasOwn(value, key)) &&
+    Object.hasOwn(value, "kind") &&
+    required.every((key) => Object.hasOwn(value, key) && isNonEmptyString(value[key])) &&
+    optional.every((key) =>
+      key === "role"
+        ? value.role === undefined || listAgentRoles().some((role) => role === value.role)
+        : !Object.hasOwn(value, key) || isNonEmptyString(value[key]),
+    ) &&
     Object.keys(value).every((key) => allowed.has(key))
   );
-}
-
-function hasOptionalString(value: Record<string, unknown>, key: string): boolean {
-  return !Object.hasOwn(value, key) || isNonEmptyString(value[key]);
 }
 
 function parsePendingOperation(value: unknown): SystemAgentOperation | null {
@@ -134,81 +155,18 @@ function parsePendingOperation(value: unknown): SystemAgentOperation | null {
   if (typeof operation.kind !== "string") {
     return null;
   }
-  switch (operation.kind) {
-    case "set-default-model":
-      if (!hasExactKeys(operation, ["kind", "model"]) || !isNonEmptyString(operation.model)) {
-        return null;
-      }
-      break;
-    case "config-set":
-      if (
-        !hasExactKeys(operation, ["kind", "path", "value"]) ||
-        !isNonEmptyString(operation.path) ||
-        !isNonEmptyString(operation.value)
-      ) {
-        return null;
-      }
-      break;
-    case "config-set-ref":
-      if (
-        !hasExactKeys(operation, ["kind", "path", "source", "id"], ["provider"]) ||
-        !isNonEmptyString(operation.path) ||
-        (operation.source !== "env" &&
-          operation.source !== "file" &&
-          operation.source !== "exec" &&
-          operation.source !== "store") ||
-        !isNonEmptyString(operation.id) ||
-        !hasOptionalString(operation, "provider")
-      ) {
-        return null;
-      }
-      break;
-    case "setup":
-      if (
-        !hasExactKeys(operation, ["kind"], ["workspace", "model"]) ||
-        !hasOptionalString(operation, "workspace") ||
-        !hasOptionalString(operation, "model")
-      ) {
-        return null;
-      }
-      break;
-    case "plugin-install":
-      if (!hasExactKeys(operation, ["kind", "spec"]) || !isNonEmptyString(operation.spec)) {
-        return null;
-      }
-      break;
-    case "create-agent":
-      if (
-        !hasExactKeys(operation, ["kind", "agentId"], ["name", "workspace", "model", "role"]) ||
-        !isNonEmptyString(operation.agentId) ||
-        !hasOptionalString(operation, "name") ||
-        (operation.role !== undefined &&
-          !listAgentRoles().some((role) => role === operation.role)) ||
-        !hasOptionalString(operation, "workspace") ||
-        !hasOptionalString(operation, "model")
-      ) {
-        return null;
-      }
-      break;
-    case "create-team":
-      if (
-        !hasExactKeys(operation, ["kind"], ["coordinatorId", "prefix", "workspaceRoot"]) ||
-        !hasOptionalString(operation, "coordinatorId") ||
-        !hasOptionalString(operation, "prefix") ||
-        !hasOptionalString(operation, "workspaceRoot")
-      ) {
-        return null;
-      }
-      break;
-    case "gateway-start":
-    case "gateway-stop":
-    case "gateway-restart":
-      if (!hasExactKeys(operation, ["kind"])) {
-        return null;
-      }
-      break;
-    default:
-      return null;
+  const fields = RESCUE_OPERATION_FIELDS.get(operation.kind);
+  if (!fields || !hasOperationFields(operation, fields.required, fields.optional)) {
+    return null;
+  }
+  if (
+    operation.kind === "config-set-ref" &&
+    operation.source !== "env" &&
+    operation.source !== "file" &&
+    operation.source !== "exec" &&
+    operation.source !== "store"
+  ) {
+    return null;
   }
   return isPersistentSystemAgentOperation(operation as SystemAgentOperation)
     ? (operation as SystemAgentOperation)
@@ -235,32 +193,32 @@ function formatPersistentPlan(operation: SystemAgentOperation): string {
 function formatUnsupportedRemoteOperation(operation: SystemAgentOperation): string | null {
   if (operation.kind === "open-tui") {
     return [
-      "OpenClaw rescue cannot open the local TUI from a message channel.",
-      "Use local `openclaw` for agent handoff, or ask for status, doctor, config, gateway, agents, or models.",
+      `${PRODUCT_NAME} rescue cannot open the local TUI from a message channel.`,
+      "Use local `paddy` for agent handoff, or ask for status, doctor, config, gateway, agents, or models.",
     ].join(" ");
   }
   if (operation.kind === "channel-setup") {
     return [
-      "OpenClaw rescue cannot host the interactive channel setup from a message channel.",
-      "Run `openclaw setup` locally and say `connect " + operation.channel + "` instead.",
+      `${PRODUCT_NAME} rescue cannot host the interactive channel setup from a message channel.`,
+      "Run `paddy setup` locally and say `connect " + operation.channel + "` instead.",
     ].join(" ");
   }
   if (operation.kind === "config-unset") {
     return [
-      "OpenClaw rescue cannot remove configuration settings.",
-      "Ask your regular agent to remove the setting, or run `openclaw config unset <path>` locally.",
+      `${PRODUCT_NAME} rescue cannot remove configuration settings.`,
+      "Ask your regular agent to remove the setting, or run `paddy config unset <path>` locally.",
     ].join(" ");
   }
   if (operation.kind === "doctor-fix") {
     return [
-      "OpenClaw rescue cannot run doctor repairs from a message channel because they can change the inference route powering this session.",
-      "On the machine running OpenClaw, with OpenClaw stopped, run `openclaw doctor --fix`.",
+      `${PRODUCT_NAME} rescue cannot run doctor repairs from a message channel because they can change the inference route powering this session.`,
+      `On the machine running ${PRODUCT_NAME}, with ${PRODUCT_NAME} stopped, run \`${CLI_NAME} doctor --fix\`.`,
     ].join(" ");
   }
   if (operation.kind === "plugin-install") {
     return [
-      "OpenClaw rescue cannot install plugins from a message channel by default because plugin install downloads executable code.",
-      "Use local `openclaw setup` or `openclaw plugins install` instead.",
+      `${PRODUCT_NAME} rescue cannot install plugins from a message channel by default because plugin install downloads executable code.`,
+      "Use local `paddy setup` or `paddy plugins install` instead.",
     ].join(" ");
   }
   return null;
@@ -294,7 +252,7 @@ export async function runSystemAgentRescueMessage(
     // capability, and a failed execution cannot leave a replayable write.
     const operation = parsePendingOperation(pendingStore.consume(pendingKey));
     if (!operation) {
-      return "No pending OpenClaw rescue change is waiting for approval.";
+      return `No pending ${PRODUCT_NAME} rescue change is waiting for approval.`;
     }
     const unsupported = formatUnsupportedRemoteOperation(operation);
     if (unsupported) {
@@ -306,14 +264,14 @@ export async function runSystemAgentRescueMessage(
       auditDetails: buildAuditDetails(input),
       deps: input.deps,
     });
-    return capture.read() || "OpenClaw rescue change applied.";
+    return capture.read() || `${PRODUCT_NAME} rescue change applied.`;
   }
 
   if (approvalIntent === "decline") {
     const pending = parsePendingOperation(pendingStore.consume(pendingKey));
     return pending
-      ? "Dropped the pending OpenClaw rescue change."
-      : "No pending OpenClaw rescue change is waiting for approval.";
+      ? `Dropped the pending ${PRODUCT_NAME} rescue change.`
+      : `No pending ${PRODUCT_NAME} rescue change is waiting for approval.`;
   }
 
   // Any fresh command revokes the previous capability for this exact route.
@@ -335,7 +293,7 @@ export async function runSystemAgentRescueMessage(
         ? undefined
         : resolveExpiresAtMsFromDurationMs(policy.pendingTtlMinutes * 60_000, { nowMs });
     if (nowMs === undefined || expiresAtMs === undefined) {
-      return "OpenClaw rescue could not create a pending approval because the expiry clock is invalid.";
+      return `${PRODUCT_NAME} rescue could not create a pending approval because the expiry clock is invalid.`;
     }
     const ttlMs = expiresAtMs - nowMs;
     pendingStore.register(
@@ -355,5 +313,5 @@ export async function runSystemAgentRescueMessage(
     auditDetails: buildAuditDetails(input),
     deps: input.deps,
   });
-  return capture.read() || "OpenClaw listened, clicked a claw, and found nothing to change.";
+  return capture.read() || `${PRODUCT_NAME} listened, clicked a claw, and found nothing to change.`;
 }

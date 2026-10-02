@@ -6,7 +6,7 @@ read_when:
   - You want AI-powered recall and user modeling
 ---
 
-[Honcho](https://honcho.dev) adds AI-native memory to OpenClaw through an
+[Honcho](https://honcho.dev) adds AI-native memory to Paddy through an
 external plugin. It persists conversations to a dedicated service and builds
 user and agent models over time, giving your agent cross-session context that
 goes beyond workspace Markdown files.
@@ -47,14 +47,14 @@ Honcho registers tools the agent can use during conversation:
 Install the plugin and run setup:
 
 ```bash
-openclaw plugins install @honcho-ai/openclaw-honcho
-openclaw honcho setup
-openclaw gateway --force
+paddy plugins install @honcho-ai/paddy-honcho
+paddy honcho setup
+paddy gateway --force
 ```
 
 The setup command prompts for your API credentials, writes the config, and
 optionally migrates existing workspace memory files. The API key it asks for is
-issued by [Honcho](https://honcho.dev), not by OpenClaw, and is only needed for
+issued by [Honcho](https://honcho.dev), not by Paddy, and is only needed for
 the managed API at `api.honcho.dev`; a self-hosted Honcho deployment has no key
 to enter.
 
@@ -90,7 +90,7 @@ For self-hosted instances, point `baseUrl` to your local server (for example
 ## Migrating existing memory
 
 If you have existing workspace memory files (`USER.md`, `MEMORY.md`,
-`IDENTITY.md`, `memory/`), `openclaw honcho setup` detects and offers to
+`IDENTITY.md`, `memory/`), `paddy honcho setup` detects and offers to
 migrate them.
 
 <Info>
@@ -104,7 +104,7 @@ After every AI turn, the conversation is persisted to Honcho. Both user and
 agent messages are observed, letting Honcho build and refine its models over
 time.
 
-During conversation, Honcho tools query the service during OpenClaw's
+During conversation, Honcho tools query the service during Paddy's
 `before_prompt_build` plugin hook, injecting relevant context before the model
 sees the prompt.
 
@@ -125,10 +125,10 @@ local Markdown available alongside Honcho's cross-session memory.
 ## CLI commands
 
 ```bash
-openclaw honcho setup                        # Configure API key and migrate files
-openclaw honcho status                       # Check connection status
-openclaw honcho ask <question>               # Query Honcho about the user
-openclaw honcho search <query> [-k N] [-d D] # Semantic search over memory
+paddy honcho setup                        # Configure API key and migrate files
+paddy honcho status                       # Check connection status
+paddy honcho ask <question>               # Query Honcho about the user
+paddy honcho search <query> [-k N] [-d D] # Semantic search over memory
 ```
 
 ## Further reading

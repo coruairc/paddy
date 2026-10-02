@@ -115,6 +115,8 @@ type CreateAgentParams = {
   transformConfig?: typeof transformConfigFileWithRetry;
   /** Revalidate delegated authority before each new persistent effect. */
   beforePersistentApply?: () => void;
+  /** Admit new identity input until its first successful publication. */
+  assertIdentityInputAllowed?: () => void;
   /** Prepare guided staged state at the last reversible edge before config publication. */
   prepareConfigCommit?: () => Promise<ConfigCommitReceipt | void>;
   /** Observe published config before post-commit bookkeeping that may still fail. */
@@ -245,7 +247,7 @@ async function evaluateMainCreationGate(
     const details = migration.outcomes.map(describeLegacySessionOutcome).join("; ");
     return createError(
       "legacy-session-migration-required",
-      `Cannot create agent "main": ${details}. Run openclaw doctor --fix, then retry.`,
+      `Cannot create agent "main": ${details}. Run paddy doctor --fix, then retry.`,
       agentId,
     );
   }
@@ -253,7 +255,7 @@ async function evaluateMainCreationGate(
   if (resolveSharedAuthStoreOwnership().location !== "state-db") {
     return createError(
       "shared-auth-store-owned-by-main",
-      'Cannot create agent "main" while agents/main/agent owns the shared auth store. Run openclaw doctor --fix to relocate shared auth, then retry.',
+      'Cannot create agent "main" while agents/main/agent owns the shared auth store. Run paddy doctor --fix to relocate shared auth, then retry.',
       agentId,
     );
   }
@@ -286,10 +288,12 @@ async function writeIdentityFile(params: {
     }
   }
   const content = mergeIdentityMarkdownContent(existing, params.identity);
-  // Root.write owns the admitted filesystem operation; finish our async reads
-  // before checking authority, without canceling an already-started write.
   params.beforePersistentApply?.();
-  await workspaceRoot.write(DEFAULT_IDENTITY_FILENAME, content, { encoding: "utf8" });
+  // Root.write rechecks after its own async preparation and before each mutation.
+  await workspaceRoot.write(DEFAULT_IDENTITY_FILENAME, content, {
+    encoding: "utf8",
+    assertBeforeMutation: params.beforePersistentApply,
+  });
 }
 
 export async function createAgent(params: CreateAgentParams): Promise<CreateAgentResult> {
@@ -332,6 +336,7 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
   const transformConfig = params.transformConfig ?? transformConfigFileWithRetry;
   let configCommitReceipt: ConfigCommitReceipt | undefined;
   let creating = false;
+  let identityPublished = false;
   let held: HeldAgentDatabase[] = [];
   const readCurrentHolds = () =>
     withExistingOpenClawStateDatabaseCurrentReadOnly(readAgentDeletionRecoveryHolds) ?? [];
@@ -359,6 +364,9 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
     automaticBootstrap && readCurrentHolds().some((entry) => entry.agentId === agentId);
   const beforePersistentApply = () => {
     params.beforePersistentApply?.();
+    if (!identityPublished) {
+      params.assertIdentityInputAllowed?.();
+    }
     assertRecoveryCurrent();
   };
 
@@ -609,6 +617,9 @@ export async function createAgent(params: CreateAgentParams): Promise<CreateAgen
               identity,
               beforePersistentApply,
             });
+            // Publish the config projection of these accepted bytes even if new
+            // uploads close; delegated and recovery authority remain live above.
+            identityPublished = true;
           }
           // The receipt owns compensation until the config transform publishes this result.
           beforePersistentApply();

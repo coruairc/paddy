@@ -10,11 +10,11 @@ title: "Slack QA"
 ## Slack QA
 
 ```bash
-pnpm openclaw qa slack
+pnpm paddy qa slack
 ```
 
 Targets one real private Slack channel with two distinct bots: a driver bot
-controlled by the harness and a SUT bot started by the child OpenClaw gateway
+controlled by the harness and a SUT bot started by the child Paddy gateway
 through the bundled Slack plugin.
 
 Once the Slack QA adapter loads, it requires async proxy capture support so write
@@ -31,8 +31,8 @@ native fixtures, Gateway replies, and runtime/config experiments. With an
 existing authenticated Convex CLI that can access the QA broker:
 
 ```bash
-pnpm openclaw qa slack --doctor
-pnpm openclaw qa slack \
+pnpm paddy qa slack --doctor
+pnpm paddy qa slack \
   --scenario-file qa/scenarios/channels/slack-e2e-lifecycle.yaml
 ```
 
@@ -196,12 +196,12 @@ then _Install to Workspace_:
 ```json
 {
   "display_information": {
-    "name": "OpenClaw QA Driver",
-    "description": "Test driver bot for OpenClaw QA Slack live lane"
+    "name": "Paddy QA Driver",
+    "description": "Test driver bot for Paddy QA Slack live lane"
   },
   "features": {
     "bot_user": {
-      "display_name": "OpenClaw QA Driver",
+      "display_name": "Paddy QA Driver",
       "always_online": true
     }
   },
@@ -240,12 +240,12 @@ reaction handling yet.
 ```json
 {
   "display_information": {
-    "name": "OpenClaw QA SUT",
-    "description": "OpenClaw QA SUT connector for OpenClaw"
+    "name": "Paddy QA SUT",
+    "description": "Paddy QA SUT connector for Paddy"
   },
   "features": {
     "bot_user": {
-      "display_name": "OpenClaw QA SUT",
+      "display_name": "Paddy QA SUT",
       "always_online": true
     },
     "app_home": {
@@ -320,8 +320,8 @@ In the QA workspace, create a channel (e.g. `#openclaw-qa`) and invite both
 bots from inside the channel:
 
 ```text
-/invite @OpenClaw QA Driver
-/invite @OpenClaw QA SUT
+/invite @Paddy QA Driver
+/invite @Paddy QA SUT
 ```
 
 Copy the `Cxxxxxxxxxx` id from _channel info → About → Channel ID_ - that
@@ -350,12 +350,12 @@ With `OPENCLAW_QA_CONVEX_SITE_URL` and `OPENCLAW_QA_CONVEX_SECRET_MAINTAINER`
 exported in your shell, register and verify:
 
 ```bash
-pnpm openclaw qa credentials add \
+pnpm paddy qa credentials add \
   --kind slack \
   --payload-file slack-creds.json \
   --note "QA Slack pool seed"
 
-pnpm openclaw qa credentials list --kind slack --status all --json
+pnpm paddy qa credentials list --kind slack --status all --json
 ```
 
 Expect `count: 1`, `status: "active"`, no `lease` field.
@@ -366,7 +366,7 @@ Run the lane locally to confirm both bots can talk to each other through the
 broker:
 
 ```bash
-pnpm openclaw qa slack \
+pnpm paddy qa slack \
   --credential-source convex \
   --credential-role maintainer \
   --output-dir .artifacts/qa-e2e/slack-local

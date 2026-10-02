@@ -3,9 +3,11 @@ import type {
   SystemAgentWizardCancel,
   WizardAnswer,
 } from "../../packages/gateway-protocol/src/index.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import type { RuntimeEnv } from "../runtime.js";
+import { createLazyRuntimeModule } from "../shared/lazy-runtime.js";
 import {
   sanitizeWizardStepForClient,
   WizardSession,
@@ -80,11 +82,24 @@ type ActiveWizardBridge = {
 
 const log = createSubsystemLogger("system-agent/chat-wizard-host");
 const WIZARD_CANCEL_HINT = "Say `cancel` to stop this setup.";
-let hostedRuntimePromise: Promise<HostedRuntime> | undefined;
-
-function loadHostedRuntime(): Promise<HostedRuntime> {
-  return (hostedRuntimePromise ??= import("./hosted-setup.runtime.js"));
-}
+const HOSTED_SETUP = {
+  skills: {
+    label: "skills",
+    dependency: "runSkillsSetupWizard",
+    runtime: "runHostedSkillsSetup",
+  },
+  search: {
+    label: "web search",
+    dependency: "runSearchSetupWizard",
+    runtime: "runHostedSearchSetup",
+  },
+  gateway: {
+    label: "gateway",
+    dependency: "runGatewaySetupWizard",
+    runtime: "runHostedGatewaySetup",
+  },
+} as const;
+const loadHostedRuntime = createLazyRuntimeModule(() => import("./hosted-setup.runtime.js"));
 
 function formatWizardOptions(step: WizardStep): string[] {
   return (step.options ?? []).map((option, index) => {
@@ -372,44 +387,19 @@ export class ChatWizardHost {
     });
   }
 
-  async startSkills(): Promise<ChatWizardResult> {
-    const run = this.options.dependencies?.runSkillsSetupWizard;
-    return await this.start({
-      kind: "skills",
-      label: "skills",
-      run: async (prompter) =>
-        await (run ?? (await loadHostedRuntime()).runHostedSkillsSetup)(
-          prompter,
-          this.options.beforePersistentApply,
-        ),
-    });
-  }
-
-  async startSearch(): Promise<ChatWizardResult> {
-    const run = this.options.dependencies?.runSearchSetupWizard;
-    return await this.start({
-      kind: "search",
-      label: "web search",
-      run: async (prompter) =>
-        await (run ?? (await loadHostedRuntime()).runHostedSearchSetup)(
-          prompter,
-          this.options.beforePersistentApply,
-        ),
-    });
-  }
-
-  async startGateway(): Promise<ChatWizardResult> {
-    const run = this.options.dependencies?.runGatewaySetupWizard;
+  async startSetup(kind: keyof typeof HOSTED_SETUP): Promise<ChatWizardResult> {
+    const setup = HOSTED_SETUP[kind];
+    const run = this.options.dependencies?.[setup.dependency];
     const result = await this.start({
-      kind: "gateway",
-      label: "gateway",
+      kind,
+      label: setup.label,
       run: async (prompter) =>
-        await (run ?? (await loadHostedRuntime()).runHostedGatewaySetup)(
+        await (run ?? (await loadHostedRuntime())[setup.runtime])(
           prompter,
           this.options.beforePersistentApply,
         ),
     });
-    if (this.options.surface !== "gateway" || !this.bridge) {
+    if (kind !== "gateway" || this.options.surface !== "gateway" || !this.bridge) {
       return result;
     }
     const warning = [
@@ -588,13 +578,13 @@ export class ChatWizardHost {
         this.bridge = null;
         const target =
           bridge.kind === "channel"
-            ? `Say \`open channel wizard\` and I'll hand you to the masked terminal wizard for ${bridge.label}, or run \`openclaw channels add --channel ${bridge.label}\` yourself later.`
+            ? `Say \`open channel wizard\` and I'll hand you to the masked terminal wizard for ${bridge.label}, or run \`paddy channels add --channel ${bridge.label}\` yourself later.`
             : bridge.kind === "gateway"
-              ? "Say `open gateway wizard` and I'll hand you to the masked terminal wizard, or run `openclaw configure --section gateway` yourself later."
-              : "Say `open search wizard` and I'll hand you to the masked terminal wizard, or run `openclaw configure --section web` yourself later.";
+              ? "Say `open gateway wizard` and I'll hand you to the masked terminal wizard, or run `paddy configure --section gateway` yourself later."
+              : "Say `open search wizard` and I'll hand you to the masked terminal wizard, or run `paddy configure --section web` yourself later.";
         return {
           text: [
-            "Sensitive input is not accepted in the OpenClaw chat because terminal input is visible.",
+            `Sensitive input is not accepted in the ${PRODUCT_NAME} chat because terminal input is visible.`,
             target,
           ].join("\n"),
           configWritten: false,

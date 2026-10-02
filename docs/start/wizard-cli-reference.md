@@ -1,8 +1,8 @@
 ---
-summary: "Step-by-step behavior for openclaw onboard: what each step does, config it writes, and internals"
+summary: "Step-by-step behavior for paddy onboard: what each step does, config it writes, and internals"
 doc-schema-version: 1
 read_when:
-  - You need detailed behavior for a specific openclaw onboard step
+  - You need detailed behavior for a specific paddy onboard step
   - You are debugging onboarding results or integrating onboarding clients
 title: "CLI setup reference"
 sidebarTitle: "CLI reference"
@@ -11,7 +11,7 @@ sidebarTitle: "CLI reference"
 This page covers step-by-step onboarding behavior, outputs, and internals.
 For a walkthrough, see [Onboarding (CLI)](/start/wizard). For the full CLI flag
 reference (every `--flag`, non-interactive examples, provider-specific
-commands), see [`openclaw onboard`](/cli/onboard).
+commands), see [`paddy onboard`](/cli/onboard).
 
 ## What the wizard does
 
@@ -23,7 +23,7 @@ detected AI access, verifies it, saves config, and opens the web
 dashboard with a foreground Gateway. It uses agent name `main` and full access,
 leaves telemetry consent unset, and skips route confirmation, memory import,
 and app recommendations. **Ctrl+C** stops the Gateway without removing config;
-`openclaw gateway install` enables background operation later.
+`paddy gateway install` enables background operation later.
 
 Custom setup keeps the full guided prompts. If Quick start finds no usable
 route, it continues with manual provider setup and the remaining guided steps,
@@ -31,7 +31,7 @@ including Gateway service installation. The Quick start defaults for agent name
 (`main`), access mode (full access), and telemetry (consent unset) stay.
 See [Guided default](/start/wizard#guided-default).
 
-The classic wizard (`openclaw onboard --classic`) in local mode walks you through:
+The classic wizard (`paddy onboard --classic`) in local mode walks you through:
 
 - Workspace location and bootstrap files
 - Model and auth setup (Anthropic, OpenAI Code subscription OAuth, xAI, OpenCode, custom endpoints, and more provider-owned auth flows)
@@ -81,7 +81,7 @@ described [above](/start/wizard-cli-reference#what-the-wizard-does).
       `--import-source`, and `--import-secrets`) cannot be combined with
       `--reset`; run the import without `--reset`.
     - Without `--reset`, invalid config or legacy keys stop the wizard and ask
-      you to run `openclaw doctor` before continuing.
+      you to run `paddy doctor` before continuing.
 
   </Step>
   <Step title="Risk acknowledgment">
@@ -97,6 +97,12 @@ described [above](/start/wizard-cli-reference#what-the-wizard-does).
   </Step>
   <Step title="Workspace">
     - Default `~/.openclaw/workspace` (configurable).
+    - The prompt and `--workspace` reject files, non-directory ancestors,
+      dangling symbolic links, and symlink loops at the workspace path or any
+      ancestor, identifying the failing path. Other inspection failures, such
+      as permission errors, are reported, not treated as missing directories.
+      Missing directories and symbolic links to existing directories are
+      allowed.
     - Seeds workspace files needed for first-run bootstrap.
     - On rerun, an existing agent roster keeps its fleet-wide workspace unless
       you explicitly confirm the move. Non-interactive reruns warn and preserve
@@ -141,13 +147,13 @@ described [above](/start/wizard-cli-reference#what-the-wizard-does).
     - Other bundled or separately installed channel plugins can add their own
       onboarding steps. See the complete [channel catalog](/channels).
     - DM security: default is pairing. First DM sends a code; approve via
-      `openclaw pairing approve <channel> <code>` or use allowlists.
+      `paddy pairing approve <channel> <code>` or use allowlists.
   </Step>
   <Step title="Web search">
     - Pick a provider (Brave, Codex Hosted Search, DuckDuckGo, Exa, Firecrawl,
       Gemini, Grok, Kimi, MiniMax Search, Ollama Web Search, Parallel,
       Perplexity, SearXNG, or Tavily) or skip.
-    - Skip this step with `--skip-search`; reconfigure later with `openclaw configure --section web`.
+    - Skip this step with `--skip-search`; reconfigure later with `paddy configure --section web`.
 
   </Step>
   <Step title="Skills">
@@ -156,7 +162,7 @@ described [above](/start/wizard-cli-reference#what-the-wizard-does).
     - Installs optional dependencies for trusted bundled skills when the required
       installer is available.
     - Skips unavailable Homebrew, uv, and Go installers, then groups the affected
-      skills with manual setup guidance. Run `openclaw doctor` after installing
+      skills with manual setup guidance. Run `paddy doctor` after installing
       the missing prerequisites.
 
   </Step>
@@ -167,9 +173,10 @@ described [above](/start/wizard-cli-reference#what-the-wizard-does).
       - Wizard attempts `loginctl enable-linger <user>` so gateway stays up after logout.
       - May prompt for sudo (writes `/var/lib/systemd/linger`); it tries without sudo first.
     - Native Windows: Scheduled Task first
-      - If task creation is denied, OpenClaw falls back to a per-user Startup-folder login item and starts the gateway immediately.
+      - If task creation is denied, Paddy falls back to a per-user Startup-folder login item and starts the gateway immediately.
       - Scheduled Tasks remain preferred because they provide better supervisor status.
     - Runtime selection: Node is the primary, default, and recommended runtime. Bun 1.4+ with WAL-reset-safe `node:sqlite` is available as an explicit opt-in.
+      QuickStart reports the runtime selected by the install plan, including Bun when no supported Node is available on a Bun-only first install.
     - A SecretRef-managed `gateway.auth.token` is validated without copying its
       resolved plaintext value into supervisor service metadata. An unresolved
       token ref blocks daemon installation with remediation guidance.
@@ -179,8 +186,8 @@ described [above](/start/wizard-cli-reference#what-the-wizard-does).
 
   </Step>
   <Step title="Health check">
-    - Starts gateway (if needed) and runs `openclaw health`.
-    - `openclaw status --deep` adds the live gateway health probe to status output, including channel probes when supported.
+    - Starts gateway (if needed) and runs `paddy health`.
+    - `paddy status --deep` adds the live gateway health probe to status output, including channel probes when supported.
 
   </Step>
   <Step title="Finish">
@@ -256,7 +263,7 @@ on a different release.
   <Accordion title="Anthropic setup token">
     Supports the long-lived token created by `claude setup-token`. Choose
     **Anthropic setup-token** during onboarding, or manage it later with
-    [`openclaw models auth`](/cli/models#auth-profiles).
+    [`paddy models auth`](/cli/models#auth-profiles).
   </Accordion>
   <Accordion title="OpenAI Code subscription (OAuth)">
     Browser flow; paste `code#state`.
@@ -281,12 +288,12 @@ on a different release.
 
     Adding or reauthenticating OpenAI preserves an existing explicit primary
     model, including `openai/gpt-5.5`. If the account does not expose GPT-5.6,
-    select `openai/gpt-5.5` explicitly; OpenClaw does not silently downgrade it.
+    select `openai/gpt-5.5` explicitly; Paddy does not silently downgrade it.
 
   </Accordion>
   <Accordion title="xAI (Grok) OAuth">
     Browser sign-in for eligible SuperGrok or X Premium accounts. This is the
-    recommended xAI path for most users. OpenClaw stores the resulting auth
+    recommended xAI path for most users. Paddy stores the resulting auth
     profile for Grok models, Grok `web_search`, `x_search`, and `code_execution`.
   </Accordion>
   <Accordion title="xAI (Grok) device code">
@@ -339,6 +346,7 @@ on a different release.
   </Accordion>
   <Accordion title="Custom provider">
     Works with OpenAI-compatible, OpenAI Responses-compatible, and Anthropic-compatible endpoints.
+    The API base URL must use `http://` or `https://`; other URL schemes are rejected before verification.
 
     Interactive onboarding supports the same API key storage choices as other provider API key flows:
     - **Paste API key now** (plaintext)
@@ -397,7 +405,7 @@ Credential storage mode:
   - Existing resolvable named auth profiles are reused unchanged, including existing `env`, `file`, `exec`, and `store` references; no new `apiKey` or `keyRef` is written and no additional provider env var is required.
   - For new custom-provider credentials, non-interactive `ref` mode stores `models.providers.<id>.apiKey` as `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`.
   - In that custom-provider case, `--custom-api-key` requires `CUSTOM_API_KEY` to be set; otherwise onboarding fails fast.
-  - Existing plaintext profile credentials remain unchanged; reference mode does not migrate them. Run `openclaw secrets configure --apply`, then `openclaw secrets audit --check`. See [Secrets management](/gateway/secrets).
+  - Existing plaintext profile credentials remain unchanged; reference mode does not migrate them. Run `paddy secrets configure --apply`, then `paddy secrets audit --check`. See [Secrets management](/gateway/secrets).
 - Gateway setup generates a secret in token mode by default. Interactive storage
   choices are **Generate/store plaintext secret** (default) or **Use SecretRef**.
   Existing password mode, `--gateway-auth password`, or `--gateway-password <value>`
@@ -413,7 +421,7 @@ Run auth setup **on the Gateway host**, using the same OS user and state directo
 as the Gateway. Over SSH, use an interactive terminal:
 
 ```bash
-openclaw configure --section model
+paddy configure --section model
 ```
 
 Choose your provider's supported auth method. For a browser OAuth flow, open the
@@ -423,7 +431,7 @@ offers device-code login, complete the displayed URL/code in your local browser
 while the Gateway host's login process waits. The completed login persists the
 credential on that host in SQLite; no credential file handoff is needed.
 
-For a specific agent, run `openclaw models auth login --provider <id> --agent <agentId>`
+For a specific agent, run `paddy models auth login --provider <id> --agent <agentId>`
 on the Gateway host. See [Models CLI](/cli/models#auth-profiles) and
 [OAuth](/concepts/oauth).
 
@@ -433,7 +441,7 @@ For unattended setup, use a provider API key with
 the Gateway service as well as the onboarding process. See
 [Authentication](/gateway/authentication).
 
-Verify the result on the Gateway host with `openclaw models status` (add
+Verify the result on the Gateway host with `paddy models status` (add
 `--agent <agentId>` for a specific agent). Remote-client onboarding only configures
 the local client connection; it does not set up provider credentials on the server.
 Do not copy `auth-profiles.json` or replace a SQLite database to transfer a login.
@@ -447,7 +455,7 @@ Typical fields in `~/.openclaw/openclaw.json`:
 - `agents.defaults.model` and provider config when the selected provider needs it
 - `tools.profile` (local onboarding selects `"full"` when unset, including on a rerun; explicit profiles and other tool policies are preserved). Full tool selection is not Full Access execution permissions. See [Tool profiles](/gateway/config-tools/tool-policy#tool-profiles).
 - `gateway.*` (mode, bind, auth, tailscale)
-- `session.dmScope` (onboarding preserves explicit values and otherwise leaves it unset, so the `main` default keeps all direct messages across channels in the agent's rolling main session—the personal-agent default. For shared or multi-user inboxes, use `per-channel-peer`; `openclaw security audit` recommends isolation when it detects multi-user DM traffic)
+- `session.dmScope` (onboarding preserves explicit values and otherwise leaves it unset, so the `main` default keeps all direct messages across channels in the agent's rolling main session—the personal-agent default. For shared or multi-user inboxes, use `per-channel-peer`; `paddy security audit` recommends isolation when it detects multi-user DM traffic)
 - `channels.telegram.botToken`, `channels.discord.token`, `channels.matrix.*`, `channels.signal.*`, `channels.imessage.*`
 - Channel allowlists when you opt in during prompts. Discord, Matrix,
   Microsoft Teams, and Slack resolve names to IDs when possible; other channels
@@ -462,7 +470,7 @@ Typical fields in `~/.openclaw/openclaw.json`:
 - `wizard.lastRunMode`
 - `wizard.securityAcknowledgedAt`
 
-`openclaw agents add` writes `agents.entries.*` and optional `bindings`.
+`paddy agents add` writes `agents.entries.*` and optional `bindings`.
 
 WhatsApp credentials go under `~/.openclaw/credentials/whatsapp/<accountId>/`.
 Active sessions and transcripts are stored in
@@ -487,14 +495,14 @@ The results screen lists the detected applications and shows: "App names were ma
 powerful and full system access is risky):
 
 ```bash
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --auth-choice apiKey \
   --anthropic-api-key "$ANTHROPIC_API_KEY"
 ```
 
 `--mode` defaults to `local`. `--json` changes output format but does not imply
 non-interactive mode. For complete flag semantics and Gateway SecretRef
-examples, see [`openclaw onboard`](/cli/onboard). Provider-specific scripts live
+examples, see [`paddy onboard`](/cli/onboard). Provider-specific scripts live
 in [CLI automation](/start/wizard-cli-automation).
 
 ## Gateway wizard RPC
@@ -527,4 +535,4 @@ than automatically retrying or claiming successful activation.
 
 - Onboarding hub: [Onboarding (CLI)](/start/wizard)
 - Automation and scripts: [CLI Automation](/start/wizard-cli-automation)
-- Command reference: [`openclaw onboard`](/cli/onboard)
+- Command reference: [`paddy onboard`](/cli/onboard)

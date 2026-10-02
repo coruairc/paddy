@@ -3,6 +3,7 @@ import type { DatabaseSync } from "node:sqlite";
 import { isDeepStrictEqual } from "node:util";
 import type { MessagePort } from "node:worker_threads";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../../brand.js";
 import { clearNodeSqliteKyselyCacheForDatabase } from "../../infra/kysely-sync-cache-state.js";
 import { sqliteReaderDatabasePathKey } from "../../infra/sqlite-reader-lifecycle.js";
 import { onSqliteWalCheckpoint } from "../../infra/sqlite-wal-checkpoint.js";
@@ -30,6 +31,7 @@ import {
 } from "../../state/openclaw-agent-db.js";
 import { closeOpenClawStateDatabaseByPath } from "../../state/openclaw-state-db-cache.js";
 import type { CanonicalSessionValidationResult } from "./session-accessor.sqlite-contract.js";
+import { assertSessionSubagentRunsCurrent } from "./session-accessor.sqlite-descendant-basis.js";
 import type { SqliteSessionReclamationPlan } from "./session-accessor.sqlite-lifecycle-types.js";
 import {
   markSqliteReclamationSettled,
@@ -41,7 +43,7 @@ import type {
   SqliteReclamationWorkerRequest,
   SqliteReclamationWorkerCloseRequest,
   SqliteReclamationWorkerMessage,
-} from "./session-accessor.sqlite-reclamation-worker.js";
+} from "./session-accessor.sqlite-reclamation-worker.types.js";
 import { withWorkerWriteAdmission } from "./session-accessor.sqlite-worker-admission.runtime.js";
 import {
   runWithSqliteMutationWorkerCoordination,
@@ -84,7 +86,7 @@ function throwReclamationFailure(
   if (!cleanup.settled) {
     throw new AggregateError(
       [error, ...cleanup.cleanupWarnings.map((warning) => new Error(warning))],
-      "SQLite session reclamation failed and Worker cleanup is incomplete; restart OpenClaw before deleting the owning agent",
+      `SQLite session reclamation failed and Worker cleanup is incomplete; restart ${PRODUCT_NAME} before deleting the owning agent`,
       { cause: error },
     );
   }
@@ -325,13 +327,17 @@ export async function runReclamationWorkerPort(
                   // Deferred periodic work outside this synchronous page unit still needs its relay.
                   checkpointResultOwnedByRequest =
                     request.type === "reclaim" && request.plan.kind === "maintenance-pages";
-                  const authorizeCommit = () =>
+                  const authorizeCommit = () => {
                     waitForSqliteReclamationCommit(request.commitGate, () =>
                       port.postMessage({
                         type: "commit-request",
                         operationId,
                       } satisfies SqliteReclamationWorkerMessage),
                     );
+                    if (request.type === "reclaim") {
+                      assertSessionSubagentRunsCurrent(request.plan, options.env);
+                    }
+                  };
                   const reclaimed =
                     request.type === "canonical-validation"
                       ? runOpenClawAgentWriteTransaction(
@@ -402,6 +408,13 @@ export async function runReclamationWorkerPort(
                   clearNodeSqliteKyselyCacheForDatabase(database.db);
                 }
               },
+              request.type === "reclaim" && request.plan.kind === "maintenance-plan"
+                ? (protection) => {
+                    if (request.plan.kind === "maintenance-plan") {
+                      Object.assign(request.plan.input, protection);
+                    }
+                  }
+                : undefined,
             ).finally(() => maintenance?.release());
             return {
               type: "reclaimed",

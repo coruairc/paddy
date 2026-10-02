@@ -1,34 +1,34 @@
 ---
-summary: "CLI reference for `openclaw tui` (Gateway-backed or local embedded terminal UI)"
+summary: "CLI reference for `paddy tui` (Gateway-backed or local embedded terminal UI)"
 read_when:
   - You want a terminal UI for the Gateway (remote-friendly)
   - You want to pass url/token/session from scripts
   - You want to run the TUI in local embedded mode without a Gateway
-  - You want to use openclaw chat or openclaw tui --local
-title: "openclaw tui"
+  - You want to use paddy chat or paddy tui --local
+title: "paddy tui"
 ---
 
-# `openclaw tui`
+# `paddy tui`
 
 Open the terminal UI connected to the Gateway, or run it in local embedded
 mode.
 
 ```bash
-openclaw tui [target]
+paddy tui [target]
 ```
 
 `target` can be a Control UI session URL, a compact `host/agent/ref`, a bare
 short reference such as `movies-a1166b81`, or a literal `agent:...` session key.
 A URL or host target authoritatively selects that Gateway; a bare reference
 uses the configured or default Gateway. You can also paste a Control UI URL
-directly as `openclaw <url>` and place the TUI options before or after it, for example
-`openclaw <url> --token <token> --deliver`.
+directly as `paddy <url>` and place the TUI options before or after it, for example
+`paddy <url> --token <token> --deliver`.
 
 The bare-URL form accepts `--token`, `--password`, `--tls-fingerprint`,
 `--deliver`, `--thinking`, `--message`, `--timeout-ms`, and `--history-limit`.
 URL-valued messages work in either position, including
-`openclaw --message https://example.com/article <url>`.
-Use `openclaw tui <url>` when you need another TUI option; `--local`, `--url`,
+`paddy --message https://example.com/article <url>`.
+Use `paddy tui <url>` when you need another TUI option; `--local`, `--url`,
 and `--session` conflict with a session URL.
 
 Related guide: [TUI](/web/tui)
@@ -49,7 +49,7 @@ Related guide: [TUI](/web/tui)
 | `--timeout-ms <ms>`          | `agents.defaults.timeoutSeconds`          | Agent timeout. Invalid values log a warning and are ignored.                       |
 | `--history-limit <n>`        | `200`                                     | History entries to load on attach.                                                 |
 
-Aliases: `openclaw chat` and `openclaw terminal` invoke this command with
+Aliases: `paddy chat` and `paddy terminal` invoke this command with
 `--local` implied.
 
 ## Notes
@@ -86,7 +86,7 @@ Aliases: `openclaw chat` and `openclaw terminal` invoke this command with
 - Local mode requires exclusive ownership of the configured state directory. It
   refuses to start while a Gateway or another embedded writer owns that state;
   run without `--local` to use the active Gateway, or stop it first with
-  `openclaw gateway stop`.
+  `paddy gateway stop`.
 - Local mode adds `/auth [provider]` to the TUI command surface.
 - Plugin approval gates still apply in local mode: tools that require approval
   prompt for a decision in the terminal, nothing is silently auto-approved.
@@ -94,35 +94,35 @@ Aliases: `openclaw chat` and `openclaw terminal` invoke this command with
   both modes. Esc collapses a prompt without answering; `/question` reopens it.
 - Gateway mode accepts [`secrets`](/tools/secrets) requests in a masked input
   with a read-only allowed-host list. Local mode cannot fulfill store-bound
-  requests; use `openclaw secrets store` or the Control UI with a running Gateway.
+  requests; use `paddy secrets store` or the Control UI with a running Gateway.
 - Session [goals](/tools/goal) appear in the footer and can be managed with
   `/goal`.
 
 ## Session target errors
 
-| Failure                                    | Recovery                                                                                                                                         |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| The Gateway predates short-link resolution | Copy the full session key from that Gateway's Control UI.                                                                                        |
-| Session missing or short ref ambiguous     | For the configured/local Gateway, run `openclaw sessions list`; for a URL/host target, choose a longer or full key in that Gateway's Control UI. |
-| Gateway unreachable                        | The error names the selected origin. For a `*.ts.net` host, connect Tailscale and confirm the Gateway is reachable on the tailnet.               |
-| Identity-aware proxy rejected the upgrade  | Configure `gateway.remote.edgeAuth` for the configured remote Gateway; the error includes the relevant remote-access docs link.                  |
-| Stored device token revoked or rotated     | Rotate it with `openclaw devices rotate --device <deviceId> --role operator`, then reconnect.                                                    |
-| TLS certificate pin mismatch               | The original TLS fingerprint error passes through unchanged; verify the configured or explicit pin before retrying.                              |
+| Failure                                    | Recovery                                                                                                                                      |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| The Gateway predates short-link resolution | Copy the full session key from that Gateway's Control UI.                                                                                     |
+| Session missing or short ref ambiguous     | For the configured/local Gateway, run `paddy sessions list`; for a URL/host target, choose a longer or full key in that Gateway's Control UI. |
+| Gateway unreachable                        | The error names the selected origin. For a `*.ts.net` host, connect Tailscale and confirm the Gateway is reachable on the tailnet.            |
+| Identity-aware proxy rejected the upgrade  | Configure `gateway.remote.edgeAuth` for the configured remote Gateway; the error includes the relevant remote-access docs link.               |
+| Stored device token revoked or rotated     | Rotate it with `paddy devices rotate --device <deviceId> --role operator`, then reconnect.                                                    |
+| TLS certificate pin mismatch               | The original TLS fingerprint error passes through unchanged; verify the configured or explicit pin before retrying.                           |
 
 ## Examples
 
 ```bash
-openclaw chat
-openclaw tui --local
-openclaw tui
-openclaw tui https://gateway.example/dashboard/main/movies-a1166b81
-openclaw https://gateway.example/dashboard/main/movies-a1166b81 --token <token>
-openclaw tui movies-a1166b81
-openclaw tui --url ws://127.0.0.1:18789 --token <token>
-openclaw tui --session main --deliver
-openclaw chat --message "Compare my config to the docs and tell me what to fix"
+paddy chat
+paddy tui --local
+paddy tui
+paddy tui https://gateway.example/dashboard/main/movies-a1166b81
+paddy https://gateway.example/dashboard/main/movies-a1166b81 --token <token>
+paddy tui movies-a1166b81
+paddy tui --url ws://127.0.0.1:18789 --token <token>
+paddy tui --session main --deliver
+paddy chat --message "Compare my config to the docs and tell me what to fix"
 # when run inside an agent workspace, infers that agent automatically
-openclaw tui --session bugfix
+paddy tui --session bugfix
 ```
 
 ## Config repair loop
@@ -130,25 +130,25 @@ openclaw tui --session bugfix
 Use local mode to have the embedded agent inspect the current config, compare
 it against the docs, and help repair it from the same terminal.
 
-If `openclaw config validate` is already failing, run `openclaw configure` or
-`openclaw doctor --fix` first; `openclaw chat` does not bypass the
+If `paddy config validate` is already failing, run `paddy configure` or
+`paddy doctor --fix` first; `paddy chat` does not bypass the
 invalid-config guard.
 
 ```bash
-openclaw chat
+paddy chat
 ```
 
 Then inside the TUI:
 
 ```text
-!openclaw config file
-!openclaw docs gateway auth token secretref
-!openclaw config validate
-!openclaw doctor
+!paddy config file
+!paddy docs gateway auth token secretref
+!paddy config validate
+!paddy doctor
 ```
 
-Apply targeted fixes with `openclaw config set` or `openclaw configure`, then
-rerun `openclaw config validate`. See [TUI](/web/tui) and
+Apply targeted fixes with `paddy config set` or `paddy configure`, then
+rerun `paddy config validate`. See [TUI](/web/tui) and
 [Config](/cli/config).
 
 ## Related
@@ -158,5 +158,5 @@ rerun `openclaw config validate`. See [TUI](/web/tui) and
 - [Control UI URLs](/web/urls)
 - [Devices](/cli/devices)
 - [Goal](/tools/goal)
-- [`openclaw attach`](/cli/attach) — launch Claude Code with a temporary session-scoped Gateway MCP grant
-- [`openclaw resume`](/cli/resume) — attach this TUI to an existing Gateway session
+- [`paddy attach`](/cli/attach) — launch Claude Code with a temporary session-scoped Gateway MCP grant
+- [`paddy resume`](/cli/resume) — attach this TUI to an existing Gateway session

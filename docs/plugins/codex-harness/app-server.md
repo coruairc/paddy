@@ -8,11 +8,11 @@ title: "Codex app-server policy"
 sidebarTitle: "App-server policy"
 ---
 
-How OpenClaw starts and authenticates the Codex app-server, and what it isolates from the operator environment. Part of the [Codex harness](/plugins/codex-harness) guide; [Where each section moved](/plugins/codex-harness#where-each-section-moved) lists every section.
+How Paddy starts and authenticates the Codex app-server, and what it isolates from the operator environment. Part of the [Codex harness](/plugins/codex-harness) guide; [Where each section moved](/plugins/codex-harness#where-each-section-moved) lists every section.
 
 ## App-server policy
 
-By default, the plugin starts OpenClaw's managed Codex binary locally with
+By default, the plugin starts Paddy's managed Codex binary locally with
 stdio transport. Set `appServer.command` only to intentionally run a
 different executable. Verified setup accepts a native Codex executable or the
 official `@openai/codex` npm entrypoint, including its installed symlink or
@@ -42,13 +42,13 @@ already running elsewhere:
 }
 ```
 
-Ask OpenClaw can verify an already configured model through an explicitly
+Ask Paddy can verify an already configured model through an explicitly
 configured WebSocket or Unix socket app-server. The initial Codex setup and
 sign-in flow still requires local stdio; finish sign-in on the remote host and
 configure the remote endpoint before using this verification path.
 Remote verification binds the selected endpoint,
 connection credentials, and initialized Codex identity. It trusts that configured
-service; it does not attest the remote executable's bytes. OpenClaw rechecks the
+service; it does not attest the remote executable's bytes. Paddy rechecks the
 connection selection before reuse and compares the initialized identity on a
 new connection before starting a thread. Endpoint, credential, version, or
 reported Codex home/platform changes require fresh inference verification.
@@ -65,23 +65,30 @@ operator action is required. Ping and pong frames are transport-level health
 checks: they do not start a Codex turn or invoke a model. Local stdio and Unix
 transports do not perform these remote connection checks.
 
+When a caller needs a connection during remote replacement, acquisition makes up
+to three connection attempts within the caller's timeout and
+cancellation scope. This applies only when the WebSocket never opened, so no
+buffered initialization frame reached the server. Authentication and certificate
+errors fail immediately. Requests on an opened connection, including model turns
+and tool execution, are not replayed by this recovery.
+
 WebSocket and Unix socket shutdown settles when the connection closes, including
 when the server disconnected first. If the peer cannot complete the closing
-handshake, OpenClaw terminates its socket at the shutdown deadline. A closed
+handshake, Paddy terminates its socket at the shutdown deadline. A closed
 connection does not prove that work on the remote app-server has stopped.
 
 Local stdio app-server sessions default to the trusted local operator
 posture: `approvalPolicy: "never"`, `approvalsReviewer: "user"`, and
 `sandbox: "danger-full-access"`. If local Codex requirements disallow that
-implicit YOLO posture, OpenClaw selects allowed guardian permissions
-instead. When an OpenClaw sandbox is active for the session, OpenClaw
+implicit YOLO posture, Paddy selects allowed guardian permissions
+instead. When a Paddy sandbox is active for the session, Paddy
 disables Codex native Code Mode, user MCP servers, and app-backed plugin
 execution for that turn instead of relying on Codex host-side sandboxing.
-Shell access instead goes through OpenClaw sandbox-backed dynamic tools such
+Shell access instead goes through Paddy sandbox-backed dynamic tools such
 as `sandbox_exec` and `sandbox_process` when the normal exec/process tools
 are available.
 
-Use normalized OpenClaw exec mode for Codex native auto-review before
+Use normalized Paddy exec mode for Codex native auto-review before
 sandbox escapes or extra permissions:
 
 ```json5
@@ -105,11 +112,11 @@ For Codex app-server sessions, `tools.exec.mode: "auto"` maps to Codex
 Guardian-reviewed approvals: usually `approvalPolicy: "on-request"`,
 `approvalsReviewer: "auto_review"`, and `sandbox: "workspace-write"` when
 local requirements allow those values. In `tools.exec.mode: "auto"`,
-OpenClaw does not preserve legacy unsafe Codex `approvalPolicy: "never"` or
+Paddy does not preserve legacy unsafe Codex `approvalPolicy: "never"` or
 `sandbox: "danger-full-access"` overrides; use `tools.exec.mode: "full"` for
 an intentional no-approval Codex posture. The legacy
 `plugins.entries.codex.config.appServer.mode: "guardian"` preset still
-works, but `tools.exec.mode: "auto"` is the normalized OpenClaw surface.
+works, but `tools.exec.mode: "auto"` is the normalized Paddy surface.
 
 For the mode-level comparison with host exec approvals and ACPX
 permissions, see [Permission modes](/tools/permission-modes). For every
@@ -119,7 +126,7 @@ see [Codex harness reference](/plugins/codex-harness-reference).
 ### Native approval audit evidence
 
 With `tools.exec.mode: "ask"` and the Codex user reviewer, native command and
-file prompts use OpenClaw's two-phase operator approval route. The prompt shows
+file prompts use Paddy's two-phase operator approval route. The prompt shows
 only decisions that the native request can preserve. A command with only a
 one-shot native decision offers allow-once and deny; byte-bound script approvals
 also remain one-shot. File prompts support both one-shot and session approval.
@@ -130,18 +137,18 @@ applying and saving that rule; the approval event reports the requested amendmen
 not confirmation that it was saved. Automatic command and file approvals remain
 one-shot and never select a persistent policy amendment.
 
-If another connected Codex client answers a native approval request, OpenClaw
+If another connected Codex client answers a native approval request, Paddy
 dismisses the matching pending prompt without sending a second answer or treating
 that resolution as a timeout or tool failure.
 
 Terminal operator decisions reuse the Gateway's authoritative approval row and
 its exact execution binding. When execution identity collection is enabled,
 inspect the admitted run with
-[`openclaw audit --run <run-id> --explain`](/cli/audit). The resulting receipt
+[`paddy audit --run <run-id> --explain`](/cli/audit). The resulting receipt
 can report allow-once, allow-always, denial, no-route, expiry, or cancellation
 without exposing command text, patch content, paths, or native request ids.
 
-Codex auto-review, full-access policy, and native hook or OpenClaw policy
+Codex auto-review, full-access policy, and native hook or Paddy policy
 decisions do not create an operator approval row. Missing or stale native turn
 context is rejected before routing. These cases therefore do not produce an
 enforced operator-approval receipt; audit inspection does not reconstruct one
@@ -152,14 +159,14 @@ from later tool events.
 In the default per-agent home, auth is selected in this order:
 
 1. Ordered OpenAI auth profiles for the agent, preferably under
-   `auth.order.openai`. Run `openclaw doctor --fix` to migrate older legacy
+   `auth.order.openai`. Run `paddy doctor --fix` to migrate older legacy
    Codex auth profile ids and legacy Codex auth order.
 2. The app-server's existing account in that agent's Codex home.
 3. For local stdio app-server launches only, `CODEX_API_KEY`, then
    `OPENAI_API_KEY`, when no app-server account is present and OpenAI auth
    is still required.
 
-When OpenClaw sees a ChatGPT subscription-style Codex auth profile, it
+When Paddy sees a ChatGPT subscription-style Codex auth profile, it
 removes `CODEX_API_KEY` and `OPENAI_API_KEY` from the spawned Codex child
 process. That keeps Gateway-level API keys available for embeddings or
 direct OpenAI models without making native Codex app-server turns bill
@@ -169,7 +176,7 @@ child-process env. WebSocket app-server connections do not receive Gateway
 env API-key fallback; use an explicit auth profile or the remote
 app-server's own account.
 
-If a subscription profile hits a Codex usage limit, OpenClaw records the
+If a subscription profile hits a Codex usage limit, Paddy records the
 reset time when Codex reports one and tries the next ordered auth profile
 for the same Codex run. When the reset time passes, the subscription
 profile becomes eligible again without changing the selected `openai/gpt-*`
@@ -181,7 +188,7 @@ still supply a scheduled reset hint; that hint does not guarantee renewed
 availability. Feature-specific resets remain separate from ordinary account
 permission.
 
-When native Codex plugins are configured, OpenClaw reads and caches one
+When native Codex plugins are configured, Paddy reads and caches one
 runtime-and-workspace-scoped `plugin/installed` snapshot. That one snapshot
 covers configured plugins from Codex-discovered marketplaces, including
 disabled plugin ownership. `plugin/read` resolves only explicitly configured
@@ -191,32 +198,32 @@ owner- or administrator-authorized installation path. Routine thread setup
 retains existing explicitly configured curated-plugin recovery.
 
 `app/installed` supplies the installed app runtime snapshot, and `app/read`
-supplies authenticated app metadata in batches of at most 100 app IDs. OpenClaw
+supplies authenticated app metadata in batches of at most 100 app IDs. Paddy
 force-refreshes a cold snapshot once and consolidates successful curated
 installations into one app-inventory refresh. Ordinary cached reads do not
 force a connector refresh for every thread.
 
 An authorized app can initially appear disabled or non-callable because Codex
 has not yet applied the target thread's restrictive app configuration.
-OpenClaw provisionally admits only explicitly allowed, ownership-proven apps,
+Paddy provisionally admits only explicitly allowed, ownership-proven apps,
 starts the thread with `_default.enabled = false`, and reads `app/installed`
 once with that thread's ID and `forceRefresh: false`. Missing, disabled, or
 non-callable apps produce one warning without blocking unrelated chat or
 heartbeat runs. Codex still enforces app/tool permissions, managed restrictions,
 and workspace policy; continuing the conversation does not enable an unavailable app.
 
-The check runs before OpenClaw starts a turn or commits a thread binding. If the
+The check runs before Paddy starts a turn or commits a thread binding. If the
 snapshot request fails, a persistent provisional thread is deleted and an
-ephemeral thread is unsubscribed. If cleanup cannot be confirmed, OpenClaw retires the app-server
+ephemeral thread is unsubscribed. If cleanup cannot be confirmed, Paddy retires the app-server
 connection instead of reusing an unsafe thread.
 
 Account-wide app access never overrides an explicitly disabled configured
-workspace plugin. When `app/read` omits that plugin's ownership, OpenClaw uses
+workspace plugin. When `app/read` omits that plugin's ownership, Paddy uses
 the `plugin/installed` snapshot and reads only the exact configured plugin's
 details to keep its apps denied. This check never installs, enables, or
 authenticates the plugin.
 
-OpenClaw does not install unknown apps or let the model authorize new plugin
+Paddy does not install unknown apps or let the model authorize new plugin
 installs. Owner-approved plugin installation refreshes the target runtime
 inventory. Missing inventory methods, authentication errors, transport
 failures, and connector refresh failures fail closed.
@@ -246,26 +253,26 @@ connection or recreate the automation from a fresh authenticated owner turn.
 Account changes that remove access to a captured app also fail visibly.
 
 Before rolling back to a build without configured-endpoint authority and cron
-authority hydration, disable these jobs with `openclaw automations disable <id>`
-and verify them with `openclaw automations list --all`. Do not rely on an older
+authority hydration, disable these jobs with `paddy automations disable <id>`
+and verify them with `paddy automations list --all`. Do not rely on an older
 binary to enforce the new authority envelope. Keep the jobs disabled until you
 return to a supporting build or recreate them under that build's supported auth
 path. See [Automations](/automation/cron-jobs) for run history and failure handling.
 
 ## Environment isolation
 
-For local stdio app-server launches, OpenClaw sets `CODEX_HOME` to a
+For local stdio app-server launches, Paddy sets `CODEX_HOME` to a
 per-agent directory so Codex config, auth/account files, plugin cache/data,
 and native thread state do not read or write the operator's personal
-`~/.codex` by default. OpenClaw preserves the normal process `HOME`;
+`~/.codex` by default. Paddy preserves the normal process `HOME`;
 Codex-run subprocesses can still find user-home config and tokens, and
 Codex may discover shared `$HOME/.agents/skills` and
 `$HOME/.agents/plugins/marketplace.json` entries. With
-`appServer.homeScope: "user"`, OpenClaw instead uses the native user Codex
-home and its existing account without injecting an OpenClaw auth profile.
+`appServer.homeScope: "user"`, Paddy instead uses the native user Codex
+home and its existing account without injecting a Paddy auth profile.
 Canonical `openai/*` chats on a user-home stdio or Unix connection also retain
 the native configured model provider; select the model with the canonical
-OpenClaw model ref. Explicit non-OpenAI providers remain explicit. Prepared
+Paddy model ref. Explicit non-OpenAI providers remain explicit. Prepared
 route compatibility and subscription/API-key account checks still apply.
 
 If a deployment needs additional environment isolation, add those
@@ -289,7 +296,7 @@ variables to `appServer.clearEnv`:
 ```
 
 `appServer.clearEnv` only affects the spawned Codex app-server child
-process. OpenClaw removes `CODEX_HOME` and `HOME` from this list during
+process. Paddy removes `CODEX_HOME` and `HOME` from this list during
 local launch normalization: `CODEX_HOME` stays pointed at the selected
 agent or user scope, and `HOME` stays inherited so subprocesses can use
 normal user-home state.

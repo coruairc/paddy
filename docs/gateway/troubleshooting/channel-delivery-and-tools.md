@@ -13,11 +13,11 @@ read_when:
 If channel state is connected but message flow is dead, focus on policy, permissions, and channel specific delivery rules.
 
 ```bash
-openclaw channels status --probe
-openclaw pairing list --channel <channel> [--account <id>]
-openclaw status --deep
-openclaw logs --follow
-openclaw config get channels
+paddy channels status --probe
+paddy pairing list --channel <channel> [--account <id>]
+paddy status --deep
+paddy logs --follow
+paddy config get channels
 ```
 
 Look for:
@@ -44,11 +44,11 @@ Related:
 If cron or heartbeat did not run or did not deliver, verify scheduler state first, then delivery target.
 
 ```bash
-openclaw automations status
-openclaw automations list
-openclaw automations runs <jobId> --limit 20
-openclaw system heartbeat last
-openclaw logs --follow
+paddy automations status
+paddy automations list
+paddy automations runs <jobId> --limit 20
+paddy system heartbeat last
+paddy logs --follow
 ```
 
 Look for:
@@ -62,7 +62,7 @@ Look for:
     - `cron: scheduler disabled; jobs will not run automatically` → cron disabled.
     - `cron: timer tick failed` → scheduler tick failed; check file/log/runtime errors.
     - `heartbeat skipped` with `reason=quiet-hours` → outside active hours window.
-    - `heartbeat skipped` with `reason=empty-heartbeat-file` → heartbeat monitor scratch only contains blank, comment, header, fence, or empty-checklist scaffolding, so OpenClaw skips the model call.
+    - `heartbeat skipped` with `reason=empty-heartbeat-file` → heartbeat monitor scratch only contains blank, comment, header, fence, or empty-checklist scaffolding, so Paddy skips the model call.
     - `heartbeat skipped` with `reason=no-route` → the default `owner` target has no concrete owner in `commands.ownerAllowFrom` or channel `allowFrom`, the owner cannot resolve to a DM, or no channel is configured. Explicit `last` also needs a session conversation route.
     - `heartbeat: unknown accountId` → invalid account id for heartbeat delivery target.
     - `heartbeat skipped` with `reason=dm-blocked` → heartbeat target resolved to a DM-style destination while `agents.defaults.heartbeat.directPolicy` (or per-agent override) is set to `block`.
@@ -81,11 +81,11 @@ Related:
 If a node is paired but tools fail, isolate foreground, permission, and approval state.
 
 ```bash
-openclaw nodes status
-openclaw nodes describe --node <idOrNameOrIp>
-openclaw approvals get --node <idOrNameOrIp>
-openclaw logs --follow
-openclaw status
+paddy nodes status
+paddy nodes describe --node <idOrNameOrIp>
+paddy approvals get --node <idOrNameOrIp>
+paddy logs --follow
+paddy status
 ```
 
 Look for:
@@ -112,11 +112,11 @@ Related:
 Use when browser tool actions fail even though the gateway itself is healthy.
 
 ```bash
-openclaw browser status
-openclaw browser start --browser-profile openclaw
-openclaw browser profiles
-openclaw logs --follow
-openclaw doctor
+paddy browser status
+paddy browser start --browser-profile paddy
+paddy browser profiles
+paddy logs --follow
+paddy doctor
 ```
 
 Look for:
@@ -134,7 +134,7 @@ Look for:
     - `browser.executablePath not found` → configured path is invalid.
     - `browser.cdpUrl must be http(s) or ws(s)` → the configured CDP URL uses an unsupported scheme such as `file:` or `ftp:`.
     - `browser.cdpUrl has invalid port` → the configured CDP URL has a bad or out-of-range port.
-    - `Playwright is not available in this gateway build; '<feature>' is unsupported.` → the current gateway install lacks the core browser runtime dependency; reinstall or update OpenClaw, then restart the gateway. ARIA snapshots and basic page screenshots can still work, but navigation, AI snapshots, CSS-selector element screenshots, and PDF export stay unavailable.
+    - `Playwright is not available in this gateway build; '<feature>' is unsupported.` → the current gateway install lacks the core browser runtime dependency; reinstall or update Paddy, then restart the gateway. ARIA snapshots and basic page screenshots can still work, but navigation, AI snapshots, CSS-selector element screenshots, and PDF export stay unavailable.
 
   </Accordion>
   <Accordion title="Chrome MCP / existing-session signatures">
@@ -152,12 +152,12 @@ Look for:
     - `existing-session dialog handling does not support timeoutMs.` → dialog hooks on Chrome MCP profiles do not support timeout overrides.
     - `existing-session type does not support timeoutMs overrides.` → omit `timeoutMs` for `act:type` on `profile="user"` / Chrome MCP existing-session profiles, or use a managed/CDP browser profile when a custom timeout is required.
     - `response body is not supported for existing-session profiles yet.` → `responsebody` still requires a managed browser or raw CDP profile.
-    - Stale viewport / dark-mode / locale / offline overrides on attach-only or remote CDP profiles → run `openclaw browser stop --browser-profile <name>` to close the active control session and release Playwright/CDP emulation state without restarting the whole gateway.
+    - Stale viewport / dark-mode / locale / offline overrides on attach-only or remote CDP profiles → run `paddy browser stop --browser-profile <name>` to close the active control session and release Playwright/CDP emulation state without restarting the whole gateway.
 
   </Accordion>
 </AccordionGroup>
 
 Related:
 
-- [Browser (OpenClaw-managed)](/tools/browser)
+- [Browser (Paddy-managed)](/tools/browser)
 - [Browser troubleshooting](/tools/browser-linux-troubleshooting)

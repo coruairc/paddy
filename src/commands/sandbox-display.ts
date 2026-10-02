@@ -70,9 +70,7 @@ export function displaySummary(
 
   if (mismatchCount > 0) {
     runtime.log(`\n⚠️  ${mismatchCount} runtime(s) with config mismatch detected.`);
-    const command = formatCliCommand(
-      `openclaw sandbox recreate --all${browser ? " --browser" : ""}`,
-    );
+    const command = formatCliCommand(`paddy sandbox recreate --all${browser ? " --browser" : ""}`);
     runtime.log(`   Run '${command}' to update all runtimes.`);
   }
 }

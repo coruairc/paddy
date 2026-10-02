@@ -18,16 +18,16 @@ Official provider plugins publish their own model catalog rows. These providers 
 - Optional rotation: `OPENAI_API_KEYS`, `OPENAI_API_KEY_1`, `OPENAI_API_KEY_2`, plus `OPENCLAW_LIVE_OPENAI_KEY` (single override)
 - Fresh setup default: `openai/gpt-6-astra`.
 - Example models: `openai/gpt-6-astra`, `openai/gpt-5.6-sol`, `openai/gpt-5.6-terra`, `openai/gpt-5.6-luna`, `openai/gpt-5.5`; the bare direct-API `openai/gpt-5.6` alias remains supported.
-- Verify account/model availability with `openclaw models list --provider openai` if a specific install or API key behaves differently.
-- CLI: `openclaw onboard --auth-choice openai-api-key`
+- Verify account/model availability with `paddy models list --provider openai` if a specific install or API key behaves differently.
+- CLI: `paddy onboard --auth-choice openai-api-key`
 - Direct OpenAI API-key Responses requests default to `"sse"`.
 - Override per model via `agents.defaults.models["openai/<model>"].params.transport` (`"sse"`, `"websocket"`, `"websocket-cached"`, or `"auto"`). Cached WebSockets reuse the session connection and send only new input with `previous_response_id` when history still matches.
-- The `"sse"` transport also supports HTTP continuation for a native `openai/openai-responses` model at the exact public `https://api.openai.com/v1` base URL (ChatGPT/Codex `openai-chatgpt-responses` routes are excluded and deliberately stay `store: false`): OpenClaw caches the request per session+credential and, when the next turn's history is a strict extension, sends only the new input plus `previous_response_id` instead of the full growing history. A rejected/expired `previous_response_id` (Zero Data Retention, TTL eviction) retries once, same turn, with the full request.
+- The `"sse"` transport also supports HTTP continuation for a native `openai/openai-responses` model at the exact public `https://api.openai.com/v1` base URL (ChatGPT/Codex `openai-chatgpt-responses` routes are excluded and deliberately stay `store: false`): Paddy caches the request per session+credential and, when the next turn's history is a strict extension, sends only the new input plus `previous_response_id` instead of the full growing history. A rejected/expired `previous_response_id` (Zero Data Retention, TTL eviction) retries once, same turn, with the full request.
   - For a custom `openai-responses` model, set `models.providers.<provider>.models[].compat.supportsResponsesContinuation: true` after verifying that its endpoint supports stored responses and `previous_response_id`. This enables `store: true` for that model, allowing the backend to retain requests even when a turn cannot continue. Other custom models remain stateless. `compat.supportsStore: false` disables this opt-in. The `azure-openai-responses` and ChatGPT/Codex transports, plus the `azure-openai` and `azure-openai-responses` provider IDs, are excluded.
 - Set an explicit OpenAI API service tier with `params.serviceTier` or `params.service_tier`; Fast mode (formerly Priority processing) uses `service_tier=priority`.
 - On native public OpenAI and ChatGPT/Codex Responses requests, precedence is payload/transport `service_tier`, then a valid explicit model param, then the fast-mode default.
 - `/fast` and valid `params.fastMode` / `params.fast_mode` values are shared agent-runtime controls; on direct embedded `openai/*` Responses requests they supply `service_tier=priority` only when no higher-precedence tier exists.
-- Hidden OpenClaw attribution headers (`originator`, `version`, `User-Agent`) apply only on native OpenAI traffic to `api.openai.com`, not generic OpenAI-compatible proxies
+- Hidden Paddy attribution headers (`originator`, `version`, `User-Agent`) apply only on native OpenAI traffic to `api.openai.com`, not generic OpenAI-compatible proxies
 - Native OpenAI provider-managed storage, prompt-cache hints, and reasoning payload shaping are unchanged. Raw native transport calls retain `store: false` by default. The custom-model continuation opt-in enables storage only; it does not enable prompt-cache hints or server compaction.
 - `openai/gpt-5.3-codex-spark` is available only through ChatGPT/Codex OAuth; direct OpenAI API-key and Azure API-key routes reject it
 
@@ -48,15 +48,15 @@ existing explicit primary model; `models auth login --set-default` and
 - Auth: `ANTHROPIC_API_KEY`
 - Optional rotation: `ANTHROPIC_API_KEYS`, `ANTHROPIC_API_KEY_1`, `ANTHROPIC_API_KEY_2`, plus `OPENCLAW_LIVE_ANTHROPIC_KEY` (single override)
 - Example model: `anthropic/claude-opus-5-5`
-- CLI: `openclaw onboard --auth-choice apiKey`
-- Direct public Anthropic requests support the shared `/fast` toggle and `params.fastMode`, including API-key and OAuth-authenticated traffic sent to `api.anthropic.com`; OpenClaw maps that to Anthropic `service_tier` (`auto` vs `standard_only`)
+- CLI: `paddy onboard --auth-choice apiKey`
+- Direct public Anthropic requests support the shared `/fast` toggle and `params.fastMode`, including API-key and OAuth-authenticated traffic sent to `api.anthropic.com`; Paddy maps that to Anthropic `service_tier` (`auto` vs `standard_only`)
 - Preferred Claude CLI config keeps the model ref canonical and selects the CLI
   backend separately: `anthropic/claude-opus-5-5` with
   model-scoped `agentRuntime.id: "claude-cli"`. Legacy
   `claude-cli/claude-opus-4-7` refs still work for compatibility.
 
 <Note>
-Claude CLI reuse (`claude -p`) is a sanctioned OpenClaw integration path. Anthropic setup-token auth remains supported, but OpenClaw prefers Claude CLI reuse when available.
+Claude CLI reuse (`claude -p`) is a sanctioned Paddy integration path. Anthropic setup-token auth remains supported, but Paddy prefers Claude CLI reuse when available.
 </Note>
 
 ```json5
@@ -74,18 +74,18 @@ Claude CLI reuse (`claude -p`) is a sanctioned OpenClaw integration path. Anthro
 - Astra (`openai/gpt-6-astra`) defaults to `medium` reasoning effort when the account supports it. The [OpenAI provider default](/providers/openai/models#gpt-6-astra) is shared by model controls and both runtimes; explicit thinking settings take precedence.
 - Legacy model refs: `codex/gpt-*`, `openai-codex/gpt-*`
 - Plugin boundary: `openai/*` loads the OpenAI plugin; explicit runtime policy or the provider-owned effective route decides whether the native Codex app-server plugin is selected.
-- CLI: `openclaw onboard --auth-choice openai` or `openclaw models auth login --provider openai`
-- OpenClaw's embedded ChatGPT Responses transport defaults to `auto` (WebSocket-first, SSE fallback).
-- `agents.defaults.models["openai/<model>"].params.transport` and `params.serviceTier` are authored embedded-provider request settings. They keep implicit runtime selection on OpenClaw; native Codex owns its app-server transport and service tier.
+- CLI: `paddy onboard --auth-choice openai` or `paddy models auth login --provider openai`
+- Paddy's embedded ChatGPT Responses transport defaults to `auto` (WebSocket-first, SSE fallback).
+- `agents.defaults.models["openai/<model>"].params.transport` and `params.serviceTier` are authored embedded-provider request settings. They keep implicit runtime selection on Paddy; native Codex owns its app-server transport and service tier.
 - Valid model-scoped `params.fastMode` / `params.fast_mode` values and valid cutoff keys are portable typed agent-runtime controls. They do not count as authored provider request params and do not select a runtime. Pin `agentRuntime.id: "openclaw"` or `agentRuntime.id: "codex"` when a recipe depends on one runtime.
-- Hidden OpenClaw attribution headers (`originator`, `version`, `User-Agent`) are only attached on native Codex traffic to `chatgpt.com/backend-api`, not generic OpenAI-compatible proxies
+- Hidden Paddy attribution headers (`originator`, `version`, `User-Agent`) are only attached on native Codex traffic to `chatgpt.com/backend-api`, not generic OpenAI-compatible proxies
 - The shared `/fast` toggle, configured defaults, and valid model-scoped Fast params resolve through one runtime-control policy. See [Thinking levels](/tools/thinking#fast-mode-%2Ffast) for precedence.
 - OpenAI API Fast mode is premium-priced and model-specific. GPT-5.6 Sol currently costs 2× Standard token pricing, and long-context multipliers stack. ChatGPT/Codex-credit Fast mode is separate: GPT-5.6 and GPT-5.5 currently consume 2.5× Standard credits, while API-key Codex runs use API token pricing. See [Fast mode](https://openai.com/api-priority-processing/), [API pricing](https://developers.openai.com/api/docs/pricing), and [Codex speed](https://learn.chatgpt.com/docs/agent-configuration/speed).
 - The native Codex catalog can expose exact `openai/gpt-5.6-sol`, `openai/gpt-5.6-terra`, and `openai/gpt-5.6-luna` refs according to account access. It does not apply the direct API's bare `gpt-5.6` alias client-side.
 - `openai/gpt-5.5` uses the Codex catalog native `contextWindow = 400000` and default runtime `contextTokens = 272000`; override the runtime cap with `models.providers.openai.models[].contextTokens`
 - Sign in with `openai` auth and use `openai/gpt-6-astra` for a fresh subscription-backed setup. Select `openai/gpt-5.5` explicitly if that Codex workspace does not expose Astra.
 - Use provider/model `agentRuntime.id: "openclaw"` to keep an otherwise eligible route on the built-in runtime. With runtime unset or `auto`, only an exact official HTTPS Responses/ChatGPT-compatible route with no authored provider request override may select Codex implicitly.
-- Legacy Codex GPT refs are legacy state, not a live provider route. Use canonical `openai/*` refs for new agent config, and run `openclaw doctor --fix` to migrate `codex/*` and `openai-codex/*` refs while preserving their native Codex semantics with model-scoped `agentRuntime.id: "codex"`. Existing explicit canonical `openai/gpt-5.5` selections are not upgraded.
+- Legacy Codex GPT refs are legacy state, not a live provider route. Use canonical `openai/*` refs for new agent config, and run `paddy doctor --fix` to migrate `codex/*` and `openai-codex/*` refs while preserving their native Codex semantics with model-scoped `agentRuntime.id: "codex"`. Existing explicit canonical `openai/gpt-5.5` selections are not upgraded.
 
 ```json5
 {
@@ -130,7 +130,7 @@ Claude CLI reuse (`claude -p`) is a sanctioned OpenClaw integration path. Anthro
 - Zen runtime provider: `opencode`
 - Go runtime provider: `opencode-go`
 - Example models: `opencode/claude-opus-4-6`, `opencode-go/kimi-k2.6`
-- CLI: `openclaw onboard --auth-choice opencode-zen` or `openclaw onboard --auth-choice opencode-go`
+- CLI: `paddy onboard --auth-choice opencode-zen` or `paddy onboard --auth-choice opencode-go`
 
 ```json5
 {
@@ -144,11 +144,11 @@ Claude CLI reuse (`claude -p`) is a sanctioned OpenClaw integration path. Anthro
 - Auth: `GEMINI_API_KEY`
 - Optional rotation: `GEMINI_API_KEYS`, `GEMINI_API_KEY_1`, `GEMINI_API_KEY_2`, `GOOGLE_API_KEY` fallback, and `OPENCLAW_LIVE_GEMINI_KEY` (single override)
 - Example models: `google/gemini-3.1-pro-preview`, `google/gemini-3.5-flash`
-- Compatibility: legacy OpenClaw config using `google/gemini-3.1-flash-preview` is normalized to `google/gemini-3-flash-preview`
+- Compatibility: legacy Paddy config using `google/gemini-3.1-flash-preview` is normalized to `google/gemini-3-flash-preview`
 - Alias: `google/gemini-3.1-pro` is accepted and normalized to Google's live Gemini API id, `google/gemini-3.1-pro-preview`
-- CLI: `openclaw onboard --auth-choice gemini-api-key`
+- CLI: `paddy onboard --auth-choice gemini-api-key`
 - Thinking: `/think adaptive` uses Google dynamic thinking. Gemini 3/3.1 omit a fixed `thinkingLevel`; Gemini 2.5 sends `thinkingBudget: -1`.
-- Direct Gemini runs also accept `agents.defaults.models["google/<model>"].params.cachedContent` (or legacy `cached_content`) to forward a provider-native `cachedContents/...` handle; Gemini cache hits surface as OpenClaw `cacheRead`
+- Direct Gemini runs also accept `agents.defaults.models["google/<model>"].params.cachedContent` (or legacy `cached_content`) to forward a provider-native `cachedContents/...` handle; Gemini cache hits surface as Paddy `cacheRead`
 
 ### Google Vertex and Gemini CLI runtime
 
@@ -157,13 +157,13 @@ Claude CLI reuse (`claude -p`) is a sanctioned OpenClaw integration path. Anthro
 - `google-gemini-cli`: optional local runtime for an explicitly configured
   canonical `google/*` model.
 
-OpenClaw does not create Gemini CLI OAuth or Antigravity OAuth profiles. Connect
+Paddy does not create Gemini CLI OAuth or Antigravity OAuth profiles. Connect
 Google through an AI Studio API key or Vertex AI. If you explicitly choose the
 Gemini CLI runtime, it can use the selected Google API-key profile. Existing
 valid Gemini CLI OAuth profiles remain runtime-compatible, but they are not a
 setup or recovery route.
 
-Gemini CLI uses `stream-json` by default. OpenClaw reads assistant stream
+Gemini CLI uses `stream-json` by default. Paddy reads assistant stream
 messages and normalizes `stats.cached` into `cacheRead`; legacy
 `--output-format json` overrides still read reply text from `response`.
 
@@ -172,7 +172,7 @@ messages and normalizes `stats.cached` into `cacheRead`; legacy
 - Provider: `zai`
 - Auth: `ZAI_API_KEY`
 - Example model: `zai/glm-5.2`
-- CLI: `openclaw onboard --auth-choice zai-api-key`
+- CLI: `paddy onboard --auth-choice zai-api-key`
   - Model refs use the canonical `zai/*` provider ID.
   - `zai-api-key` auto-detects the matching Z.AI endpoint; `zai-coding-global`, `zai-coding-cn`, `zai-global`, and `zai-cn` force a specific surface
 
@@ -181,7 +181,7 @@ messages and normalizes `stats.cached` into `cacheRead`; legacy
 - Provider: `vercel-ai-gateway`
 - Auth: `AI_GATEWAY_API_KEY`
 - Example models: `vercel-ai-gateway/anthropic/claude-opus-4.6`, `vercel-ai-gateway/moonshotai/kimi-k2.6`
-- CLI: `openclaw onboard --auth-choice ai-gateway-api-key`
+- CLI: `paddy onboard --auth-choice ai-gateway-api-key`
 
 ### Other bundled provider plugins
 
@@ -232,6 +232,6 @@ messages and normalizes `stats.cached` into `cacheRead`; legacy
     Model ids use a `nvidia/<vendor>/<model>` namespace (for example `nvidia/nvidia/nemotron-...`); pickers preserve the literal `<provider>/<model-id>` composition while the canonical key sent to the API stays single-prefixed.
   </Accordion>
   <Accordion title="xAI">
-    Uses the xAI Responses path. The recommended path is SuperGrok/X Premium OAuth; OAuth and API-key setup use the curated `xai/grok-4.7` default. Existing primary models stay pinned. Run `openclaw doctor --fix` to repair retired `xai/auto` selections on the native API and subscription routes. API keys still work via `XAI_API_KEY` or plugin config. Grok `web_search` reuses the same auth profile before API-key fallback. Older `/fast` and `params.fastMode: true` configurations still resolve through xAI's Grok 4.3 compatibility redirects, but new configurations should select a current model directly. `tool_stream` defaults on; disable via `agents.defaults.models["xai/<model>"].params.tool_stream=false`.
+    Uses the xAI Responses path. The recommended path is SuperGrok/X Premium OAuth; OAuth and API-key setup use the curated `xai/grok-4.7` default. Existing primary models stay pinned. Run `paddy doctor --fix` to repair retired `xai/auto` selections on the native API and subscription routes. API keys still work via `XAI_API_KEY` or plugin config. Grok `web_search` reuses the same auth profile before API-key fallback. Older `/fast` and `params.fastMode: true` configurations still resolve through xAI's Grok 4.3 compatibility redirects, but new configurations should select a current model directly. `tool_stream` defaults on; disable via `agents.defaults.models["xai/<model>"].params.tool_stream=false`.
   </Accordion>
 </AccordionGroup>

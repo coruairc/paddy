@@ -1,13 +1,13 @@
 ---
-summary: "Run the OpenClaw Gateway on EasyRunner with Podman and Caddy"
+summary: "Run the Paddy Gateway on EasyRunner with Podman and Caddy"
 read_when:
-  - Deploying OpenClaw on EasyRunner
+  - Deploying Paddy on EasyRunner
   - Running the Gateway behind EasyRunner's Caddy proxy
   - Choosing persistent volumes and auth for a hosted Gateway
 title: "EasyRunner"
 ---
 
-EasyRunner hosts the OpenClaw Gateway as a small containerized app behind its
+EasyRunner hosts the Paddy Gateway as a small containerized app behind its
 Caddy proxy. This guide assumes an EasyRunner host that runs Podman-compatible
 Compose apps and terminates HTTPS through Caddy.
 
@@ -58,7 +58,7 @@ committing it to the app definition. The image binds to loopback by default,
 so the explicit `--bind lan --port 1455` in `command` is required for Caddy to
 reach the container.
 
-## Configure OpenClaw
+## Configure Paddy
 
 Inside the persistent config volume, keep the Gateway reachable only through
 the proxy and require auth:
@@ -84,8 +84,8 @@ the exact proxy path rather than disabling auth checks globally. See
 From your workstation:
 
 ```bash
-openclaw gateway probe --url https://openclaw.example.com --token <token>
-openclaw gateway status --url https://openclaw.example.com --token <token>
+paddy gateway probe --url https://paddy.example.com --token <token>
+paddy gateway status --url https://paddy.example.com --token <token>
 ```
 
 From the EasyRunner host, `GET /healthz` (liveness) and `GET /readyz`
@@ -95,12 +95,12 @@ SecretRef, plugin, or channel auth failures.
 
 ## Updates and backups
 
-- Pull or build the new OpenClaw image, then redeploy the EasyRunner app.
+- Pull or build the new Paddy image, then redeploy the EasyRunner app.
 - Back up the `openclaw-config` volume before updates. It holds
   `openclaw.json`, shared auth in `state/openclaw.sqlite`, agent-local profiles
   in `agents/<agentId>/agent/openclaw-agent.sqlite`, and installed plugin package state.
 - Back up `openclaw-workspace` if agents write durable project data there.
-- Run `openclaw doctor` after major updates to catch config migrations and
+- Run `paddy doctor` after major updates to catch config migrations and
   service warnings.
 
 ## Troubleshooting

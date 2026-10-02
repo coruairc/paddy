@@ -1,4 +1,5 @@
 import type { Command } from "commander";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawPluginApi } from "../plugins/plugin-api.types.js";
 import type { OpenClawPluginCliRootCommandDescriptor } from "../plugins/plugin-registration.types.js";
 import { createLazyRuntimeModule } from "../shared/lazy-runtime.js";
@@ -77,7 +78,7 @@ export function createMeetingPluginNodeHostHandler(options: MeetingPluginNodeHos
       buildProfileArgs: (profile) => ["--args", `--profile-directory=${profile}`],
       openedStatus: "chrome-opened",
       openedNotes: [
-        `${options.browserPageName} page control is handled by OpenClaw browser automation when using chrome-node.`,
+        `${options.browserPageName} page control is handled by ${PRODUCT_NAME} browser automation when using chrome-node.`,
       ],
     },
   });
@@ -184,7 +185,7 @@ export function createMeetingPluginShellEntry<
     gatewayMethodPrefix: methodPrefix,
     nodeCommand: options.platform.nodeCommandName,
     normalizeUrl: (value) => options.platform.urls.validateAndNormalize(value),
-    toolDescription: `Join and manage ${options.browserGuestLabel} browser guests. Guest admission, tenant sign-in, and media permissions may require manual action in the OpenClaw Chrome profile.`,
+    toolDescription: `Join and manage ${options.browserGuestLabel} browser guests. Guest admission, tenant sign-in, and media permissions may require manual action in the ${PRODUCT_NAME} Chrome profile.`,
     toolLabel: options.platform.displayName,
     toolName,
     transcriptSource: { ...options.transcriptSource, name: options.platform.displayName },

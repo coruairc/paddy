@@ -104,7 +104,7 @@ xurl --auth oauth2 /2/users/me
 ```bash
 xurl /2/users/me
 xurl -X POST /2/tweets -d '{"text":"Hello world!"}'
-xurl '/2/tweets/search/recent?query=openclaw&max_results=10'
+xurl '/2/tweets/search/recent?query=paddy&max_results=10'
 ```
 
 Use raw mode when shortcuts do not cover the endpoint. Keep payloads in temp files for complex JSON.

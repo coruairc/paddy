@@ -2,7 +2,7 @@
   "name": "@openclaw/microsoft-speech",
   "version": "2026.9.6",
   "private": true,
-  "description": "OpenClaw Microsoft speech plugin",
+  "description": "Paddy Microsoft speech plugin",
   "type": "module",
   "dependencies": {
     "node-edge-tts": "1.2.10"

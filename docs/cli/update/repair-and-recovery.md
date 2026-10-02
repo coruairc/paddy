@@ -1,18 +1,18 @@
 ---
-summary: "Recovering from a failed `openclaw update`, plus the `update repair` and `update cleanup` subcommands"
+summary: "Recovering from a failed `paddy update`, plus the `update repair` and `update cleanup` subcommands"
 read_when:
   - An update or repair failed and you need a working install back
-  - You are running `openclaw update repair` and need its flags or exit codes
+  - You are running `paddy update repair` and need its flags or exit codes
   - You want to inspect or retire migration recovery originals after an update
 title: "Update repair and recovery"
 sidebarTitle: "Repair and recovery"
 ---
 
-What happens when an update fails, and the subcommands that finish the job. Part of the [`openclaw update`](/cli/update) reference.
+What happens when an update fails, and the subcommands that finish the job. Part of the [`paddy update`](/cli/update) reference.
 
 ## Recover a failed update
 
-After a failed interactive update or repair, OpenClaw finishes cleanup and offers
+After a failed interactive update or repair, Paddy finishes cleanup and offers
 **Diagnose update failure**, **Report update failure**, or **Exit**. Reporting
 previews the sanitized issue body and requires separate confirmation.
 
@@ -51,15 +51,15 @@ POSIX shells on macOS, Linux, and WSL. When running triage manually, keep the sa
 profile and state/config overrides:
 
 ```bash
-openclaw triage
-openclaw triage --agent codex
+paddy triage
+paddy triage --agent codex
 ```
 
-Use `openclaw triage --non-interactive` to collect diagnostics without starting
+Use `paddy triage --non-interactive` to collect diagnostics without starting
 an agent. Add `--update-result <path>` to include a saved update-failure artifact.
 
 Validation failures leave the serving Gateway untouched. If stopping the managed
-service unloads it and then fails before activation, OpenClaw attempts to restore
+service unloads it and then fails before activation, Paddy attempts to restore
 the verified original runtime after rechecking service ownership. After activation, a
 failed verification can [restore the previous package](/cli/update/how-updates-run#validation-and-activation)
 when database schemas are unchanged and the config file still matches the
@@ -72,6 +72,23 @@ After activation succeeds, a failure to read or publish update reporting leaves
 the updated installation in place. Reporting failures do not trigger package
 rollback. The command still exits nonzero when required finalization cannot
 complete; follow its recovery guidance after the owning updater exits.
+
+Activation Doctor rechecks the chat requester's authority inside its own live
+maintenance scope. This lets it read authorization policy while the state database
+is offline for repair, without granting access to unrelated operations. The
+candidate supplies this repair even when an older updater launches Doctor.
+
+Git updaters with database rollback support snapshot the stopped installation's
+databases before activation Doctor. If Doctor fails, verified snapshots restore
+the pre-migration state before the previous source, runtime, configuration, and
+managed Gateway are restored. Doctor records its admitted and settled database
+generations against that backup, so its own migration does not prevent rollback.
+Later operator or runtime writes prevent destructive restoration: the updater
+preserves them, restarts and verifies the Gateway on the migrated installation,
+and reports the refusal with the next Doctor command. Lost ownership still
+prevents unauthorized effects and retains the recovery artifacts. This rollback support
+belongs to the installed updater; a new candidate cannot add it to an older
+updater already running.
 
 Dry runs and commands rejected by the initial argument, external-supervisor,
 state-store ownership, handoff identity, or immutable-config checks do not
@@ -90,7 +107,9 @@ its workers and removes that directory after success, failure, an exception, or
 `SIGINT`/`SIGTERM`, including failures while reporting the outcome. If a worker
 cannot settle or removal fails, it records `Runtime retained at <path>: <reason>`
 and leaves cleanup available to Doctor. A cleanup warning does not replace the
-original update outcome.
+original update outcome. An earlier nonzero exit remains nonzero while cleanup
+is draining. Mutation and recovery owners must still drain; their failures produce
+a nonzero exit even if the printed command result was successful.
 
 Retention copies plugin manifests and files inspected by plugin safety checks,
 so retaining the updater does not make the checkout's plugins fail hardlink
@@ -98,9 +117,12 @@ validation. Other runtime files remain hardlinked when supported.
 
 These lifecycle and copying changes apply when the installed updater supports
 them; installing a newer candidate cannot change the updater already running.
-After that updater exits, run the newer `openclaw doctor --fix` from the original
+After that updater exits, run the newer `paddy doctor --fix` from the original
 checkout to locate its sibling runtime directories. Doctor also checks known
-temporary directories, including the managed service's `TMPDIR`. Recognized
+temporary directories, including the managed service's `TMPDIR`, `TMP`, and `TEMP`.
+Relative service paths require its recorded absolute working directory. Legacy
+pnpm projections remain recognizable after a versioned package-root change within
+the same store; lookup is limited to 4,096 immediate projected-store entries. Recognized
 runtime projections are disposable; Doctor removes them when no worker still
 uses them. If ownership or process liveness cannot be verified, Doctor preserves
 the directory and reports the reason.
@@ -124,32 +146,32 @@ deleting database rows to work around this failure.
 
 Rerun update finalization after the core package already changed but later
 repair work did not finish cleanly. This is the supported recovery path when
-`openclaw update` installed the new core package but post-core plugin sync,
+`paddy update` installed the new core package but post-core plugin sync,
 managed npm plugin metadata, registry refresh, or doctor repair did not
 converge.
 
 ```bash
-openclaw update repair
-openclaw update repair --channel beta
-openclaw update repair --json
-openclaw update repair --accept-capabilities
+paddy update repair
+paddy update repair --channel beta
+paddy update repair --json
+paddy update repair --accept-capabilities
 ```
 
-When repair runs under Bun, its fresh Doctor, config validation, readiness,
-completion, and non-interactive failure-diagnostic commands use that same Bun
-executable. Node and command-shim invocations keep their existing Node selection
-policy. Managed-service runtime selection remains owned by the service configuration.
+When update, post-core continuation, or repair runs under Bun, its Paddy
+maintenance children use that same Bun executable, including fresh Doctor,
+config validation, readiness, completion, and non-interactive failure diagnostics.
+Managed-service runtime selection stays with the service definition and its runtime pin.
 
 If an older updater publishes the new core but then reports
 `update-executor-settlement-failed` with `Parent executor is suspended for its candidate.`,
-wait for that updater to exit and run `openclaw update repair --yes --json` from
+wait for that updater to exit and run `paddy update repair --yes --json` from
 the updated installation, preserving its profile and state/config overrides.
 This finishes Doctor and post-core convergence through a fresh owner. Check the
 repair result before restarting an already stopped Gateway through its service
 owner. Updating the candidate cannot change the older updater already in memory.
 
 When a managed Gateway was already stopped before standalone repair, repair leaves
-it offline and warns that you must run `openclaw gateway start` to bring it online.
+it offline and warns that you must run `paddy gateway start` to bring it online.
 If its service definition points to a different installation, repair instead reports
 the installation repair command. These maintenance warnings also appear in
 `postUpdate.doctor.warnings`; otherwise successful finalization reports
@@ -165,9 +187,9 @@ the installation repair command. These maintenance warnings also appear in
 | `--no-restart`                                   | Accepted for parity; repair does not request update activation. The repair parent restores a Gateway it stopped for maintenance.                                                                                                                                                                 |
 
 Untouched, identityless 2026.9.2-era update admissions heal automatically after
-more than 24 hours. Gateway startup, `openclaw update status`, and `openclaw status`
+more than 24 hours. Gateway startup, `paddy update status`, and `paddy status`
 retain the row as an abandoned failure with reason `legacy-driver-expired` and an
-advisory to run `openclaw update` to retry. The Control UI refreshes the Gateway's
+advisory to run `paddy update` to retry. The Control UI refreshes the Gateway's
 recovery classification before refusing a suspended config write, so an expired
 orphan does not keep settings or provider sign-in blocked. Live updates and
 pending recovery remain protected. No explicit repair is needed for this shape.
@@ -175,7 +197,7 @@ pending recovery remain protected. No explicit repair is needed for this shape.
 `update repair` first inspects stale update history. When the installed Gateway
 generation is healthy and the only remaining problem is an inactive ledger row,
 repair records `failed` / `abandoned` and exits successfully without Doctor,
-maintenance, or a service stop. `openclaw status` and the Control UI then report the abandoned run as reconciled, without a failure warning or retry prompt; its historical failure record remains intact. It also acknowledges a Gateway-reconciled row
+maintenance, or a service stop. `paddy status` and the Control UI then report the abandoned run as reconciled, without a failure warning or retry prompt; its historical failure record remains intact. It also acknowledges a Gateway-reconciled row
 once within 30 minutes of reconciliation. Later repair invocations use full
 finalization, so historical recovery cannot suppress plugin convergence.
 Successful repair acknowledges every outstanding abandoned run in Doctor's
@@ -224,8 +246,8 @@ the cause and the commands to inspect and restart the Gateway. Normal update
 finalization continues to leave activation with its outer updater.
 
 If Doctor reports that the update parent must stop the managed Gateway, wait
-for that update to exit, then run `openclaw gateway stop` and retry
-`openclaw update repair` from an independent shell with the same profile and
+for that update to exit, then run `paddy gateway stop` and retry
+`paddy update repair` from an independent shell with the same profile and
 state/config overrides. On macOS, stop unloads the LaunchAgent and verifies that
 its process exited. A still-loaded service or surviving PID after a successful
 stop is a service shutdown failure. If stop cannot unload the service, use the
@@ -237,7 +259,7 @@ repair, even after a long period without activity. Manual `doctor --fix` also
 refuses to stop a service while that update is active. The refusal identifies the
 owning run, phase, driver PID, host, start and last-activity times and ages, and observed liveness (`alive` or
 `not observed`). Wait for that update to finish, or stop the named driver on its
-host and rerun `openclaw update repair` after it exits. Elapsed inactivity alone
+host and rerun `paddy update repair` after it exits. Elapsed inactivity alone
 does not authorize taking over a live updater.
 
 Explicit channel or capability changes and known incomplete post-core work use
@@ -265,11 +287,17 @@ newly acknowledged by that invocation, including already-terminal abandoned rows
 Successful convergence with nonfatal warnings also acknowledges those rows.
 Deferred maintenance preserves the selected history and pending migration obligations.
 
-For full finalization, `update repair` runs `openclaw doctor --fix`, reloads the repaired config and
+For full finalization, `update repair` runs `paddy doctor --fix`, reloads the repaired config and
 install records, syncs tracked plugins for the active update channel, updates
 managed npm plugin installs, repairs missing configured plugin payloads,
 refreshes the plugin registry, and writes converged install-record metadata.
-Configured runtime plugins whose versions follow OpenClaw are checked against
+If plugin migrations remain deferred, finalization runs another fresh Doctor after
+releasing install-record ownership, even when no plugin package changed. This lets
+a corrected local plugin finish its pending confirmation in the same repair run.
+Doctor preserves the plugin's configuration when compatibility checks prevent
+discovery, so correcting the plugin does not require recreating its allowlist or
+enabled entry.
+Configured runtime plugins whose versions follow Paddy are checked against
 the newly installed core during post-update repair, even when the updater process
 started on the previous version.
 It does not install a new core package or request update activation. The repair
@@ -286,7 +314,7 @@ repaired install record is published.
 
 When a bundled plugin moves to an external package, failed relocation reports
 that the replacement payload was not installed and preserves the underlying error.
-Resolve that error before retrying with `openclaw update repair`.
+Resolve that error before retrying with `paddy update repair`.
 Doctor and update repair reinstall configured payloads with missing package files
 or a reported missing runtime entry;
 an empty directory is not a successful installation. Rollback removes empty
@@ -311,7 +339,7 @@ records completion. Unrelated warnings and later or reintroduced obligations
 remain visible; the original update history is preserved.
 
 After post-update or finalization work fails and its child processes settle,
-OpenClaw probes the installed Gateway using the normal startup and readiness
+Paddy probes the installed Gateway using the normal startup and readiness
 budget. Update history and failure reports record the observed serving version
 and readiness, including for a foreground Gateway. A failed finalization step
 can therefore report **verified serving** while retaining its original failure
@@ -388,7 +416,7 @@ interactive review or explicit `--accept-capabilities`. `--yes` alone does not
 accept capability changes, and JSON mode does not prompt. An unresolved review
 preserves the previous plugin payload and appears in `postUpdate.plugins.warnings`
 with a `PLUGIN_CAPABILITY_CONSENT_REQUIRED` outcome. When required checks pass,
-`openclaw update` can complete the core update and requested Gateway restart with
+`paddy update` can complete the core update and requested Gateway restart with
 `status: "ok"`; `update repair` reports `status: "warning"` without requesting
 update activation. Both commands exit successfully. This also applies when a
 bundled plugin moves to an external package or a missing configured plugin has
@@ -396,9 +424,9 @@ no install record yet; the unreviewed replacement is not installed. Automatic re
 report a deferred replacement as a notice when a usable, enabled artifact remains
 installed; that retained artifact still undergoes payload validation.
 
-If the core package has already changed, run `openclaw update repair` in an
+If the core package has already changed, run `paddy update repair` in an
 interactive terminal to review plugin capabilities. After reviewing the changes,
-automation can use `openclaw update repair --accept-capabilities`. Acceptance
+automation can use `paddy update repair --accept-capabilities`. Acceptance
 applies to each artifact's recomputed declared surface during this invocation;
 it does not approve future capability additions.
 
@@ -428,7 +456,7 @@ before attempting recovery, and include the warning and archive filenames when
 requesting help. Do not delete or rewrite archives or checkpoints to suppress
 the warning.
 
-Warnings for sources left in place repeat on later Doctor or `openclaw update repair`
+Warnings for sources left in place repeat on later Doctor or `paddy update repair`
 runs until the archive is resolved. Successful finalization does not mean this historical audit
 data was imported. There is currently no supported sanitized-only import when
 the raw archive is unusable: accepting the companion as a recovery source needs
@@ -442,8 +470,8 @@ session history work. Start with a preview, which can run while the Gateway is
 active:
 
 ```bash
-openclaw update cleanup --dry-run
-openclaw --profile work update cleanup --dry-run --json
+paddy update cleanup --dry-run
+paddy --profile work update cleanup --dry-run --json
 ```
 
 Cleanup targets the selected profile and `OPENCLAW_STATE_DIR` / `OPENCLAW_CONFIG_PATH`
@@ -457,7 +485,7 @@ include reason codes.
 
 Before applying, stop the Gateway for that same profile/state directory and wait
 for other SQLite maintenance commands to finish. Stop database readers too,
-including watchers that repeatedly run `openclaw sessions --all-agents --json`,
+including watchers that repeatedly run `paddy sessions --all-agents --json`,
 and keep them stopped until cleanup exits. Read-only SQLite connections can
 create or change WAL/SHM sidecars, invalidating cleanup's destination check even
 when session content is unchanged. If cleanup reports `Recovery destination
@@ -473,8 +501,8 @@ them, if you still need that rollback path. Current SQLite history stays in plac
 </Warning>
 
 ```bash
-openclaw update cleanup
-openclaw update cleanup --yes --json
+paddy update cleanup
+paddy update cleanup --yes --json
 ```
 
 Interactive confirmation defaults to **No**. JSON mode never prompts or grants

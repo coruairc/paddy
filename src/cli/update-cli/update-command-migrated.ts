@@ -78,9 +78,9 @@ export async function inspectActivatedUpdateState(
       // Doctor can warn without failing. Require applied content so startup
       // cannot migrate late; deferred publication alone is already ready.
       result.status = "error";
-      result.reason = `${CLI_NAME} doctor`;
+      result.reason = "paddy doctor";
       result.steps.push({
-        name: `${CLI_NAME} doctor`,
+        name: "paddy doctor",
         command: `${CLI_NAME} doctor --fix`,
         cwd: result.root ?? root,
         durationMs: 0,
@@ -99,7 +99,7 @@ export async function inspectActivatedUpdateState(
     result.reason = "rollback-state-unverified";
     result.steps.push({
       name: "state-schema-verification",
-      command: "openclaw update",
+      command: `${CLI_NAME} update`,
       cwd: result.root ?? root,
       durationMs: 0,
       exitCode: 1,
@@ -327,7 +327,10 @@ export async function continueMigratedUpdateInFreshProcess(
     }
     try {
       await windowsRecovery?.complete(
-        response.result.status === "ok" || isUpdateGatewayReadinessPending(response.result),
+        response.result.status === "ok" ||
+          isUpdateGatewayReadinessPending(response.result) ||
+          (response.result.recovery?.serviceRestartSafe === true &&
+            response.result.recovery.service === "healthy"),
       );
     } catch (cause) {
       throw new UpdateCommandFailure(

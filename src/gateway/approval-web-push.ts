@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { normalizeOptionalString } from "@openclaw/normalization-core";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import {
   isWebPushQuietHours,
@@ -59,7 +60,7 @@ function approvalNotificationCopy(params: {
   const agent = params.agentLabel ? ` for ${params.agentLabel}` : "";
   if (params.terminal) {
     return {
-      title: `${label}OpenClaw approval updated`,
+      title: `${label}${PRODUCT_NAME} approval updated`,
       body:
         params.preferences.detailLevel === "private"
           ? "This approval is no longer pending."
@@ -67,11 +68,11 @@ function approvalNotificationCopy(params: {
     };
   }
   return {
-    title: `${label}OpenClaw approval requested`,
+    title: `${label}${PRODUCT_NAME} approval requested`,
     body:
       params.preferences.detailLevel === "private"
-        ? "Open OpenClaw to review this request."
-        : `Open OpenClaw to review an approval${agent}.`,
+        ? `Open ${PRODUCT_NAME} to review this request.`
+        : `Open ${PRODUCT_NAME} to review an approval${agent}.`,
   };
 }
 

@@ -58,8 +58,6 @@ export type RealtimeTalkEventInput<TPayload = unknown> = Omit<
 
 export type RealtimeTalkSessionResult = RealtimeVoiceBrowserSession & {
   voiceSessionId?: string;
-  consultThinkingLevel?: string;
-  consultFastMode?: boolean;
 };
 
 export type RealtimeTalkWebRtcSdpSessionResult = Extract<
@@ -95,8 +93,6 @@ export type RealtimeTalkTransportContext = {
   callbacks: RealtimeTalkCallbacks;
   input: Pick<RealtimeTalkInputController, "stream" | "adopt" | "stop">;
   videoDeviceId?: string;
-  consultThinkingLevel?: string;
-  consultFastMode?: boolean;
 };
 
 export function createRealtimeTalkEventEmitter(
@@ -200,21 +196,18 @@ type AgentWaitResult = {
 const EMPTY_FINAL_FALLBACK_GRACE_MS = 500;
 
 function extractTextFromMessage(message: unknown): string {
-  if (!message || typeof message !== "object") {
+  const record = asOptionalObjectRecord(message);
+  if (!record) {
     return "";
   }
-  const record = message as Record<string, unknown>;
   if (typeof record.text === "string") {
     return record.text;
   }
   const content = Array.isArray(record.content) ? record.content : [];
   const parts = content
     .map((block) => {
-      if (!block || typeof block !== "object") {
-        return "";
-      }
-      const entry = block as Record<string, unknown>;
-      return entry.type === "text" && typeof entry.text === "string" ? entry.text : "";
+      const entry = asOptionalObjectRecord(block);
+      return entry?.type === "text" && typeof entry.text === "string" ? entry.text : "";
     })
     .filter(Boolean);
   return parts.join("\n\n").trim();
@@ -226,7 +219,7 @@ function getTerminalAgentWaitError(result: AgentWaitResult | undefined): Error |
   }
   const message = result.error?.trim();
   if (result.status === "error") {
-    return new Error(message || "OpenClaw tool call failed");
+    return new Error(message || "Paddy tool call failed");
   }
   if (result.status !== "timeout" || result.pendingError) {
     return undefined;
@@ -246,7 +239,7 @@ function getTerminalAgentWaitError(result: AgentWaitResult | undefined): Error |
     timeoutPhase === "post_turn" ||
     result.providerStarted === true;
   if (hasTerminalTimeoutMetadata) {
-    return new Error(message || "OpenClaw tool call timed out");
+    return new Error(message || "Paddy tool call timed out");
   }
   return undefined;
 }
@@ -260,17 +253,17 @@ function waitForChatResult(params: {
 }): Promise<string> {
   return new Promise((resolve, reject) => {
     if (params.signal?.aborted) {
-      reject(new DOMException("OpenClaw tool call aborted", "AbortError"));
+      reject(new DOMException("Paddy tool call aborted", "AbortError"));
       return;
     }
     const timer = window.setTimeout(() => {
-      settleReject(new Error("OpenClaw tool call timed out"));
+      settleReject(new Error("Paddy tool call timed out"));
     }, params.timeoutMs);
     let settled = false;
     let emptyFinalWaitStarted = false;
     let emptyFinalFallbackTimer: number | undefined;
     const onAbort = () => {
-      settleReject(new DOMException("OpenClaw tool call aborted", "AbortError"));
+      settleReject(new DOMException("Paddy tool call aborted", "AbortError"));
     };
     params.signal?.addEventListener("abort", onAbort, { once: true });
     let unsubscribe: () => void = () => undefined;
@@ -313,7 +306,7 @@ function waitForChatResult(params: {
             return;
           }
           emptyFinalFallbackTimer = window.setTimeout(() => {
-            settleResolve("OpenClaw finished with no text.");
+            settleResolve("Paddy finished with no text.");
           }, EMPTY_FINAL_FALLBACK_GRACE_MS);
         })
         .catch((error: unknown) => {
@@ -338,10 +331,10 @@ function waitForChatResult(params: {
         waitForEmptyFinalFallback();
       } else if (payload.state === "aborted") {
         settleReject(
-          new DOMException(payload.errorMessage ?? "OpenClaw tool call aborted", "AbortError"),
+          new DOMException(payload.errorMessage ?? "Paddy tool call aborted", "AbortError"),
         );
       } else if (payload.state === "error") {
-        settleReject(new Error(payload.errorMessage ?? "OpenClaw tool call failed"));
+        settleReject(new Error(payload.errorMessage ?? "Paddy tool call failed"));
       }
     });
     function cleanup() {
@@ -362,8 +355,7 @@ function emitRealtimeTalkAgentProgress(
   if (!emitTalkEvent || payload.stream !== "tool") {
     return;
   }
-  const data = payload.data && typeof payload.data === "object" ? payload.data : {};
-  const record = data as Record<string, unknown>;
+  const record = asOptionalObjectRecord(payload.data) ?? {};
   const phase = typeof record.phase === "string" ? record.phase : undefined;
   const name = typeof record.name === "string" ? record.name : undefined;
   const toolCallId = typeof record.toolCallId === "string" ? record.toolCallId : undefined;
@@ -495,10 +487,10 @@ function maybeSpeakRealtimeTalkControlResult(
   speakControlResult: ((message: string) => void) | undefined,
   suppressSpeechForModes: readonly RealtimeVoiceAgentControlMode[] | undefined,
 ): void {
-  if (!speakControlResult || !result || typeof result !== "object") {
+  const record = asOptionalObjectRecord(result);
+  if (!speakControlResult || !record) {
     return;
   }
-  const record = result as Record<string, unknown>;
   const mode =
     typeof record.mode === "string" ? (record.mode as RealtimeVoiceAgentControlMode) : undefined;
   if (mode && suppressSpeechForModes?.includes(mode)) {

@@ -1,11 +1,11 @@
-# OpenClaw Matrix
+# Paddy Matrix
 
-Official OpenClaw channel plugin for Matrix rooms and direct messages.
+Official Paddy channel plugin for Matrix rooms and direct messages.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/matrix
 ```
 
-Configure the Matrix homeserver and bot credentials in OpenClaw. The plugin lets agents join configured rooms, receive messages, and reply through Matrix.
+Configure the Matrix homeserver and bot credentials in Paddy. The plugin lets agents join configured rooms, receive messages, and reply through Matrix.

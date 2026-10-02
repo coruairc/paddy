@@ -1,14 +1,14 @@
 ---
 summary: "Place outbound and accept inbound voice calls via Twilio, Telnyx, or Plivo, with optional realtime voice and streaming transcription"
 read_when:
-  - You want to place an outbound voice call from OpenClaw
+  - You want to place an outbound voice call from Paddy
   - You are configuring or developing the voice-call plugin
   - You need realtime voice or streaming transcription on telephony
 title: "Voice call plugin"
 sidebarTitle: "Voice call"
 ---
 
-Voice calls for OpenClaw via a plugin: outbound notifications, multi-turn
+Voice calls for Paddy via a plugin: outbound notifications, multi-turn
 conversations, full-duplex realtime voice, streaming transcription, and
 inbound calls with allowlist policies.
 
@@ -36,7 +36,7 @@ offline, start it after configuration.
       <Tab title="From a local folder (dev)">
         ```bash
         PLUGIN_SRC=./path/to/local/voice-call-plugin
-        openclaw plugins install "$PLUGIN_SRC"
+        paddy plugins install "$PLUGIN_SRC"
         cd "$PLUGIN_SRC" && pnpm install
         ```
       </Tab>
@@ -61,8 +61,8 @@ offline, start it after configuration.
   </Step>
   <Step title="Verify setup">
     ```bash
-    openclaw voicecall setup
-    openclaw voicecall setup --json
+    paddy voicecall setup
+    paddy voicecall setup --json
     ```
 
     Checks plugin enablement, provider credentials, webhook exposure, agent
@@ -71,15 +71,15 @@ offline, start it after configuration.
   </Step>
   <Step title="Smoke test">
     ```bash
-    openclaw voicecall smoke
-    openclaw voicecall smoke --to "+15555550123"
+    paddy voicecall smoke
+    paddy voicecall smoke --to "+15555550123"
     ```
 
     Both are dry runs by default. Add `--yes` to place a short outbound
     notify call:
 
     ```bash
-    openclaw voicecall smoke --to "+15555550123" --yes
+    paddy voicecall smoke --to "+15555550123" --yes
     ```
 
   </Step>
@@ -173,4 +173,4 @@ resolve here.
 - [Text-to-speech](/tools/tts)
 - [Voice wake](/nodes/voicewake)
 - [Google Meet plugin](/plugins/google-meet) - Meet calls, including Twilio sessions delegated through Voice Call
-- [`openclaw voicecall`](/cli/voicecall) - the plugin-provided CLI command, which appears only when this plugin is installed
+- [`paddy voicecall`](/cli/voicecall) - the plugin-provided CLI command, which appears only when this plugin is installed

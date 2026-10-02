@@ -71,7 +71,7 @@ async function admitTriageScope() {
         !parentIdentityCurrent())
   ) {
     throw new Error(
-      "automatic triage primary ownership changed before native admission; run openclaw triage manually",
+      "automatic triage primary ownership changed before native admission; run paddy triage manually",
     );
   }
   const scope = await inspectTriageScope();

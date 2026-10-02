@@ -1,6 +1,6 @@
 ---
 name: visualize
-description: "Create inline visuals for code and explanations, or author persistent OpenClaw dashboard widgets with show_widget."
+description: "Create inline visuals for code and explanations, or author persistent Paddy dashboard widgets with show_widget."
 ---
 
 # Visualize
@@ -38,7 +38,7 @@ widgets; follow the current tool schema instead of earlier delivery instructions
 ## Author the content
 
 Send the markup itself in `widget_code`. Use an HTML or SVG fragment, optionally
-including `<style>` and `<script>`; OpenClaw supplies the document shell, theme,
+including `<style>` and `<script>`; Paddy supplies the document shell, theme,
 and host bridges. Do not send a file path, Markdown fence, full HTML document, or
 another application's visualization directive. `title` is host metadata: start
 with useful content rather than repeating the title or drawing dashboard chrome.
@@ -93,7 +93,7 @@ they affect interpretation. Preserve the last successful data when refresh fails
 Use a mockup's product context for its inner controls while retaining the host's
 theme for the surrounding surface.
 
-OpenClaw styles native headings, controls, tables, and code. It provides `.card`,
+Paddy styles native headings, controls, tables, and code. It provides `.card`,
 `.row`, `.metric`, `.muted`, `.badge` with `.ok`/`.warn`/`.danger`/`.info`, and
 `button.primary`. Use these when they fit; do not assume another host's classes.
 Colors and typography use `--text`, `--text-strong`, `--muted`, `--surface`,
@@ -142,10 +142,14 @@ initialization and outside that host.
 
 ## Verify and deliver
 
-Fix reported inline-script syntax errors and call the tool again. Inspect the
-rendered result with available browser or device tools: verify libraries and
-fonts loaded, important controls work, and content fits the intended width and
-theme. For live dashboards, exercise the data read in the actual pinned frame.
+Fix reported inline-script syntax errors and call the tool again. Script errors
+thrown after an inline widget renders in the Control UI are reported back to this
+session. Agent browser tools normally run a separate profile without the viewer's
+Control UI session, so opening the chat there reaches sign-in, not the widget; do
+not use them to inspect inline widgets. When a browser or device tool can load the
+rendered surface itself, verify libraries and fonts loaded, important controls
+work, and content fits the intended width and theme. For live dashboards, exercise
+the data read in the actual pinned frame.
 Strict embed mode disables scripts. Report any concrete visual or platform
 verification gap; successful hosting alone proves neither rendering nor data access.
 

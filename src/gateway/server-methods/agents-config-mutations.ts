@@ -1,8 +1,7 @@
-// Agent config mutation helpers wrap retrying config writes for create/update/
-// delete flows and surface typed precondition failures to gateway handlers.
 import { hasAgentRosterProperty, tryResolveSoleAgentId } from "../../agents/agent-roster.js";
 import { resolveAgentDir, resolveAgentWorkspaceDir } from "../../agents/agent-scope.js";
 import { splitTrailingAuthProfile } from "../../agents/model-ref-profile.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   applyAgentConfig,
   findAgentEntryIndex,
@@ -22,7 +21,6 @@ type AgentDeleteMutationResult = {
   removedBindings: number;
 };
 
-/** Typed precondition failure surfaced by agent mutation handlers as gateway errors. */
 export class AgentConfigPreconditionError extends Error {}
 
 export class AgentModelSelectionError extends Error {}
@@ -60,12 +58,11 @@ export function validateAgentModelSelectionUpdate(
     return "Runtime selection requires a model-only update.";
   }
   if (splitTrailingAuthProfile(params.model).profile) {
-    return "Choose a model without an OpenClaw sign-in override for this runtime.";
+    return `Choose a model without a ${PRODUCT_NAME} sign-in override for this runtime.`;
   }
   return undefined;
 }
 
-/** Checks the current config snapshot for a concrete agent entry. */
 export function isConfiguredAgent(cfg: OpenClawConfig, agentId: string): boolean {
   return findAgentEntryIndex(listAgentEntries(cfg), agentId) >= 0;
 }
@@ -82,8 +79,9 @@ export function isImplicitAgentModelUpdate(
   );
 }
 
-/** Updates an existing agent entry while preserving omitted fields. */
-export async function updateAgentConfigEntry(params: AgentConfigUpdate): Promise<void> {
+export async function updateAgentConfigEntry(
+  params: AgentConfigUpdate & { assertCurrent?: () => void },
+): Promise<void> {
   const selectionError = validateAgentModelSelectionUpdate(params);
   if (selectionError) {
     throw new AgentModelSelectionError(selectionError);
@@ -102,6 +100,7 @@ export async function updateAgentConfigEntry(params: AgentConfigUpdate): Promise
     writeOptions: {
       ...(params.identity ? { allowConfigSizeDrop: true } : {}),
       assertConfigPathForWrite: () => {
+        params.assertCurrent?.();
         const error = validateSelection?.();
         if (error) {
           throw new AgentModelSelectionError(error);

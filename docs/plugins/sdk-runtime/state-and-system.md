@@ -166,7 +166,7 @@ The runtime config snapshot, durable plugin-scoped storage, system utilities, ev
     These two methods remain optional in the public store type for existing adapters. A plugin using retained storage must require the host capabilities it needs; do not silently fall back to an evicting store or retry failed reads through a different path. Retained runtime handles reject operations after their owning capability closes.
 
     <Warning>
-    Retained storage does not add a database-version fence. Older OpenClaw binaries still apply older cache and plugin-quota rules and must not write to expanded retained state. Before downgrading, restore a compatible pre-update backup; matching SQLite schema versions alone do not establish safe retention behavior.
+    Retained storage does not add a database-version fence. Older Paddy binaries still apply older cache and plugin-quota rules and must not write to expanded retained state. Before downgrading, restore a compatible pre-update backup; matching SQLite schema versions alone do not establish safe retention behavior.
     </Warning>
 
     `lookupMany(keys)` is an optional keyed-store capability for at most 10,000 exact keys per call. Results have the same length and order as the input, including duplicates. Each position is a `Result<T | undefined, PluginStateStoreError>`: `{ ok: true, value }` on success, including `value: undefined` for missing or expired keys, or `{ ok: false, error }` for corrupt stored JSON. An empty request returns `[]`. Keys use the same trimming and 512-byte UTF-8 limit as `lookup`; invalid keys or an oversized request fail with `PLUGIN_STATE_INVALID_INPUT` and operation `lookup` before reading. Database acquisition and query errors fail the whole call. Corrupt-JSON errors retain the `lookup` error code and operation in their per-key result. Inspect each result only when the reader reaches that position, and throw `result.error` if it is not `ok`; this lets a reader stop at an earlier missing or invalid chunk without raising a later corruption error. Each call uses one expiry cutoff and one SQLite selection in the same plugin and namespace, without creating a missing database. Separate calls, including metadata reads, do not share a snapshot; chunked formats must retain their generation, digest, and reader-lifetime checks.
@@ -235,7 +235,7 @@ assertion together with any action-specific permission check:
 
 ```typescript
 if (!store.withCurrent) {
-  throw new Error("Update OpenClaw to authorize this state mutation.");
+  throw new Error("Update Paddy to authorize this state mutation.");
 }
 const actionStore = store.withCurrent({
   assertCurrent: () => {
@@ -326,7 +326,7 @@ Callback-based `update` and `deleteIf` retain the native synchronous transaction
 do not replace either with a separate lookup and write. Worker errors retain `PluginStateStoreError` codes, operation, and path. Canonical
 state errors use their existing codec; other native causes retain bounded causal
 messages, error codes, and numeric `errno` values. Structured file logs include
-the process ID, thread ID, and OpenClaw version that constructed the plugin-state
+the process ID, thread ID, and Paddy version that constructed the plugin-state
 error in `owner`, plus nested cause details. Failures before command dispatch
 are wrapped on the caller thread. Native cause codes appear as `errorCode` in these
 records; the in-memory error keeps its original `code`. Existing log redaction

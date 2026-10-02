@@ -1,7 +1,7 @@
 ---
 summary: "Org-wide Slack installs across every workspace in a Grid organization"
 read_when:
-  - Installing OpenClaw at the Enterprise Grid organization level
+  - Installing Paddy at the Enterprise Grid organization level
   - Writing workspace-qualified channel and user policy keys
   - Checking which features an enterprise account supports
 title: "Slack Enterprise Grid"
@@ -25,15 +25,15 @@ actions and modal submissions, and the single `/openclaw` slash command.
 ```json
 {
   "display_information": {
-    "name": "OpenClaw",
-    "description": "Slack connector for OpenClaw"
+    "name": "Paddy",
+    "description": "Slack connector for Paddy"
   },
   "features": {
-    "bot_user": { "display_name": "OpenClaw", "always_online": true },
+    "bot_user": { "display_name": "Paddy", "always_online": true },
     "slash_commands": [
       {
         "command": "/openclaw",
-        "description": "Send a message to OpenClaw",
+        "description": "Send a message to Paddy",
         "should_escape": false
       }
     ]
@@ -89,7 +89,7 @@ actions and modal submissions, and the single `/openclaw` slash command.
 Have an Enterprise Grid Org Admin or Org Owner approve the app, install it at
 the organization level, and choose the workspaces the installation covers.
 Confirm that the app is available in every intended workspace before starting
-OpenClaw. Generate an app-level token with `connections:write` for Socket Mode,
+Paddy. Generate an app-level token with `connections:write` for Socket Mode,
 then copy the bot token from the org installation. Configure the account that
 uses the org-installed bot token:
 
@@ -122,15 +122,15 @@ Socket Mode connection. Replace the example URL with the Gateway's public
 ```json
 {
   "display_information": {
-    "name": "OpenClaw",
-    "description": "Slack connector for OpenClaw"
+    "name": "Paddy",
+    "description": "Slack connector for Paddy"
   },
   "features": {
-    "bot_user": { "display_name": "OpenClaw", "always_online": true },
+    "bot_user": { "display_name": "Paddy", "always_online": true },
     "slash_commands": [
       {
         "command": "/openclaw",
-        "description": "Send a message to OpenClaw",
+        "description": "Send a message to Paddy",
         "should_escape": false,
         "url": "https://gateway-host.example.com/slack/events"
       }
@@ -222,22 +222,22 @@ For each selected workspace, open it in Slack's web app and copy the `T...`
 workspace ID from `https://app.slack.com/client/T.../...`. Use that workspace ID
 with the channel's `C...` ID in every qualified policy key, as shown above.
 
-At startup, OpenClaw uses Slack `auth.test` to detect whether the token belongs
+At startup, Paddy uses Slack `auth.test` to detect whether the token belongs
 to a workspace installation or an Enterprise Grid org-wide installation. No
 installation-mode setting is required. Slack remains the source of truth for
-which workspaces have granted the installation; OpenClaw then applies the
+which workspaces have granted the installation; Paddy then applies the
 configured channel, user, DM, and mention policies to each delivered event.
 Enterprise installs default `allowBots` to `true`, with the same channel access,
 mention, bot-room authorization, and loop-prevention rules as workspace installs.
 Set `allowBots: false` on the account or channel to disable bot-triggered turns.
-OpenClaw retains the org installation's `auth.test` `user_id` and `bot_id` to
+Paddy retains the org installation's `auth.test` `user_id` and `bot_id` to
 ignore its own messages.
 
 Enterprise support accepts direct Socket Mode or HTTP message, mention,
 membership, reaction, pin, channel-created, channel-renamed, Block Kit action,
 modal, and configured shortcut and slash-command payloads plus
 workspace-qualified outbound messages and presence polling. Add any shortcuts to the app manifest's
-`features.shortcuts` list; OpenClaw accepts their callback IDs through the same
+`features.shortcuts` list; Paddy accepts their callback IDs through the same
 interaction path. The manifest examples register the single `/openclaw`
 command; native command mode still requires the administrator-managed command
 entries described in
@@ -260,7 +260,7 @@ use validated listener-owned, workspace-scoped event routing. Outbound
 acknowledgment, typing, and status reactions are also supported through that
 client and require `reactions:write`.
 
-OpenClaw records Enterprise Grid destinations as
+Paddy records Enterprise Grid destinations as
 `team:<team-id>:channel:<channel-id>` or `team:<team-id>:user:<user-id>`.
 Current-conversation Slack tool actions inherit that workspace. Heartbeat owner
 routing can resolve a bare user ID by verifying the recipient's membership against

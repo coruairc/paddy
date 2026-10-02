@@ -7,13 +7,13 @@ read_when:
 title: "Discovery and transports"
 ---
 
-OpenClaw has two related but distinct discovery problems:
+Paddy has two related but distinct discovery problems:
 
 1. **Operator remote control**: the macOS menu bar app controlling a Gateway running elsewhere.
 2. **Node pairing**: iOS/Android (and future nodes) finding a Gateway and pairing securely.
 
 All network discovery/advertising lives in the **Gateway**
-(`openclaw gateway`); clients (mac app, iOS) are consumers only.
+(`paddy gateway`); clients (mac app, iOS) are consumers only.
 
 ## Terms
 
@@ -41,7 +41,7 @@ Protocol details: [Gateway protocol](/gateway/protocol).
 
 ### 1) Bonjour / DNS-SD
 
-Multicast Bonjour is best-effort and does not cross networks. OpenClaw also
+Multicast Bonjour is best-effort and does not cross networks. Paddy also
 supports browsing the same Gateway beacon via a configured wide-area DNS-SD
 domain, so discovery can cover both `local.` on the same LAN and a configured
 unicast DNS-SD domain for cross-network discovery.
@@ -86,7 +86,7 @@ Security notes:
 
 Enable, disable, and override:
 
-- `openclaw plugins enable bonjour` enables LAN multicast advertising.
+- `paddy plugins enable bonjour` enables LAN multicast advertising.
 - `discovery.mdns.mode` in `openclaw.json` controls mDNS broadcast:
   `"minimal"` (default), `"full"` (adds `cliPath`/`sshPort` to both the LAN
   beacon and any wide-area DNS-SD zone), or `"off"` (disables mDNS).

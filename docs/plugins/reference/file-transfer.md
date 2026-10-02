@@ -15,7 +15,7 @@ Fetch, list, and write files on paired nodes via dedicated node commands. Bypass
 ## Distribution
 
 - Package: `@openclaw/file-transfer`
-- Install route: included in OpenClaw
+- Install route: included in Paddy
 
 ## Surface
 
@@ -38,7 +38,7 @@ you review them. Deny rules, size limits, and symlink settings continue to
 apply. Run this command on the Gateway host in an interactive terminal:
 
 ```bash
-openclaw file-transfer approvals migrate
+paddy file-transfer approvals migrate
 ```
 
 See [File transfers](/cli/file-transfer) for the full flag surface and the
@@ -58,7 +58,7 @@ runs never guess; they list unresolved items and direct you back to the same
 interactive command.
 
 The migration writes the new format once after confirmation and reports whether
-the adjacent config backup was verified. Older OpenClaw versions cannot read
+the adjacent config backup was verified. Older Paddy versions cannot read
 the migrated format. To downgrade, restore that reported `.bak` file before
 starting the older version; doing so also restores the older permission
 semantics.

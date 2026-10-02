@@ -1053,7 +1053,7 @@ describe("skills-clawhub", () => {
       throw new Error("expected ambiguous slug failure");
     }
     expect(result.error).toContain('Skill "weather" is ambiguous on ClawHub.');
-    expect(result.error).toContain("openclaw skills install @owner/weather");
+    expect(result.error).toContain("paddy skills install @owner/weather");
     expect(result.error).toContain("Multiple ClawHub publishers provide weather.");
   });
 
@@ -2091,7 +2091,7 @@ describe("skills-clawhub", () => {
         ok: false,
         code: "force_required",
         error:
-          'Skill "weather" was installed before OpenClaw recorded file fingerprints, so local changes cannot be detected. Updating replaces the installed skill directory.',
+          'Skill "weather" was installed before Paddy recorded file fingerprints, so local changes cannot be detected. Updating replaces the installed skill directory.',
       },
     ]);
 

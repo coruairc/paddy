@@ -1,13 +1,13 @@
-# OpenClaw Mistral Provider
+# Paddy Mistral Provider
 
-Official OpenClaw provider plugin for Mistral models, Voxtral transcription, and
+Official Paddy provider plugin for Mistral models, Voxtral transcription, and
 Mistral memory embeddings.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/mistral-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 Set `MISTRAL_API_KEY`, then select a `mistral/*` model or configure Mistral for

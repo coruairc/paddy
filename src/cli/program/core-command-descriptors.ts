@@ -1,23 +1,20 @@
 // Core root-command descriptor catalog used for help placeholders and lazy registration.
 import { isExperimentalClawsEnabled } from "../../claws/experimental.js";
+import { CLI_NAME, PRODUCT_NAME } from "../cli-name.js";
 import { isConfigMachineOutput } from "../config-output-mode.js";
 import { isDoctorMachineOutput } from "../doctor-output-mode.js";
 import { hasMachineOutputOption } from "../machine-output-argv.js";
 import type { NamedCommandDescriptor } from "./command-group-descriptors.js";
 
-/** Descriptor shape for root commands owned by the core CLI. */
-type CoreCliCommandDescriptor = NamedCommandDescriptor;
-
-/** Static root-command descriptors for the core CLI surface. */
 export const CORE_CLI_COMMAND_DESCRIPTORS = [
   {
     name: "setup",
-    description: "Chat with OpenClaw; onboard when setup is incomplete",
+    description: `Chat with ${PRODUCT_NAME}; onboard when setup is incomplete`,
     hasSubcommands: false,
   },
   {
     name: "crestodian", // hidden alias
-    description: "Deprecated: use openclaw setup",
+    description: `Deprecated: use ${CLI_NAME} setup`,
     hasSubcommands: false,
     hidden: true,
   },
@@ -40,7 +37,7 @@ export const CORE_CLI_COMMAND_DESCRIPTORS = [
   },
   {
     name: "claws",
-    description: "Inspect and add experimental OpenClaw Claws",
+    description: `Inspect and add experimental ${PRODUCT_NAME} Claws`,
     hasSubcommands: true,
     parentDefaultHelp: true,
   },
@@ -94,7 +91,7 @@ export const CORE_CLI_COMMAND_DESCRIPTORS = [
   },
   {
     name: "mcp",
-    description: "Manage OpenClaw mcp.servers config and channel bridge",
+    description: `Manage ${PRODUCT_NAME} mcp.servers config and channel bridge`,
     hasSubcommands: true,
     parentDefaultHelp: true,
   },
@@ -133,33 +130,24 @@ export const CORE_CLI_COMMAND_DESCRIPTORS = [
     description: "List stored conversation sessions",
     hasSubcommands: true,
   },
-  {
-    name: "tasks",
-    description: "Inspect durable background tasks and TaskFlow state",
-    hasSubcommands: true,
-  },
-] as const satisfies ReadonlyArray<CoreCliCommandDescriptor>;
+] as const satisfies ReadonlyArray<NamedCommandDescriptor>;
 
-/** Return core root-command descriptors in help/registration order. */
-export function getCoreCliCommandDescriptors(): ReadonlyArray<CoreCliCommandDescriptor> {
+export function getCoreCliCommandDescriptors(): ReadonlyArray<NamedCommandDescriptor> {
   return isExperimentalClawsEnabled()
     ? CORE_CLI_COMMAND_DESCRIPTORS
     : CORE_CLI_COMMAND_DESCRIPTORS.filter((descriptor) => descriptor.name !== "claws");
 }
 
-/** Return names for all core root commands. */
 export function getCoreCliCommandNamesCore(): string[] {
   return getCoreCliCommandDescriptors().map((descriptor) => descriptor.name);
 }
 
-/** Return core root commands that own child subcommands. */
 export function getCoreCliCommandsWithSubcommands(): string[] {
   return getCoreCliCommandDescriptors()
     .filter((descriptor) => descriptor.hasSubcommands)
     .map((descriptor) => descriptor.name);
 }
 
-/** Return core root commands whose parent action should default to help. */
 export function getCoreCliParentDefaultHelpCommands(): string[] {
   return getCoreCliCommandDescriptors()
     .filter((descriptor) => descriptor.parentDefaultHelp)

@@ -1,12 +1,12 @@
-# OpenClaw Voyage Provider
+# Paddy Voyage Provider
 
-Official OpenClaw memory embedding provider plugin for Voyage AI.
+Official Paddy memory embedding provider plugin for Voyage AI.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/voyage-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 Set `VOYAGE_API_KEY`, then configure memory search with `provider: "voyage"`.

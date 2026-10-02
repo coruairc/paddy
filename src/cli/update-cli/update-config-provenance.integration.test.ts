@@ -238,7 +238,7 @@ describe("update config provenance", () => {
               fixHints: [],
             },
             shouldRepair: true,
-            doctorFixCommand: "openclaw doctor --fix",
+            doctorFixCommand: "paddy doctor --fix",
           });
           expect(result.state.pendingChanges).toBe(true);
           await replaceConfigFile({

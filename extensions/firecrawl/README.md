@@ -1,12 +1,12 @@
-# OpenClaw Firecrawl Plugin
+# Paddy Firecrawl Plugin
 
-Official OpenClaw plugin for Firecrawl.
+Official Paddy plugin for Firecrawl.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/firecrawl-plugin
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/tools/firecrawl> for setup and configuration.

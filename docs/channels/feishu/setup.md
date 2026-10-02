@@ -7,18 +7,18 @@ title: "Feishu setup"
 sidebarTitle: "Setup"
 ---
 
-Run the channel setup wizard, then understand how OpenClaw durably accepts inbound Feishu events.
+Run the channel setup wizard, then understand how Paddy durably accepts inbound Feishu events.
 
 ## Quick start
 
 <Note>
-Requires OpenClaw 2026.5.29 or above. Run `openclaw --version` to check. Upgrade with `openclaw update`.
+Requires Paddy 2026.5.29 or above. Run `paddy --version` to check. Upgrade with `paddy update`.
 </Note>
 
 <Steps>
   <Step title="Run the channel setup wizard">
   ```bash
-  openclaw channels login --channel feishu
+  paddy channels login --channel feishu
   ```
   This installs the `@openclaw/feishu` plugin if it is missing, then walks through setup:
 
@@ -32,7 +32,7 @@ The wizard also asks for the API domain (Feishu vs Lark) and the group policy. I
   <a id="after-setup-completes%2C-restart-the-gateway-to-apply-the-changes" />
   Config changes follow [hot reload](/gateway/configuration/hot-reload). Check that Feishu is ready:
   ```bash
-  openclaw channels status --probe
+  paddy channels status --probe
   ```
   Start the Gateway if it is offline.
   </Step>
@@ -40,11 +40,11 @@ The wizard also asks for the API domain (Feishu vs Lark) and the group policy. I
 
 ## Inbound durability
 
-OpenClaw durably queues authenticated `im.message.receive_v1` and `drive.notice.comment_add_v1` envelopes before agent dispatch. In webhook mode, the durable `200` carries `x-openclaw-delivery-accepted: durable`; verification challenges, non-durable event types, and error responses omit the marker, so reverse proxies can require it to distinguish durable acceptance from a generic `200`. Pending or retryable events survive a Gateway restart, remain serialized per chat or document, and use Feishu's event ID to suppress duplicate queue entries while the active or retained completion record exists.
+Paddy durably queues authenticated `im.message.receive_v1` and `drive.notice.comment_add_v1` envelopes before agent dispatch. In webhook mode, the durable `200` carries `x-openclaw-delivery-accepted: durable`; verification challenges, non-durable event types, and error responses omit the marker, so reverse proxies can require it to distinguish durable acceptance from a generic `200`. Pending or retryable events survive a Gateway restart, remain serialized per chat or document, and use Feishu's event ID to suppress duplicate queue entries while the active or retained completion record exists.
 
-If a WebSocket event cannot be persisted after bounded retries, OpenClaw closes that socket and forces a fresh authenticated connection instead of continuing past an uncommitted turn. Other Feishu event types, including reactions and VC meeting invitations, use their normal event paths and do not receive this durable-queue guarantee.
+If a WebSocket event cannot be persisted after bounded retries, Paddy closes that socket and forces a fresh authenticated connection instead of continuing past an uncommitted turn. Other Feishu event types, including reactions and VC meeting invitations, use their normal event paths and do not receive this durable-queue guarantee.
 
-When a Feishu account stops, OpenClaw closes admission for message, menu, card, meeting, and reaction handlers and waits for accepted handlers and replay-guard writes to settle before releasing account resources. The five-minute per-chat queue limit releases the ordering slot; it does not cancel the original handler or let account cleanup finish while that handler is still running.
+When a Feishu account stops, Paddy closes admission for message, menu, card, meeting, and reaction handlers and waits for accepted handlers and replay-guard writes to settle before releasing account resources. The five-minute per-chat queue limit releases the ordering slot; it does not cancel the original handler or let account cleanup finish while that handler is still running.
 
 ## Webhook delivery window
 

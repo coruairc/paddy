@@ -3,6 +3,7 @@ import {
   normalizeOptionalString,
   normalizeStringifiedOptionalString,
 } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import type { OpenClawConfig } from "../config/types.js";
 import { isValidEnvSecretRefId, type SecretRef } from "../config/types.secrets.js";
 import { formatErrorMessage } from "../infra/errors.js";
@@ -54,10 +55,6 @@ function resolveDefaultProviderEnvVar(
     includeUntrustedWorkspacePlugins: false,
   });
   return envVars?.find((candidate) => normalizeOptionalString(candidate) !== undefined);
-}
-
-function resolveDefaultFilePointerId(provider: string): string {
-  return `/providers/${encodeJsonPointerToken(provider)}/apiKey`;
 }
 
 export function resolveRefFallbackInput(params: {
@@ -143,7 +140,7 @@ async function promptEnvSecretRefForSetup(params: {
   };
   await params.prompter.note(
     params.copy?.envValidatedMessage?.(envVar) ??
-      `Validated environment variable ${envVar}. OpenClaw will store a reference, not the key value.`,
+      `Validated environment variable ${envVar}. ${PRODUCT_NAME} will store a reference, not the key value.`,
     "Reference validated",
   );
   return { ref, resolvedValue };
@@ -269,7 +266,7 @@ async function promptProviderSecretRefForSetup(params: {
     });
     await params.prompter.note(
       params.copy?.providerValidatedMessage?.(selectedProvider, id, providerEntry.source) ??
-        `Validated ${providerEntry.source} reference ${selectedProvider}:${id}. OpenClaw will store a reference, not the key value.`,
+        `Validated ${providerEntry.source} reference ${selectedProvider}:${id}. ${PRODUCT_NAME} will store a reference, not the key value.`,
       "Reference validated",
     );
     return { ref, resolvedValue };
@@ -296,7 +293,7 @@ export async function promptSecretRefForSetup(params: {
 }): Promise<{ ref: SecretRef; resolvedValue: string }> {
   const defaultEnvVar =
     params.preferredEnvVar ?? resolveDefaultProviderEnvVar(params.provider, params.config) ?? "";
-  const defaultFilePointer = resolveDefaultFilePointerId(params.provider);
+  const defaultFilePointer = `/providers/${encodeJsonPointerToken(params.provider)}/apiKey`;
   let sourceChoice: SecretRefChoice = "env"; // pragma: allowlist secret
 
   while (true) {
@@ -311,7 +308,7 @@ export async function promptSecretRefForSetup(params: {
         },
         {
           value: "store",
-          label: "OpenClaw secret store",
+          label: `${PRODUCT_NAME} secret store`,
           hint: "Reference a team-scoped value in the shared state database",
         },
         {
@@ -327,12 +324,8 @@ export async function promptSecretRefForSetup(params: {
 
     if (source === "env") {
       return await promptEnvSecretRefForSetup({
-        provider: params.provider,
-        config: params.config,
-        prompter: params.prompter,
+        ...params,
         defaultEnvVar,
-        copy: params.copy,
-        env: params.env,
       });
     }
 
@@ -360,7 +353,7 @@ export async function promptSecretRefForSetup(params: {
         env: params.env ?? process.env,
       });
       await params.prompter.note(
-        `Validated store reference ${ref.provider}:${id}. OpenClaw will store a reference, not the value.`,
+        `Validated store reference ${ref.provider}:${id}. ${PRODUCT_NAME} will store a reference, not the value.`,
         "Reference validated",
       );
       return { ref, resolvedValue };
@@ -368,12 +361,8 @@ export async function promptSecretRefForSetup(params: {
 
     try {
       return await promptProviderSecretRefForSetup({
-        provider: params.provider,
-        config: params.config,
-        prompter: params.prompter,
+        ...params,
         defaultFilePointer,
-        copy: params.copy,
-        env: params.env,
       });
     } catch (error) {
       if (error instanceof Error && error.message === "retry") {

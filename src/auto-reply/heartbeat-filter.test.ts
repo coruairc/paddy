@@ -177,11 +177,11 @@ describe("isHeartbeatOkResponse", () => {
 
 describe("filterHeartbeatTranscriptArtifacts", () => {
   it.each([
-    "[OpenClaw heartbeat poll]",
-    "[OpenClaw exec completion]",
-    "[OpenClaw exec completion]\nDisable automatic completion turns with tools.exec.notifyOnExit=false; check per-agent overrides. Background exec and process poll remain available.",
-    "[OpenClaw cron wake]",
-    "[OpenClaw session event]",
+    "[Paddy heartbeat poll]",
+    "[Paddy exec completion]",
+    "[Paddy exec completion]\nDisable automatic completion turns with tools.exec.notifyOnExit=false; check per-agent overrides. Background exec and process poll remain available.",
+    "[Paddy cron wake]",
+    "[Paddy session event]",
   ])("removes no-op wake pairs for %s", (marker) => {
     const messages = [
       user("Hello"),

@@ -45,7 +45,7 @@ const POLL_INTERVAL_MS = 5_000;
 const MAX_POLL_ATTEMPTS = 120;
 
 // /v1/openai/videos is async: POST returns a job, GET /{id} polls until the
-// job leaves the queue. Mirrors the OpenAI Sora surface (extensions/openai).
+// job succeeds or fails, then the result contains downloadable video URLs.
 type DeepInfraVideoStatus = "queued" | "processing" | "succeeded" | "failed";
 
 type DeepInfraVideoJob = {
@@ -190,7 +190,7 @@ function resolveDeepInfraVideoBaseUrl(req: VideoGenerationRequest): string {
   // carry credentials).
   if (baseUrl.includes("/v1/inference")) {
     throw new Error(
-      'DeepInfra video generation requires an OpenAI-compatible endpoint, but models.providers.deepinfra.baseUrl targets the retired native /v1/inference surface. Run "openclaw doctor --fix" (api.deepinfra.com migrates automatically; custom hosts must set baseUrl to an OpenAI-compatible videos endpoint).',
+      'DeepInfra video generation requires an OpenAI-compatible endpoint, but models.providers.deepinfra.baseUrl targets the retired native /v1/inference surface. Run "paddy doctor --fix" (api.deepinfra.com migrates automatically; custom hosts must set baseUrl to an OpenAI-compatible videos endpoint).',
     );
   }
   return baseUrl;

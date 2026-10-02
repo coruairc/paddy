@@ -9,14 +9,14 @@ title: "Secrets management"
 sidebarTitle: "Secrets management"
 ---
 
-OpenClaw supports additive SecretRefs so supported credentials do not need to live as plaintext in configuration.
+Paddy supports additive SecretRefs so supported credentials do not need to live as plaintext in configuration.
 
 <Note>
 Plaintext still works. SecretRefs are opt-in per credential.
 </Note>
 
 <Warning>
-Plaintext credentials remain agent-readable when they sit in files the agent can inspect, including `openclaw.json`, `.env`, retired auth-profile JSON archives, or generated `agents/*/agent/models.json` files. SecretRefs reduce that local blast radius once every supported credential is migrated and `openclaw secrets audit --check` reports no plaintext residue.
+Plaintext credentials remain agent-readable when they sit in files the agent can inspect, including `openclaw.json`, `.env`, retired auth-profile JSON archives, or generated `agents/*/agent/models.json` files. SecretRefs reduce that local blast radius once every supported credential is migrated and `paddy secrets audit --check` reports no plaintext residue.
 </Warning>
 
 This page is an index. Secrets management is documented on five pages, one per reader job.

@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import { z } from "zod";
+import { PRODUCT_NAME } from "../brand.js";
 import { formatInstallationTargetCommand } from "../cli/installation-target-format.js";
 import { resolveSubprocessExitCode } from "../cli/subprocess-exit-code.js";
 import {
@@ -63,7 +64,7 @@ const triageReportPathsSchema = z.object({
   bundleError: z.string().max(1024).nullish(),
 });
 const TRIAGE_OUTPUT_HINT =
-  "See the Gateway host command output for saved diagnostics and the installation-specific openclaw triage command.";
+  "See the Gateway host command output for saved diagnostics and the installation-specific paddy triage command.";
 
 /** Capture the interactive handoff before replacement; invoke it after native cleanup releases. */
 export async function prepareUpdateFailureTriage(params: {
@@ -184,7 +185,7 @@ async function runPreparedUpdateFailureTriage(
         return { status: "cancelled" };
       }
       if (!entryPath) {
-        throw new Error("The installed OpenClaw entrypoint is unavailable.");
+        throw new Error(`The installed ${PRODUCT_NAME} entrypoint is unavailable.`);
       }
       const args = [
         entryPath,

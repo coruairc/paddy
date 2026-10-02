@@ -1,9 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { isRecord, normalizeOptionalString } from "openclaw/plugin-sdk/string-coerce-runtime";
+import type { RuntimeId } from "./runtime-id.js";
 import {
   runRuntimeParityScenario,
-  type RuntimeId,
   type RuntimeParityCell,
   type RuntimeParityResult,
   type RuntimeParityScenarioExecution,
@@ -241,7 +241,7 @@ export function renderJsonlReplayMarkdownReport(report: JsonlReplayMarkdownRepor
     (entry) => entry.firstDriftAtTurn !== undefined,
   );
   const lines = [
-    `# OpenClaw JSONL Replay Report - ${report.runtimePair[0]} vs ${report.runtimePair[1]}`,
+    `# Paddy JSONL Replay Report - ${report.runtimePair[0]} vs ${report.runtimePair[1]}`,
     "",
     `- Generated at: ${report.generatedAt}`,
     `- Provider mode: ${report.providerMode}`,

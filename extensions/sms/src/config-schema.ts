@@ -95,7 +95,7 @@ export const SmsChannelConfigSchema = buildChannelConfigSchema(SmsConfigSchema, 
     "accounts.*.allowFrom.*": { presentation: "phone-number" },
     textChunkLimit: {
       label: "SMS Text Chunk Limit",
-      help: "Maximum characters per outbound SMS chunk before OpenClaw splits long replies.",
+      help: "Maximum characters per outbound SMS chunk before Paddy splits long replies.",
     },
   },
 });

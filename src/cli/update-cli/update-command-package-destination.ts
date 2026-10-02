@@ -16,7 +16,8 @@ import {
   resolveNpmGlobalPrefixLayoutFromGlobalRoot,
 } from "../../infra/update-npm-prefix.js";
 import { UPDATE_FOREIGN_DESTINATION_REASON } from "../../shared/update-outcome.js";
-import { formatCliCommand } from "../command-format.js";
+import { PRODUCT_NAME } from "../cli-name.js";
+import { formatCliCommandWithNodeLauncher } from "../command-format.js";
 import { quoteCliArg, quotePowerShellArg } from "../quote-cli-arg.js";
 import {
   gatewayServiceCommandUsesRoot,
@@ -39,9 +40,9 @@ export async function inspectNpmGlobalDestination(
     launcherTarget: null,
   };
   const quote = process.platform === "win32" ? quotePowerShellArg : quoteCliArg;
-  const retry = formatCliCommand("openclaw update").replace(
-    /^openclaw\b/,
-    () => `node ${quote(path.resolve(root, "openclaw.mjs"))}`,
+  const retry = formatCliCommandWithNodeLauncher(
+    "paddy update",
+    path.resolve(root, "openclaw.mjs"),
   );
   const unknown = (prefix: string | null, cause: "permission" | "unreadable-layout") => ({
     kind: "unknown" as const,
@@ -112,12 +113,13 @@ export async function inspectNpmGlobalDestination(
     ].some((env) => env?.OPENCLAW_WRAPPER?.trim());
     const select =
       serviceInspection?.verdict.refreshDefinition && !wrapper && ownsLauncher && launcherTarget
-        ? formatCliCommand(
-            `openclaw gateway install --force --runtime-path ${quote(process.execPath)}`,
-          ).replace(/^openclaw\b/, () => `node ${quote(launcherTarget)}`)
+        ? formatCliCommandWithNodeLauncher(
+            `paddy gateway install --force --runtime-path ${quote(process.execPath)}`,
+            launcherTarget,
+          )
         : undefined;
     const message = [
-      `Selected npm destination ${prefix} is occupied by another OpenClaw installation: package ${packageRoot}; launcher ${launcher}${launcherTarget ? ` -> ${launcherTarget}` : " (target unresolved)"}.`,
+      `Selected npm destination ${prefix} is occupied by another ${PRODUCT_NAME} installation: package ${packageRoot}; launcher ${launcher}${launcherTarget ? ` -> ${launcherTarget}` : " (target unresolved)"}.`,
       layout?.entrypoint
         ? `The selected service${layout.sourcePath ? ` (${layout.sourcePath})` : ""} uses ${layout.entrypoint}; it does not own this destination.`
         : "No selected managed service could be verified as owning this destination.",

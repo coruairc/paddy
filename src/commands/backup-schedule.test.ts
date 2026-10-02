@@ -143,7 +143,7 @@ describe("scheduled backups", () => {
     [
       "unknown",
       "nope-agent",
-      'Unknown agent id "nope-agent". Run openclaw agents list to see configured agents.',
+      'Unknown agent id "nope-agent". Run paddy agents list to see configured agents.',
     ],
     ["whitespace-only", "   ", "--agent must not be blank"],
   ])("rejects an %s scheduled backup agent", async (_label, agent, message) => {

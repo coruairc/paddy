@@ -6,6 +6,7 @@
 import crypto from "node:crypto";
 import { normalizeProviderId } from "@openclaw/model-catalog-core/provider-id";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
+import { PRODUCT_NAME } from "../brand.js";
 import type { CliSessionBinding, SessionEntry } from "../config/sessions.js";
 import { normalizeCliSessionReseedReceipt } from "../config/sessions/cli-session-binding.js";
 import { readErrorName } from "../infra/errors.js";
@@ -193,7 +194,7 @@ export type CliSessionReuseResult =
   | { mode: "invalidate"; invalidatedReason: CliSessionInvalidatedReason };
 
 const CLI_SESSION_DRIFT_NOTE_PREFIX =
-  "OpenClaw resumed this CLI session after prompt content changed.";
+  `${PRODUCT_NAME} resumed this CLI session after prompt content changed.`;
 
 /** User-turn note telling a resumed CLI session that its prompt content drifted. */
 export function buildCliSessionDriftNote(reasons: readonly CliSessionContentDriftReason[]): string {

@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 // Package executable entrypoint that forwards to the CLI bootstrap.
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { PRODUCT_NAME } from "./brand.js";
 import { resolveCliArgvInvocation } from "./cli/argv-invocation.js";
 import { tryRunUpdateAdmissionBeforeStartup } from "./cli/run-main-update-admission.js";
 import { isMainModule } from "./infra/is-main.js";
@@ -25,7 +26,7 @@ if (
     await completePendingPackageLifecycle({ packageRoot: fileURLToPath(packageRootUrl) });
   } catch (error) {
     throw new Error(
-      `OpenClaw package lifecycle is incomplete. Reinstall with package scripts enabled, then retry. ${error instanceof Error ? error.message : String(error)}`,
+      `${PRODUCT_NAME} package lifecycle is incomplete. Reinstall with package scripts enabled, then retry. ${error instanceof Error ? error.message : String(error)}`,
       { cause: error },
     );
   }
@@ -159,7 +160,7 @@ if (isMain && !handledRootVersion && !handledAdmission) {
       defaultRuntime.writeJson(formatCliJsonFailure(error));
     }
     for (const line of formatCliFailureLines({
-      title: "OpenClaw hit an unexpected runtime error.",
+      title: `${PRODUCT_NAME} hit an unexpected runtime error.`,
       error,
       argv: process.argv,
     })) {

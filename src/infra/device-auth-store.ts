@@ -27,7 +27,7 @@ export function assertNoLegacyDeviceAuth(env: NodeJS.ProcessEnv | undefined): vo
   }
   if (hasLegacy) {
     throw new Error(
-      "Legacy device auth requires migration; stop the Gateway and run `openclaw doctor --fix`.",
+      "Legacy device auth requires migration; stop the Gateway and run `paddy doctor --fix`.",
     );
   }
 }

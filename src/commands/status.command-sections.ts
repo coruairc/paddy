@@ -6,6 +6,7 @@ import {
 } from "../../packages/gateway-protocol/src/connect-error-details.js";
 import type { TableColumn } from "../../packages/terminal-core/src/table.js";
 import { areRuntimeModelRefsEquivalent } from "../agents/model-runtime-aliases.js";
+import { formatMissingChildRuntimeWarning } from "../infra/child-runtime-viability.js";
 import { formatDurationCompact } from "../infra/format-time/format-duration.js";
 import type { HeartbeatEventPayload } from "../infra/heartbeat-events.js";
 import type { Tone } from "../memory-host-sdk/status.js";
@@ -24,7 +25,7 @@ type AgentStatusLike = {
   agents: AgentLocalStatus[];
 };
 
-type SummaryLike = Pick<StatusSummary, "tasks" | "taskAudit" | "heartbeat" | "sessions">;
+type SummaryLike = Pick<StatusSummary, "heartbeat" | "sessions">;
 type MemoryLike = MemoryStatusSnapshot | null;
 type SessionsRecentLike = StatusSummary["sessions"]["recent"][number];
 type EventLoopHealthLike = NonNullable<HealthSummary["eventLoop"]>;
@@ -73,34 +74,6 @@ export function buildStatusAgentsValue(params: {
     def?.lastActiveAgeMs != null ? params.formatTimeAgo(def.lastActiveAgeMs) : "unknown";
   const defSuffix = def ? ` · default ${def.id} active ${defActive}` : "";
   return `${params.agentStatus.agents.length} · ${pending} · sessions ${params.agentStatus.totalSessions}${defSuffix}`;
-}
-
-export function buildStatusTasksValue(params: {
-  summary: Pick<SummaryLike, "tasks" | "taskAudit">;
-  warn: (value: string) => string;
-  muted: (value: string) => string;
-}) {
-  if (params.summary.tasks.total <= 0) {
-    return params.muted("none");
-  }
-  return [
-    `${params.summary.tasks.active} active`,
-    `${params.summary.tasks.byStatus.queued} queued`,
-    `${params.summary.tasks.byStatus.running} running`,
-    params.summary.tasks.failures > 0
-      ? params.warn(
-          `${params.summary.tasks.failures} issue${params.summary.tasks.failures === 1 ? "" : "s"}`,
-        )
-      : params.muted("no issues"),
-    params.summary.taskAudit.errors > 0
-      ? params.warn(
-          `audit ${params.summary.taskAudit.errors} error${params.summary.taskAudit.errors === 1 ? "" : "s"} · ${params.summary.taskAudit.warnings} warn`,
-        )
-      : params.summary.taskAudit.warnings > 0
-        ? params.muted(`audit ${params.summary.taskAudit.warnings} warn`)
-        : params.muted("audit clean"),
-    `${params.summary.tasks.total} tracked`,
-  ].join(" · ");
 }
 
 export function buildStatusHeartbeatValue(params: { summary: Pick<SummaryLike, "heartbeat"> }) {
@@ -256,11 +229,9 @@ export function buildStatusSecurityAuditLines(params: {
       lines.push(params.theme.muted(`… +${importantFindings.length - shown.length} more`));
     }
   }
+  lines.push(params.theme.muted(`Full report: ${params.formatCliCommand("paddy security audit")}`));
   lines.push(
-    params.theme.muted(`Full report: ${params.formatCliCommand("openclaw security audit")}`),
-  );
-  lines.push(
-    params.theme.muted(`Deep probe: ${params.formatCliCommand("openclaw security audit --deep")}`),
+    params.theme.muted(`Deep probe: ${params.formatCliCommand("paddy security audit --deep")}`),
   );
   return lines;
 }
@@ -280,6 +251,16 @@ export function buildStatusHealthRows(params: {
       Detail: `${params.health.durationMs}ms`,
     },
   ];
+  const childRuntimeWarning = params.health.childRuntime
+    ? formatMissingChildRuntimeWarning(params.health.childRuntime)
+    : undefined;
+  if (childRuntimeWarning) {
+    rows.push({
+      Item: "Gateway runtime",
+      Status: params.warn("WARN"),
+      Detail: childRuntimeWarning,
+    });
+  }
   const sqliteWalWarning = formatSqliteWalHealthWarning(params.sqliteWal);
   if (sqliteWalWarning) {
     rows.push({ Item: "SQLite WAL", Status: params.warn("WARN"), Detail: sqliteWalWarning });
@@ -420,15 +401,15 @@ export function buildStatusFooterLines(params: {
     "Troubleshooting: https://docs.openclaw.ai/troubleshooting",
     ...(params.updateHint ? ["", params.warn(params.updateHint)] : []),
     "Next steps:",
-    `  Need to share?      ${params.formatCliCommand("openclaw status --all")}`,
-    `  Need to debug live? ${params.formatCliCommand("openclaw logs --follow")}`,
+    `  Need to share?      ${params.formatCliCommand("paddy status --all")}`,
+    `  Need to debug live? ${params.formatCliCommand("paddy logs --follow")}`,
     params.nodeOnlyGateway
-      ? `  Need node service?  ${params.formatCliCommand("openclaw node status")}`
+      ? `  Need node service?  ${params.formatCliCommand("paddy node status")}`
       : params.gatewayStartupPhase
-        ? `  Retry after startup: ${params.formatCliCommand("openclaw status --deep")}`
+        ? `  Retry after startup: ${params.formatCliCommand("paddy status --deep")}`
         : params.gatewayReachable
-          ? `  Need to test channels? ${params.formatCliCommand("openclaw status --deep")}`
-          : `  Fix reachability first: ${params.formatCliCommand("openclaw gateway probe")}`,
+          ? `  Need to test channels? ${params.formatCliCommand("paddy status --deep")}`
+          : `  Fix reachability first: ${params.formatCliCommand("paddy gateway probe")}`,
   ];
 }
 
@@ -480,12 +461,12 @@ export function buildStatusPairingRecoveryLines(params: {
     ...(params.pairingRecovery.requestId
       ? [
           params.muted(
-            `Recovery: ${params.formatCliCommand(`openclaw devices approve ${params.pairingRecovery.requestId}`)}`,
+            `Recovery: ${params.formatCliCommand(`paddy devices approve ${params.pairingRecovery.requestId}`)}`,
           ),
         ]
       : []),
-    params.muted(`Fallback: ${params.formatCliCommand("openclaw devices approve --latest")}`),
-    params.muted(`Inspect: ${params.formatCliCommand("openclaw devices list")}`),
+    params.muted(`Fallback: ${params.formatCliCommand("paddy devices approve --latest")}`),
+    params.muted(`Inspect: ${params.formatCliCommand("paddy devices list")}`),
   ];
 }
 

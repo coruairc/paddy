@@ -642,7 +642,7 @@ describe("system agent operations", () => {
       }),
     ).rejects.toThrow("Gateway restart did not complete");
 
-    expect(lines.join("\n")).toContain("[openclaw] running: gateway.restart");
+    expect(lines.join("\n")).toContain("[paddy] running: gateway.restart");
     expect(lines.join("\n")).not.toContain("[openclaw] done: gateway.restart");
     await expect(fs.access(path.join(tempDir, "audit", "system-agent.jsonl"))).rejects.toThrow();
   });
@@ -678,7 +678,7 @@ describe("system agent operations", () => {
       value: "19001",
       cliOptions: {},
     });
-    expect(lines.join("\n")).toContain("[openclaw] done: config.set");
+    expect(lines.join("\n")).toContain("[paddy] done: config.set");
     const audit = readLastAuditEntry();
     expectAuditRecord(
       audit,
@@ -708,7 +708,7 @@ describe("system agent operations", () => {
     expect(result.applied).toBe(true);
     expect(runConfigSet).toHaveBeenCalledOnce();
     expect(readLastAuditEntry()).toMatchObject({ operation: "config.set" });
-    expect(lines.join("\n")).toContain("[openclaw] done: config.set");
+    expect(lines.join("\n")).toContain("[paddy] done: config.set");
   });
 
   it("applies SecretRef config set through typed deps and writes an audit entry", async () => {
@@ -740,7 +740,7 @@ describe("system agent operations", () => {
         refId: "OPENCLAW_GATEWAY_TOKEN",
       },
     });
-    expect(lines.join("\n")).toContain("[openclaw] done: config.setRef");
+    expect(lines.join("\n")).toContain("[paddy] done: config.setRef");
     const audit = readLastAuditEntry();
     expectAuditRecord(
       audit,
@@ -940,7 +940,7 @@ describe("system agent operations", () => {
     expect(installRequest.applyRuntime).toBe(applyPluginRuntime);
     expect(beforePersistentApply).toHaveBeenCalledOnce();
     expectRuntimeArg(installRequest.runtime);
-    expect(lines.join("\n")).toContain("[openclaw] done: plugin.install");
+    expect(lines.join("\n")).toContain("[paddy] done: plugin.install");
     expect(lines.join("\n")).not.toContain(
       "Restart the Gateway to apply installed plugin changes.",
     );
@@ -1015,7 +1015,7 @@ describe("system agent operations", () => {
     const uninstallCall = requireFirstMockCall(runPluginUninstall, "runPluginUninstall");
     expect(uninstallCall[0]).toBe("openclaw-demo");
     expectRuntimeArg(uninstallCall[1]);
-    expect(lines.join("\n")).toContain("[openclaw] done: plugin.uninstall");
+    expect(lines.join("\n")).toContain("[paddy] done: plugin.uninstall");
     expect(lines.join("\n")).toContain("Restart the Gateway to apply plugin changes.");
   });
 

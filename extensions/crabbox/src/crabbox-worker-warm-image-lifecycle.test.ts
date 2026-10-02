@@ -2,8 +2,9 @@ import { createDeferred } from "openclaw/plugin-sdk/extension-shared";
 import { resetPluginStateStoreForTests } from "openclaw/plugin-sdk/plugin-state-test-runtime";
 import { closeOpenClawStateDatabaseAsync } from "openclaw/plugin-sdk/sqlite-runtime-testing";
 import { describe, expect, it, vi } from "vitest";
-import { crabboxState } from "./crabbox-state.test-support.js";
+import { crabboxState, openWarmImageStore } from "./crabbox-state.test-support.js";
 import { operationLeaseId } from "./crabbox-worker-profile.js";
+import { commandResult } from "./crabbox-worker-provider.test-support.js";
 import {
   listCrabboxWarmImages,
   recoverCrabboxWarmImageCapture,
@@ -11,9 +12,7 @@ import {
 import {
   captureWarmImage,
   checkpointResult,
-  commandResult,
   createWarmProvider,
-  openWarmImageStore,
   provisionWarmProfile,
   CHECKPOINT_ID,
   LEASE_ID,
@@ -162,7 +161,7 @@ describe("Crabbox warm-image lifecycle ownership", () => {
       if (deleteFails) {
         expect(warn).toHaveBeenCalledWith(
           expect.stringMatching(
-            /checkpoint retirement.*chk_profile_warm.*retained.*retry.*openclaw crabbox warm-images/iu,
+            /checkpoint retirement.*chk_profile_warm.*retained.*retry.*paddy crabbox warm-images/iu,
           ),
         );
         expect(warn).not.toHaveBeenCalledWith(expect.stringContaining("warm image capture failed"));

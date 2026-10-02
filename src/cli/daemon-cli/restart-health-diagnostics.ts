@@ -1,4 +1,5 @@
 import { formatPortDiagnostics } from "../../infra/ports-format.js";
+import { CLI_NAME } from "../cli-name.js";
 import type {
   GatewayPortHealthSnapshot,
   GatewayRestartSnapshot,
@@ -15,7 +16,7 @@ const restartFailureReasons: Partial<Record<GatewayRestartWaitOutcome, string>> 
 };
 
 function formatGatewayStillStarting(snapshot: GatewayRestartSnapshot): string {
-  return `Gateway service is still starting after ${Math.round((snapshot.elapsedMs ?? 0) / 1000)}s. Last observed startup phase: ${snapshot.startupPhase ?? "unknown"}. Run openclaw gateway status --deep.`;
+  return `Gateway service is still starting after ${Math.round((snapshot.elapsedMs ?? 0) / 1000)}s. Last observed startup phase: ${snapshot.startupPhase ?? "unknown"}. Run ${CLI_NAME} gateway status --deep.`;
 }
 
 export function renderGatewayPortHealthDiagnostics(snapshot: GatewayPortHealthSnapshot): string[] {

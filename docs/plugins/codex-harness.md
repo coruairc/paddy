@@ -1,5 +1,6 @@
 ---
-summary: "Run OpenClaw embedded agent turns through the official Codex app-server harness"
+doc-schema-version: 1
+summary: "Run Paddy embedded agent turns through the official Codex app-server harness"
 title: "Codex harness"
 read_when:
   - You want to use the official Codex app-server harness
@@ -8,10 +9,10 @@ read_when:
 ---
 
 The official `codex` plugin runs embedded OpenAI agent turns through Codex
-app-server instead of the built-in OpenClaw harness. Codex owns the
+app-server instead of the built-in Paddy harness. Codex owns the
 low-level agent session: native thread resume, native tool continuation,
-native compaction, and app-server execution. OpenClaw still owns chat
-channels, session files, model selection, OpenClaw dynamic tools, approvals,
+native compaction, and app-server execution. Paddy still owns chat
+channels, session files, model selection, Paddy dynamic tools, approvals,
 media delivery, and the visible transcript mirror.
 
 ## Shared output projection
@@ -27,7 +28,7 @@ hook handling, and transcript provenance. Constructed messages are persisted
 through the existing scoped transcript APIs; the shared projection helpers do
 not own storage.
 
-During `initialize`, OpenClaw uses `capabilities.optOutNotificationMethods` to
+During `initialize`, Paddy uses `capabilities.optOutNotificationMethods` to
 suppress unused app-server notifications before they reach the transport and JSON
 decoder. This includes cumulative turn diffs; file-change items still carry the
 individual changes. The plugin's notification policy owns the exact method list.
@@ -126,7 +127,7 @@ loading error and asks the caller to retry. The shared hydration continues in th
 background. Partial or invalid saved caches are rebuilt before their rows are
 shown, and initial retries preserve positions already used in continuation cursors.
 The index persists reconstructible display rows and file fingerprints through
-plugin state in the OpenClaw SQLite database. A valid complete snapshot serves a
+plugin state in the Paddy SQLite database. A valid complete snapshot serves a
 recent unfiltered page without a native request, including on remote app-servers.
 Snapshot restoration waits for earlier cache writes, and mutations received during
 restoration fence stale saved rows from publication. Background work then
@@ -298,18 +299,18 @@ The resident limiter bounds the admitted result, not this predecode peak. Normal
 catalog writes contain only the much smaller bounded row shape; resolving the
 generic peak requires a paged state API.
 
-Pasted text saved as a `.txt` attachment is extracted by OpenClaw and included in
+Pasted text saved as a `.txt` attachment is extracted by Paddy and included in
 the current turn as untrusted external content, subject to the existing file
 extraction limits. Extracted attachments use the sender's filename in model context,
 even when the stored or staged copy has a generated name. This also applies to
 adopted and forked Codex sessions with locked model selection. Images continue
 through Codex's native image input.
 
-For an unsandboxed local Codex process with file-read permission, OpenClaw also
+For an unsandboxed local Codex process with file-read permission, Paddy also
 supplies verified paths to saved documents. Codex can process the complete file
-when inline extraction is bounded. OpenClaw adds the paths to the admitted native
+when inline extraction is bounded. Paddy adds the paths to the admitted native
 input without changing its canonical attachment references or transcript text.
-If the path note cannot fit the native input budget, OpenClaw omits it and retains
+If the path note cannot fit the native input budget, Paddy omits it and retains
 the original request and inline attachment context.
 JSON escapes keep mention characters in attachment metadata from selecting skills
 or plugins while preserving the decoded filenames and paths.
@@ -319,7 +320,7 @@ admission. This does not expand workspace-only policies or expose Gateway paths
 to remote app-servers.
 
 Remote Codex app-servers can run on a different machine from the Gateway. Set
-`remoteWorkspaceRoot` to validate remote workspace attachment paths. OpenClaw
+`remoteWorkspaceRoot` to validate remote workspace attachment paths. Paddy
 transfers authoritative attachment bytes over the existing app-server connection
 using a fixed, no-shell `command/exec` reader. The reader rejects symlinks,
 enforces file and response size limits before allocation, and stages immutable
@@ -331,7 +332,7 @@ Uploads always use the Gateway's configured channel identity and request timeout
 Use canonical OpenAI model refs such as `openai/gpt-6-astra`. Do not configure
 legacy Codex GPT refs. Put OpenAI agent auth order under `auth.order.openai`.
 Legacy Codex auth profile ids and legacy Codex auth order entries are
-repaired by `openclaw doctor --fix`.
+repaired by `paddy doctor --fix`.
 
 With provider/model runtime policy unset or `auto`, the `openai/*` prefix alone
 never selects this harness. OpenAI may select Codex implicitly only for an
@@ -341,15 +342,15 @@ authored provider request override. Valid model-scoped `params.fastMode` /
 controls, so they do not count as authored provider request params or select a
 runtime by themselves. See
 [OpenAI implicit agent runtime](/providers/openai/runtimes#implicit-agent-runtime).
-If Codex owns auth before Platform versus ChatGPT routing is known, OpenClaw
+If Codex owns auth before Platform versus ChatGPT routing is known, Paddy
 still requires every candidate route to declare Codex compatibility. Native
 auth ownership alone never bypasses that route check.
 
-When no OpenClaw sandbox is active, OpenClaw starts Codex app-server threads
+When no Paddy sandbox is active, Paddy starts Codex app-server threads
 with Codex native code mode enabled (code-mode-only stays off by default), so
-native workspace/code capabilities remain available alongside OpenClaw
+native workspace/code capabilities remain available alongside Paddy
 dynamic tools routed through the app-server `item/tool/call` bridge. An
-ordinary OpenClaw sandbox or restricted tool policy disables native code mode
+ordinary Paddy sandbox or restricted tool policy disables native code mode
 unless you opt into the experimental sandbox exec-server path. The effective
 tool profile must allow all native shell and filesystem capabilities: `coding`
 and `full` do, while `messaging` and `minimal` disable the native surface. Agent
@@ -360,7 +361,7 @@ continuation, while `sandbox_exec` runs to completion under the existing timeout
 sandbox backend, and workspace-access policy.
 
 Sandbox turns also use these tools when Codex allows only managed hooks and cannot
-install the native process-admission hook. OpenClaw selects this existing execution
+install the native process-admission hook. Paddy selects this existing execution
 path before preparing the tool catalog and prompt. Existing policies that require
 other enforcing native hooks still require their normal preflight to pass.
 
@@ -376,20 +377,20 @@ existing conversation after an upgrade. To retain a limited profile, use a
 Gateway-managed conversation or runtime with a compatible execution environment.
 If native shell and filesystem access is intended, the operator can choose
 `coding` or `full`. Other explicit tool and sandbox restrictions still apply;
-an explicit finite tool allowlist still blocks native execution. OpenClaw does
+an explicit finite tool allowlist still blocks native execution. Paddy does
 not broaden tool access or replace externally owned threads automatically.
 
 Scheduled and other runtime tool allowlists use the same aliases, groups, and
-wildcards as the OpenClaw harness, including `cron`, `group:runtime`, and `web_*`.
+wildcards as the Paddy harness, including `cron`, `group:runtime`, and `web_*`.
 An explicit empty runtime allowlist disables tools. Independent restrictions
-must all permit a tool before OpenClaw registers it with Codex.
+must all permit a tool before Paddy registers it with Codex.
 
 Eligible native-shell turns also retain `gateway_exec` and `gateway_process`
-as a distinct OpenClaw execution path. Use `gateway_exec` only when a command
-needs OpenClaw-managed Gateway environment access, including Secret Store
+as a distinct Paddy execution path. Use `gateway_exec` only when a command
+needs Paddy-managed Gateway environment access, including Secret Store
 agent-readable environment values or protected egress sentinels. It is pinned
-to the Gateway host and follows OpenClaw exec policy. `gateway_process` uses the
-existing per-session OpenClaw process scope for background follow-up. Prefer
+to the Gateway host and follows Paddy exec policy. `gateway_process` uses the
+existing per-session Paddy process scope for background follow-up. Prefer
 Codex native shell for ordinary local work.
 
 A native shell command can yield a session handle before it exits. When a
@@ -398,20 +399,13 @@ its tool row records **Outcome unknown** and explains that the process is still
 running. This is not command success or failure. Collect the retained handle
 with the native process-wait tool to obtain its output and exit code. The
 continuation records that result without rewriting the earlier turn's snapshot.
+Confirmed background commands keep their native thread subscribed until their
+matching completion or source closure, including when the sandbox exec-server
+is disabled. Idle conversation eviction does not interrupt that work.
 The existing unknown-outcome audit diagnostic remains; cancellation and a
 command with no confirmed live owner retain their failure handling.
 
-These retained commands also appear in **Tasks**, where you can follow completion
-or stop an individual command. The task follows the native process after the
-foreground turn ends; its final status does not rewrite the earlier tool row.
-A known nonzero exit reports **Command failed**, even if a Stop request races
-with completion. A confirmed Stop with no native exit result reports **Command
-stopped**; this records the acknowledged request without attributing the exit to
-a particular signal. Task updates do not automatically start another model
-turn. If the native connection is lost before completion is confirmed, the task
-reports an unknown outcome instead of success.
-
-Stopping an active Codex run interrupts its turn. With the OpenClaw sandbox
+Stopping an active Codex run interrupts its turn. With the Paddy sandbox
 exec-server, cleanup stops the concrete processes admitted by that turn and
 preserves independent background work in the same reused thread. Each process
 retains its original source until settlement, including after foreground
@@ -428,33 +422,33 @@ claiming cleanup succeeded. Inspect that thread's running terminals before
 starting more work. This uses Codex's terminal ownership. It does not guarantee
 cleanup of commands that deliberately detach from that ownership.
 
-With the default `tools.exec.host: "auto"` and no active OpenClaw sandbox,
+With the default `tools.exec.host: "auto"` and no active Paddy sandbox,
 Codex also receives `node_exec` when a connected node supports `system.run`.
 Offline paired devices and devices without shell support do not expose this tool.
 When a node is configured, that binding must resolve to an eligible node. Native shell
 remains on the Codex app-server host and workspace
 (Gateway-local for the default stdio deployment). `node_exec` selects the sole
 connected node that supports `system.run`, or requires a name or id when several
-are eligible. It keeps OpenClaw's node approval policy in force and waits for the
+are eligible. It keeps Paddy's node approval policy in force and waits for the
 remote command to finish. Remote-node background follow-up is not available. If
 a finite runtime allowlist disables native Code Mode and leaves the turn without
-an execution environment, OpenClaw keeps its policy-filtered `exec` and
+an execution environment, Paddy keeps its policy-filtered `exec` and
 `process` tools available instead for direct, unsandboxed execution.
 
 When `tools.exec.host: "node"` or `/exec host=node` makes the node the session
-default, OpenClaw hides the Codex-native shell and exposes `node_exec` only while
+default, Paddy hides the Codex-native shell and exposes `node_exec` only while
 the node target is eligible. If it is unavailable, reconnect the configured node
-or explicitly change the exec host. OpenClaw does not silently fall back to the
+or explicitly change the exec host. Paddy does not silently fall back to the
 app-server or Gateway machine.
 
-`gateway_exec` is not exposed when an active OpenClaw sandbox, a node-default
+`gateway_exec` is not exposed when an active Paddy sandbox, a node-default
 execution policy, memory-flush restrictions, tool allow/deny policy, or
 `codexDynamicToolsExclude` would make Gateway host access a bypass. Secret
 Store environment values never enter the Codex app-server process, native
 shell, sandbox exec-server, ACP children, sandbox exec, or node exec.
 
 This Codex-native feature is separate from
-[OpenClaw Code Mode](/tools/code-mode), a separate JavaScript runtime with its
+[Paddy Code Mode](/tools/code-mode), a separate JavaScript runtime with its
 own automatic per-model activation and explicit overrides. It has a different
 `exec` input shape. For the
 broader model/provider/runtime split, start with
@@ -473,73 +467,84 @@ Proxy launch arguments are rejected to avoid changing a shared daemon's login.
 
 ## Native subagent status
 
-Native task tracking requires a host with asynchronous, exact-assignment task
-persistence. A task runtime without these capabilities can still register an
-ordinary Codex turn; native task admission reports an OpenClaw upgrade requirement.
-Task creation, status updates, and cleanup await persistence without blocking
-the Gateway event loop. Cleanup settles accepted task writes before releasing
-the native subscription; it does not wait for a later reply delivery.
+Native Codex subagents use Codex's execution and collaboration controls, not
+Paddy's retired Tasks view. Their current execution, assignment result, and
+result delivery remain separate facts.
 
-Native Codex subagents appear under their parent in OpenClaw's task view.
-Their current execution, task result, and result delivery are separate facts.
+Retirement revokes captured requester authority immediately, then joins accepted
+native submission and assignment writes before releasing child subscriptions.
+Client disposal joins those writes before releasing retained owners.
+
 An approval or input request shows what needs attention. A native mailbox wait
 shows that the agent is waiting for messages; it does not invent a list of child
 dependencies. Idle, interrupted, or unloaded native threads do not prove that
 the delegated task succeeded. A resumed native turn clears the previous turn's
-current tool activity while retaining the task identity.
+current tool activity while retaining the native assignment identity.
 
-Follow-up work after a native child has finished creates a separate task run on
-the same Codex thread. Earlier results and their delivery status remain intact.
-Each task's transcript links to the full native child conversation, including later follow-ups.
-Interrupted work keeps its task identity when the native turn resumes.
-If a recovered turn's end is still unknown, OpenClaw waits for native history or
-an end event before deciding whether later work resumes that task or starts a new one.
-Older tasks without enough native turn information remain unresolved instead of
-borrowing another turn's result.
+Follow-up work after a native child has finished creates a separate assignment
+on the same Codex thread. Earlier results and their delivery status remain intact.
+The native thread retains its conversation; there is no shared Tasks transcript
+viewer. Interrupted work keeps its assignment identity when the native turn resumes.
+If a recovered turn's end is still unknown, Paddy waits for native history or
+an end event before deciding whether later work resumes that assignment or starts
+a new one. Older assignments without enough native turn information remain
+unresolved instead of borrowing another turn's result.
 
-For Codex V1 follow-ups, OpenClaw retains a successful submission receipt with
-the parent binding until it records the matching native turn as a task. This
-allows recovery when the parent yields or the Gateway restarts before observing
+Pending native assignments retain their run, child-thread, native-parent, and
+known native-turn identities in metadata on the existing parent binding. This
+adds no SQL table and does not migrate old Tasks rows. On parent registration,
+Paddy can restore observation from those saved identities and native history
+only under fresh completion authority for the same requester session, lifecycle,
+and connection. Native-parent thread rotation can preserve those assignments;
+resetting the requester or changing the connection does not adopt them. Missing
+assignment metadata is not reconstructed from retired Tasks history.
+
+For Codex V1 follow-ups, Paddy retains a successful submission receipt with
+the parent binding until it records the matching native turn as an assignment.
+This allows recovery when the parent yields or the Gateway restarts before observing
 the child turn. A receipt alone does not keep an idle native connection alive.
 Observation follows the existing warm-thread lifetime; an unmatched receipt
 remains available for later recovery. Resetting the parent or replacing its native connection
-invalidates these receipts. Before downgrading OpenClaw, let pending native work
+invalidates these receipts. Before downgrading Paddy, let pending native work
 settle: older versions can read the binding but may discard its recovery receipts
 when updating it.
 
 Closing a native child applies to the assignment selected when the close starts.
-OpenClaw waits for Codex to confirm that the child's runtime is absent before
+Paddy waits for Codex to confirm that the child's runtime is absent before
 marking unfinished work canceled; a delayed close cannot cancel a later assignment.
-If confirmation is unavailable, the task asks you to retry the close request.
+If confirmation is unavailable, the close remains unresolved; retry the close
+request rather than treating it as successful cancellation.
 Native result receipts do not identify the child's turn. If an earlier result
 is still being recovered or repeated identical results make a receipt ambiguous,
-OpenClaw preserves the later pending delivery instead of risking a lost result;
+Paddy preserves the later pending delivery instead of risking a lost result;
 this can cause an additional continuation.
 
 Codex owns native subagent execution and controls. Follow up through the parent
-session, which can use Codex's native collaboration tools. OpenClaw's task view
-observes those children and delivers results after a parent yields. The native
-foreground parent already receives completion messages, so OpenClaw does not
-send another continuation for a result it has consumed. Explicit OpenClaw or ACP
-delegation continues to use `sessions_spawn`.
+session, which can use Codex's native collaboration tools. For an admitted native
+assignment, Paddy's harness observes the child and routes results after the
+parent yields. The native foreground parent already receives completion messages, so Paddy does not
+send another continuation for a result it has consumed. Explicit Paddy or ACP
+delegation continues to use `sessions_spawn`. Stored submission and result
+receipts are recovery evidence, not permission to adopt a child or deliver to a
+replacement parent.
 
 For native Codex V1 agents, a completed `wait` result also records delivery to
-the foreground parent. OpenClaw does not start another continuation for that
+the foreground parent. Paddy does not start another continuation for that
 same child result after the parent replies.
 
 ## Requirements
 
 - The official `@openclaw/codex` plugin installed. Include `codex` in
   `plugins.allow` if your config uses an allowlist.
-- Managed Codex app-server `0.155.1`. The plugin ships and manages
-  `@openai/codex` `0.155.1` by default, so a `codex` command on `PATH` does not
+- Managed Codex app-server `0.158.0`. The plugin ships and manages
+  `@openai/codex` `0.158.0` by default, so a `codex` command on `PATH` does not
   affect normal startup. Explicit custom, remote, and macOS desktop-owned
   app-servers must report a parseable semantic version of `0.149.0` or newer.
   Newer versions continue with a compatibility warning and normal runtime
   validation.
 - Node.js on the remote Codex app-server host when `remoteWorkspaceRoot` is set
   and cross-machine workspace attachments must be transferred.
-- Codex auth through `openclaw models auth login --provider openai`, an
+- Codex auth through `paddy models auth login --provider openai`, an
   app-server account already present in the agent's Codex home, or an
   explicit Codex API-key auth profile.
 
@@ -553,7 +558,7 @@ Install the official plugin, then sign in with Codex OAuth:
 
 ```bash
 openclaw plugins install @openclaw/codex
-openclaw models auth login --provider openai
+paddy models auth login --provider openai
 ```
 
 Enable the `codex` plugin and select an OpenAI agent model:
@@ -613,19 +618,19 @@ Then check Codex app-server state:
 /codex binding
 ```
 
-After installing or updating OpenClaw, explicitly verify the managed package
+After installing or updating Paddy, explicitly verify the managed package
 binary before cutover:
 
 ```bash
-openclaw doctor --lint --only codex/managed-app-server --json
+paddy doctor --lint --only codex/managed-app-server --json
 ```
 
 For an effective Codex route using the managed stdio app-server, this
 default-disabled check resolves the platform-native executable and requires the
-exact Codex version pinned by OpenClaw. It does not execute custom, remote, or
+exact Codex version pinned by Paddy. It does not execute custom, remote, or
 macOS desktop-owned app-servers.
 
-`/status` reports the resolved OpenClaw Fast policy (`on`, `off`, or `auto`)
+`/status` reports the resolved Paddy Fast policy (`on`, `off`, or `auto`)
 and the selected runtime. It does not report the upstream service tier actually
 honored or returned for a completed request. `/codex binding` reports the
 attached native thread and current model settings. `/codex status` reports
@@ -641,7 +646,7 @@ Ordinary `gpt-5.6-luna` and Luna Reserve (`gpt-reserve`) are separate routes.
 Selecting ordinary Luna does not consume Reserve merely because its quota has
 capacity. Turning Fast off changes the requested service tier, not the model route.
 
-OpenClaw currently reports the Reserve bucket when Codex returns it, but does not
+Paddy currently reports the Reserve bucket when Codex returns it, but does not
 implement the backend-authorized Reserve transition and recovery flow. Do not
 force the hidden Reserve model or treat an unused counter as authorization.
 Account and client eligibility remain backend decisions.

@@ -644,7 +644,7 @@ describe("managed service update handoff", () => {
           env: { PATH: "" },
           meta: { sessionKey: "agent:test:webchat:dm:user-123" },
         }),
-      ).rejects.toThrow("openclaw gateway install --force");
+      ).rejects.toThrow("paddy gateway install --force");
       expect(spawnMock).not.toHaveBeenCalled();
     } finally {
       process.execPath = originalExecPath;
@@ -707,7 +707,7 @@ describe("managed service update handoff", () => {
           expect(command).toBe(replacement);
         } else {
           await expect(handoff).rejects.toThrow(removed);
-          await expect(handoff).rejects.toThrow("openclaw gateway install --force");
+          await expect(handoff).rejects.toThrow("paddy gateway install --force");
           expect(spawnMock).not.toHaveBeenCalled();
         }
       } finally {
@@ -762,7 +762,7 @@ describe("managed service update handoff", () => {
         });
         if (missing) {
           await expect(handoff).rejects.toThrow(removed);
-          await expect(handoff).rejects.toThrow("openclaw gateway install --force");
+          await expect(handoff).rejects.toThrow("paddy gateway install --force");
           expect(spawnMock).not.toHaveBeenCalled();
           expect(beforePark).not.toHaveBeenCalled();
         } else {

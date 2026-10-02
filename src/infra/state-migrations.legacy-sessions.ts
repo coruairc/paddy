@@ -224,7 +224,7 @@ export async function migrateLegacySessions(
   }
   if (detected.sessions.targetStoreAliases.hasFinalSymlink) {
     warnings.push(
-      `Deferred legacy session migration in final-component symlink store ${detected.sessions.targetStorePath}; configure one canonical session.store path, then rerun openclaw doctor --fix`,
+      `Deferred legacy session migration in final-component symlink store ${detected.sessions.targetStorePath}; configure one canonical session.store path, then rerun paddy doctor --fix`,
     );
     return { changes, warnings };
   }
@@ -336,7 +336,7 @@ export async function migrateLegacySessions(
       }
     } else {
       warnings.push(
-        `Target sessions store unreadable; left untouched to avoid overwriting at ${detected.sessions.targetStorePath}. Run openclaw doctor --fix to archive it and retry the legacy merge.`,
+        `Target sessions store unreadable; left untouched to avoid overwriting at ${detected.sessions.targetStorePath}. Run paddy doctor --fix to archive it and retry the legacy merge.`,
       );
     }
   }
@@ -348,7 +348,7 @@ export async function migrateLegacySessions(
     const normalized = normalizeMergedSessionStore(merged, targetKeys);
     if (normalized.rejectedProtectedKeyCount > 0) {
       warnings.push(
-        `Refused legacy session migration because normalization rejected ${normalized.rejectedProtectedKeyCount} existing target session ${normalized.rejectedProtectedKeyCount === 1 ? "key" : "keys"}; left ${detected.sessions.targetStorePath} and ${detected.sessions.legacyStorePath} in place. Repair the conflicting rows, then rerun openclaw doctor --fix.`,
+        `Refused legacy session migration because normalization rejected ${normalized.rejectedProtectedKeyCount} existing target session ${normalized.rejectedProtectedKeyCount === 1 ? "key" : "keys"}; left ${detected.sessions.targetStorePath} and ${detected.sessions.legacyStorePath} in place. Repair the conflicting rows, then rerun paddy doctor --fix.`,
       );
       return { changes, warnings };
     }
@@ -711,7 +711,7 @@ export async function migrateLegacyAgentDir(
         }
       }
       warnings.push(
-        `Could not finish legacy agent migration: ${String(error)}. Any remaining source is preserved at ${retainedRoot}. Rerun openclaw doctor --fix after resolving this error.`,
+        `Could not finish legacy agent migration: ${String(error)}. Any remaining source is preserved at ${retainedRoot}. Rerun paddy doctor --fix after resolving this error.`,
       );
     } finally {
       if (preserveSource) {

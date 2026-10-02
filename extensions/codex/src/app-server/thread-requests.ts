@@ -81,7 +81,7 @@ const CODEX_TOOL_SEARCH_UNSUPPORTED_THREAD_CONFIG: JsonObject = {
   "features.multi_agent": false,
 };
 
-const CODEX_DELEGATION_DISABLED_THREAD_CONFIG: JsonObject = {
+export const CODEX_DELEGATION_DISABLED_THREAD_CONFIG: JsonObject = {
   "agents.enabled": false,
   "features.multi_agent": false,
   "features.multi_agent_v2": false,
@@ -221,7 +221,7 @@ export function buildThreadStartParams(
       ? { baseInstructions: CODEX_RING_ZERO_BASE_INSTRUCTIONS }
       : {}),
     personality: CODEX_NATIVE_PERSONALITY_NONE,
-    serviceName: "OpenClaw",
+    serviceName: "Paddy",
     threadSource: "openclaw",
     ...resolveCodexThreadEnvironmentSelection(options),
     // Codex 0.146 accepts canonical typed function and namespace specs natively.

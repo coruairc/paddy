@@ -9,6 +9,7 @@ import { resolveCronCompletionStatus } from "../../cron/completion-status.js";
 import type { CronRunLogEntry } from "../../cron/run-log-types.js";
 import { defaultRuntime } from "../../runtime.js";
 import { sleep } from "../../utils/sleep.js";
+import { CLI_NAME } from "../cli-name.js";
 import type { GatewayRpcOpts } from "../gateway-rpc.js";
 import { addGatewayClientOptions, callGatewayFromCli } from "../gateway-rpc.js";
 import { exitCliAfterOutput } from "../one-shot-exit.js";
@@ -123,7 +124,7 @@ export function registerCronSimpleCommands(cron: Command) {
             printCronJson(res);
             if (name === "disable" && process.stderr.isTTY) {
               process.stderr.write(
-                `Note: 'openclaw cron list' hides disabled jobs by default. Use 'openclaw cron list --all' to see this job, or 'openclaw cron enable <id>' to re-enable it.\n`,
+                `Note: '${CLI_NAME} cron list' hides disabled jobs by default. Use '${CLI_NAME} cron list --all' to see this job, or '${CLI_NAME} cron enable <id>' to re-enable it.\n`,
               );
             }
             if (method === "cron.update") {

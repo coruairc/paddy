@@ -1,5 +1,6 @@
 import { coerceErrorMessage } from "@openclaw/normalization-core/error-coercion";
 import { isScalar, parseDocument, visit } from "yaml";
+import { PRODUCT_NAME } from "../brand.js";
 import type { ClawDiagnostic } from "./types.js";
 
 function diagnostic(code: string, message: string): ClawDiagnostic {
@@ -17,7 +18,7 @@ export function parseClawYaml(
       : [
           "invalid_openclaw_profile",
           "unsupported_openclaw_profile_yaml_feature",
-          "OpenClaw profile YAML",
+          `${PRODUCT_NAME} profile YAML`,
         ];
   const document = parseDocument(raw, {
     prettyErrors: false,

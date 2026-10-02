@@ -42,14 +42,22 @@ private struct OpenClawPickerTransferUnavailable: LocalizedError {
     }
 }
 #endif
+#endif
 
 @MainActor
-private struct OpenClawChatAttachmentCaptureOwner {
+struct OpenClawChatAttachmentCaptureOwner {
     let viewModel: OpenClawChatViewModel
     let session: OpenClawChatViewModel.SessionSnapshot
-}
 
-#endif
+    init(viewModel: OpenClawChatViewModel) {
+        self.viewModel = viewModel
+        self.session = viewModel.currentSessionSnapshot()
+    }
+
+    func addAttachments(urls: [URL]) {
+        self.viewModel.addAttachments(urls: urls, for: self.session)
+    }
+}
 
 private struct SlashPanelHeightKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
@@ -388,11 +396,11 @@ struct OpenClawChatComposer: View {
             if self.composerChrome == .clean {
                 self.cleanComposerCard
             } else {
-                if self.showsToolbar, self.voiceNoteControl?.recorder.isRecording != true {
+                if self.style == .standard, self.voiceNoteControl?.recorder.isRecording != true {
                     self.composerToolbar
                 }
 
-                if self.showsAttachments, !self.viewModel.attachments.isEmpty {
+                if self.style == .standard, !self.viewModel.attachments.isEmpty {
                     self.attachmentsStrip
                 }
 
@@ -447,13 +455,11 @@ struct OpenClawChatComposer: View {
         OpenClawChatComposerPresentationOwner(viewModel: self.viewModel)
     }
 
-    #if !os(macOS)
     private func attachmentCaptureOwner() -> OpenClawChatAttachmentCaptureOwner {
-        OpenClawChatAttachmentCaptureOwner(
-            viewModel: self.viewModel,
-            session: self.viewModel.currentSessionSnapshot())
+        OpenClawChatAttachmentCaptureOwner(viewModel: self.viewModel)
     }
 
+    #if !os(macOS)
     var photoPickerPresentation: Binding<Bool> {
         Binding(
             get: { self.showsPhotoPicker },
@@ -613,7 +619,7 @@ struct OpenClawChatComposer: View {
         } label: {
             Image(systemName: "paperclip")
         }
-        .help("Add Attachment")
+        .help("Add attachment")
         .accessibilityLabel("Attachments")
         .buttonStyle(.bordered)
         .controlSize(.small)
@@ -678,7 +684,7 @@ struct OpenClawChatComposer: View {
                             visualSize: 32)
                     }
                 }
-                if self.showsConnectionPill {
+                if self.style == .standard {
                     ChatConnectionPill(
                         isConnected: self.viewModel.healthOK || (self.talkControl?.isGatewayConnected ?? false))
                 }
@@ -699,7 +705,7 @@ struct OpenClawChatComposer: View {
 
     private var cleanComposerCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if self.showsAttachments, !self.viewModel.attachments.isEmpty {
+            if self.style == .standard, !self.viewModel.attachments.isEmpty {
                 #if os(iOS)
                 self.attachmentsStrip
                     .padding(.horizontal, CleanChatComposerMetrics.footerInlineInset)
@@ -877,6 +883,10 @@ struct OpenClawChatComposer: View {
                 onPasteImageAttachment: { data, fileName, mimeType in
                     guard self.isAttachmentInputEnabled else { return }
                     self.viewModel.addImageAttachment(data: data, fileName: fileName, mimeType: mimeType)
+                },
+                onPasteFiles: { urls in
+                    guard self.isAttachmentInputEnabled else { return }
+                    self.viewModel.addAttachments(urls: urls)
                 },
                 onKeyCommand: { command, context in
                     self.handleComposerKeyCommand(command, context: context)
@@ -1285,18 +1295,6 @@ extension OpenClawChatComposer {
         .help("Refresh")
     }
 
-    private var showsToolbar: Bool {
-        self.style == .standard && self.composerChrome == .full
-    }
-
-    private var showsAttachments: Bool {
-        self.style == .standard
-    }
-
-    private var showsConnectionPill: Bool {
-        self.style == .standard && self.composerChrome == .full
-    }
-
     private var composerPadding: CGFloat {
         self.style == .onboarding ? 5 : (self.composerChrome == .clean ? 4 : 6)
     }
@@ -1430,9 +1428,10 @@ extension OpenClawChatComposer {
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
         panel.allowedContentTypes = OpenClawChatPickerAttachmentMetadata.allowedFileContentTypes
+        let owner = self.attachmentCaptureOwner()
         panel.begin { resp in
             guard resp == .OK else { return }
-            self.viewModel.addAttachments(urls: panel.urls)
+            owner.addAttachments(urls: panel.urls)
         }
     }
 
@@ -1440,13 +1439,14 @@ extension OpenClawChatComposer {
         guard self.isAttachmentInputEnabled else { return false }
         let fileProviders = providers.filter { $0.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) }
         guard !fileProviders.isEmpty else { return false }
+        let owner = self.attachmentCaptureOwner()
         for item in fileProviders {
             item.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
                 guard let data = item as? Data,
                       let url = URL(dataRepresentation: data, relativeTo: nil)
                 else { return }
                 Task { @MainActor in
-                    self.viewModel.addAttachments(urls: [url])
+                    owner.addAttachments(urls: [url])
                 }
             }
         }
@@ -1464,7 +1464,7 @@ extension OpenClawChatComposer {
         else { return }
         switch result {
         case let .success(urls):
-            owner.viewModel.addAttachments(urls: urls, for: owner.session)
+            owner.addAttachments(urls: urls)
         case let .failure(error):
             if !(error is CancellationError) {
                 owner.viewModel.errorText = error.localizedDescription

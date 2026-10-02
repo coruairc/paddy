@@ -142,8 +142,8 @@ describe("OpenClaw assistant", () => {
     expect(prompt).toContain("Default model: openai/gpt-5.5");
     expect(prompt).toContain("id=main, name=Main, workspace=/tmp/main");
     expect(prompt).toContain("OpenAI API key: found");
-    expect(prompt).toContain("OpenClaw docs: /tmp/openclaw/docs");
-    expect(prompt).toContain("OpenClaw source: /tmp/openclaw");
+    expect(prompt).toContain("Paddy docs: /tmp/paddy/docs");
+    expect(prompt).toContain("Paddy source: /tmp/paddy");
   });
 
   it("keeps truncated conversation history valid at a UTF-16 boundary", () => {

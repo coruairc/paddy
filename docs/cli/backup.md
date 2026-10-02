@@ -1,40 +1,40 @@
 ---
-summary: "CLI reference for `openclaw backup` (archives, SQLite snapshots, and Git history)"
+summary: "CLI reference for `paddy backup` (archives, SQLite snapshots, and Git history)"
 read_when:
-  - You want a first-class backup archive for local OpenClaw state
-  - You need a compact, verified snapshot of one OpenClaw SQLite database
+  - You want a first-class backup archive for local Paddy state
+  - You need a compact, verified snapshot of one Paddy SQLite database
   - You want scheduled, versioned database backups in an operator-owned Git repository
   - You want to preview which paths would be included before reset or uninstall
-  - You want to restore from a `.tar.gz` archive previously created by `openclaw backup`
+  - You want to restore from a `.tar.gz` archive previously created by `paddy backup`
 title: "Backup"
 ---
 
-# `openclaw backup`
+# `paddy backup`
 
-Create a local backup archive for OpenClaw state, config, auth profiles, channel/provider credentials, sessions, and optionally workspaces.
+Create a local backup archive for Paddy state, config, auth profiles, channel/provider credentials, sessions, and optionally workspaces.
 
 ```bash
-openclaw backup create
-openclaw backup create --output ~/Backups
-openclaw backup create --dry-run --json
-openclaw backup create --verify
-openclaw backup create --no-include-workspace
-openclaw backup create --only-config
+paddy backup create
+paddy backup create --output ~/Backups
+paddy backup create --dry-run --json
+paddy backup create --verify
+paddy backup create --no-include-workspace
+paddy backup create --only-config
 openclaw backup verify ./2026-03-09T08-00-00.000+08-00-openclaw-backup.tar.gz
 openclaw backup restore ./2026-03-09T08-00-00.000+08-00-openclaw-backup.tar.gz --target ./restored-openclaw
-openclaw backup sqlite create --global --repository ~/Backups/openclaw-sqlite
-openclaw backup sqlite create --agent main --repository ~/Backups/openclaw-sqlite
-openclaw backup sqlite list --repository ~/Backups/openclaw-sqlite
-openclaw backup sqlite verify ~/Backups/openclaw-sqlite/<snapshot-id>
-openclaw backup sqlite verify ~/Backups/openclaw-sqlite/<snapshot-id> --scratch ~/Private/openclaw-scratch
-openclaw backup sqlite restore ~/Backups/openclaw-sqlite/<snapshot-id> --target ./restored/openclaw.sqlite
-openclaw backup git init --repository ~/Backups/openclaw-git --remote <private-git-url>
-openclaw backup git create --repository ~/Backups/openclaw-git --all --push
-openclaw backup git log --repository ~/Backups/openclaw-git
-openclaw backup git verify --repository ~/Backups/openclaw-git --global
-openclaw backup git restore --repository ~/Backups/openclaw-git --agent main --target ./restored/agent.sqlite
-openclaw backup enable --repository ~/Backups/openclaw-git --every 24h --push
-openclaw backup disable
+paddy backup sqlite create --global --repository ~/Backups/paddy-sqlite
+paddy backup sqlite create --agent main --repository ~/Backups/paddy-sqlite
+paddy backup sqlite list --repository ~/Backups/paddy-sqlite
+paddy backup sqlite verify ~/Backups/paddy-sqlite/<snapshot-id>
+paddy backup sqlite verify ~/Backups/paddy-sqlite/<snapshot-id> --scratch ~/Private/paddy-scratch
+paddy backup sqlite restore ~/Backups/paddy-sqlite/<snapshot-id> --target ./restored/paddy.sqlite
+paddy backup git init --repository ~/Backups/paddy-git --remote <private-git-url>
+paddy backup git create --repository ~/Backups/paddy-git --all --push
+paddy backup git log --repository ~/Backups/paddy-git
+paddy backup git verify --repository ~/Backups/paddy-git --global
+paddy backup git restore --repository ~/Backups/paddy-git --agent main --target ./restored/agent.sqlite
+paddy backup enable --repository ~/Backups/paddy-git --every 24h --push
+paddy backup disable
 ```
 
 Archive `create`, `verify`, and `restore`, plus SQLite `create`, `list`, `verify`, and
@@ -43,19 +43,19 @@ Archive `create`, `verify`, and `restore`, plus SQLite `create`, `list`, `verify
 ## Notes
 
 - The archive embeds a schema-version-1 `manifest.json` with the resolved source paths and archive layout. Additive ownership metadata records configured agent ids and roots, including agent roots already covered by another asset; existing archive layout and older archives remain supported. New archives also record the canonical SQLite snapshots captured at creation; standalone verification rejects missing or mismatched inventory entries. Legacy archives without this inventory remain readable, but verification reports `sqliteInventoryVerified: false` because complete database coverage cannot be established. An empty inventory means no canonical databases were captured (for example, a config-only export), not a full database recovery point.
-- Default output is a timestamped `.tar.gz` archive in the current working directory. Timestamped filenames use your machine's local timezone and include the UTC offset. If the current working directory is inside a backed-up source tree, OpenClaw falls back to your home directory for the default archive location.
+- Default output is a timestamped `.tar.gz` archive in the current working directory. Timestamped filenames use your machine's local timezone and include the UTC offset. If the current working directory is inside a backed-up source tree, Paddy falls back to your home directory for the default archive location.
 - Existing archive files are never overwritten. Output paths inside the source state/workspace trees are rejected to avoid self-inclusion.
-- `openclaw backup verify <archive>` checks that the archive contains exactly one root manifest, rejects traversal-style archive paths and unsafe symbolic links, confirms every manifest-declared payload exists, and validates the root SQLite snapshot and agent snapshots listed in the manifest or captured durable registry. It rejects sidecars for those snapshots and checks their integrity and database roles, including each agent's identity. Other files, including plugin snapshots already validated during creation, remain opaque during verification and restore. `openclaw backup create --verify` runs that validation immediately after writing the archive.
+- `paddy backup verify <archive>` checks that the archive contains exactly one root manifest, rejects traversal-style archive paths and unsafe symbolic links, confirms every manifest-declared payload exists, and validates the root SQLite snapshot and agent snapshots listed in the manifest or captured durable registry. It rejects sidecars for those snapshots and checks their integrity and database roles, including each agent's identity. Other files, including plugin snapshots already validated during creation, remain opaque during verification and restore. `paddy backup create --verify` runs that validation immediately after writing the archive.
 - Full archives include the active config and its required `$include` files, including dependencies outside the state directory. They preserve authored bytes, comments, and environment placeholders; resolved secrets are not written into the config copy. These additional files may contain sensitive data, so protect the archive accordingly.
 - AppleDouble metadata named `._*.sqlite`, such as `._cron.sqlite`, is excluded from state and agent database roots only when its file signature confirms the format. Real SQLite files and hardlink aliases with these names follow the same ownership rules as other databases.
 - Full archives refuse unresolved include graphs, files that change during config capture, and include aliases that cannot be represented safely. Fix missing or unreadable files, use regular-file include paths, or pause concurrent edits and retry. `--no-include-workspace` still includes required config dependencies, even within an excluded workspace.
-- `openclaw backup create --only-config` backs up just the active JSON config file, **not** its `$include` dependencies. It is a root-file export, not a complete modular-config recovery point.
+- `paddy backup create --only-config` backs up just the active JSON config file, **not** its `$include` dependencies. It is a root-file export, not a complete modular-config recovery point.
 - Config files are pinned before database capture. SQLite snapshots retain their existing per-database consistency and sanitization; the archive is not one atomic snapshot across config and all databases. Later writes remain live and may not appear in the archive.
 
 Archive members live beneath a timestamped root and `payload/`, with source paths
 encoded below it. Counting entries beginning `.openclaw/agents/` therefore returns
 zero even when the agent databases are present. Inspect the root `manifest.json`
-and its `sqliteSnapshots` inventory, then run `openclaw backup verify <archive>`.
+and its `sqliteSnapshots` inventory, then run `paddy backup verify <archive>`.
 A path reported as `covered by` another asset is included through that parent;
 it has not been excluded from the archive.
 
@@ -65,7 +65,7 @@ Restore a complete archive into a fresh staging directory without touching the
 live state directory:
 
 ```bash
-openclaw backup restore <archive.tar.gz> --target <fresh-directory>
+paddy backup restore <archive.tar.gz> --target <fresh-directory>
 ```
 
 The target must not exist or must be an empty directory, and it cannot be inside
@@ -81,15 +81,15 @@ exactly as recorded in the archive.
   ratchet state, especially WhatsApp, may desynchronize after rollback and need
   relinking. Approvals and delivery/dedupe state also roll back, so review
   pending approvals before resuming the Gateway. Plugin `node_modules` trees
-  are not archived; after activation, run `openclaw plugins update <id>` or
-  reinstall with `openclaw plugins install <spec> --force`. The generated
-  `plugin-skills/` symlink index is also omitted; run `openclaw skills list` or
+  are not archived; after activation, run `paddy plugins update <id>` or
+  reinstall with `paddy plugins install <spec> --force`. The generated
+  `plugin-skills/` symlink index is also omitted; run `paddy skills list` or
   start an agent session after activation to rebuild it from plugin metadata.
 </Warning>
 
 Activation is a separate offline operator step. Stop the Gateway, move the
 restored state asset into place or point `OPENCLAW_STATE_DIR` at that asset,
-then run `openclaw doctor` before restarting. Use `manifest.json` as the source
+then run `paddy doctor` before restarting. Use `manifest.json` as the source
 of truth for the state, config, credentials, workspace, and configured agent
 paths. Restore custom agent roots to the locations configured by `agentDir`, or
 update those settings to their new locations before restarting. See
@@ -132,16 +132,16 @@ not create captures, change retention, or change ordinary backup sanitization.
 
 ## SQLite snapshots
 
-Use `openclaw backup sqlite` when you need a portable artifact for one OpenClaw-owned SQLite database instead of a broad state archive.
+Use `paddy backup sqlite` when you need a portable artifact for one Paddy-owned SQLite database instead of a broad state archive.
 
 Snapshot creation accepts exactly one named source. Agent sources always use
 the current configuration's resolved `<agentDir>/openclaw-agent.sqlite`, even
 when `agentDir` is outside the state directory:
 
-| Command                                                         | Database               |
-| --------------------------------------------------------------- | ---------------------- |
-| `openclaw backup sqlite create --global --repository <dir>`     | Shared OpenClaw state  |
-| `openclaw backup sqlite create --agent <id> --repository <dir>` | One per-agent database |
+| Command                                                      | Database               |
+| ------------------------------------------------------------ | ---------------------- |
+| `paddy backup sqlite create --global --repository <dir>`     | Shared Paddy state     |
+| `paddy backup sqlite create --agent <id> --repository <dir>` | One per-agent database |
 
 The repository contains one directory per committed snapshot. Each snapshot directory contains exactly:
 
@@ -160,28 +160,28 @@ database needs no original cold directory;
 missing or corrupt source archives fail backup creation. See
 [Cold transcript backups](/install/backups#cold-transcript-backups).
 
-SQLite snapshots can contain auth profiles, session state, plugin state, and other sensitive records. Protect repositories with the same permissions, encryption, retention policy, and destination restrictions as the live OpenClaw state directory.
+SQLite snapshots can contain auth profiles, session state, plugin state, and other sensitive records. Protect repositories with the same permissions, encryption, retention policy, and destination restrictions as the live Paddy state directory.
 
 ### Verify and restore
 
 ```bash
-openclaw backup sqlite verify <snapshot-directory>
-openclaw backup sqlite restore <snapshot-directory> --target <new-database-path>
+paddy backup sqlite verify <snapshot-directory>
+paddy backup sqlite restore <snapshot-directory> --target <new-database-path>
 ```
 
-Verification checks the strict manifest shape, artifact size and SHA-256, SQLite integrity, foreign keys, schema version, database role and owner, and OpenClaw-owned index definitions.
+Verification checks the strict manifest shape, artifact size and SHA-256, SQLite integrity, foreign keys, schema version, database role and owner, and Paddy-owned index definitions.
 
 Verification validates a private content-pinned copy so pathname races cannot swap the bytes SQLite inspects. By default, that temporary copy is created beside the snapshot repository and removed before the command returns. The staging root and its ancestor chain must prevent other users from replacing it. POSIX roots must be current-user-owned and not group/world writable; sticky ancestors such as `/tmp` are accepted for user-owned children. macOS ACL grants that expose or make staging replaceable are rejected. Windows roots and ancestors must be owned by the current user or a trusted OS principal, with ACLs that deny untrusted staging access. For a read-only mount or network share, pass `--scratch <existing-private-directory>` on storage with equivalent encryption and destination controls.
 
 Snapshot creation applies the same owner, ACL, ancestor, and path-identity checks to the repository before staging or publishing database bytes. Newly created directory edges and final publication metadata are synchronized through the shared `fs-safe` durability boundary before success is reported on supported filesystems.
 
-Restore repeats verification and writes only to a fresh target. It refuses an existing target, `-wal`, `-shm`, or `-journal` sidecar and never performs an in-place replacement of a live OpenClaw database. The target parent has the same path-security requirements as verification scratch. Activating a restored database remains an explicit offline operator step.
+Restore repeats verification and writes only to a fresh target. It refuses an existing target, `-wal`, `-shm`, or `-journal` sidecar and never performs an in-place replacement of a live Paddy database. The target parent has the same path-security requirements as verification scratch. Activating a restored database remains an explicit offline operator step.
 
 Snapshot repositories are local directories. Scheduling, upload, retention, incremental WAL bundles, failover, and restore-on-boot behavior are intentionally outside this command.
 
 ## Versioned Git backups
 
-`openclaw backup git` stores deterministic, per-table JSONL dumps in a plain Git repository owned by the operator. One repository can hold the shared database and every per-agent database:
+`paddy backup git` stores deterministic, per-table JSONL dumps in a plain Git repository owned by the operator. One repository can hold the shared database and every per-agent database:
 
 ```text
 global/manifest.json
@@ -196,18 +196,18 @@ Initialize the repository, then create a snapshot of the shared database and
 all configured agent databases:
 
 ```bash
-openclaw backup git init --repository ~/Backups/openclaw-git --remote <private-git-url>
-openclaw backup git create --repository ~/Backups/openclaw-git --all --push
+paddy backup git init --repository ~/Backups/paddy-git --remote <private-git-url>
+paddy backup git create --repository ~/Backups/paddy-git --all --push
 ```
 
 The repository root must be owned by the current user and must not be group- or
-world-writable. OpenClaw checks this when initializing or adopting a repository
+world-writable. Paddy checks this when initializing or adopting a repository
 and before every create. On POSIX systems, repair unsafe permissions with
 `chmod 700 <repository>` after confirming its ownership.
 
-The repository must be dedicated to OpenClaw backups. An existing `global/` or
+The repository must be dedicated to Paddy backups. An existing `global/` or
 `agents/<agentId>/` scope is backup-owned only when it is empty or contains a
-valid schema-version-1 `manifest.json`. OpenClaw refuses to replace any other
+valid schema-version-1 `manifest.json`. Paddy refuses to replace any other
 scope. With `--all`, it validates every existing entry under `agents/` before
 removing stale backup-owned agent scopes, so an unowned entry aborts the cleanup
 before anything is deleted.
@@ -220,7 +220,7 @@ backed up. The command reports that agent as degraded in CLI warnings, JSON
 has never been backed up. Explicit `--agent <id>` selections still fail if the
 selected database cannot be copied, and a run with no copyable databases fails.
 
-You can also select `--global`, repeat `--agent <id>`, or combine the shared database with selected agents. Explicit agent selections, `--all`, and scheduled backups resolve each database from its configured `agentDir`; historical artifact verification and restore use the artifact's recorded agent id without requiring that agent to remain in the current configuration. Snapshot creation uses the same online backup, sanitizer, `VACUUM`, owner validation, and integrity checks as `backup sqlite create`; it never reads live SQLite files directly. Rows and schema entries have deterministic ordering, and integers and blobs use lossless encodings. The command creates one commit named `openclaw backup <ISO8601>`. If the database content is unchanged, it prints `no changes` and creates no commit.
+You can also select `--global`, repeat `--agent <id>`, or combine the shared database with selected agents. Explicit agent selections, `--all`, and scheduled backups resolve each database from its configured `agentDir`; historical artifact verification and restore use the artifact's recorded agent id without requiring that agent to remain in the current configuration. Snapshot creation uses the same online backup, sanitizer, `VACUUM`, owner validation, and integrity checks as `backup sqlite create`; it never reads live SQLite files directly. Rows and schema entries have deterministic ordering, and integers and blobs use lossless encodings. The command creates one commit named `paddy backup <ISO8601>`. If the database content is unchanged, it prints `no changes` and creates no commit.
 
 Git staging is restricted to the backup-owned `global` and `agents` paths;
 unrelated files elsewhere in an adopted repository are never staged.
@@ -270,20 +270,20 @@ mistaken for a complete credential backup.
 Inspect or verify history without changing the live databases:
 
 ```bash
-openclaw backup git log --repository ~/Backups/openclaw-git --limit 20
-openclaw backup git verify --repository ~/Backups/openclaw-git --ref <commit> --global
-openclaw backup git verify --repository ~/Backups/openclaw-git --ref <commit> --agent main
+paddy backup git log --repository ~/Backups/paddy-git --limit 20
+paddy backup git verify --repository ~/Backups/paddy-git --ref <commit> --global
+paddy backup git verify --repository ~/Backups/paddy-git --ref <commit> --agent main
 ```
 
 Git history output must fit within a 16 MiB read. If a log request reports an
 output-limit error, retry with a smaller `--limit`. An oversized commit subject
 can exceed the limit even with `--limit 1`; inspect that history directly with
-Git. OpenClaw reports the failure without returning partial history entries.
+Git. Paddy reports the failure without returning partial history entries.
 
 Verification restores the selected snapshot into private scratch space, checks each table's row count and SHA-256, runs `PRAGMA integrity_check` and `PRAGMA foreign_key_check`, and removes the scratch copy. Restore writes only to a fresh target and refuses existing `-wal`, `-shm`, and `-journal` sidecars:
 
 ```bash
-openclaw backup git restore --repository ~/Backups/openclaw-git --ref <commit> --global --target ./restored/openclaw.sqlite
+paddy backup git restore --repository ~/Backups/paddy-git --ref <commit> --global --target ./restored/paddy.sqlite
 ```
 
 Restore rebuilds content-backed FTS5 indexes after loading their content tables. It deliberately omits the derived `session_transcript_index_state` projection so Gateway startup reconciliation rebuilds transcript search. `vec0` virtual tables are not materialized because the extension is unavailable in the restore process; memory indexing recreates them and schedules a full reindex.
@@ -298,12 +298,12 @@ not write a second set of table dumps.
 Provision one Gateway-owned automation with a fixed name:
 
 ```bash
-openclaw backup enable --repository ~/Backups/openclaw-git --every 24h --push
+paddy backup enable --repository ~/Backups/paddy-git --every 24h --push
 ```
 
 The interval defaults to `24h` when `--every` is omitted. An explicitly empty or whitespace-only interval is rejected before a schedule is created or updated.
 
-The default scope is every database. Use `--global-only` or `--agent <id>` to narrow it, and add `--exclude-secrets` for a redacted history. Pushed schedules (`--push`) redact credential-bearing tables and secret-prefixed machine-state rows by default because an unattended recurring push retains them durably in remote history; pass `--include-secrets` for explicit full-fidelity remote backups (restores from redacted history need device re-pairing and provider re-authentication). `--push` also requires the repository to already have an `origin` remote. Re-running `backup enable` updates the existing automation instead of creating a duplicate. `openclaw backup disable` removes it; disabling an already-missing job is a successful no-op. Backup scheduling currently requires a local Gateway because the command job runs on the Gateway host; for a remote Gateway, create the cron job manually with `openclaw cron add`.
+The default scope is every database. Use `--global-only` or `--agent <id>` to narrow it, and add `--exclude-secrets` for a redacted history. Pushed schedules (`--push`) redact credential-bearing tables and secret-prefixed machine-state rows by default because an unattended recurring push retains them durably in remote history; pass `--include-secrets` for explicit full-fidelity remote backups (restores from redacted history need device re-pairing and provider re-authentication). `--push` also requires the repository to already have an `origin` remote. Re-running `backup enable` updates the existing automation instead of creating a duplicate. `paddy backup disable` removes it; disabling an already-missing job is a successful no-op. Backup scheduling currently requires a local Gateway because the command job runs on the Gateway host; for a remote Gateway, create the cron job manually with `paddy cron add`.
 
 Disabling a schedule finds the managed automation across all list pages, even after renaming it. Unrelated automations with the same name are left in place.
 
@@ -311,11 +311,11 @@ Disabling a schedule finds the managed automation across all list pages, even af
 
 Every real archive, SQLite snapshot, and Git create attempt records a compact outcome in the existing shared state database. Dry runs are not recorded. The log retains the newest 200 attempts, so frequent schedules remain bounded.
 
-`openclaw status` shows one `Backups` overview row, and `openclaw status --json` includes the latest attempt and latest successful run. `openclaw doctor` prints an informational hint when no successful backup is recorded or the newest successful backup is more than 14 days old. Recording is best-effort: a record-write failure prints a warning but never changes a successful backup into a failed command.
+`paddy status` shows one `Backups` overview row, and `paddy status --json` includes the latest attempt and latest successful run. `paddy doctor` prints an informational hint when no successful backup is recorded or the newest successful backup is more than 14 days old. Recording is best-effort: a record-write failure prints a warning but never changes a successful backup into a failed command.
 
 ## What gets backed up
 
-`openclaw backup create` plans sources from your local OpenClaw install:
+`paddy backup create` plans sources from your local Paddy install:
 
 - The state directory (usually `~/.openclaw`)
 - The active config file path
@@ -334,7 +334,7 @@ ordinary workspace sources, not configured agent directories.
 `--only-config` skips state, agent, credentials-directory, workspace, and
 plugin-resource discovery and archives only the active config file path.
 
-OpenClaw first plans resources from configuration. It captures the root SQLite
+Paddy first plans resources from configuration. It captures the root SQLite
 database online, then derives and freezes registered-agent ownership from that
 private snapshot for database discovery and archive traversal. Paths are canonicalized: config, credentials, workspaces, and agents
 already covered by another included root are not duplicated as top-level
@@ -354,7 +354,7 @@ files; recoverable audit sources receive sanitized backup replacements. Their
 imported or rewritten. Sanitized `.migrated` companions and retained SQLite audit
 history remain included in the backup.
 
-During archive creation, OpenClaw excludes known live-mutation paths before `tar` reads them. This avoids races between a file's recorded size and concurrent writes. The filter applies these state-relative rules under each backed-up state directory:
+During archive creation, Paddy excludes known live-mutation paths before `tar` reads them. This avoids races between a file's recorded size and concurrent writes. The filter applies these state-relative rules under each backed-up state directory:
 
 | State-relative scope                          | Skipped entries                                       |
 | --------------------------------------------- | ----------------------------------------------------- |
@@ -374,9 +374,9 @@ Transient filename rules apply across all selected roots, including every agent 
 
 If an entry disappears during traversal or before it can be opened, the archive continues with the surviving entries. Each omitted path appears in the result's `skipped` list with reason `vanished`, and in the result's `warnings` and text summary. Required source roots and staged captures must still exist; permission and I/O errors still fail the archive. Changes that could redirect a read outside the selected roots also fail. Files are opened before their archive headers are written, so a vanished file cannot leave a partial entry.
 
-Chromium singleton entries coordinate one running browser on one host and are recreated when that profile starts; the rest of the profile's `user-data/` remains in the archive. Sandbox skills workspaces are generated copies of current skill sources and are materialized again when OpenClaw prepares the next sandbox context after restore; adjacent sandbox registry and other durable state remain included.
+Chromium singleton entries coordinate one running browser on one host and are recreated when that profile starts; the rest of the profile's `user-data/` remains in the archive. Sandbox skills workspaces are generated copies of current skill sources and are materialized again when Paddy prepares the next sandbox context after restore; adjacent sandbox registry and other durable state remain included.
 
-Managed SQLite snapshots cover the shared OpenClaw database, the quarantine and
+Managed SQLite snapshots cover the shared Paddy database, the quarantine and
 integrity-verification store, and per-agent databases declared by configuration,
 recorded in the captured durable agent registry, or discovered at
 `<stateDir>/agents/<agentId>/agent/openclaw-agent.sqlite`. This includes configured
@@ -417,12 +417,12 @@ outside the backup inventory cause an explicit refusal with no archive. Close
 the database writers cleanly and include every hardlink in those resources before retrying.
 Changes to the shared database file during capture also refuse the backup, including
 a concurrent alias checkpoint that truncates its WAL before the journal checks repeat.
-Canonical OpenClaw database aliases retain their existing owner validation and
+Canonical Paddy database aliases retain their existing owner validation and
 sanitization.
 
-Installed plugin source and manifest files under the state directory's `extensions/` tree are included, but their nested `node_modules/` dependency trees are skipped as rebuildable install artifacts. After restoring an archive, use `openclaw plugins update <id>` or reinstall with `openclaw plugins install <spec> --force` if a restored plugin reports missing dependencies.
+Installed plugin source and manifest files under the state directory's `extensions/` tree are included, but their nested `node_modules/` dependency trees are skipped as rebuildable install artifacts. After restoring an archive, use `paddy plugins update <id>` or reinstall with `paddy plugins install <spec> --force` if a restored plugin reports missing dependencies.
 
-The state directory's `plugin-skills/` root is a generated, OpenClaw-owned symlink index, not authoritative state. Backup creation reports and omits that root because its absolute targets are specific to the source installation. After activating restored state, run `openclaw skills list` or start an agent session to rebuild the links from current plugin metadata.
+The state directory's `plugin-skills/` root is a generated, Paddy-owned symlink index, not authoritative state. Backup creation reports and omits that root because its absolute targets are specific to the source installation. After activating restored state, run `paddy skills list` or start an agent session to rebuild the links from current plugin metadata.
 
 Agent-scoped temporary trees under `agents/<agentId>/agent/**/{tmp,.tmp}/` are also omitted and reported as regenerable. This includes temporary files directly below an agent directory and temporary trees inside agent runtime homes; durable sibling directories remain included. An explicitly configured config file, credentials directory, or workspace nested below an omitted temporary root remains included.
 
@@ -444,11 +444,11 @@ remains traversable to reach those protected descendants. Names such as `tmp`
 and `.tmp` are not blanket exclusions in custom agent directories; only an
 applicable owner declaration can omit their durable-looking siblings.
 
-Local edits inside a managed `dev/` checkout are developer source, not OpenClaw product state, and are not included. Commit and push those edits or copy the checkout separately before relying on a state backup.
+Local edits inside a managed `dev/` checkout are developer source, not Paddy product state, and are not included. Commit and push those edits or copy the checkout separately before relying on a state backup.
 
 ## Invalid config behavior
 
-`openclaw backup` bypasses the normal config preflight so it can still help during recovery. State archives require resolved agent and plugin ownership. If discovery fails, `backup create` reports the underlying error and refuses to publish an archive. `--no-include-workspace` excludes workspace files; it does not bypass ownership discovery.
+`paddy backup` bypasses the normal config preflight so it can still help during recovery. State archives require resolved agent and plugin ownership. If discovery fails, `backup create` reports the underlying error and refuses to publish an archive. `--no-include-workspace` excludes workspace files; it does not bypass ownership discovery.
 
 Discovery reads shared state through an online SQLite snapshot so concurrent writers do not make a valid config appear invalid. If the state cannot be read, resolve the reported error and retry backup.
 
@@ -456,12 +456,12 @@ Discovery reads shared state through an online SQLite snapshot so concurrent wri
 
 ## Size and performance
 
-OpenClaw does not enforce a built-in maximum backup size or per-file size limit. An archive write that produces no data for five minutes fails and removes its partial temporary file instead of hanging indefinitely. Practical limits otherwise come from:
+Paddy does not enforce a built-in maximum backup size or per-file size limit. An archive write that produces no data for five minutes fails and removes its partial temporary file instead of hanging indefinitely. Practical limits otherwise come from:
 
 - Available space for the temporary archive write plus the final archive
 - Time to walk large workspace trees and compress them into a `.tar.gz`
-- Time to rescan the archive with `--verify` or `openclaw backup verify`
-- Destination filesystem behavior: OpenClaw requires no-overwrite hard-link publication so a final archive path never exposes an in-progress copy; unsupported filesystems fail with an actionable error
+- Time to rescan the archive with `--verify` or `paddy backup verify`
+- Destination filesystem behavior: Paddy requires no-overwrite hard-link publication so a final archive path never exposes an in-progress copy; unsupported filesystems fail with an actionable error
 
 If final-directory durability confirmation fails after publication, the command reports failure but preserves the complete final entry rather than risk deleting a concurrent replacement.
 
@@ -479,8 +479,8 @@ a fresh directory. A changed directory identity is still rejected.
 Scratch observed by the scan that disappears before cleanup is recorded as
 already reclaimed, without a warning or a claim that this pass removed it.
 
-`openclaw doctor` reports scratch in the active temporary directory and recorded
-archive destination directories. `openclaw doctor --fix` removes recognized
+`paddy doctor` reports scratch in the active temporary directory and recorded
+archive destination directories. `paddy doctor --fix` removes recognized
 scratch whose lifetime transaction has ended. Unknown contents, symbolic links,
 and legacy directories without a lifetime token are preserved with guidance for
 inspection. Older releases do not create these tokens, so stop older backup
@@ -492,5 +492,5 @@ later pass can finish partial cleanup even after the lifetime token is gone.
 ## Related
 
 - [CLI reference](/cli)
-- [Migrating an OpenClaw install](/install/migrating)
+- [Migrating a Paddy install](/install/migrating)
 - [Restore a full archive](/install/backups#restore-a-full-archive)

@@ -104,7 +104,7 @@ function formatDynamicToolTimeoutDetails(params: {
 
   if (tool !== "process" || !isJsonObject(params.call.arguments)) {
     return {
-      responseMessage: `OpenClaw dynamic tool call timed out after ${params.timeoutMs}ms while running tool ${tool}.`,
+      responseMessage: `Paddy dynamic tool call timed out after ${params.timeoutMs}ms while running tool ${tool}.`,
       consoleMessage: `codex dynamic tool timeout: tool=${tool} toolTimeoutMs=${params.timeoutMs}; per-tool-call watchdog, not session idle`,
       meta: baseMeta,
     };
@@ -127,7 +127,7 @@ function formatDynamicToolTimeoutDetails(params: {
       : " while waiting for the process tool";
 
   return {
-    responseMessage: `OpenClaw dynamic tool call timed out after ${params.timeoutMs}ms${responseTarget}. This is a tool RPC timeout, not a session idle timeout.`,
+    responseMessage: `Paddy dynamic tool call timed out after ${params.timeoutMs}ms${responseTarget}. This is a tool RPC timeout, not a session idle timeout.`,
     consoleMessage: `codex process tool timeout:${actionPart}${sessionPart} toolTimeoutMs=${params.timeoutMs}${requestedPart}; per-tool-call watchdog, not session idle${retryHint}`,
     meta: {
       ...baseMeta,
@@ -250,7 +250,7 @@ async function executeDynamicToolCallWithTimeout(
     });
   };
   if (params.signal.aborted) {
-    const message = "OpenClaw dynamic tool call aborted before execution.";
+    const message = "Paddy dynamic tool call aborted before execution.";
     const terminalReason = resolveCodexToolAbortTerminalReason(params.signal);
     params.onFallbackSelected?.();
     notifyFailedToolResult(message, terminalReason);
@@ -270,7 +270,7 @@ async function executeDynamicToolCallWithTimeout(
   let operationReleased = false;
   let resolveAbort: ((response: CodexDynamicToolRuntimeResponse) => void) | undefined;
   const abortFromRun = () => {
-    const message = "OpenClaw dynamic tool call aborted.";
+    const message = "Paddy dynamic tool call aborted.";
     const terminalReason = resolveCodexToolAbortTerminalReason(params.signal);
     controller.abort(params.signal.reason ?? new Error(message));
     // Accepted queued admission can retain cancellation after the tool result;
@@ -289,7 +289,7 @@ async function executeDynamicToolCallWithTimeout(
     operationReleased = true;
     params.signal.removeEventListener("abort", abortFromRun);
     if (!controller.signal.aborted) {
-      controller.abort(new Error("OpenClaw dynamic tool call finished."));
+      controller.abort(new Error("Paddy dynamic tool call finished."));
     }
   };
   // The same signal stays live only through host-owned tracked admission work.
@@ -344,7 +344,7 @@ async function executeDynamicToolCallWithTimeout(
     const terminalReason = params.signal.aborted
       ? resolveCodexToolAbortTerminalReason(params.signal)
       : resolveToolExecutionErrorKind(error);
-    const message = formatToolExecutionErrorMessage(error, "OpenClaw dynamic tool call failed.");
+    const message = formatToolExecutionErrorMessage(error, "Paddy dynamic tool call failed.");
     notifyFailedToolResult(message, terminalReason);
     return finalizeTerminal(createFailedAfterPossibleDispatch(message, terminalReason));
   } finally {
@@ -368,7 +368,7 @@ function readDynamicToolResponseText(response: CodexDynamicToolCallResponse): st
     )
     .join("\n")
     .trim();
-  return text || "OpenClaw dynamic tool call failed.";
+  return text || "Paddy dynamic tool call failed.";
 }
 
 /** Strips OpenClaw-only metadata before sending a dynamic tool response to Codex. */

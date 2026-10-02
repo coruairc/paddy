@@ -226,7 +226,7 @@ describe("doctor runtime tool schema checks", () => {
             severity: "warning",
             path: `mcp.servers.${serverName}`,
             message: expect.stringContaining(
-              "openclaw doctor --lint --only core/doctor/runtime-tool-schemas",
+              "paddy doctor --lint --only core/doctor/runtime-tool-schemas",
             ),
           }),
         ),
@@ -557,7 +557,7 @@ describe("doctor runtime tool schema checks", () => {
           severity: "info",
           path: "mcp.servers.authenticated",
           message: expect.stringContaining("OAuth may rotate external credentials"),
-          fixHint: expect.stringContaining("openclaw mcp probe"),
+          fixHint: expect.stringContaining("paddy mcp probe"),
         }),
       ]);
       expect(mocks.createBundleMcpToolRuntime).toHaveBeenCalledTimes(1);
@@ -710,7 +710,7 @@ describe("doctor gateway runtime checks", () => {
         message: expect.stringContaining("cold account:discord:ops"),
         path: "channels.discord.accounts.ops.token",
         target: "account:discord:ops",
-        fixHint: expect.stringContaining("openclaw secrets reload"),
+        fixHint: expect.stringContaining("paddy secrets reload"),
       }),
       expect.objectContaining({
         checkId: "core/doctor/gateway-health",
@@ -718,7 +718,7 @@ describe("doctor gateway runtime checks", () => {
         message: expect.stringContaining("stale capability:tts"),
         path: "tts.providers.elevenlabs.apiKey",
         target: "capability:tts",
-        fixHint: expect.stringContaining("openclaw secrets reload"),
+        fixHint: expect.stringContaining("paddy secrets reload"),
       }),
       expect.objectContaining({
         checkId: "core/doctor/gateway-health",
@@ -731,7 +731,7 @@ describe("doctor gateway runtime checks", () => {
         checkId: "core/doctor/gateway-health",
         severity: "warning",
         message: expect.stringContaining("SQLite WAL: checkpoint blocked"),
-        fixHint: expect.stringContaining("openclaw status --deep"),
+        fixHint: expect.stringContaining("paddy status --deep"),
       }),
     ]);
     expect(findings[1]?.message).toContain("tts.providers.elevenlabs.voiceId");
@@ -786,7 +786,7 @@ describe("doctor gateway runtime checks", () => {
       credentialsRequired: false,
       message: "Gateway status could not be inspected: connect ECONNREFUSED 127.0.0.1:5829",
       fixHint:
-        "Inspect the service with `openclaw gateway status --deep`, or run `openclaw doctor` for guided checks.",
+        "Inspect the service with `paddy gateway status --deep`, or run `paddy doctor` for guided checks.",
     },
   ])("reports $label from exactly one sanitized status attempt", async (entry) => {
     if (entry.error instanceof GatewayClientRequestError) {
@@ -851,7 +851,7 @@ describe("doctor gateway runtime checks", () => {
         severity: "warning",
         message: expect.stringContaining("intentionally skipped"),
         fixHint:
-          "Rerun `openclaw doctor --lint --only core/doctor/gateway-health --allow-exec` to permit configured secret execution.",
+          "Rerun `paddy doctor --lint --only core/doctor/gateway-health --allow-exec` to permit configured secret execution.",
       }),
     ]);
     expect(JSON.stringify(findings)).not.toContain("PRIVATE_REF_ID");
@@ -894,7 +894,7 @@ describe("doctor gateway runtime checks", () => {
       runtimeStatus: "stopped",
       message: "Gateway service is not installed.",
       path: "gateway.mode",
-      fixHint: "Run `openclaw gateway install` to install the service.",
+      fixHint: "Run `paddy gateway install` to install the service.",
     },
     {
       label: "installed but not loaded",
@@ -903,7 +903,7 @@ describe("doctor gateway runtime checks", () => {
       runtimeStatus: "stopped",
       message: "Gateway service is installed but not loaded.",
       path: "/tmp/gateway.service",
-      fixHint: "Start the installed service with `openclaw gateway start`.",
+      fixHint: "Start the installed service with `paddy gateway start`.",
     },
     {
       label: "loaded with unconfirmed runtime",
@@ -913,7 +913,7 @@ describe("doctor gateway runtime checks", () => {
       message: "Gateway service runtime is unknown, not running.",
       path: "/tmp/gateway.service",
       fixHint:
-        "Run `openclaw gateway status --deep` to inspect the service before choosing a recovery action.",
+        "Run `paddy gateway status --deep` to inspect the service before choosing a recovery action.",
     },
   ])("reports actionable advice for a $label local gateway daemon", async (entry) => {
     mocks.readGatewayServiceState.mockResolvedValueOnce({

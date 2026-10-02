@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { asNullableRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { GatewayChatStreamProjection } from "../../packages/gateway-client/src/chat-stream-projection.js";
-import { gatewayOriginScope } from "../../packages/gateway-client/src/gateway-origin-scope.js";
 import { startGatewayClientWhenEventLoopReady } from "../../packages/gateway-client/src/readiness.js";
 import {
   GATEWAY_CLIENT_CAPS,
@@ -35,6 +34,7 @@ import {
 } from "../../packages/gateway-protocol/src/index.js";
 import { GATEWAY_SERVER_CAPS } from "../../packages/gateway-protocol/src/server-capabilities.js";
 import { isRetryableGatewayStartupUnavailableError } from "../../packages/gateway-protocol/src/startup-unavailable.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { getRuntimeConfig } from "../config/config.js";
 import type { ConfigFileSnapshot, OpenClawConfig } from "../config/types.openclaw.js";
 import { assertExplicitGatewayAuthModeWhenBothConfigured } from "../gateway/auth-mode-policy.js";
@@ -44,6 +44,10 @@ import {
   resolveGatewayUrlOverride,
 } from "../gateway/client-bootstrap.js";
 import { GatewayClient, GatewayClientRequestError } from "../gateway/client.js";
+import {
+  resolveGatewayDeviceAuthRoute,
+  type GatewaySshRoute,
+} from "../gateway/connection-details.js";
 import { resolveExplicitGatewayAuth } from "../gateway/credentials.js";
 import {
   gatewayEdgeAuthValueForTarget,
@@ -80,15 +84,7 @@ import type {
   TuiImageData,
 } from "./tui-backend.js";
 import { isListedTuiSession } from "./tui-session-list-policy.js";
-
-type GatewayConnectionOptions = {
-  url?: string;
-  token?: string;
-  password?: string;
-  tlsFingerprint?: string;
-  allowConfiguredAuthForExactTarget?: boolean;
-  suppressEnvAuthFallback?: boolean;
-};
+import type { TuiBoundGateway, TuiGatewayConnectionOptions } from "./tui-types.js";
 
 const STARTUP_CHAT_HISTORY_RETRY_TIMEOUT_MS = 60_000;
 const STARTUP_CHAT_HISTORY_DEFAULT_RETRY_MS = 500;
@@ -97,6 +93,7 @@ const STARTUP_CHAT_HISTORY_MAX_RETRY_MS = 5_000;
 type ResolvedGatewayConnection = {
   url: string;
   deviceAuthScope?: string;
+  sshTunnel?: GatewaySshRoute;
   token?: string;
   password?: string;
   edgeAuthHeaders?: Readonly<Record<string, string>>;
@@ -196,6 +193,7 @@ export class GatewayChatClient implements TuiBackend {
     this.client = new GatewayClient({
       url: connection.url,
       ...(connection.deviceAuthScope ? { deviceAuthScope: connection.deviceAuthScope } : {}),
+      ...(connection.sshTunnel ? { sshTunnel: connection.sshTunnel } : {}),
       token: connection.token,
       password: connection.password,
       edgeAuthHeaders: connection.edgeAuthHeaders,
@@ -255,14 +253,14 @@ export class GatewayChatClient implements TuiBackend {
     });
   }
 
-  static async connect(opts: GatewayConnectionOptions): Promise<GatewayChatClient> {
+  static async connect(opts: TuiGatewayConnectionOptions): Promise<GatewayChatClient> {
     const connection = await resolveGatewayConnection(opts);
     return new GatewayChatClient(connection);
   }
 
   /** Connect to a target already selected and authenticated by a preceding Gateway probe. */
   static async connectBound(
-    opts: GatewayConnectionOptions & { config: OpenClawConfig; url: string },
+    opts: TuiBoundGateway & { config: OpenClawConfig },
   ): Promise<GatewayChatClient> {
     return new GatewayChatClient(await resolveBoundGatewayConnection(opts));
   }
@@ -296,7 +294,7 @@ export class GatewayChatClient implements TuiBackend {
     ) {
       error.message = [
         error.message,
-        "Pairing request sent. Approve it in that gateway's Control UI (Settings -> Devices), or run `openclaw devices approve --latest` on the gateway host, then retry.",
+        "Pairing request sent. Approve it in that gateway's Control UI (Settings -> Devices), or run `paddy devices approve --latest` on the gateway host, then retry.",
       ].join("\n");
     }
     this.pendingConnectError = error;
@@ -655,7 +653,7 @@ export class GatewayChatClient implements TuiBackend {
  * credentials, while still applying the normal remote URL safety policy.
  */
 async function resolveBoundGatewayConnection(
-  opts: GatewayConnectionOptions & { config: OpenClawConfig; url: string },
+  opts: TuiBoundGateway & { config: OpenClawConfig },
 ): Promise<ResolvedGatewayConnection> {
   const url = buildGatewayConnectionDetails({
     config: opts.config,
@@ -672,9 +670,17 @@ async function resolveBoundGatewayConnection(
     targetUrl: url,
     env: process.env,
   });
+  const { deviceAuthScope, sshTunnel } = resolveGatewayDeviceAuthRoute({
+    config: opts.config,
+    url,
+    remote: true,
+    configuredRemote: opts.configuredRemote,
+    tlsFingerprint: opts.tlsFingerprint,
+  });
   return {
     url,
-    deviceAuthScope: gatewayOriginScope(url),
+    deviceAuthScope,
+    ...(sshTunnel ? { sshTunnel } : {}),
     token: explicitAuth.token,
     password: explicitAuth.password,
     ...(edgeAuthHeaders ? { edgeAuthHeaders } : {}),
@@ -683,7 +689,7 @@ async function resolveBoundGatewayConnection(
 }
 
 async function resolveGatewayConnection(
-  opts: GatewayConnectionOptions,
+  opts: TuiGatewayConnectionOptions,
 ): Promise<ResolvedGatewayConnection> {
   const config = getRuntimeConfig();
   const env = process.env;
@@ -727,8 +733,7 @@ async function resolveGatewayConnection(
     ...(activeLocalGatewayPort ? { localPortOverride: activeLocalGatewayPort } : {}),
     explicitTlsFingerprint: opts.tlsFingerprint,
     allowStoredOriginAuth: hasStoredOriginDeviceAuth,
-    overrideAuthErrorHint:
-      "Fix: pass --token or --password once to request pairing, approve it in that gateway's Control UI (Settings -> Devices), then retry with the same credential so OpenClaw can store the device token.",
+    overrideAuthErrorHint: `Fix: pass --token or --password once to request pairing, approve it in that gateway's Control UI (Settings -> Devices), then retry with the same credential so ${PRODUCT_NAME} can store the device token.`,
     buildConnectionDetails: buildGatewayConnectionDetails,
   });
   const hasStoredOriginAuth = Boolean(
@@ -753,6 +758,7 @@ async function resolveGatewayConnection(
   return {
     url: bootstrap.url,
     deviceAuthScope: bootstrap.deviceAuthScope,
+    ...(bootstrap.sshTunnel ? { sshTunnel: bootstrap.sshTunnel } : {}),
     token: bootstrap.auth.token,
     password: bootstrap.auth.password,
     ...(edgeAuthHeaders ? { edgeAuthHeaders } : {}),

@@ -94,7 +94,7 @@ describe("cli json stdout contract", () => {
             ]);
           }
           if (tty && format === "text") {
-            expect(result.stdout).toContain("OpenClaw");
+            expect(result.stdout).toContain("Paddy");
             expect(result.stderr).toContain("\u001B[?25h");
             expect(result.stderr).not.toContain("TELEMETRY_NETWORK_FORBIDDEN");
           } else {
@@ -571,26 +571,26 @@ describe("cli json stdout contract", () => {
     {
       name: "unknown root",
       args: ["pairng"],
-      diagnostic: 'OpenClaw does not know the command "pairng".',
-      suggestion: "openclaw pairing",
+      diagnostic: 'Paddy does not know the command "pairng".',
+      suggestion: "paddy pairing",
     },
     {
       name: "unknown nested command",
       args: ["sessions", "lst"],
-      diagnostic: 'OpenClaw sessions has no command "lst".',
-      suggestion: "openclaw sessions list",
+      diagnostic: 'Paddy sessions has no command "lst".',
+      suggestion: "paddy sessions list",
     },
     {
       name: "unknown nested command with a later argument",
       args: ["config", "gett", "gateway.port"],
-      diagnostic: 'OpenClaw config has no command "gett".',
-      suggestion: "openclaw config get",
+      diagnostic: 'Paddy config has no command "gett".',
+      suggestion: "paddy config get",
     },
     {
       name: "unknown root before help",
       args: ["pairng", "--help"],
-      diagnostic: 'OpenClaw does not know the command "pairng".',
-      suggestion: "openclaw pairing",
+      diagnostic: 'Paddy does not know the command "pairng".',
+      suggestion: "paddy pairing",
     },
   ])("renders $name as actionable guidance", async (testCase) => {
     await withTempHome(
@@ -606,9 +606,9 @@ describe("cli json stdout contract", () => {
         expect(result.stderr).not.toContain("The CLI command failed.");
         expect(result.stderr).not.toContain("Could not start the CLI.");
         expect(result.stderr).not.toContain("OPENCLAW_DEBUG");
-        expect(result.stderr).not.toContain("openclaw doctor");
+        expect(result.stderr).not.toContain("paddy doctor");
         if (testCase.args.includes("--help")) {
-          expect(result.stdout).not.toContain("Usage: openclaw [options] [command]");
+          expect(result.stdout).not.toContain("Usage: paddy [options] [command]");
         }
       },
       { prefix: "openclaw-unknown-command-e2e-" },
@@ -619,14 +619,14 @@ describe("cli json stdout contract", () => {
     {
       name: "unknown root",
       args: ["pairng", "--json"],
-      diagnostic: 'OpenClaw does not know the command "pairng".',
-      suggestion: "openclaw pairing",
+      diagnostic: 'Paddy does not know the command "pairng".',
+      suggestion: "paddy pairing",
     },
     {
       name: "unknown nested command",
       args: ["sessions", "lst", "--json"],
-      diagnostic: 'OpenClaw sessions has no command "lst".',
-      suggestion: "openclaw sessions list",
+      diagnostic: 'Paddy sessions has no command "lst".',
+      suggestion: "paddy sessions list",
     },
   ])("reports $name once with structured JSON guidance", async (testCase) => {
     await withTempHome(
@@ -644,7 +644,7 @@ describe("cli json stdout contract", () => {
         expect(payload.error.message).not.toMatch(/^error:/i);
         expect(payload.error.message).toContain(`Did you mean this?\n  ${testCase.suggestion}`);
         expect(payload.error.message).not.toContain("OPENCLAW_DEBUG");
-        expect(payload.error.message).not.toContain("openclaw doctor");
+        expect(payload.error.message).not.toContain("paddy doctor");
         expect(result.stderr).toContain(testCase.diagnostic);
         expect(result.stderr).toContain(`Did you mean this?\n  ${testCase.suggestion}`);
         expect(result.stderr.split(testCase.diagnostic)).toHaveLength(2);
@@ -652,7 +652,7 @@ describe("cli json stdout contract", () => {
         expect(result.stderr).not.toContain("The CLI command failed.");
         expect(result.stderr).not.toContain("Could not start the CLI.");
         expect(result.stderr).not.toContain("OPENCLAW_DEBUG");
-        expect(result.stderr).not.toContain("openclaw doctor");
+        expect(result.stderr).not.toContain("paddy doctor");
       },
       { prefix: "openclaw-unknown-command-json-e2e-" },
     );
@@ -670,7 +670,7 @@ describe("cli json stdout contract", () => {
           error: { message: string };
         };
         expect(payload.error.message).toBe(
-          'OpenClaw sessions has no command "lst".\nDid you mean this?\n  openclaw sessions list\nTry: openclaw sessions --help\nDocs: https://docs.openclaw.ai/cli',
+          'Paddy sessions has no command "lst".\nDid you mean this?\n  paddy sessions list\nTry: openclaw sessions --help\nDocs: https://docs.openclaw.ai/cli',
         );
         expect(payload.error.message).not.toContain("\u001B");
         expect(payload.error.message).not.toContain("\u0007");

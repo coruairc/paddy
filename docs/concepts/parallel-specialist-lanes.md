@@ -26,14 +26,14 @@ real bottlenecks:
   focused.
 - **Ownership ambiguity**: duplicate agents doing the same job waste capacity.
 
-OpenClaw already serializes runs per session and caps global parallelism
+Paddy already serializes runs per session and caps global parallelism
 through the [command queue](/concepts/queue). Specialist lanes add policy on
 top: which agent owns which work, what stays in chat, and what becomes
 background work.
 
 ## Recommended rollout
 
-For a ready-made starting point, `openclaw agents team create` ships these lane
+For a ready-made starting point, `paddy agents team create` ships these lane
 contracts as coordinator, researcher, writer, and reviewer roles. Each role puts
 its scope, artifact handoff, approval gates, and escalation rules in `AGENTS.md`.
 The preset wires the coordinator to the specialists and instructs specialists

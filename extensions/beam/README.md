@@ -10,7 +10,7 @@ conversation to continue the work.
 Enable Beam on the receiving Gateway:
 
 ```bash
-openclaw plugins enable beam
+paddy plugins enable beam
 ```
 
 The sender needs a reachable Gateway endpoint and permission to upload. Prepare

@@ -26,7 +26,7 @@ export function resolveNodeHostLauncherStateDir(
     env,
     stateEnvPath: path.join(resolveStateDir(env), ".env"),
     quiet: true,
-    onWarning: (message) => process.stderr.write(`openclaw: ${message}\n`),
+    onWarning: (message) => process.stderr.write(`paddy: ${message}\n`),
   });
   return resolveStateDir(env);
 }

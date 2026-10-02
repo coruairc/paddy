@@ -198,9 +198,9 @@ describe("noteSecurityWarnings gateway exposure", () => {
     expect(message).toContain(
       '- CRITICAL: Gateway bound to "lan" (0.0.0.0) without authentication.',
     );
-    expect(message).toContain("openclaw config set gateway.bind loopback");
+    expect(message).toContain("paddy config set gateway.bind loopback");
     expect(message).toContain("openclaw doctor --fix");
-    expect(message).toContain("openclaw security audit --deep");
+    expect(message).toContain("paddy security audit --deep");
   });
 
   it("uses env token to avoid critical warning", async () => {
@@ -327,7 +327,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
     const message = lastMessage();
     expect(message).toContain("disables approval forwarding only");
     expect(message).toContain("state/openclaw.sqlite#exec_approvals_config");
-    expect(message).toContain("openclaw approvals get --gateway");
+    expect(message).toContain("paddy approvals get --gateway");
   });
 
   it("explains how to renew inactive generated exec approvals", async () => {
@@ -401,7 +401,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
     const message = lastMessage();
     expect(message).toContain("plaintext secret-bearing config fields");
     expect(message).toContain("models.providers.openai.apiKey");
-    expect(message).toContain("openclaw secrets audit --check");
+    expect(message).toContain("paddy secrets audit --check");
   });
 
   it.each<{ name: string; provider: Partial<ModelProviderConfig>; paths: string[] }>([
@@ -591,7 +591,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
     expect(message).toContain('tools.exec.mode="full"');
     expect(message).toContain('defaults.security="allowlist"');
     expect(message).toContain("stricter side wins");
-    expect(message).not.toContain("OpenClaw default");
+    expect(message).not.toContain("Paddy default");
   });
 
   it("attributes broader host policy warnings to wildcard agent entries", async () => {
@@ -767,7 +767,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
     const message = lastMessage();
     expect(message).toContain("[secrets]");
     expect(message).toContain("failed to resolve account");
-    expect(message).toContain("Run: openclaw security audit --deep");
+    expect(message).toContain("Run: paddy security audit --deep");
   });
 
   it.each([
@@ -836,7 +836,7 @@ describe("noteSecurityWarnings gateway exposure", () => {
       expect(
         plainFindings.filter((finding) => finding.detail.includes('groupPolicy="open"')),
       ).toEqual([expect.objectContaining({ severity: "warn" })]);
-      expect(lastMessage()).toContain("openclaw security audit --deep");
+      expect(lastMessage()).toContain("paddy security audit --deep");
 
       const openGroupFindings = healthFindings.filter((finding) =>
         finding.message.includes('groupPolicy="open"'),

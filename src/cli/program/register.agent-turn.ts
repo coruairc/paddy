@@ -4,6 +4,7 @@ import type { Command } from "commander";
 import { formatDocsLink } from "../../../packages/terminal-core/src/links.js";
 import { theme } from "../../../packages/terminal-core/src/theme.js";
 import { THINKING_LEVELS_HELP } from "../../auto-reply/thinking.shared.js";
+import { CLI_NAME } from "../cli-name.js";
 import { inheritOptionFromParent } from "../command-options.js";
 import { measureCliCommandStartup } from "../command-startup-timing.js";
 import { formatHelpExamples } from "../help-format.js";
@@ -53,24 +54,24 @@ export function registerAgentTurnCommand(
         `
 ${theme.heading("Examples:")}
 ${formatHelpExamples([
-  ['openclaw agent --to +15555550123 --message "status update"', "Start a new session."],
-  ['openclaw agent --agent ops --message "Summarize logs"', "Use a specific agent."],
-  ["openclaw agent --agent ops --message-file ./task.md", "Read a multiline message file."],
+  [`${CLI_NAME} agent --to +15555550123 --message "status update"`, "Start a new session."],
+  [`${CLI_NAME} agent --agent ops --message "Summarize logs"`, "Use a specific agent."],
+  [`${CLI_NAME} agent --agent ops --message-file ./task.md`, "Read a multiline message file."],
   [
-    'openclaw agent --session-key agent:ops:incident-42 --message "Summarize status"',
+    `${CLI_NAME} agent --session-key agent:ops:incident-42 --message "Summarize status"`,
     "Target an exact session key.",
   ],
   [
-    'openclaw agent --session-id 1234 --message "Summarize inbox" --thinking medium',
+    `${CLI_NAME} agent --session-id 1234 --message "Summarize inbox" --thinking medium`,
     "Target a session with explicit thinking level.",
   ],
   [
-    'openclaw agent --to +15555550123 --message "Trace logs" --verbose on --json',
+    `${CLI_NAME} agent --to +15555550123 --message "Trace logs" --verbose on --json`,
     "Enable verbose logging and JSON output.",
   ],
-  ['openclaw agent --to +15555550123 --message "Summon reply" --deliver', "Deliver reply."],
+  [`${CLI_NAME} agent --to +15555550123 --message "Summon reply" --deliver`, "Deliver reply."],
   [
-    'openclaw agent --agent ops --message "Generate report" --deliver --reply-channel slack --reply-to "#reports"',
+    `${CLI_NAME} agent --agent ops --message "Generate report" --deliver --reply-channel slack --reply-to "#reports"`,
     "Send reply to a different channel/target.",
   ],
 ])}
@@ -134,17 +135,17 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/agent", "docs.openclaw.ai/cli/age
       "after",
       () =>
         `\n${theme.heading("Examples:")}\n${formatHelpExamples([
-          ['openclaw agent exec "Fix the failing test"', "Run in the current directory."],
+          [`${CLI_NAME} agent exec "Fix the failing test"`, "Run in the current directory."],
           [
-            "openclaw agent exec --message-file task.md --cwd ./repo",
+            `${CLI_NAME} agent exec --message-file task.md --cwd ./repo`,
             "Read a prompt file and set the workspace.",
           ],
           [
-            'openclaw agent exec "Summarize this repo" --model openai/gpt-6-astra --fallback anthropic/claude-sonnet-4-6 --json',
+            `${CLI_NAME} agent exec "Summarize this repo" --model openai/gpt-6-astra --fallback anthropic/claude-sonnet-4-6 --json`,
             "Use an explicit fallback chain and JSON output.",
           ],
           [
-            'openclaw agent exec "Inspect this repo" --model ollama/qwen3.5:9b --code-mode code --local-model-lean --json',
+            `${CLI_NAME} agent exec "Inspect this repo" --model ollama/qwen3.5:9b --code-mode code --local-model-lean --json`,
             "Force Code Mode with the lean local-model tool surface.",
           ],
         ])}\n\n${theme.muted("Docs:")} ${formatDocsLink("/cli/agent#agent-exec", "docs.openclaw.ai/cli/agent#agent-exec")}`,

@@ -479,7 +479,7 @@ describe("runBrowserHatchHandoff", () => {
     expect(displayed).toContain("ssh -N -L 18789:127.0.0.1:18789");
     expect(displayed).toContain("http://localhost:18789/dashboard/");
     expect(displayed).not.toContain(`http://${host}:18789`);
-    expect(displayed).not.toContain("openclaw devices approve <requestId>");
+    expect(displayed).not.toContain("paddy devices approve <requestId>");
     expect(displayed).not.toContain("test-token");
     expect(displayed).not.toContain("#token=");
     expect(displayed).toContain("#bootstrapToken=one-time-bootstrap");
@@ -540,7 +540,7 @@ describe("runBrowserHatchHandoff", () => {
     expect(displayed).not.toContain("ssh -N -L");
     expect(displayed).not.toContain("test-token");
     expect(displayed).not.toContain("#token=");
-    expect(displayed).not.toContain("openclaw devices approve <requestId>");
+    expect(displayed).not.toContain("paddy devices approve <requestId>");
     expect(sharedMocks.resolveAdvertisedControlUiLinks).toHaveBeenCalledWith({
       bind,
       port: 18789,

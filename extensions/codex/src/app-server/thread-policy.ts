@@ -60,11 +60,11 @@ export async function refreshCodexThreadPolicy(
   params: CodexThreadHandoffParams & { developerInstructions: string },
 ): Promise<void> {
   const notice =
-    "The following is the complete current OpenClaw-supplied generic instruction policy. It replaces earlier OpenClaw-supplied generic policy, including sections removed from that generic policy. Parent-local instructions supplied for the current inference request are outside this policy replacement. Independently supplied native managed, guardian, security, collaboration, and project instructions retain their authority. User requests retain their own authority.\n\n";
+    "The following is the complete current Paddy-supplied generic instruction policy. It replaces earlier Paddy-supplied generic policy, including sections removed from that generic policy. Parent-local instructions supplied for the current inference request are outside this policy replacement. Independently supplied native managed, guardian, security, collaboration, and project instructions retain their authority. User requests retain their own authority.\n\n";
   const text =
     notice +
     (params.developerInstructions === ""
-      ? "The current OpenClaw generic policy is empty; earlier OpenClaw generic policy is withdrawn."
+      ? "The current Paddy generic policy is empty; earlier Paddy generic policy is withdrawn."
       : params.developerInstructions);
   await injectCodexThreadDeveloperHandoff(params, text);
 }
@@ -78,11 +78,11 @@ export async function refreshCodexThreadSkillsCatalog(
   params: CodexThreadHandoffParams & { skillsInstructions: string | undefined },
 ): Promise<void> {
   const notice =
-    "The following is the complete current OpenClaw skills catalog. It replaces the earlier OpenClaw skills catalog in this conversation.\n\n";
+    "The following is the complete current Paddy skills catalog. It replaces the earlier Paddy skills catalog in this conversation.\n\n";
   const text =
     notice +
     (params.skillsInstructions ??
-      "The current OpenClaw skills catalog is empty; the earlier catalog is withdrawn.");
+      "The current Paddy skills catalog is empty; the earlier catalog is withdrawn.");
   await injectCodexThreadDeveloperHandoff(params, text);
 }
 

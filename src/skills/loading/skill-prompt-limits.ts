@@ -1,4 +1,3 @@
-// Skill prompt limits keep every catalog producer within one shared model-context budget.
 import {
   COMPACT_DESCRIPTION_MAX_CHARS,
   formatSkillsCompactForPrompt,
@@ -37,12 +36,12 @@ function buildSkillsLimitNote(params: {
       params.format.kind === "compact"
         ? ` (compact format, ${params.format.descriptionMaxChars > 0 ? "descriptions shortened" : "descriptions omitted"})`
         : "";
-    return `⚠️ Skills truncated: included ${params.included} of ${params.total}${compactDetails}. Run \`openclaw skills check\` to audit.`;
+    return `⚠️ Skills truncated: included ${params.included} of ${params.total}${compactDetails}. Run \`paddy skills check\` to audit.`;
   }
   if (params.format.kind === "compact") {
     const compactDetails =
       params.format.descriptionMaxChars > 0 ? "descriptions shortened" : "descriptions omitted";
-    return `⚠️ Skills catalog using compact format (${compactDetails}). Run \`openclaw skills check\` to audit.`;
+    return `⚠️ Skills catalog using compact format (${compactDetails}). Run \`paddy skills check\` to audit.`;
   }
   return "";
 }

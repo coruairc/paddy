@@ -1,6 +1,6 @@
-# Venice OpenClaw provider
+# Venice Paddy provider
 
-Official OpenClaw provider plugin for Venice.
+Official Paddy provider plugin for Venice.
 
 ## Install
 

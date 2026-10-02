@@ -1,13 +1,18 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { StringDecoder } from "node:string_decoder";
 import { formatErrorMessage } from "openclaw/plugin-sdk/error-runtime";
-import type { RuntimeEnv } from "openclaw/plugin-sdk/runtime-env";
+import { logVerbose, type RuntimeEnv } from "openclaw/plugin-sdk/runtime-env";
 import { normalizeLowercaseStringOrEmpty } from "openclaw/plugin-sdk/string-coerce-runtime";
 import { resolveUserPath } from "openclaw/plugin-sdk/text-utility-runtime";
 import { recoverIMessageBridge } from "./bridge-recovery.js";
 import { expandIMessageUserPath } from "./cli-path.js";
 import { DEFAULT_IMESSAGE_PROBE_TIMEOUT_MS } from "./constants.js";
 import { invalidateCachedIMessagePrivateApiStatus } from "./private-api-status.js";
+
+// Match only the documented Contacts reconciliation diagnostic; other Apple
+// framework messages must keep their error level.
+const IMSG_APPLE_FRAMEWORK_STDERR_PATTERN =
+  /^(?:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d+ imsg\[\d+:\d+\] )?Could not fetch group for change type \d+ with identifier [^:]+:ABGroup, making it a delete change type\.$/u;
 
 type IMessageRpcError = {
   code?: number;
@@ -56,7 +61,7 @@ function isIMessageBridgeStall(error: unknown): boolean {
 
 const BRIDGE_STALL_GUIDANCE =
   "The imsg private API bridge stopped responding. Run `imsg launch` to re-inject the dylib, " +
-  "then `openclaw channels status --probe` to refresh capability detection.";
+  "then `paddy channels status --probe` to refresh capability detection.";
 
 // Direct sends bypass the capability cache. Preserve the original error prefix,
 // class, code, and data so recovery guidance does not break send reconciliation.
@@ -378,7 +383,13 @@ export class IMessageRpcClient {
     if (!trimmed) {
       return;
     }
+    // The Full Disk Access promotion below must still see every line, including
+    // the benign ones, so record before choosing the log level.
     this.recordProcessDiagnostic(trimmed);
+    if (IMSG_APPLE_FRAMEWORK_STDERR_PATTERN.test(trimmed)) {
+      logVerbose(`imsg rpc: ${trimmed}`);
+      return;
+    }
     this.runtime?.error?.(`imsg rpc: ${trimmed}`);
   }
 

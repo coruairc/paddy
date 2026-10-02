@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { intro as clackIntro, outro as clackOutro } from "@clack/prompts";
 import { collectNestedErrorCandidates } from "@openclaw/normalization-core/error-coercion";
 import { stylePromptTitle } from "../../packages/terminal-core/src/prompt-style.js";
+import { PRODUCT_NAME } from "../brand.js";
 import type { BackupSqliteSnapshotFact } from "../commands/backup-resource-inventory.js";
 import type { DoctorDatabasePreflight } from "../commands/doctor-database-preflight.js";
 import type { DoctorOptions } from "../commands/doctor-prompter.js";
@@ -115,7 +116,7 @@ async function runDoctorHealthFlowWithResult(
   // Config loading can initialize SQLite-backed state before integrity runs.
   // Preserve the entry fact so doctor can report that automatic initialization.
   const stateDirExistedAtStart = stateDirectoryExistsAtDoctorStart();
-  intro("OpenClaw doctor");
+  intro(`${PRODUCT_NAME} doctor`);
 
   const { resolveOpenClawPackageRoot } = await import("../infra/openclaw-root.js");
   const root = await resolveOpenClawPackageRoot({
@@ -132,6 +133,7 @@ async function runDoctorHealthFlowWithResult(
   let maintenance: Awaited<
     ReturnType<typeof import("../commands/doctor-maintenance.js").beginDoctorMaintenance>
   >;
+  let sqliteNoCowPaths: string[] = [];
   let exitCode: number | undefined;
   let healthContext: DoctorHealthFlowContext | undefined;
   let doctorResult: UpdatePostInstallDoctorResult = { status: "error" };
@@ -205,6 +207,19 @@ async function runDoctorHealthFlowWithResult(
         databasePreflight && !refreshRecoveryInventory
           ? databasePreflight
           : await prepareDoctorDatabasePreflight();
+      const { inspectDoctorSqliteNoCow } = await import("../commands/doctor-sqlite-nocow.js");
+      const { resolveOpenClawStateSqlitePath } =
+        await import("../state/openclaw-state-db.paths.js");
+      const nocow = inspectDoctorSqliteNoCow([
+        resolveOpenClawStateSqlitePath(),
+        ...(schemas.agentDatabaseMigrationDiscovery?.discovery.targets.map(
+          (target) => target.path,
+        ) ?? []),
+      ]);
+      sqliteNoCowPaths = nocow.paths;
+      for (const message of nocow.notes) {
+        doctorRuntime.log(message);
+      }
       const { recordAgentDatabaseAdmissions } =
         await import("../state/agent-database-admission.js");
       // Repair owns fresh file decisions until its migration graph finishes.
@@ -369,6 +384,9 @@ async function runDoctorHealthFlowWithResult(
     let failure: unknown;
     try {
       ctx = await (maintenance ? maintenance.run(runChecks) : runChecks());
+      if (ctx && maintenance && options.repair === true && sqliteNoCowPaths.length > 0) {
+        await maintenance.repairSqliteNoCow(sqliteNoCowPaths);
+      }
     } catch (error) {
       failure = error;
       throw error;
@@ -564,6 +582,9 @@ async function runDoctorHealthFlowWithResult(
           result: {
             ...doctorResult,
             ...(maintenance?.databaseWrites ? { databaseWrites: maintenance.databaseWrites } : {}),
+            ...(updateResult.capture.fileWrites
+              ? { configFileWrites: updateResult.capture.fileWrites }
+              : {}),
             ...(warnings.length ? { warnings } : {}),
             ...(updateResult.capture.configChanges.length
               ? { configChanges: updateResult.capture.configChanges }

@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { PRODUCT_NAME } from "../../brand.js";
 import {
   executeSqliteQuerySync,
   executeSqliteQueryTakeFirstSync,
@@ -43,7 +44,7 @@ function ensureRetirementsTable(database: DatabaseSync): void {
   const endMarker = "\n) STRICT;";
   const end = OPENCLAW_STATE_SCHEMA_SQL.indexOf(endMarker, start);
   if (start < 0 || end < start) {
-    throw new Error("OpenClaw cron run trigger-state retirement schema is missing.");
+    throw new Error(`${PRODUCT_NAME} cron run trigger-state retirement schema is missing.`);
   }
   // sqlite-allow-raw -- Canonical first-use DDL rolls back with the owning edit.
   database.exec(OPENCLAW_STATE_SCHEMA_SQL.slice(start, end + endMarker.length));

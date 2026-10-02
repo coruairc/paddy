@@ -1,5 +1,5 @@
 ---
-summary: "OpenClaw ClickClack channel plugin."
+summary: "Paddy ClickClack channel plugin."
 read_when:
   - You are installing, configuring, or auditing the clickclack plugin
 title: "Clickclack plugin reference"
@@ -10,7 +10,7 @@ Run `pnpm plugins:inventory:gen` to rebuild it. Hand-written text survives only
 between the openclaw-plugin-reference:manual-start and
 openclaw-plugin-reference:manual-end comment markers. -->
 
-OpenClaw ClickClack channel plugin.
+Paddy ClickClack channel plugin.
 
 ## Distribution
 
@@ -25,7 +25,7 @@ OpenClaw ClickClack channel plugin.
 <!-- openclaw-plugin-reference:manual-start -->
 
 The plugin can optionally create a lifecycle-synchronized ClickClack channel
-for each OpenClaw session. Managed discussion channels use a same-agent side
+for each Paddy session. Managed discussion channels use a same-agent side
 session for observation and relay, while the attached main session receives a
 pull-only `discussion` tool. See [ClickClack session discussions](/channels/clickclack#session-discussions)
 for configuration and session-tool visibility requirements.

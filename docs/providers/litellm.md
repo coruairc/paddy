@@ -1,27 +1,27 @@
 ---
-summary: "Run OpenClaw through LiteLLM Proxy for unified model access and cost tracking"
+summary: "Run Paddy through LiteLLM Proxy for unified model access and cost tracking"
 title: "LiteLLM"
 read_when:
-  - You want to route OpenClaw through a LiteLLM proxy
+  - You want to route Paddy through a LiteLLM proxy
   - You need cost tracking, logging, or model routing through LiteLLM
 ---
 
 [LiteLLM](https://litellm.ai) is an open-source LLM gateway with a unified API to 100+ model
-providers. Route OpenClaw through LiteLLM for centralized cost tracking, logging, virtual keys with
-spend limits, and backend failover without changing OpenClaw config.
+providers. Route Paddy through LiteLLM for centralized cost tracking, logging, virtual keys with
+spend limits, and backend failover without changing Paddy config.
 
 ## Quick start
 
 <Tabs>
   <Tab title="Onboarding (recommended)">
     ```bash
-    openclaw onboard --auth-choice litellm-api-key
+    paddy onboard --auth-choice litellm-api-key
     ```
 
     For non-interactive setup against a remote proxy, pass the proxy URL explicitly:
 
     ```bash
-    openclaw onboard --non-interactive --accept-risk --skip-health --auth-choice litellm-api-key \
+    paddy onboard --non-interactive --accept-risk --skip-health --auth-choice litellm-api-key \
       --litellm-api-key "$LITELLM_API_KEY" --custom-base-url "https://litellm.example/v1"
     ```
 
@@ -40,10 +40,10 @@ spend limits, and backend failover without changing OpenClaw config.
         litellm --model claude-opus-4-6
         ```
       </Step>
-      <Step title="Point OpenClaw to LiteLLM">
+      <Step title="Point Paddy to LiteLLM">
         ```bash
         export LITELLM_API_KEY="your-litellm-key"
-        openclaw
+        paddy
         ```
       </Step>
     </Steps>
@@ -94,7 +94,7 @@ The default model onboarding writes is `litellm/claude-opus-4-6`.
 
 In merge mode, onboarding with an explicit proxy URL preserves any authored provider models and
 otherwise leaves the provider model list empty for discovery. Run
-`openclaw models list --provider litellm --refresh --json` to list the proxy's models.
+`paddy models list --provider litellm --refresh --json` to list the proxy's models.
 With `models.mode: "replace"`, discovery is disabled, so onboarding keeps the documented default
 in the provider model list while preserving existing model definitions.
 
@@ -135,7 +135,7 @@ without a global private-network override. For a LAN-hosted proxy, set
 
 <AccordionGroup>
   <Accordion title="Virtual keys">
-    Create a dedicated key for OpenClaw with spend limits:
+    Create a dedicated key for Paddy with spend limits:
 
     ```bash
     curl -X POST "http://localhost:4000/key/generate" \
@@ -168,7 +168,7 @@ without a global private-network override. For a LAN-hosted proxy, set
           api_key: os.environ/OPENAI_API_KEY
     ```
 
-    OpenClaw keeps requesting `claude-opus-4-6`; LiteLLM handles the routing.
+    Paddy keeps requesting `claude-opus-4-6`; LiteLLM handles the routing.
 
   </Accordion>
 
@@ -187,11 +187,11 @@ without a global private-network override. For a LAN-hosted proxy, set
 
   <Accordion title="Proxy behavior notes">
     - LiteLLM runs on `http://localhost:4000` by default.
-    - OpenClaw connects through LiteLLM's proxy-style OpenAI-compatible `/v1` endpoint.
+    - Paddy connects through LiteLLM's proxy-style OpenAI-compatible `/v1` endpoint.
     - Native-OpenAI-only request shaping does not apply through a configured LiteLLM base URL:
       no `service_tier`, no Responses `store`, no prompt-cache hints, no OpenAI reasoning-effort
       payload shaping.
-    - Hidden OpenClaw attribution headers (`originator`, `version`, `User-Agent`) are only sent to
+    - Hidden Paddy attribution headers (`originator`, `version`, `User-Agent`) are only sent to
       verified native OpenAI endpoints, so they are not injected on a custom LiteLLM base URL.
   </Accordion>
 </AccordionGroup>

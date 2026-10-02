@@ -551,7 +551,7 @@ defineDiscordVoiceTests(
       },
       {
         name: "name inside a long transcript",
-        chunks: ["ordinary discussion ".repeat(30), `OpenClaw, ${"x".repeat(230)}`],
+        chunks: ["ordinary discussion ".repeat(30), `Paddy, ${"x".repeat(230)}`],
       },
     ])("does not acknowledge $name that the final wake gate rejects", async ({ chunks }) => {
       const { entry, bridgeParams } = await createWakeNameFixture();
@@ -828,7 +828,7 @@ defineDiscordVoiceTests(
       const { entry, bridgeParams } = await createWakeNameFixture();
 
       beginSpeakerTurn(entry);
-      await emitFinalRealtimeUserTranscript(bridgeParams, "OpenClaw, how is it going");
+      await emitFinalRealtimeUserTranscript(bridgeParams, "Paddy, how is it going");
 
       expect(controlRealtimeVoiceAgentRunMock).toHaveBeenCalledWith({
         getToolAuthorityOverlay: expect.any(Function),
@@ -836,7 +836,7 @@ defineDiscordVoiceTests(
         text: "how is it going",
       });
       expect(lastAgentCommandArgs().message).toContain("how is it going");
-      expect(lastAgentCommandArgs().message).not.toContain("OpenClaw");
+      expect(lastAgentCommandArgs().message).not.toContain("Paddy");
       expectUserMessageIncludes("openclaw wake answer");
     });
 
@@ -850,10 +850,10 @@ defineDiscordVoiceTests(
       expect(agentCommandMock).not.toHaveBeenCalled();
 
       beginSpeakerTurn(entry);
-      await emitFinalRealtimeUserTranscript(bridgeParams, "OpenClaw, fallback still wakes");
+      await emitFinalRealtimeUserTranscript(bridgeParams, "Paddy, fallback still wakes");
 
       expect(lastAgentCommandArgs().message).toContain("fallback still wakes");
-      expect(lastAgentCommandArgs().message).not.toContain("OpenClaw");
+      expect(lastAgentCommandArgs().message).not.toContain("Paddy");
       expectUserMessageIncludes("fallback wake answer");
     });
 
@@ -862,9 +862,9 @@ defineDiscordVoiceTests(
       ["Moti", "Moti, what's going on today?", "what's going on today?"],
       ["Multi", "Multi, step through the maintainer queue.", "step through the maintainer queue."],
       ["Marty", "Marty, can you hear me?", "can you hear me?"],
-      ["Open claw", "Open claw can you still hear me?", "can you still hear me?"],
-      ["Open Club", "Open Club, can you hear me now?", "can you hear me now?"],
-      ["Open Cloud", "Open Cloud, can you hear me too?", "can you hear me too?"],
+      ["Paddie", "Paddie, can you still hear me?", "can you still hear me?"],
+      ["Paddi", "Paddi, can you hear me now?", "can you hear me now?"],
+      ["Poddy", "Poddy, can you hear me too?", "can you hear me too?"],
       ["Molty", "Can you still hear trailing, Molty.", "Can you still hear trailing"],
       ["Malty", "What's going on today, Malty?", "What's going on today"],
     ])("accepts fuzzy wake name %s", async (wakeName, transcript, expectedMessage) => {
@@ -956,7 +956,7 @@ defineDiscordVoiceTests(
       await emitFinalRealtimeUserTranscript(bridgeParams, "Claw Bot Helper, ship it");
 
       beginSpeakerTurn(entry);
-      await emitFinalRealtimeUserTranscript(bridgeParams, "OpenClaw, ship it");
+      await emitFinalRealtimeUserTranscript(bridgeParams, "Paddy, ship it");
 
       expect(agentCommandMock).not.toHaveBeenCalled();
     });

@@ -43,7 +43,7 @@ Exec approvals are enforced locally on the execution host:
 
 The `claude-cli` backend also checks native Bash commands against the agent's
 exec allowlist when `ask: "on-miss"`. This authorizes command arguments while
-Claude Code owns execution. It does not provide OpenClaw sandboxing. See
+Claude Code owns execution. It does not provide Paddy sandboxing. See
 [Native Bash and the exec allowlist](/gateway/cli-backends#native-bash-and-the-exec-allowlist)
 for matching, prompting, and binding restrictions.
 
@@ -55,8 +55,8 @@ for matching, prompting, and binding restrictions.
 - Once approved, a command can mutate files according to the selected host or sandbox filesystem permissions.
 - Approved node-host runs bind canonical execution context: cwd, exact argv, env binding when present, and pinned executable path when applicable.
 - Gateway approval-backed commands bind every resolved command-segment executable before review and re-check it before launch. Node hosts capture these identities during local policy evaluation and re-check before dispatch. This does not cover inner shell executables across a remote human approval wait. Protected executables use resolved real-path identity only. Writable executables also use a content hash. A changed resolution during the bound window, including a new executable earlier on `PATH`, denies the run. Identity-only binding preserves otherwise eligible `allow-always` decisions. See [Interpreter/runtime commands](/tools/exec-approvals-advanced#interpreter%2Fruntime-commands).
-- For shell scripts and direct interpreter/runtime file invocations, OpenClaw also tries to bind one concrete local file operand. If that file changes after approval but before execution, the run is denied instead of executing drifted content.
-- File binding is best-effort, not a complete model of every interpreter/runtime loader path. If exactly one concrete local file cannot be identified, OpenClaw refuses to mint an approval-backed run rather than pretend full coverage.
+- For shell scripts and direct interpreter/runtime file invocations, Paddy also tries to bind one concrete local file operand. If that file changes after approval but before execution, the run is denied instead of executing drifted content.
+- File binding is best-effort, not a complete model of every interpreter/runtime loader path. If exactly one concrete local file cannot be identified, Paddy refuses to mint an approval-backed run rather than pretend full coverage.
 
 ### macOS split
 
@@ -65,11 +65,11 @@ for matching, prompting, and binding restrictions.
 
 ## Inspecting the effective policy
 
-| Command                                                          | What it shows                                                                                         |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `openclaw approvals get` / `--gateway` / `--node <id\|name\|ip>` | Requested policy, host policy sources, and the effective result.                                      |
-| `openclaw exec-policy show`                                      | Terminal tool policies and local command approvals; add `--session <key>` for a session tool preview. |
-| `openclaw exec-policy set` / `preset`                            | Synchronize the local requested policy with the local host approvals document in one step.            |
+| Command                                                       | What it shows                                                                                         |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `paddy approvals get` / `--gateway` / `--node <id\|name\|ip>` | Requested policy, host policy sources, and the effective result.                                      |
+| `paddy exec-policy show`                                      | Terminal tool policies and local command approvals; add `--session <key>` for a session tool preview. |
+| `paddy exec-policy set` / `preset`                            | Synchronize the local requested policy with the local host approvals document in one step.            |
 
 <Note>
 Per-session `/exec` overrides are not included. Run `/exec` in the relevant session to inspect its current defaults. See [session overrides](/tools/exec#session-overrides-%2Fexec).
@@ -109,7 +109,7 @@ not that the command may have run.
 
 Approvals live in the shared SQLite state database on the execution host. When
 `OPENCLAW_STATE_DIR` is set, the database follows that state directory.
-Otherwise it uses the default OpenClaw state directory:
+Otherwise it uses the default Paddy state directory:
 
 ```text
 $OPENCLAW_STATE_DIR/state/openclaw.sqlite#exec_approvals_config
@@ -127,10 +127,10 @@ The default approval socket follows the same root:
 `~/.openclaw/exec-approvals.sock` when the variable is unset.
 
 State directories are independent trust scopes. When `OPENCLAW_STATE_DIR`
-points somewhere else, OpenClaw never imports or archives approvals from the
+points somewhere else, Paddy never imports or archives approvals from the
 default state directory. Configure approvals separately for the custom state
 directory. If the active state directory still contains a legacy
-`exec-approvals.json`, stop the Gateway and run `openclaw doctor --fix` once to
+`exec-approvals.json`, stop the Gateway and run `paddy doctor --fix` once to
 import it. Doctor also imports legacy
 `plugin-binding-approvals.json` only when it belongs to the active state
 directory.
@@ -141,7 +141,7 @@ import, including when the config still needs repair. This does not relax
 canonical policy validation: other malformed fields or conflicting legacy
 policies remain preserved for operator recovery, and exec approvals stay
 blocked until the legacy file is resolved. After repair, verify with
-`openclaw approvals get` using the same state directory.
+`paddy approvals get` using the same state directory.
 
 Example schema:
 
@@ -216,7 +216,7 @@ An incomplete pair needs an explicit choice of the intended policy before
 conversion. Pairs with `ask: "always"`, or `security: "full", ask: "on-miss"`,
 have no exact mode equivalent: retain both legacy fields and remove `mode` from
 that same object to keep their policy. Preserve other exec settings when replacing
-an object. Run `openclaw doctor --fix` for a saved file that still needs migration.
+an object. Run `paddy doctor --fix` for a saved file that still needs migration.
 Running it again does not update a stale deployment source.
 
 ### `exec.security`
@@ -296,7 +296,7 @@ exception. See [Inline eval](/tools/exec#inline-eval-strictinlineeval).
 ### `tools.exec.commandHighlighting`
 
 <ParamField path="commandHighlighting" type="boolean" default="false">
-  Presentation only: when enabled, OpenClaw may attach parser-derived
+  Presentation only: when enabled, Paddy may attach parser-derived
   command spans so Web approval prompts can highlight command tokens. Does
   **not** change `security`, `ask`, allowlist matching, strict inline-eval
   behavior, approval forwarding, or command execution.
@@ -308,7 +308,7 @@ Set globally under `tools.exec.commandHighlighting` or per agent under
 ## YOLO mode (no-approval)
 
 To run host exec without approval prompts, open **both** policy layers:
-requested exec policy in OpenClaw config (`tools.exec.*`) **and**
+requested exec policy in Paddy config (`tools.exec.*`) **and**
 host-local approvals policy in the execution host approvals document.
 
 For ordinary configured full-mode execution of recognized inline-eval forms
@@ -335,13 +335,13 @@ explicitly when a no-UI approval prompt should fall back to allow.
 
 </Warning>
 
-For OpenClaw-managed Claude sessions, OpenClaw launches Claude Code in its
-`default` permission mode. OpenClaw's effective exec policy remains
+For Paddy-managed Claude sessions, Paddy launches Claude Code in its
+`default` permission mode. Paddy's effective exec policy remains
 authoritative through native tool hooks and permission requests, including YOLO and
 restrictive policies, even if raw Claude backend args request
 `bypassPermissions`.
 
-If you want a more conservative setup, tighten OpenClaw exec policy back to
+If you want a more conservative setup, tighten Paddy exec policy back to
 `allowlist` / `on-miss` or `deny`.
 
 ### Persistent gateway-host "never prompt" setup
@@ -349,15 +349,15 @@ If you want a more conservative setup, tighten OpenClaw exec policy back to
 <Steps>
   <Step title="Set the requested config policy">
     ```bash
-    openclaw config set tools.exec.host gateway
-    openclaw config set tools.exec.mode full
-    openclaw config set tools.exec.strictInlineEval false
-    openclaw gateway restart
+    paddy config set tools.exec.host gateway
+    paddy config set tools.exec.mode full
+    paddy config set tools.exec.strictInlineEval false
+    paddy gateway restart
     ```
   </Step>
   <Step title="Match the host approvals document">
     ```bash
-    openclaw approvals set --stdin <<'EOF'
+    paddy approvals set --stdin <<'EOF'
     {
       version: 1,
       defaults: {
@@ -374,28 +374,28 @@ If you want a more conservative setup, tighten OpenClaw exec policy back to
 ### Local shortcut
 
 ```bash
-openclaw exec-policy preset yolo
+paddy exec-policy preset yolo
 ```
 
 Updates both local `tools.exec.host/security/ask` and the local approvals
 file defaults (including `askFallback: "full"`). It is intentionally
 local-only. To change gateway-host or node-host approvals remotely, use
-`openclaw approvals set --gateway` or
-`openclaw approvals set --node <id|name|ip>`.
+`paddy approvals set --gateway` or
+`paddy approvals set --node <id|name|ip>`.
 
 Other built-in presets: `cautious` (`host=gateway`, `security=allowlist`,
 `ask=on-miss`, `askFallback=deny`) and `deny-all` (`host=gateway`,
 `security=deny`, `ask=off`, `askFallback=deny`). Apply the same way:
-`openclaw exec-policy preset cautious`.
+`paddy exec-policy preset cautious`.
 
-To set individual fields instead of a full preset, use `openclaw exec-policy set --host <auto|sandbox|gateway|node> --security <deny|allowlist|full> --ask <off|on-miss|always> --ask-fallback <deny|allowlist|full>` with any subset of those flags.
+To set individual fields instead of a full preset, use `paddy exec-policy set --host <auto|sandbox|gateway|node> --security <deny|allowlist|full> --ask <off|on-miss|always> --ask-fallback <deny|allowlist|full>` with any subset of those flags.
 
 ### Node host
 
 Apply the same approvals document on the node instead:
 
 ```bash
-openclaw approvals set --node <id|name|ip> --stdin <<'EOF'
+paddy approvals set --node <id|name|ip> --stdin <<'EOF'
 {
   version: 1,
   defaults: {
@@ -410,11 +410,11 @@ EOF
 <Note>
 **Local-only limitations:**
 
-- `openclaw exec-policy` does not synchronize node approvals.
-- `openclaw exec-policy set --host node` is rejected.
+- `paddy exec-policy` does not synchronize node approvals.
+- `paddy exec-policy set --host node` is rejected.
 - Node exec approvals are fetched from the node at runtime. Inspect them with
-  `openclaw approvals get --node <id|name|ip>` and replace them with
-  `openclaw approvals set --node <id|name|ip> --file <path>` (or `--stdin`); see the
+  `paddy approvals get --node <id|name|ip>` and replace them with
+  `paddy approvals set --node <id|name|ip> --file <path>` (or `--stdin`); see the
   [Approvals CLI](/cli/approvals).
 
 </Note>
@@ -454,7 +454,7 @@ Examples:
 ### Restricting arguments with argPattern
 
 Add `argPattern` when an allowlist entry should match a binary and a
-specific argument shape. OpenClaw uses ECMAScript (JavaScript) regular
+specific argument shape. Paddy uses ECMAScript (JavaScript) regular
 expression semantics on every host and evaluates the expression against
 the parsed command arguments, excluding the executable token (`argv[0]`).
 For hand-authored entries, arguments are joined with a single space, so
@@ -483,7 +483,7 @@ entry when the goal is to restrict the binary to the declared arguments.
 
 Entries saved by approval flows use an internal separator format for exact
 argv matching. Prefer the UI or approval flow to regenerate those entries
-instead of hand-editing the encoded value. If OpenClaw cannot parse argv
+instead of hand-editing the encoded value. If Paddy cannot parse argv
 for a command segment, entries with `argPattern` do not match.
 
 Generated `allow-always` entries are bound to both the exact argv and the working
@@ -491,8 +491,8 @@ directory where you approved them. Choosing **Always allow here** authorizes the
 same command only in that directory. Running it elsewhere is an allowlist miss.
 
 Generated entries saved before 2026.8.1 are not directory-bound and are inactive
-after upgrading. `openclaw update` removes them during its automatic Doctor pass,
-or you can run `openclaw doctor --fix` yourself. Rerun an affected workflow and
+after upgrading. `paddy update` removes them during its automatic Doctor pass,
+or you can run `paddy doctor --fix` yourself. Rerun an affected workflow and
 choose **Always allow here** to create the replacement. Manual allowlist rules
 are not changed. For a manual path-only rule, omit both `source` and
 `argPattern`.
@@ -520,8 +520,8 @@ It does not grant access to other agents, servers, or tools.
 
 Each entry has `server`, `tool`, `source: "allow-always"`, and `addedAt`
 (Unix milliseconds). `lastUsedAt` is optional. Codex apps, native plugin
-servers, and computer-use servers do not receive OpenClaw MCP tool grants.
-OpenClaw only mints when durable persistence is offered and it can unambiguously
+servers, and computer-use servers do not receive Paddy MCP tool grants.
+Paddy only mints when durable persistence is offered and it can unambiguously
 match the approval to a live Gateway-owned tool call. Missing or ambiguous
 correlation retains Codex's existing native/session behavior instead.
 
@@ -530,19 +530,19 @@ unspecified. Explicit `prompt` wins over a stored grant and keeps asking.
 Explicit `approve` already bypasses per-call approval. See
 [Codex tool approvals](/cli/mcp#codex-tool-approvals).
 
-The durable grant is read when OpenClaw next prepares the Codex thread
+The durable grant is read when Paddy next prepares the Codex thread
 configuration and hook registration, such as for a new session or after a
 restart. The current session continues using Codex's remembered decision.
-OpenClaw does not reload grants for every tool call.
+Paddy does not reload grants for every tool call.
 
-To inspect grants, run `openclaw approvals get --gateway`. To revoke one,
+To inspect grants, run `paddy approvals get --gateway`. To revoke one,
 export the document, remove its entry from `agents.<agentId>.mcpTools`, and
 replace the document with the existing `set` command:
 
 ```bash
-openclaw approvals get --gateway --json | jq '.file' > approvals.json
+paddy approvals get --gateway --json | jq '.file' > approvals.json
 # Edit approvals.json, preserving other settings, allowlists, and grants.
-openclaw approvals set --gateway --file approvals.json
+paddy approvals set --gateway --file approvals.json
 ```
 
 Omit `--gateway` from both commands to edit local approvals. Revocation takes
@@ -599,7 +599,7 @@ change retroactively:
   knob for managed deployments that require periodic re-approval.
 - A resolving surface may override the default per grant with the
   `grantExpiresInDays` field on `approval.resolve` /
-  `exec.approval.resolve`, or `openclaw approvals resolve <id> allow-always
+  `exec.approval.resolve`, or `paddy approvals resolve <id> allow-always
 --expires-in-days <n>`. The override wins over the config default.
 - Expired grants fall back to prompting and are pruned opportunistically.
 
@@ -610,8 +610,8 @@ Every standing grant is visible and revocable:
 - **Control UI**: Settings → Approvals shows the standing-grant ledger —
   automation, exact command, use count, and state (until revoked, expires in
   N days, expired, revoked) — with a Revoke action per active row.
-- **CLI**: `openclaw approvals grants list` renders the same ledger.
-  `openclaw approvals grants revoke <grant-id>` revokes one grant. Revocation
+- **CLI**: `paddy approvals grants list` renders the same ledger.
+  `paddy approvals grants revoke <grant-id>` revokes one grant. Revocation
   is idempotent and takes effect at the next occurrence's spawn boundary —
   that occurrence prompts again.
 - Deleting or substantively editing the automation, or reversing the minting
@@ -667,10 +667,10 @@ local approvals document directly.
 
 Some node hosts, including the Windows companion, own a different approval
 policy format. Control UI shows these host-native policies read-only. Use the
-companion app or `openclaw approvals set --node <id|name|ip>` with the native
+companion app or `paddy approvals set --node <id|name|ip>` with the native
 policy shape to edit them. See [Approvals CLI](/cli/approvals).
 
-CLI: `openclaw approvals` supports gateway or node editing - see
+CLI: `paddy approvals` supports gateway or node editing - see
 [Approvals CLI](/cli/approvals).
 
 ## Approval flow
@@ -706,7 +706,7 @@ context when forwarding approved `system.run` requests:
 ## Approval scope summaries
 
 An approval owner can attach a typed, display-only scope describing the action's
-blast radius. OpenClaw renders the sanitized summary on channel approval cards
+blast radius. Paddy renders the sanitized summary on channel approval cards
 and includes the bounded scope in the safe approval presentation available to
 Control UI clients. Scope never grants authorization or changes approval policy.
 
@@ -731,17 +731,17 @@ Diagnostic and export commands that explicitly use asynchronous execution retain
 their separate follow-up delivery. For those workflows:
 
 Exec lifecycle posts an `Exec finished` system message to the agent's
-session after the node reports completion. OpenClaw can also emit an
+session after the node reports completion. Paddy can also emit an
 in-progress notice once an approval is granted, after
 `tools.exec.approvalRunningNoticeMs` elapses (default `10000`, `0` disables
 it). Denied exec approvals are terminal for the host command: the command
 does not run.
 
-- For main-agent async approvals with an originating session, OpenClaw
+- For main-agent async approvals with an originating session, Paddy
   posts the denial back into that session as an internal followup so the
   agent can stop waiting on the async command and avoid a missing-result
   repair.
-- If there is no session or the session cannot be resumed, OpenClaw can
+- If there is no session or the session cannot be resumed, Paddy can
   still report a concise denial to the operator or direct chat route.
 - Denials for subagent and cron sessions are not posted back into that
   session.

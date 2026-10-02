@@ -41,6 +41,7 @@ import {
 import { discoverConfigSecretTargets } from "../secrets/target-registry.js";
 import { dedupeByKey } from "../shared/dedupe-by-key.js";
 import { shortenHomePath } from "../utils.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatCliCommand } from "./command-format.js";
 import type { ConfigMutationOptions, ConfigSetOperation } from "./config-cli-input.js";
 import { getAtPath } from "./config-cli-path.js";
@@ -60,7 +61,7 @@ function formatInvalidConfigRepairHint(
     ? "Resolve the read error shown above, then retry."
     : isPluginPackagingRuntimeOutputInvalidConfigSnapshot(snapshot)
       ? formatPluginPackagingRuntimeOutputRecoveryHint()
-      : `Run \`${formatCliCommand("openclaw doctor --fix")}\` ${doctorMessage}`;
+      : `Run \`${formatCliCommand(`${CLI_NAME} doctor --fix`)}\` ${doctorMessage}`;
 }
 
 export function ensureValidConfigSnapshotForCli(

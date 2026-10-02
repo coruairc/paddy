@@ -479,7 +479,7 @@ describe("qa coverage report", () => {
     });
 
     expect(report).toContain(
-      "- Suite command: `pnpm openclaw qa suite --scenario control-ui-chat-flow-playwright`",
+      "- Suite command: `pnpm paddy qa suite --scenario control-ui-chat-flow-playwright`",
     );
     expect(report).toContain(
       "  - execution: playwright ui/src/e2e/chat-flow.messaging.e2e.test.ts",
@@ -498,7 +498,7 @@ describe("qa coverage report", () => {
     });
 
     expect(report).toContain(
-      "- Suite command: `pnpm openclaw qa suite --scenario instruction-followthrough-repo-contract`",
+      "- Suite command: `pnpm paddy qa suite --scenario instruction-followthrough-repo-contract`",
     );
     expect(report).not.toContain("--channel-driver live --channel qa-channel");
   });
@@ -513,7 +513,7 @@ describe("qa coverage report", () => {
     const matches = findQaScenarioMatches(readQaScenarioPack().scenarios, scenarioId);
     const report = renderQaScenarioMatchesMarkdownReport({ query: scenarioId, matches });
 
-    expect(report).toContain(`- Suite command: \`pnpm openclaw qa suite ${expectedArgs}\``);
+    expect(report).toContain(`- Suite command: \`pnpm paddy qa suite ${expectedArgs}\``);
   });
 
   it("groups commands by compatible provider mode while preserving the live default", () => {
@@ -601,9 +601,9 @@ describe("qa coverage report", () => {
     });
 
     expect(report).toContain("- Suite commands:");
-    expect(report).toContain("  - flow: `pnpm openclaw qa suite --scenario flow-proof`");
+    expect(report).toContain("  - flow: `pnpm paddy qa suite --scenario flow-proof`");
     expect(report).toContain(
-      "  - playwright: `pnpm openclaw qa suite --scenario playwright-proof`",
+      "  - playwright: `pnpm paddy qa suite --scenario playwright-proof`",
     );
   });
 

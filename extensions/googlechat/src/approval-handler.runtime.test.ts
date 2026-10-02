@@ -327,7 +327,7 @@ describe("googleChatApprovalNativeRuntime", () => {
       expect(result).toMatchObject({
         kind: "update",
         payload: {
-          cardsV2: [{ card: { header: { title: `OpenClaw Change Approval: ${label}` } } }],
+          cardsV2: [{ card: { header: { title: `Paddy Change Approval: ${label}` } } }],
         },
       });
     },

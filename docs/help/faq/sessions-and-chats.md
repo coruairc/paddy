@@ -35,7 +35,7 @@ read_when:
 
   </Accordion>
 
-  <Accordion title="Is there a way to make a team of OpenClaw instances (one CEO and many agents)?">
+  <Accordion title="Is there a way to make a team of Paddy instances (one CEO and many agents)?">
     Yes, via **multi-agent routing** and **sub-agents**: one coordinator agent plus several worker agents with their own workspaces and models.
 
     This is best seen as a fun experiment - it is token-heavy and often less efficient than one bot with separate sessions. The typical model is one bot you talk to, with different sessions for parallel work, spawning sub-agents when needed.
@@ -55,21 +55,21 @@ read_when:
 
   </Accordion>
 
-  <Accordion title="How do I completely reset OpenClaw but keep it installed?">
+  <Accordion title="How do I completely reset Paddy but keep it installed?">
     ```bash
-    openclaw reset
+    paddy reset
     ```
 
     Non-interactive full reset:
 
     ```bash
-    openclaw reset --scope full --yes --non-interactive
+    paddy reset --scope full --yes --non-interactive
     ```
 
     Then re-run setup:
 
     ```bash
-    openclaw onboard --install-daemon
+    paddy onboard --install-daemon
     ```
 
     To reset and immediately re-run onboarding, pass `openclaw onboard --reset`; reset is a command flag, not a **Setup mode** menu choice. See [Onboarding (CLI)](/start/wizard). If you used profiles (`--profile` / `OPENCLAW_PROFILE`), reset each state dir (default `~/.openclaw-<profile>`). Dev-only reset: `openclaw gateway --dev --reset` wipes dev config, credentials, sessions, and workspace.
@@ -115,7 +115,7 @@ read_when:
   </Accordion>
 
   <Accordion title='Do I need to add a "bot account" to a WhatsApp group?'>
-    No. OpenClaw runs on **your own account** - if you are in the group, OpenClaw can see it. By default, group replies are blocked until you allow senders (`groupPolicy: "allowlist"`).
+    No. Paddy runs on **your own account** - if you are in the group, Paddy can see it. By default, group replies are blocked until you allow senders (`groupPolicy: "allowlist"`).
 
     To restrict group replies to only you:
 
@@ -136,7 +136,7 @@ read_when:
     Fastest: tail logs and send a test message in the group.
 
     ```bash
-    openclaw logs --follow --json
+    paddy logs --follow --json
     ```
 
     Look for `chatId` (or `from`) ending in `@g.us`, like `1234567890-1234567890@g.us`.
@@ -144,14 +144,14 @@ read_when:
     If already configured/allowlisted, list groups from config:
 
     ```bash
-    openclaw directory groups list --channel whatsapp
+    paddy directory groups list --channel whatsapp
     ```
 
     Docs: [WhatsApp](/channels/whatsapp), [Directory](/cli/directory), [Logs](/cli/logs).
 
   </Accordion>
 
-  <Accordion title="Why does OpenClaw not reply in a group?">
+  <Accordion title="Why does Paddy not reply in a group?">
     Two common causes: mention gating is on by default (you must @mention the bot, or match `mentionPatterns`), or you configured `channels.whatsapp.groups` without `"*"` and the group is not allowlisted.
 
     See [Groups](/channels/groups) and [Group messages](/channels/group-messages).
@@ -169,7 +169,7 @@ read_when:
     - **Token cost**: more agents means more concurrent model usage.
     - **Ops overhead**: per-agent auth profiles, workspaces, and channel routing.
 
-    Keep one **active** workspace per agent (`agents.defaults.workspace`), prune old sessions with `openclaw sessions cleanup` if disk grows (do not edit active SQLite state by hand), and use `openclaw doctor` to spot stray workspaces and profile mismatches.
+    Keep one **active** workspace per agent (`agents.defaults.workspace`), prune old sessions with `paddy sessions cleanup` if disk grows (do not edit active SQLite state by hand), and use `paddy doctor` to spot stray workspaces and profile mismatches.
 
   </Accordion>
 

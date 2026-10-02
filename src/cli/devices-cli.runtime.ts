@@ -441,18 +441,11 @@ function hasExactRoleMatch(original: PendingDevice, replacement: PendingDevice):
 }
 
 function hasCompatibleClientMetadata(original: PendingDevice, replacement: PendingDevice): boolean {
-  const originalClientId = normalizeOptionalString(original.clientId);
-  const replacementClientId = normalizeOptionalString(replacement.clientId);
-  if (originalClientId && replacementClientId && originalClientId !== replacementClientId) {
-    return false;
-  }
-  const originalClientMode = normalizeOptionalString(original.clientMode);
-  const replacementClientMode = normalizeOptionalString(replacement.clientMode);
-  return !(
-    originalClientMode &&
-    replacementClientMode &&
-    originalClientMode !== replacementClientMode
-  );
+  return (["clientId", "clientMode"] as const).every((key) => {
+    const before = normalizeOptionalString(original[key]);
+    const after = normalizeOptionalString(replacement[key]);
+    return !before || !after || before === after;
+  });
 }
 
 function resolveOriginalReplacementScopes(
@@ -503,14 +496,10 @@ function findSameDeviceReplacementRequest(params: {
   if (!replacement) {
     return null;
   }
-  const originalDeviceId = normalizeOptionalString(params.originalRequest.deviceId);
-  const replacementDeviceId = normalizeOptionalString(replacement.deviceId);
-  if (!originalDeviceId || originalDeviceId !== replacementDeviceId) {
-    return null;
-  }
-  const originalPublicKey = normalizeOptionalString(params.originalRequest.publicKey);
-  const replacementPublicKey = normalizeOptionalString(replacement.publicKey);
-  if (!originalPublicKey || !replacementPublicKey || originalPublicKey !== replacementPublicKey) {
+  if (
+    !stringsMatch(params.originalRequest.deviceId, replacement.deviceId) ||
+    !stringsMatch(params.originalRequest.publicKey, replacement.publicKey)
+  ) {
     return null;
   }
   if (!hasExactRoleMatch(params.originalRequest, replacement)) {
@@ -634,11 +623,9 @@ function formatTokenSummary(tokens: DeviceTokenSummary[] | undefined) {
 }
 
 function formatPendingDeviceIdentity(request: PendingDevice): string {
-  const displayName = normalizeOptionalString(request.displayName);
-  if (displayName) {
-    return sanitizeForLog(displayName);
-  }
-  return sanitizeForLog(normalizeOptionalString(request.deviceId) ?? "");
+  return sanitizeForLog(
+    normalizeOptionalString(request.displayName) ?? normalizeOptionalString(request.deviceId) ?? "",
+  );
 }
 
 function formatAccessSummary(access: DevicePairingAccessSummary | null): string {
@@ -724,7 +711,7 @@ function resolveRequiredDeviceRole(
     return { deviceId, role };
   }
   defaultRuntime.error(
-    `--device and --role are required. Run ${formatCliCommand("openclaw devices list")} to choose a paired device.`,
+    `--device and --role are required. Run ${formatCliCommand(`paddy devices list`)} to choose a paired device.`,
   );
   defaultRuntime.exit(1);
   return null;
@@ -845,7 +832,7 @@ export async function runDevicesJoinCodeCommand(opts: DevicesRpcOpts): Promise<v
   if (!joinUrl) {
     throw new Error("Gateway did not return a device join URL.");
   }
-  const command = `npx openclaw connect ${quoteCliArg(joinUrl)}`;
+  const command = `npx paddy connect ${quoteCliArg(joinUrl)}`;
   if (opts.json) {
     defaultRuntime.writeJson({ joinUrl, command });
     return;
@@ -861,7 +848,7 @@ export async function runDevicesRemoveCommand(
   const trimmed = deviceId.trim();
   if (!trimmed) {
     defaultRuntime.error(
-      `deviceId is required. Run ${formatCliCommand("openclaw devices list")} to choose a paired device.`,
+      `deviceId is required. Run ${formatCliCommand(`paddy devices list`)} to choose a paired device.`,
     );
     defaultRuntime.exit(1);
     return;
@@ -987,7 +974,7 @@ export async function runDevicesApproveCommand(
         break;
       case "re-approval":
         defaultRuntime.log(
-          "  Note:   Already paired. Approval-bound device details changed, so OpenClaw created a fresh request instead of silently reusing the old approval.",
+          `  Note:   Already paired. Approval-bound device details changed, so Paddy created a fresh request instead of silently reusing the old approval.`,
         );
         break;
       case "new-pairing":
@@ -1017,7 +1004,7 @@ export async function runDevicesApproveCommand(
   }
   if (!result) {
     defaultRuntime.error(
-      `No pending device request matches ${sanitizeForLog(resolvedRequestId)}. Run ${formatCliCommand("openclaw devices list")} and retry with the current request ID.`,
+      `No pending device request matches ${sanitizeForLog(resolvedRequestId)}. Run ${formatCliCommand(`paddy devices list`)} and retry with the current request ID.`,
     );
     const nodeApprovalNotices = findQueryPendingNodeApprovalNotices(
       opts,
@@ -1052,7 +1039,7 @@ export async function runDevicesRejectCommand(
   const normalizedRequestId = normalizeOptionalString(requestId);
   if (!normalizedRequestId) {
     defaultRuntime.error(
-      `requestId is required. Run ${formatCliCommand("openclaw devices list")} to choose a pending request.`,
+      `requestId is required. Run ${formatCliCommand(`paddy devices list`)} to choose a pending request.`,
     );
     defaultRuntime.exit(1);
     return;
@@ -1073,7 +1060,7 @@ export async function runDevicesRenameCommand(opts: DevicesRpcOpts): Promise<voi
   const label = normalizeStringifiedOptionalString(opts.name) ?? "";
   if (!deviceId || !label) {
     defaultRuntime.error(
-      `--device and --name are required. Run ${formatCliCommand("openclaw devices list")} to choose a paired device.`,
+      `--device and --name are required. Run ${formatCliCommand(`paddy devices list`)} to choose a paired device.`,
     );
     defaultRuntime.exit(1);
     return;

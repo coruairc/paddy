@@ -43,7 +43,7 @@ Per-agent override: `agents.entries.*.workspace`. To keep `main` at an existing 
 
 Run workspace selection rejects an explicitly supplied blank or invalid agent ID. Omit the selector to use configured ownership, or supply the intended agent ID.
 
-`openclaw onboard`, `openclaw configure`, or `openclaw setup` create the workspace and seed the bootstrap files if they are missing.
+`paddy onboard`, `paddy configure`, or `paddy setup` create the workspace and seed the bootstrap files if they are missing.
 
 <Note>
 Sandbox seed copies only accept regular in-workspace files; symlink/hardlink aliases that resolve outside the source workspace are ignored.
@@ -60,14 +60,14 @@ If you already manage the workspace files yourself, disable bootstrap file creat
 Older installs may have created `~/openclaw`. Each agent uses one resolved workspace; keeping extra directories does not merge their persona or memory files into the active workspace.
 
 <Note>
-Keep each agent's workspace path explicit when retaining older directories. Before switching back to an older workspace, stop the Gateway, configure the intended path, run [`openclaw doctor --fix`](/cli/doctor) to migrate retired setup state, and restart. Doctor also discovers legacy setup files in a still-configured `agents.defaults.workspace` root even when no agent currently uses that root directly. Archive unused folders only after verifying which files you want to retain.
+Keep each agent's workspace path explicit when retaining older directories. Before switching back to an older workspace, stop the Gateway, configure the intended path, run [`paddy doctor --fix`](/cli/doctor) to migrate retired setup state, and restart. Doctor also discovers legacy setup files in a still-configured `agents.defaults.workspace` root even when no agent currently uses that root directly. Archive unused folders only after verifying which files you want to retain.
 </Note>
 
 ## Workspace file map
 
 Use **Settings → Agents → Files** in the Control UI to edit these files. **Preview** shows the current draft; **Edit** returns to the editor so you can continue typing, while **Close** returns to **Preview**.
 
-Standard files OpenClaw expects inside the workspace:
+Standard files Paddy expects inside the workspace:
 
 <AccordionGroup>
   <Accordion title="AGENTS.md - operating instructions">
@@ -103,7 +103,7 @@ Standard files OpenClaw expects inside the workspace:
 </AccordionGroup>
 
 <Note>
-If a required bootstrap file is missing, OpenClaw injects a "missing file" marker into the session and continues. Optional `USER.md` and `MEMORY.md` files are omitted when absent. Large bootstrap files are truncated when injected; adjust general limits with `agents.defaults.bootstrapMaxChars` (default: `20000`) and `agents.defaults.bootstrapTotalMaxChars` (default: `60000`). `USER.md` keeps its separate 4,000-character cap. `openclaw setup` can recreate missing defaults without overwriting existing files.
+If a required bootstrap file is missing, Paddy injects a "missing file" marker into the session and continues. Optional `USER.md` and `MEMORY.md` files are omitted when absent. Large bootstrap files are truncated when injected; adjust general limits with `agents.defaults.bootstrapMaxChars` (default: `20000`) and `agents.defaults.bootstrapTotalMaxChars` (default: `60000`). `USER.md` keeps its separate 4,000-character cap. `paddy setup` can recreate missing defaults without overwriting existing files.
 </Note>
 
 ## What is NOT in the workspace
@@ -120,10 +120,10 @@ These live under `~/.openclaw/` and should NOT be committed to the workspace rep
 
 If you need to migrate sessions or config, copy them separately and keep them out of version control.
 
-Older OpenClaw releases wrote `openclaw-workspace-state.json`,
+Older Paddy releases wrote `openclaw-workspace-state.json`,
 `.openclaw/workspace-state.json`, and `.attested` workspace sidecars. Current
 runtime uses only the shared SQLite database for that state. If Doctor reports
-one of these files, run `openclaw doctor --fix`; Doctor imports valid legacy
+one of these files, run `paddy doctor --fix`; Doctor imports valid legacy
 state and deletes a source only after verifying the database rows. Empty reserved
 hashed files under `workspace-attestations/` are discarded because they contain
 no importable state; other unreadable sources stay in place and Doctor names
@@ -224,7 +224,7 @@ Suggested `.gitignore` starter:
     Set `agents.entries.<agentId>.workspace` to the cloned path in `~/.openclaw/openclaw.json` for the agent that should use it. A sole agent without a per-agent override can use `agents.defaults.workspace` instead; in a multi-agent roster, that setting only changes the base directory for unpinned entries.
   </Step>
   <Step title="Verify the workspace">
-    Run `openclaw agents list` and confirm that the intended agent points to the cloned path before starting the Gateway. Moving an existing workspace does not require rerunning onboarding.
+    Run `paddy agents list` and confirm that the intended agent points to the cloned path before starting the Gateway. Moving an existing workspace does not require rerunning onboarding.
   </Step>
   <Step title="Copy sessions (optional)">
     If you need sessions, copy `~/.openclaw/agents/<agentId>/agent/openclaw-agent.sqlite`

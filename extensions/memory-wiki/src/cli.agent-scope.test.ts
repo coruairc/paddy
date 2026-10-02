@@ -190,7 +190,7 @@ describe("memory-wiki agent-scoped cli", () => {
     await expect(
       program.parseAsync(["wiki", "apply", "metadata", "entity.alpha"], { from: "user" }),
     ).rejects.toThrow(
-      "No default memory-wiki agent is configured. Pass --agent <id>, or add an agent with `openclaw agents add`.",
+      "No default memory-wiki agent is configured. Pass --agent <id>, or add an agent with `paddy agents add`.",
     );
     expect(resolveConfig).not.toHaveBeenCalled();
   });

@@ -37,7 +37,7 @@ read_when:
   </Accordion>
 
   <Accordion title="Why do I need a token on localhost now?">
-    OpenClaw enforces gateway auth by default, including loopback. If no explicit auth path is configured, startup resolves to token mode and generates a runtime-only token for that startup, so local WS clients must authenticate. This blocks other local processes from calling the Gateway.
+    Paddy enforces gateway auth by default, including loopback. If no explicit auth path is configured, startup resolves to token mode and generates a runtime-only token for that startup, so local WS clients must authenticate. This blocks other local processes from calling the Gateway.
 
     On a fresh loopback start, the Gateway prepares the canonical same-user CLI device credential before `/readyz`, so normal `openclaw` CLI calls can authenticate without persisting the generated token. Other clients still need an explicit shared secret or an approved device pairing.
 
@@ -67,9 +67,9 @@ read_when:
     | SearXNG | Yes (self-hosted) | `SEARXNG_BASE_URL` |
     | Tavily | No | `TAVILY_API_KEY` |
 
-    Grok can also reuse xAI OAuth from model auth (`openclaw onboard --auth-choice xai-oauth`).
+    Grok can also reuse xAI OAuth from model auth (`paddy onboard --auth-choice xai-oauth`).
 
-    **Recommended**: `openclaw configure --section web` and pick a provider.
+    **Recommended**: `paddy configure --section web` and pick a provider.
 
     ```json5
     {
@@ -104,7 +104,7 @@ read_when:
 
     - Allowlists: add `web_search`/`web_fetch`/`x_search`, or `group:web` for all three.
     - `web_fetch` is enabled by default.
-    - If `tools.web.fetch.provider` is omitted, OpenClaw auto-detects the first ready fetch fallback provider from available credentials; the official Firecrawl plugin provides that fallback.
+    - If `tools.web.fetch.provider` is omitted, Paddy auto-detects the first ready fetch fallback provider from available credentials; the official Firecrawl plugin provides that fallback.
     - Daemons read env vars from `~/.openclaw/.env` (or the service environment).
 
     Docs: [Web tools](/tools/web).
@@ -114,23 +114,23 @@ read_when:
   <Accordion title="config.apply wiped my config. How do I recover and avoid this?">
     `config.apply` replaces the **entire config**; a partial object removes everything else.
 
-    Current OpenClaw protects most accidental clobbers:
+    Current Paddy protects most accidental clobbers:
 
-    - OpenClaw-owned config writes validate the full post-change config before writing.
+    - Paddy-owned config writes validate the full post-change config before writing.
     - Invalid or destructive OpenClaw-owned writes are rejected and saved as `openclaw.json.rejected.*`.
     - Startup can migrate deterministic legacy keys in eligible single-file configs when the whole result validates, keeping the previous config in the `.bak` ring. Other invalid edits make startup fail closed; hot reload skips invalid edits without rewriting `openclaw.json`.
-    - `openclaw doctor --fix` owns repairs beyond that startup migration, can restore last-known-good, and saves the rejected file as `openclaw.json.clobbered.*`.
+    - `paddy doctor --fix` owns repairs beyond that startup migration, can restore last-known-good, and saves the rejected file as `openclaw.json.clobbered.*`.
 
     Recover:
 
-    - Check `openclaw logs --follow` for `Invalid config at`, `Config write rejected:`, or `config reload skipped (invalid config)`.
+    - Check `paddy logs --follow` for `Invalid config at`, `Config write rejected:`, or `config reload skipped (invalid config)`.
     - Inspect the newest `openclaw.json.clobbered.*` or `openclaw.json.rejected.*` beside the active config.
-    - Run `openclaw config validate` and `openclaw doctor --fix`.
-    - Copy only the intended keys back with `openclaw config set` or `config.patch`.
-    - No last-known-good or rejected payload: restore from backup, or re-run `openclaw doctor` and reconfigure channels/models.
+    - Run `paddy config validate` and `paddy doctor --fix`.
+    - Copy only the intended keys back with `paddy config set` or `config.patch`.
+    - No last-known-good or rejected payload: restore from backup, or re-run `paddy doctor` and reconfigure channels/models.
     - Unexpected loss: file a bug with your last known config or a backup. A local coding agent can often reconstruct a working config from logs or history.
 
-    Avoid it: use `openclaw config set` for small changes, `openclaw configure` for interactive edits, `config.schema.lookup` to inspect an unfamiliar path (returns a shallow schema node plus immediate child summaries), and `config.patch` for partial RPC edits - reserve `config.apply` for full-config replacement. The agent-facing `gateway` runtime tool refuses to rewrite `tools.exec.ask` / `tools.exec.security` even via legacy `tools.bash.*` aliases.
+    Avoid it: use `paddy config set` for small changes, `paddy configure` for interactive edits, `config.schema.lookup` to inspect an unfamiliar path (returns a shallow schema node plus immediate child summaries), and `config.patch` for partial RPC edits - reserve `config.apply` for full-config replacement. The agent-facing `gateway` runtime tool refuses to rewrite `tools.exec.ask` / `tools.exec.security` even via legacy `tools.bash.*` aliases.
 
     Docs: [Config](/cli/config), [Configure](/cli/configure), [Gateway troubleshooting](/gateway/troubleshooting#gateway-rejected-invalid-config), [Doctor](/gateway/doctor).
 
@@ -149,7 +149,7 @@ read_when:
 
   </Accordion>
 
-  <Accordion title="Can the OpenClaw browser run headless?">
+  <Accordion title="Can the Paddy browser run headless?">
     Yes:
 
     ```json5

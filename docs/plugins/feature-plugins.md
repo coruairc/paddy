@@ -14,7 +14,7 @@ transcript, and tool results.
 
 All plugin APIs are [experimental](/plugins/sdk-overview#api-stability),
 including the backend and browser contracts on this page. Pin and test your
-OpenClaw host version.
+Paddy host version.
 
 Native UI runs trusted JavaScript in the Control UI origin. Install it only from
 authors you trust. Native modules share the signed-in operator's Gateway
@@ -55,8 +55,8 @@ JavaScript that already ran. This does not uninstall plugins or disable their
 backend operations, tools, or services.
 Ordinary plugin APIs, sandboxed dashboard widgets, and MCP Apps are unaffected.
 
-Native UI shipped with OpenClaw remains available for enabled bundled plugins,
-including Workboard. OpenClaw determines bundled status from the loaded
+Native UI shipped with Paddy remains available for enabled bundled plugins,
+including Workboard. Paddy determines bundled status from the loaded
 plugin's origin, not its name or a manifest claim. A separately installed copy
 uses the custom-plugin setting.
 
@@ -66,12 +66,12 @@ Enable the [Custom plugin UI lab](/plugins/feature-plugins#enable-custom-plugin-
 scaffold's browser views.
 
 ```bash
-openclaw plugins init draft-review --name "Draft Review" --type feature
+paddy plugins init draft-review --name "Draft Review" --type feature
 cd draft-review
 npm install
 npm run build
 npm run validate
-openclaw plugins install .
+paddy plugins install .
 ```
 
 The scaffold includes a draft-analysis operation, an agent tool, a native page,
@@ -240,7 +240,7 @@ The picker matches option labels, values, and descriptions.
 }
 ```
 
-`openclaw plugins build` bundles that source and its browser dependencies with
+`paddy plugins build` bundles that source and its browser dependencies with
 the plugin's `esbuild` dev dependency. It writes immutable JavaScript and CSS
 under `dist/control-ui/<content-hash>/`, then publishes their paths in
 `openclaw.plugin.json.controlUi`. A failed build leaves the previous manifest
@@ -304,7 +304,7 @@ tool catalog.
 After building and validating, produce an import archive:
 
 ```bash
-openclaw plugins pack --root . --out ./draft-review.tgz --json
+paddy plugins pack --root . --out ./draft-review.tgz --json
 ```
 
 The receipt contains the absolute archive path, SHA-256 digest, plugin id, and
@@ -325,7 +325,7 @@ Provide an entry compiled without those loaders so packing can bundle its
 dependencies, or use the normal package-install flow.
 
 The system agent can propose activation with that path and digest. Before
-approval, OpenClaw verifies and retains the exact archive and inspects its
+approval, Paddy verifies and retains the exact archive and inspects its
 declared capabilities and native UI presence without executing the plugin.
 Approved application uses those retained bytes through the managed plugin
 installer. Changing the source file while approval is pending cannot change
@@ -334,7 +334,7 @@ what is installed. Existing install policy and capability checks still apply.
 Artifact approval does not enable the Custom plugin UI lab. The installed
 backend can run with that setting off; its native browser UI remains gated.
 
-Pending imports expire after one hour. OpenClaw keeps at most eight pending
+Pending imports expire after one hour. Paddy keeps at most eight pending
 archives of up to 32 MiB each and prunes expired or oldest imports when another
 proposal is prepared. An expired or evicted review requires a fresh proposal.
 Approved archives are retained separately as the install source, including when
@@ -343,12 +343,12 @@ an installer error leaves the final installation outcome uncertain.
 Artifact activation currently requires plugin configuration in the root config
 file without a root-level `$include`. For a `plugins` section containing only
 `$include: "plugins.json5"` (a single file under the config directory with no
-nested includes), use `openclaw plugins install <archive>` from a trusted shell.
+nested includes), use `paddy plugins install <archive>` from a trusted shell.
 The regular installer also rejects root-level, nested, and external include
 layouts; adjust those layouts before installation.
 
-Artifact activation also refuses to replace the plugin backing OpenClaw's active
-inference route. Stop OpenClaw and install that artifact from a trusted shell.
+Artifact activation also refuses to replace the plugin backing Paddy's active
+inference route. Stop Paddy and install that artifact from a trusted shell.
 
 Gateway-hosted artifact activation waits for backend runtime application. Terminal
 or other hosts without a live Gateway lifecycle callback save the install and

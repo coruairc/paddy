@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "../brand.js";
 import type { DaemonRuntimePinUpdate } from "./runtime-pin-types.js";
 import type { ServiceInspectionReason } from "./service-inspection-error.js";
 import type { GatewayServiceRuntime } from "./service-runtime.js";
@@ -214,6 +215,17 @@ export type GatewayServiceReadOptions = {
   loadForInspection?: GatewayServiceUnitInspection;
 };
 
+export type ReadGatewayServiceStateArgs = GatewayServiceEnvArgs & {
+  windowsStartupEntry?: string;
+  systemdReadTarget?: GatewayServiceReadOptions["systemdReadTarget"];
+  systemdInstallation?: GatewayServiceState["systemdInstallation"];
+  requireEffective?: boolean;
+  requireLoadedCommand?: boolean;
+  loadForInspection?: GatewayServiceReadOptions["loadForInspection"];
+  systemdReadBinding?: GatewayServiceReadOptions["systemdReadBinding"];
+  validateEnvBeforeStatusRead?: (env: GatewayServiceEnv) => void;
+};
+
 export type GatewayServiceEnvironmentValueSource = "inline" | "file" | "inline-and-file";
 
 export type GatewayServiceLoadState =
@@ -235,7 +247,7 @@ const SERVICE_DEFINITION_REASONS = {
   "invalid-artifact":
     "has an unexpected file type. Inspect the service directories and files locally; have their owner repair the layout before retrying. Changing permissions alone will not repair it.",
   symlink:
-    "is a symbolic link. Ask the deployment owner to replace the managed file through the deployment process; OpenClaw will not rewrite the link or its target.",
+    `is a symbolic link. Ask the deployment owner to replace the managed file through the deployment process; ${PRODUCT_NAME} will not rewrite the link or its target.`,
   "foreign-owner":
     "belongs to another account. Ask the privileged deployment owner to repair or replace it; do not take ownership or use --force to bypass this check.",
   "sealed-mount":
@@ -295,6 +307,8 @@ export type GatewayServiceManagedOverrides = {
 export type GatewayServiceCommandConfig = GatewayServiceCommandSnapshot & {
   sourcePath?: string;
   definitionPaths?: string[];
+  /** Selected login items observed with the Scheduled Task registration missing. */
+  startupEntryPaths?: string[];
   managedDefinition?: GatewayServiceCommandSnapshot;
   managedOverrides?: GatewayServiceManagedOverrides;
   reloadPending?: true;

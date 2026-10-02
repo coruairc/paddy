@@ -120,7 +120,7 @@ describe("memory-lancedb statistics", () => {
   });
 
   it.each([
-    ["legacy", "openclaw doctor --fix"],
+    ["legacy", "paddy doctor --fix"],
     ["failed", "fixture database unavailable"],
   ])("preserves the %s database diagnostic", async (dbPath, message) => {
     await expect(readMemoryStats({ dbPath }, "main")).rejects.toThrow(message);

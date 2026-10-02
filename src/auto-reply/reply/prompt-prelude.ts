@@ -3,6 +3,7 @@ import { normalizeOptionalString } from "@openclaw/normalization-core/string-coe
 import type { CurrentInboundPromptContext } from "../../agents/embedded-agent-runner/run/params.js";
 import { appendCurrentInboundContext } from "../../agents/embedded-agent-runner/run/runtime-context-prompt.js";
 import type { RuntimeContextFragment } from "../../agents/internal-runtime-context.js";
+import { PRODUCT_NAME } from "../../brand.js";
 import type { InboundEventKind } from "../../channels/inbound-event/kind.js";
 import { normalizeMediaFacts, type MediaFact } from "../../media/media-facts.js";
 import { MESSAGE_TOOL_ONLY_DELIVERY_HINT } from "../../plugin-sdk/message-tool-delivery-hints.js";
@@ -14,7 +15,7 @@ import { buildInboundMediaNoteProjection } from "../media-note.js";
 import type { MsgContext, TemplateContext } from "../templating.js";
 import { appendChannelPromptContext } from "./channel-prompt-context.js";
 
-const ROOM_EVENT_PROMPT = "[OpenClaw room event]";
+const ROOM_EVENT_PROMPT = `[${PRODUCT_NAME} room event]`;
 const ROOM_EVENT_PARTICIPATION_RULE =
   "Treat this message as observed room activity, not a request. You were not explicitly tagged or mentioned in this room event. Default: stay silent. Only respond if you have something useful, substantial, or important to add. A previous mention or reply is not an invitation to keep talking.";
 const RESUMABLE_ROOM_CONTEXT_OMITTED_PREFIXES = [
@@ -222,7 +223,7 @@ export function buildReplyPromptEnvelopeBase(
         InternalTurnSource: params.ctx.InternalTurnSource ?? params.sessionCtx.InternalTurnSource,
       }).text
     : params.isBareSessionReset
-      ? softResetTail || `[OpenClaw session ${params.startupAction}]`
+      ? softResetTail || `[${PRODUCT_NAME} session ${params.startupAction}]`
       : (roomEventBody ?? (params.hasUserBody ? params.baseBody : MEDIA_ONLY_USER_TEXT));
   const deliveryDirective = resolvePerTurnDeliveryDirective(params);
   const fragments: RuntimeContextFragment[] = [

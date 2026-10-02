@@ -96,8 +96,12 @@ Plist location (per-user): `~/Library/LaunchAgents/ai.openclaw.gateway.plist`
 (or `ai.openclaw.<profile>.plist`).
 
 The macOS app owns LaunchAgent install/update for the default profile in
-Local mode. The CLI can also install it directly: `openclaw gateway install`
+Local mode. The CLI can also install it directly: `paddy gateway install`
 (named profiles are selected via the `OPENCLAW_PROFILE` env var).
+Enabling the Gateway from the app preserves a saved runtime pin.
+If the pin is invalid, enabling fails with the CLI error; reinstall explicitly with
+`--runtime` or `--runtime-path` to replace the saved pin.
+Disabling it uninstalls the LaunchAgent, which removes the pin.
 
 Behavior:
 
@@ -113,8 +117,8 @@ Behavior:
 Use the CLI for lifecycle checks and recovery:
 
 ```bash
-openclaw gateway status --deep
-openclaw gateway restart
+paddy gateway status --deep
+paddy gateway restart
 ```
 
 When **Also run a Gateway on this Mac** is enabled with a remote primary, the
@@ -130,13 +134,13 @@ location without tying the Gateway lifetime to the app process.
 Run these commands if the Gateway repeatedly restarts after an update:
 
 ```bash
-openclaw gateway status
-openclaw doctor
+paddy gateway status
+paddy doctor
 ```
 
 On macOS, both commands report foreign loaded jobs in the `ai.openclaw.*`
 namespace, including jobs submitted without a plist. The report shows each
-label, program, KeepAlive flag, and detected `openclaw gateway restart`,
+label, program, KeepAlive flag, and detected `paddy gateway restart`,
 `start`, or `stop` invocation. Plain-text status shows the list as a warning when
 at least one job has KeepAlive or a verified lifecycle invocation. Otherwise,
 the list appears informationally under "Other OpenClaw launchd jobs (macOS)".
@@ -151,13 +155,13 @@ does not suppress an operator's restart command.
 To remove confirmed stray Gateway lifecycle jobs and verify recovery:
 
 ```bash
-openclaw doctor --fix
-openclaw gateway status
-openclaw health
+paddy doctor --fix
+paddy gateway status
+paddy health
 ```
 
 Doctor removes a foreign job only when its literal, straight-line script or
-direct arguments invoke an absolute OpenClaw path with a Gateway lifecycle
+direct arguments invoke an absolute Paddy path with a Gateway lifecycle
 subcommand. Shell jobs must also have no launchd environment entries that alter
 shell execution. Everything outside this contract is reported and left unchanged.
 This is command-metadata verification; it does not probe binary executability,
@@ -169,7 +173,7 @@ in noninteractive runs. Service repair remains disabled for an isolated install
 identity, external supervision, or an update in progress.
 
 Never use `launchctl submit` or an ad-hoc KeepAlive job for updates or Gateway
-lifecycle commands. Such a job can repeatedly run `openclaw gateway restart`
+lifecycle commands. Such a job can repeatedly run `paddy gateway restart`
 whenever its script exits, as described in
 [#114967](https://github.com/openclaw/openclaw/issues/114967). Use the managed
 update workflow and its suspension fence, then verify status and health.
@@ -227,12 +231,12 @@ the Dashboard cannot reach the Gateway.
 
 ## State directory on macOS
 
-Keep OpenClaw state on a local, non-synced disk. Avoid iCloud Drive and other
+Keep Paddy state on a local, non-synced disk. Avoid iCloud Drive and other
 cloud-synced folders; sync latency and file locks can affect sessions,
 credentials, and Gateway state.
 
 Set `OPENCLAW_STATE_DIR` to a local path only when you need an override.
-`openclaw doctor` warns about common cloud-synced state paths and recommends
+`paddy doctor` warns about common cloud-synced state paths and recommends
 moving back to local storage. See
 [environment variables](/help/environment#path-related-env-vars) and
 [Doctor](/gateway/doctor).
@@ -265,23 +269,23 @@ swift run openclaw-mac discover --timeout 3000 --json
 `connect` accepts `--url`, `--token`, `--timeout`, `--probe`, and `--json`
 (plus client-identity overrides; run with `--help` for the full list).
 `discover` accepts `--timeout`, `--json`, and `--include-local`. Compare
-discovery output with `openclaw gateway discover --json` when you need to
+discovery output with `paddy gateway discover --json` when you need to
 separate CLI discovery from app-side connection issues.
 
 ## Smoke check
 
 ```bash
-openclaw --version
+paddy --version
 
 OPENCLAW_SKIP_CHANNELS=1 \
 OPENCLAW_SKIP_CANVAS_HOST=1 \
-openclaw gateway --port 18999 --bind loopback
+paddy gateway --port 18999 --bind loopback
 ```
 
 Then:
 
 ```bash
-openclaw gateway call health --port 18999 --timeout 3000
+paddy gateway call health --port 18999 --timeout 3000
 ```
 
 ## Related

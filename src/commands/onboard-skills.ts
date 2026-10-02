@@ -94,17 +94,6 @@ function formatSkippedInstallNote(skipped: SkippedInstall[]): string {
   return lines.join("\n");
 }
 
-function isBrewOnlyInstallableSkill(skill: {
-  install: Array<{ kind: string }>;
-  missing: { bins: string[] };
-}): boolean {
-  return (
-    skill.install.length > 0 &&
-    skill.missing.bins.length > 0 &&
-    skill.install.every((option) => option.kind === "brew")
-  );
-}
-
 function isTrustedAutoInstallableSkill(skill: { bundled: boolean; source: string }): boolean {
   // Onboarding can offer bundled recipes in its explicit consent prompt. Workspace
   // skill metadata is mutable project input, so those installs stay excluded.
@@ -188,9 +177,10 @@ export async function setupSkills(
   if (inLinuxContainer && baseInstallable.length > 0 && !(await detectBrewOnce())) {
     // Linux containers without brew cannot use brew-only recipes reliably; hide
     // them from install selection and leave manual instructions in the note.
-    const hiddenBrewOnly = baseInstallable.filter(isBrewOnlyInstallableSkill);
-    installable = baseInstallable.filter((skill) => !isBrewOnlyInstallableSkill(skill));
-    if (hiddenBrewOnly.length > 0) {
+    installable = baseInstallable.filter((skill) =>
+      skill.install.some((option) => option.kind !== "brew"),
+    );
+    if (installable.length < baseInstallable.length) {
       await prompter.note(
         [t("wizard.skills.containerBrewHidden"), t("wizard.skills.containerBrewManual")].join("\n"),
         t("wizard.skills.containerInstallsTitle"),
@@ -214,8 +204,8 @@ export async function setupSkills(
     await prompter.note(
       [
         "No missing skill dependencies to install.",
-        `To inspect available skills, run: ${formatCliCommand("openclaw skills list --verbose")}`,
-        `To check skill status, run: ${formatCliCommand("openclaw skills check")}`,
+        `To inspect available skills, run: ${formatCliCommand("paddy skills list --verbose")}`,
+        `To check skill status, run: ${formatCliCommand("paddy skills check")}`,
       ].join("\n"),
       t("wizard.skills.allReadyTitle") ?? "All skills ready",
     );
@@ -324,7 +314,7 @@ export async function setupSkills(
         runtime.log(result.stdout.trim());
       }
       runtime.log(
-        `Tip: run \`${formatCliCommand("openclaw doctor")}\` to review skills + requirements.`,
+        `Tip: run \`${formatCliCommand("paddy doctor")}\` to review skills + requirements.`,
       );
       runtime.log(t("wizard.skills.docsLine"));
     }

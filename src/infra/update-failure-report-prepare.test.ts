@@ -703,7 +703,7 @@ describe("update report diagnostic command boundary", () => {
       service: "failed",
       reason: "restart-unhealthy",
       outcome:
-        "runtime files verified; Gateway health failed (restart-unhealthy). Run `openclaw gateway status --deep` to check the serving version and readiness.",
+        "runtime files verified; Gateway health failed (restart-unhealthy). Run `paddy gateway status --deep` to check the serving version and readiness.",
     },
     {
       service: "healthy",
@@ -715,14 +715,14 @@ describe("update report diagnostic command boundary", () => {
       packageRollbackVerified: true,
       reason: "channel-errors",
       outcome:
-        "package rollback verified (2026.9.4); Gateway health failed (channel-errors). Run `openclaw gateway status --deep` to check the serving version and readiness.",
+        "package rollback verified (2026.9.4); Gateway health failed (channel-errors). Run `paddy gateway status --deep` to check the serving version and readiness.",
     },
     {
       service: undefined,
       packageRollbackVerified: true,
       reason: "gateway-readiness-pending",
       outcome:
-        "package rollback verified (2026.9.4); Gateway health unverified (gateway-readiness-pending). Run `openclaw gateway status --deep` to check the serving version and readiness.",
+        "package rollback verified (2026.9.4); Gateway health unverified (gateway-readiness-pending). Run `paddy gateway status --deep` to check the serving version and readiness.",
     },
   ] as const)("reports the observed recovery service outcome: $service", async (testCase) => {
     const { service, outcome } = testCase;
@@ -859,6 +859,8 @@ describe("update report diagnostic command boundary", () => {
 
   it.each([
     ["openclaw doctor", "package-doctor"],
+    ["paddy doctor", "package-doctor"],
+    ["paddy doctor entry", "package-doctor-entry"],
     ["candidate doctor lint", "candidate-doctor-lint"],
     ["Checking update health cleanup", "candidate-doctor-lint-cleanup"],
     ["candidate snapshot", "candidate-state-snapshot"],

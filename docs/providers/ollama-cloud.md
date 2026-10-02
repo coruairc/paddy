@@ -1,5 +1,5 @@
 ---
-summary: "Use Ollama Cloud directly with OpenClaw"
+summary: "Use Ollama Cloud directly with Paddy"
 read_when:
   - You want to use hosted Ollama models without a local Ollama server
   - You need the ollama-cloud provider id, key, or endpoint
@@ -11,7 +11,7 @@ directly at `https://ollama.com` over Ollama's native `/api/chat` API, with no
 local Ollama server and no local Ollama app signed into cloud mode. Use model
 refs like `ollama-cloud/kimi-k2.6`.
 
-OpenClaw registers `ollama-cloud` as its own provider id so cloud-only
+Paddy registers `ollama-cloud` as its own provider id so cloud-only
 credentials, live catalog discovery, and model selection do not get mixed with
 a local `ollama` host. For local Ollama, hybrid cloud-plus-local routing,
 embeddings, and custom host details, see [Ollama](/providers/ollama).
@@ -21,7 +21,7 @@ embeddings, and custom host details, see [Ollama](/providers/ollama).
 Follow [Ollama's API key instructions](https://docs.ollama.com/api/authentication#api-keys), then run:
 
 ```bash
-openclaw onboard --auth-choice ollama-cloud
+paddy onboard --auth-choice ollama-cloud
 ```
 
 Or set:
@@ -33,7 +33,7 @@ export OLLAMA_API_KEY="<your-ollama-cloud-api-key>" # pragma: allowlist secret
 Non-interactive onboarding accepts the key directly:
 
 ```bash
-openclaw onboard --auth-choice ollama-cloud --ollama-cloud-api-key "<key>"
+paddy onboard --auth-choice ollama-cloud --ollama-cloud-api-key "<key>"
 ```
 
 Onboarding sets the default model to `ollama-cloud/minimax-m2.7`.
@@ -49,7 +49,7 @@ Onboarding sets the default model to `ollama-cloud/minimax-m2.7`.
 ## When to choose Ollama Cloud
 
 - You want hosted Ollama models without running `ollama serve` locally.
-- You want the same native Ollama chat API shape OpenClaw uses for local
+- You want the same native Ollama chat API shape Paddy uses for local
   Ollama, but pointed at `https://ollama.com`.
 - You want a simple cloud path for models that are already in Ollama's hosted
   catalog.
@@ -63,17 +63,17 @@ semantics or provider-specific OpenAI-style features.
 ## Models
 
 The provider requires an API key; without one it stays inactive. With a key,
-OpenClaw discovers Ollama Cloud models live from the hosted catalog:
+Paddy discovers Ollama Cloud models live from the hosted catalog:
 
 ```bash
-openclaw models list --provider ollama-cloud
-openclaw models set ollama-cloud/kimi-k2.6
+paddy models list --provider ollama-cloud
+paddy models set ollama-cloud/kimi-k2.6
 ```
 
 Hosted ids in the live catalog include `deepseek-v4-flash`, `glm-5.2`,
 `gpt-oss:20b`, `kimi-k3`, and `minimax-m3`. Failed discovery keeps the last
 successful inventory for the same credentials. Without a prior inventory,
-OpenClaw offers bundled suggestions and records the discovery failure. A
+Paddy offers bundled suggestions and records the discovery failure. A
 successful empty response clears discovered models; later failures preserve
 that empty result. Retired `kimi-k2.5` remains marked
 deprecated for existing exact references, but is no longer a current hosted
@@ -108,7 +108,7 @@ authorize `/api/embed`; force them with `OPENCLAW_LIVE_OLLAMA_EMBEDDINGS=1`.
 - `Ollama Cloud requires an API key` / `Set OLLAMA_API_KEY` errors: provide a
   real cloud API key. The local `ollama-local` marker is only for local or
   private Ollama hosts.
-- Unknown model errors: run `openclaw models list --provider ollama-cloud` and
+- Unknown model errors: run `paddy models list --provider ollama-cloud` and
   copy the hosted model id exactly.
 - Tool-call or raw JSON issues on custom Ollama hosts: check whether you are
   accidentally using an OpenAI-compatible `/v1` URL. Ollama routes should use

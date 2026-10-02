@@ -42,6 +42,7 @@ function resolveBundledPluginConfigEnablement(params: {
 
 export async function installBundledPluginSource(params: {
   snapshot: ConfigSnapshotForInstallPersist;
+  env?: NodeJS.ProcessEnv;
   rawSpec: string;
   bundledSource: BundledPluginSource;
   warning?: string;
@@ -69,7 +70,7 @@ export async function installBundledPluginSource(params: {
     : prepareConfigForDisabledInstall(params.snapshot.config, params.bundledSource.pluginId);
   const configWarning = shouldEnable
     ? undefined
-    : `Installed bundled plugin "${params.bundledSource.pluginId}" without enabling it because it requires configuration first. Configure it, then run \`openclaw plugins enable ${params.bundledSource.pluginId}\`.`;
+    : `Installed bundled plugin "${params.bundledSource.pluginId}" without enabling it because it requires configuration first. Configure it, then run \`paddy plugins enable ${params.bundledSource.pluginId}\`.`;
   const warnings = [params.warning, configWarning].filter((warning): warning is string =>
     Boolean(warning),
   );

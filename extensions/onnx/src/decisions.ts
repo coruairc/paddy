@@ -154,7 +154,7 @@ export function createOnnxProvider(
         if (error instanceof OnnxWorkerError) {
           if (error.code === "model-missing" || error.code === "model-integrity") {
             warn(
-              `ONNX model ${context.model} is missing or invalid. Run openclaw onnx verify ${context.model}; use download or prepare a local export as listed by openclaw onnx models.`,
+              `ONNX model ${context.model} is missing or invalid. Run paddy onnx verify ${context.model}; use download or prepare a local export as listed by paddy onnx models.`,
             );
           } else if (error.code === "dependency-unavailable") {
             warn(

@@ -2,7 +2,7 @@
 summary: "Tencent Cloud TokenHub and TokenPlan setup for hy4-preview"
 title: "Tencent Cloud (TokenHub / TokenPlan)"
 read_when:
-  - You want to use Tencent hy4-preview with OpenClaw
+  - You want to use Tencent hy4-preview with Paddy
   - You need the TokenHub or TokenPlan API key setup
 ---
 
@@ -34,21 +34,21 @@ Install the official Tencent Cloud provider plugin to access Tencent Hunyuan cha
     <CodeGroup>
 
 ```bash TokenHub onboarding
-openclaw onboard --auth-choice tokenhub-api-key
+paddy onboard --auth-choice tokenhub-api-key
 ```
 
 ```bash TokenHub direct flag
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --auth-choice tokenhub-api-key \
   --tokenhub-api-key "$TOKENHUB_API_KEY"
 ```
 
 ```bash TokenPlan onboarding
-openclaw onboard --auth-choice tokenplan-api-key
+paddy onboard --auth-choice tokenplan-api-key
 ```
 
 ```bash TokenPlan direct flag
-openclaw onboard --non-interactive --accept-risk --skip-health \
+paddy onboard --non-interactive --accept-risk --skip-health \
   --auth-choice tokenplan-api-key \
   --tokenplan-api-key "$TOKENPLAN_API_KEY"
 ```
@@ -63,8 +63,8 @@ export TOKENPLAN_API_KEY=...
   </Step>
   <Step title="Verify the model">
     ```bash
-    openclaw models list --provider tencent-tokenhub
-    openclaw models list --provider tencent-tokenplan
+    paddy models list --provider tencent-tokenhub
+    paddy models list --provider tencent-tokenplan
     ```
   </Step>
 </Steps>
@@ -75,7 +75,7 @@ Onboarding preserves your model entries and leaves generated catalog rows to dis
 
 ```bash
 # TokenHub
-openclaw onboard --non-interactive \
+paddy onboard --non-interactive \
   --mode local \
   --auth-choice tokenhub-api-key \
   --tokenhub-api-key "$TOKENHUB_API_KEY" \
@@ -83,7 +83,7 @@ openclaw onboard --non-interactive \
   --accept-risk
 
 # TokenPlan
-openclaw onboard --non-interactive \
+paddy onboard --non-interactive \
   --mode local \
   --auth-choice tokenplan-api-key \
   --tokenplan-api-key "$TOKENPLAN_API_KEY" \
@@ -115,7 +115,7 @@ on the server.
 
 Fresh onboarding selects `hy4-preview` on both endpoints. Existing TokenHub
 configurations follow a separate migration policy: when a TokenHub model
-allowlist is configured, `openclaw doctor --fix` changes a deprecated
+allowlist is configured, `paddy doctor --fix` changes a deprecated
 `tencent-tokenhub/hy3-preview` primary to `tencent-tokenhub/hy3`, not Hy4.
 This applies to string and object primary settings and preserves fallbacks,
 custom aliases, and unrelated settings. Explicit `hy3` and `hy4-preview`
@@ -129,10 +129,10 @@ review its different pricing and verify model access for the selected endpoint.
 
 <AccordionGroup>
   <Accordion title="Endpoint override">
-    OpenClaw's built-in catalog uses Tencent Cloud's `https://tokenhub.tencentmaas.com/v1` endpoint. Override it only if your TokenHub account or region requires a different one:
+    Paddy's built-in catalog uses Tencent Cloud's `https://tokenhub.tencentmaas.com/v1` endpoint. Override it only if your TokenHub account or region requires a different one:
 
     ```bash
-    openclaw config set models.providers.tencent-tokenhub.baseUrl "https://your-endpoint/v1"
+    paddy config set models.providers.tencent-tokenhub.baseUrl "https://your-endpoint/v1"
     ```
 
   </Accordion>

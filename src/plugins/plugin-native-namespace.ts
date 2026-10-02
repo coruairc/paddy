@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { PRODUCT_NAME } from "../brand.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { isPathInside } from "../infra/path-guards.js";
 import {
@@ -86,7 +87,7 @@ export function assertPluginNativeNamespaceHost(
     break;
   }
   throw new Error(
-    "Retained native directory does not resolve the selected OpenClaw host; repair the installed plugin's OpenClaw peer link before loading it.",
+    `Retained native directory does not resolve the selected ${PRODUCT_NAME} host; repair the installed plugin's ${PRODUCT_NAME} peer link before loading it.`,
   );
 }
 
@@ -262,6 +263,7 @@ export function capturePluginNativeNamespace(params: {
     }
   }
   const directory = path.join(capturedRoot, "content");
+  const linkedSources = new Set<string>();
   let referenceRoot: string | undefined;
   try {
     for (const [relative, member] of before) {
@@ -284,6 +286,7 @@ export function capturePluginNativeNamespace(params: {
         !(previous?.members[relative]?.boundaryChecked ?? boundaryFiles.has(member.source))
       ) {
         linkPluginSourceFile(member.source, member.boundary, target);
+        linkedSources.add(member.source);
       } else {
         copyPluginSourceFile(member.source, member.boundary, target);
         fs.chmodSync(target, 0o600 | Number(member.stat.mode & 0o100n));
@@ -302,6 +305,7 @@ export function capturePluginNativeNamespace(params: {
       throw error;
     }
     fs.rmSync(directory, { recursive: true, force: true });
+    linkedSources.clear();
     fs.symlinkSync(sourceDirectory, directory, "junction");
     referenceRoot = params.retainedRoot;
   }
@@ -362,7 +366,11 @@ export function capturePluginNativeNamespace(params: {
     ...(referenceRoot ? { referenceRoot } : {}),
     members: Object.fromEntries(
       [...after].map(([relative, member]) => {
-        if (member.identity !== before.get(relative)!.identity) {
+        // A successful link can share the filesystem's current ctime tick.
+        if (
+          linkedSources.has(member.source) &&
+          member.identity === captured.get(relative)!.identity
+        ) {
           changed.set(member.source, member.identity);
         }
         const old = previous?.members[relative];
@@ -387,9 +395,11 @@ export function capturePluginNativeNamespace(params: {
     for (const [relative, member] of Object.entries(fact.members)) {
       const current = fs.statSync(member.source, { bigint: true, throwIfNoEntry: false });
       if (
+        linkedSources.has(after.get(relative)!.source) &&
         current &&
         current.dev === after.get(relative)!.stat.dev &&
-        current.ino === after.get(relative)!.stat.ino
+        current.ino === after.get(relative)!.stat.ino &&
+        pluginSourceStatIdentity(current) === member.capturedIdentity
       ) {
         member.sourceIdentity = pluginSourceStatIdentity(current);
         previous.members[relative]!.sourceIdentity = member.sourceIdentity;

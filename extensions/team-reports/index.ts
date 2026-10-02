@@ -80,7 +80,7 @@ export default definePluginEntry({
         startingStore = (async () => {
           if (!api.runtimeSource) {
             throw new Error(
-              "Team Reports requires an OpenClaw host with runtime entrypoint metadata",
+              "Team Reports requires a Paddy host with runtime entrypoint metadata",
             );
           }
           const nextStore = await createTeamReportsStore({

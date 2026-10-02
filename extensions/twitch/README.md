@@ -1,11 +1,11 @@
 # @openclaw/twitch
 
-Twitch channel plugin for OpenClaw.
+Twitch channel plugin for Paddy.
 
 ## Install (local checkout)
 
 ```bash
-openclaw plugins install ./path/to/local/twitch-plugin
+paddy plugins install ./path/to/local/twitch-plugin
 ```
 
 ## Install (npm)

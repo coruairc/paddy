@@ -40,13 +40,6 @@ const {
 export const listIMessageAccountIds = listAccountIds;
 export const resolveDefaultIMessageAccountId = resolveDefaultAccountId;
 
-function resolveIMessageAccountConfig(
-  cfg: OpenClawConfig,
-  accountId: string,
-): IMessageAccountConfig | undefined {
-  return resolveAccountEntry(cfg.channels?.imessage?.accounts, accountId);
-}
-
 type IMessageStreamingConfig = NonNullable<IMessageAccountConfig["streaming"]>;
 
 function asStreamingConfigObject(value: unknown): IMessageStreamingConfig | undefined {
@@ -85,7 +78,7 @@ function mergeIMessageStreamingConfig(
 }
 
 function mergeIMessageAccountConfig(cfg: OpenClawConfig, accountId: string): IMessageAccountConfig {
-  const accountConfig = resolveIMessageAccountConfig(cfg, accountId);
+  const accountConfig = resolveAccountEntry(cfg.channels?.imessage?.accounts, accountId);
   const merged = resolveMergedIMessageAccountConfig(cfg, accountId);
   const streaming = mergeIMessageStreamingConfig(
     (cfg.channels?.imessage as Record<string, unknown> | undefined)?.streaming,
@@ -311,7 +304,7 @@ export function collectIMessageDuplicateAccountSourceWarnings(params: {
     const dbPath = normalizeIMessageDbPath(owner.config.dbPath);
     const where = dbPath ? `cliPath=${cliPath}, dbPath=${dbPath}` : `cliPath=${cliPath}`;
     warnings.push(
-      `- channels.imessage: accounts "${owner.accountId}" and ${dupIds} watch the same local Messages source (${where}). OpenClaw runs one watcher (owner: "${owner.accountId}") and idles the duplicate; the other accounts stay enabled for outbound sends and status. Inbound messages arrive tagged with accountId="${owner.accountId}", so bindings pinned to ${dupIds} should be re-pointed at "${owner.accountId}" (or set "enabled": false on "${owner.accountId}" to flip ownership). Set "enabled": false on the unused duplicates to silence this warning.`,
+      `- channels.imessage: accounts "${owner.accountId}" and ${dupIds} watch the same local Messages source (${where}). Paddy runs one watcher (owner: "${owner.accountId}") and idles the duplicate; the other accounts stay enabled for outbound sends and status. Inbound messages arrive tagged with accountId="${owner.accountId}", so bindings pinned to ${dupIds} should be re-pointed at "${owner.accountId}" (or set "enabled": false on "${owner.accountId}" to flip ownership). Set "enabled": false on the unused duplicates to silence this warning.`,
     );
   }
   return warnings;

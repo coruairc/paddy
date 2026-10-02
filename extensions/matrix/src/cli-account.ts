@@ -7,7 +7,9 @@ import { listMatrixOwnDevices } from "./matrix/actions/devices.js";
 import { updateMatrixOwnProfile } from "./matrix/actions/profile.js";
 import { resolveMatrixConfigPath, updateMatrixAccountConfig } from "./matrix/config-update.js";
 import { isOpenClawManagedMatrixDevice } from "./matrix/device-health.js";
+import type { MatrixProfileSyncResult } from "./matrix/profile.js";
 import { getMatrixRuntime } from "./runtime.js";
+import type { maybeBootstrapNewEncryptedMatrixAccount } from "./setup-bootstrap.js";
 import type { MatrixSetupInput } from "./setup-config.js";
 import { matrixSetupAdapter } from "./setup-core.js";
 import type { CoreConfig } from "./types.js";
@@ -22,19 +24,9 @@ type MatrixCliAccountAddResult = {
     staleOpenClawDeviceIds: string[];
     error?: string;
   };
-  verificationBootstrap: {
+  verificationBootstrap: Awaited<ReturnType<typeof maybeBootstrapNewEncryptedMatrixAccount>>;
+  profile: Omit<MatrixProfileSyncResult, "skipped" | "uploadedAvatarSource"> & {
     attempted: boolean;
-    success: boolean;
-    recoveryKeyCreatedAt: string | null;
-    backupVersion: string | null;
-    error?: string;
-  };
-  profile: {
-    attempted: boolean;
-    displayNameUpdated: boolean;
-    avatarUpdated: boolean;
-    resolvedAvatarUrl: string | null;
-    convertedAvatarFromHttp: boolean;
     error?: string;
   };
 };
@@ -281,7 +273,7 @@ export function registerMatrixAccountCommands(root: Command): void {
                 .map((deviceId) => cli.formatMatrixCliText(deviceId))
                 .join(", ");
               console.log(
-                `Matrix device hygiene warning: stale OpenClaw devices detected (${staleDeviceIds}). Run ${cli.formatMatrixCliCommand("devices prune-stale", result.accountId)}.`,
+                `Matrix device hygiene warning: stale Paddy devices detected (${staleDeviceIds}). Run ${cli.formatMatrixCliCommand("devices prune-stale", result.accountId)}.`,
               );
             }
             if (result.profile.attempted) {
@@ -301,7 +293,7 @@ export function registerMatrixAccountCommands(root: Command): void {
               }
             }
             console.log(
-              `Bind this account to an agent: openclaw agents bind --agent <id> --bind matrix:${result.accountId}`,
+              `Bind this account to an agent: paddy agents bind --agent <id> --bind matrix:${result.accountId}`,
             );
           },
           errorPrefix: "Account setup failed",

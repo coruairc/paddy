@@ -246,7 +246,7 @@ read_when:
     CLI equivalent:
 
     ```bash
-    openclaw config set gateway.push.apns.relay.baseUrl https://relay.example.com
+    paddy config set gateway.push.apns.relay.baseUrl https://relay.example.com
     ```
 
     What this does:
@@ -398,8 +398,8 @@ read_when:
     - **Sibling keys**: merged after includes (override included values)
     - **Relative paths**: resolved relative to the including file
     - **Path format**: include paths must not contain null bytes and must be strictly shorter than 4096 characters before and after resolution
-    - **OpenClaw-owned writes**: when every changed key is owned by one
-      single-file include at an object-key path, OpenClaw updates the deepest
+    - **Paddy-owned writes**: when every changed key is owned by one
+      single-file include at an object-key path, Paddy updates the deepest
       owning include and leaves `openclaw.json` intact. This works for both
       top-level sections such as `plugins: { $include: "./plugins.json5" }` and
       nested object-map entries. Write-through only targets include files inside
@@ -419,7 +419,7 @@ read_when:
       array positions.
       Include targets and contents are rechecked around persistence; a concurrent
       edit to an intermediate include refuses the write or rolls back its unchanged leaf.
-    - **Doctor repairs**: `openclaw doctor --fix` writes through the same
+    - **Doctor repairs**: `paddy doctor --fix` writes through the same
       boundary. A run whose candidate mixes a root-owned repair with an
       include-owned repair is refused as a whole. That refused write leaves every
       file unchanged (earlier writes in the same run stay saved), and Doctor names

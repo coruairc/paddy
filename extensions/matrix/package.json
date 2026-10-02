@@ -1,7 +1,7 @@
 {
   "name": "@openclaw/matrix",
   "version": "2026.9.6",
-  "description": "OpenClaw Matrix channel plugin for rooms and direct messages.",
+  "description": "Paddy Matrix channel plugin for rooms and direct messages.",
   "repository": {
     "type": "git",
     "url": "https://github.com/openclaw/openclaw"
@@ -10,7 +10,7 @@
   "dependencies": {
     "@matrix-org/matrix-sdk-crypto-nodejs": "0.6.6",
     "@matrix-org/matrix-sdk-crypto-wasm": "18.8.0",
-    "@openclaw/fs-safe": "0.21.0",
+    "@openclaw/fs-safe": "0.21.2",
     "fake-indexeddb": "6.2.5",
     "markdown-it": "15.0.2",
     "matrix-js-sdk": "42.4.0",

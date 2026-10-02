@@ -19,12 +19,12 @@ auth-configured provider (a set API key, for example).
 </Note>
 
 For session-backed agent runs, `music_generate` starts as a background task,
-tracks progress in the task ledger, then wakes the agent when the track is
+tracks progress in its media runtime, then wakes the agent when the track is
 ready so it can tell the user and attach the finished audio. The completion
 agent follows the session's visible-reply contract: automatic final reply
 when configured, or `message(action="send")` when the session requires the
 message tool. If the requester session is inactive or its wake fails and
-generated audio is still missing from the reply, OpenClaw sends an
+generated audio is still missing from the reply, Paddy sends an
 idempotent direct fallback with just the missing audio.
 
 ## Quick start
@@ -174,16 +174,16 @@ shared live sweep:
 <ParamField path="filename" type="string">Output filename hint.</ParamField>
 
 <Note>
-Not all providers support all parameters. OpenClaw still validates hard
+Not all providers support all parameters. Paddy still validates hard
 limits such as input counts before submission. When a provider supports
-duration but uses a shorter maximum than the requested value, OpenClaw
+duration but uses a shorter maximum than the requested value, Paddy
 clamps to the closest supported duration. Truly unsupported optional hints
 are ignored with a warning when the selected provider or model cannot honor
 them. Tool results report applied settings; `details.normalization`
 captures any requested-to-applied mapping.
 </Note>
 
-Provider request timeouts are operator configuration only. OpenClaw uses
+Provider request timeouts are operator configuration only. Paddy uses
 `agents.defaults.mediaModels.music.timeoutMs` when configured, raises
 values below 120000ms to 120000ms, and otherwise defaults provider requests
 to 300000ms.
@@ -196,12 +196,13 @@ Session-backed music generation runs as a background task:
   started/task response immediately, and posts the finished track later in
   a follow-up agent message.
 - **Duplicate prevention:** while a task is `queued` or `running`, later
-  `music_generate` calls in the same session return task status instead of
+  `music_generate` calls in the same chat return task status instead of
   starting another generation. Use `action: "status"` to check explicitly.
   A recently completed matching request is also deduplicated for 2 minutes.
-- **Status lookup:** `openclaw tasks list` or `openclaw tasks show <taskId>`
-  inspects queued, running, and terminal status.
-- **Completion wake:** OpenClaw injects an internal completion event back
+  Direct chats keep separate tasks even when they share the main session
+  transcript; completion returns to the requesting peer.
+- **Status lookup:** use `music_generate` with `action: "status"`.
+- **Completion wake:** Paddy injects an internal completion event back
   into the same session so the model can write the user-facing follow-up
   itself.
 - **Prompt hint:** later user/manual turns in the same session get a small
@@ -212,10 +213,7 @@ Session-backed music generation runs as a background task:
 
 ### Task lifecycle
 
-The music task surfaces the same states as the general task registry (see
-[Background tasks](/automation/tasks#task-lifecycle) for the full state
-machine, including `timed_out`, `cancelled`, and `lost`). Most music runs
-move through:
+The media runtime reports generation progress:
 
 | State       | Meaning                                                                                        |
 | ----------- | ---------------------------------------------------------------------------------------------- |
@@ -223,14 +221,6 @@ move through:
 | `running`   | Provider is processing (typically 30 seconds to 3 minutes depending on provider and duration). |
 | `succeeded` | Track ready; the agent wakes and posts it to the conversation.                                 |
 | `failed`    | Provider error or timeout; the agent wakes with error details.                                 |
-
-Check status from the CLI:
-
-```bash
-openclaw tasks list
-openclaw tasks show <taskId>
-openclaw tasks cancel <taskId>
-```
 
 ## Configuration
 
@@ -253,7 +243,7 @@ openclaw tasks cancel <taskId>
 
 ### Provider selection order
 
-For `music_generate`, OpenClaw tries providers in this order:
+For `music_generate`, Paddy tries providers in this order:
 
 1. `model` parameter from the tool call. When set, only this model is tried.
 2. `agents.defaults.mediaModels.music.primary` from config.
@@ -267,11 +257,12 @@ For `music_generate`, OpenClaw tries providers in this order:
 
 If a provider fails, the next candidate is tried automatically. If all
 fail, the error includes details from each attempt.
+Each failed candidate logs its provider, model, and error at `warn`.
 For reference-image requests, candidates that cannot use images or accept
 the supplied reference count are skipped.
 
 Explicit music model configuration limits fallback to the configured list;
-OpenClaw does not append auto-detected providers.
+Paddy does not append auto-detected providers.
 
 ## Provider notes
 
@@ -387,7 +378,6 @@ sections are configured.
 
 ## Related
 
-- [Background tasks](/automation/tasks) — task tracking for detached `music_generate` runs
 - [ComfyUI](/providers/comfy)
 - [Configuration reference](/gateway/config-agents#agent-defaults) — `agents.defaults.mediaModels.music` config
 - [Google (Gemini)](/providers/google)

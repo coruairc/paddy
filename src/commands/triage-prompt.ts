@@ -1,4 +1,5 @@
 // Render bounded, sanitized doctor findings into a fixing-agent handoff prompt.
+import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { HEALTH_FINDING_SEVERITY_RANK, type HealthFinding } from "../flows/health-checks.js";
 import {
   redactSupportString,
@@ -125,13 +126,13 @@ export function renderTriagePrompt(params: {
     return severity || left.checkId.localeCompare(right.checkId);
   });
   const lines = [
-    "You are repairing THIS machine's OpenClaw installation. Diagnose the root cause, apply the repair autonomously within your existing permissions, and verify the result. Preserve configuration, history, and databases. Use read-only `openclaw doctor --lint --json`, `openclaw status --all`, and `openclaw logs` for diagnostics. Product documentation: https://docs.openclaw.ai.",
+    `You are repairing THIS machine's ${PRODUCT_NAME} installation. Diagnose the root cause, apply the repair autonomously within your existing permissions, and verify the result. Preserve configuration, history, and databases. Use read-only \`${CLI_NAME} doctor --lint --json\`, \`${CLI_NAME} status --all\`, and \`${CLI_NAME} logs\` for diagnostics. Product documentation: https://docs.openclaw.ai.`,
     "",
     "## Environment",
     "",
-    `- OpenClaw: ${VERSION}`,
+    `- ${PRODUCT_NAME}: ${VERSION}`,
     `- Platform: ${process.platform}`,
-    `- Node.js: ${process.versions.node} (the runtime executing OpenClaw, which may differ from the shell default)`,
+    `- Node.js: ${process.versions.node} (the runtime executing ${PRODUCT_NAME}, which may differ from the shell default)`,
     "- Local shell commands inherit `OPENCLAW_STATE_DIR`, `OPENCLAW_CONFIG_PATH`, and `OPENCLAW_WORKSPACE_DIR` for the diagnosed installation and its default workspace; expand archive references in that shell. The diagnostic conversation is separate from the installation's saved sessions. The execution cwd is separate from the installation's default workspace. Do not substitute a remote or sandbox installation for this local target.",
   ];
   const failureIndex = lines.length;
@@ -141,11 +142,11 @@ export function renderTriagePrompt(params: {
     "",
     params.maintenanceHandoff
       ? "Diagnose and repair the original symptom. Never run Doctor maintenance or update repair through exec: this turn owns live credential database resources. Call request_update_maintenance with operation doctor-fix or update-repair to end the turn; the update owner will run that fixed command only after agent work and database resources settle. Respect all lease, service, schema, and capability refusals. The tool is a request, not proof of recovery."
-      : "Diagnose and repair the original symptom using existing repair commands, including `openclaw doctor --fix` and, for unfinished updates, `openclaw update repair`. Respect installation ownership, locks, schema and capability approval refusals. If maintenance refuses to stop the Gateway from this fixing subtree, use read-only diagnosis or safe offline artifact repair and atomic restart, or report that an independent operator must run maintenance outside triage. Do not bypass the refusal.",
+      : "Diagnose and repair the original symptom using existing repair commands, including `paddy doctor --fix` and, for unfinished updates, `paddy update repair`. Respect installation ownership, locks, schema and capability approval refusals. If maintenance refuses to stop the Gateway from this fixing subtree, use read-only diagnosis or safe offline artifact repair and atomic restart, or report that an independent operator must run maintenance outside triage. Do not bypass the refusal.",
     failure?.gateway === "preserve"
       ? "Do not start or restart the Gateway: this invocation did not authorize activation. Preserve --no-restart and intentional stops. Use read-only status checks and report live health verification as deferred while it is intentionally stopped."
-      : "Only activate a Gateway intended to run. For managed recovery, use atomic `openclaw gateway restart` when needed, never stop then start: an explicit stop after native scope attachment cancels this recovery and its children. Preserve later operator stops and report cancellation or infeasibility instead of claiming recovery.",
-    "For a running Gateway, verify this installation with `openclaw health --json` AND `openclaw status --all` or `openclaw gateway status --deep`. Verify the running version matches the expected version above when supplied, and reproduce the original symptom to confirm it is resolved.",
+      : "Only activate a Gateway intended to run. For managed recovery, use atomic `paddy gateway restart` when needed, never stop then start: an explicit stop after native scope attachment cancels this recovery and its children. Preserve later operator stops and report cancellation or infeasibility instead of claiming recovery.",
+    "For a running Gateway, verify this installation with `paddy health --json` AND `paddy status --all` or `paddy gateway status --deep`. Verify the running version matches the expected version above when supplied, and reproduce the original symptom to confirm it is resolved.",
     "A valid config, process PID, repair command exit 0, or health snapshot's top-level ok alone is not success. Inspect relevant health/status failures. End with a concise report of changes, verification commands and evidence, and any remaining blocker. Do not claim recovery without that evidence.",
     "",
   );
@@ -210,7 +211,7 @@ export function renderTriagePrompt(params: {
   }
   const omitted = findings.length - rendered;
   if (omitted > 0) {
-    lines.push(`${omitted} more findings omitted; run \`openclaw doctor\` for the full list.`);
+    lines.push(`${omitted} more findings omitted; run \`paddy doctor\` for the full list.`);
   }
 
   lines.push(...tail);

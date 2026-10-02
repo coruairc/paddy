@@ -76,6 +76,7 @@ import {
 import { type RuntimeEnv, writeRuntimeJson } from "../runtime.js";
 import { createLazyPromiseLoader } from "../shared/lazy-runtime.js";
 import { normalizeMessageChannel } from "../utils/message-channel-normalize.js";
+import { sleep } from "../utils/sleep.js";
 
 type AgentGatewayResult = {
   payloads?: Array<{
@@ -210,10 +211,6 @@ const replyPayloadModuleLoader = createLazyPromiseLoader(
 );
 let gatewayAbortRetryDelaysMsForTests: readonly number[] | undefined;
 
-function resolveGatewayAbortRetryDelaysMs(): readonly number[] {
-  return gatewayAbortRetryDelaysMsForTests ?? GATEWAY_ABORT_RETRY_DELAYS_MS;
-}
-
 const loadAgentSessionModule = agentSessionModuleCache.load;
 
 type EmbeddedAgentCommandOpts = Parameters<
@@ -328,7 +325,7 @@ async function loadRemoteGatewayRosterWithShellEnvFallback(
 }
 
 function formatActiveGatewayLocalRefusal(identity: GatewayLockIdentity): string {
-  return `A Gateway is running for this state directory (pid ${identity.pid}, port ${identity.port}). Run without --local to use it, or stop the Gateway first (${formatCliCommand("openclaw gateway stop")}).`;
+  return `A Gateway is running for this state directory (pid ${identity.pid}, port ${identity.port}). Run without --local to use it, or stop the Gateway first (${formatCliCommand("paddy gateway stop")}).`;
 }
 
 async function acquireEmbeddedAgentStateLock(
@@ -367,7 +364,7 @@ function protectJsonStdout(opts: Pick<AgentCliOpts, "json">): void {
 
 function missingAgentMessageError(): Error {
   return new Error(
-    `Missing message. Use ${formatCliCommand('openclaw agent --message "..." --agent <id>')} or ${formatCliCommand("openclaw agent --message-file <path> --agent <id>")}.`,
+    `Missing message. Use ${formatCliCommand('paddy agent --message "..." --agent <id>')} or ${formatCliCommand("paddy agent --message-file <path> --agent <id>")}.`,
   );
 }
 
@@ -531,7 +528,7 @@ function formatGatewayAgentTransportLossHint(err: unknown): string | undefined {
     : "";
   return (
     `Gateway agent call ${failureHint}; the Gateway may still be running this turn${acceptedNote}. ` +
-    "Check `openclaw gateway status` and the session transcript before retrying or rerunning with --local, so the turn does not execute twice."
+    "Check `paddy gateway status` and the session transcript before retrying or rerunning with --local, so the turn does not execute twice."
   );
 }
 
@@ -752,26 +749,12 @@ function resolveAgentCliProcessLike(deps: AgentCliDeps | undefined): AgentCliPro
   return isAgentCliProcessLike(processLike) ? processLike : process;
 }
 
-function createAbortDelayError(): Error {
-  return createAbortError("gateway agent retry aborted");
-}
-
-function delayMs(ms: number, signal?: AbortSignal): Promise<void> {
-  if (signal?.aborted) {
-    return Promise.reject(createAbortDelayError());
+async function delayMs(ms: number, signal?: AbortSignal): Promise<void> {
+  try {
+    await sleep(ms, signal);
+  } catch {
+    throw createAbortError("gateway agent retry aborted");
   }
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      signal?.removeEventListener("abort", onAbort);
-      resolve();
-    }, ms);
-    const onAbort = () => {
-      clearTimeout(timer);
-      signal?.removeEventListener("abort", onAbort);
-      reject(createAbortDelayError());
-    };
-    signal?.addEventListener("abort", onAbort, { once: true });
-  });
 }
 
 function isConfirmedChatAbortResponseForRun(value: unknown, runId: string): boolean {
@@ -859,7 +842,7 @@ async function abortAcceptedGatewayAgentRunWithGatewayCall(params: {
 async function abortAcceptedGatewayAgentRunWithRetries(
   params: Parameters<typeof abortAcceptedGatewayAgentRunWithRequest>[0],
 ): Promise<boolean> {
-  const retryDelaysMs = resolveGatewayAbortRetryDelaysMs();
+  const retryDelaysMs = gatewayAbortRetryDelaysMsForTests ?? GATEWAY_ABORT_RETRY_DELAYS_MS;
   for (const [attempt, retryDelayMs] of [...retryDelaysMs, 0].entries()) {
     const isFinalAttempt = attempt === retryDelaysMs.length;
     const aborted = await abortAcceptedGatewayAgentRunWithRequest({
@@ -899,10 +882,6 @@ function buildGatewayJsonResponse(response: GatewayAgentResponse): GatewayAgentR
     ...response,
     deliveryStatus,
   };
-}
-
-function isInFlightGatewayAgentResponse(response: GatewayAgentResponse): boolean {
-  return response.status === "in_flight";
 }
 
 function markAgentRunExitCode(
@@ -967,7 +946,7 @@ async function agentViaGatewayCommand(
     !hasImplicitGlobalTarget
   ) {
     throw new Error(
-      `No target session selected. Use --agent <id>, --session-key <key>, --session-id <id>, or --to <E.164>. Run ${formatCliCommand("openclaw agents list")} to see agents.`,
+      `No target session selected. Use --agent <id>, --session-key <key>, --session-id <id>, or --to <E.164>. Run ${formatCliCommand("paddy agents list")} to see agents.`,
     );
   }
 
@@ -980,7 +959,7 @@ async function agentViaGatewayCommand(
       opts.remoteGatewayRoster?.agentIds ?? (remoteGateway ? undefined : listAgentIds(cfg));
     if (knownAgents && !knownAgents.includes(agentId)) {
       throw new Error(
-        `Unknown agent id "${agentIdRaw}". Use "${formatCliCommand("openclaw agents list")}" to see configured agents.`,
+        `Unknown agent id "${agentIdRaw}". Use "${formatCliCommand("paddy agents list")}" to see configured agents.`,
       );
     }
   }
@@ -1152,7 +1131,7 @@ async function agentViaGatewayCommand(
 
   const payloads = response.result?.payloads ?? [];
 
-  if (isInFlightGatewayAgentResponse(response)) {
+  if (response.status === "in_flight") {
     runtime.error?.(formatInFlightGatewayAgentMessage(response));
     return response;
   }
@@ -1233,7 +1212,7 @@ export async function agentCliCommand(
   // Fail loudly and point at the first-class command instead of no-opping.
   if (isCompactControlCommand(messageOpts.message)) {
     throw new Error(
-      "Slash commands cannot be executed via --message from the CLI. Use: openclaw sessions compact <key>",
+      "Slash commands cannot be executed via --message from the CLI. Use: paddy sessions compact <key>",
     );
   }
   const dispatchOpts = await normalizeSessionKeyOptsForDispatch(messageOpts);
@@ -1280,13 +1259,7 @@ export async function agentCliCommand(
       );
       return returnAfterSignalExit(result, signalBridge.getReceivedSignal(), runtime);
     } catch (err) {
-      if (isAbortError(err)) {
-        if (exitForReceivedSignal(signalBridge.getReceivedSignal(), runtime)) {
-          return undefined;
-        }
-        throw err;
-      }
-      const failureHint = formatGatewayAgentTransportLossHint(err);
+      const failureHint = isAbortError(err) ? undefined : formatGatewayAgentTransportLossHint(err);
       if (failureHint) {
         runtime.error?.(failureHint);
       }

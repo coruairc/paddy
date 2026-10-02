@@ -103,7 +103,7 @@ sequenceDiagram
   for subsequent connects.
 - Direct local loopback connects can be auto-approved to keep same-host UX
   smooth.
-- OpenClaw also has a narrow backend/container-local self-connect path for
+- Paddy also has a narrow backend/container-local self-connect path for
   trusted shared-secret helper flows.
 - Tailnet and LAN connects, including same-host tailnet binds, still require
   explicit pairing approval.
@@ -137,9 +137,30 @@ Details: [Gateway protocol](/gateway/protocol), [Pairing](/channels/pairing),
 
 ## Operations snapshot
 
-- Start: `openclaw gateway` (foreground, logs to stdout).
+- Start: `paddy gateway` (foreground, logs to stdout).
 - Health: `health` over WS (also included in `hello-ok`).
 - Supervision: launchd/systemd for auto-restart.
+
+### Timed work and shutdown
+
+The Gateway kernel owns one `GatewayScheduler` for registered maintenance and cron
+wakeups. Owners receive that instance and register jobs; one host timer drives the
+next wake. For durable work, stores retain deadlines and their owners reconstruct
+schedules at startup rather than persisting a second scheduler state.
+
+After sleep, a late wake dispatches each runnable, due registration once for that
+wake. A periodic registration waits for its callback and tracked work to finish
+before starting its next interval; missed ticks are coalesced. Wall time catches
+sleep, while elapsed time keeps relative delays and cadences moving through a
+backward clock correction. Rescheduling replaces a waiting job by default;
+`mode: "earliest"` preserves earlier wall and elapsed deadlines for the same job ID
+so a stale read cannot postpone an already promised wake.
+
+`beginClose()` closes scheduling admission, cancels pending wakes, and signals
+shutdown. `stop()` joins callbacks already running and work tracked by their async
+scope; the Gateway lifecycle owns the outer shutdown budget and resource teardown.
+Request deadlines, stream-local timers, and child-process cleanup stay with their
+operation owners. SQLite WAL checkpoint timers stay with the storage owner.
 
 ## Invariants
 
@@ -153,4 +174,4 @@ Details: [Gateway protocol](/gateway/protocol), [Pairing](/channels/pairing),
 - [Gateway Protocol](/gateway/protocol) — WebSocket protocol contract
 - [Queue](/concepts/queue) — command queue and concurrency
 - [Security](/gateway/security) — trust model and hardening
-- [Network](/network) — the hub for how OpenClaw connects, pairs, and secures devices across localhost, LAN, and tailnet
+- [Network](/network) — the hub for how Paddy connects, pairs, and secures devices across localhost, LAN, and tailnet

@@ -169,7 +169,7 @@ describe("tools.catalog handler", () => {
         {
           id: "openclaw",
           label: "openclaw",
-          description: "Delegate OpenClaw setup and repair",
+          description: "Delegate Paddy setup and repair",
           source: "core",
           defaultProfiles: [],
         },

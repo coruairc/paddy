@@ -1,5 +1,6 @@
 import { sliceUtf16Safe } from "@openclaw/normalization-core/utf16-slice";
 import { UPDATE_RUN_PHASES } from "../../packages/gateway-protocol/src/update-run-vocabulary.js";
+import { PRODUCT_NAME } from "../brand.js";
 import {
   formatUpdateActivationTimeoutGuidance,
   isVerifiedUpdateRollback,
@@ -27,7 +28,7 @@ import { formatUpdateSnapshotCapacity } from "./update-snapshot-capacity.js";
 
 export type UpdateRunReport = { headline: string; lines: string[]; markdown: string };
 
-const IN_PROGRESS_REPORT_PREFIX = "⬆️ OpenClaw update in progress: ";
+const IN_PROGRESS_REPORT_PREFIX = `⬆️ ${PRODUCT_NAME} update in progress: `;
 
 /** Recognizes pending projections written by this renderer, including shipped reports. */
 export function isUpdateRunReportInProgress(markdown: string): boolean {
@@ -123,7 +124,7 @@ export function formatUpdateRunRecovery(
     const packageOutcome = restored
       ? `package rollback verified (${version})`
       : "runtime files verified";
-    return `${packageOutcome}; Gateway health ${recovery.service === "failed" ? "failed" : "unverified"} (${reason}). Run \`openclaw gateway status --deep\` to check the serving version and readiness.`;
+    return `${packageOutcome}; Gateway health ${recovery.service === "failed" ? "failed" : "unverified"} (${reason}). Run \`paddy gateway status --deep\` to check the serving version and readiness.`;
   }
   const version =
     recovery?.serviceRestartSafe && recovery.service === "healthy"
@@ -163,7 +164,7 @@ export function renderUpdateRunNotice(
   const target = run.after.version ?? run.target.version;
   const to = target ? bounded(target, 120) : undefined;
   if (kind === "ack") {
-    return `⬆️ Updating OpenClaw ${from ?? "the current version"} → ${to ?? "the latest release"}. The gateway stays available while the update is validated; you'll get a message here when it finishes.`;
+    return `⬆️ Updating ${PRODUCT_NAME} ${from ?? "the current version"} → ${to ?? "the latest release"}. The gateway stays available while the update is validated; you'll get a message here when it finishes.`;
   }
   if (kind === "activating" || kind === "parking") {
     return `⏳ Restarting the gateway now${from && to ? ` (v${from} → v${to})` : ""}…`;
@@ -183,7 +184,7 @@ function recoveryHints(run: ReportInput, nextAction?: string): string[] {
     return nextAction ? [] : run.origin.nextAction ? [run.origin.nextAction] : [];
   }
   if (run.status === "running") {
-    return ["Check progress with openclaw update status."];
+    return ["Check progress with paddy update status."];
   }
   if (run.status !== "failed") {
     return [];
@@ -220,7 +221,7 @@ function recoveryHints(run: ReportInput, nextAction?: string): string[] {
     );
   }
   if (!nextAction) {
-    hints.push("Run openclaw triage to diagnose and repair the failed update.");
+    hints.push("Run paddy triage to diagnose and repair the failed update.");
   }
   return hints;
 }
@@ -262,26 +263,26 @@ export function renderUpdateRunReport(
   switch (run.status) {
     case "succeeded":
       headline = after
-        ? `✅ OpenClaw updated to ${after}${before ? ` (from ${before})` : ""}.`
-        : "✅ OpenClaw updated.";
+        ? `✅ ${PRODUCT_NAME} updated to ${after}${before ? ` (from ${before})` : ""}.`
+        : `✅ ${PRODUCT_NAME} updated.`;
       break;
     case "failed":
       headline = reconciled
-        ? "ℹ️ OpenClaw abandoned update reconciled."
+        ? `ℹ️ ${PRODUCT_NAME} abandoned update reconciled.`
         : run.reason === LEGACY_UPDATE_RUN_EXPIRED_REASON
-          ? `ℹ️ OpenClaw update abandoned: ${reason}.`
-          : `⚠️ OpenClaw update failed: ${reason}.${running ? ` The gateway is running ${running}.` : ""}`;
+          ? `ℹ️ ${PRODUCT_NAME} update abandoned: ${reason}.`
+          : `⚠️ ${PRODUCT_NAME} update failed: ${reason}.${running ? ` The gateway is running ${running}.` : ""}`;
       break;
     case "skipped":
       headline =
         run.reason === "still-starting"
-          ? `ℹ️ OpenClaw${after ? ` ${after}` : ""} installed; Gateway still starting; readiness unverified; recovery backups retained.`
+          ? `ℹ️ Paddy${after ? ` ${after}` : ""} installed; Gateway still starting; readiness unverified; recovery backups retained.`
           : run.reason === "gateway-readiness-unverified"
-            ? `ℹ️ OpenClaw${after ? ` ${after}` : ""} installed; Gateway readiness unverified; recovery backups retained.`
-            : `ℹ️ OpenClaw update skipped: ${reason}.`;
+            ? `ℹ️ Paddy${after ? ` ${after}` : ""} installed; Gateway readiness unverified; recovery backups retained.`
+            : `ℹ️ ${PRODUCT_NAME} update skipped: ${reason}.`;
       break;
     case "rolled-back":
-      headline = `↩️ OpenClaw update rolled back to ${after ?? running ?? before ?? "the previous version"}: ${reason}.`;
+      headline = `↩️ ${PRODUCT_NAME} update rolled back to ${after ?? running ?? before ?? "the previous version"}: ${reason}.`;
       break;
     case "running":
       headline = `${IN_PROGRESS_REPORT_PREFIX}${run.target?.installationMethod === "ocm" ? "managed by OCM" : run.phase}.`;
@@ -372,32 +373,30 @@ export function renderUpdateRunReport(
   for (const message of updateRunWarningMessages(run.steps, 3)) {
     lines.push(`Warning: ${bounded(message, 500)}`);
   }
-  const verification: string[] = [];
   const facts = run.verification;
   const observation = run.steps.findLast((step) => step.step === "gateway recovery verification");
   const recovery = observation && formatUpdateRunRecovery(facts, observation);
   if (recovery) {
     lines.push(`Recovery: ${recovery}.`);
   }
-  if (facts.booted) {
-    verification.push("gateway booted");
-  }
-  if (facts.serviceRunning !== undefined) {
-    verification.push(facts.serviceRunning ? "service running" : "service stopped");
-  }
-  const identity = formatUpdateRunIdentity(facts, run.after);
-  if (identity) {
-    verification.push(identity);
-  }
-  if (facts.channelsReady !== undefined) {
-    verification.push(facts.channelsReady ? "channels ready" : "channels not ready");
-  }
-  if (facts.readyz !== undefined) {
-    verification.push(facts.readyz ? "HTTP ready" : "HTTP not ready");
-  }
-  if (facts.pluginErrors?.length) {
-    verification.push(`${facts.pluginErrors.length} plugin activation error(s)`);
-  }
+  const verification = [
+    facts.booted ? "gateway booted" : undefined,
+    facts.serviceRunning === undefined
+      ? undefined
+      : facts.serviceRunning
+        ? "service running"
+        : "service stopped",
+    formatUpdateRunIdentity(facts, run.after),
+    facts.channelsReady === undefined
+      ? undefined
+      : facts.channelsReady
+        ? "channels ready"
+        : "channels not ready",
+    facts.readyz === undefined ? undefined : facts.readyz ? "HTTP ready" : "HTTP not ready",
+    facts.pluginErrors?.length
+      ? `${facts.pluginErrors.length} plugin activation error(s)`
+      : undefined,
+  ].filter(Boolean);
   if (verification.length) {
     lines.push(
       `${currentHealth ? "Recorded verification" : "Verification"}: ${verification.join("; ")}.`,
@@ -441,11 +440,11 @@ export function renderUpdateRunReport(
     run.status === "failed" && repairStopReason === "requester-revoked"
       ? nextAction
         ? "Repair stopped because the chat requester is no longer a command owner. Further recovery requires a current command owner."
-        : "Repair stopped because the chat requester is no longer a command owner. A current command owner must start a new update, or the operator can run openclaw triage locally."
+        : "Repair stopped because the chat requester is no longer a command owner. A current command owner must start a new update, or the operator can run paddy triage locally."
       : run.status === "failed" && repairStopReason === "repair-requires-config-change"
         ? nextAction
           ? "Doctor could not promote config changes. Review the named keys and writer refusal before continuing recovery."
-          : "Doctor could not promote config changes. Review the named keys and writer refusal, then run openclaw doctor --fix under your own authority, or openclaw triage."
+          : "Doctor could not promote config changes. Review the named keys and writer refusal, then run paddy doctor --fix under your own authority, or paddy triage."
         : undefined;
   const hints = reconciled
     ? []

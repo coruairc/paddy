@@ -286,11 +286,11 @@ describe("OpenClaw rescue message", () => {
       const cfg: OpenClawConfig = {};
 
       const reply = await runRescue("/openclaw doctor fix", cfg, commandContext());
-      expect(reply).toContain("machine running OpenClaw");
-      expect(reply).toContain("with OpenClaw stopped");
-      expect(reply).toContain("run `openclaw doctor --fix`");
+      expect(reply).toContain("machine running Paddy");
+      expect(reply).toContain("with Paddy stopped");
+      expect(reply).toContain("run `paddy doctor --fix`");
       await expect(runRescue("/openclaw yes", cfg, commandContext())).resolves.toBe(
-        "No pending OpenClaw rescue change is waiting for approval.",
+        "No pending Paddy rescue change is waiting for approval.",
       );
     });
   });
@@ -305,7 +305,7 @@ describe("OpenClaw rescue message", () => {
         runRescue("/openclaw config unset agents.defaults.fastModeDefault", cfg),
       ).resolves.toContain("cannot remove configuration settings");
       await expect(runRescue("/openclaw yes", cfg)).resolves.toBe(
-        "No pending OpenClaw rescue change is waiting for approval.",
+        "No pending Paddy rescue change is waiting for approval.",
       );
       expect(mockConfig.mutateConfigFile).not.toHaveBeenCalled();
       expect(mockConfig.currentConfig()).toEqual(before);
@@ -322,10 +322,10 @@ describe("OpenClaw rescue message", () => {
         runRescue("/openclaw restart gateway", cfg, commandContext(), deps),
       ).resolves.toContain("Reply /openclaw yes to apply");
       await expect(runRescue("/openclaw no", cfg, commandContext(), deps)).resolves.toContain(
-        "Dropped the pending OpenClaw rescue change",
+        "Dropped the pending Paddy rescue change",
       );
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toBe(
-        "No pending OpenClaw rescue change is waiting for approval.",
+        "No pending Paddy rescue change is waiting for approval.",
       );
       expect(deps.runGatewayRestart).not.toHaveBeenCalled();
     });
@@ -346,7 +346,7 @@ describe("OpenClaw rescue message", () => {
         "plugin rows",
       );
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toBe(
-        "No pending OpenClaw rescue change is waiting for approval.",
+        "No pending Paddy rescue change is waiting for approval.",
       );
       expect(deps.runGatewayRestart).not.toHaveBeenCalled();
     });
@@ -364,10 +364,8 @@ describe("OpenClaw rescue message", () => {
       ]);
 
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
-      expect(replies).toContain("No pending OpenClaw rescue change is waiting for approval.");
-      expect(replies.some((reply) => reply?.includes("[openclaw] done: gateway.restart"))).toBe(
-        true,
-      );
+      expect(replies).toContain("No pending Paddy rescue change is waiting for approval.");
+      expect(replies.some((reply) => reply?.includes("[paddy] done: gateway.restart"))).toBe(true);
     });
   });
 
@@ -385,7 +383,7 @@ describe("OpenClaw rescue message", () => {
         "restart failed",
       );
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toBe(
-        "No pending OpenClaw rescue change is waiting for approval.",
+        "No pending Paddy rescue change is waiting for approval.",
       );
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
     });
@@ -415,9 +413,9 @@ describe("OpenClaw rescue message", () => {
       await restartEntered;
       await runRescue("/openclaw start gateway", cfg, commandContext(), deps);
       releaseRestart?.();
-      await expect(approval).resolves.toContain("[openclaw] done: gateway.restart");
+      await expect(approval).resolves.toContain("[paddy] done: gateway.restart");
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-        "[openclaw] done: gateway.start",
+        "[paddy] done: gateway.start",
       );
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
       expect(deps.runGatewayStart).toHaveBeenCalledTimes(1);
@@ -437,7 +435,7 @@ describe("OpenClaw rescue message", () => {
       await expect(olderPlan).resolves.toContain("restart the Gateway");
       await expect(newerPlan).resolves.toContain("start the Gateway");
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-        "[openclaw] done: gateway.start",
+        "[paddy] done: gateway.start",
       );
       expect(deps.runGatewayRestart).not.toHaveBeenCalled();
       expect(deps.runGatewayStart).toHaveBeenCalledTimes(1);
@@ -453,7 +451,7 @@ describe("OpenClaw rescue message", () => {
       resetPluginStateStoreForTests();
 
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-        "[openclaw] done: gateway.restart",
+        "[paddy] done: gateway.restart",
       );
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
       await expect(fs.access(path.join(stateDir, "openclaw", "rescue-pending"))).rejects.toThrow(
@@ -475,11 +473,11 @@ describe("OpenClaw rescue message", () => {
         commandContext({ from: "user:other", senderId: "user:other" }),
       ]) {
         await expect(runRescue("/openclaw yes", cfg, isolated, deps)).resolves.toBe(
-          "No pending OpenClaw rescue change is waiting for approval.",
+          "No pending Paddy rescue change is waiting for approval.",
         );
       }
       await expect(runRescue("/openclaw yes", cfg, original, deps)).resolves.toContain(
-        "[openclaw] done: gateway.restart",
+        "[paddy] done: gateway.restart",
       );
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
     });
@@ -499,9 +497,9 @@ describe("OpenClaw rescue message", () => {
           commandContext({ accountId: undefined, to: "bot:secondary" }),
           deps,
         ),
-      ).resolves.toBe("No pending OpenClaw rescue change is waiting for approval.");
+      ).resolves.toBe("No pending Paddy rescue change is waiting for approval.");
       await expect(runRescue("/openclaw yes", cfg, original, deps)).resolves.toContain(
-        "[openclaw] done: gateway.restart",
+        "[paddy] done: gateway.restart",
       );
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
     });
@@ -543,37 +541,55 @@ describe("OpenClaw rescue message", () => {
     expect(searchRuntime).toBeTypeOf("object");
   });
 
-  it("queues and applies persistent writes through conversational approval", async () => {
-    await withRescueStateDir("models-", async () => {
-      const cfg: OpenClawConfig = {};
-      const deps = {
-        verifyInferenceConfig: vi.fn(async () => ({
-          ok: true as const,
-          modelRef: "openai/gpt-5.2",
-          latencyMs: 17,
-        })),
-      };
-      await expect(
-        runRescue("/openclaw set default model openai/gpt-5.2", cfg, commandContext(), deps),
-      ).resolves.toContain("Reply /openclaw yes to apply");
-      await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-        "Default model: openai/gpt-5.2",
-      );
+  it.each([undefined, "work"])(
+    "queues and applies model selection for agent %s through conversational approval",
+    async (agentId) => {
+      await withRescueStateDir("models-", async () => {
+        const cfg: OpenClawConfig = {};
+        if (agentId) {
+          await mockConfig.mutateConfigFile({
+            mutate: (draft) => {
+              draft.agents = { entries: { [agentId]: {} } };
+            },
+          });
+        }
+        const deps = {
+          verifyInferenceConfig: vi.fn(async () => ({
+            ok: true as const,
+            modelRef: "openai/gpt-5.2",
+            latencyMs: 17,
+          })),
+        };
+        await expect(
+          runRescue(
+            `/openclaw set default model openai/gpt-5.2${agentId ? ` for agent ${agentId}` : ""}`,
+            cfg,
+            commandContext(),
+            deps,
+          ),
+        ).resolves.toContain("Reply /openclaw yes to apply");
+        await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
+          agentId ? `Agent ${agentId} model: openai/gpt-5.2` : "Default model: openai/gpt-5.2",
+        );
 
-      const currentConfig = mockConfig.currentConfig() as {
-        agents?: { defaults?: { model?: string | { primary?: string } } };
-      };
-      const model = currentConfig.agents?.defaults?.model;
-      expect(typeof model === "string" ? model : model?.primary).toBe("openai/gpt-5.2");
-      const audit = readLastAuditEntry() as {
-        details?: { rescue?: boolean; channel?: string; accountId?: string; senderId?: string };
-      };
-      expect(audit.details?.rescue).toBe(true);
-      expect(audit.details?.channel).toBe("whatsapp");
-      expect(audit.details?.accountId).toBe("default");
-      expect(audit.details?.senderId).toBe("user:owner");
-    });
-  });
+        const currentConfig = mockConfig.currentConfig() as OpenClawConfig;
+        const model = agentId
+          ? currentConfig.agents?.entries?.[agentId]?.model
+          : currentConfig.agents?.defaults?.model;
+        expect(typeof model === "string" ? model : model?.primary).toBe("openai/gpt-5.2");
+        if (agentId) {
+          expect(currentConfig.agents?.defaults?.model).toBeUndefined();
+        }
+        const audit = readLastAuditEntry() as {
+          details?: { rescue?: boolean; channel?: string; accountId?: string; senderId?: string };
+        };
+        expect(audit.details?.rescue).toBe(true);
+        expect(audit.details?.channel).toBe("whatsapp");
+        expect(audit.details?.accountId).toBe("default");
+        expect(audit.details?.senderId).toBe("user:owner");
+      });
+    },
+  );
 
   it("queues and applies gateway restart through conversational approval", async () => {
     await withRescueStateDir("gateway-", async () => {
@@ -584,7 +600,7 @@ describe("OpenClaw rescue message", () => {
         runRescue("/openclaw restart gateway", cfg, commandContext(), deps),
       ).resolves.toBe("Plan: restart the Gateway. Reply /openclaw yes to apply.");
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-        "[openclaw] done: gateway.restart",
+        "[paddy] done: gateway.restart",
       );
 
       expect(deps.runGatewayRestart).toHaveBeenCalledTimes(1);
@@ -630,7 +646,7 @@ describe("OpenClaw rescue message", () => {
       vi.advanceTimersByTime(15 * 60_000 + 1);
 
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toBe(
-        "No pending OpenClaw rescue change is waiting for approval.",
+        "No pending Paddy rescue change is waiting for approval.",
       );
       expect(deps.runGatewayRestart).not.toHaveBeenCalled();
     });
@@ -652,10 +668,10 @@ describe("OpenClaw rescue message", () => {
       );
 
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toBe(
-        "No pending OpenClaw rescue change is waiting for approval.",
+        "No pending Paddy rescue change is waiting for approval.",
       );
       await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toBe(
-        "No pending OpenClaw rescue change is waiting for approval.",
+        "No pending Paddy rescue change is waiting for approval.",
       );
       expect(deps.runGatewayRestart).not.toHaveBeenCalled();
     });
@@ -666,9 +682,10 @@ describe("OpenClaw rescue message", () => {
     { role: "writer", name: undefined },
     { role: undefined, name: "QA Writer" },
     { role: "writer", name: "QA Writer" },
+    { role: "writer", name: "QA Writer", purpose: "Write release notes" },
   ])(
-    "queues and applies agent creation with role $role and name $name through conversational approval",
-    async ({ role, name }) => {
+    "queues and applies agent creation with role $role, name $name and purpose $purpose through conversational approval",
+    async ({ role, name, purpose }) => {
       await withRescueStateDir("agent-", async () => {
         const cfg: OpenClawConfig = {};
         const deps = {
@@ -686,17 +703,17 @@ describe("OpenClaw rescue message", () => {
 
         await expect(
           runRescue(
-            `/openclaw create agent work${name ? ` name ${JSON.stringify(name)}` : ""}${role ? ` role ${role}` : ""} workspace /tmp/work`,
+            `/openclaw create agent work${name ? ` name ${JSON.stringify(name)}` : ""}${role ? ` role ${role}` : ""}${purpose ? ` purpose ${JSON.stringify(purpose)}` : ""} workspace /tmp/work`,
             cfg,
             commandContext(),
             deps,
           ),
         ).resolves.toBe(
-          `Plan: create agent work with workspace /tmp/work${name ? `, name: ${JSON.stringify(name)}` : ""}${role ? ", role: Writer" : ""}. Reply /openclaw yes to apply.`,
+          `Plan: create agent work with workspace /tmp/work${name ? `, name: ${JSON.stringify(name)}` : ""}${purpose ? `, purpose: ${JSON.stringify(purpose)}` : ""}${role ? ", role: Writer" : ""}. Reply /openclaw yes to apply.`,
         );
         expect(deps.createAgent).not.toHaveBeenCalled();
         await expect(runRescue("/openclaw yes", cfg, commandContext(), deps)).resolves.toContain(
-          "[openclaw] done: agents.create",
+          "[paddy] done: agents.create",
         );
 
         expect(deps.createAgent).toHaveBeenCalledTimes(1);
@@ -706,6 +723,7 @@ describe("OpenClaw rescue message", () => {
             ...(name ? { name, identity: { name } } : {}),
           },
           ...(role ? { role } : {}),
+          ...(purpose ? { purpose } : {}),
           workspace: "/tmp/work",
           provenance: { createdVia: "agent", creatorAgentId: "openclaw" },
         });

@@ -1,4 +1,5 @@
 import { sanitizeTerminalText } from "../../packages/terminal-core/src/safe-text.js";
+import { PRODUCT_NAME } from "../brand.js";
 import { VERSION } from "../version.js";
 import { hashConfigRaw } from "./io.read-helpers.js";
 import {
@@ -40,12 +41,11 @@ export function logConfigWarningsOnce(params: {
     )
     .join("; ");
   const fingerprint = hashConfigRaw(details);
-  if (loggedConfigWarningFingerprints.get(params.configPath) === fingerprint) {
-    setBoundedConfigIoWarningEntry(loggedConfigWarningFingerprints, params.configPath, fingerprint);
-    return;
-  }
+  const repeated = loggedConfigWarningFingerprints.get(params.configPath) === fingerprint;
   setBoundedConfigIoWarningEntry(loggedConfigWarningFingerprints, params.configPath, fingerprint);
-  params.logger.warn(`Config warnings: ${details}`);
+  if (!repeated) {
+    params.logger.warn(`Config warnings: ${details}`);
+  }
 }
 
 export function warnIfConfigFromFuture(
@@ -61,9 +61,9 @@ export function warnIfConfigFromFuture(
   }
   logger.warn(
     [
-      `Your OpenClaw config was written by version ${touched}, but this command is running ${VERSION}.`,
-      "Check: `openclaw --version`, `which openclaw`, and `openclaw gateway status --deep`.",
-      "If unexpected, update PATH so `openclaw` points to the version you want, or reinstall the Gateway service from that same OpenClaw install.",
+      `Your ${PRODUCT_NAME} config was written by version ${touched}, but this command is running ${VERSION}.`,
+      "Check: `paddy --version`, `which paddy`, and `paddy gateway status --deep`.",
+      `If unexpected, update PATH so \`openclaw\` points to the version you want, or reinstall the Gateway service from that same ${PRODUCT_NAME} install.`,
     ].join("\n"),
   );
 }

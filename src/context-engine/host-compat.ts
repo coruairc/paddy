@@ -1,4 +1,5 @@
 // Context-engine host compatibility checks prevent engines from running on unsupported harnesses.
+import { PRODUCT_NAME } from "../brand.js";
 import type {
   ContextEngine,
   ContextEngineHostCapability,
@@ -29,7 +30,7 @@ const GENERIC_CLI_CONTEXT_ENGINE_HOST_CAPABILITIES = [
 
 export const OPENCLAW_EMBEDDED_CONTEXT_ENGINE_HOST = {
   id: "openclaw-embedded",
-  label: "OpenClaw embedded runner",
+  label: `${PRODUCT_NAME} embedded runner`,
   capabilities: [
     "bootstrap",
     "assemble-before-prompt",

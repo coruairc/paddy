@@ -31,7 +31,7 @@ tree, so any live skill asset drift requires a fresh evaluation.
 The lifecycle supports external optimization loops without embedding one.
 Controllers can consume `skills.proposals.events.list`, evaluate an exact
 `revisionHash`, revise with `expectedRevisionHash` and `correlationId`, then continue
-from the returned event sequence. OpenClaw does not schedule, auto-revise, or
+from the returned event sequence. Paddy does not schedule, auto-revise, or
 decide when such a loop should stop.
 
 ## Proposal content
@@ -58,7 +58,7 @@ Use `--proposal-dir` when the proposed skill needs files beside
 `PROPOSAL.md`:
 
 ```bash
-openclaw skills workshop propose-create \
+paddy skills workshop propose-create \
   --name weekly-update \
   --description "Friday wrap-up: stats, highlights, next week's top three" \
   --proposal-dir ./weekly-update-proposal

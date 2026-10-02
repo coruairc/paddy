@@ -346,7 +346,7 @@ describe("hooks CLI metadata config keys", () => {
     ).rejects.toThrow("__exit__:1");
 
     expect(capture.runtimeErrors.at(-1)).toBe(
-      'Error: Hook "missing-hook" not found. Run `openclaw hooks list` to see available hooks.',
+      'Error: Hook "missing-hook" not found. Run `paddy hooks list` to see available hooks.',
     );
     expect(mocks.replaceConfigFile).not.toHaveBeenCalled();
   });
@@ -375,7 +375,7 @@ describe("hooks CLI metadata config keys", () => {
     ).rejects.toThrow("__exit__:1");
 
     expect(capture.runtimeErrors.at(-1)).toBe(
-      'Error: Hook "display-name" is not eligible; missing bins: missing-bin; anyBins: missing-any-a, missing-any-b; env: MISSING_ENV; config: hooks.demo.enabled; os: linux. Install options: Install @openclaw/demo-hook (npm). Run `openclaw hooks info display-name` for details.',
+      'Error: Hook "display-name" is not eligible; missing bins: missing-bin; anyBins: missing-any-a, missing-any-b; env: MISSING_ENV; config: hooks.demo.enabled; os: linux. Install options: Install @openclaw/demo-hook (npm). Run `paddy hooks info display-name` for details.',
     );
     expect(mocks.replaceConfigFile).not.toHaveBeenCalled();
   });
@@ -489,7 +489,7 @@ describe("hooks CLI metadata config keys", () => {
           expect(capture.defaultRuntime.writeStdout).toHaveBeenCalledOnce();
         } else {
           expect(capture.runtimeLogs[0]).toBe(
-            'Hook "missing-hook" not found. Run `openclaw hooks list` to see available hooks.',
+            'Hook "missing-hook" not found. Run `paddy hooks list` to see available hooks.',
           );
           expect(capture.defaultRuntime.writeStdout).not.toHaveBeenCalled();
         }

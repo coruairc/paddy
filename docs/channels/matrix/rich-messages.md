@@ -7,13 +7,13 @@ title: "Matrix rich messages and approvals"
 sidebarTitle: "Rich messages"
 ---
 
-Structured content OpenClaw attaches to Matrix events, and the approval prompts built on it.
+Structured content Paddy attaches to Matrix events, and the approval prompts built on it.
 
 ## Reply controls and presentations
 
 Buttons and selection lists in agent replies include readable fallback text and
 structured content under `com.openclaw.presentation`. Stock Matrix clients show
-the text; OpenClaw-aware clients can render the structured controls. Replies that
+the text; Paddy-aware clients can render the structured controls. Replies that
 contain only controls still produce a room message.
 
 For replies with multiple attachments, the first event carries the controls.

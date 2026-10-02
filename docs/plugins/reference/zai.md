@@ -1,5 +1,5 @@
 ---
-summary: "Adds Z.AI model provider support to OpenClaw."
+summary: "Adds Z.AI model provider support to Paddy."
 read_when:
   - You are installing, configuring, or auditing the zai plugin
 title: "Z.AI plugin reference"
@@ -10,7 +10,7 @@ Run `pnpm plugins:inventory:gen` to rebuild it. Hand-written text survives only
 between the openclaw-plugin-reference:manual-start and
 openclaw-plugin-reference:manual-end comment markers. -->
 
-Adds Z.AI model provider support to OpenClaw.
+Adds Z.AI model provider support to Paddy.
 
 ## Distribution
 
@@ -20,7 +20,7 @@ Adds Z.AI model provider support to OpenClaw.
 ## Surface
 
 - Providers: `zai`
-- Contracts: `mediaUnderstandingProviders`, `usageProviders`
+- Contracts: `mediaUnderstandingProviders`, `usageProviders`, `videoGenerationProviders`
 
 ## Related docs
 

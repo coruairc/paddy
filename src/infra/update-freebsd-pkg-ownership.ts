@@ -41,7 +41,7 @@ export class FreeBsdPkgOwnershipError extends Error {
     super(
       prefix +
         (reason === "pkg-owned-install"
-          ? "This installation contains files owned by FreeBSD pkg. Update it through pkg or the Ports deployment that owns it; openclaw update will not replace package-owned files."
+          ? "This installation contains files owned by FreeBSD pkg. Update it through pkg or the Ports deployment that owns it; paddy update will not replace package-owned files."
           : source === "paths"
             ? "FreeBSD pkg paths could not be inspected completely. Check access to the registered package directories and installation paths, and resolve any inspection timeout before retrying."
             : "FreeBSD pkg ownership could not be verified. Restore access to the active pkg database and configuration, then retry."),

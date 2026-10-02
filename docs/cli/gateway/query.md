@@ -8,7 +8,7 @@ title: "Query a running Gateway"
 sidebarTitle: "Query"
 ---
 
-The WebSocket RPC query subcommands and their shared options. Part of the [`openclaw gateway`](/cli/gateway) reference.
+The WebSocket RPC query subcommands and their shared options. Part of the [`paddy gateway`](/cli/gateway) reference.
 
 ## Query a running Gateway
 
@@ -47,8 +47,8 @@ WebSocket opening-handshake timeouts report a Gateway transport error with
 ### `gateway health`
 
 ```bash
-openclaw gateway health --url ws://127.0.0.1:18789
-openclaw gateway health --port 18789
+paddy gateway health --url ws://127.0.0.1:18789
+paddy gateway health --port 18789
 ```
 
 `/healthz` is a liveness probe: it returns as soon as the server can answer HTTP. `/readyz` is stricter and stays red while startup plugin sidecars, channels, or configured hooks are still settling. Local or authenticated detailed `/readyz` responses include an `eventLoop` diagnostic block (delay, utilization, CPU-core ratio, `degraded` flag).
@@ -62,11 +62,11 @@ openclaw gateway health --port 18789
 Fetch usage-cost summaries from session logs.
 
 ```bash
-openclaw gateway usage-cost
-openclaw gateway usage-cost --days 7
-openclaw gateway usage-cost --agent work --json
-openclaw gateway usage-cost --all-agents
-openclaw gateway usage-cost --json
+paddy gateway usage-cost
+paddy gateway usage-cost --days 7
+paddy gateway usage-cost --agent work --json
+paddy gateway usage-cost --all-agents
+paddy gateway usage-cost --json
 ```
 
 Human-readable output warns that totals may be incomplete when the usage cache is
@@ -89,11 +89,11 @@ the `cacheStatus` object so scripts can inspect the same state.
 Fetch the recent diagnostic stability recorder from a running Gateway.
 
 ```bash
-openclaw gateway stability
-openclaw gateway stability --type payload.large
-openclaw gateway stability --bundle latest
-openclaw gateway stability --bundle latest --export
-openclaw gateway stability --json
+paddy gateway stability
+paddy gateway stability --type payload.large
+paddy gateway stability --bundle latest
+paddy gateway stability --bundle latest --export
+paddy gateway stability --json
 ```
 
 <ParamField path="--limit <limit>" type="number" default="25">
@@ -119,7 +119,7 @@ openclaw gateway stability --json
   <Accordion title="Privacy and bundle behavior">
     - Records keep operational metadata: event names, counts, byte sizes, memory readings, queue/session state, approval ids, channel/plugin names, and redacted session summaries. They exclude chat text, webhook bodies, tool outputs, raw request/response bodies, tokens, cookies, secret values, hostnames, and raw session ids. Set `diagnostics.enabled: false` to disable the recorder entirely.
     - Fatal Gateway exits, shutdown timeouts, and restart startup failures write a diagnostic snapshot to `~/.openclaw/logs/stability/openclaw-stability-*.json`, even when the recorder has no events. When the error has a stack, `error.stack` retains it with secrets redacted and a limit of 8,000 UTF-16 code units. Inspect the newest bundle with `openclaw gateway stability --bundle latest`; `--limit`, `--type`, and `--since-seq` apply to bundle output too.
-    - Failed shutdown steps include `evidence.shutdown`: the step and redacted error names, messages, codes, and stacks, including nested causes and aggregate errors. Use `openclaw gateway stability --bundle latest --json` to inspect these details. Capture is bounded to 32 errors and 8,000 UTF-16 code units per stack. `gateway.restart_close_failed` identifies a thrown close failure; `gateway.restart_shutdown_timeout` identifies the overall shutdown deadline. A timeout also retains any shutdown error already observed. Restart and stop failures flush the existing file logger before exit, within its shutdown budget.
+    - Failed shutdown steps include `evidence.shutdown`: the step and redacted error names, messages, codes, and stacks, including nested causes and aggregate errors. Use `paddy gateway stability --bundle latest --json` to inspect these details. Capture is bounded to 32 errors and 8,000 UTF-16 code units per stack. `gateway.restart_close_failed` identifies a thrown close failure; `gateway.restart_shutdown_timeout` identifies the overall shutdown deadline. A timeout also retains any shutdown error already observed. Restart and stop failures flush the existing file logger before exit, within its shutdown budget.
 
   </Accordion>
 </AccordionGroup>
@@ -129,9 +129,9 @@ openclaw gateway stability --json
 Write a local diagnostics zip designed for bug reports. For the privacy model and bundle contents, see [Diagnostics Export](/gateway/diagnostics).
 
 ```bash
-openclaw gateway diagnostics export
-openclaw gateway diagnostics export --output openclaw-diagnostics.zip
-openclaw gateway diagnostics export --json
+paddy gateway diagnostics export
+paddy gateway diagnostics export --output paddy-diagnostics.zip
+paddy gateway diagnostics export --json
 ```
 
 <ParamField path="--output <path>" type="string">
@@ -171,10 +171,10 @@ It is designed to be shared. It keeps operational details useful for debugging â
 Shows the Gateway service (launchd/systemd/schtasks) plus an optional connectivity/auth probe.
 
 ```bash
-openclaw gateway status
-openclaw gateway status --json
-openclaw gateway status --require-rpc
-openclaw gateway status --port 19001
+paddy gateway status
+paddy gateway status --json
+paddy gateway status --require-rpc
+paddy gateway status --port 19001
 ```
 
 <ParamField path="--url <url>" type="string">
@@ -190,7 +190,7 @@ openclaw gateway status --port 19001
   Password auth for the probe.
 </ParamField>
 <ParamField path="--timeout <ms>" type="number" default="10000">
-  Probe timeout.
+  Probe timeout. Without an explicit value, the RPC probe uses 10 seconds and Windows Task Scheduler state and registration probes allow 60 seconds for cold startup. The read-only registration query uses this allowance for both its total runtime and time without output. Explicit values also apply to native service probes. Each operation has its own budget; this is not an overall command deadline.
 </ParamField>
 <ParamField path="--no-probe" type="boolean">
   Skip the connectivity probe (service-only view).
@@ -244,9 +244,9 @@ If multiple probe targets are reachable, all are printed. An SSH tunnel, TLS/pro
 </Note>
 
 ```bash
-openclaw gateway probe
-openclaw gateway probe --json
-openclaw gateway probe --port 18789
+paddy gateway probe
+paddy gateway probe --json
+paddy gateway probe --port 18789
 ```
 
 <ParamField path="--port <port>" type="number">
@@ -282,10 +282,10 @@ openclaw gateway probe --port 18789
   </Accordion>
   <Accordion title="Common warning codes">
     - `ssh_tunnel_failed`: SSH tunnel setup failed; the command fell back to direct probes.
-    - `multiple_gateways`: distinct gateway identities were reachable, or OpenClaw could not prove reachable targets are the same gateway. An SSH tunnel, proxy URL, or configured remote URL to the same gateway does not trigger this.
+    - `multiple_gateways`: distinct gateway identities were reachable, or Paddy could not prove reachable targets are the same gateway. An SSH tunnel, proxy URL, or configured remote URL to the same gateway does not trigger this.
     - `auth_secretref_unresolved`: a configured auth SecretRef could not be resolved for a failed target.
     - `probe_scope_limited`: WebSocket connect succeeded, but the read probe was limited by missing `operator.read`.
-    - `local_tls_runtime_unavailable`: local Gateway TLS is enabled but OpenClaw could not load the local certificate fingerprint.
+    - `local_tls_runtime_unavailable`: local Gateway TLS is enabled but Paddy could not load the local certificate fingerprint.
 
   </Accordion>
 </AccordionGroup>
@@ -297,14 +297,14 @@ The macOS app "Remote over SSH" mode uses a local port-forward so a loopback-onl
 CLI equivalent:
 
 ```bash
-openclaw gateway probe --ssh user@gateway-host
+paddy gateway probe --ssh user@gateway-host
 ```
 
 <ParamField path="--ssh <target>" type="string">
   `user@host` or `user@host:port` (port defaults to `22`).
 </ParamField>
 
-OpenClaw launches only an SSH client found in OS-managed system directories. On native Windows,
+Paddy launches only an SSH client found in OS-managed system directories. On native Windows,
 install the **OpenSSH Client** optional feature; Windows places it under
 `%SystemRoot%\System32\OpenSSH`.
 
@@ -324,13 +324,13 @@ Low-level RPC helper.
 Use `--expect-url <url>` to bind a call to a previously observed Gateway endpoint
 without changing URL selection or authentication. The CLI compares the exact
 resolved URL before connecting and fails if the destination changed. Automation
-can obtain the endpoint from `gateway.url` in `openclaw status --json`; a redacted
+can obtain the endpoint from `gateway.url` in `paddy status --json`; a redacted
 URL cannot serve as an exact endpoint assertion.
 
 ```bash
-openclaw gateway call status
-openclaw gateway call health --port 18999
-openclaw gateway call logs.tail --params '{"limit": 200}'
+paddy gateway call status
+paddy gateway call health --port 18999
+paddy gateway call logs.tail --params '{"limit": 200}'
 ```
 
 To add an existing checkout to the Control UI's Place picker, use the
@@ -341,7 +341,7 @@ execution budget, not an acknowledgment timeout. Omit it for ordinary
 coordination; `--timeout` independently limits how long this CLI waits:
 
 ```bash
-openclaw gateway call sessions.send --params '{"key":"<session-key>","message":"Status update"}' --timeout 10000
+paddy gateway call sessions.send --params '{"key":"<session-key>","message":"Status update"}' --timeout 10000
 ```
 
 A `started` response confirms acceptance, not a completed reply. These CLI methods
@@ -396,9 +396,9 @@ ID. The value must be a non-negative number of seconds; an empty value is reject
 Use `--wait 0` for a single attempt without polling.
 
 ```bash
-openclaw gateway suspend
-openclaw gateway suspend --request-id snapshot-2026-08-11 --wait 30
-openclaw gateway suspend --port 18999 --json
+paddy gateway suspend
+paddy gateway suspend --request-id snapshot-2026-08-11 --wait 30
+paddy gateway suspend --port 18999 --json
 ```
 
 The ready output includes the suspension ID, lease expiry, and the matching
@@ -411,8 +411,8 @@ Release a prepared suspension after thaw or when the host operation is
 abandoned.
 
 ```bash
-openclaw gateway resume <suspensionId>
-openclaw gateway resume <suspensionId> --port 18999 --json
+paddy gateway resume <suspensionId>
+paddy gateway resume <suspensionId> --port 18999 --json
 ```
 
 An already expired or resumed lease is a successful no-op. A different active

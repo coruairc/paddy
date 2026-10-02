@@ -54,7 +54,7 @@ For faster QA Lab UI iteration without rebuilding the Docker image each time,
 start the stack with a bind-mounted QA Lab bundle:
 
 ```bash
-pnpm openclaw qa docker-build-image
+pnpm paddy qa docker-build-image
 pnpm qa:lab:build
 pnpm qa:lab:up:fast
 pnpm qa:lab:watch
@@ -108,7 +108,7 @@ For a transport-real Matrix lane that does not require model-provider
 credentials, use the deterministic mock OpenAI provider:
 
 ```bash
-pnpm openclaw qa matrix --provider-mode mock-openai
+pnpm paddy qa matrix --provider-mode mock-openai
 ```
 
 For the live-frontier provider lane, supply OpenAI-compatible credentials
@@ -116,10 +116,10 @@ explicitly:
 
 ```bash
 OPENCLAW_LIVE_OPENAI_KEY="${OPENAI_API_KEY}" \
-  pnpm openclaw qa matrix --provider-mode live-frontier
+  pnpm paddy qa matrix --provider-mode live-frontier
 ```
 
-Plain `pnpm openclaw qa matrix` runs every flow scenario that explicitly
+Plain `pnpm paddy qa matrix` runs every flow scenario that explicitly
 declares Matrix eligibility through `execution.channel` or
 `execution.channels`, and it continues after scenario failures. Use
 `--fail-fast` for a shorter feedback loop or repeat `--scenario <id>` for an
@@ -179,7 +179,7 @@ end: mention gating, allow-bot policies, allowlists, top-level and threaded
 replies, DM routing, reaction handling, inbound edit suppression, restart
 replay dedupe, homeserver interruption recovery, approval metadata delivery,
 media handling, and Matrix E2EE bootstrap/recovery/verification flows. The
-E2EE CLI scenarios also drive `openclaw matrix encryption setup` and
+E2EE CLI scenarios also drive `paddy matrix encryption setup` and
 verification commands through the same disposable homeserver before checking
 gateway replies.
 
@@ -189,7 +189,7 @@ manual runs execute the catalog-derived selection in one job with up to four
 isolated host workers. Each worker owns its disposable homeserver, Gateway,
 state, and artifacts. Scenario membership stays catalog-owned; `--fail-fast`
 keeps execution serial and stops after the first failure.
-Use `openclaw qa matrix --concurrency <count>` to request fewer workers;
+Use `paddy qa matrix --concurrency <count>` to request fewer workers;
 values above the transport limit stay capped.
 
 ### Discord Mantis scenarios
@@ -210,11 +210,11 @@ decision still comes from the Discord REST oracle.
 For the other transport-real smoke lanes:
 
 ```bash
-pnpm openclaw qa buzz
-pnpm openclaw qa discord
-pnpm openclaw qa slack
-pnpm openclaw qa telegram
-pnpm openclaw qa whatsapp
+pnpm paddy qa buzz
+pnpm paddy qa discord
+pnpm paddy qa slack
+pnpm paddy qa telegram
+pnpm paddy qa whatsapp
 ```
 
 They target a pre-existing real channel with two bots or accounts (driver +
@@ -227,7 +227,7 @@ credential pool for those five transports are documented in
 For a full Slack desktop VM run with VNC rescue, run:
 
 ```bash
-pnpm openclaw qa mantis slack-desktop-smoke \
+pnpm paddy qa mantis slack-desktop-smoke \
   --gateway-setup \
   --scenario slack-canary \
   --keep-lease
@@ -249,7 +249,7 @@ runs install/build inside the VM. Use `--hydrate-mode prehydrated` only when
 the reused remote workspace already has `node_modules` and a built `dist/`;
 that mode skips the expensive install/build step and fails closed when the
 workspace is not ready. With `--gateway-setup`, Mantis leaves a persistent
-OpenClaw Slack gateway running inside the VM on port `38973`; without it, the
+Paddy Slack gateway running inside the VM on port `38973`; without it, the
 command runs the normal bot-to-bot Slack QA lane and exits after artifact
 capture.
 
@@ -257,7 +257,7 @@ To prove native Slack approval UI with desktop evidence, run the Mantis
 approval checkpoint mode:
 
 ```bash
-pnpm openclaw qa mantis slack-desktop-smoke \
+pnpm paddy qa mantis slack-desktop-smoke \
   --approval-checkpoints \
   --credential-source convex \
   --credential-role maintainer
@@ -289,7 +289,7 @@ handling steps live in
 For an agent/CV style desktop task, run:
 
 ```bash
-pnpm openclaw qa mantis visual-task \
+pnpm paddy qa mantis visual-task \
   --browser-url https://example.net \
   --expect-text "Example Domain" \
   --vision-model openai/gpt-5.6-luna
@@ -297,7 +297,7 @@ pnpm openclaw qa mantis visual-task \
 
 `visual-task` leases or reuses a Crabbox desktop/browser machine, starts
 `crabbox record --while`, drives the visible browser through a nested
-`visual-driver`, captures `visual-task.png`, runs `openclaw infer image
+`visual-driver`, captures `visual-task.png`, runs `paddy infer image
 describe` against the screenshot when `--vision-mode image-describe` is
 selected, and writes `visual-task.mp4`, `mantis-visual-task-summary.json`,
 `mantis-visual-task-driver-result.json`, and
@@ -318,7 +318,7 @@ and `--keep-lease` was not set.
 Before using pooled live credentials, run:
 
 ```bash
-pnpm openclaw qa credentials doctor
+pnpm paddy qa credentials doctor
 ```
 
 The doctor checks Convex broker env (`OPENCLAW_QA_CONVEX_SITE_URL`,

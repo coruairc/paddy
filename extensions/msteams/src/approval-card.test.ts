@@ -94,7 +94,7 @@ describe("Microsoft Teams approval Adaptive Cards", () => {
         title: "OpenClaw change",
         operationSummary: "restart the Gateway",
       } satisfies PendingApprovalView,
-      label: "OpenClaw Change",
+      label: "Paddy Change",
       decision: "allow-once",
       decisionLabel: "Allowed once",
       subject: [
@@ -344,7 +344,7 @@ describe("Microsoft Teams approval Adaptive Cards", () => {
 
       expect(card.body).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ text: `OpenClaw Change Approval: ${label}` }),
+          expect.objectContaining({ text: `Paddy Change Approval: ${label}` }),
         ]),
       );
     },

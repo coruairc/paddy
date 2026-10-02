@@ -1,13 +1,13 @@
 ---
 summary: "Windows support: Windows Hub, native CLI and Gateway, WSL2 gateway setup, node mode, and troubleshooting"
 read_when:
-  - Installing OpenClaw on Windows
+  - Installing Paddy on Windows
   - Choosing between Windows Hub, native Windows, and WSL2
   - Setting up the Windows companion app or Windows node mode
 title: "Windows"
 ---
 
-OpenClaw ships a native **Windows Hub** companion app plus Windows CLI support.
+Paddy ships a native **Windows Hub** companion app plus Windows CLI support.
 Use Windows Hub for a desktop app with setup, tray status, chat, Command
 Center diagnostics, and Windows node capabilities. Use the PowerShell
 installer for the CLI/Gateway directly. Use WSL2 for the most
@@ -19,7 +19,7 @@ Windows Hub is the native WinUI companion app for Windows 10 20H2+ and
 Windows 11. It installs without administrator privileges and ships signed x64
 and ARM64 installers from its own release page.
 
-Windows Hub publishes independently from the OpenClaw CLI and Gateway. Download
+Windows Hub publishes independently from the Paddy CLI and Gateway. Download
 the latest stable Hub installer from the
 [Windows Hub releases page](https://github.com/openclaw/openclaw-windows-node/releases/latest)
 or directly via `releases/latest/download`:
@@ -28,7 +28,7 @@ or directly via `releases/latest/download`:
 - [OpenClawCompanion-Setup-arm64.exe](https://github.com/openclaw/openclaw-windows-node/releases/latest/download/OpenClawCompanion-Setup-arm64.exe)
 
 If a link above 404s, visit the [Windows Hub releases page](https://github.com/openclaw/openclaw-windows-node/releases)
-and open the newest stable Windows Hub release. Regular OpenClaw stable releases
+and open the newest stable Windows Hub release. Regular Paddy stable releases
 also mirror a pinned, release-validated Windows Hub build; that mirror can lag a
 newer standalone Hub release.
 
@@ -69,7 +69,7 @@ the tray to confirm connection, pairing, node status, and channel health.
 
 ## Windows node mode
 
-Windows Hub can register as an OpenClaw node so the agent can use declared
+Windows Hub can register as a Paddy node so the agent can use declared
 Windows-native capabilities through the Gateway. Node commands must be
 declared by the node, included in its approved surface, and allowed by Gateway
 policy before they run; see
@@ -89,8 +89,8 @@ Node mode requires Gateway pairing. If the app shows a pairing request,
 approve it from the Gateway host:
 
 ```powershell
-openclaw devices list
-openclaw devices approve <deviceRequestId>
+paddy devices list
+paddy devices approve <deviceRequestId>
 ```
 
 Device approval admits the connection only. If node mode has paused for manual
@@ -98,10 +98,10 @@ pairing, restart node mode or the app so it reconnects. This reconnect creates
 a separate command-surface request. On the Gateway:
 
 ```powershell
-openclaw nodes pending
-openclaw nodes approve <nodeRequestId>
-openclaw nodes status
-openclaw nodes describe --node <idOrNameOrIp>
+paddy nodes pending
+paddy nodes approve <nodeRequestId>
+paddy nodes status
+paddy nodes describe --node <idOrNameOrIp>
 ```
 
 The two request IDs are distinct. An initial unapproved surface has no effective
@@ -118,7 +118,7 @@ and `camera.clip` need explicit `gateway.nodes.commands.allow` opt-in.
 
 Windows Hub can expose the same Windows-native capability registry as a local
 MCP server on loopback, so local MCP clients can drive Windows capabilities
-without a running OpenClaw Gateway.
+without a running Paddy Gateway.
 
 Enable it in Windows Hub Settings under the developer/advanced section. The
 app shows the loopback endpoint and bearer token once the server is enabled.
@@ -134,40 +134,59 @@ Mode matrix:
 
 ## Native Windows CLI and Gateway
 
-For terminal-first use, install OpenClaw from PowerShell:
+For terminal-first use, install Paddy from PowerShell:
 
 ```powershell
-iwr -useb https://openclaw.ai/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex
 ```
 
 Verify:
 
 ```powershell
-openclaw --version
-openclaw doctor
-openclaw gateway status --json
+paddy --version
+paddy doctor
+paddy gateway status --json
 ```
 
 Managed startup uses Windows Scheduled Tasks when available. The task keeps
-the readable `gateway.cmd` script in the OpenClaw state dir but launches it
+the readable `gateway.cmd` script in the Paddy state dir but launches it
 through a generated `gateway.vbs` WScript wrapper, so the background Gateway
-does not open a visible console window. If task creation is denied, OpenClaw
+does not open a visible console window. If task creation is denied, Paddy
 falls back to a per-user Startup-folder login item.
 
 If you append output redirection to the `gateway.cmd` launch line, quote the
 entire target, for example `>> "%USERPROFILE%\.openclaw\logs\gateway-stdout.log" 2>&1`.
 Complete trailing redirections are excluded from process ownership checks.
 Unquoted environment expansions can leave filename fragments in the Gateway's
-arguments; OpenClaw preserves ambiguous launcher commands and refuses to terminate
+arguments; Paddy preserves ambiguous launcher commands and refuses to terminate
 a listener whose ownership cannot be verified. Quote the target before retrying.
 
 The hidden launcher owns the supervised Gateway process tree. Ending the task
 with `schtasks /end /tn "OpenClaw Gateway"`, `Stop-ScheduledTask`, or Task
 Scheduler's **End** action terminates the Gateway and its descendants. After
-updating an older installation, run `openclaw gateway install --force` to
+updating an older installation, run `paddy gateway install --force` to
 regenerate the launcher if the update did not refresh it.
 
 Gateway status and Doctor read the Scheduled Task's numeric current state, independently of the Windows display language or console code page. A previous task exit result does not prove whether it is running now. Queued or unknown tasks do not count as safely stopped for Doctor maintenance. Stop a queued task through its service owner; if inspection is inaccessible, restore Task Scheduler inspection permissions before retrying.
+
+Strict maintenance inspection follows the task's registered CMD or VBS launcher, or a directly registered executable with literal arguments, and rechecks its captured definition before using the result. Runtime inspection uses that registered command rather than a default launcher. Direct executable inspection does not grant ownership to rewrite the executable or its task definition. Automatic update service management still reports these custom actions as unavailable and leaves them untouched because it cannot restore a managed launcher; environment expansion and ambiguous argument quoting remain uninspectable. Deep discovery identifies Paddy and legacy helpers from executable or launcher evidence; an unrelated task's display name alone does not identify a service. Canonical and selected task names suppress extra-service findings only when the registered action is a modern Gateway; legacy and Node actions remain visible. Doctor reports incomplete inspection separately from services eligible for existing cleanup.
+
+`paddy gateway status --deep` and `paddy doctor --deep` report sibling
+profiles from the current account's Startup folder. If its Scheduled Task is
+absent, the selected modern Gateway fallback is omitted from the extra-service list. Each
+Startup file remains a separate service definition even when a task has the same
+name. Inspection follows that exact file and its captured Gateway
+script. The complete inventory retains errors for unreadable or malformed Gateway
+launchers; Doctor and status list only successfully inspected extra services.
+Startup inspection hints use the exact file path and do not grant Task Scheduler
+control over it.
+Local builds also check these definitions for a running Gateway using that
+installation's `dist`. Stop the matching Gateway before rebuilding its files.
+
+Doctor and deep status provide read-only `schtasks /Query` hints for extra Scheduled Tasks, including Node hosts. Discovery shares one 60-second budget across the inventory query, Startup directory scan, and launcher inspection. If it expires, completed discoveries remain available and Doctor reports that some services could not be inspected. Review the registered command and purpose before choosing removal through the service's owner.
+
+Doctor recognizes the waiting VBS launcher shipped with 2026.9.3 during an owned
+service refresh. Custom launcher behavior still preserves the existing definition.
 
 Doctor compares task definitions using Task Scheduler's defaults. An omitted
 `Enabled` element means `true` for both the task and its logon trigger, so XML
@@ -177,32 +196,60 @@ Explicitly disabled tasks and triggers are still reported.
 The task probe allows Windows PowerShell to inherit or create a console because
 some PowerShell 5.1 hosts fail inspection when console creation is disabled.
 Invoking it from an app without a console can briefly display a console window.
+Without an explicit caller deadline, each probe allows up to 60 seconds for
+PowerShell's cold startup. Registration inspection uses the same native probe
+and shares its budget with any Startup-folder checks. Explicit inspection
+budgets replace the default allowance. Direct lifecycle commands retain their
+existing limits. Access-denied and timeout results remain inspection failures,
+not proof that a task is absent.
 If inspection fails, Doctor and update refusals include the underlying probe
 detail; an empty response identifies the exit code and reports that PowerShell
 produced no output.
 
-During previous-Gateway readiness verification, each Scheduled Task runtime probe allows at most five seconds, or the shorter remaining budget. Other service inspections retain their caller's budget, including the longer allowance for verifying that a runtime rebuild is safe. Update preflight retries a timed-out probe once and reports the enforced probe budget. If ownership remains unverified, it skips service changes with a warning; losing verified ownership after admission blocks the service mutation.
+During previous-Gateway readiness verification, each Scheduled Task runtime probe allows at most five seconds, or the shorter remaining budget. Other service inspections retain their caller's budget, including the longer allowance for verifying that a runtime rebuild is safe.
+
+During update preflight, Scheduled Task inspection uses the update's `--timeout` budget. A registration or runtime timeout retries the complete strict inspection once. If inspection remains unavailable, the update reports the enforced budget and probe detail, preserves the recorded service definition, and skips automatic service restart. Inspect the service with `paddy gateway status --deep`, then restart it manually after the update. Losing verified ownership after admission blocks the service mutation.
 
 Gateway startup creates private SQLite staging directories through Windows APIs,
 without compiling C# or launching PowerShell for their permissions. The owner,
 SYSTEM, and Administrators retain full access; other inherited access is removed
 at creation. Update restart helpers also avoid runtime C# compilation and
 `Invoke-Expression`. If antivirus software still interrupts a start, include its
-detection name and the output of `openclaw gateway status --json` in your report.
+detection name and the output of `paddy gateway status --json` in your report.
 
 Install the Gateway service:
 
 ```powershell
-openclaw gateway install
-openclaw gateway status --json
+paddy gateway install
+paddy gateway status --json
 ```
 
 For CLI-only use without a managed Gateway service:
 
 ```powershell
-openclaw onboard --non-interactive --accept-risk --skip-health
-openclaw gateway run
+paddy onboard --non-interactive --accept-risk --skip-health
+paddy gateway run
 ```
+
+### Updating from 2026.9.4
+
+The published 2026.9.4 Windows updater retains an old database reader in its
+service handoff. A target that migrates shared state beyond schema 17 can make
+that callback fail after activation. During a running 9.4 update, the candidate's
+package lifecycle asks Doctor's read-only preflight to refuse this migration
+while an updater driver has not been confirmed stopped. A failed npm stage leaves
+the original package and Gateway in place, before the old updater enters repair.
+The CLI preflight also retains this check when package scripts were skipped;
+that later refusal can be masked by a cleanup error in the old repair path.
+This containment does not complete the automatic update.
+
+Wait for the updater to exit and review its result. To upgrade, create a
+[verified backup](/install/updating/rollback-and-recovery#before-updating-create-a-verified-backup)
+and use the existing [manual package-manager procedure](/install/updating/update-methods#alternative-manual-npm-pnpm-or-bun)
+from an independent shell. Keep the original service account, package prefix,
+profile, and state/config overrides. Stop the Gateway through its owner before
+replacing the package, run the newly installed Doctor, then start and verify the
+Gateway. Do not lower schema markers or run an older build against migrated data.
 
 ## WSL2 Gateway
 
@@ -234,11 +281,11 @@ Restart WSL from PowerShell:
 wsl --shutdown
 ```
 
-Then install OpenClaw inside WSL with the Linux quickstart:
+Then install Paddy inside WSL with the Linux quickstart:
 
 ```bash
-curl -fsSL https://openclaw.ai/install.sh | bash
-openclaw gateway status
+curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
+paddy gateway status
 ```
 
 ## Gateway auto-start before Windows login
@@ -251,7 +298,7 @@ Inside WSL:
 ```bash
 sudo apt-get install -y dbus-x11
 sudo loginctl enable-linger "$(whoami)"
-openclaw gateway install
+paddy gateway install
 ```
 
 In PowerShell as Administrator:
@@ -321,7 +368,7 @@ Notes:
 
 ### The Scheduled Task stops before the Gateway is ready
 
-Run `openclaw gateway status --json`, then inspect the local [Gateway log](/gateway/logging).
+Run `paddy gateway status --json`, then inspect the local [Gateway log](/gateway/logging).
 Entries from `gateway/task-supervisor` record the child exit code, signal, and
 the last 8,192 characters of stderr, including failures before Gateway logging
 starts. Child stdout is discarded. A failed child or supervisor exits nonzero;
@@ -331,7 +378,7 @@ not prove the Gateway is healthy.
 Task Scheduler's [`RestartOnFailure` policy](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-tsch/2ff4aa5a-7bc4-449f-bbb1-27475645867f)
 retries failed start conditions or action launches. Do not rely on it to restart
 a Gateway that launches successfully and then exits with an error, such as an
-occupied port. Fix the logged cause, then run `openclaw gateway start`.
+occupied port. Fix the logged cause, then run `paddy gateway start`.
 
 ### The tray icon does not appear
 
@@ -355,8 +402,8 @@ state, or a network failure while installing the Gateway package.
 Approve the operator or node request from the Gateway:
 
 ```powershell
-openclaw devices list
-openclaw devices approve <requestId>
+paddy devices list
+paddy devices approve <requestId>
 ```
 
 If the device already had a token, reconnect from the Connections tab after
@@ -364,7 +411,7 @@ approval.
 
 For a node request, complete the separate command-surface approval in
 [Windows node mode](#windows-node-mode): restart paused node mode, then run
-`openclaw nodes pending` and approve its distinct node request ID. Operator-device
+`paddy nodes pending` and approve its distinct node request ID. Operator-device
 approval alone does not complete that node flow.
 
 ### Web chat cannot reach a remote Gateway

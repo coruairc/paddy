@@ -4,6 +4,7 @@ import type { Command } from "commander";
 import { CHAT_HISTORY_MAX_ENTRIES } from "../../packages/gateway-protocol/src/schema/chat-history-constants.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { defaultRuntime } from "../runtime.js";
+import { CLI_NAME } from "./cli-name.js";
 import { formatDocsHelp } from "./help-format.js";
 import { parseTimeoutMs } from "./parse-timeout.js";
 import { resolveSessionTarget } from "./session-target.js";
@@ -32,7 +33,7 @@ export async function runTuiCliAction(
   const isLocal = Boolean(opts.local) || invokedAsLocalAlias;
   if (target && isLocal) {
     throw new Error(
-      "a session target cannot be combined with --local, openclaw chat, or openclaw terminal",
+      `a session target cannot be combined with --local, ${CLI_NAME} chat, or ${CLI_NAME} terminal`,
     );
   }
   if (isLocal && (opts.url || opts.token || opts.password || opts.tlsFingerprint)) {

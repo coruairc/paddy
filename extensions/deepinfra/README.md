@@ -1,12 +1,12 @@
-# OpenClaw DeepInfra Provider
+# Paddy DeepInfra Provider
 
-Official OpenClaw provider plugin for DeepInfra.
+Official Paddy provider plugin for DeepInfra.
 
-Install from OpenClaw:
+Install from Paddy:
 
 ```bash
 openclaw plugins install @openclaw/deepinfra-provider
-openclaw gateway restart
+paddy gateway restart
 ```
 
 See <https://docs.openclaw.ai/providers/deepinfra> for setup and configuration.

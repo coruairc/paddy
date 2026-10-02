@@ -1,12 +1,12 @@
 ---
-summary: "Get OpenClaw installed and run your first chat in minutes."
+summary: "Get Paddy installed and run your first chat in minutes."
 read_when:
   - First time setup from zero
   - You want the fastest path to a working chat
 title: "Getting started"
 ---
 
-Install OpenClaw, run onboarding, and chat with your AI assistant in about 5
+Install Paddy, run onboarding, and chat with your AI assistant in about 5
 minutes. By the end you will have a running Gateway, configured auth, and a
 working chat session.
 
@@ -30,7 +30,7 @@ npx openclaw@latest
 
 On a fresh install, choose **Quick start** after a one-line pointer to the
 [security guide](/gateway/security). That is the only onboarding prompt when
-usable AI access is already available: OpenClaw
+usable AI access is already available: Paddy
 finds an existing Claude Code or Codex CLI login or API key, verifies it with a
 real completion, saves the config, and opens the web dashboard.
 
@@ -39,27 +39,22 @@ saved. If no detected route works, onboarding opens manual provider setup.
 Choose **Custom setup** to walk through all guided options instead.
 
 To keep the Gateway running in the background later, install the CLI below and
-run `openclaw gateway install`. Run `openclaw` for the TUI or
-`openclaw dashboard` to reopen the web UI.
+run `paddy gateway install`. Run `paddy` for the TUI or
+`paddy dashboard` to reopen the web UI.
 
 ## Quick setup
 
 <Steps>
-  <Step title="Install OpenClaw">
+  <Step title="Install Paddy">
     <Tabs>
       <Tab title="macOS / Linux">
         ```bash
-        curl -fsSL https://openclaw.ai/install.sh | bash
+        curl -fsSL https://raw.githubusercontent.com/coruairc/paddy/main/install.sh | bash
         ```
-        <img
-  src="/assets/install-script.svg"
-  alt="Install Script Process"
-  className="rounded-lg"
-/>
       </Tab>
       <Tab title="Windows (PowerShell)">
         ```powershell
-        iwr -useb https://openclaw.ai/install.ps1 | iex
+        iwr -useb https://raw.githubusercontent.com/coruairc/paddy/main/install.ps1 | iex
         ```
       </Tab>
     </Tabs>
@@ -73,8 +68,8 @@ run `openclaw gateway install`. Run `openclaw` for the TUI or
     The installer starts the guided onboarding wizard automatically. Choose
     **Quick start** to reuse detected AI access and open the dashboard, or
     **Custom setup** for the full guided flow. Provider sign-in and optional
-    setup can take longer. Return later with `openclaw configure` for
-    additional settings. `openclaw onboard --classic` opens the classic
+    setup can take longer. Return later with `paddy configure` for
+    additional settings. `paddy onboard --classic` opens the classic
     step-by-step wizard instead.
 
     See [Onboarding (CLI)](/start/wizard) for the full reference.
@@ -86,7 +81,7 @@ run `openclaw gateway install`. Run `openclaw` for the TUI or
     foreground Gateway, then install the service:
 
     ```bash
-    openclaw gateway install
+    paddy gateway install
     ```
 
     This installs a LaunchAgent on macOS, a systemd user unit on Linux and
@@ -97,7 +92,7 @@ run `openclaw gateway install`. Run `openclaw` for the TUI or
   </Step>
   <Step title="Verify the Gateway is running">
     ```bash
-    openclaw gateway status
+    paddy gateway status
     ```
 
     You should see the Gateway listening on port 18789.
@@ -105,7 +100,7 @@ run `openclaw gateway install`. Run `openclaw` for the TUI or
   </Step>
   <Step title="Open the dashboard">
     ```bash
-    openclaw dashboard
+    paddy dashboard
     ```
 
     This opens the Control UI in your browser. If it loads, everything is working.
@@ -147,8 +142,8 @@ Then set:
 Restart the gateway and reopen the dashboard:
 
 ```bash
-openclaw gateway restart
-openclaw dashboard
+paddy gateway restart
+paddy dashboard
 ```
 
 </Accordion>
@@ -158,14 +153,14 @@ openclaw dashboard
 One command turns the current state of your install into a diagnosis you can act on:
 
 ```bash
-openclaw triage
+paddy triage
 ```
 
-It runs read-only health checks, writes a sanitized prompt describing what it found, and then offers to hand that prompt to a coding agent it detects on your machine — Claude Code, Codex CLI, or the built-in OpenClaw agent — so the agent starts with the diagnosis already loaded. Pick "just print the commands" if you would rather run the handoff yourself.
+It runs read-only health checks, writes a sanitized prompt describing what it found, and then offers to hand that prompt to a coding agent it detects on your machine — Claude Code, Codex CLI, or the built-in Paddy agent — so the agent starts with the diagnosis already loaded. Pick "just print the commands" if you would rather run the handoff yourself.
 
 Nothing leaves your machine until you choose an agent, and secrets, tokens, raw chat payloads, and raw logs are excluded from the prompt.
 
-To read the findings yourself instead, run [`openclaw doctor`](/cli/doctor). For symptom-first routes, see [Troubleshooting](/help/troubleshooting).
+To read the findings yourself instead, run [`paddy doctor`](/cli/doctor). For symptom-first routes, see [Troubleshooting](/help/troubleshooting).
 
 ## What to do next
 
@@ -185,7 +180,7 @@ To read the findings yourself instead, run [`openclaw doctor`](/cli/doctor). For
 </Columns>
 
 <Accordion title="Advanced: environment variables">
-  If you run OpenClaw as a service account or want custom paths:
+  If you run Paddy as a service account or want custom paths:
 
 - `OPENCLAW_HOME` — home directory for internal path resolution
 - `OPENCLAW_STATE_DIR` — override the state directory
@@ -199,6 +194,6 @@ Full reference: [Environment variables](/help/environment).
 - [Install overview](/install)
 - [Channels overview](/channels)
 - [Setup](/start/setup)
-- [Personal assistant setup](/start/openclaw) - end-to-end guide to a dedicated number that behaves like an always-on assistant
+- [Personal assistant setup](/start/paddy) - end-to-end guide to a dedicated number that behaves like an always-on assistant
 - [Triage](/cli/triage)
 - [Troubleshooting](/help/troubleshooting)

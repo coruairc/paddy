@@ -85,7 +85,7 @@ export function assertCanonicalSessionValidationSchema(database: DatabaseSync): 
       throw classifyOpenClawAgentDatabaseReadError(
         database,
         new Error(
-          `Session canonical validation schema is missing or drifted: ${name}; run openclaw doctor --fix with the compatible build.`,
+          `Session canonical validation schema is missing or drifted: ${name}; run paddy doctor --fix with the compatible build.`,
         ),
       );
     }

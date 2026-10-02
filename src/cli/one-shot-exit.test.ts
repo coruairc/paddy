@@ -573,7 +573,7 @@ describe("one-shot CLI exit", () => {
         }),
       );
     } else {
-      expect(result.stdout).toContain("Usage: openclaw proxy validate");
+      expect(result.stdout).toContain("Usage: paddy proxy validate");
     }
   });
 

@@ -438,7 +438,7 @@ export async function stageProviderAuthCandidate(
     if (params.isRemoteProviderAuth ?? params.surface === "gateway") {
       return {
         error:
-          "For a custom provider, run openclaw onboard --auth-choice custom-api-key on the Gateway host, then return here and refresh connections.",
+          "For a custom provider, run paddy onboard --auth-choice custom-api-key on the Gateway host, then return here and refresh connections.",
       };
     }
     if (!params.prompter) {
