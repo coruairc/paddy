@@ -120,6 +120,17 @@ export function createOperationRegistrars(state: PluginRegistryState) {
     registrar: OpenClawPluginCliRegistrar,
     opts?: OpenClawPluginCliRegistrationOptions,
   ) => {
+    if (record.dreamingSidecar) {
+      // Paddy: a dreaming sidecar never owns CLI commands; the selected memory slot
+      // owner does. Without this, memory-core would claim `memory` first-wins.
+      state.pushDiagnostic({
+        level: "info",
+        pluginId: record.id,
+        source: record.source,
+        message: "dreaming sidecar; skipping cli registration",
+      });
+      return;
+    }
     const normalizeCommandRoot = (raw: string, source: "command" | "descriptor") => {
       const normalized = normalizeCommandDescriptorName(raw);
       if (!normalized) {
