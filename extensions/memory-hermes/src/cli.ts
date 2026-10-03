@@ -7,8 +7,8 @@ type CommandChain = {
   description(text: string): CommandChain;
   argument(name: string, description?: string): CommandChain;
   option(flags: string, description?: string): CommandChain;
-  // Commander action callbacks are variadic. `any` matches that host type.
-  action(fn: (...args: any[]) => void): CommandChain;
+  // Commander action callbacks are variadic; handlers are cast to an unknown-args signature.
+  action(fn: (...args: unknown[]) => void): CommandChain;
 };
 
 type ScopeOpts = { scope?: string; global?: boolean };
@@ -55,7 +55,7 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
           )}\n`,
         );
       });
-    }) as (...args: any[]) => void);
+    }) as (...args: unknown[]) => void);
 
   memory
     .command("list")
@@ -73,7 +73,7 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
       withStore((db) => {
         process.stdout.write(`${JSON.stringify(db.list(scope, opts.status), null, 2)}\n`);
       });
-    }) as (...args: any[]) => void);
+    }) as (...args: unknown[]) => void);
 
   for (const name of ["approve", "reject", "rollback"] as const) {
     memory
@@ -89,7 +89,7 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
             process.exitCode = 1;
           }
         });
-      }) as (...args: any[]) => void);
+      }) as (...args: unknown[]) => void);
   }
 
   memory
@@ -112,5 +112,5 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
           process.exitCode = 1;
         }
       });
-    }) as (...args: any[]) => void);
+    }) as (...args: unknown[]) => void);
 }

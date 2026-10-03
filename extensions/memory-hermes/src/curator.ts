@@ -2,7 +2,7 @@ import type { MemoryKind } from "./limits.js";
 import type { HermesStore, StoreResult } from "./store.js";
 
 const REMEMBER =
-  /(?:^|\n)\s*(?:please\s+)?(?:remember(?:\s+that)?|note(?:\s+that)?)\s*[:\-]?\s+(.+)/i;
+  /(?:^|\n)\s*(?:please\s+)?(?:remember(?:\s+that)?|note(?:\s+that)?)\s*[:-]?\s+(.+)/i;
 
 export function extractProposal(userText: string): { kind: MemoryKind; text: string } | null {
   const match = REMEMBER.exec(userText);
