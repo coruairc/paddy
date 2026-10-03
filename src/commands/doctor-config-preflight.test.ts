@@ -511,7 +511,7 @@ describe("runDoctorConfigPreflight", () => {
       await writeLegacyConfig(home);
       const stateDir = await fs.realpath(await fs.mkdtemp(path.join(home, "custom-state-")));
       const configPath = path.join(stateDir, "openclaw.json");
-      const defaultConfigPath = path.join(home, ".openclaw", "openclaw.json");
+      const defaultConfigPath = path.join(home, ".paddy", "openclaw.json");
 
       try {
         await withEnvAsync(
@@ -565,7 +565,7 @@ describe("runDoctorConfigPreflight", () => {
   it("migrates legacy config into the selected profile", async () => {
     await withDoctorConfigPreflightHome(async (home) => {
       await writeLegacyConfig(home);
-      const profileStateDir = path.join(home, ".openclaw-work");
+      const profileStateDir = path.join(home, ".paddy-work");
       const configPath = path.join(profileStateDir, "openclaw.json");
 
       try {
