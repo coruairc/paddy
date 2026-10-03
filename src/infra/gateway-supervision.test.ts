@@ -56,8 +56,8 @@ describe("gateway supervision", () => {
       assertGatewayServiceMutationAllowed("restart the gateway", {
         HOME: accountHome,
         OPENCLAW_PROFILE: "work",
-        OPENCLAW_STATE_DIR: path.join(accountHome, ".openclaw-work"),
-        OPENCLAW_CONFIG_PATH: path.join(accountHome, ".openclaw-work", "openclaw.json"),
+        OPENCLAW_STATE_DIR: path.join(accountHome, ".paddy-work"),
+        OPENCLAW_CONFIG_PATH: path.join(accountHome, ".paddy-work", "openclaw.json"),
       }),
     ).not.toThrow();
   });
@@ -91,8 +91,8 @@ describe("gateway supervision", () => {
           assertGatewayServiceMutationAllowed("restart the gateway", {
             HOME: accountHome,
             OPENCLAW_PROFILE: "work",
-            OPENCLAW_STATE_DIR: path.join(accountHome, ".openclaw-work"),
-            OPENCLAW_CONFIG_PATH: path.join(accountHome, ".openclaw-work", "openclaw.json"),
+            OPENCLAW_STATE_DIR: path.join(accountHome, ".paddy-work"),
+            OPENCLAW_CONFIG_PATH: path.join(accountHome, ".paddy-work", "openclaw.json"),
             [envKey]: value,
           }),
         ).toThrow(

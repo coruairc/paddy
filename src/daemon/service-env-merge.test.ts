@@ -138,8 +138,8 @@ describe("mergeGatewayServiceEnv", () => {
           ],
           environment: {
             OPENCLAW_PROFILE: "saved",
-            OPENCLAW_STATE_DIR: path.join(home, ".openclaw-saved"),
-            OPENCLAW_CONFIG_PATH: path.join(home, ".openclaw-saved", "openclaw.json"),
+            OPENCLAW_STATE_DIR: path.join(home, ".paddy-saved"),
+            OPENCLAW_CONFIG_PATH: path.join(home, ".paddy-saved", "openclaw.json"),
             OPENCLAW_WINDOWS_TASK_NAME: "OpenClaw Gateway (saved)",
             OPENCLAW_LAUNCHD_LABEL: "ai.openclaw.saved",
             OPENCLAW_SYSTEMD_UNIT: "openclaw-gateway-saved.service",
@@ -167,7 +167,7 @@ describe("mergeGatewayServiceEnv", () => {
           OPENCLAW_PROFILE: platform === "win32" ? "rescue" : "saved",
           OPENCLAW_STATE_DIR: path.join(
             home,
-            platform === "win32" ? ".openclaw-rescue" : ".openclaw-saved",
+            platform === "win32" ? ".paddy-rescue" : ".paddy-saved",
           ),
           OPENCLAW_WINDOWS_TASK_NAME: "Services\\Selected",
           OPENCLAW_LAUNCHD_LABEL: "caller-agent",
@@ -192,8 +192,8 @@ describe("mergeGatewayServiceEnv", () => {
       });
       expect(merged).toMatchObject({
         OPENCLAW_PROFILE: "rescue",
-        OPENCLAW_STATE_DIR: path.join(home, ".openclaw-rescue"),
-        OPENCLAW_CONFIG_PATH: path.join(home, ".openclaw-rescue", "openclaw.json"),
+        OPENCLAW_STATE_DIR: path.join(home, ".paddy-rescue"),
+        OPENCLAW_CONFIG_PATH: path.join(home, ".paddy-rescue", "openclaw.json"),
         OPENCLAW_WINDOWS_TASK_NAME: "Services\\Selected",
       });
       expect(baseEnv).toEqual({ HOME: home, OPENCLAW_WINDOWS_TASK_NAME: "Services\\Selected" });
