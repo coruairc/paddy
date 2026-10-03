@@ -196,3 +196,44 @@ describe("applyLocalSetupWorkspaceConfig", () => {
     expect(result.agents?.defaults?.workspace).toBe("/tmp/requested-workspace");
   });
 });
+
+// Paddy: onboarding writes the memory-hermes slot and its dreaming-off backstop through
+// applyPaddyMemoryDefaults. These cases fail if the onboarding hook stops calling the writer.
+describe("applyLocalSetupWorkspaceConfig Paddy memory defaults", () => {
+  it("fills the memory-hermes slot and dreaming.enabled: false on a fresh install", () => {
+    const result = applyLocalSetupWorkspaceConfig({}, "/tmp/workspace");
+
+    expect(result.plugins?.slots?.memory).toBe("memory-hermes");
+    expect(result.plugins?.entries?.["memory-hermes"]).toEqual({
+      config: { dreaming: { enabled: false } },
+    });
+    // The memory defaults compose with the workspace/gateway writes instead of replacing them.
+    expect(result.agents?.defaults?.workspace).toBe("/tmp/workspace");
+    expect(result.gateway?.mode).toBe("local");
+  });
+
+  it("fills the dreaming backstop beside an existing memory-hermes slot and keeps other entries", () => {
+    const result = applyLocalSetupWorkspaceConfig(
+      {
+        plugins: {
+          slots: { memory: "memory-hermes" },
+          entries: { "memory-hermes": { config: { recall: { limit: 5 } } }, other: {} },
+        },
+      },
+      "/tmp/workspace",
+    );
+
+    expect(result.plugins?.slots?.memory).toBe("memory-hermes");
+    expect(result.plugins?.entries?.["memory-hermes"]).toEqual({
+      config: { recall: { limit: 5 }, dreaming: { enabled: false } },
+    });
+    expect(result.plugins?.entries?.other).toEqual({});
+  });
+
+  it("leaves another memory owner untouched", () => {
+    const plugins = { slots: { memory: "memory-lancedb" } };
+    const result = applyLocalSetupWorkspaceConfig({ plugins }, "/tmp/workspace");
+
+    expect(result.plugins).toEqual(plugins);
+  });
+});
