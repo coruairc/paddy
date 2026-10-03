@@ -400,7 +400,7 @@ export function registerManagedInstallEnvironmentTest({
     vi.stubEnv("UNSET_PROVIDER_KEY", "removed-by-drop-in");
     vi.stubEnv("GEMINI_API_KEY", "allowed-runtime-credential");
     vi.stubEnv("OPENCLAW_PROFILE", "caller-only-profile");
-    const callerStateDir = path.join(identity.home, ".openclaw-caller-only-profile");
+    const callerStateDir = path.join(identity.home, ".paddy-caller-only-profile");
     vi.stubEnv("OPENCLAW_STATE_DIR", callerStateDir);
     vi.stubEnv("OPENCLAW_CONFIG_PATH", path.join(callerStateDir, "openclaw.json"));
     try {

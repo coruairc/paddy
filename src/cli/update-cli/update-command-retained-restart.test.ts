@@ -55,7 +55,7 @@ beforeEach(() => {
   for (const root of [a, b, c, control]) {
     fs.mkdirSync(root);
   }
-  env = { HOME: dir, OPENCLAW_STATE_DIR: path.join(dir, ".openclaw") };
+  env = { HOME: dir, OPENCLAW_STATE_DIR: path.join(dir, ".paddy") };
   vi.stubEnv("HOME", dir);
   mockSystemAccountHome();
   for (const key of [

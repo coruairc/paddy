@@ -2164,7 +2164,7 @@ describe("config cli", () => {
     it("resolves the active path without initializing state", async () => {
       const home = tempDirs.make("openclaw-config-file-");
       const profile = "configfile-probe";
-      const stateDir = path.join(home, `.openclaw-${profile}`);
+      const stateDir = path.join(home, `.paddy-${profile}`);
       const configPath = path.join(stateDir, "openclaw.json");
       vi.stubEnv("OPENCLAW_HOME", home);
       vi.stubEnv("OPENCLAW_CONFIG_PATH", "");

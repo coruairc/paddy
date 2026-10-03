@@ -1,5 +1,6 @@
 import { theme } from "../../../packages/terminal-core/src/theme.js";
 import { withGatewayServiceUpdateAuthority } from "../../daemon/service-update-authority.js";
+import { assertPaddySelfUpdateAvailable } from "../../infra/paddy-update-policy.js";
 import { tryProcessCwd } from "../../infra/safe-cwd.js";
 import { resolveUpdateFinalizationTimeoutMs } from "../../infra/update-finalization-budget.js";
 import type { RetainUpdateRuntime } from "../../infra/update-retained-runtime.js";
@@ -59,6 +60,9 @@ export async function updateCommand(
   inputOpts: UpdateCommandOptions,
   executorOptions?: UpdateCommandExecutorOptions,
 ): Promise<void> {
+  // Refuse before any run ledger, lock, or service state is opened (CLI, wizard, Doctor, and
+  // Gateway handoff children all enter here).
+  assertPaddySelfUpdateAvailable();
   const { withRetainedUpdateRuntime } = await import("../../infra/update-retained-runtime.js");
   return await withRetainedUpdateRuntime(import.meta.url, (retainRuntime) =>
     updateCommandWithRuntime(inputOpts, retainRuntime, executorOptions),

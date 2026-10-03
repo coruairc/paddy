@@ -276,8 +276,8 @@ it.each([
           ...(scenario === "different profile"
             ? {
                 OPENCLAW_PROFILE: "other",
-                OPENCLAW_STATE_DIR: path.join(home, ".openclaw-other"),
-                OPENCLAW_CONFIG_PATH: path.join(home, ".openclaw-other", "openclaw.json"),
+                OPENCLAW_STATE_DIR: path.join(home, ".paddy-other"),
+                OPENCLAW_CONFIG_PATH: path.join(home, ".paddy-other", "openclaw.json"),
               }
             : {}),
         },

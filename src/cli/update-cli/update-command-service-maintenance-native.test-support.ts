@@ -103,7 +103,7 @@ export async function runNativeMaintenanceUpdate(
   serviceRoot?: string,
 ) {
   const snapshot: ConfigFileSnapshot = {
-    path: `${process.env.HOME}/.openclaw/openclaw.json`,
+    path: `${process.env.HOME}/.paddy/openclaw.json`,
     exists: true,
     raw: "{}",
     parsed: {},

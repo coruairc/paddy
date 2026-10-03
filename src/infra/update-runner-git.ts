@@ -1,6 +1,7 @@
 import { hasCommandProcessCleanupError } from "../process/exec-result.js";
 import { resolveControlUiAssetHealth } from "./control-ui-assets.js";
 import { readPackageVersion } from "./package-json.js";
+import { assertPaddySelfUpdateAvailable } from "./paddy-update-policy.js";
 import { DEV_BRANCH, type UpdateChannel } from "./update-channels.js";
 import { getUpdateDoctorConfigFailureReason } from "./update-doctor-config.js";
 import { createUpdateErrorFact } from "./update-failure-facts.js";
@@ -48,6 +49,8 @@ export async function updateGitCheckout(params: {
   timeoutMs: number;
   startedAt: number;
 }): Promise<UpdateRunResult> {
+  // Every git checkout update passes here; refuse before any fetch or checkout.
+  assertPaddySelfUpdateAvailable();
   const { opts, defaultCommandEnv, timeoutMs, startedAt } = params;
   let gitRoot = params.gitRoot;
   const runCommand: CommandRunner = (argv, options) =>

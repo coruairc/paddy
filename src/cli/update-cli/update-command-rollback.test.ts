@@ -89,7 +89,7 @@ describe("verified package rollback", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     const serviceHome = fs.realpathSync(dirs.make("rollback-service-home-"));
-    serviceStateDir = path.join(serviceHome, ".openclaw");
+    serviceStateDir = path.join(serviceHome, ".paddy");
     fs.mkdirSync(serviceStateDir);
     vi.spyOn(os, "userInfo").mockReturnValue({ ...os.userInfo(), homedir: serviceHome });
     vi.stubEnv("HOME", serviceHome);

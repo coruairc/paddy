@@ -17,7 +17,7 @@ export function createPostUpdateRepairFixture(home: string): FinishUpdateParams 
   vi.stubEnv("HOME", home);
   vi.stubEnv("USERPROFILE", home);
   vi.spyOn(os, "userInfo").mockReturnValue({ ...os.userInfo(), homedir: home });
-  const stateDir = path.join(home, ".openclaw");
+  const stateDir = path.join(home, ".paddy");
   const configPath = path.join(stateDir, "openclaw.json");
   vi.stubEnv("OPENCLAW_STATE_DIR", stateDir);
   vi.stubEnv("OPENCLAW_CONFIG_PATH", configPath);

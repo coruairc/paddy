@@ -62,7 +62,7 @@ describe("resolveDefaultAgentWorkspaceDir", () => {
       HOME: "/home/other",
     } as NodeJS.ProcessEnv);
 
-    expect(dir).toBe(path.join(path.resolve("/srv/openclaw-home"), ".openclaw-work", "workspace"));
+    expect(dir).toBe(path.join(path.resolve("/srv/openclaw-home"), ".paddy-work", "workspace"));
   });
 
   it("rejects invalid environment-only profile names", () => {

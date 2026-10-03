@@ -1058,7 +1058,8 @@ export async function noteStateIntegrity(
   const env = process.env;
   const homedir = () => resolveRequiredHomeDir(env, os.homedir);
   const stateDir = resolveStateDir(env, homedir);
-  const defaultStateDir = path.join(homedir(), ".openclaw");
+  // Must match NEW_STATE_DIRNAME in config/state-dir.ts.
+  const defaultStateDir = path.join(homedir(), ".paddy");
   const oauthDir = resolveOAuthDir(env, stateDir);
   const runtimeAgentId = tryResolveDefaultAgentId(cfg);
   const runtimeSessionsDir = runtimeAgentId

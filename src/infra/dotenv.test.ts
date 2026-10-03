@@ -108,7 +108,7 @@ async function withDotEnvFixture(run: (fixture: DotEnvFixture) => Promise<void>)
 }
 
 describe("loadDotEnv", () => {
-  it("loads ~/.openclaw/.env as fallback without overriding CWD .env", async () => {
+  it("loads ~/.paddy/.env as fallback without overriding CWD .env", async () => {
     await withDotEnvFixture(async ({ cwdDir, stateDir }) => {
       await writeEnvFile(path.join(stateDir, ".env"), "FOO=from-global\nBAR=1\n");
       await writeEnvFile(path.join(cwdDir, ".env"), "FOO=from-cwd\n");
@@ -190,10 +190,10 @@ describe("loadDotEnv", () => {
     });
   });
 
-  it("loads the Ubuntu gateway.env compatibility fallback after ~/.openclaw/.env", async () => {
+  it("loads the Ubuntu gateway.env compatibility fallback after ~/.paddy/.env", async () => {
     await withDotEnvFixture(async ({ base, cwdDir }) => {
       setTestEnvValue("HOME", base);
-      const defaultStateDir = path.join(base, ".openclaw");
+      const defaultStateDir = path.join(base, ".paddy");
       setTestEnvValue("OPENCLAW_STATE_DIR", defaultStateDir);
       await writeEnvFile(path.join(defaultStateDir, ".env"), "FOO=from-global\n");
       await writeEnvFile(
@@ -493,7 +493,7 @@ describe("loadCliDotEnv", () => {
   it("loads the gateway.env compatibility fallback during CLI startup", async () => {
     await withDotEnvFixture(async ({ base, cwdDir }) => {
       setTestEnvValue("HOME", base);
-      const defaultStateDir = path.join(base, ".openclaw");
+      const defaultStateDir = path.join(base, ".paddy");
       setTestEnvValue("OPENCLAW_STATE_DIR", defaultStateDir);
       await writeEnvFile(path.join(defaultStateDir, ".env"), "FOO=from-global\n");
       await writeEnvFile(
@@ -515,7 +515,7 @@ describe("loadCliDotEnv", () => {
   it("can defer global dotenv while loading only workspace env", async () => {
     await withDotEnvFixture(async ({ base, cwdDir }) => {
       setTestEnvValue("HOME", base);
-      const defaultStateDir = path.join(base, ".openclaw");
+      const defaultStateDir = path.join(base, ".paddy");
       setTestEnvValue("OPENCLAW_STATE_DIR", defaultStateDir);
       await writeEnvFile(path.join(cwdDir, ".env"), "BAZ=from-workspace\n");
       await writeEnvFile(path.join(defaultStateDir, ".env"), "FOO=from-global\n");
@@ -572,7 +572,7 @@ describe("loadCliDotEnv", () => {
     });
   });
 
-  it("keeps the legacy state-dir fallback for CLI dotenv loading", async () => {
+  it("does not load .env from the legacy ~/.clawdbot state dir during CLI startup", async () => {
     await withIsolatedEnvAndCwd(async () => {
       const base = await fs.mkdtemp(path.join(os.tmpdir(), "openclaw-dotenv-legacy-"));
       const cwdDir = path.join(base, "cwd");
@@ -588,7 +588,7 @@ describe("loadCliDotEnv", () => {
 
       loadCliDotEnv({ quiet: true });
 
-      expect(process.env.LEGACY_ONLY).toBe("from-legacy");
+      expect(process.env.LEGACY_ONLY).toBeUndefined();
     });
   });
 

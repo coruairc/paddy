@@ -190,7 +190,7 @@ describe("config io write", () => {
   };
 
   const configPathForHome = (home: string, fileName = "openclaw.json") =>
-    path.join(home, ".openclaw", fileName);
+    path.join(home, ".paddy", fileName);
 
   const formatConfig = (config: unknown) => `${JSON.stringify(config, null, 2)}\n`;
 
@@ -1142,7 +1142,7 @@ describe("config io write", () => {
 
   itWithHome("returns the snapshot-time hash when an included file is malformed", async (home) => {
     const configPath = configPathForHome(home);
-    const includePath = path.join(home, ".openclaw", "plugins.json5");
+    const includePath = path.join(home, ".paddy", "plugins.json5");
     const malformedRaw = "{ malformed";
     await fs.mkdir(path.dirname(configPath), { recursive: true });
     await writeConfigJson(configPath, { plugins: { $include: "./plugins.json5" } });
@@ -1165,8 +1165,8 @@ describe("config io write", () => {
     "composes caller authority with captured destination ownership for %s",
     async (mutation) => {
       await withSuiteHome(async (home) => {
-        const firstConfigPath = path.join(home, ".openclaw", "first.json");
-        const secondConfigPath = path.join(home, ".openclaw", "second.json");
+        const firstConfigPath = path.join(home, ".paddy", "first.json");
+        const secondConfigPath = path.join(home, ".paddy", "second.json");
         await fs.mkdir(path.dirname(firstConfigPath), { recursive: true });
         await fs.writeFile(firstConfigPath, "{}\n");
         await fs.writeFile(secondConfigPath, "{}\n");
@@ -1207,8 +1207,8 @@ describe("config io write", () => {
   itWithHome(
     "rejects write snapshots when the IO instance no longer owns its config path",
     async (home) => {
-      const firstConfigPath = path.join(home, ".openclaw", "first.json");
-      const secondConfigPath = path.join(home, ".openclaw", "second.json");
+      const firstConfigPath = path.join(home, ".paddy", "first.json");
+      const secondConfigPath = path.join(home, ".paddy", "second.json");
       await fs.mkdir(path.dirname(firstConfigPath), { recursive: true });
       await fs.writeFile(firstConfigPath, "{}", "utf-8");
       await fs.writeFile(secondConfigPath, "{}", "utf-8");
@@ -1226,8 +1226,8 @@ describe("config io write", () => {
   );
 
   itWithHome("does not use expectedConfigPath as the write destination", async (home) => {
-    const expectedConfigPath = path.join(home, ".openclaw", "expected.json");
-    const activeConfigPath = path.join(home, ".openclaw", "active.json");
+    const expectedConfigPath = path.join(home, ".paddy", "expected.json");
+    const activeConfigPath = path.join(home, ".paddy", "active.json");
     await fs.mkdir(path.dirname(expectedConfigPath), { recursive: true });
     await writeConfigJson(expectedConfigPath, { gateway: { mode: "local" } });
     await fs.writeFile(activeConfigPath, "{}\n", "utf-8");
@@ -1255,7 +1255,7 @@ describe("config io write", () => {
 
   itWithHome("returns the missing-file hash when an included file is absent", async (home) => {
     const configPath = configPathForHome(home);
-    const includePath = path.join(home, ".openclaw", "plugins.json5");
+    const includePath = path.join(home, ".paddy", "plugins.json5");
     await fs.mkdir(path.dirname(configPath), { recursive: true });
     await writeConfigJson(configPath, { plugins: { $include: "./plugins.json5" } });
     const io = createFastConfigIO(home);
@@ -1275,7 +1275,7 @@ describe("config io write", () => {
     "rejects root-include partial writes instead of flattening the root config",
     async (home) => {
       const configPath = configPathForHome(home);
-      const includePath = path.join(home, ".openclaw", "extra.json5");
+      const includePath = path.join(home, ".paddy", "extra.json5");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await writeConfigJson(includePath, {
         $schema: "https://openclaw.ai/config-from-include.json",
@@ -1312,8 +1312,8 @@ describe("config io write", () => {
   itWithHome(
     "rejects a base snapshot from a different config path before overwriting the root config",
     async (home) => {
-      const firstConfigPath = path.join(home, ".openclaw", "first.json");
-      const secondConfigPath = path.join(home, ".openclaw", "second.json");
+      const firstConfigPath = path.join(home, ".paddy", "first.json");
+      const secondConfigPath = path.join(home, ".paddy", "second.json");
       await fs.mkdir(path.dirname(firstConfigPath), { recursive: true });
       const originalRaw = formatConfig({ gateway: { mode: "local", port: 18789 } });
       await fs.writeFile(firstConfigPath, originalRaw, "utf-8");
@@ -1520,7 +1520,7 @@ describe("config io write", () => {
     "rejects invalid include-backed repairs instead of persisting substituted secrets",
     async (home) => {
       const configPath = configPathForHome(home);
-      const includePath = path.join(home, ".openclaw", "gateway.json5");
+      const includePath = path.join(home, ".paddy", "gateway.json5");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await writeConfigJson(includePath, {
         mode: "local",
@@ -1558,7 +1558,7 @@ describe("config io write", () => {
     "repairs invalid root-authored siblings without flattening included config",
     async (home) => {
       const configPath = configPathForHome(home);
-      const includePath = path.join(home, ".openclaw", "agent-defaults.json5");
+      const includePath = path.join(home, ".paddy", "agent-defaults.json5");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await writeConfigJson(includePath, { maxConcurrent: 1 });
       await writeConfigJson(configPath, {
@@ -1585,7 +1585,7 @@ describe("config io write", () => {
     "does not let an unrelated include mask removal of a local gateway mode",
     async (home) => {
       const configPath = configPathForHome(home);
-      const includePath = path.join(home, ".openclaw", "agents.json5");
+      const includePath = path.join(home, ".paddy", "agents.json5");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await fs.writeFile(
         includePath,
@@ -1634,8 +1634,8 @@ describe("config io write", () => {
     "preserves a leaf-included gateway mode during an unrelated include override",
     async (home) => {
       const configPath = configPathForHome(home);
-      const agentsPath = path.join(home, ".openclaw", "agents.json5");
-      const modePath = path.join(home, ".openclaw", "gateway-mode.json5");
+      const agentsPath = path.join(home, ".paddy", "agents.json5");
+      const modePath = path.join(home, ".paddy", "gateway-mode.json5");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await fs.writeFile(
         agentsPath,
@@ -1681,8 +1681,8 @@ describe("config io write", () => {
     "does not let a surviving sibling include mask removal of the gateway include",
     async (home) => {
       const configPath = configPathForHome(home);
-      const agentsPath = path.join(home, ".openclaw", "agents.json5");
-      const gatewayPath = path.join(home, ".openclaw", "gateway.json5");
+      const agentsPath = path.join(home, ".paddy", "agents.json5");
+      const gatewayPath = path.join(home, ".paddy", "gateway.json5");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await fs.writeFile(
         agentsPath,
@@ -1722,7 +1722,7 @@ describe("config io write", () => {
     "adds a root-owned agent beside a keyed include without rewriting the include file",
     async (home) => {
       const configPath = configPathForHome(home);
-      const tonyPath = path.join(home, ".openclaw", "tony.json5");
+      const tonyPath = path.join(home, ".paddy", "tony.json5");
       const tonyRaw = `{
   // Keep operator comments and references byte-identical.
   workspace: "/w/tony",
@@ -1782,8 +1782,8 @@ describe("config io write", () => {
         },
       },
       includeFiles: {
-        ".openclaw/tony-base.json5": `{ workspace: "/w/tony" }\n`,
-        ".openclaw/tony-extra.json5": `{ name: "Tony" }\n`,
+        ".paddy/tony-base.json5": `{ workspace: "/w/tony" }\n`,
+        ".paddy/tony-extra.json5": `{ name: "Tony" }\n`,
       },
     });
   });
@@ -1799,7 +1799,7 @@ describe("config io write", () => {
           },
         },
       },
-      includeFiles: { ".openclaw/tony.json5": `{ name: "Tony" }\n` },
+      includeFiles: { ".paddy/tony.json5": `{ name: "Tony" }\n` },
     });
   });
 
@@ -1813,8 +1813,8 @@ describe("config io write", () => {
         },
       },
       includeFiles: {
-        ".openclaw/tony-delegate.json5": `{ $include: "./tony.json5" }\n`,
-        ".openclaw/tony.json5": `{ workspace: "/w/tony" }\n`,
+        ".paddy/tony-delegate.json5": `{ $include: "./tony.json5" }\n`,
+        ".paddy/tony.json5": `{ workspace: "/w/tony" }\n`,
       },
     });
   });
@@ -1838,7 +1838,7 @@ describe("config io write", () => {
     "rejects repairs that would flatten a valid outer include with a broken nested include",
     async (home) => {
       const configPath = configPathForHome(home);
-      const pluginsPath = path.join(home, ".openclaw", "plugins.json5");
+      const pluginsPath = path.join(home, ".paddy", "plugins.json5");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await writeConfigJson(pluginsPath, { $include: "./missing-entries.json5" });
       await writeConfigJson(configPath, { plugins: { $include: "./plugins.json5" } });
@@ -1921,7 +1921,7 @@ describe("config io write", () => {
 
     await withSuiteHome(async (home) => {
       const configPath = configPathForHome(home);
-      const agentsPath = path.join(home, ".openclaw", "agents.json5");
+      const agentsPath = path.join(home, ".paddy", "agents.json5");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
       await writeConfigJson(agentsPath, { entries: { main: { default: true } } });
       await writeConfigJson(configPath, {
@@ -1958,7 +1958,7 @@ describe("config io write", () => {
   itWithHome("repairs invalid config without flattening record-nested includes", async (home) => {
     mockLoadPluginManifestRegistry.mockReturnValue(literalPluginRegistry);
     const configPath = configPathForHome(home);
-    const includePath = path.join(home, ".openclaw", "main-agent.json5");
+    const includePath = path.join(home, ".paddy", "main-agent.json5");
     await fs.mkdir(path.dirname(configPath), { recursive: true });
     await writeConfigJson(includePath, { workspace: "${OPENCLAW_AGENT_WORKSPACE}" });
     await writeConfigJson(configPath, {
@@ -2264,7 +2264,7 @@ describe("config io write", () => {
           {
             HOME: home,
             OPENCLAW_HOME: home,
-            OPENCLAW_STATE_DIR: path.join(home, ".openclaw"),
+            OPENCLAW_STATE_DIR: path.join(home, ".paddy"),
             OPENCLAW_CONFIG_PATH: configPath,
             INCLUDE_PREFIX: "[include]",
             INCLUDE_WORKSPACE: path.join(home, "workspace"),
@@ -3246,7 +3246,7 @@ describe("config io write", () => {
     "uses injected filesystem operations when rolling back ownership loss",
     async (home) => {
       const configPath = configPathForHome(home);
-      const otherConfigPath = path.join(home, ".openclaw", "other.json");
+      const otherConfigPath = path.join(home, ".paddy", "other.json");
       const initialConfig = { gateway: { mode: "local", port: 18789 } } satisfies OpenClawConfig;
       const initialRaw = formatConfig(initialConfig);
       await fs.mkdir(path.dirname(configPath), { recursive: true });
@@ -3527,7 +3527,7 @@ gateway: { mode: "local", port: 18789 }
         const result = await withEnvAsync(
           {
             OPENCLAW_CONFIG_PATH: configPath,
-            OPENCLAW_STATE_DIR: path.join(home, ".openclaw"),
+            OPENCLAW_STATE_DIR: path.join(home, ".paddy"),
             OPENCLAW_TEST_FAST: "1",
           },
           () =>
@@ -3603,7 +3603,7 @@ gateway: { mode: "local", port: 18789 }
       await withEnvAsync(
         {
           OPENCLAW_CONFIG_PATH: configPath,
-          OPENCLAW_STATE_DIR: path.join(home, ".openclaw"),
+          OPENCLAW_STATE_DIR: path.join(home, ".paddy"),
           OPENCLAW_TEST_FAST: "1",
         },
         async () => {

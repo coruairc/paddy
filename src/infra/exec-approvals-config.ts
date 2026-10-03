@@ -83,7 +83,9 @@ export const DEFAULT_SECURITY: ExecSecurity = "full";
 export const DEFAULT_ASK: ExecAsk = "off";
 export const DEFAULT_EXEC_APPROVAL_ASK_FALLBACK: ExecSecurity = "deny";
 export const DEFAULT_AUTO_ALLOW_SKILLS = false;
-const DEFAULT_EXEC_APPROVALS_STATE_DIR = "~/.openclaw";
+// Default state root; must match NEW_STATE_DIRNAME in config/state-dir.ts so approvals and the
+// approvals socket are never shared with a separate OpenClaw install.
+const DEFAULT_EXEC_APPROVALS_STATE_DIR = "~/.paddy";
 const EXEC_APPROVALS_FILE = "exec-approvals.json";
 const EXEC_APPROVALS_SOCKET = "exec-approvals.sock";
 function resolveExecApprovalsStateDir(env: NodeJS.ProcessEnv = process.env): {

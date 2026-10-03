@@ -8,8 +8,10 @@ import { isPathInside } from "./path-guards.js";
 export const LEGACY_AGENT_DIR_RECEIPT = ".legacy-agent-dir-migration.json";
 
 // Shipped standalone SDKs used the OS home, independently of OpenClaw state/home overrides.
+// Paddy resolves this under its own default root; ~/.openclaw/agent belongs to a separate
+// OpenClaw install and must never be selected at runtime or migrated by Doctor.
 export function resolveLegacyStandaloneAgentDir(homedir: () => string = os.homedir): string {
-  return path.join(homedir(), ".openclaw", "agent");
+  return path.join(homedir(), ".paddy", "agent");
 }
 
 function receiptContent(source: string, target: string): string {

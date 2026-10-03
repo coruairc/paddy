@@ -111,7 +111,7 @@ describe("runDaemonInstall integration", () => {
       "OPENCLAW_GATEWAY_PASSWORD",
     ]);
     accountHome = await makeTempWorkspace("openclaw-daemon-install-int-");
-    tempHome = path.join(accountHome, ".openclaw");
+    tempHome = path.join(accountHome, ".paddy");
     await fs.mkdir(tempHome);
     configPath = path.join(tempHome, "openclaw.json");
     process.env.HOME = accountHome;

@@ -65,7 +65,8 @@ function resolveDefaultNodeInstallStateDir(): string {
   if (process.platform !== "win32" && process.getuid?.() === 0) {
     return path.join(path.parse(cwd).root, "var", "lib", "openclaw");
   }
-  return path.join(os.homedir(), ".openclaw");
+  // Default state root; must match NEW_STATE_DIRNAME in config/state-dir.ts.
+  return path.join(os.homedir(), ".paddy");
 }
 
 async function buildNodeInstallEnv(prefs: SkillsInstallPreferences): Promise<NodeJS.ProcessEnv> {

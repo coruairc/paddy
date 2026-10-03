@@ -36,7 +36,7 @@ it.each([false, true])(
   "repairs credentials with a canonical service OPENCLAW_HOME only when state is offline (active writer: %s)",
   async (activeWriter) => {
     const home = tempDirs.make("doctor-service-identity-");
-    const stateDir = path.join(home, ".openclaw");
+    const stateDir = path.join(home, ".paddy");
     const agentDir = path.join(stateDir, "agents/main/agent");
     const sourcePath = path.join(agentDir, "auth-profiles.json");
     const profile = { type: "api_key", provider: "claude-cli", key: "fixture-credential" };

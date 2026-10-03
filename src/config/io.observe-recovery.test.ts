@@ -141,7 +141,7 @@ describe("config observe recovery", () => {
     warn = vi.fn(),
     options: { env?: NodeJS.ProcessEnv; observe?: boolean } = {},
   ) {
-    const configPath = path.join(fixtureHome, ".openclaw", "openclaw.json");
+    const configPath = path.join(fixtureHome, ".paddy", "openclaw.json");
     const error = vi.fn();
     // Keep recovery validation out of host/workspace plugin state. Preserve the
     // caller's env identity because rollback tests inspect that exact object.
@@ -149,7 +149,7 @@ describe("config observe recovery", () => {
     env.HOME ??= fixtureHome;
     env.USERPROFILE ??= fixtureHome;
     env.OPENCLAW_CONFIG_PATH ??= configPath;
-    env.OPENCLAW_STATE_DIR ??= path.join(fixtureHome, ".openclaw");
+    env.OPENCLAW_STATE_DIR ??= path.join(fixtureHome, ".paddy");
     env.OPENCLAW_DISABLE_BUNDLED_PLUGINS ??= "1";
     env.VITEST ??= "true";
     return {
@@ -207,7 +207,7 @@ describe("config observe recovery", () => {
     auditPath: string;
     warn: ReturnType<typeof vi.fn>;
   } {
-    const configPath = path.join(fixtureHome, ".openclaw", "openclaw.json");
+    const configPath = path.join(fixtureHome, ".paddy", "openclaw.json");
     return {
       deps: {
         fs,
@@ -217,7 +217,7 @@ describe("config observe recovery", () => {
         logger: { warn },
       },
       configPath,
-      auditPath: path.join(fixtureHome, ".openclaw", "logs", "config-audit.jsonl"),
+      auditPath: path.join(fixtureHome, ".paddy", "logs", "config-audit.jsonl"),
       warn,
     };
   }
@@ -272,7 +272,7 @@ describe("config observe recovery", () => {
 
   it("rereads a committed backup after its audit closes health admission", async () => {
     const { io, configPath, warn } = createTestConfigIO(home);
-    const auditPath = path.join(home, ".openclaw", "logs", "config-audit.jsonl");
+    const auditPath = path.join(home, ".paddy", "logs", "config-audit.jsonl");
     await seedConfigBackup(configPath, largeRecoverableCoreConfig);
     const backupRaw = await fsp.readFile(`${configPath}.bak`, "utf-8");
     await writeConfigRaw(configPath, { meta: { lastTouchedVersion: "2026.5.28" } });
@@ -342,7 +342,7 @@ describe("config observe recovery", () => {
 
   it("does not auto-restore read snapshots when observation is disabled", async () => {
     const { io, configPath } = createTestConfigIO(home, vi.fn(), { observe: false });
-    const auditPath = path.join(home, ".openclaw", "logs", "config-audit.jsonl");
+    const auditPath = path.join(home, ".paddy", "logs", "config-audit.jsonl");
     await seedConfigBackup(configPath, recoverableCoreConfig);
     const clobbered = await writeConfigRaw(configPath, {
       meta: { lastTouchedVersion: "2026.5.28" },
@@ -358,7 +358,7 @@ describe("config observe recovery", () => {
 
   it("does not auto-restore include-authored roots from stale full-file backups", async () => {
     const { io, configPath } = createTestConfigIO(home);
-    const auditPath = path.join(home, ".openclaw", "logs", "config-audit.jsonl");
+    const auditPath = path.join(home, ".paddy", "logs", "config-audit.jsonl");
     const includedConfig = largeRecoverableCoreConfig;
     await seedConfigBackup(configPath, includedConfig);
     await fsp.writeFile(
@@ -752,12 +752,12 @@ describe("config observe recovery", () => {
   it("preserves another config and a later promotion while an async observation is pending", async () => {
     const env = {
       HOME: home,
-      OPENCLAW_STATE_DIR: path.join(home, ".openclaw"),
+      OPENCLAW_STATE_DIR: path.join(home, ".paddy"),
       OPENCLAW_DISABLE_BUNDLED_PLUGINS: "1",
       VITEST: "true",
     };
     const first = createTestConfigIO(home, vi.fn(), { env });
-    const secondPath = path.join(home, ".openclaw", "second.json");
+    const secondPath = path.join(home, ".paddy", "second.json");
     const options = {
       fs,
       json5: JSON5,

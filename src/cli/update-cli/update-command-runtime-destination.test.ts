@@ -159,8 +159,8 @@ it.each([
       mockSystemAccountHome();
       vi.stubEnv("OPENCLAW_HOME", undefined);
       vi.stubEnv("OPENCLAW_PROFILE", undefined);
-      vi.stubEnv("OPENCLAW_STATE_DIR", path.join(base, ".openclaw"));
-      vi.stubEnv("OPENCLAW_CONFIG_PATH", path.join(base, ".openclaw", "openclaw.json"));
+      vi.stubEnv("OPENCLAW_STATE_DIR", path.join(base, ".paddy"));
+      vi.stubEnv("OPENCLAW_CONFIG_PATH", path.join(base, ".paddy", "openclaw.json"));
       vi.mocked(servicePlan.isGatewayServiceManagementAllowedForUpdate).mockReturnValue(true);
       vi.spyOn(daemonService, "resolveGatewayService").mockReturnValue(
         createMockGatewayService({

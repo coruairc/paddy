@@ -76,8 +76,8 @@ describe("configured profile workspace preservation", () => {
     async (roster, endpoint, alias) => {
       const fixture = await makeFixture();
       fixture.env.OPENCLAW_PROFILE = "work";
-      const source = path.join(fixture.homeDir, ".openclaw", "workspace-work");
-      const target = path.join(fixture.homeDir, ".openclaw-work", "workspace");
+      const source = path.join(fixture.homeDir, ".paddy", "workspace-work");
+      const target = path.join(fixture.homeDir, ".paddy-work", "workspace");
       for (const directory of [source, target]) {
         fs.mkdirSync(directory, { recursive: true });
         fs.writeFileSync(path.join(directory, "marker.txt"), directory);
@@ -147,8 +147,8 @@ describe("configured profile workspace preservation", () => {
     async (kind) => {
       const fixture = await makeFixture();
       fixture.env.OPENCLAW_PROFILE = "work";
-      const source = path.join(fixture.homeDir, ".openclaw", "workspace-work");
-      const target = path.join(fixture.homeDir, ".openclaw-work", "workspace");
+      const source = path.join(fixture.homeDir, ".paddy", "workspace-work");
+      const target = path.join(fixture.homeDir, ".paddy-work", "workspace");
       fs.mkdirSync(source, { recursive: true });
       fs.writeFileSync(path.join(source, "marker.txt"), "configured target must stay absent");
       const alias = path.join(fixture.homeDir, "workspace-alias");
@@ -204,8 +204,8 @@ describe("configured profile workspace preservation", () => {
   it("honors native case semantics for an absent configured target", async () => {
     const fixture = await makeFixture();
     fixture.env.OPENCLAW_PROFILE = "work";
-    const source = path.join(fixture.homeDir, ".openclaw", "workspace-work");
-    const target = path.join(fixture.homeDir, ".openclaw-work", "workspace");
+    const source = path.join(fixture.homeDir, ".paddy", "workspace-work");
+    const target = path.join(fixture.homeDir, ".paddy-work", "workspace");
     fs.mkdirSync(source, { recursive: true });
     fs.writeFileSync(path.join(source, "marker.txt"), "workspace marker");
     const caseInsensitive = fs.existsSync(
@@ -249,12 +249,12 @@ describe("configured profile workspace preservation", () => {
 
   it("keeps an explicitly configured source when the target is absent", async () => {
     const fixture = await makeFixture();
-    const source = path.join(fixture.homeDir, ".openclaw", "workspace-work");
-    const target = path.join(fixture.homeDir, ".openclaw-work", "workspace");
+    const source = path.join(fixture.homeDir, ".paddy", "workspace-work");
+    const target = path.join(fixture.homeDir, ".paddy-work", "workspace");
     fs.mkdirSync(source, { recursive: true });
     fs.writeFileSync(path.join(source, "marker.txt"), "configured source");
     const cfg: OpenClawConfig = {
-      agents: { defaults: { workspace: "~/.openclaw/workspace-work" } },
+      agents: { defaults: { workspace: "~/.paddy/workspace-work" } },
     };
     fs.writeFileSync(fixture.configPath, JSON.stringify(cfg));
     const result = await autoMigrateLegacyState({

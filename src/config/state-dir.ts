@@ -5,8 +5,12 @@ import path from "node:path";
 import { resolveHomeRelativePath, resolveRequiredHomeDir } from "../infra/home-dir.js";
 import { isFastTestRuntimeEnv } from "../infra/test-runtime-env.js";
 
-const LEGACY_STATE_DIRNAMES = [".clawdbot"] as const;
-const NEW_STATE_DIRNAME = ".openclaw";
+// Paddy owns ~/.paddy and has no legacy state dirs of its own. Upstream's ".clawdbot" entry
+// is removed and ".openclaw" is never listed: every legacy dir is adopted in place by
+// resolveStateDirFromHome and moved (then symlinked) by Doctor's autoMigrateLegacyStateDir,
+// which would take over a separate OpenClaw install.
+const LEGACY_STATE_DIRNAMES: readonly string[] = [];
+const NEW_STATE_DIRNAME = ".paddy";
 
 function resolveDefaultHomeDir(): string {
   return resolveRequiredHomeDir(process.env, os.homedir);
@@ -23,7 +27,7 @@ export function resolveNewStateDir(homedir: () => string = resolveDefaultHomeDir
 /**
  * State directory for mutable data (sessions, logs, caches).
  * Can be overridden via OPENCLAW_STATE_DIR.
- * Default: ~/.openclaw
+ * Default: ~/.paddy
  */
 export function resolveStateDir(
   env: NodeJS.ProcessEnv = process.env,

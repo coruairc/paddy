@@ -273,7 +273,7 @@ it.each([false, true])(
     write(environmentTmp, "openclaw-plugin-build-env/source.cjs", "abc");
     write(systemTmp, "openclaw-plugin-build-system/source.cjs", "12345");
     write(serviceTmp, "openclaw-plugin-build-service/source.cjs", "1234567");
-    const homeTmp = path.join(parent, ".openclaw", "tmp");
+    const homeTmp = path.join(parent, ".paddy", "tmp");
     write(homeTmp, "openclaw-plugin-build-home/source.cjs", "ab");
     readCommand.mockResolvedValue({ programArguments: [], environment: { TMPDIR: serviceTmp } });
 

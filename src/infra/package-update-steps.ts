@@ -39,6 +39,7 @@ import {
   createPackageVerificationFailureStep,
   type PackagePostInstallVerifier,
 } from "./package-update-verification-step.js";
+import { assertPaddySelfUpdateAvailable } from "./paddy-update-policy.js";
 import { createUpdateFailureFact } from "./update-failure-facts.js";
 import {
   createFreeBsdPkgOwnershipInspection,
@@ -202,6 +203,8 @@ export async function runGlobalPackageUpdateSteps(params: {
   activateGitRoot?: string;
   localOverrides?: { reapply: boolean; env?: NodeJS.ProcessEnv };
 }): Promise<PackageUpdateStepsResult> {
+  // Every package install (CLI, Gateway handoff child, node-host auto-update) passes here.
+  assertPaddySelfUpdateAvailable();
   const workTimeoutMs = resolveInstallWorkTimeoutMs(params.workTimeoutMs, params.timeoutMs);
   let localOverrides: LocalPackageOverridesResult | undefined;
   let stagedInstall: StagedPackageInstall | null = null;

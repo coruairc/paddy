@@ -240,7 +240,7 @@ describe("legacy agent directory migration", () => {
       await withOpenClawTestState(
         { label: "legacy-agent-family-deferred", layout: "split", agentEnv: "clear" },
         async (state) => {
-          const legacyDir = path.join(state.home, ".openclaw", "agent");
+          const legacyDir = path.join(state.home, ".paddy", "agent");
           const targetDir = state.agentDir("main");
           const sourceDatabase = path.join(legacyDir, relativeDatabase);
           const otherDatabase = path.join(legacyDir, "a-other.sqlite");
@@ -418,7 +418,7 @@ describe("legacy agent directory migration", () => {
     await withOpenClawTestState(
       { label: "standalone-agent-snapshot", layout: "split", agentEnv: "clear" },
       async (state) => {
-        const legacyDir = path.join(state.home, ".openclaw", "agent");
+        const legacyDir = path.join(state.home, ".paddy", "agent");
         await fs.mkdir(path.join(legacyDir, "bin"), { recursive: true });
         await fs.writeFile(path.join(legacyDir, "bin/fd"), "uncopied SDK binary");
         await state.writeConfig({ agents: { entries: { main: {} } }, plugins: { enabled: false } });
@@ -455,7 +455,7 @@ describe("legacy agent directory migration", () => {
         async (state) => {
           const overrideHome = path.join(state.root, "override-home");
           const stateDir =
-            override === "OPENCLAW_HOME" ? path.join(overrideHome, ".openclaw") : state.stateDir;
+            override === "OPENCLAW_HOME" ? path.join(overrideHome, ".paddy") : state.stateDir;
           const env = {
             ...state.env,
             OPENCLAW_STATE_DIR: override === "OPENCLAW_STATE_DIR" ? stateDir : "",
@@ -464,7 +464,7 @@ describe("legacy agent directory migration", () => {
           vi.stubEnv("OPENCLAW_STATE_DIR", env.OPENCLAW_STATE_DIR);
           vi.stubEnv("OPENCLAW_HOME", env.OPENCLAW_HOME);
           try {
-            const legacyDir = path.join(state.home, ".openclaw", "agent");
+            const legacyDir = path.join(state.home, ".paddy", "agent");
             const stateLegacyDir = path.join(stateDir, "agent");
             const canonicalDir = path.join(stateDir, "agents", "main", "agent");
             for (const { directory, binary, contents } of [

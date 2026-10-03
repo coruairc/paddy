@@ -46,7 +46,7 @@ export function registerBoundaryFinalizationControls({
       "run-finished",
     ] as const)("settles the POSIX predecessor stop before Doctor: %s", async (scenario) => {
     const home = makeTempDir("predecessor-stop-receipt-");
-    vi.stubEnv("OPENCLAW_STATE_DIR", path.join(home, ".openclaw"));
+    vi.stubEnv("OPENCLAW_STATE_DIR", path.join(home, ".paddy"));
     const env = { ...process.env };
     const run = createUpdateRun({ trigger: "cli" }, { env });
     vi.spyOn(gatewayOwner, "readGatewayOwnerLease").mockReturnValue({
@@ -166,7 +166,7 @@ export function registerBoundaryFinalizationControls({
     async ({ route, scenario }) => {
       const home = makeTempDir("finalizer-doctor-stop-");
       const identity = createManagedServiceIdentityFixture(home);
-      vi.stubEnv("OPENCLAW_STATE_DIR", path.join(home, ".openclaw"));
+      vi.stubEnv("OPENCLAW_STATE_DIR", path.join(home, ".paddy"));
       const env = { ...process.env };
       const record = createUpdateRun({ trigger: "cli" }, { env });
       let currentExecutor = true;
@@ -301,7 +301,7 @@ export function registerBoundaryFinalizationControls({
         }
         if (scenario === "owned-selectors") {
           vi.stubEnv("OPENCLAW_PROFILE", "other");
-          vi.stubEnv("OPENCLAW_STATE_DIR", path.join(home, ".openclaw-other"));
+          vi.stubEnv("OPENCLAW_STATE_DIR", path.join(home, ".paddy-other"));
         }
         inspect.mockClear();
         const finishing = finishSuccessfulPackageSwitch(
@@ -407,7 +407,7 @@ export function registerBoundaryFinalizationControls({
           ]);
           if (scenario === "owned-selectors") {
             expect(process.env.OPENCLAW_PROFILE).toBe("other");
-            expect(process.env.OPENCLAW_STATE_DIR).toBe(path.join(home, ".openclaw-other"));
+            expect(process.env.OPENCLAW_STATE_DIR).toBe(path.join(home, ".paddy-other"));
           }
         }
         expect(inspect.mock.calls.map(([params]) => params.phase)).toEqual(

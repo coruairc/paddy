@@ -773,7 +773,7 @@ describe("launchd bootstrap repair", () => {
   it("migrates inline secrets before making an existing plist readable", async () => {
     const env = createDefaultLaunchdEnv();
     const plistPath = resolveLaunchAgentPlistPath(env);
-    const wrapperPath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway-env-wrapper.sh";
+    const wrapperPath = "/Users/test/.paddy/service-env/ai.openclaw.gateway-env-wrapper.sh";
     const warn = vi.fn();
     const secret = "legacy-secret";
     state.files.set(wrapperPath, "custom wrapper");
@@ -792,7 +792,7 @@ describe("launchd bootstrap repair", () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining("custom behavior"));
     expect(state.files.get(plistPath)).not.toContain(secret);
     expect(state.fileModes.get(plistPath)).toBe(0o644);
-    expect(state.files.get("/Users/test/.openclaw/service-env/ai.openclaw.gateway.env")).toContain(
+    expect(state.files.get("/Users/test/.paddy/service-env/ai.openclaw.gateway.env")).toContain(
       secret,
     );
   });
@@ -1145,8 +1145,8 @@ describe("launchd install", () => {
   it("removes generated artifacts after a failed fresh install", async () => {
     const env = createDefaultLaunchdEnv();
     const plistPath = resolveLaunchAgentPlistPath(env);
-    const envFilePath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway.env";
-    const wrapperPath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway-env-wrapper.sh";
+    const envFilePath = "/Users/test/.paddy/service-env/ai.openclaw.gateway.env";
+    const wrapperPath = "/Users/test/.paddy/service-env/ai.openclaw.gateway-env-wrapper.sh";
     state.serviceLoaded = false;
     state.serviceRunning = false;
     state.bootstrapError = "Operation not permitted";
@@ -1197,8 +1197,8 @@ describe("launchd install", () => {
     async (preserveAutoStart) => {
       const env = createDefaultLaunchdEnv();
       const plistPath = resolveLaunchAgentPlistPath(env);
-      const envFilePath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway.env";
-      const wrapperPath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway-env-wrapper.sh";
+      const envFilePath = "/Users/test/.paddy/service-env/ai.openclaw.gateway.env";
+      const wrapperPath = "/Users/test/.paddy/service-env/ai.openclaw.gateway-env-wrapper.sh";
       const previousEnv = "export OPENCLAW_GATEWAY_PORT='18789'\n";
       const previousWrapper = '#!/bin/sh\n. "$1"\nshift\nexec "$@"\n';
       const previous = createTestLaunchAgentPlist({
@@ -1414,7 +1414,7 @@ describe("launchd install", () => {
 
   it("writes LaunchAgent environment to an owner-only env file when provided", async () => {
     const env = createDefaultLaunchdEnv();
-    const tmpDir = "/Users/test/.openclaw/tmp";
+    const tmpDir = "/Users/test/.paddy/tmp";
     const apiKey = "secret-api-key";
     await installLaunchAgent(
       defaultLaunchAgentFixture(env, {
@@ -1423,8 +1423,8 @@ describe("launchd install", () => {
     );
 
     const plistPath = resolveLaunchAgentPlistPath(env);
-    const envFilePath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway.env";
-    const wrapperPath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway-env-wrapper.sh";
+    const envFilePath = "/Users/test/.paddy/service-env/ai.openclaw.gateway.env";
+    const wrapperPath = "/Users/test/.paddy/service-env/ai.openclaw.gateway-env-wrapper.sh";
     const plist = state.files.get(plistPath) ?? "";
     expect(plist).not.toContain("<key>EnvironmentVariables</key>");
     expect(plist).not.toContain(apiKey);
@@ -1441,7 +1441,7 @@ describe("launchd install", () => {
     expect(envFile).not.toContain("UNUSED");
     expect(state.fileModes.get(envFilePath)).toBe(0o600);
     expect(state.fileModes.get(wrapperPath)).toBe(0o700);
-    expect(state.dirModes.get("/Users/test/.openclaw/service-env")).toBe(0o700);
+    expect(state.dirModes.get("/Users/test/.paddy/service-env")).toBe(0o700);
 
     const command = await readLaunchAgentProgramArguments(env);
     expect(command?.programArguments).toEqual(defaultProgramArguments);
@@ -1455,8 +1455,8 @@ describe("launchd install", () => {
   it("retains custom Node CA trust when reinstalling a generated owner-only LaunchAgent", async () => {
     const env = createDefaultLaunchdEnv();
     const extraCaCerts = "/Users/test/certs/corporate-ca.pem";
-    const envFilePath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway.env";
-    const wrapperPath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway-env-wrapper.sh";
+    const envFilePath = "/Users/test/.paddy/service-env/ai.openclaw.gateway.env";
+    const wrapperPath = "/Users/test/.paddy/service-env/ai.openclaw.gateway-env-wrapper.sh";
 
     await installLaunchAgent(
       defaultLaunchAgentFixture(env, {
@@ -1485,12 +1485,12 @@ describe("launchd install", () => {
     expect(state.files.get(resolveLaunchAgentPlistPath(env))).not.toContain(extraCaCerts);
     expect(state.fileModes.get(envFilePath)).toBe(0o600);
     expect(state.fileModes.get(wrapperPath)).toBe(0o700);
-    expect(state.dirModes.get("/Users/test/.openclaw/service-env")).toBe(0o700);
+    expect(state.dirModes.get("/Users/test/.paddy/service-env")).toBe(0o700);
   });
 
   it("warns before overwriting a customized generated LaunchAgent env wrapper", async () => {
     const env = createDefaultLaunchdEnv();
-    const wrapperPath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway-env-wrapper.sh";
+    const wrapperPath = "/Users/test/.paddy/service-env/ai.openclaw.gateway-env-wrapper.sh";
     await installLaunchAgent(
       defaultLaunchAgentFixture(env, {
         environment: { OPENCLAW_GATEWAY_PORT: "18789" },
@@ -1524,7 +1524,7 @@ describe("launchd install", () => {
 
   it("warns before overwriting a customized generated LaunchAgent env wrapper during restart rewrite", async () => {
     const env = createDefaultLaunchdEnv();
-    const wrapperPath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway-env-wrapper.sh";
+    const wrapperPath = "/Users/test/.paddy/service-env/ai.openclaw.gateway-env-wrapper.sh";
     await installLaunchAgent(
       defaultLaunchAgentFixture(env, {
         environment: { OPENCLAW_GATEWAY_PORT: "18789" },
@@ -1557,8 +1557,8 @@ describe("launchd install", () => {
 
   it("rewrites legacy LaunchAgent environment wrappers to a system shell executable", async () => {
     const env = createDefaultLaunchdEnv();
-    const envFilePath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway.env";
-    const wrapperPath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway-env-wrapper.sh";
+    const envFilePath = "/Users/test/.paddy/service-env/ai.openclaw.gateway.env";
+    const wrapperPath = "/Users/test/.paddy/service-env/ai.openclaw.gateway-env-wrapper.sh";
     await installLaunchAgent(
       defaultLaunchAgentFixture(env, {
         environment: { OPENCLAW_GATEWAY_PORT: "19007" },
@@ -1618,9 +1618,8 @@ describe("launchd install", () => {
     const envFilePath = "/Users/test/service-env/custom-state/service-env/ai.openclaw.gateway.env";
     const wrapperPath =
       "/Users/test/service-env/custom-state/service-env/ai.openclaw.gateway-env-wrapper.sh";
-    const callerEnvFilePath = "/Users/test/.openclaw/service-env/ai.openclaw.gateway.env";
-    const callerWrapperPath =
-      "/Users/test/.openclaw/service-env/ai.openclaw.gateway-env-wrapper.sh";
+    const callerEnvFilePath = "/Users/test/.paddy/service-env/ai.openclaw.gateway.env";
+    const callerWrapperPath = "/Users/test/.paddy/service-env/ai.openclaw.gateway-env-wrapper.sh";
     const mangledEnvFilePath =
       "/Users/test/service-env/custom-state/service-env/[ai.openclaw.gateway.env](http:/ai.openclaw.gateway.env)";
     const mangledWrapperPath =
@@ -1658,7 +1657,7 @@ describe("launchd install", () => {
 
   it("creates the LaunchAgent TMPDIR before bootstrap", async () => {
     const env = createDefaultLaunchdEnv();
-    const tmpDir = "/Users/test/.openclaw/tmp";
+    const tmpDir = "/Users/test/.paddy/tmp";
     await installLaunchAgent(
       defaultLaunchAgentFixture(env, {
         environment: { TMPDIR: tmpDir },

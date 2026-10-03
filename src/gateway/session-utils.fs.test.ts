@@ -229,7 +229,7 @@ describe("archive selection", () => {
     archive(id, [{ message: { role: "assistant", content: "older store archive" } }], {
       timestamp: "2026-02-16T22-26-33.000Z",
     });
-    const legacy = path.join(tmpDir, ".openclaw", "sessions");
+    const legacy = path.join(tmpDir, ".paddy", "sessions");
     fs.mkdirSync(legacy, { recursive: true });
     archive(id, [{ message: { role: "assistant", content: "newer legacy archive" } }], {
       dir: legacy,

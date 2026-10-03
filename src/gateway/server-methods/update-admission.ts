@@ -8,6 +8,10 @@ import { UpdatePreMutationError } from "../../cli/update-cli/shared.js";
 import { isRestartEnabled } from "../../config/commands.flags.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { resolveOcmUpdateManager } from "../../infra/ocm-update-client.js";
+import {
+  isPaddySelfUpdateAvailable,
+  PADDY_SELF_UPDATE_UNAVAILABLE_MESSAGE,
+} from "../../infra/paddy-update-policy.js";
 import { normalizeUpdateChannel } from "../../infra/update-channels.js";
 import { currentUpdateCheckLifecycle } from "../../infra/update-check-lifecycle.js";
 import { createUpdateErrorFact } from "../../infra/update-failure-facts.js";
@@ -34,6 +38,16 @@ import { assertValidParams } from "./validation.js";
 export async function admitGatewayUpdateRequest(request: GatewayRequestHandlerOptions) {
   const { params, respond, context } = request;
   if (!assertValidParams(params, validateUpdateRunParams, "update.run", respond)) {
+    return null;
+  }
+  // Paddy: refuse before the OCM manager or the native updater (run ledger, sentinel,
+  // managed-service handoff) is reached. The Gateway keeps running.
+  if (!isPaddySelfUpdateAvailable()) {
+    respond(
+      false,
+      undefined,
+      errorShape(ErrorCodes.UNAVAILABLE, PADDY_SELF_UPDATE_UNAVAILABLE_MESSAGE),
+    );
     return null;
   }
   const authority = readGatewayRequestMutationAuthority(request);

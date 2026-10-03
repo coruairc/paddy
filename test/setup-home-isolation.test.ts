@@ -11,6 +11,6 @@ describe("shared test setup home isolation", () => {
     }
     expect(process.env.HOME).toBe(testHome);
     expect(process.env.USERPROFILE).toBe(testHome);
-    expect(createConfigIO().configPath).toBe(path.join(testHome, ".openclaw", "openclaw.json"));
+    expect(createConfigIO().configPath).toBe(path.join(testHome, ".paddy", "openclaw.json"));
   });
 });

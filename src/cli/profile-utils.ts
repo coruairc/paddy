@@ -34,5 +34,7 @@ export function resolveProfileStateDir(
     throw new Error(`Invalid profile name: ${JSON.stringify(profile)}`);
   }
   const suffix = normalizeLowercaseStringOrEmpty(trimmed) === "default" ? "" : `-${trimmed}`;
-  return path.join(resolveRequiredHomeDir(env, homedir), `.openclaw${suffix}`);
+  // Must match NEW_STATE_DIRNAME in config/state-dir.ts so the default install keeps host
+  // service management (isDefaultInstallIdentity compares against this path).
+  return path.join(resolveRequiredHomeDir(env, homedir), `.paddy${suffix}`);
 }

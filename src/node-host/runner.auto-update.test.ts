@@ -27,7 +27,11 @@ vi.mock("../config/io.js", async (importOriginal) => ({
   createConfigIO: () => ({
     readConfigFileSnapshot: async () => ({
       valid: true,
-      config: { update: { channel: "stable" } },
+      // Paddy defaults both switches off; this suite covers the opted-in handoff.
+      config: {
+        update: { channel: "stable", checkOnStart: true },
+        nodeHost: { autoUpdate: { enabled: true } },
+      },
     }),
   }),
 }));

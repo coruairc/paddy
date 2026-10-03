@@ -132,7 +132,7 @@ describe("state-dir-gateway-check", () => {
         checkCliGatewayStateDir({ command: "paddy configure", config: {} }),
       ).resolves.toMatchObject({
         kind: "refuse",
-        message: expect.stringContaining(path.join(serviceRuntimeHome, ".openclaw")),
+        message: expect.stringContaining(path.join(serviceRuntimeHome, ".paddy")),
       });
     },
   );

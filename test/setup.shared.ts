@@ -1,5 +1,6 @@
 // Shared test setup installs common Vitest mocks and cleanup behavior.
 import { vi } from "vitest";
+import { setPaddySelfUpdateAllowedForTest } from "../src/infra/paddy-update-policy.js";
 import { installProcessWarningFilter } from "../src/infra/warning-filter.js";
 import { withIsolatedTestHome } from "./test-env.js";
 
@@ -39,6 +40,11 @@ vi.mock("@mariozechner/clipboard", () => ({
   watch: () => {},
   callThreadsafeFunction: () => {},
 }));
+
+// Upstream updater suites exercise the inherited update machinery, which Paddy keeps intact for
+// when it publishes its own package. Paddy's refusal guard is covered by paddy-update-policy tests,
+// which switch this off. Runs on every setup evaluation so isolated module registries match.
+setPaddySelfUpdateAllowedForTest(true);
 
 // Ensure Vitest environment is properly set.
 process.env.VITEST = "true";

@@ -13,9 +13,21 @@ import type { SqliteWorkerCommand } from "./sqlite-worker-contract.js";
 import type { TelemetryWorkerOperations, TelemetryState } from "./telemetry-worker-contract.js";
 import {
   buildTelemetryPayload,
-  checkTelemetryUpdate,
-  resolveTelemetryStatus,
+  checkTelemetryUpdate as checkTelemetryUpdateUnwrapped,
+  resolveTelemetryStatus as resolveTelemetryStatusUnwrapped,
 } from "./telemetry.js";
+
+// Paddy defaults update.checkOnStart to false, which also turns the anonymous update-check ping
+// off. These cases cover the opted-in behavior; explicit checkOnStart values still win.
+function withUpdateChecks(config: OpenClawConfig): OpenClawConfig {
+  return config.update?.checkOnStart === undefined
+    ? { ...config, update: { ...config.update, checkOnStart: true } }
+    : config;
+}
+const checkTelemetryUpdate: typeof checkTelemetryUpdateUnwrapped = (getConfig, options) =>
+  checkTelemetryUpdateUnwrapped(() => withUpdateChecks(getConfig()), options);
+const resolveTelemetryStatus: typeof resolveTelemetryStatusUnwrapped = (config) =>
+  resolveTelemetryStatusUnwrapped(withUpdateChecks(config));
 
 const { execute, contexts } = vi.hoisted(() => ({
   execute: vi.fn<(command: SqliteWorkerCommand<TelemetryWorkerOperations>) => Promise<unknown>>(),

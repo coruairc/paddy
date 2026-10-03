@@ -586,7 +586,7 @@ describe("maybeRestartService", () => {
       const home = tempDirs.make("stopped-service-guidance-");
       vi.stubEnv("HOME", home);
       mockSystemAccountHome();
-      const stateDir = path.join(home, profile === "default" ? ".openclaw" : ".openclaw-work");
+      const stateDir = path.join(home, profile === "default" ? ".paddy" : ".paddy-work");
       const result: UpdateRunResult = { status: "ok", mode: "npm", steps: [], durationMs: 0 };
       expect(
         prepareUpdateServiceResult({

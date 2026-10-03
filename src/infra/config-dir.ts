@@ -16,5 +16,7 @@ export function resolveConfigDir(
   if (configPath) {
     return path.dirname(resolveUserPath(configPath, env, homedir));
   }
-  return path.join(resolveRequiredHomeDir(env, homedir), ".openclaw");
+  // Default state root; must match NEW_STATE_DIRNAME in config/state-dir.ts so the global
+  // .env is never read from a separate OpenClaw install's ~/.openclaw.
+  return path.join(resolveRequiredHomeDir(env, homedir), ".paddy");
 }

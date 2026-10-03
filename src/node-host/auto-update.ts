@@ -8,6 +8,10 @@ import { resolveStateDir } from "../config/paths.js";
 import { isTruthyEnvValue } from "../infra/env.js";
 import { hasErrnoCode } from "../infra/errno.js";
 import { resolveOpenClawPackageRoot } from "../infra/openclaw-root.js";
+import {
+  isNodeHostAutoUpdateEnabled,
+  isUpdateCheckOnStartEnabled,
+} from "../infra/paddy-update-policy.js";
 import { resolveEffectiveUpdateChannel, type UpdateChannel } from "../infra/update-channels.js";
 import {
   compareSemverStrings,
@@ -32,8 +36,8 @@ type NodeUpdateRuntime = {
 
 function updatesEnabled(config: OpenClawConfig, env: NodeJS.ProcessEnv): boolean {
   return (
-    config.nodeHost?.autoUpdate?.enabled !== false &&
-    config.update?.checkOnStart !== false &&
+    isNodeHostAutoUpdateEnabled(config) &&
+    isUpdateCheckOnStartEnabled(config) &&
     !isTruthyEnvValue(env.OPENCLAW_NO_AUTO_UPDATE) &&
     !isTruthyEnvValue(env.OPENCLAW_NO_RESPAWN)
   );
@@ -61,7 +65,9 @@ export function startNodeHostAutoUpdate(params: {
     const snapshot = await configIO.readConfigFileSnapshot();
     signal.throwIfAborted();
     if (!snapshot.valid) {
-      throw new Error(`Node auto-update deferred: fix the invalid ${PRODUCT_NAME} configuration first.`);
+      throw new Error(
+        `Node auto-update deferred: fix the invalid ${PRODUCT_NAME} configuration first.`,
+      );
     }
     const channel = resolveEffectiveUpdateChannel({
       configChannel: snapshot.config.update?.channel,

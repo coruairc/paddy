@@ -25,12 +25,13 @@ import {
   resolveStateDir,
   STATE_DIR,
 } from "./paths.js";
+import { resolveLegacyStateDirs, resolveNewStateDir } from "./state-dir.js";
 
 describe("default state directory", () => {
   it("matches filesystem aliases of the default state directory", async () => {
     await withTestDir({ prefix: "openclaw-default-state-" }, async (root) => {
       const home = path.join(root, "home");
-      const defaultStateDir = path.join(home, ".openclaw");
+      const defaultStateDir = path.join(home, ".paddy");
       const stateAlias = path.join(home, "state-alias");
       await fs.mkdir(defaultStateDir, { recursive: true });
       await fs.symlink(defaultStateDir, stateAlias, "dir");
@@ -45,7 +46,7 @@ describe("default state directory", () => {
 describe("default install identity", () => {
   it("accepts default paths and equivalent explicit overrides", () => {
     const home = "/home/test";
-    const stateDir = path.join(home, ".openclaw");
+    const stateDir = path.join(home, ".paddy");
     const configPath = path.join(stateDir, "openclaw.json");
 
     expect(isDefaultInstallIdentity({ HOME: home }, () => home)).toBe(true);
@@ -58,17 +59,24 @@ describe("default install identity", () => {
     ).toBe(true);
   });
 
-  it("preserves implicit legacy config discovery for the default profile", async () => {
+  it("does not discover ~/.clawdbot or ~/.openclaw configs for the default profile", async () => {
     await withTestDir({ prefix: "openclaw-default-install-legacy-config-" }, async (home) => {
-      const stateDir = path.join(home, ".openclaw");
-      const legacyStateDir = path.join(home, ".clawdbot");
-      const legacyConfigPath = path.join(legacyStateDir, "clawdbot.json");
-      await fs.mkdir(stateDir, { recursive: true });
-      await fs.mkdir(legacyStateDir, { recursive: true });
-      await fs.writeFile(legacyConfigPath, "{}");
+      const stateDir = path.join(home, ".paddy");
+      for (const [dir, file] of [
+        [".clawdbot", "clawdbot.json"],
+        [".clawdbot", "openclaw.json"],
+        [".openclaw", "openclaw.json"],
+        [".openclaw", "clawdbot.json"],
+        [".paddy", "clawdbot.json"],
+      ] as const) {
+        await fs.mkdir(path.join(home, dir), { recursive: true });
+        await fs.writeFile(path.join(home, dir, file), "{}");
+      }
 
       const env = { HOME: home };
-      expect(resolveConfigPathCandidate(env, () => home)).toBe(legacyConfigPath);
+      expect(resolveConfigPathCandidate(env, () => home)).toBe(
+        path.join(stateDir, "openclaw.json"),
+      );
       expect(isDefaultInstallIdentity(env, () => home)).toBe(true);
     });
   });
@@ -89,7 +97,7 @@ describe("default install identity", () => {
 
   it("rejects process home overrides that relocate the implicit install", () => {
     const accountHome = "/home/test";
-    const stateDir = path.join(accountHome, ".openclaw");
+    const stateDir = path.join(accountHome, ".paddy");
 
     expect(isDefaultInstallIdentity({ HOME: "/tmp/copied-home" }, () => accountHome)).toBe(false);
     for (const processHome of ["HOME", "USERPROFILE"]) {
@@ -122,7 +130,7 @@ describe("default install identity", () => {
   it("rejects installs relocated through OPENCLAW_HOME", () => {
     const accountHome = "/home/test";
     const installHome = "/srv/openclaw";
-    const stateDir = path.join(installHome, ".openclaw");
+    const stateDir = path.join(installHome, ".paddy");
 
     expect(isDefaultInstallIdentity({ OPENCLAW_HOME: installHome }, () => accountHome)).toBe(false);
     expect(
@@ -140,8 +148,8 @@ describe("default install identity", () => {
         {
           OPENCLAW_HOME: installHome,
           OPENCLAW_PROFILE: "work",
-          OPENCLAW_STATE_DIR: path.join(installHome, ".openclaw-work"),
-          OPENCLAW_CONFIG_PATH: path.join(installHome, ".openclaw-work", "openclaw.json"),
+          OPENCLAW_STATE_DIR: path.join(installHome, ".paddy-work"),
+          OPENCLAW_CONFIG_PATH: path.join(installHome, ".paddy-work", "openclaw.json"),
         },
         () => accountHome,
       ),
@@ -162,8 +170,8 @@ describe("default install identity", () => {
 
   it("accepts the canonical paths a named profile projects", async () => {
     await withTestDir({ prefix: "openclaw-profile-install-" }, async (home) => {
-      const defaultStateDir = path.join(home, ".openclaw");
-      const profileStateDir = path.join(home, ".openclaw-work");
+      const defaultStateDir = path.join(home, ".paddy");
+      const profileStateDir = path.join(home, ".paddy-work");
       await fs.mkdir(defaultStateDir, { recursive: true });
       await fs.writeFile(path.join(defaultStateDir, "openclaw.json"), "{}");
 
@@ -217,7 +225,7 @@ describe("default install identity", () => {
           {
             HOME: home,
             OPENCLAW_PROFILE: "work",
-            OPENCLAW_STATE_DIR: path.join(home, ".openclaw-other"),
+            OPENCLAW_STATE_DIR: path.join(home, ".paddy-other"),
           },
           () => home,
         ),
@@ -253,7 +261,7 @@ describe("default install identity", () => {
     },
   ])("rejects a named profile overriding $envKey on $platform", ({ platform, envKey, value }) => {
     const home = "/home/test";
-    const stateDir = path.join(home, ".openclaw-work");
+    const stateDir = path.join(home, ".paddy-work");
     expect(
       isDefaultInstallIdentity(
         {
@@ -273,7 +281,7 @@ describe("default install identity", () => {
     "rejects invalid profile %j even when its derived paths match",
     (profile) => {
       const home = "/home/test";
-      const profileStateDir = path.join(home, `.openclaw-${profile}`);
+      const profileStateDir = path.join(home, `.paddy-${profile}`);
 
       expect(
         isDefaultInstallIdentity(
@@ -449,10 +457,10 @@ describe("state + config path candidates", () => {
       throw new Error("OPENCLAW_HOME must be set for this assertion helper");
     }
     const resolvedHome = path.resolve(configuredHome);
-    expect(resolveStateDir(env)).toBe(path.join(resolvedHome, ".openclaw"));
+    expect(resolveStateDir(env)).toBe(path.join(resolvedHome, ".paddy"));
 
     const candidates = resolveDefaultConfigCandidates(env);
-    expect(candidates[0]).toBe(path.join(resolvedHome, ".openclaw", "openclaw.json"));
+    expect(candidates[0]).toBe(path.join(resolvedHome, ".paddy", "openclaw.json"));
   }
 
   it("uses OPENCLAW_STATE_DIR when set", () => {
@@ -519,42 +527,58 @@ describe("state + config path candidates", () => {
     const home = "/home/test";
     const resolvedHome = path.resolve(home);
     const candidates = resolveDefaultConfigCandidates({}, () => home);
-    const expected = [
-      path.join(resolvedHome, ".openclaw", "openclaw.json"),
-      path.join(resolvedHome, ".openclaw", "clawdbot.json"),
-      path.join(resolvedHome, ".clawdbot", "openclaw.json"),
-      path.join(resolvedHome, ".clawdbot", "clawdbot.json"),
-    ];
+    // Paddy discovers only its own config; no ~/.openclaw or clawdbot candidates.
+    const expected = [path.join(resolvedHome, ".paddy", "openclaw.json")];
     expect(candidates).toEqual(expected);
   });
 
-  it("prefers ~/.openclaw when it exists and legacy dir is missing", async () => {
+  it("defaults to ~/.paddy when no state dir exists yet", () => {
+    expect(resolveStateDir({}, () => "/home/test")).toBe(path.join("/home/test", ".paddy"));
+  });
+
+  it("prefers ~/.paddy when it exists alongside ~/.openclaw and ~/.clawdbot", async () => {
     await withTestDir({ prefix: "openclaw-state-" }, async (root) => {
-      const newDir = path.join(root, ".openclaw");
+      const newDir = path.join(root, ".paddy");
       await fs.mkdir(newDir, { recursive: true });
+      await fs.mkdir(path.join(root, ".openclaw"), { recursive: true });
+      await fs.mkdir(path.join(root, ".clawdbot"), { recursive: true });
       const resolved = resolveStateDir({}, () => root);
       expect(resolved).toBe(newDir);
     });
   });
 
-  it("falls back to existing legacy state dir when ~/.openclaw is missing", async () => {
+  it("never adopts an existing ~/.openclaw or ~/.clawdbot when ~/.paddy is missing", async () => {
     await withTestDir({ prefix: "openclaw-state-legacy-" }, async (root) => {
-      const legacyDir = path.join(root, ".clawdbot");
-      await fs.mkdir(legacyDir, { recursive: true });
+      await fs.mkdir(path.join(root, ".openclaw"), { recursive: true });
+      await fs.mkdir(path.join(root, ".clawdbot"), { recursive: true });
       const resolved = resolveStateDir({}, () => root);
-      expect(resolved).toBe(legacyDir);
+      expect(resolved).toBe(path.join(root, ".paddy"));
+      expect(resolveNewStateDir(() => root)).toBe(path.join(root, ".paddy"));
+      expect(resolveLegacyStateDirs(() => root)).toEqual([]);
     });
   });
 
   it("CONFIG_PATH prefers existing config when present", async () => {
     await withTestDir({ prefix: "openclaw-config-" }, async (root) => {
-      const legacyDir = path.join(root, ".openclaw");
+      const legacyDir = path.join(root, ".paddy");
       await fs.mkdir(legacyDir, { recursive: true });
       const legacyPath = path.join(legacyDir, "openclaw.json");
       await fs.writeFile(legacyPath, "{}", "utf-8");
 
       const resolved = resolveConfigPathCandidate({}, () => root);
       expect(resolved).toBe(legacyPath);
+    });
+  });
+
+  it("CONFIG_PATH ignores an existing ~/.openclaw/openclaw.json", async () => {
+    await withTestDir({ prefix: "openclaw-config-foreign-" }, async (root) => {
+      const openclawDir = path.join(root, ".openclaw");
+      await fs.mkdir(openclawDir, { recursive: true });
+      await fs.writeFile(path.join(openclawDir, "openclaw.json"), "{}", "utf-8");
+
+      expect(resolveConfigPathCandidate({}, () => root)).toBe(
+        path.join(root, ".paddy", "openclaw.json"),
+      );
     });
   });
 
@@ -576,7 +600,7 @@ describe("state + config path candidates", () => {
 
   it("respects state dir overrides when config is missing", async () => {
     await withTestDir({ prefix: "openclaw-config-override-" }, async (root) => {
-      const legacyDir = path.join(root, ".openclaw");
+      const legacyDir = path.join(root, ".paddy");
       await fs.mkdir(legacyDir, { recursive: true });
       const legacyConfig = path.join(legacyDir, "openclaw.json");
       await fs.writeFile(legacyConfig, "{}", "utf-8");

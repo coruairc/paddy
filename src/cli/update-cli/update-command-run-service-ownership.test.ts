@@ -48,8 +48,8 @@ it.each([
   "preserves verified ownership and warns on unavailable inspection (%s)",
   async (scenario) => {
     const home = dirs.make("update-loaded-admission-");
-    const callerState = path.join(home, ".openclaw-caller");
-    const serviceState = path.join(home, ".openclaw-service");
+    const callerState = path.join(home, ".paddy-caller");
+    const serviceState = path.join(home, ".paddy-service");
     const root = path.join(home, "package");
     const foreignRoot = path.join(home, "foreign");
     for (const packageRoot of [root, foreignRoot]) {
@@ -273,7 +273,7 @@ it.each([
       expect(JSON.stringify({ inspected, facts })).not.toContain("inspection-secret-canary");
       expect(
         snapshot().filter(
-          ([name]) => name !== ".openclaw-caller" && !String(name).startsWith(".openclaw-caller/"),
+          ([name]) => name !== ".paddy-caller" && !String(name).startsWith(".paddy-caller/"),
         ),
       ).toEqual(before);
     }

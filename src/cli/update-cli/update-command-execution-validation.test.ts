@@ -349,7 +349,7 @@ export function prepareBundledPluginRuntime({ repoRoot }) {
             config,
             sourceConfig: config,
           };
-          const managedEnv = { HOME: root, OPENCLAW_STATE_DIR: path.join(root, ".openclaw") };
+          const managedEnv = { HOME: root, OPENCLAW_STATE_DIR: path.join(root, ".paddy") };
           vi.spyOn(os, "userInfo").mockReturnValue({
             uid: 1000,
             gid: 1000,

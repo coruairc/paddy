@@ -928,15 +928,12 @@ describe("secrets audit", () => {
     },
   );
 
-  it("scans .env in legacy .clawdbot state directory via automatic fallback", async () => {
+  it("scans .env in the default ~/.paddy state directory without env overrides", async () => {
     // Do NOT set OPENCLAW_STATE_DIR or OPENCLAW_CONFIG_PATH — rely on
-    // resolveStateDir's automatic legacy-directory fallback. A controlled
-    // HOME that contains only .clawdbot (no .openclaw) exercises the exact
-    // path the old resolveConfigDir call could not reach: resolveConfigDir
-    // always returns $HOME/.openclaw, so it would miss the .env inside
-    // .clawdbot.  resolveStateDir finds .clawdbot via its legacy-dir scan.
+    // resolveStateDir's default. Paddy: the default is $HOME/.paddy and
+    // there is no legacy ~/.clawdbot fallback any more.
     const homeDir = tempDirs.make("openclaw-secrets-audit-legacy-");
-    const legacyStateDir = path.join(homeDir, ".clawdbot");
+    const legacyStateDir = path.join(homeDir, ".paddy");
     const configPath = path.join(legacyStateDir, "openclaw.json");
     const envPath = path.join(legacyStateDir, ".env");
     const agentDir = path.join(legacyStateDir, "agents", "main", "agent");
@@ -971,7 +968,7 @@ describe("secrets audit", () => {
     try {
       const report = await runSecretsAudit({ env });
       // Config-based key is ref'd from env, so no plaintext finding for config;
-      // but the .env file should be scanned and reported via the legacy fallback.
+      // but the .env file in the default state dir should be scanned and reported.
       expect(report.status).toBe("findings");
       expect(report.findings.some((f) => f.code === "PLAINTEXT_FOUND" && f.file === envPath)).toBe(
         true,

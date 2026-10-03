@@ -34,39 +34,16 @@ afterEach(() => {
   savedEnv.clear();
 });
 
-describe("doctor legacy config migration failures", () => {
-  it.runIf(process.platform !== "win32" && process.getuid?.() !== 0)(
-    "surfaces a copy failure instead of proceeding as a fresh install",
-    async () => {
-      await withTempDir("openclaw-doctor-legacy-copy-", async (home) => {
-        const legacyDir = path.join(home, ".clawdbot");
-        await fs.mkdir(legacyDir, { recursive: true });
-        await fs.writeFile(path.join(legacyDir, "clawdbot.json"), "{}\n", "utf-8");
-        const targetDir = path.join(home, "readonly-state");
-        await fs.mkdir(targetDir, { recursive: true });
-        await fs.chmod(targetDir, 0o555);
-        setEnv({
-          HOME: home,
-          OPENCLAW_CONFIG_PATH: path.join(targetDir, "openclaw.json"),
-          OPENCLAW_STATE_DIR: path.join(home, "state"),
-        });
-
-        try {
-          await expect(
-            runDoctorConfigPreflight({ migrateState: false, invalidConfigNote: false }),
-          ).rejects.toThrow(/Failed to migrate legacy config/);
-        } finally {
-          await fs.chmod(targetDir, 0o755);
-        }
-      });
-    },
-  );
-
-  it("migrates the legacy config and reports the change when the copy works", async () => {
+// Upstream copied ~/.clawdbot/clawdbot.json into the active config path when none existed, and
+// this file pinned that a failed copy surfaced. Paddy has no legacy state dirs, so Doctor never
+// reads or copies that file and the copy-failure case has nothing left to exercise.
+describe("doctor legacy config migration", () => {
+  it("never copies a ~/.clawdbot/clawdbot.json into Paddy's config path", async () => {
     await withTempDir("openclaw-doctor-legacy-copy-", async (home) => {
       const legacyDir = path.join(home, ".clawdbot");
       await fs.mkdir(legacyDir, { recursive: true });
-      await fs.writeFile(path.join(legacyDir, "clawdbot.json"), "{}\n", "utf-8");
+      const legacyPath = path.join(legacyDir, "clawdbot.json");
+      await fs.writeFile(legacyPath, '{"gateway":{"mode":"local"}}\n', "utf-8");
       const targetPath = path.join(home, "state-root", "openclaw.json");
       setEnv({
         HOME: home,
@@ -76,7 +53,10 @@ describe("doctor legacy config migration failures", () => {
 
       await runDoctorConfigPreflight({ migrateState: false, invalidConfigNote: false });
 
-      await expect(fs.readFile(targetPath, "utf-8")).resolves.toBe("{}\n");
+      await expect(fs.access(targetPath)).rejects.toMatchObject({ code: "ENOENT" });
+      await expect(fs.readFile(legacyPath, "utf-8")).resolves.toBe(
+        '{"gateway":{"mode":"local"}}\n',
+      );
     });
   });
 });

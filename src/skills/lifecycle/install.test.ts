@@ -213,7 +213,7 @@ describe("installSkill before_install hooks", () => {
   it("runs npm node installs with an OpenClaw-managed user prefix", async () => {
     await withWorkspaceCase(async ({ workspaceDir, homeDir }) => {
       await writeInstallableSkill(workspaceDir, "node-prefix-skill");
-      const npmPrefix = path.join(homeDir, ".openclaw", "tools", "node", "npm");
+      const npmPrefix = path.join(homeDir, ".paddy", "tools", "node", "npm");
       const mkdirSpy = observePrivateNpmPrefix(npmPrefix);
       const uidSpy = process.getuid ? vi.spyOn(process, "getuid").mockReturnValue(501) : undefined;
       try {
@@ -313,7 +313,7 @@ describe("installSkill before_install hooks", () => {
           "current-host-package",
         ]);
         expect(lastRunCommandCall()?.[1]).toMatchObject({
-          env: { NPM_CONFIG_PREFIX: path.join(hostDir, ".openclaw", "tools", "node", "npm") },
+          env: { NPM_CONFIG_PREFIX: path.join(hostDir, ".paddy", "tools", "node", "npm") },
         });
       } finally {
         release();
@@ -650,7 +650,7 @@ describe("installSkill before_install hooks", () => {
     await withWorkspaceCase(async ({ workspaceDir, homeDir }) => {
       await writeInstallableSkill(workspaceDir, "env-prefix-skill");
       const envSnapshot = captureEnv(["OPENCLAW_STATE_DIR", "OPENCLAW_CONFIG_PATH"]);
-      const prefix = path.join(homeDir, ".openclaw", "tools", "node", "npm");
+      const prefix = path.join(homeDir, ".paddy", "tools", "node", "npm");
       const mkdirSpy = observePrivateNpmPrefix(prefix);
       const uidSpy = process.getuid ? vi.spyOn(process, "getuid").mockReturnValue(501) : undefined;
       try {

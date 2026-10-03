@@ -27,5 +27,6 @@ export function resolveDefaultAgentWorkspaceDir(
   if (profile && normalizeOptionalLowercaseString(profile) !== "default") {
     return path.join(resolveProfileStateDir(profile, env, homedir), "workspace");
   }
-  return path.join(home, ".openclaw", "workspace");
+  // Default profile state root; must match NEW_STATE_DIRNAME in config/state-dir.ts.
+  return path.join(home, ".paddy", "workspace");
 }

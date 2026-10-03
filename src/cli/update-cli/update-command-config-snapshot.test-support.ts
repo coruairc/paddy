@@ -13,15 +13,15 @@ export async function runUpdateSnapshotIsolationProof(
   const repo = fileURLToPath(new URL("../../../", import.meta.url));
   const homeA = path.join(root, "A");
   const homeB = path.join(root, "B");
-  const configA = path.join(homeA, ".openclaw", "openclaw.json");
-  const defaultB = path.join(homeB, ".openclaw", "openclaw.json");
+  const configA = path.join(homeA, ".paddy", "openclaw.json");
+  const defaultB = path.join(homeB, ".paddy", "openclaw.json");
   const configB =
     selection === "explicit"
       ? path.join(homeB, "custom.json")
       : selection === "state"
         ? path.join(homeB, "selected-state", "openclaw.json")
         : selection === "profile"
-          ? path.join(homeB, ".openclaw-snapshot-proof", "openclaw.json")
+          ? path.join(homeB, ".paddy-snapshot-proof", "openclaw.json")
           : defaultB;
   const sourceA = '{ "canary": "synthetic-A" }\n';
   const sourceB = '{ "canary": "synthetic-B" }\n';
@@ -42,8 +42,8 @@ export async function runUpdateSnapshotIsolationProof(
       HOME: home,
       USERPROFILE: home,
       OPENCLAW_HOME: home,
-      OPENCLAW_STATE_DIR: path.join(home, ".openclaw"),
-      OPENCLAW_CONFIG_PATH: path.join(home, ".openclaw", "openclaw.json"),
+      OPENCLAW_STATE_DIR: path.join(home, ".paddy"),
+      OPENCLAW_CONFIG_PATH: path.join(home, ".paddy", "openclaw.json"),
     });
   };
   selectHome(homeA);

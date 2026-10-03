@@ -19,7 +19,7 @@ describe("DEFAULT_AGENT_WORKSPACE_DIR", () => {
       () => resolveDefaultAgentWorkspaceDir(),
     );
 
-    expect(resolved).toBe(path.join(path.resolve(home), ".openclaw", "workspace"));
+    expect(resolved).toBe(path.join(path.resolve(home), ".paddy", "workspace"));
   });
 
   it("uses OPENCLAW_WORKSPACE_DIR before OPENCLAW_HOME", () => {

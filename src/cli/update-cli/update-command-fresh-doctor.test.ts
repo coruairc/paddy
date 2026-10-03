@@ -429,7 +429,7 @@ describe("post-plugin update readiness", () => {
     "preserves an unconfigured install through finalization (Doctor: %s)",
     async (freshDoctorRequired) => {
       await withTempHome(async (home) => {
-        const configPath = path.join(home, ".openclaw", "openclaw.json");
+        const configPath = path.join(home, ".paddy", "openclaw.json");
         const io = createConfigIO({ configPath, observe: false });
         mocks.readConfig.mockImplementation(() => io.readConfigFileSnapshot());
         const runNormally = mocks.runExec.getMockImplementation()!;
@@ -455,7 +455,7 @@ describe("post-plugin update readiness", () => {
 
   it("validates a config created during fresh Doctor before allowing restart", async () => {
     await withTempHome(async (home) => {
-      const configPath = path.join(home, ".openclaw", "openclaw.json");
+      const configPath = path.join(home, ".paddy", "openclaw.json");
       const io = createConfigIO({ configPath, observe: false });
       mocks.readConfig.mockImplementation(() => io.readConfigFileSnapshot());
       mocks.runExec.mockImplementation(async (_command, args: string[]) => {
@@ -683,7 +683,7 @@ describe("post-plugin update readiness", () => {
 
   it("keeps expected post-update version skew quiet while normal reads still warn", async () => {
     await withTempHome(async (home) => {
-      const configPath = path.join(home, ".openclaw", "openclaw.json");
+      const configPath = path.join(home, ".paddy", "openclaw.json");
       vi.stubEnv("OPENCLAW_CONFIG_PATH", configPath);
       vi.stubEnv("OPENCLAW_UPDATE_IN_PROGRESS", "1");
       await fs.mkdir(path.dirname(configPath), { recursive: true });
@@ -1002,7 +1002,7 @@ describe("post-plugin update readiness", () => {
       expect(getUpdateRun(run.runId)).toEqual(before);
       expect(defaultRuntime.log).not.toHaveBeenCalled();
       expect(defaultRuntime.error).not.toHaveBeenCalled();
-      await expect(fs.stat(path.join(home, ".openclaw", "update-reports"))).rejects.toMatchObject({
+      await expect(fs.stat(path.join(home, ".paddy", "update-reports"))).rejects.toMatchObject({
         code: "ENOENT",
       });
     });
