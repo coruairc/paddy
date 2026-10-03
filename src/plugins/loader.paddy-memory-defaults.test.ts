@@ -75,4 +75,26 @@ describe("Paddy default memory config at plugin load", () => {
     expect(core?.status).not.toBe("loaded");
     expect(core?.status).not.toBe("error");
   });
+
+  it("memory-core's own dreaming.enabled: true with no slot written (the writer's output) does not start it beside memory-hermes", () => {
+    setupBundledDreamingMemoryPlugins({
+      selectedId: "memory-hermes",
+      coreBody: `throw new Error("memory-core's own entry must not start a sidecar beside memory-hermes");`,
+    });
+
+    // The writer keeps the slot unset for this user and adds only Hermes's dreaming off.
+    const config = applyPaddyMemoryDefaults({
+      plugins: { entries: { "memory-core": { config: { dreaming: { enabled: true } } } } },
+    });
+    expect(config.plugins?.slots?.memory).toBeUndefined();
+
+    const registry = loadOpenClawPlugins({ cache: false, config });
+
+    const hermes = registry.plugins.find((entry) => entry.id === "memory-hermes");
+    expect(hermes?.status).toBe("loaded");
+    expect(hermes?.memorySlotSelected).toBe(true);
+    const core = registry.plugins.find((entry) => entry.id === "memory-core");
+    expect(core?.status).not.toBe("loaded");
+    expect(core?.status).not.toBe("error");
+  });
 });

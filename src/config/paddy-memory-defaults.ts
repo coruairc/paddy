@@ -1,9 +1,11 @@
 // Paddy memory backstop: memory-hermes owns the memory slot and memory-core's dreaming sidecar
-// stays off. The inherited loader reads dreaming settings from the plugin entry named by the raw
-// `plugins.slots.memory` value. When the slot is unset it reads memory-core's entry instead, where
-// dreaming defaults to on, so memory-core would start as a dreaming sidecar beside Hermes. Writing
-// both keys makes the loader read memory-hermes's own `dreaming.enabled: false`.
+// stays off. Paddy's loader and gateway read the sidecar opt-in only from the resolved slot
+// owner's own entry (an unset slot resolves to memory-hermes), so memory-core's own entry never
+// starts a sidecar beside Hermes. The upstream resolvers (`resolveMemoryDreamingPluginId`) still
+// read memory-core's entry, where dreaming defaults to on, when the slot is unset. Writing both
+// keys makes every reader see memory-hermes's own `dreaming.enabled: false`.
 import { defaultSlotIdForKey } from "../plugins/slots.js";
+import type { ConfigValidationIssue } from "./types.js";
 import type { OpenClawConfig } from "./types.openclaw.js";
 import type { PluginEntryConfig } from "./types.plugins.js";
 
@@ -24,15 +26,51 @@ function readDreaming(entry: unknown): Record<string, unknown> | undefined {
   return isRecord(entry.config.dreaming) ? entry.config.dreaming : undefined;
 }
 
+function isMemorySlotUnset(cfg: OpenClawConfig): boolean {
+  return cfg.plugins?.slots?.memory === undefined;
+}
+
+// memory-core's own dreaming block, written by a user who leaves the slot unset. Upstream that
+// meant "memory-core owns memory and dreams"; in Paddy the unset slot resolves to memory-hermes.
+function readUnsetSlotMemoryCoreDreaming(cfg: OpenClawConfig): Record<string, unknown> | undefined {
+  return isMemorySlotUnset(cfg)
+    ? readDreaming(cfg.plugins?.entries?.[DREAMING_ENGINE_PLUGIN_ID])
+    : undefined;
+}
+
+/**
+ * Config warning for a user who configured memory-core dreaming but left `plugins.slots.memory`
+ * unset: memory-hermes owns memory, and memory-core's dreaming does not run. No warning when that
+ * block explicitly turns dreaming off, because nothing the user asked for is lost.
+ */
+export function collectPaddyMemoryDreamingOwnerWarnings(
+  cfg: OpenClawConfig,
+): ConfigValidationIssue[] {
+  const dreaming = readUnsetSlotMemoryCoreDreaming(cfg);
+  if (!dreaming || dreaming.enabled === false) {
+    return [];
+  }
+  return [
+    {
+      path: "plugins.slots.memory",
+      message: `plugins.entries.${DREAMING_ENGINE_PLUGIN_ID}.config.dreaming is set but plugins.slots.memory is unset, so ${PADDY_MEMORY_PLUGIN_ID} owns memory and ${DREAMING_ENGINE_PLUGIN_ID} dreaming won't run; set plugins.slots.memory to "${DREAMING_ENGINE_PLUGIN_ID}" to keep it.`,
+    },
+  ];
+}
+
 /**
  * Fills `plugins.slots.memory: "memory-hermes"` and
  * `plugins.entries.memory-hermes.config.dreaming.enabled: false` when they are unset.
  *
  * Never overwrites a value the user set: another memory owner (or "none") in the slot, an
- * explicit `dreaming.enabled`, or a malformed Hermes entry all leave the config unchanged. With
- * the slot unset and an explicit `memory-core` `dreaming.enabled`, the user already chose how the
- * inherited resolution behaves, so that config is left unchanged too. Returns the same object
- * when nothing needs to be filled.
+ * explicit `dreaming.enabled`, or a malformed Hermes entry all leave the config unchanged.
+ *
+ * With the slot unset and a `memory-core` `config.dreaming` block, the slot stays unset: that
+ * user configured memory-core, and writing `memory-hermes` would pin an owner they never chose
+ * and hide the `collectPaddyMemoryDreamingOwnerWarnings` hint to set the slot to memory-core.
+ * Hermes's own `dreaming.enabled: false` is still filled; it changes nothing for the unset slot
+ * (which already resolves to memory-hermes with the sidecar off) and never turns dreaming on.
+ * Returns the same object when nothing needs to be filled.
  */
 export function applyPaddyMemoryDefaults(cfg: OpenClawConfig): OpenClawConfig {
   const plugins = cfg.plugins;
@@ -46,9 +84,7 @@ export function applyPaddyMemoryDefaults(cfg: OpenClawConfig): OpenClawConfig {
     return cfg;
   }
   const entries = plugins?.entries;
-  if (!hasSlot && readDreaming(entries?.[DREAMING_ENGINE_PLUGIN_ID])?.enabled !== undefined) {
-    return cfg;
-  }
+  const keepSlotUnset = readUnsetSlotMemoryCoreDreaming(cfg) !== undefined;
 
   const hermesEntry = entries?.[PADDY_MEMORY_PLUGIN_ID];
   if (hermesEntry !== undefined && !isRecord(hermesEntry)) {
@@ -63,7 +99,7 @@ export function applyPaddyMemoryDefaults(cfg: OpenClawConfig): OpenClawConfig {
     return cfg;
   }
   const needsDreaming = hermesDreaming?.enabled === undefined;
-  if (hasSlot && !needsDreaming) {
+  if ((hasSlot || keepSlotUnset) && !needsDreaming) {
     return cfg;
   }
 
@@ -78,7 +114,9 @@ export function applyPaddyMemoryDefaults(cfg: OpenClawConfig): OpenClawConfig {
     ...cfg,
     plugins: {
       ...plugins,
-      slots: { ...slots, memory: hasSlot ? rawSlot : PADDY_MEMORY_PLUGIN_ID },
+      ...(keepSlotUnset
+        ? {}
+        : { slots: { ...slots, memory: hasSlot ? rawSlot : PADDY_MEMORY_PLUGIN_ID } }),
       entries: { ...entries, [PADDY_MEMORY_PLUGIN_ID]: nextEntry },
     },
   };

@@ -12,12 +12,27 @@ import {
   resolveMemoryDreamingPluginConfig,
   resolveMemoryDreamingPluginId,
 } from "../memory-host-sdk/dreaming.js";
+import { normalizePluginsConfig } from "../plugins/config-state.js";
 import { validateJsonSchemaValue } from "../plugins/schema-validator.js";
 import { createConfigIO } from "./io.factory.js";
-import { applyPaddyMemoryDefaults, PADDY_MEMORY_PLUGIN_ID } from "./paddy-memory-defaults.js";
+import {
+  applyPaddyMemoryDefaults,
+  collectPaddyMemoryDreamingOwnerWarnings,
+  PADDY_MEMORY_PLUGIN_ID,
+} from "./paddy-memory-defaults.js";
 import type { OpenClawConfig } from "./types.openclaw.js";
+import { validateConfigObjectWithPlugins } from "./validation.js";
 
 const tempDirs = useAutoCleanupTempDirTracker(afterEach);
+
+// The memory slot owner the loader and gateway resolve (the written slot, else the default).
+function resolvedMemoryOwner(cfg: OpenClawConfig): string | null {
+  return normalizePluginsConfig(cfg.plugins).slots.memory;
+}
+
+function sidecarExplicitlyEnabled(cfg: OpenClawConfig): boolean {
+  return isMemoryDreamingSidecarExplicitlyEnabled(cfg, resolvedMemoryOwner(cfg));
+}
 
 const PADDY_DEFAULT_MEMORY_PLUGINS = {
   slots: { memory: "memory-hermes" },
@@ -27,7 +42,7 @@ const PADDY_DEFAULT_MEMORY_PLUGINS = {
 function expectDreamingSidecarOff(cfg: OpenClawConfig) {
   // Both keys: main's loader (patch A, plugins/loader-shared.ts) starts the sidecar only on an
   // explicit dreaming.enabled: true, and the inherited resolvers also read Hermes's false.
-  expect(isMemoryDreamingSidecarExplicitlyEnabled(cfg)).toBe(false);
+  expect(sidecarExplicitlyEnabled(cfg)).toBe(false);
   expect(resolveMemoryDreamingPluginId(cfg)).toBe("memory-hermes");
   expect(
     resolveMemoryDreamingConfig({ pluginConfig: resolveMemoryDreamingPluginConfig(cfg), cfg })
@@ -83,7 +98,7 @@ describe("applyPaddyMemoryDefaults", () => {
     const unset: OpenClawConfig = {};
     // Main's loader (patch A) already keeps the sidecar off here; the defaults are the second key
     // if that check regresses or another caller uses the inherited resolvers.
-    expect(isMemoryDreamingSidecarExplicitlyEnabled(unset)).toBe(false);
+    expect(sidecarExplicitlyEnabled(unset)).toBe(false);
     expect(resolveMemoryDreamingPluginId(unset)).toBe("memory-core");
     expect(
       resolveMemoryDreamingConfig({ pluginConfig: resolveMemoryDreamingPluginConfig(unset) })
@@ -144,7 +159,7 @@ describe("applyPaddyMemoryDefaults", () => {
         slots: { memory: slot },
         entries: { "memory-hermes": { config: { dreaming: { enabled: false } } } },
       });
-      expect(isMemoryDreamingSidecarExplicitlyEnabled(next)).toBe(false);
+      expect(sidecarExplicitlyEnabled(next)).toBe(false);
     },
   );
 
@@ -193,11 +208,62 @@ describe("applyPaddyMemoryDefaults", () => {
     expect(applyPaddyMemoryDefaults(cfg)).toBe(cfg);
   });
 
-  it("leaves an unset slot alone when memory-core's dreaming.enabled is explicit", () => {
+  it.each([
+    { name: "dreaming.enabled: true", dreaming: { enabled: true } },
+    { name: "dreaming.enabled: false", dreaming: { enabled: false } },
+    { name: "a dreaming block without enabled", dreaming: { frequency: "0 3 * * *" } },
+  ])(
+    "keeps the slot unset when memory-core has $name, and adds only Hermes's dreaming off",
+    ({ dreaming }) => {
+      const cfg: OpenClawConfig = {
+        plugins: { entries: { "memory-core": { config: { dreaming } } } },
+      };
+      const next = applyPaddyMemoryDefaults(cfg);
+      // The user configured memory-core: no slot is pinned for them, and their entry is untouched.
+      expect(next.plugins).toEqual({
+        entries: {
+          "memory-core": { config: { dreaming } },
+          "memory-hermes": { config: { dreaming: { enabled: false } } },
+        },
+      });
+      expect(next.plugins?.slots).toBeUndefined();
+      // Ownership is what it already was (the unset slot resolves to memory-hermes), and the
+      // sidecar stays off before and after: memory-core's entry is not read for the opt-in.
+      expect(resolvedMemoryOwner(next)).toBe(resolvedMemoryOwner(cfg));
+      expect(resolvedMemoryOwner(next)).toBe("memory-hermes");
+      expect(sidecarExplicitlyEnabled(cfg)).toBe(false);
+      expect(sidecarExplicitlyEnabled(next)).toBe(false);
+      expect(cfg.plugins?.entries?.["memory-hermes"]).toBeUndefined();
+    },
+  );
+
+  it("keeps other slots as written and still leaves the memory slot unset for memory-core dreaming", () => {
+    const next = applyPaddyMemoryDefaults({
+      plugins: {
+        slots: { contextEngine: "legacy" },
+        entries: { "memory-core": { config: { dreaming: { enabled: true } } } },
+      },
+    });
+    expect(next.plugins?.slots).toEqual({ contextEngine: "legacy" });
+  });
+
+  it("returns the same config when the slot is unset for memory-core dreaming and Hermes's dreaming is explicit", () => {
     const cfg: OpenClawConfig = {
-      plugins: { entries: { "memory-core": { config: { dreaming: { enabled: true } } } } },
+      plugins: {
+        entries: {
+          "memory-core": { config: { dreaming: { enabled: true } } },
+          "memory-hermes": { config: { dreaming: { enabled: true } } },
+        },
+      },
     };
     expect(applyPaddyMemoryDefaults(cfg)).toBe(cfg);
+  });
+
+  it("still writes the slot when memory-core's entry has no dreaming block", () => {
+    const next = applyPaddyMemoryDefaults({
+      plugins: { entries: { "memory-core": { config: {} } } },
+    });
+    expect(next.plugins?.slots).toEqual({ memory: "memory-hermes" });
   });
 
   it("leaves a malformed Hermes dreaming block for validation to report", () => {
@@ -257,5 +323,86 @@ describe("Paddy default config carries the memory backstop", () => {
     expect(applyLocalSetupWorkspaceConfig(explicit, "/tmp/paddy-workspace").plugins).toEqual({
       slots: { memory: "memory-core" },
     });
+  });
+});
+
+describe("Paddy warns when memory-core dreaming is configured but the memory slot is unset", () => {
+  const MESSAGE =
+    'plugins.entries.memory-core.config.dreaming is set but plugins.slots.memory is unset, so memory-hermes owns memory and memory-core dreaming won\'t run; set plugins.slots.memory to "memory-core" to keep it.';
+
+  it.each([
+    { name: "dreaming.enabled: true", dreaming: { enabled: true } },
+    {
+      name: "a dreaming block without enabled (upstream default on)",
+      dreaming: { frequency: "0 3 * * *" },
+    },
+  ])("warns for $name", ({ dreaming }) => {
+    expect(
+      collectPaddyMemoryDreamingOwnerWarnings({
+        plugins: { entries: { "memory-core": { config: { dreaming } } } },
+      }),
+    ).toEqual([{ path: "plugins.slots.memory", message: MESSAGE }]);
+  });
+
+  it.each([
+    { name: "an empty config", cfg: {} },
+    {
+      name: "memory-core dreaming explicitly off",
+      cfg: {
+        plugins: { entries: { "memory-core": { config: { dreaming: { enabled: false } } } } },
+      },
+    },
+    {
+      name: "the slot set to memory-core",
+      cfg: {
+        plugins: {
+          slots: { memory: "memory-core" },
+          entries: { "memory-core": { config: { dreaming: { enabled: true } } } },
+        },
+      },
+    },
+    {
+      name: "the slot set to memory-hermes",
+      cfg: {
+        plugins: {
+          slots: { memory: "memory-hermes" },
+          entries: { "memory-core": { config: { dreaming: { enabled: true } } } },
+        },
+      },
+    },
+    {
+      name: "the slot set to none",
+      cfg: {
+        plugins: {
+          slots: { memory: "none" },
+          entries: { "memory-core": { config: { dreaming: { enabled: true } } } },
+        },
+      },
+    },
+    {
+      name: "memory-core without a dreaming block",
+      cfg: { plugins: { entries: { "memory-core": { config: {} } } } },
+    },
+    { name: "the written Paddy defaults", cfg: applyPaddyMemoryDefaults({}) },
+  ])("does not warn for $name", ({ cfg }) => {
+    expect(collectPaddyMemoryDreamingOwnerWarnings(cfg as OpenClawConfig)).toEqual([]);
+  });
+
+  it("surfaces the warning through config validation, and the writer's output keeps it", () => {
+    const raw = {
+      plugins: { entries: { "memory-core": { config: { dreaming: { enabled: true } } } } },
+    };
+    const slotWarnings = (value: unknown) =>
+      validateConfigObjectWithPlugins(value, {
+        pluginMetadataSnapshot: { manifestRegistry: { diagnostics: [], plugins: [] } },
+      }).warnings.filter((warning) => warning.path === "plugins.slots.memory");
+    expect(slotWarnings(raw)).toEqual([{ path: "plugins.slots.memory", message: MESSAGE }]);
+    // The writer leaves the slot unset here, so the hint survives onboarding.
+    expect(slotWarnings(applyPaddyMemoryDefaults(raw as OpenClawConfig))).toEqual([
+      { path: "plugins.slots.memory", message: MESSAGE },
+    ]);
+    expect(slotWarnings({ plugins: { ...raw.plugins, slots: { memory: "memory-core" } } })).toEqual(
+      [],
+    );
   });
 });

@@ -236,4 +236,20 @@ describe("applyLocalSetupWorkspaceConfig Paddy memory defaults", () => {
 
     expect(result.plugins).toEqual(plugins);
   });
+
+  it("keeps the memory slot unset for a user who configured memory-core dreaming", () => {
+    const result = applyLocalSetupWorkspaceConfig(
+      { plugins: { entries: { "memory-core": { config: { dreaming: { enabled: true } } } } } },
+      "/tmp/workspace",
+    );
+
+    // No owner is pinned for them; only Hermes's own dreaming-off backstop is added.
+    expect(result.plugins).toEqual({
+      entries: {
+        "memory-core": { config: { dreaming: { enabled: true } } },
+        "memory-hermes": { config: { dreaming: { enabled: false } } },
+      },
+    });
+    expect(result.gateway?.mode).toBe("local");
+  });
 });
