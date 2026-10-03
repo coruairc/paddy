@@ -231,34 +231,51 @@ describe("legacy state migration caller execution", () => {
 
   // Paddy has no legacy state roots (LEGACY_STATE_DIRNAMES is empty in config/state-dir.ts), so
   // upstream's ~/.clawdbot -> default state-root relocation receipts are unreachable. Pin that
-  // Doctor-owned migrations never plan, move, or link a ~/.clawdbot root into ~/.paddy.
-  it("never relocates a legacy ~/.clawdbot state root before Doctor-owned migrations", async () => {
-    const root = await tempDirs.make("openclaw-doctor-state-root-");
-    const legacyStateDir = path.join(root, ".clawdbot");
-    const stateDir = path.join(root, ".paddy");
-    fs.mkdirSync(legacyStateDir, { recursive: true });
-    const { execPath } = writeLegacyDoctorSources(legacyStateDir);
-    const env: NodeJS.ProcessEnv = {
-      ...process.env,
-      HOME: root,
-      OPENCLAW_BUNDLED_PLUGINS_DIR: path.resolve("extensions"),
-      OPENCLAW_TEST_TRUST_BUNDLED_PLUGINS_DIR: "1",
-    };
-    delete env.OPENCLAW_STATE_DIR;
+  // Doctor-owned migrations never plan, move, or link a ~/.clawdbot root, or upstream's own
+  // ~/.openclaw default, into ~/.paddy.
+  it.each([".clawdbot", ".openclaw"])(
+    "never relocates a legacy ~/%s state root before Doctor-owned migrations",
+    async (legacyName) => {
+      const root = await tempDirs.make("openclaw-doctor-state-root-");
+      const legacyStateDir = path.join(root, legacyName);
+      const stateDir = path.join(root, ".paddy");
+      fs.mkdirSync(legacyStateDir, { recursive: true });
+      const { execPath } = writeLegacyDoctorSources(legacyStateDir);
+      const env: NodeJS.ProcessEnv = {
+        ...process.env,
+        HOME: root,
+        OPENCLAW_BUNDLED_PLUGINS_DIR: path.resolve("extensions"),
+        OPENCLAW_TEST_TRUST_BUNDLED_PLUGINS_DIR: "1",
+      };
+      delete env.OPENCLAW_STATE_DIR;
 
-    const result = await autoMigrateLegacyState({
-      cfg: {},
-      doctorOnlyStateMigrations: true,
-      env,
-      homedir: () => root,
-      legacySessionSurfaces: EMPTY_LEGACY_SESSION_SURFACES,
-    });
+      const result = await autoMigrateLegacyState({
+        cfg: {},
+        doctorOnlyStateMigrations: true,
+        env,
+        homedir: () => root,
+        legacySessionSurfaces: EMPTY_LEGACY_SESSION_SURFACES,
+      });
 
-    expect(result.stepReceipts.some((receipt) => receipt.id === "state-dir")).toBe(false);
-    expect(fs.lstatSync(legacyStateDir).isDirectory()).toBe(true);
-    expect(fs.existsSync(execPath)).toBe(true);
-    expect(fs.existsSync(stateDir) && fs.lstatSync(stateDir).isSymbolicLink()).toBe(false);
-  });
+      expect(result.stepReceipts.some((receipt) => receipt.id === "state-dir")).toBe(false);
+      expect(fs.lstatSync(legacyStateDir).isDirectory()).toBe(true);
+      expect(fs.existsSync(execPath)).toBe(true);
+      expect(fs.existsSync(stateDir) && fs.lstatSync(stateDir).isSymbolicLink()).toBe(false);
+
+      // The read-only planner that update and Doctor previews use plans no state-root move either.
+      const configPath = path.join(legacyStateDir, "openclaw.json");
+      fs.writeFileSync(configPath, "{}\n");
+      const plan = await planLegacyStateMigrationsReadOnly({
+        mode: "doctor",
+        candidate: { root, version: "test" },
+        snapshot: { homeDir: root, configPath, stateDir },
+        env: { ...env, OPENCLAW_CONFIG_PATH: configPath },
+      });
+      expect(plan.steps.some((step) => step.id === "state-dir")).toBe(false);
+      expect(fs.lstatSync(legacyStateDir).isDirectory()).toBe(true);
+      expect(fs.existsSync(execPath)).toBe(true);
+    },
+  );
 
   it("receipts a blocking conditional media warning before its ordered tail", async () => {
     const fixture = await makeFixture();

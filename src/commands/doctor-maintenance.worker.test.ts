@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   writeNativeHookRelayBridgeRecord,
@@ -60,6 +61,81 @@ describe("Doctor maintenance with shared-state workers", () => {
       },
     );
   });
+  // Upstream's seven implicit-relocation scenarios (schema upgrade, resident worker, link
+  // rollback, contenders, receipts) all exercised the ~/.clawdbot -> default-root move. Paddy has
+  // no legacy roots, so there is no move to hold custody over; what remains to pin is that a full
+  // Doctor maintenance window never moves, links, or reads a legacy root, including upstream's own
+  // ~/.openclaw default and a config path that still points into that root.
+  it.each([
+    { legacyName: ".clawdbot", configInLegacy: false },
+    { legacyName: ".clawdbot", configInLegacy: true },
+    { legacyName: ".openclaw", configInLegacy: false },
+    { legacyName: ".openclaw", configInLegacy: true },
+  ])(
+    "Doctor maintenance leaves a legacy ~/$legacyName root untouched (config in legacy root: $configInLegacy)",
+    async ({ legacyName, configInLegacy }) => {
+      await withOpenClawTestState(
+        { layout: "home", scenario: "external-service", label: "doctor-legacy-root-window" },
+        async (state) => {
+          const { db } = openOpenClawStateDatabase();
+          db.exec(`
+            INSERT INTO config_machine_state (state_key, value_json, updated_at_ms)
+              VALUES ('doctor-relocation-sentinel', '{"keep":true}', 1);
+          `);
+          await closeOpenClawStateDatabaseAsync();
+          const legacy = path.join(state.home, legacyName);
+          fs.renameSync(state.stateDir, legacy);
+          const readSentinel = (databasePath: string) => {
+            const database = new DatabaseSync(databasePath, { readOnly: true });
+            try {
+              return database
+                .prepare("SELECT value_json FROM config_machine_state WHERE state_key = ?")
+                .get("doctor-relocation-sentinel");
+            } finally {
+              database.close();
+            }
+          };
+          await withEnvAsync(
+            {
+              OPENCLAW_STATE_DIR: "",
+              OPENCLAW_CONFIG_PATH: configInLegacy ? path.join(legacy, "openclaw.json") : "",
+              OPENCLAW_TEST_FAST: "0",
+              OPENCLAW_DISABLE_BUNDLED_PLUGINS: "1",
+            },
+            async () => {
+              const log = vi.fn();
+              const maintenance = await beginDoctorMaintenance({
+                options: { repair: true, nonInteractive: true },
+                root: null,
+                runtime: { log, error() {}, exit() {} },
+              });
+              try {
+                await maintenance!.run(async () => {
+                  const result = await autoMigrateLegacyStateDir({ env: process.env });
+                  expect(result.migrated).toBe(false);
+                  expect(result.changes).toEqual([]);
+                });
+              } finally {
+                await maintenance?.release();
+              }
+              await closeOpenClawStateDatabaseAsync();
+              expect(log.mock.calls.flat().join("\n")).not.toMatch(/State dir( migration)?[: ]/);
+            },
+          );
+          expect(fs.lstatSync(legacy).isSymbolicLink()).toBe(false);
+          expect(fs.lstatSync(legacy).isDirectory()).toBe(true);
+          expect(readSentinel(path.join(legacy, "state", "openclaw.sqlite"))).toEqual({
+            value_json: '{"keep":true}',
+          });
+          const paddyDatabase = path.join(state.stateDir, "state", "openclaw.sqlite");
+          if (fs.existsSync(paddyDatabase)) {
+            expect(fs.lstatSync(state.stateDir).isSymbolicLink()).toBe(false);
+            expect(readSentinel(paddyDatabase)).toBeUndefined();
+          }
+        },
+      );
+    },
+  );
   it.each([
     { alreadyOpen: false, reload: false },
     { alreadyOpen: true, reload: false },
