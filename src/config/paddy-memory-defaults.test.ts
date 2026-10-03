@@ -133,6 +133,44 @@ describe("applyPaddyMemoryDefaults", () => {
     },
   );
 
+  // The writer matches the slot after trim + lowercase. A padded or mixed-case memory-hermes slot
+  // gets only the dreaming-off backstop (the user's slot string is kept as written); any other
+  // owner, in any case, is left alone. Both directions fail safe: nothing turns dreaming on.
+  it.each([" Memory-Hermes ", "MEMORY-HERMES", "memory-hermes\t"])(
+    "treats slot %j as memory-hermes: keeps the slot string and adds only dreaming.enabled: false",
+    (slot) => {
+      const next = applyPaddyMemoryDefaults({ plugins: { slots: { memory: slot } } });
+      expect(next.plugins).toEqual({
+        slots: { memory: slot },
+        entries: { "memory-hermes": { config: { dreaming: { enabled: false } } } },
+      });
+      expect(isMemoryDreamingSidecarExplicitlyEnabled(next)).toBe(false);
+    },
+  );
+
+  it("keeps an explicit Hermes dreaming.enabled under a mixed-case memory-hermes slot", () => {
+    const cfg: OpenClawConfig = {
+      plugins: {
+        slots: { memory: " Memory-Hermes " },
+        entries: { "memory-hermes": { config: { dreaming: { enabled: true } } } },
+      },
+    };
+    expect(applyPaddyMemoryDefaults(cfg)).toBe(cfg);
+  });
+
+  it.each(["MEMORY-CORE", " memory-core ", "Memory-LanceDB", "NONE", "memory-hermes-2"])(
+    "leaves non-Hermes slot %j and its entries unchanged",
+    (slot) => {
+      const cfg: OpenClawConfig = {
+        plugins: {
+          slots: { memory: slot },
+          entries: { "memory-core": { config: { dreaming: { enabled: true } } } },
+        },
+      };
+      expect(applyPaddyMemoryDefaults(cfg)).toBe(cfg);
+    },
+  );
+
   it("keeps an explicit Hermes dreaming.enabled and only fills the slot", () => {
     const next = applyPaddyMemoryDefaults({
       plugins: { entries: { "memory-hermes": { config: { dreaming: { enabled: true } } } } },
