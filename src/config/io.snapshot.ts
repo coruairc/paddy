@@ -69,6 +69,7 @@ import {
 } from "./legacy.js";
 import { materializeRuntimeConfig } from "./materialize.js";
 import { ConfigMutationConflictError } from "./mutation-conflict.js";
+import { applyPaddyMemoryDefaults } from "./paddy-memory-defaults.js";
 import { captureManagedConfigSnapshotPreparation } from "./runtime-snapshot.js";
 import type { ConfigFileSnapshot, LegacyConfigIssue, OpenClawConfig } from "./types.js";
 import { validateConfigObjectWithPlugins } from "./validation.js";
@@ -163,7 +164,8 @@ async function readConfigSnapshotWithPreparation(
     );
     if (raw === undefined) {
       const migrated = migratePersistedImplicitMainRoster({});
-      const config = coerceConfig(migrated.config);
+      // Paddy: a fresh install also gets the memory-hermes slot and dreaming-off backstop.
+      const config = applyPaddyMemoryDefaults(coerceConfig(migrated.config));
       const metadata = context.createValidationPluginMetadataSnapshotLoader({
         env: deps.env,
         allowCurrentPluginMetadata: options.allowCurrentPluginMetadata,

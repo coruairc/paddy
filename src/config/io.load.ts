@@ -29,6 +29,7 @@ import {
 } from "./io.warnings.js";
 import { migrateLegacyContextBudgetConfig, migratePersistedImplicitMainRoster } from "./legacy.js";
 import { materializeRuntimeConfig } from "./materialize.js";
+import { applyPaddyMemoryDefaults } from "./paddy-memory-defaults.js";
 import type { OpenClawConfig } from "./types.js";
 import {
   validateConfigObjectWithPlugins,
@@ -132,7 +133,10 @@ function* loadConfigWithEffects(
       // A missing config is the fresh-install default path: materialize the
       // same runtime defaults an empty {} config gets, or out-of-box behavior
       // (compaction safeguard, session/cron defaults) silently diverges.
-      const config = coerceConfig(migratePersistedImplicitMainRoster({}).config);
+      // Paddy: a fresh install also gets the memory-hermes slot and dreaming-off backstop.
+      const config = applyPaddyMemoryDefaults(
+        coerceConfig(migratePersistedImplicitMainRoster({}).config),
+      );
       const metadata = context.createValidationPluginMetadataSnapshotLoader({
         env: deps.env,
       });

@@ -25,7 +25,22 @@ A memory plugin:
 - registers CLI with `api.registerCli`, loading the command module inside the callback (`await import(...)`), same as `extensions/memory-core/index.ts`
 - declares tools on the manifest `contracts.tools` and `api.registerTool`
 
-`memory-core` is the reference plugin. It also owns dreaming, workers, and workspace files. Hermes does not take those over. Dreaming stays `memory-core` (`DEFAULT_MEMORY_DREAMING_PLUGIN_ID`). With the slot unset, dreaming resolution still names `memory-core`, so the dreaming sidecar is not started beside Hermes. Selecting another memory plugin with dreaming enabled still loads `memory-core` as that sidecar. That is existing OpenClaw behavior.
+`memory-core` is the reference plugin. It also owns dreaming, workers, and workspace files. Hermes does not take those over. Dreaming stays `memory-core` (`DEFAULT_MEMORY_DREAMING_PLUGIN_ID`). The inherited plugin loader reads dreaming settings from the entry named by the raw `plugins.slots.memory` value. With the slot unset it reads `memory-core`'s entry, where dreaming defaults to on, so it loads `memory-core` as a dreaming sidecar beside Hermes. Selecting another memory plugin with dreaming enabled also loads `memory-core` as that sidecar. That is existing OpenClaw behavior.
+
+Paddy keeps the sidecar off with two config keys, written by default:
+
+```json5
+{
+  plugins: {
+    slots: { memory: "memory-hermes" },
+    entries: { "memory-hermes": { config: { dreaming: { enabled: false } } } },
+  },
+}
+```
+
+`src/config/paddy-memory-defaults.ts` `applyPaddyMemoryDefaults` adds both keys when they are unset. It runs on the missing-config path (`io.snapshot.ts`, `io.load.ts`), so a first run with no config file has them, and in onboarding (`onboard-config.ts` `applyLocalSetupWorkspaceConfig`, used by the setup wizard, non-interactive local onboarding, system-agent setup and migration import), so the config onboarding writes has them. It never overwrites a value the user set. Another slot owner (`memory-core`, `memory-lancedb`, `"none"`), a malformed Hermes entry, or an unset slot with an explicit `memory-core` `dreaming.enabled` leaves the config unchanged. An explicit Hermes `dreaming.enabled` is kept as written. The memory-hermes manifest accepts `dreaming: { enabled?: boolean }`. An explicit `plugins.slots.memory: "memory-hermes"` that is missing from the plugin registry only warns, the same as the implicit default.
+
+Existing configs are left alone. Doctor does not rewrite them and there is no migration, because plugin config the user wrote should not change silently on upgrade. An existing config that leaves the slot unset still starts the `memory-core` sidecar until the loader patch (`fe/memory-sidecar-guard`) lands. Re-running onboarding fills in the unset keys.
 
 Hook and tool identity differ:
 
@@ -42,20 +57,20 @@ Storage is `node:sqlite` `DatabaseSync` (Node 22, already used by OpenClaw's `no
 
 ## What is ported
 
-| Hermes behavior | Decision |
-| --- | --- |
-| SQLite under `~/.paddy`, no external database | Ported |
-| Scope column on every row; per user/channel/session; `global` only when asked | Ported |
-| Ranked recall, top 6, 2000 chars, approved rows in scope plus explicit global | Ported |
-| Caps: memory 200/24000, user 80/8000 | Ported |
-| Secret regex before insert and again before approve | Ported |
-| Curator proposes, human approves | Ported. Default curator is the explicit "remember / note that" rule, not a model. `plugins.entries.memory-hermes.config.curatorModel` is reserved and optional. Unset means the deterministic rule. |
-| `memory status/list/approve/reject/rollback/add` | Ported. `add`/`list` require `--scope` or `--global`. |
-| Per-entry version rollback | Ported. Prior version of that id only. |
-| Fail-open recall and curator | Ported. Errors go to `memory_errors` and stderr, not the user reply. |
-| Dreaming, embeddings, workspace MEMORY.md, LanceDB | Not ported. They stay `memory-core`. |
-| Old app memory rows | Not ported. Fresh database. |
-| Binary rename `openclaw` → `paddy` | Landed for user-facing surfaces. `bin.paddy` and `bin.openclaw` both point at `openclaw.mjs`. npm package name, `OPENCLAW_*` env, `openclaw.json`, plugin imports, and service unit ids stay. |
+| Hermes behavior                                                               | Decision                                                                                                                                                                                            |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SQLite under `~/.paddy`, no external database                                 | Ported                                                                                                                                                                                              |
+| Scope column on every row; per user/channel/session; `global` only when asked | Ported                                                                                                                                                                                              |
+| Ranked recall, top 6, 2000 chars, approved rows in scope plus explicit global | Ported                                                                                                                                                                                              |
+| Caps: memory 200/24000, user 80/8000                                          | Ported                                                                                                                                                                                              |
+| Secret regex before insert and again before approve                           | Ported                                                                                                                                                                                              |
+| Curator proposes, human approves                                              | Ported. Default curator is the explicit "remember / note that" rule, not a model. `plugins.entries.memory-hermes.config.curatorModel` is reserved and optional. Unset means the deterministic rule. |
+| `memory status/list/approve/reject/rollback/add`                              | Ported. `add`/`list` require `--scope` or `--global`.                                                                                                                                               |
+| Per-entry version rollback                                                    | Ported. Prior version of that id only.                                                                                                                                                              |
+| Fail-open recall and curator                                                  | Ported. Errors go to `memory_errors` and stderr, not the user reply.                                                                                                                                |
+| Dreaming, embeddings, workspace MEMORY.md, LanceDB                            | Not ported. They stay `memory-core`.                                                                                                                                                                |
+| Old app memory rows                                                           | Not ported. Fresh database.                                                                                                                                                                         |
+| Binary rename `openclaw` → `paddy`                                            | Landed for user-facing surfaces. `bin.paddy` and `bin.openclaw` both point at `openclaw.mjs`. npm package name, `OPENCLAW_*` env, `openclaw.json`, plugin imports, and service unit ids stay.       |
 
 ## Files
 
@@ -69,15 +84,22 @@ Modified:
 - `test/vitest/vitest.extension-memory-paths.mjs`
 - `test/vitest-scoped-config.test.ts`
 - `pnpm-lock.yaml` — workspace importer only, no new packages
+- `src/config/io.snapshot.ts`, `src/config/io.load.ts` — missing config gets the memory backstop
+- `src/commands/onboard-config.ts` — onboarding writes the memory backstop
+- `src/config/validation-plugin-config.ts` — explicit default memory slot missing from the registry warns only
 
 Added:
 
 - `extensions/memory-hermes/**`
 - `docs/paddy/PHASE-0.md`
+- `src/config/paddy-memory-defaults.ts`, `src/config/paddy-memory-defaults.test.ts`
+- `src/plugins/loader.paddy-memory-defaults.test.ts`
 
 ## Tests
 
 `extensions/memory-hermes/src/hermes.test.ts` covers scope isolation, secret rejection independent of the curator, single-entry rollback, same-scope recall, explicit global, fail-open recall, and no `PADDY_STATE_DIR`.
+
+`src/config/paddy-memory-defaults.test.ts` covers the `dreaming` schema, the fill rules (no overwrite of explicit values), the missing-config snapshot and load, and onboarding output. `src/plugins/loader.paddy-memory-defaults.test.ts` loads plugins with the current loader: the default config does not load `memory-core`, and the control (slot unset) does.
 
 OpenClaw tests that encoded "the implicit memory plugin id is `memory-core`" are updated. Tests that pin `plugins.slots.memory: "memory-core"` are not.
 

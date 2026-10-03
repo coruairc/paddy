@@ -24,6 +24,17 @@
       "curatorModel": {
         "type": "string",
         "description": "Optional provider/model for a future classifier. The default curator is deterministic and does not call a model."
+      },
+      "dreaming": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Hermes does not dream. The inherited loader reads dreaming.enabled from the memory slot owner's entry to decide whether to start memory-core as a dreaming sidecar; Paddy's default config sets it to false.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Start memory-core as a dreaming sidecar beside Hermes. Default config: false."
+          }
+        }
       }
     }
   }

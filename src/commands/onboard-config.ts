@@ -5,6 +5,7 @@ import { listAgentEntries } from "../agents/agent-scope-config.js";
 import { resolveDefaultAgentWorkspaceDir } from "../agents/workspace-default.js";
 import { setConfigValueAtPath } from "../config/config-paths.js";
 import { inheritLegacyDefaultAgentId } from "../config/legacy.default-agent-owner.js";
+import { applyPaddyMemoryDefaults } from "../config/paddy-memory-defaults.js";
 import { resolveStateDir } from "../config/paths.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import type { ToolProfileId } from "../config/types.tools.js";
@@ -87,9 +88,11 @@ export function applyLocalSetupWorkspaceConfig(
   const shouldUpdateWorkspace =
     !options.preserveWorkspace &&
     (options.allowWorkspaceChange || (!hasRoster && !workspaceConflict));
+  // Paddy: also fill the memory-hermes slot and its dreaming-off backstop when unset.
+  const memoryConfig = applyPaddyMemoryDefaults(baseConfig);
   // Workspace/gateway copies still belong to the owner selected by the config reader.
   return inheritLegacyDefaultAgentId(baseConfig, {
-    ...baseConfig,
+    ...memoryConfig,
     ...(shouldUpdateWorkspace
       ? {
           agents: {
