@@ -404,6 +404,8 @@ export type PluginRecord = {
   uiCapabilities?: PluginManifestRecord["uiCapabilities"];
   mcpServers?: Record<string, PluginManifestMcpServer>;
   memorySlotSelected?: boolean;
+  /** Paddy: loaded only as the memory-core dreaming sidecar, not as the memory slot owner. */
+  dreamingSidecar?: boolean;
   dependencyStatus?: PluginDependencyStatus;
 };
 

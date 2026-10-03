@@ -437,6 +437,133 @@ describe("loadOpenClawPlugins", () => {
         },
       },
       {
+        // Paddy (a): upstream treats unset dreaming as on; Paddy requires explicit opt-in.
+        label: "Paddy: excludes dreaming engine when dreaming is unset and it is not the slot",
+        loadRegistry: () => {
+          setupBundledDreamingMemoryPlugins({
+            coreBody: `throw new Error("memory-core should not load when dreaming is unset");`,
+          });
+
+          return loadOpenClawPlugins({
+            cache: false,
+            config: {
+              plugins: {
+                allow: ["memory-core", "memory-lancedb"],
+                slots: { memory: "memory-lancedb" },
+                entries: {
+                  "memory-core": { enabled: true },
+                  "memory-lancedb": { enabled: true },
+                },
+              },
+            },
+          });
+        },
+        assert: (registry: ReturnType<typeof loadOpenClawPlugins>) => {
+          const core = registry.plugins.find((entry) => entry.id === "memory-core");
+          const lance = registry.plugins.find((entry) => entry.id === "memory-lancedb");
+          expect(core?.status).toBe("disabled");
+          expect(core?.dreamingSidecar).not.toBe(true);
+          expect(lance?.status).toBe("loaded");
+          expect(lance?.memorySlotSelected).toBe(true);
+        },
+      },
+      {
+        // Paddy (b): explicit opt-in loads the sidecar, but it never claims CLI roots.
+        label: "Paddy: loads an explicitly enabled dreaming sidecar without registering its cli",
+        loadRegistry: () => {
+          setupBundledDreamingMemoryPlugins({
+            coreBody: `module.exports = {
+              id: "memory-core",
+              kind: "memory",
+              register(api) {
+                api.registerMemoryCapability({ promptBuilder: () => ["core prompt"] });
+                api.registerCli(() => {}, { commands: ["memory"] });
+              },
+            };`,
+          });
+
+          return loadOpenClawPlugins({
+            cache: false,
+            config: {
+              plugins: {
+                allow: ["memory-core", "memory-lancedb"],
+                slots: { memory: "memory-lancedb" },
+                entries: {
+                  "memory-core": { enabled: true },
+                  "memory-lancedb": { enabled: true, config: { dreaming: { enabled: true } } },
+                },
+              },
+            },
+          });
+        },
+        assert: (registry: ReturnType<typeof loadOpenClawPlugins>) => {
+          const core = registry.plugins.find((entry) => entry.id === "memory-core");
+          expect(core?.status).toBe("loaded");
+          expect(core?.dreamingSidecar).toBe(true);
+          expect(core?.memorySlotSelected).not.toBe(true);
+          expect(core?.cliCommands).toEqual([]);
+          expect(
+            registry.cliRegistrars.filter((entry) => entry.pluginId === "memory-core"),
+          ).toEqual([]);
+          expect(registry.diagnostics).toContainEqual(
+            expect.objectContaining({
+              level: "info",
+              pluginId: "memory-core",
+              message: "dreaming sidecar; skipping cli registration",
+            }),
+          );
+          expect(
+            registry.diagnostics.filter(
+              (entry) => entry.pluginId === "memory-core" && entry.level === "error",
+            ),
+          ).toEqual([]);
+        },
+      },
+      {
+        // Paddy (c): memory-core as the slot owner keeps upstream behavior, including its cli.
+        label: "Paddy: keeps memory-core cli registration when memory-core owns the slot",
+        loadRegistry: () => {
+          setupBundledDreamingMemoryPlugins({
+            coreBody: `module.exports = {
+              id: "memory-core",
+              kind: "memory",
+              register(api) {
+                api.registerMemoryCapability({ promptBuilder: () => ["core prompt"] });
+                api.registerCli(() => {}, { commands: ["memory"] });
+              },
+            };`,
+          });
+
+          return loadOpenClawPlugins({
+            cache: false,
+            config: {
+              plugins: {
+                allow: ["memory-core"],
+                slots: { memory: "memory-core" },
+                entries: {
+                  "memory-core": { enabled: true },
+                },
+              },
+            },
+          });
+        },
+        assert: (registry: ReturnType<typeof loadOpenClawPlugins>) => {
+          const core = registry.plugins.find((entry) => entry.id === "memory-core");
+          expect(core?.status).toBe("loaded");
+          expect(core?.dreamingSidecar).not.toBe(true);
+          expect(core?.memorySlotSelected).toBe(true);
+          expect(core?.cliCommands).toEqual(["memory"]);
+          expect(
+            registry.cliRegistrars
+              .filter((entry) => entry.pluginId === "memory-core")
+              .flatMap((entry) => entry.commands),
+          ).toEqual(["memory"]);
+          expect(registry.diagnostics).not.toContainEqual(
+            expect.objectContaining({ message: "dreaming sidecar; skipping cli registration" }),
+          );
+        },
+      },
+      {
         label: 'keeps memory slot "none" disabled even with stale memory-core dreaming config',
         loadRegistry: () => {
           const bundledDir = makePluginLoaderTempDir();
