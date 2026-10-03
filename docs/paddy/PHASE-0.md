@@ -25,7 +25,7 @@ A memory plugin:
 - registers CLI with `api.registerCli`, loading the command module inside the callback (`await import(...)`), same as `extensions/memory-core/index.ts`
 - declares tools on the manifest `contracts.tools` and `api.registerTool`
 
-`memory-core` is the reference plugin. It also owns dreaming, workers, and workspace files. Hermes does not take those over. Dreaming stays `memory-core` (`DEFAULT_MEMORY_DREAMING_PLUGIN_ID`). The inherited plugin loader reads dreaming settings from the entry named by the raw `plugins.slots.memory` value. With the slot unset it reads `memory-core`'s entry, where dreaming defaults to on, so it loads `memory-core` as a dreaming sidecar beside Hermes. Selecting another memory plugin with dreaming enabled also loads `memory-core` as that sidecar. That is existing OpenClaw behavior.
+`memory-core` is the reference plugin. It also owns dreaming, workers, and workspace files. Hermes does not take those over. Dreaming stays `memory-core` (`DEFAULT_MEMORY_DREAMING_PLUGIN_ID`). The inherited plugin loader reads dreaming settings from the entry named by the raw `plugins.slots.memory` value. Upstream OpenClaw starts `memory-core` as a dreaming sidecar beside any other slot owner unless that owner's entry turns dreaming off, and with the slot unset it reads `memory-core`'s entry, where dreaming defaults to on. Since PR #3 (`fe/memory-sidecar-guard`, on `main`), Paddy's loader starts the sidecar only when the slot owner's entry sets `dreaming.enabled: true`; unset, an empty block, or `false` keep it off, and a sidecar never registers CLI commands.
 
 Paddy keeps the sidecar off with two config keys, written by default:
 
@@ -40,7 +40,7 @@ Paddy keeps the sidecar off with two config keys, written by default:
 
 `src/config/paddy-memory-defaults.ts` `applyPaddyMemoryDefaults` adds both keys when they are unset. It runs on the missing-config path (`io.snapshot.ts`, `io.load.ts`), so a first run with no config file has them, and in onboarding (`onboard-config.ts` `applyLocalSetupWorkspaceConfig`, used by the setup wizard, non-interactive local onboarding, system-agent setup and migration import), so the config onboarding writes has them. It never overwrites a value the user set. Another slot owner (`memory-core`, `memory-lancedb`, `"none"`), a malformed Hermes entry, or an unset slot with an explicit `memory-core` `dreaming.enabled` leaves the config unchanged. An explicit Hermes `dreaming.enabled` is kept as written. The memory-hermes manifest accepts `dreaming: { enabled?: boolean }`. An explicit `plugins.slots.memory: "memory-hermes"` that is missing from the plugin registry only warns, the same as the implicit default.
 
-Existing configs are left alone. Doctor does not rewrite them and there is no migration, because plugin config the user wrote should not change silently on upgrade. An existing config that leaves the slot unset still starts the `memory-core` sidecar until the loader patch (`fe/memory-sidecar-guard`) lands. Re-running onboarding fills in the unset keys.
+Existing configs are left alone. Doctor does not rewrite them and there is no migration, because plugin config the user wrote should not change silently on upgrade. An existing config that leaves the slot unset resolves the slot to the default `memory-hermes`, and the sidecar stays off because main's loader (PR #3) requires an explicit `dreaming.enabled: true`. An existing explicit value (another slot owner, `"none"`, or any `dreaming.enabled`) is kept as written. Re-running onboarding fills in the unset keys.
 
 Hook and tool identity differ:
 
@@ -99,7 +99,7 @@ Added:
 
 `extensions/memory-hermes/src/hermes.test.ts` covers scope isolation, secret rejection independent of the curator, single-entry rollback, same-scope recall, explicit global, fail-open recall, and no `PADDY_STATE_DIR`.
 
-`src/config/paddy-memory-defaults.test.ts` covers the `dreaming` schema, the fill rules (no overwrite of explicit values), the missing-config snapshot and load, and onboarding output. `src/plugins/loader.paddy-memory-defaults.test.ts` loads plugins with the current loader: the default config does not load `memory-core`, and the control (slot unset) does.
+`src/config/paddy-memory-defaults.test.ts` covers the `dreaming` schema, the fill rules (no overwrite of explicit values), the missing-config snapshot and load, and onboarding output. `src/plugins/loader.paddy-memory-defaults.test.ts` loads plugins with main's loader (including PR #3): the default config does not load `memory-core`, an unset slot does not either, and the control (an explicit Hermes `dreaming.enabled: true`) does, so the default-config case cannot pass vacuously.
 
 OpenClaw tests that encoded "the implicit memory plugin id is `memory-core`" are updated. Tests that pin `plugins.slots.memory: "memory-core"` are not.
 

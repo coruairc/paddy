@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { useAutoCleanupTempDirTracker } from "../../test/helpers/temp-dir.js";
 import { applyLocalSetupWorkspaceConfig } from "../commands/onboard-config.js";
 import {
+  isMemoryDreamingSidecarExplicitlyEnabled,
   resolveMemoryDreamingConfig,
   resolveMemoryDreamingPluginConfig,
   resolveMemoryDreamingPluginId,
@@ -24,7 +25,9 @@ const PADDY_DEFAULT_MEMORY_PLUGINS = {
 };
 
 function expectDreamingSidecarOff(cfg: OpenClawConfig) {
-  // The loader's sidecar decision (plugins/loader-shared.ts) reads exactly these resolvers.
+  // Both keys: main's loader (patch A, plugins/loader-shared.ts) starts the sidecar only on an
+  // explicit dreaming.enabled: true, and the inherited resolvers also read Hermes's false.
+  expect(isMemoryDreamingSidecarExplicitlyEnabled(cfg)).toBe(false);
   expect(resolveMemoryDreamingPluginId(cfg)).toBe("memory-hermes");
   expect(
     resolveMemoryDreamingConfig({ pluginConfig: resolveMemoryDreamingPluginConfig(cfg), cfg })
@@ -76,8 +79,11 @@ describe("applyPaddyMemoryDefaults", () => {
     expectDreamingSidecarOff(next);
   });
 
-  it("documents the gap it closes: with the slot unset, dreaming resolves from memory-core (on)", () => {
+  it("documents the gap it backstops: with the slot unset, the inherited resolvers say memory-core (on)", () => {
     const unset: OpenClawConfig = {};
+    // Main's loader (patch A) already keeps the sidecar off here; the defaults are the second key
+    // if that check regresses or another caller uses the inherited resolvers.
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(unset)).toBe(false);
     expect(resolveMemoryDreamingPluginId(unset)).toBe("memory-core");
     expect(
       resolveMemoryDreamingConfig({ pluginConfig: resolveMemoryDreamingPluginConfig(unset) })
