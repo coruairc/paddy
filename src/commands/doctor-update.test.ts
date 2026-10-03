@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { UpdateCommandRecoveryPendingError } from "../cli/update-cli/update-command-recovery-error.js";
 import { withUpdateInProgressEnv } from "../cli/update-cli/update-command-service-env.js";
+import { setPaddySelfUpdateAllowedForTest } from "../infra/paddy-update-policy.js";
 import type { UpdateRunResult } from "../infra/update-runner-types.js";
 import { maybeOfferUpdateBeforeDoctor } from "./doctor-update.js";
 
@@ -68,6 +69,21 @@ afterEach(() => {
 });
 
 describe("Doctor source update delegation", () => {
+  it("continues Doctor without offering an update while Paddy self-update is disabled", async () => {
+    setPaddySelfUpdateAllowedForTest(false);
+    try {
+      await expect(offer()).resolves.toEqual({ updated: false });
+    } finally {
+      setPaddySelfUpdateAllowedForTest(true);
+    }
+    expect(mocks.git).not.toHaveBeenCalled();
+    expect(mocks.confirm).not.toHaveBeenCalled();
+    expect(mocks.updateCommand).not.toHaveBeenCalled();
+    expect(mocks.note).toHaveBeenCalledWith(
+      expect.stringContaining("Self-update is disabled"),
+      "Update",
+    );
+  });
   it.each(["OPENCLAW_SUPERVISOR_MODE", "OPENCLAW_SERVICE_REPAIR_POLICY"])(
     "continues Doctor without offering self-update when %s is external",
     async (key) => {

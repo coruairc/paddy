@@ -6,6 +6,10 @@ import { note } from "../../packages/terminal-core/src/note.js";
 import { CLI_NAME, PRODUCT_NAME } from "../brand.js";
 import { formatCliCommand } from "../cli/command-format.js";
 import { isTruthyEnvValue } from "../infra/env.js";
+import {
+  isPaddySelfUpdateAvailable,
+  PADDY_SELF_UPDATE_UNAVAILABLE_MESSAGE,
+} from "../infra/paddy-update-policy.js";
 import { UPDATE_RUNNER_TIMEOUT_MS } from "../infra/update-run-timeouts.js";
 import { runCommandWithTimeout } from "../process/exec.js";
 import type { DoctorOptions } from "./doctor-prompter.js";
@@ -55,6 +59,11 @@ export async function maybeOfferUpdateBeforeDoctor(params: {
     params.options.repair !== true &&
     process.stdin.isTTY;
   if (!canOfferUpdate || !params.root) {
+    return { updated: false };
+  }
+  // Paddy refuses self-update; offering it would only abort Doctor with the refusal.
+  if (!isPaddySelfUpdateAvailable()) {
+    note(`${PADDY_SELF_UPDATE_UNAVAILABLE_MESSAGE} Continuing Doctor.`, "Update");
     return { updated: false };
   }
 
