@@ -75,10 +75,10 @@ describe("normalizePluginsConfig", () => {
     });
   });
   it.each([
-    [{}, "memory-core"],
+    [{}, "memory-hermes"],
     [{ slots: { memory: "None" } }, null],
     [{ slots: { memory: "  custom-memory  " } }, "custom-memory"],
-    [{ slots: { memory: "   " } }, "memory-core"],
+    [{ slots: { memory: "   " } }, "memory-hermes"],
   ] as const)("normalizes memory slot for %o", (config, expected) => {
     expect(normalizePluginsConfig(config).slots.memory).toBe(expected);
   });

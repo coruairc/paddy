@@ -23,6 +23,7 @@ import {
 import { resolveChannelSchemaSelection } from "./channel-schema-selection.js";
 import { resolveConfigWidePluginManifestRegistry } from "./io.plugin-metadata.js";
 import { materializeRuntimeConfig } from "./materialize.js";
+import { collectPaddyMemoryDreamingOwnerWarnings } from "./paddy-memory-defaults.js";
 import type { ConfigValidationIssue, OpenClawConfig } from "./types.js";
 import {
   bundledChannelIds,
@@ -141,6 +142,7 @@ export function validatePreparedConfigWithPlugins(
     opts.deferredPluginMigrations?.map(({ pluginId }) => normalizePluginId(pluginId)),
   );
   warnings.push(...collectHeartbeatOwnerWarnings(config));
+  warnings.push(...collectPaddyMemoryDreamingOwnerWarnings(config));
   const hasExplicitPluginsConfig = isRecord(raw) && Object.hasOwn(raw, "plugins");
 
   let compatPluginIds: ReadonlySet<string> | null = null;

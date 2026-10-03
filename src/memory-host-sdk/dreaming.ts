@@ -376,14 +376,39 @@ export function resolveMemoryDreamingPluginConfig(
  *
  * Upstream treats dreaming as on by default, so selecting any other memory slot owner
  * silently loads memory-core as a sidecar (which then registers its `memory` CLI and
- * runs its own promotion). Paddy only allows the sidecar when the selected slot
- * owner's config sets `dreaming.enabled: true` explicitly. The default
- * (`DEFAULT_MEMORY_DREAMING_ENABLED`) still applies when memory-core owns the slot.
+ * runs its own promotion). Paddy only allows the sidecar when the selected memory slot
+ * owner's own entry, `plugins.entries[<slotOwnerId>].config.dreaming.enabled`, is
+ * explicitly `true`.
+ *
+ * `slotOwnerId` must be the normalized, resolved memory slot owner (the explicitly
+ * written `plugins.slots.memory`, or the default slot when none is written). It is
+ * never derived from the raw config here, because an unwritten slot must not fall back
+ * to memory-core's own entry. memory-core itself, `none`, and an empty owner never
+ * allow a sidecar. The default (`DEFAULT_MEMORY_DREAMING_ENABLED`) still applies when
+ * memory-core owns the slot.
  */
 export function isMemoryDreamingSidecarExplicitlyEnabled(
   cfg: OpenClawConfig | Record<string, unknown> | undefined,
+  slotOwnerId: string | null | undefined,
 ): boolean {
-  const dreaming = asNullableRecord(resolveMemoryDreamingPluginConfig(cfg)?.dreaming);
+  const ownerId = normalizeLowercaseStringOrEmpty(slotOwnerId);
+  if (!ownerId || ownerId === "none" || ownerId === DEFAULT_MEMORY_DREAMING_PLUGIN_ID) {
+    return false;
+  }
+  const root = asNullableRecord(cfg);
+  const plugins = asNullableRecord(root?.plugins);
+  const entries = asNullableRecord(plugins?.entries);
+  if (!entries) {
+    return false;
+  }
+  const entryKey = Object.hasOwn(entries, ownerId)
+    ? ownerId
+    : Object.keys(entries).find((key) => normalizeLowercaseStringOrEmpty(key) === ownerId);
+  if (!entryKey) {
+    return false;
+  }
+  const entry = asNullableRecord(entries[entryKey]);
+  const dreaming = asNullableRecord(asNullableRecord(entry?.config)?.dreaming);
   return parseBoolean(dreaming?.enabled) === true;
 }
 

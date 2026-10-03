@@ -10,6 +10,7 @@ import type { PluginCandidate } from "./discovery.js";
 import {
   createPluginCandidatesFromManifestRegistry,
   preparePluginLoadRecord,
+  resolveAuthorizedDreamingSidecar,
   validatePluginConfig as validatePluginConfigByOrigin,
 } from "./loader-shared.js";
 import { loadOpenClawPluginCliRegistry, loadOpenClawPlugins } from "./loader.js";
@@ -86,6 +87,53 @@ describe("preparePluginLoadRecord", () => {
       "2026.7.2",
     );
     expect(createRecordWithBuildVersion(42)).toHaveProperty("builtWithOpenClawVersion", undefined);
+  });
+});
+
+describe("resolveAuthorizedDreamingSidecar with no memory slot written (Paddy)", () => {
+  // No `plugins.slots.memory` is written, so the loader's normalized slot comes from the
+  // default slot owner. Simulate a non-memory-core default (memory-hermes in Paddy) by
+  // passing that resolved owner the same way loader-runtime-core does.
+  const OWNER = "memory-lancedb";
+  const memoryManifest = (id: string): PluginManifestRecord => ({
+    ...manifestRecord,
+    id,
+    kind: "memory",
+    rootDir: `/plugins/${id}`,
+    source: `/plugins/${id}/index.js`,
+    manifestPath: `/plugins/${id}/openclaw.plugin.json`,
+  });
+  const resolveFor = (entries: Record<string, unknown>) => {
+    const cfg = { plugins: { entries } } as OpenClawConfig;
+    const activationSource = createPluginActivationSource({ config: cfg });
+    return resolveAuthorizedDreamingSidecar({
+      cfg,
+      normalized: activationSource.plugins,
+      activationSource,
+      manifestRegistry: {
+        plugins: [memoryManifest("memory-core"), memoryManifest(OWNER)],
+        diagnostics: [],
+      },
+      memorySlot: OWNER,
+    });
+  };
+
+  it("keeps the sidecar off when only memory-core's own entry opts in", () => {
+    expect(
+      resolveFor({
+        [OWNER]: { enabled: true },
+        "memory-core": { enabled: true, config: { dreaming: { enabled: true } } },
+      }),
+    ).toBeNull();
+  });
+
+  it("turns the sidecar on when the resolved slot owner's entry opts in", () => {
+    expect(
+      resolveFor({
+        [OWNER]: { enabled: true, config: { dreaming: { enabled: true } } },
+        "memory-core": { enabled: true },
+      }),
+    ).toEqual({ engineId: "memory-core", selectedMemoryPluginId: OWNER });
   });
 });
 

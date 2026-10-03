@@ -145,6 +145,7 @@ export function setupBundledDreamingMemoryPlugins(params?: {
   selectedId?: string;
   selectedKind?: unknown;
   coreBody?: string;
+  selectedBody?: string;
 }) {
   const selectedId = params?.selectedId ?? "memory-lancedb";
   const bundledDir = makePluginLoaderTempDir();
@@ -163,9 +164,10 @@ export function setupBundledDreamingMemoryPlugins(params?: {
     dir: selectedMemoryDir,
     filename: "index.cjs",
     body:
-      params?.selectedKind === "utility"
+      params?.selectedBody ??
+      (params?.selectedKind === "utility"
         ? `module.exports = { id: ${JSON.stringify(selectedId)}, kind: "utility", register() {} };`
-        : memoryPluginBody(selectedId),
+        : memoryPluginBody(selectedId)),
   });
   const openSchema = { type: "object", additionalProperties: true };
   updatePluginManifest({ dir: memoryCoreDir }, { kind: "memory" });

@@ -29,12 +29,18 @@ const ROOT_COMMANDS_HINT =
 const EXAMPLES = [
   [`${CLI_NAME} onboard`, "Run guided setup for a local Gateway, workspace, auth, and channels."],
   [`${CLI_NAME} setup --baseline`, "Create the baseline config, workspace, and session folders."],
-  [`${CLI_NAME} configure`, "Change models, Gateway, channels, plugins, skills, and health checks."],
+  [
+    `${CLI_NAME} configure`,
+    "Change models, Gateway, channels, plugins, skills, and health checks.",
+  ],
   [`${CLI_NAME} status`, "Check Gateway, channel, model, and recent-session status."],
   [`${CLI_NAME} doctor --fix`, "Repair common config, service, plugin, and channel problems."],
   [`${CLI_NAME} channels add`, "Add or update a chat channel account with guided prompts."],
   [`${CLI_NAME} channels status`, "See connected messaging accounts and login state."],
-  [`${CLI_NAME} --dev gateway`, "Run a dev Gateway (isolated state/config) on ws://127.0.0.1:19001."],
+  [
+    `${CLI_NAME} --dev gateway`,
+    "Run a dev Gateway (isolated state/config) on ws://127.0.0.1:19001.",
+  ],
   [`${CLI_NAME} gateway run --force`, "Start the Gateway and replace anything bound to its port."],
   [`${CLI_NAME} models status`, "Show model/provider auth health before running agents."],
   [`${CLI_NAME} plugins list`, "Inspect enabled, disabled, and installed plugins."],
@@ -85,11 +91,11 @@ export function configureProgramHelp(
     )
     .option(
       "--dev",
-      "Dev profile: isolate state under ~/.openclaw-dev, default gateway port 19001, and shift derived ports (browser/canvas)",
+      "Dev profile: isolate state under ~/.paddy-dev, default gateway port 19001, and shift derived ports (browser/canvas)",
     )
     .option(
       "--profile <name>",
-      "Use a named profile (isolates OPENCLAW_STATE_DIR/OPENCLAW_CONFIG_PATH under ~/.openclaw-<name>)",
+      "Use a named profile (isolates OPENCLAW_STATE_DIR/OPENCLAW_CONFIG_PATH under ~/.paddy-<name>)",
     )
     .option(
       "--log-level <level>",
