@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createDeferred } from "../../test/helpers/promise.js";
 import { resolveGatewayTaskScriptPath } from "../daemon/paths.js";
 import {
+  PADDY_SELF_UPDATE_UNAVAILABLE_MESSAGE,
   PaddySelfUpdateUnavailableError,
   setPaddySelfUpdateAllowedForTest,
 } from "../infra/paddy-update-policy.js";
@@ -265,6 +266,43 @@ describe("update-cli", () => {
     expect(fetchNpmPackageTargetStatus).not.toHaveBeenCalled();
     expect(triageCommand).not.toHaveBeenCalled();
     expect(listUpdateRuns()).toEqual([]);
+    expect(JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"))).toMatchObject({
+      version: "1.0.0",
+    });
+  });
+
+  it("exits 1 with the Paddy refusal message when `paddy update --yes` runs on Windows", async () => {
+    vi.spyOn(process, "platform", "get").mockReturnValue("win32");
+    const root = await fixture.mockPackageInstallAtCaseDir("openclaw-update-paddy-refusal-cli");
+    fixture.mockRunningManagedGateway([
+      "node",
+      path.join(root, "dist", "index.js"),
+      "gateway",
+      "run",
+    ]);
+    suspendScheduledTaskAutoStartForUpdate.mockResolvedValue(true);
+    vi.mocked(defaultRuntime.error).mockClear();
+    vi.mocked(defaultRuntime.exit).mockClear();
+    const runsBefore = listUpdateRuns();
+    setPaddySelfUpdateAllowedForTest(false);
+    try {
+      await invokeUpdateCli({ yes: true });
+    } finally {
+      setPaddySelfUpdateAllowedForTest(true);
+    }
+
+    expect(vi.mocked(defaultRuntime.error).mock.calls).toEqual([
+      [PADDY_SELF_UPDATE_UNAVAILABLE_MESSAGE],
+    ]);
+    expect(vi.mocked(defaultRuntime.exit).mock.calls).toEqual([[1]]);
+    expect(listUpdateRuns()).toEqual(runsBefore);
+    expect(serviceReadCommand).not.toHaveBeenCalled();
+    expect(suspendScheduledTaskAutoStartForUpdate).not.toHaveBeenCalled();
+    expect(serviceStop).not.toHaveBeenCalled();
+    expect(freshRestartCalls()).toHaveLength(0);
+    expect(packageInstallCommandCall()).toBeUndefined();
+    expect(fetchNpmPackageTargetStatus).not.toHaveBeenCalled();
+    expect(triageCommand).not.toHaveBeenCalled();
     expect(JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"))).toMatchObject({
       version: "1.0.0",
     });
