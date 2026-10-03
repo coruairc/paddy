@@ -124,7 +124,7 @@ export function createOperationRegistrars(state: PluginRegistryState) {
       // Paddy: a dreaming sidecar never owns CLI commands; the selected memory slot
       // owner does. Without this, memory-core would claim `memory` first-wins.
       state.pushDiagnostic({
-        level: "info",
+        level: "warn",
         pluginId: record.id,
         source: record.source,
         message: "dreaming sidecar; skipping cli registration",

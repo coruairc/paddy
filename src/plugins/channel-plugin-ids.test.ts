@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { OpenClawConfig } from "../config/config.js";
 import { applyPluginAutoEnable } from "../config/plugin-auto-enable.js";
+import { createPluginActivationSource } from "./config-state.js";
+import { resolveAuthorizedGatewayStartupDreamingPluginIds } from "./gateway-startup-plugin-config.js";
 import type { InstalledPluginIndex, InstalledPluginIndexRecord } from "./installed-plugin-index.js";
 import type { PluginManifestRecord, PluginManifestRegistry } from "./manifest-registry.js";
 import { loadPluginMetadataSnapshot } from "./plugin-metadata-snapshot.js";
@@ -2319,6 +2321,44 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
           index,
         }),
       ).toEqual(expected);
+    },
+  );
+
+  // Paddy: with no `plugins.slots.memory` written, gateway startup resolves the memory
+  // slot owner from the default slot (memory-hermes in Paddy). Simulate a non-memory-core
+  // default by passing that resolved owner, exactly as the startup plan does.
+  it.each([
+    {
+      label: "only memory-core's own entry opts in",
+      entries: {
+        "memory-lancedb": { enabled: true },
+        "memory-core": { enabled: true, config: { dreaming: { enabled: true } } },
+      },
+      expected: [] as string[],
+    },
+    {
+      label: "the resolved slot owner's entry opts in",
+      entries: {
+        "memory-lancedb": { enabled: true, config: { dreaming: { enabled: true } } },
+      },
+      expected: ["memory-core"],
+    },
+  ])(
+    "Paddy: with no memory slot written, gates the startup dreaming sidecar on the resolved owner ($label)",
+    ({ entries, expected }) => {
+      const config = { channels: {}, plugins: { entries } } as OpenClawConfig;
+      const activationSource = createPluginActivationSource({ config });
+      const registry = createManifestRegistryFixture();
+      expect([
+        ...resolveAuthorizedGatewayStartupDreamingPluginIds({
+          config,
+          pluginsConfig: activationSource.plugins,
+          activationSource,
+          activationSourcePlugins: activationSource.plugins,
+          selectedMemoryPluginId: "memory-lancedb",
+          index: createInstalledPluginIndexFixture(registry),
+        }),
+      ]).toEqual(expected);
     },
   );
 

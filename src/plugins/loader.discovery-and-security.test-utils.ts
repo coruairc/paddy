@@ -480,6 +480,15 @@ describe("loadOpenClawPlugins", () => {
                 api.registerCli(() => {}, { commands: ["memory"] });
               },
             };`,
+            // The slot owner registers its own `memory` command; it must still win cleanly.
+            selectedBody: `module.exports = {
+              id: "memory-lancedb",
+              kind: "memory",
+              register(api) {
+                api.registerMemoryCapability({ promptBuilder: () => ["lancedb prompt"] });
+                api.registerCli(() => {}, { commands: ["memory"] });
+              },
+            };`,
           });
 
           return loadOpenClawPlugins({
@@ -507,7 +516,7 @@ describe("loadOpenClawPlugins", () => {
           ).toEqual([]);
           expect(registry.diagnostics).toContainEqual(
             expect.objectContaining({
-              level: "info",
+              level: "warn",
               pluginId: "memory-core",
               message: "dreaming sidecar; skipping cli registration",
             }),
@@ -515,6 +524,20 @@ describe("loadOpenClawPlugins", () => {
           expect(
             registry.diagnostics.filter(
               (entry) => entry.pluginId === "memory-core" && entry.level === "error",
+            ),
+          ).toEqual([]);
+          const lance = registry.plugins.find((entry) => entry.id === "memory-lancedb");
+          expect(lance?.status).toBe("loaded");
+          expect(lance?.memorySlotSelected).toBe(true);
+          expect(lance?.cliCommands).toEqual(["memory"]);
+          expect(
+            registry.cliRegistrars
+              .filter((entry) => entry.pluginId === "memory-lancedb")
+              .flatMap((entry) => entry.commands),
+          ).toEqual(["memory"]);
+          expect(
+            registry.diagnostics.filter(
+              (entry) => entry.pluginId === "memory-lancedb" && entry.level === "error",
             ),
           ).toEqual([]);
         },
