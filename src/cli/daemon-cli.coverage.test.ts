@@ -223,8 +223,8 @@ describe("daemon-cli coverage", () => {
       "OPENCLAW_PROFILE",
     ]);
     setTestEnvValue("HOME", tmpDir);
-    setTestEnvValue("OPENCLAW_STATE_DIR", path.join(tmpDir, ".openclaw"));
-    setTestEnvValue("OPENCLAW_CONFIG_PATH", path.join(tmpDir, ".openclaw", "openclaw.json"));
+    setTestEnvValue("OPENCLAW_STATE_DIR", path.join(tmpDir, ".paddy"));
+    setTestEnvValue("OPENCLAW_CONFIG_PATH", path.join(tmpDir, ".paddy", "openclaw.json"));
     mockSystemAccountHome();
     deleteTestEnvValue("OPENCLAW_GATEWAY_PORT");
     deleteTestEnvValue("OPENCLAW_PROFILE");
