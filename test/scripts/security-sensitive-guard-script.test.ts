@@ -10,6 +10,7 @@ import {
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { loadSecurityReviewPolicy } from "../../scripts/github/security-review-policy.mjs";
+import { rolloutPolicyText } from "../helpers/security-review-rollout-checkout.js";
 import { useAutoCleanupTempDirTracker } from "../helpers/temp-dir.js";
 
 const tempDirs = useAutoCleanupTempDirTracker(afterEach);
@@ -455,6 +456,7 @@ describe("security-sensitive guard entry point", () => {
       };
       const result = runGuard({
         script,
+        policy: rolloutPolicyText(),
         routes: {
           [`GET ${pullPath}`]: {
             responses: [
@@ -524,6 +526,7 @@ describe("security-sensitive guard entry point", () => {
     expect(result.comment).toBeUndefined();
   });
 
+  // Rollout modes need a policy that names a rollout pull request; the repository policy has none.
   describe.each(["security-sensitive-guard", "dependency-guard"] as const)(
     "%s rollout enforcement",
     (script) => {
@@ -535,6 +538,7 @@ describe("security-sensitive guard entry point", () => {
         const result = runGuard({
           script,
           files,
+          policy: rolloutPolicyText(),
           createdAt: "2025-11-01T00:00:00Z",
           routes: {
             [`GET /repos/openclaw/openclaw/compare/${rolloutSha}...${headSha}`]: {
@@ -554,6 +558,7 @@ describe("security-sensitive guard entry point", () => {
         const result = runGuard({
           script,
           files,
+          policy: rolloutPolicyText(),
           createdAt: "2025-11-01T00:00:00Z",
           routes: {
             [`GET /repos/openclaw/openclaw/compare/${rolloutSha}...${headSha}`]: {
@@ -575,6 +580,7 @@ describe("security-sensitive guard entry point", () => {
         const result = runGuard({
           script,
           files,
+          policy: rolloutPolicyText(),
           routes: { "GET /repos/openclaw/openclaw/pulls/152415": response },
         });
         expect(result.status).toBe(1);

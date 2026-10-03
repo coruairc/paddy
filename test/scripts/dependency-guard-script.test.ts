@@ -22,6 +22,7 @@ import {
   shouldAutoscrubDependencyLockfiles,
 } from "../../scripts/github/dependency-guard.mjs";
 import { loadSecurityReviewPolicy } from "../../scripts/github/security-review-policy.mjs";
+import { createRolloutPolicyCheckout } from "../helpers/security-review-rollout-checkout.js";
 import { useAutoCleanupTempDirTracker } from "../helpers/temp-dir.js";
 
 const headSha = "a".repeat(40);
@@ -80,6 +81,7 @@ function runDependencyGuard(
   routes: Record<string, unknown> = {},
   mode = "enforce",
   autoscrubToken: string | null = "fixture-autoscrub-token",
+  options: { rolloutPolicy?: boolean } = {},
 ) {
   const dir = tempDirs.make("openclaw-dependency-guard-");
   const eventPath = path.join(dir, "event.json");
@@ -127,7 +129,9 @@ function runDependencyGuard(
     [
       "--import",
       fileURLToPath(new URL("../fixtures/github-guard-fetch.mjs", import.meta.url)),
-      fileURLToPath(new URL("../../scripts/github/dependency-guard.mjs", import.meta.url)),
+      options.rolloutPolicy
+        ? createRolloutPolicyCheckout(path.join(dir, "checkout"), "dependency-guard")
+        : fileURLToPath(new URL("../../scripts/github/dependency-guard.mjs", import.meta.url)),
     ],
     {
       encoding: "utf8",
@@ -569,6 +573,9 @@ describe("dependency guard script", () => {
           },
         },
         mode,
+        undefined,
+        // Rollout modes need a policy that names a rollout pull request; the repository has none.
+        { rolloutPolicy: true },
       );
       expect(result.status, result.stderr).toBe(0);
       expect(result.stdout).toContain("grandfathered");

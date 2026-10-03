@@ -3,6 +3,7 @@ import { copyFileSync, mkdirSync, symlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { stringify } from "yaml";
+import { loadSecurityReviewPolicy } from "../../scripts/github/security-review-policy.mjs";
 import { useAutoCleanupTempDirTracker } from "../helpers/temp-dir.js";
 
 const tempDirs = useAutoCleanupTempDirTracker(afterEach);
@@ -112,6 +113,12 @@ try {
 }
 
 describe("security review rollout", () => {
+  it("Paddy's repository policy names no rollout pull request, so every PR is enforced", () => {
+    // Upstream's rollout PR (openclaw/openclaw#152415) does not exist in this fork; naming it
+    // made every security review fail its rollout lookup with a 404 before reading the diff.
+    expect(loadSecurityReviewPolicy().rolloutPullRequest).toBeUndefined();
+  });
+
   it("enforces without GitHub rollout lookups after the configuration is removed", () => {
     expect(evaluate({ policy: { rollout: undefined } })).toEqual({
       status: 0,
