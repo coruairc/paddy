@@ -41,7 +41,8 @@ function scopeFromTurn(input: ScopeInput): string {
 }
 
 function textResult(text: string) {
-  return { content: [{ type: "text" as const, text }] };
+  // AgentToolResult requires `details`; these tools have no structured payload.
+  return { content: [{ type: "text" as const, text }], details: {} };
 }
 
 export default definePluginEntry({
