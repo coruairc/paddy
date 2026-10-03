@@ -5,6 +5,10 @@ import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { createDeferred } from "../../test/helpers/promise.js";
 import { resolveGatewayTaskScriptPath } from "../daemon/paths.js";
+import {
+  PaddySelfUpdateUnavailableError,
+  setPaddySelfUpdateAllowedForTest,
+} from "../infra/paddy-update-policy.js";
 import { resolveOpenClawStateSqlitePath } from "../state/openclaw-state-db.paths.js";
 import { withEnvAsync } from "../test-utils/env.js";
 import { createCommandResult as commandResult } from "../test-utils/npm-spec-install-test-helpers.js";
@@ -110,7 +114,7 @@ describe("update-cli", () => {
     vi.spyOn(process, "platform", "get").mockReturnValue(platform);
     const tempDir = fixture.tempDirs.make(`openclaw-update-${platform}-selector-`);
     const home = path.join(tempDir, "home");
-    const stateDir = path.join(home, ".openclaw-work");
+    const stateDir = path.join(home, ".paddy-work");
     const { nodeModules, pkgRoot: root } = await fixture.setupInstalledPackageRoot(tempDir);
     serviceReadCommand.mockResolvedValue({
       programArguments: ["node", path.join(root, "dist", "index.js"), "gateway", "run"],
@@ -151,7 +155,7 @@ describe("update-cli", () => {
     expect(defaultRuntime.exit).not.toHaveBeenCalled();
     expect(getLogOutput()).toContain(envKey);
     expect(fetchNpmPackageTargetStatus).not.toHaveBeenCalled();
-    for (const candidateState of [stateDir, path.join(home, ".openclaw")]) {
+    for (const candidateState of [stateDir, path.join(home, ".paddy")]) {
       expect(
         fsSync.existsSync(resolveOpenClawStateSqlitePath({ OPENCLAW_STATE_DIR: candidateState })),
       ).toBe(false);
@@ -226,6 +230,44 @@ describe("update-cli", () => {
     expect(requireValue(stopOrder, "service stop order")).toBeLessThan(
       requireValue(resumeOrder, "Scheduled Task resume order"),
     );
+  });
+
+  // test/setup.shared.ts opts upstream suites into the inherited self-update machinery. With
+  // Paddy's shipped policy the same Windows update must refuse before it touches the task,
+  // the service, or the installed package.
+  it("refuses a Windows self-update before suspending the task, stopping the service, or installing", async () => {
+    vi.spyOn(process, "platform", "get").mockReturnValue("win32");
+    const root = await fixture.mockPackageInstallAtCaseDir("openclaw-update-paddy-refusal");
+    fixture.mockRunningManagedGateway([
+      "node",
+      path.join(root, "dist", "index.js"),
+      "gateway",
+      "run",
+    ]);
+    suspendScheduledTaskAutoStartForUpdate.mockResolvedValue(true);
+    setPaddySelfUpdateAllowedForTest(false);
+    try {
+      await expect(updateCommand({ yes: true })).rejects.toBeInstanceOf(
+        PaddySelfUpdateUnavailableError,
+      );
+    } finally {
+      setPaddySelfUpdateAllowedForTest(true);
+    }
+
+    expect(serviceReadCommand).not.toHaveBeenCalled();
+    expect(suspendScheduledTaskAutoStartForUpdate).not.toHaveBeenCalled();
+    expect(resumeScheduledTaskAutoStartAfterUpdate).not.toHaveBeenCalled();
+    expect(serviceStop).not.toHaveBeenCalled();
+    expect(serviceRestart).not.toHaveBeenCalled();
+    expect(freshRestartCalls()).toHaveLength(0);
+    expect(runDaemonRestart).not.toHaveBeenCalled();
+    expect(packageInstallCommandCall()).toBeUndefined();
+    expect(fetchNpmPackageTargetStatus).not.toHaveBeenCalled();
+    expect(triageCommand).not.toHaveBeenCalled();
+    expect(listUpdateRuns()).toEqual([]);
+    expect(JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"))).toMatchObject({
+      version: "1.0.0",
+    });
   });
 
   it.each([
