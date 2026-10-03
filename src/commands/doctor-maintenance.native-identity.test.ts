@@ -245,7 +245,7 @@ async function repair(scenario: Scenario) {
       HOME: home,
       USERPROFILE: home,
       OPENCLAW_HOME: undefined,
-      OPENCLAW_STATE_DIR: path.join(home, ".openclaw"),
+      OPENCLAW_STATE_DIR: path.join(home, ".paddy"),
       OPENCLAW_CONFIG_PATH: undefined,
       OPENCLAW_PROFILE: undefined,
       OPENCLAW_SUPERVISOR_MODE: undefined,

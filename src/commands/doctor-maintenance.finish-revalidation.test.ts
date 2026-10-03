@@ -552,7 +552,7 @@ async function runDoctorFinishForStoppedUnit(
         vi.stubEnv("OPENCLAW_UPDATE_PARENT_ALLOWS_GATEWAY_ACTIVATION", undefined);
       }
       const logs: string[] = [];
-      const databasePath = path.join(home, ".openclaw", "state", "openclaw.sqlite");
+      const databasePath = path.join(home, ".paddy", "state", "openclaw.sqlite");
       otherOwner =
         scenario === "lifecycle-contended" ||
         scenario === "gateway-lifecycle-contended" ||
@@ -565,7 +565,7 @@ async function runDoctorFinishForStoppedUnit(
                     payload: {
                       pid: process.pid,
                       createdAt: new Date().toISOString(),
-                      configPath: path.join(home, ".openclaw", "openclaw.json"),
+                      configPath: path.join(home, ".paddy", "openclaw.json"),
                       role: "gateway",
                     },
                   }),
