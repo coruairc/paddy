@@ -779,6 +779,25 @@ For conceptual behavior and slash commands, see [Dreaming](/concepts/dreaming).
 
 </Note>
 
+### Dreaming with a different memory slot owner
+
+When another plugin owns `plugins.slots.memory` (for example `memory-hermes`), `memory-core` can still run dreaming alongside it as a sidecar. The sidecar only loads when the slot owner's own config sets `dreaming.enabled: true` explicitly. If `dreaming` is unset or `false` there, `memory-core` does not load at all, in both the plugin loader and gateway startup, even though the dreaming default is `true` when `memory-core` owns the slot.
+
+```json5
+{
+  plugins: {
+    slots: { memory: "memory-hermes" },
+    entries: {
+      "memory-hermes": { config: { dreaming: { enabled: true } } },
+    },
+  },
+}
+```
+
+<Warning>
+A dreaming sidecar never registers CLI commands. When you opt in as shown above, `memory-core`'s `memory` CLI command is not available; the slot owner's CLI is the only memory CLI. The loader records an info diagnostic, `dreaming sidecar; skipping cli registration`, for the skipped registration. To use the `memory-core` CLI, select `memory-core` as the memory slot owner instead.
+</Warning>
+
 ## Related
 
 - [Configuration reference](/gateway/configuration-reference)

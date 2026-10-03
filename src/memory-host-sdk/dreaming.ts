@@ -371,6 +371,22 @@ export function resolveMemoryDreamingPluginConfig(
   return asNullableRecord(memoryPlugin?.config) ?? undefined;
 }
 
+/**
+ * Paddy: whether a non-owner memory-core dreaming sidecar may load.
+ *
+ * Upstream treats dreaming as on by default, so selecting any other memory slot owner
+ * silently loads memory-core as a sidecar (which then registers its `memory` CLI and
+ * runs its own promotion). Paddy only allows the sidecar when the selected slot
+ * owner's config sets `dreaming.enabled: true` explicitly. The default
+ * (`DEFAULT_MEMORY_DREAMING_ENABLED`) still applies when memory-core owns the slot.
+ */
+export function isMemoryDreamingSidecarExplicitlyEnabled(
+  cfg: OpenClawConfig | Record<string, unknown> | undefined,
+): boolean {
+  const dreaming = asNullableRecord(resolveMemoryDreamingPluginConfig(cfg)?.dreaming);
+  return parseBoolean(dreaming?.enabled) === true;
+}
+
 export function resolveMemoryDreamingConfig(params: {
   pluginConfig?: Record<string, unknown>;
   cfg?: OpenClawConfig;
