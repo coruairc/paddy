@@ -88,9 +88,7 @@ export class HermesStore {
 
   recentErrors(limit = 10): { at: number; op: string; message: string }[] {
     const rows = this.db
-      .prepare(
-        "SELECT at, op, message FROM memory_errors ORDER BY id DESC LIMIT ?",
-      )
+      .prepare("SELECT at, op, message FROM memory_errors ORDER BY id DESC LIMIT ?")
       .all(limit) as { at: number; op: string; message: string }[];
     return rows;
   }
@@ -114,12 +112,7 @@ export class HermesStore {
     return out;
   }
 
-  propose(input: {
-    scope: string;
-    kind: MemoryKind;
-    text: string;
-    source?: string;
-  }): StoreResult {
+  propose(input: { scope: string; kind: MemoryKind; text: string; source?: string }): StoreResult {
     const text = input.text.trim();
     if (!text) {
       return { ok: false, error: "empty" };
@@ -204,9 +197,7 @@ export class HermesStore {
     }
     const version = row.version + 1;
     this.db
-      .prepare(
-        "UPDATE memories SET text = ?, status = ?, version = ?, updated_at = ? WHERE id = ?",
-      )
+      .prepare("UPDATE memories SET text = ?, status = ?, version = ?, updated_at = ? WHERE id = ?")
       .run(prior.text, prior.status, version, now, id);
     this.snapshot(id, version, prior.text, prior.status, now);
     return { ok: true, id, row: this.get(id) };
@@ -216,9 +207,7 @@ export class HermesStore {
     if (status) {
       return (
         this.db
-          .prepare(
-            "SELECT * FROM memories WHERE scope = ? AND status = ? ORDER BY updated_at DESC",
-          )
+          .prepare("SELECT * FROM memories WHERE scope = ? AND status = ? ORDER BY updated_at DESC")
           .all(scope, status) as Record<string, unknown>[]
       ).map(rowFrom);
     }
@@ -264,9 +253,7 @@ export class HermesStore {
 
   private snapshot(id: string, version: number, text: string, status: string, at: number): void {
     this.db
-      .prepare(
-        `INSERT INTO memory_versions (id, version, text, status, at) VALUES (?, ?, ?, ?, ?)`,
-      )
+      .prepare(`INSERT INTO memory_versions (id, version, text, status, at) VALUES (?, ?, ?, ?, ?)`)
       .run(id, version, text, status, at);
   }
 }

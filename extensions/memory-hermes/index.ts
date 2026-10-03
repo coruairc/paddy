@@ -78,7 +78,9 @@ export default definePluginEntry({
           }
           try {
             const query =
-              params && typeof params === "object" && "query" in params ? String(params.query ?? "") : "";
+              params && typeof params === "object" && "query" in params
+                ? String(params.query ?? "")
+                : "";
             const text = safeRecall(
               db,
               scopeFromTurn({
@@ -128,7 +130,11 @@ export default definePluginEntry({
               agentId: ctx.agentId,
             });
             const row = id ? db.get(id) : undefined;
-            if (!row || row.status !== "approved" || (row.scope !== scope && row.scope !== "global")) {
+            if (
+              !row ||
+              row.status !== "approved" ||
+              (row.scope !== scope && row.scope !== "global")
+            ) {
               return textResult("");
             }
             return textResult(row.text);

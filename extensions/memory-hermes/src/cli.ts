@@ -83,7 +83,11 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
       .action(((id: string) => {
         withStore((db) => {
           const result =
-            name === "approve" ? db.approve(id) : name === "reject" ? db.reject(id) : db.rollback(id);
+            name === "approve"
+              ? db.approve(id)
+              : name === "reject"
+                ? db.reject(id)
+                : db.rollback(id);
           process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
           if (!result.ok) {
             process.exitCode = 1;

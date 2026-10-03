@@ -15,7 +15,12 @@ function tempDb(): { dir: string; store: HermesStore } {
   return { dir, store: new HermesStore(path.join(dir, "memory.sqlite")) };
 }
 
-function approveText(store: HermesStore, scope: string, text: string, kind: "memory" | "user" = "memory") {
+function approveText(
+  store: HermesStore,
+  scope: string,
+  text: string,
+  kind: "memory" | "user" = "memory",
+) {
   const proposed = store.propose({ scope, kind, text, source: "test" });
   expect(proposed.ok).toBe(true);
   if (!proposed.ok || !proposed.id) {
