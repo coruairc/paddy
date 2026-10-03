@@ -57,9 +57,20 @@ describe("Paddy default memory config at plugin load", () => {
       coreBody: `throw new Error("memory-core must not load without an explicit dreaming opt-in");`,
     });
 
-    const registry = loadOpenClawPlugins({ cache: false, config: {} });
+    // No `plugins.slots.memory` and no dreaming setting anywhere. The bare memory-hermes entry is
+    // required: under VITEST, applyTestPluginDefaults turns plugins off and forces the memory slot
+    // to "none" unless a memory slot or memory-hermes entry is present, which would make this case
+    // pass without the sidecar decision ever running.
+    const registry = loadOpenClawPlugins({
+      cache: false,
+      config: { plugins: { entries: { "memory-hermes": { enabled: true } } } },
+    });
 
-    // Whatever owns the inferred slot, memory-core is neither loaded nor attempted (its body throws).
+    // The slot resolves to the default owner, so the sidecar decision really ran...
+    const hermes = registry.plugins.find((entry) => entry.id === "memory-hermes");
+    expect(hermes?.status).toBe("loaded");
+    expect(hermes?.memorySlotSelected).toBe(true);
+    // ...and memory-core is neither loaded nor attempted (its body throws).
     const core = registry.plugins.find((entry) => entry.id === "memory-core");
     expect(core?.status).not.toBe("loaded");
     expect(core?.status).not.toBe("error");
