@@ -8,7 +8,11 @@ import {
   recoverConfigFromJsonRootSuffix,
   type ConfigSnapshotReadMeasure,
 } from "../config/io.js";
-import { resolveCanonicalConfigPath, resolveIsConfigReadOnly } from "../config/paths.js";
+import {
+  resolveCanonicalConfigPath,
+  resolveIsConfigReadOnly,
+  resolveLegacyStateDirs,
+} from "../config/paths.js";
 import { inspectShippedPluginInstallConfigRecords } from "../config/plugin-install-config-migration.js";
 import type { ConfigFileSnapshot } from "../config/types.js";
 import { formatErrorMessage } from "../infra/errors.js";
@@ -206,7 +210,13 @@ async function maybeMigrateLegacyConfig(): Promise<string[]> {
     // missing config
   }
 
-  const legacyPath = path.join(home, ".clawdbot", "clawdbot.json");
+  // Paddy has no legacy state dirs (config/state-dir.ts), so this finds nothing: a
+  // ~/.clawdbot/clawdbot.json belongs to a separate install and is never copied into Paddy.
+  const [legacyStateDir] = resolveLegacyStateDirs(() => home);
+  if (!legacyStateDir) {
+    return changes;
+  }
+  const legacyPath = path.join(legacyStateDir, "clawdbot.json");
   try {
     await fs.access(legacyPath);
   } catch {
