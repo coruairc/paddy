@@ -140,7 +140,7 @@ describe("registered gateway install runtime default", () => {
 beforeEach(async () => {
   originalArgv = process.argv;
   const home = tempDirs.make("openclaw-install-wrapper-");
-  const state = path.join(home, ".openclaw-wrapper-test");
+  const state = path.join(home, ".paddy-wrapper-test");
   for (const [key, value] of Object.entries({
     HOME: home,
     OPENCLAW_HOME: "",
