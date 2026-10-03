@@ -97,7 +97,7 @@ async function withStatusFixture(
       homedir: accountHome,
       shell: "/bin/sh",
     }));
-    const stateDir = path.join(accountHome, ".openclaw");
+    const stateDir = path.join(accountHome, ".paddy");
     await withEnvAsync(
       {
         HOME: accountHome,
@@ -151,7 +151,7 @@ async function createStatus(surface: StatusSurface, accountHome: string): Promis
     const serviceConfigPath = path.join(serviceStateDir, "openclaw.json");
     status.config = {
       cli: {
-        path: path.join(accountHome, ".openclaw", "openclaw.json"),
+        path: path.join(accountHome, ".paddy", "openclaw.json"),
         exists: true,
         valid: true,
       },
@@ -360,8 +360,8 @@ describe("eligible status recovery", () => {
     await withStatusFixture(
       (accountHome) => ({
         OPENCLAW_PROFILE: "work",
-        OPENCLAW_STATE_DIR: path.join(accountHome, ".openclaw-work"),
-        OPENCLAW_CONFIG_PATH: path.join(accountHome, ".openclaw-work", "openclaw.json"),
+        OPENCLAW_STATE_DIR: path.join(accountHome, ".paddy-work"),
+        OPENCLAW_CONFIG_PATH: path.join(accountHome, ".paddy-work", "openclaw.json"),
         OPENCLAW_LAUNCHD_LABEL: "ai.openclaw.work",
       }),
       async (accountHome, print) => {

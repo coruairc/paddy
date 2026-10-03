@@ -875,7 +875,7 @@ describe("openclaw agent database", () => {
     const home = createTempStateDir();
     const env = { HOME: home, NODE_ENV: "test" };
     const options = { agentId: "main", env };
-    const stateDir = path.join(home, ".openclaw");
+    const stateDir = path.join(home, ".paddy");
     const agentPath = path.join(stateDir, "agents", "main", "agent", "openclaw-agent.sqlite");
 
     // Fail before opening if path resolution escapes the test-owned home.

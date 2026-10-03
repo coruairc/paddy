@@ -486,7 +486,7 @@ describe("SDK installation ownership", () => {
         { label: "sdk-legacy-owner", layout: "split", agentEnv: "clear" },
         async (state) => {
           vi.spyOn(os, "homedir").mockReturnValue(state.home);
-          const legacyDir = path.join(state.home, ".openclaw", "agent");
+          const legacyDir = path.join(state.home, ".paddy", "agent");
           const options = {
             cwd: state.workspaceDir,
             model: testModel,
@@ -619,7 +619,7 @@ describe("SDK installation ownership", () => {
         async (state) => {
           const agentDir =
             selection === "legacy"
-              ? path.join(state.home, ".openclaw/agent")
+              ? path.join(state.home, ".paddy/agent")
               : state.statePath("selected-agent");
           vi.spyOn(os, "homedir").mockReturnValue(state.home);
           await mkdir(agentDir, { recursive: true });

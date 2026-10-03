@@ -1694,7 +1694,7 @@ describe("openclaw state database", () => {
   ])("resolves default SQLite state through HOME with %j", (runtimeEnv) => {
     const home = createTempStateDir();
     expect(resolveOpenClawStateSqlitePath({ ...runtimeEnv, HOME: home })).toBe(
-      path.join(home, ".openclaw", "state", "openclaw.sqlite"),
+      path.join(home, ".paddy", "state", "openclaw.sqlite"),
     );
   });
 
