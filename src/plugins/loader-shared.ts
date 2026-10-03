@@ -7,8 +7,7 @@ import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { activateContextEngineRegistrations } from "../context-engine/registry.js";
 import {
   DEFAULT_MEMORY_DREAMING_PLUGIN_ID,
-  resolveMemoryDreamingConfig,
-  resolveMemoryDreamingPluginConfig,
+  isMemoryDreamingSidecarExplicitlyEnabled,
 } from "../memory-host-sdk/dreaming.js";
 import { recordPluginCandidateInstallOwner } from "./candidate-install-owner.js";
 import {
@@ -82,11 +81,10 @@ function resolveDreamingSidecarEngineId(params: {
   ) {
     return null;
   }
-  const dreamingConfig = resolveMemoryDreamingConfig({
-    pluginConfig: resolveMemoryDreamingPluginConfig(params.cfg),
-    cfg: params.cfg,
-  });
-  return dreamingConfig.enabled ? DEFAULT_MEMORY_DREAMING_PLUGIN_ID : null;
+  // Paddy: a non-owner sidecar requires an explicit `dreaming.enabled: true`.
+  return isMemoryDreamingSidecarExplicitlyEnabled(params.cfg)
+    ? DEFAULT_MEMORY_DREAMING_PLUGIN_ID
+    : null;
 }
 
 export function resolveAuthorizedDreamingSidecar(params: {
@@ -406,6 +404,10 @@ export function preparePluginLoadRecord(params: {
   record.configJsonSchema = manifestRecord.configSchema;
   // Manifest ownership survives rollback of executable registrations.
   record.commandAliases = manifestRecord.commandAliases;
+  if (isDreamingSidecar) {
+    // Paddy: the registrar uses this to keep a sidecar from claiming CLI roots.
+    record.dreamingSidecar = true;
+  }
   return { pluginId, policyId, isDreamingSidecar, activationState, enableState, entry, record };
 }
 

@@ -93,7 +93,8 @@ export function createUpdateCliFixture() {
   const profileStateDir = (profile = "default") =>
     path.join(
       expectDefined(process.env.HOME, "isolated test home"),
-      profile === "default" ? ".openclaw" : `.openclaw-${profile}`,
+      // Paddy's default and named-profile state dirs (config/state-dir.ts, cli/profile-utils.ts).
+      profile === "default" ? ".paddy" : `.paddy-${profile}`,
     );
   let fixtureCount = 0;
   const tempDirs = useAutoCleanupTempDirTracker(afterEach);

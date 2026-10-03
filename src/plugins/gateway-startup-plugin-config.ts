@@ -12,8 +12,7 @@ import {
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import {
   DEFAULT_MEMORY_DREAMING_PLUGIN_ID,
-  resolveMemoryDreamingConfig,
-  resolveMemoryDreamingPluginConfig,
+  isMemoryDreamingSidecarExplicitlyEnabled,
   resolveMemoryDreamingPluginId,
 } from "../memory-host-sdk/dreaming.js";
 import { readBundledDiscoveryMode } from "./bundled-discovery-state.js";
@@ -100,11 +99,8 @@ function listPotentialEnabledChannelIds(
 }
 
 function resolveGatewayStartupDreamingEngineId(config: OpenClawConfig): string | undefined {
-  const dreamingConfig = resolveMemoryDreamingConfig({
-    pluginConfig: resolveMemoryDreamingPluginConfig(config),
-    cfg: config,
-  });
-  if (!dreamingConfig.enabled) {
+  // Paddy: mirror the loader rule; a non-owner sidecar requires explicit opt-in.
+  if (!isMemoryDreamingSidecarExplicitlyEnabled(config)) {
     return undefined;
   }
   if (!resolveGatewayStartupDreamingSelectedPluginId(config)) {

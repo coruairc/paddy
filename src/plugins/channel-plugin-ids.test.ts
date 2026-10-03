@@ -2234,12 +2234,14 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
   });
 
   it("includes the explicitly selected memory slot plugin in startup scope", () => {
+    // Paddy: memory-core is no longer a default-on dreaming sidecar for another slot
+    // owner; it joins startup only with an explicit `dreaming.enabled: true` (see below).
     expectStartupPluginIds({
       config: createStartupConfig({
         enabledPluginIds: ["memory-lancedb"],
         memorySlot: "memory-lancedb",
       }),
-      expected: ["demo-channel", "browser", "memory-core", "memory-lancedb"],
+      expected: ["demo-channel", "browser", "memory-lancedb"],
     });
   });
 
@@ -2280,6 +2282,46 @@ describe("resolveGatewayStartupPluginPlanFromRegistry", () => {
       }),
     ).toEqual(["browser", "memory-core", "memory-lancedb"]);
   });
+
+  // Paddy (a)/(d): gateway startup must agree with the loader, which only admits the
+  // memory-core dreaming sidecar when the slot owner sets `dreaming.enabled: true`.
+  it.each([
+    { label: "unset", entryConfig: undefined, sidecar: false },
+    { label: "empty dreaming block", entryConfig: { dreaming: {} }, sidecar: false },
+    { label: "explicitly false", entryConfig: { dreaming: { enabled: false } }, sidecar: false },
+    { label: "explicitly true", entryConfig: { dreaming: { enabled: true } }, sidecar: true },
+  ])(
+    "Paddy: includes memory-core as a startup dreaming sidecar only when explicit ($label)",
+    ({ entryConfig, sidecar }) => {
+      const config = {
+        channels: {},
+        plugins: {
+          allow: ["browser", "memory-lancedb"],
+          slots: { memory: "memory-lancedb" },
+          entries: {
+            "memory-lancedb": entryConfig
+              ? { enabled: true, config: entryConfig }
+              : { enabled: true },
+          },
+        },
+      } as OpenClawConfig;
+      const expected = sidecar
+        ? ["browser", "memory-core", "memory-lancedb"]
+        : ["browser", "memory-lancedb"];
+
+      expectStartupPluginIds({ config, expected });
+
+      const registry = createManifestRegistryFixture();
+      const index = createInstalledPluginIndexFixture(registry);
+      expect(
+        resolveGatewayStartupMetadataPluginIds({
+          config,
+          env: createPluginPlanningTestEnv(),
+          index,
+        }),
+      ).toEqual(expected);
+    },
+  );
 
   it("does not include denied memory-core as a restrictive dreaming startup sidecar", () => {
     expectStartupPluginIds({

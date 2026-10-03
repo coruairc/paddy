@@ -5,6 +5,7 @@ import { useAutoCleanupTempDirTracker } from "../../test/helpers/temp-dir.js";
 import type { OpenClawConfig } from "../config/config.js";
 import {
   formatMemoryDreamingDay,
+  isMemoryDreamingSidecarExplicitlyEnabled,
   isSameMemoryDreamingDay,
   resolveMemoryDreamingPluginConfig,
   resolveMemoryDreamingPluginId,
@@ -330,5 +331,51 @@ describe("memory dreaming host helpers", () => {
         },
       }),
     ).toEqual({ dreaming: { enabled: true } });
+  });
+});
+
+describe("isMemoryDreamingSidecarExplicitlyEnabled (Paddy)", () => {
+  const withSlotOwnerConfig = (config: Record<string, unknown> | undefined) =>
+    ({
+      plugins: {
+        slots: { memory: "memory-hermes" },
+        entries: { "memory-hermes": config ? { enabled: true, config } : { enabled: true } },
+      },
+    }) as OpenClawConfig;
+
+  it("is false when the slot owner leaves dreaming unset, even though the default is on", () => {
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(undefined)).toBe(false);
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(withSlotOwnerConfig(undefined))).toBe(false);
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(withSlotOwnerConfig({ dreaming: {} }))).toBe(
+      false,
+    );
+    expect(resolveMemoryDreamingConfig({ pluginConfig: {} }).enabled).toBe(true);
+  });
+
+  it("is false when dreaming is explicitly disabled", () => {
+    expect(
+      isMemoryDreamingSidecarExplicitlyEnabled(
+        withSlotOwnerConfig({ dreaming: { enabled: false } }),
+      ),
+    ).toBe(false);
+  });
+
+  it("is true only when the selected slot owner sets dreaming.enabled to true", () => {
+    expect(
+      isMemoryDreamingSidecarExplicitlyEnabled(
+        withSlotOwnerConfig({ dreaming: { enabled: true } }),
+      ),
+    ).toBe(true);
+    expect(
+      isMemoryDreamingSidecarExplicitlyEnabled({
+        plugins: {
+          slots: { memory: "memory-hermes" },
+          entries: {
+            "memory-hermes": { enabled: true },
+            "memory-core": { enabled: true, config: { dreaming: { enabled: true } } },
+          },
+        },
+      } as OpenClawConfig),
+    ).toBe(false);
   });
 });
