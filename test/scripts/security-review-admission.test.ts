@@ -1,5 +1,20 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { revalidatePublishedSecurityClearance } from "../../scripts/github/guard-review.mjs";
+import { TEST_ROLLOUT_PULL_REQUEST } from "../helpers/security-review-rollout-checkout.js";
+
+// These cases exercise every rollout mode, so they need a policy that names a rollout pull
+// request; Paddy's repository policy has none (always enforced).
+vi.mock("../../scripts/github/security-review-policy.mjs", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../scripts/github/security-review-policy.mjs")>();
+  return {
+    ...actual,
+    loadSecurityReviewPolicy: () => ({
+      ...actual.loadSecurityReviewPolicy(),
+      rolloutPullRequest: TEST_ROLLOUT_PULL_REQUEST,
+    }),
+  };
+});
 
 const head = "a".repeat(40);
 const rolloutCommit = "b".repeat(40);
