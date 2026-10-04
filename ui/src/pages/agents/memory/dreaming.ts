@@ -319,7 +319,13 @@ export function resolveConfiguredDreaming(configValue: Record<string, unknown> |
   const overridden = typeof dreaming?.enabled === "boolean";
   return {
     pluginId,
-    enabled: slotSelection.kind !== "off" && dreaming?.enabled !== false,
+    // memory-core defaults dreaming on; any other owner (memory-hermes) only runs the sidecar
+    // on an explicit opt-in, matching the loader and resolveMemoryDreamingPluginConfig.
+    enabled:
+      slotSelection.kind !== "off" &&
+      (pluginId.toLowerCase() === "memory-core"
+        ? dreaming?.enabled !== false
+        : dreaming?.enabled === true),
     overridden,
     engineOff: slotSelection.kind === "off",
   };

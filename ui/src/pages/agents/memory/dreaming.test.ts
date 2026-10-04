@@ -418,7 +418,7 @@ describe("dreaming controller", () => {
     expect(config.patch).not.toHaveBeenCalled();
   });
 
-  it("falls back to memory-core when selected memory slot is blank", async () => {
+  it("writes the opt-in to the default owner (memory-hermes) when the memory slot is blank", async () => {
     const { state, request } = createState();
     state.hello = gatewayHelloForMethods(["config.patch"]);
     state.configSnapshot = {
@@ -440,7 +440,7 @@ describe("dreaming controller", () => {
     expect(getConfigPatchRawPayload(config)).toEqual({
       plugins: {
         entries: {
-          "memory-core": {
+          "memory-hermes": {
             config: {
               dreaming: {
                 enabled: true,
@@ -519,7 +519,7 @@ describe("dreaming controller", () => {
     });
   });
 
-  it('falls back to memory-core config but stays operationally off when the slot is "none"', () => {
+  it('falls back to the default owner\'s config but stays operationally off when the slot is "none"', () => {
     expect(
       resolveConfiguredDreaming({
         plugins: {
@@ -527,7 +527,7 @@ describe("dreaming controller", () => {
             memory: "none",
           },
           entries: {
-            "memory-core": {
+            "memory-hermes": {
               config: {
                 dreaming: {
                   enabled: true,
@@ -538,24 +538,54 @@ describe("dreaming controller", () => {
         },
       }),
     ).toEqual({
-      pluginId: "memory-core",
+      pluginId: "memory-hermes",
       enabled: false,
       overridden: true,
       engineOff: true,
     });
   });
 
-  it("keeps the default enabled while the default engine is active", () => {
+  it("keeps dreaming off for the default owner (memory-hermes) without an explicit opt-in", () => {
     expect(resolveConfiguredDreaming({ plugins: { slots: {} } })).toEqual({
-      pluginId: "memory-core",
-      enabled: true,
+      pluginId: "memory-hermes",
+      enabled: false,
       overridden: false,
       engineOff: false,
     });
   });
 
-  it("uses the runtime enabled default when config omits the override", () => {
+  it("reports dreaming off when config omits the override and the slot is unset", () => {
     expect(resolveConfiguredDreaming(null)).toEqual({
+      pluginId: "memory-hermes",
+      enabled: false,
+      overridden: false,
+      engineOff: false,
+    });
+  });
+
+  it("reads the opt-in from memory-hermes, not memory-core, when the slot is unset", () => {
+    expect(
+      resolveConfiguredDreaming({
+        plugins: {
+          entries: {
+            "memory-core": { config: { dreaming: { enabled: true } } },
+          },
+        },
+      }),
+    ).toMatchObject({ pluginId: "memory-hermes", enabled: false, overridden: false });
+    expect(
+      resolveConfiguredDreaming({
+        plugins: {
+          entries: {
+            "memory-hermes": { config: { dreaming: { enabled: true } } },
+          },
+        },
+      }),
+    ).toMatchObject({ pluginId: "memory-hermes", enabled: true, overridden: true });
+  });
+
+  it("keeps memory-core's on-by-default when memory-core owns the slot", () => {
+    expect(resolveConfiguredDreaming({ plugins: { slots: { memory: "memory-core" } } })).toEqual({
       pluginId: "memory-core",
       enabled: true,
       overridden: false,

@@ -87,6 +87,42 @@ function createInput(
   return { input, inventory, repairCronJobs };
 }
 
+describe("dreaming cron Doctor repair when plugins.slots.memory is not written (Paddy)", () => {
+  // An unset slot resolves to memory-hermes, so the managed job only survives when
+  // memory-hermes's own entry opts in; memory-core's own entry is ignored.
+  it.each([
+    { label: "an empty config", config: {} },
+    {
+      label: "only memory-core's own entry enabled",
+      config: {
+        plugins: { entries: { "memory-core": { config: { dreaming: { enabled: true } } } } },
+      },
+    },
+    {
+      label: "a memory-hermes dreaming block without the opt-in",
+      config: { plugins: { entries: { "memory-hermes": { config: { dreaming: {} } } } } },
+    },
+  ])("removes the managed job with $label", async ({ config }) => {
+    const job = makeJob("managed");
+    const { input, inventory, repairCronJobs } = createInput([job], config);
+
+    await dreamingCronMigration.migrateLegacyState(input);
+
+    expect(repairCronJobs).toHaveBeenCalledExactlyOnceWith(inventory, [{ job, definition: null }]);
+  });
+
+  it("keeps and adopts the managed job when memory-hermes opts in", async () => {
+    const job = makeJob("managed");
+    const { input, inventory, repairCronJobs } = createInput([job], {
+      plugins: { entries: { "memory-hermes": { config: { dreaming: { enabled: true } } } } },
+    });
+
+    await dreamingCronMigration.migrateLegacyState(input);
+
+    expect(repairCronJobs).toHaveBeenCalledExactlyOnceWith(inventory, [adopted(job)]);
+  });
+});
+
 describe("dreaming cron Doctor selection", () => {
   it.each([
     {
