@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { createRolloutPolicyCheckout } from "../helpers/security-review-rollout-checkout.js";
 import { useAutoCleanupTempDirTracker } from "../helpers/temp-dir.js";
 
 const tempDirs = useAutoCleanupTempDirTracker(afterEach);
@@ -63,7 +64,12 @@ const otherReview = {
   creator: { login: "github-actions[bot]", type: "Bot" },
 };
 
-function evaluate(routes: Record<string, unknown> = {}, mode = "enforce", deadline?: number) {
+function evaluate(
+  routes: Record<string, unknown> = {},
+  mode = "enforce",
+  deadline?: number,
+  options: { rolloutPolicy?: boolean } = {},
+) {
   const root = tempDirs.make("security-review-");
   const logPath = path.join(root, "requests.jsonl");
   const fixturePath = path.join(root, "fixture.json");
@@ -101,7 +107,9 @@ function evaluate(routes: Record<string, unknown> = {}, mode = "enforce", deadli
     [
       "--import",
       path.resolve("test/fixtures/github-guard-fetch.mjs"),
-      path.resolve("scripts/github/security-review.mjs"),
+      options.rolloutPolicy
+        ? createRolloutPolicyCheckout(path.join(root, "checkout"), "security-review")
+        : path.resolve("scripts/github/security-review.mjs"),
     ],
     {
       encoding: "utf8",
@@ -1644,6 +1652,7 @@ describe("combined security review entry point", () => {
     }
   });
 
+  // Rollout modes need a policy that names a rollout pull request; the repository policy has none.
   const exemptRoutes = {
     "GET /repos/openclaw/openclaw/pulls/152415": { ...rollout, merged_at: "2026-02-01T00:00:00Z" },
     [`GET /repos/openclaw/openclaw/compare/${landed}...${head}`]: {
@@ -1654,7 +1663,7 @@ describe("combined security review entry point", () => {
   };
 
   it("grandfathers an old branch without issuing reusable standalone successes or notices", () => {
-    const result = evaluate(exemptRoutes);
+    const result = evaluate(exemptRoutes, "enforce", undefined, { rolloutPolicy: true });
     expect(result.status, result.stderr).toBe(0);
     expect(result.combined).toEqual(["pending", "success"]);
     expect(result.reviews).toEqual([]);
@@ -1663,14 +1672,19 @@ describe("combined security review entry point", () => {
   });
 
   it("still requires real CI for a grandfathered PR", () => {
-    const result = evaluate({ ...exemptRoutes, [runsPath]: { total_count: 0, workflow_runs: [] } });
+    const result = evaluate(
+      { ...exemptRoutes, [runsPath]: { total_count: 0, workflow_runs: [] } },
+      "enforce",
+      undefined,
+      { rolloutPolicy: true },
+    );
     expect(result.status, result.stderr).toBe(0);
     expect(result.combined).toEqual(["pending", "pending"]);
     expect(result.reviews).toEqual([]);
   });
 
   it("does not autoscrub a grandfathered PR", () => {
-    const result = evaluate(exemptRoutes, "autoscrub");
+    const result = evaluate(exemptRoutes, "autoscrub", undefined, { rolloutPolicy: true });
     expect(result.status, result.stderr).toBe(0);
     expect(
       result.requests
@@ -1680,22 +1694,32 @@ describe("combined security review entry point", () => {
   });
 
   it("activates both guards once an old head contains the rollout commit", () => {
-    const result = evaluate({
-      ...exemptRoutes,
-      [`GET /repos/openclaw/openclaw/compare/${landed}...${head}`]: {
-        base_commit: { sha: landed },
-        merge_base_commit: { sha: landed },
-        status: "ahead",
+    const result = evaluate(
+      {
+        ...exemptRoutes,
+        [`GET /repos/openclaw/openclaw/compare/${landed}...${head}`]: {
+          base_commit: { sha: landed },
+          merge_base_commit: { sha: landed },
+          status: "ahead",
+        },
+        [rolePath]: { role_name: "read" },
       },
-      [rolePath]: { role_name: "read" },
-    });
+      "enforce",
+      undefined,
+      { rolloutPolicy: true },
+    );
     expect(result.status, result.stderr).toBe(0);
     expect(result.reviews.filter((entry) => entry.body?.state === "failure")).toHaveLength(4);
     expect(result.combined).not.toContain("success");
   });
 
   it("leaves the combined gate failed when rollout metadata cannot be read", () => {
-    const result = evaluate({ "GET /repos/openclaw/openclaw/pulls/152415": { httpError: 403 } });
+    const result = evaluate(
+      { "GET /repos/openclaw/openclaw/pulls/152415": { httpError: 403 } },
+      "enforce",
+      undefined,
+      { rolloutPolicy: true },
+    );
     expect(result.status).toBe(1);
     expect(result.combined).toEqual(["pending", "failure"]);
     expect(result.reviews).toEqual([]);
