@@ -40,8 +40,10 @@ function readUnsetSlotMemoryCoreDreaming(cfg: OpenClawConfig): Record<string, un
 
 /**
  * Config warning for a user who configured memory-core dreaming but left `plugins.slots.memory`
- * unset: memory-hermes owns memory, and memory-core's dreaming does not run. No warning when that
- * block explicitly turns dreaming off, because nothing the user asked for is lost.
+ * unset: memory-hermes owns memory, and memory-core's dreaming does not run. The message says how
+ * to keep memory-core dreaming (set the slot to memory-core) and how to silence it for a user happy
+ * with memory-hermes (set the slot to memory-hermes, or remove memory-core's dreaming block). No
+ * warning when that block explicitly turns dreaming off, because nothing the user asked for is lost.
  */
 export function collectPaddyMemoryDreamingOwnerWarnings(
   cfg: OpenClawConfig,
@@ -53,7 +55,7 @@ export function collectPaddyMemoryDreamingOwnerWarnings(
   return [
     {
       path: "plugins.slots.memory",
-      message: `plugins.entries.${DREAMING_ENGINE_PLUGIN_ID}.config.dreaming is set but plugins.slots.memory is unset, so ${PADDY_MEMORY_PLUGIN_ID} owns memory and ${DREAMING_ENGINE_PLUGIN_ID} dreaming won't run; set plugins.slots.memory to "${DREAMING_ENGINE_PLUGIN_ID}" to keep it.`,
+      message: `plugins.entries.${DREAMING_ENGINE_PLUGIN_ID}.config.dreaming is set but plugins.slots.memory is unset, so ${PADDY_MEMORY_PLUGIN_ID} owns memory and ${DREAMING_ENGINE_PLUGIN_ID} dreaming won't run; set plugins.slots.memory to "${DREAMING_ENGINE_PLUGIN_ID}" to keep it. To keep ${PADDY_MEMORY_PLUGIN_ID} and silence this warning, set plugins.slots.memory to "${PADDY_MEMORY_PLUGIN_ID}" or remove plugins.entries.${DREAMING_ENGINE_PLUGIN_ID}.config.dreaming.`,
     },
   ];
 }

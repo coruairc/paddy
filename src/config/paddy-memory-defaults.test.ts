@@ -328,7 +328,7 @@ describe("Paddy default config carries the memory backstop", () => {
 
 describe("Paddy warns when memory-core dreaming is configured but the memory slot is unset", () => {
   const MESSAGE =
-    'plugins.entries.memory-core.config.dreaming is set but plugins.slots.memory is unset, so memory-hermes owns memory and memory-core dreaming won\'t run; set plugins.slots.memory to "memory-core" to keep it.';
+    'plugins.entries.memory-core.config.dreaming is set but plugins.slots.memory is unset, so memory-hermes owns memory and memory-core dreaming won\'t run; set plugins.slots.memory to "memory-core" to keep it. To keep memory-hermes and silence this warning, set plugins.slots.memory to "memory-hermes" or remove plugins.entries.memory-core.config.dreaming.';
 
   it.each([
     { name: "dreaming.enabled: true", dreaming: { enabled: true } },
