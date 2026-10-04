@@ -783,7 +783,9 @@ For conceptual behavior and slash commands, see [Dreaming](/concepts/dreaming).
 
 When another plugin owns the memory slot (for example `memory-hermes`), `memory-core` can still run dreaming alongside it as a sidecar. The sidecar only loads when the slot owner's own entry, `plugins.entries.<slot owner>.config.dreaming.enabled`, is explicitly `true`. The slot owner is the plugin named in `plugins.slots.memory`, or the default memory slot owner when that key is not written. If `dreaming` is unset or `false` on the slot owner's entry, `memory-core` does not load at all, in both the plugin loader and gateway startup, even though the dreaming default is `true` when `memory-core` owns the slot.
 
-`memory-core`'s own `plugins.entries.memory-core.config.dreaming` only applies while `memory-core` owns the slot. It never turns the sidecar on for another slot owner, including when `plugins.slots.memory` is not written.
+In Paddy, `memory-hermes` owns the memory slot when `plugins.slots.memory` is not written. `memory-core`'s own `plugins.entries.memory-core.config.dreaming` only runs when `plugins.slots.memory` is set to `"memory-core"`, so the example above also needs that slot setting. It never turns the sidecar on for another slot owner, including the implicit `memory-hermes`. Paddy's config defaults (first run without a config file, and onboarding) fill `plugins.slots.memory: "memory-hermes"` and `plugins.entries.memory-hermes.config.dreaming.enabled: false` when they are unset, but never write the slot when `memory-core` has a `dreaming` block; they still fill Hermes's `dreaming.enabled: false`, which keeps the sidecar off.
+
+When `plugins.slots.memory` is not written and `memory-core` has a `dreaming` block that doesn't set `enabled: false`, config validation warns on `plugins.slots.memory` that `memory-core` dreaming won't run. To keep `memory-core` dreaming, set `plugins.slots.memory` to `"memory-core"`. To keep `memory-hermes` and silence the warning, set `plugins.slots.memory` to `"memory-hermes"` or remove `plugins.entries.memory-core.config.dreaming`.
 
 ```json5
 {
