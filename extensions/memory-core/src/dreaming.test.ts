@@ -219,6 +219,7 @@ function createDreamingConfig(
   return {
     ...config,
     plugins: {
+      slots: { memory: "memory-core" },
       entries: {
         "memory-core": { config: { dreaming } },
       },
@@ -443,6 +444,7 @@ describe("dreaming service reconciliation", () => {
       config: {
         hooks: { internal: { enabled: true } },
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {
@@ -1069,6 +1071,8 @@ describe("dreaming service reconciliation", () => {
       () =>
         ({
           plugins: {
+            // memory-core owns the slot; only its own entry is removed.
+            slots: { memory: "memory-core" },
             entries: {},
           },
         }) as OpenClawConfig,
@@ -1092,6 +1096,78 @@ describe("dreaming service reconciliation", () => {
       expect(harness.addCalls).toHaveLength(1);
       expect(harness.addCalls[0]?.schedule.expr).toBe(constants.DEFAULT_DREAMING_CRON_EXPR);
       expectLogNotContains(logger.warn, "cron service unavailable");
+    } finally {
+      await triggerDreamingServiceStop(api).catch(() => undefined);
+      vi.useRealTimers();
+    }
+  });
+
+  it("runs on memory-hermes's settings when no slot is written and memory-hermes opts in", async () => {
+    vi.useFakeTimers();
+    const runtimeCurrentConfig = vi.fn(
+      () =>
+        ({
+          plugins: {
+            entries: {
+              "memory-hermes": {
+                config: { dreaming: { enabled: true, frequency: "0 */6 * * *" } },
+              },
+              "memory-core": { config: { dreaming: { enabled: false } } },
+            },
+          },
+        }) as OpenClawConfig,
+    );
+    const { api, harness } = createDreamingTestContext({
+      runtime: { config: { current: runtimeCurrentConfig } },
+    });
+
+    try {
+      registerShortTermPromotionDreamingForTest(api);
+      let cronAvailable = false;
+      await triggerDreamingServiceStart(api, {
+        config: api.config,
+        getCron: () => (cronAvailable ? harness.cron : undefined),
+      });
+
+      cronAvailable = true;
+      await vi.advanceTimersByTimeAsync(constants.RUNTIME_CRON_RECONCILE_INTERVAL_MS);
+
+      expect(runtimeCurrentConfig).toHaveBeenCalled();
+      expect(harness.addCalls).toHaveLength(1);
+      expect(harness.addCalls[0]?.schedule.expr).toBe("0 */6 * * *");
+    } finally {
+      await triggerDreamingServiceStop(api).catch(() => undefined);
+      vi.useRealTimers();
+    }
+  });
+
+  it("ignores memory-core's own dreaming entry when no slot is written", async () => {
+    vi.useFakeTimers();
+    const runtimeCurrentConfig = vi.fn(
+      () =>
+        ({
+          plugins: {
+            entries: { "memory-core": { config: { dreaming: { enabled: true } } } },
+          },
+        }) as OpenClawConfig,
+    );
+    const { api, harness } = createDreamingTestContext({
+      runtime: { config: { current: runtimeCurrentConfig } },
+    });
+
+    try {
+      registerShortTermPromotionDreamingForTest(api);
+      let cronAvailable = false;
+      await triggerDreamingServiceStart(api, {
+        config: api.config,
+        getCron: () => (cronAvailable ? harness.cron : undefined),
+      });
+
+      cronAvailable = true;
+      await vi.advanceTimersByTimeAsync(constants.RUNTIME_CRON_RECONCILE_INTERVAL_MS);
+
+      expect(runtimeCurrentConfig).toHaveBeenCalled();
+      expect(harness.addCalls).toHaveLength(0);
     } finally {
       await triggerDreamingServiceStop(api).catch(() => undefined);
       vi.useRealTimers();
@@ -1167,6 +1243,8 @@ describe("dreaming service reconciliation", () => {
     const runtimeCurrentConfig = vi.fn(
       () =>
         ({
+          // memory-core owns the slot; only its own entry is removed.
+          plugins: { slots: { memory: "memory-core" } },
           agents: {
             defaults: { workspace: workspaceDir },
             list: [{ id: "main", default: true, workspace: workspaceDir }],

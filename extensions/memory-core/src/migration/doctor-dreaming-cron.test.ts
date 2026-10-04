@@ -63,7 +63,9 @@ function makeJob(
 
 function createInput(
   jobs: PluginDoctorCronJob[],
-  config: Parameters<PluginDoctorStateMigration["migrateLegacyState"]>[0]["config"] = {},
+  config: Parameters<PluginDoctorStateMigration["migrateLegacyState"]>[0]["config"] = {
+    plugins: { slots: { memory: "memory-core" } },
+  },
 ) {
   const inventory: PluginDoctorCronInventory = { jobs };
   const repairCronJobs = vi.fn<NonNullable<PluginDoctorStateMigrationContext["repairCronJobs"]>>(
@@ -227,7 +229,10 @@ describe("dreaming cron Doctor selection", () => {
         authored,
       ];
       const { input, inventory, repairCronJobs } = createInput(jobs, {
-        plugins: { entries: { "memory-core": { config: { dreaming: { enabled } } } } },
+        plugins: {
+          slots: { memory: "memory-core" },
+          entries: { "memory-core": { config: { dreaming: { enabled } } } },
+        },
       });
       const before = structuredClone(inventory);
 
@@ -295,7 +300,12 @@ describe("dreaming cron Doctor selection", () => {
             delivery: { mode: "none" },
           }),
         ],
-        { plugins: { entries: { "memory-core": { config: { dreaming: { enabled } } } } } },
+        {
+          plugins: {
+            slots: { memory: "memory-core" },
+            entries: { "memory-core": { config: { dreaming: { enabled } } } },
+          },
+        },
       );
       const before = structuredClone(inventory);
 

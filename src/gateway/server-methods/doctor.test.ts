@@ -161,7 +161,8 @@ describe("doctor.memory.status", () => {
       embedding: { ok: true },
     });
     const dreaming = expectRecordFields(payload.dreaming, {
-      enabled: true,
+      // Paddy: an empty config means memory-hermes owns memory without opting in to dreaming.
+      enabled: false,
       shortTermCount: 0,
       totalSignalCount: 0,
       phaseSignalCount: 0,
@@ -176,6 +177,41 @@ describe("doctor.memory.status", () => {
       managedCronPresent: false,
     });
     expect(close).toHaveBeenCalled();
+  });
+
+  it("reads dreaming status from memory-hermes's explicit opt-in when no slot is written", async () => {
+    useMemoryManagerFixture({
+      status: () => ({ provider: "gemini" }),
+    });
+    getRuntimeConfig.mockReturnValue({
+      plugins: {
+        entries: {
+          "memory-hermes": { config: { dreaming: { enabled: true, frequency: "0 */6 * * *" } } },
+          "memory-core": { config: { dreaming: { enabled: false, frequency: "0 1 * * *" } } },
+        },
+      },
+    } as OpenClawConfig);
+    const respond = vi.fn();
+
+    await invokeDoctorMemory("doctor.memory.status", respond, { params: { probe: true } });
+
+    const dreaming = expectRecordFields(respondPayload(respond).dreaming, { enabled: true });
+    const phases = expectRecordFields(dreaming.phases, {});
+    expectRecordFields(phases.deep, { enabled: true, cron: "0 */6 * * *" });
+  });
+
+  it("ignores memory-core's own dreaming entry in status when no slot is written", async () => {
+    useMemoryManagerFixture({
+      status: () => ({ provider: "gemini" }),
+    });
+    getRuntimeConfig.mockReturnValue({
+      plugins: { entries: { "memory-core": { config: { dreaming: { enabled: true } } } } },
+    } as OpenClawConfig);
+    const respond = vi.fn();
+
+    await invokeDoctorMemory("doctor.memory.status", respond, { params: { probe: true } });
+
+    expectRecordFields(respondPayload(respond).dreaming, { enabled: false });
   });
 
   it("orders dreaming entries deterministically when one timestamp is malformed", async () => {
@@ -347,6 +383,7 @@ describe("doctor.memory.status", () => {
         ],
       },
       plugins: {
+        slots: { memory: "memory-core" },
         entries: {
           "memory-core": {
             config: {
@@ -550,6 +587,7 @@ describe("doctor.memory.status", () => {
         list: [{ id: "alpha", workspace: alphaWorkspaceDir }],
       },
       plugins: {
+        slots: { memory: "memory-core" },
         entries: {
           "memory-core": {
             config: {
@@ -606,6 +644,7 @@ describe("doctor.memory.status", () => {
     );
     getRuntimeConfig.mockReturnValue({
       plugins: {
+        slots: { memory: "memory-core" },
         entries: {
           "memory-core": {
             config: {
@@ -700,6 +739,7 @@ describe("doctor.memory.status", () => {
         ],
       },
       plugins: {
+        slots: { memory: "memory-core" },
         entries: {
           "memory-core": {
             config: {

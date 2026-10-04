@@ -56,6 +56,7 @@ const memoryArtifactProvenanceMock = vi.mocked(listMemoryArtifactProvenance);
 memoryArtifactProvenanceMock.mockResolvedValue([]);
 const LIGHT_DREAMING_TEST_CONFIG: OpenClawConfig = {
   plugins: {
+    slots: { memory: "memory-core" },
     entries: {
       "memory-core": {
         config: {
@@ -393,6 +394,7 @@ function createDefaultStorageLightDreamingHarness(
         : {}),
       ...(options.memorySearchEnabled === false ? { memory: { search: { enabled: false } } } : {}),
       plugins: {
+        slots: { memory: "memory-core" },
         entries: {
           "memory-core": {
             config: {
@@ -420,6 +422,7 @@ function createNarrativeDreamingSweepConfig(workspaceDir: string): OpenClawConfi
     ...LIGHT_DREAMING_TEST_CONFIG,
     agents: { defaults: { workspace: workspaceDir, userTimezone: "UTC" } },
     plugins: {
+      slots: { memory: "memory-core" },
       entries: {
         "memory-core": {
           config: {
@@ -538,6 +541,7 @@ describe("memory-core dreaming phases", () => {
     const { beforeAgentReply, logger } = createHarness(
       {
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {
@@ -835,6 +839,7 @@ describe("memory-core dreaming phases", () => {
         },
       },
       plugins: {
+        slots: { memory: "memory-core" },
         entries: {
           "memory-core": {
             config: {
@@ -958,6 +963,7 @@ describe("memory-core dreaming phases", () => {
       const { beforeAgentReply } = createHarness(
         {
           plugins: {
+            slots: { memory: "memory-core" },
             entries: {
               "memory-core": {
                 config: {
@@ -1481,6 +1487,7 @@ describe("memory-core dreaming phases", () => {
     const excludedConfig: OpenClawConfig = {
       agents: { list: [{ id: "main", workspace: workspaceDir }] },
       plugins: {
+        slots: { memory: "memory-core" },
         entries: {
           "memory-core": {
             config: {
@@ -1598,6 +1605,7 @@ describe("memory-core dreaming phases", () => {
       const cfg: OpenClawConfig = {
         agents: { list: [{ id: "main", workspace: workspaceDir }] },
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {
@@ -2823,6 +2831,7 @@ describe("memory-core dreaming phases", () => {
     const { beforeAgentReply } = createHarness(
       {
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {
@@ -2949,6 +2958,7 @@ describe("memory-core dreaming phases", () => {
     const { beforeAgentReply } = createHarness(
       {
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {
@@ -3014,6 +3024,7 @@ describe("memory-core dreaming phases", () => {
     const { beforeAgentReply } = createHarness(
       {
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {
@@ -3057,6 +3068,7 @@ describe("memory-core dreaming phases", () => {
     const { beforeAgentReply } = createHarness(
       {
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {
@@ -3130,6 +3142,7 @@ describe("memory-core dreaming phases", () => {
 
     const configForTest: OpenClawConfig = {
       plugins: {
+        slots: { memory: "memory-core" },
         entries: {
           "memory-core": {
             config: {

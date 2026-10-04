@@ -54,6 +54,7 @@ describe("memory_search recall tracking", () => {
       config: {
         agents: { list: [{ id: "main", default: true }] },
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {
@@ -96,6 +97,7 @@ describe("memory_search recall tracking", () => {
           list: [{ id: "main", default: true }],
         },
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {
@@ -155,7 +157,10 @@ describe("memory_search recall tracking", () => {
       const tool = createMemorySearchToolOrThrow({
         config: {
           memory: { citations },
-          plugins: { entries: { "memory-core": { config: { dreaming: { enabled: true } } } } },
+          plugins: {
+            slots: { memory: "memory-core" },
+            entries: { "memory-core": { config: { dreaming: { enabled: true } } } },
+          },
         },
       });
 
@@ -205,6 +210,7 @@ describe("memory_search recall tracking", () => {
       config: {
         agents: { list: [{ id: "main", default: true }] },
         plugins: {
+          slots: { memory: "memory-core" },
           entries: {
             "memory-core": {
               config: {

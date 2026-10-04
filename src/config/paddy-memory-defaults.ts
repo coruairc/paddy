@@ -1,9 +1,9 @@
 // Paddy memory backstop: memory-hermes owns the memory slot and memory-core's dreaming sidecar
 // stays off. Paddy's loader and gateway read the sidecar opt-in only from the resolved slot
 // owner's own entry (an unset slot resolves to memory-hermes), so memory-core's own entry never
-// starts a sidecar beside Hermes. The upstream resolvers (`resolveMemoryDreamingPluginId`) still
-// read memory-core's entry, where dreaming defaults to on, when the slot is unset. Writing both
-// keys makes every reader see memory-hermes's own `dreaming.enabled: false`.
+// starts a sidecar beside Hermes. The dreaming resolvers (`resolveMemoryDreamingPluginId`) follow
+// the same resolved owner. Writing both keys is a second line of defence, so every reader sees
+// memory-hermes's own `dreaming.enabled: false` even if one of those checks regresses.
 import { defaultSlotIdForKey } from "../plugins/slots.js";
 import type { ConfigValidationIssue } from "./types.js";
 import type { OpenClawConfig } from "./types.openclaw.js";

@@ -94,16 +94,16 @@ describe("applyPaddyMemoryDefaults", () => {
     expectDreamingSidecarOff(next);
   });
 
-  it("documents the gap it backstops: with the slot unset, the inherited resolvers say memory-core (on)", () => {
+  it("the inherited resolvers agree with the loader when the slot is unset: memory-hermes, off", () => {
     const unset: OpenClawConfig = {};
-    // Main's loader (patch A) already keeps the sidecar off here; the defaults are the second key
-    // if that check regresses or another caller uses the inherited resolvers.
+    // The defaults are the second key: the loader and the dreaming resolvers already read the
+    // resolved owner (memory-hermes) here, so an empty config reports dreaming off.
     expect(sidecarExplicitlyEnabled(unset)).toBe(false);
-    expect(resolveMemoryDreamingPluginId(unset)).toBe("memory-core");
+    expect(resolveMemoryDreamingPluginId(unset)).toBe("memory-hermes");
     expect(
       resolveMemoryDreamingConfig({ pluginConfig: resolveMemoryDreamingPluginConfig(unset) })
         .enabled,
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("keeps unrelated plugin settings and Hermes config fields", () => {

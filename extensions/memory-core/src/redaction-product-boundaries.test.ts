@@ -122,6 +122,7 @@ describe("memory-core redaction product boundaries", () => {
         list: [{ id: "main", workspace: workspaceDir }],
       },
       plugins: {
+        slots: { memory: "memory-core" },
         entries: {
           "memory-core": {
             config: {

@@ -302,35 +302,96 @@ describe("memory dreaming host helpers", () => {
     ).toEqual({ dreaming: { enabled: true, frequency: "0 */6 * * *" } });
   });
 
-  it("falls back to memory-core when no memory slot override is configured", () => {
+  it("keeps memory-core's own default when memory-core explicitly owns the slot", () => {
+    const cfg = { plugins: { slots: { memory: "memory-core" } } };
+    expect(resolveMemoryDreamingPluginId(cfg)).toBe("memory-core");
+    expect(resolveMemoryDreamingPluginConfig(cfg)).toBeUndefined();
     expect(
-      resolveMemoryDreamingPluginConfig({
-        plugins: {
-          entries: {
-            "memory-core": { config: { dreaming: { enabled: true } } },
-          },
+      resolveMemoryDreamingConfig({ pluginConfig: resolveMemoryDreamingPluginConfig(cfg) }).enabled,
+    ).toBe(true);
+    const withSettings = {
+      plugins: {
+        slots: { memory: "Memory-Core" },
+        entries: {
+          "memory-core": { config: { dreaming: { enabled: false, frequency: "0 4 * * *" } } },
         },
-      }),
-    ).toEqual({ dreaming: { enabled: true } });
+      },
+    };
+    expect(resolveMemoryDreamingPluginConfig(withSettings)).toEqual({
+      dreaming: { enabled: false, frequency: "0 4 * * *" },
+    });
+  });
+});
+
+describe("dreaming owner resolution with no memory slot written (Paddy)", () => {
+  const settings = (cfg: Record<string, unknown>) =>
+    resolveMemoryDreamingConfig({ pluginConfig: resolveMemoryDreamingPluginConfig(cfg) });
+
+  it("resolves an unset or blank slot to memory-hermes, never memory-core", () => {
+    expect(resolveMemoryDreamingPluginId({})).toBe("memory-hermes");
+    expect(resolveMemoryDreamingPluginId({ plugins: { slots: { memory: "   " } } })).toBe(
+      "memory-hermes",
+    );
+    expect(resolveMemoryDreamingPluginId({ plugins: { slots: { memory: "none" } } })).toBe("none");
   });
 
-  it('falls back to memory-core when memory slot is "none" or blank', () => {
-    expect(
-      resolveMemoryDreamingPluginId({
-        plugins: { slots: { memory: "none" } },
-      }),
-    ).toBe("memory-core");
+  it("reports dreaming off for an empty config", () => {
+    expect(settings({}).enabled).toBe(false);
+    expect(settings({ plugins: {} }).enabled).toBe(false);
+  });
 
-    expect(
-      resolveMemoryDreamingPluginConfig({
-        plugins: {
-          slots: { memory: "   " },
-          entries: {
-            "memory-core": { config: { dreaming: { enabled: true } } },
-          },
+  it("ignores memory-core's own entry when memory-hermes owns the slot by default", () => {
+    const cfg = {
+      plugins: {
+        entries: {
+          "memory-core": { config: { dreaming: { enabled: true, frequency: "0 1 * * *" } } },
         },
-      }),
-    ).toEqual({ dreaming: { enabled: true } });
+      },
+    };
+    expect(settings(cfg).enabled).toBe(false);
+    expect(settings(cfg).frequency).not.toBe("0 1 * * *");
+  });
+
+  it("keeps dreaming off when memory-hermes has a dreaming block without an explicit opt-in", () => {
+    const cfg = {
+      plugins: {
+        entries: {
+          "memory-hermes": { config: { dreaming: { frequency: "0 2 * * *" } } },
+          "memory-core": { config: { dreaming: { enabled: true } } },
+        },
+      },
+    };
+    expect(resolveMemoryDreamingPluginConfig(cfg)).toEqual({
+      dreaming: { frequency: "0 2 * * *", enabled: false },
+    });
+    expect(settings(cfg).enabled).toBe(false);
+  });
+
+  it("uses memory-hermes's settings when it explicitly opts in", () => {
+    const cfg = {
+      plugins: {
+        entries: {
+          "memory-hermes": {
+            config: { dreaming: { enabled: true, frequency: "0 */6 * * *" } },
+          },
+          "memory-core": { config: { dreaming: { enabled: false, frequency: "0 1 * * *" } } },
+        },
+      },
+    };
+    expect(resolveMemoryDreamingPluginConfig(cfg)).toEqual({
+      dreaming: { enabled: true, frequency: "0 */6 * * *" },
+    });
+    expect(settings(cfg)).toMatchObject({ enabled: true, frequency: "0 */6 * * *" });
+  });
+
+  it('reports dreaming off when the slot is "none", whatever memory-core says', () => {
+    const cfg = {
+      plugins: {
+        slots: { memory: "none" },
+        entries: { "memory-core": { config: { dreaming: { enabled: true } } } },
+      },
+    };
+    expect(settings(cfg).enabled).toBe(false);
   });
 });
 

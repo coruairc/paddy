@@ -284,6 +284,7 @@ describe("memory tools", () => {
         config: asOpenClawConfig({
           agents: { list: [{ id: "main", default: true }] },
           plugins: {
+            slots: { memory: "memory-core" },
             entries: {
               "memory-core": {
                 config: {

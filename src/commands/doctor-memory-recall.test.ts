@@ -166,7 +166,8 @@ describe("memory recall doctor integration", () => {
       "doctor --fix",
       "memory status --fix",
     );
-    expect(String(note.mock.calls[1]?.[0] ?? "")).toContain("Dreaming: enabled");
+    // Paddy: an empty config means memory-hermes owns memory without opting in to dreaming.
+    expect(String(note.mock.calls[1]?.[0] ?? "")).toContain("Dreaming: disabled");
   });
 
   it("runs dreaming artifact repair during doctor --fix", async () => {

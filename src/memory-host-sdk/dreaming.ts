@@ -18,6 +18,7 @@ import {
 } from "../agents/agent-scope.js";
 import { resolveWorkspaceStateIdentity } from "../agents/workspace-state-identity.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
+import { resolveSlotSelection } from "../plugins/slots.js";
 
 const DEFAULT_MEMORY_DREAMING_ENABLED = true;
 const DEFAULT_MEMORY_DREAMING_VERBOSE_LOGGING = false;
@@ -347,28 +348,69 @@ function formatLocalIsoDay(epochMs: number): string {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * Paddy: the resolved memory slot owner whose entry holds the dreaming settings.
+ *
+ * An unset (or blank) `plugins.slots.memory` resolves to the default slot owner
+ * (`memory-hermes`), the same rule the loader and gateway use, so it never falls back
+ * to memory-core's own entry. `"none"` returns `"none"`: no plugin owns memory.
+ */
 export function resolveMemoryDreamingPluginId(
   cfg: OpenClawConfig | Record<string, unknown> | undefined,
 ): string {
   const root = asNullableRecord(cfg);
   const plugins = asNullableRecord(root?.plugins);
   const slots = asNullableRecord(plugins?.slots);
-  const configuredSlot = normalizeOptionalString(slots?.memory);
-  if (configuredSlot && normalizeLowercaseStringOrEmpty(configuredSlot) !== "none") {
-    return configuredSlot;
-  }
-  return DEFAULT_MEMORY_DREAMING_PLUGIN_ID;
+  const selection = resolveSlotSelection("memory", slots?.memory);
+  return selection.kind === "off" ? "none" : selection.pluginId;
 }
 
-export function resolveMemoryDreamingPluginConfig(
+function findPluginEntryConfig(
   cfg: OpenClawConfig | Record<string, unknown> | undefined,
+  pluginId: string,
 ): Record<string, unknown> | undefined {
   const root = asNullableRecord(cfg);
   const plugins = asNullableRecord(root?.plugins);
   const entries = asNullableRecord(plugins?.entries);
-  const pluginId = resolveMemoryDreamingPluginId(cfg);
-  const memoryPlugin = asNullableRecord(entries?.[pluginId]);
-  return asNullableRecord(memoryPlugin?.config) ?? undefined;
+  if (!entries) {
+    return undefined;
+  }
+  const normalizedId = normalizeLowercaseStringOrEmpty(pluginId);
+  const entryKey = Object.hasOwn(entries, pluginId)
+    ? pluginId
+    : Object.keys(entries).find((key) => normalizeLowercaseStringOrEmpty(key) === normalizedId);
+  if (!entryKey) {
+    return undefined;
+  }
+  return asNullableRecord(asNullableRecord(entries[entryKey])?.config) ?? undefined;
+}
+
+/**
+ * Paddy: the plugin config that dreaming status and memory-core's engine read.
+ *
+ * - memory-core owns the slot: its own config, so `DEFAULT_MEMORY_DREAMING_ENABLED`
+ *   still applies when it has no `dreaming.enabled`.
+ * - Another owner (including the default owner when the slot is unset) with an
+ *   explicit `dreaming.enabled: true`: that owner's config, which is exactly when the
+ *   loader starts the memory-core sidecar.
+ * - Anything else, including `"none"`: dreaming is off. The owner's other dreaming
+ *   settings are kept, with `dreaming.enabled` forced to `false`. memory-core's own
+ *   entry is never read here unless memory-core owns the slot.
+ */
+export function resolveMemoryDreamingPluginConfig(
+  cfg: OpenClawConfig | Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  const ownerId = resolveMemoryDreamingPluginId(cfg);
+  const normalizedOwner = normalizeLowercaseStringOrEmpty(ownerId);
+  const ownerConfig = normalizedOwner === "none" ? undefined : findPluginEntryConfig(cfg, ownerId);
+  if (
+    normalizedOwner === DEFAULT_MEMORY_DREAMING_PLUGIN_ID ||
+    isMemoryDreamingSidecarExplicitlyEnabled(cfg, ownerId)
+  ) {
+    return ownerConfig;
+  }
+  const dreaming = asNullableRecord(ownerConfig?.dreaming);
+  return { ...ownerConfig, dreaming: { ...dreaming, enabled: false } };
 }
 
 /**
