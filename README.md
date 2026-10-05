@@ -1,7 +1,7 @@
 # Paddy 🍀
 
 <p align="center">
-  <img src="ui/public/paddy-icon.jpg" width="160" height="160" alt="Paddy">
+  <img src="ui/public/paddy-icon-circle.png" width="160" height="160" alt="Paddy">
 </p>
 
 <p align="center">
@@ -159,7 +159,7 @@ Foundation, an independent 501(c)(3); Paddy is not affiliated with or endorsed b
 The upstream `LICENSE` and `THIRD_PARTY_NOTICES.md` are retained unchanged, as the MIT
 license requires. Portions of OpenClaw were adapted from [Pi / pi-mono](https://github.com/earendil-works/pi-mono)
 (MIT, © 2025 Mario Zechner); bundled icon work derives from GitHub Octicons (MIT).
-The Paddy mark in `ui/public/paddy-icon.jpg` comes from [paddy-gui](https://github.com/coruairc/paddy-gui).
+The Paddy mark in `ui/public/paddy-icon-circle.png` comes from [paddy-gui](https://github.com/coruairc/paddy-gui).
 
 ## License
 
