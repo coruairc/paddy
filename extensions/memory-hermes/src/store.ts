@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { DatabaseSync } from "node:sqlite";
+import type { DatabaseSync } from "node:sqlite";
+import { openNodeSqliteDatabase } from "openclaw/plugin-sdk/sqlite-runtime";
 import { LIMITS, type MemoryKind } from "./limits.js";
 import { findSecret } from "./secret-filter.js";
 
@@ -49,17 +50,52 @@ CREATE TABLE IF NOT EXISTS memory_errors (
 CREATE INDEX IF NOT EXISTS memories_scope_status ON memories (scope, status);
 `;
 
-function rowFrom(record: Record<string, unknown>): MemoryRow {
+type SqlRow = Record<string, unknown>;
+
+const MEMORY_STATUSES: readonly MemoryStatus[] = ["proposed", "approved", "rejected"];
+
+export function isMemoryStatus(value: unknown): value is MemoryStatus {
+  return MEMORY_STATUSES.some((status) => status === value);
+}
+
+// Rows come from this store's own NOT NULL columns; the field readers narrow
+// node:sqlite's output union instead of asserting a row shape.
+function textField(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (typeof value === "number" || typeof value === "bigint") {
+    return value.toString();
+  }
+  return "";
+}
+
+function numberField(value: unknown): number {
+  if (typeof value === "number") {
+    return value;
+  }
+  if (typeof value === "bigint") {
+    return Number(value);
+  }
+  return 0;
+}
+
+// An unknown status is never recallable: only "approved" rows are recalled.
+function statusField(value: unknown): MemoryStatus {
+  return isMemoryStatus(value) ? value : "rejected";
+}
+
+function rowFrom(record: SqlRow): MemoryRow {
   return {
-    id: String(record.id),
-    scope: String(record.scope),
+    id: textField(record.id),
+    scope: textField(record.scope),
     kind: record.kind === "user" ? "user" : "memory",
-    text: String(record.text),
-    status: record.status as MemoryStatus,
-    version: Number(record.version),
-    createdAt: Number(record.created_at),
-    updatedAt: Number(record.updated_at),
-    source: String(record.source ?? ""),
+    text: textField(record.text),
+    status: statusField(record.status),
+    version: numberField(record.version),
+    createdAt: numberField(record.created_at),
+    updatedAt: numberField(record.updated_at),
+    source: textField(record.source),
   };
 }
 
@@ -68,7 +104,7 @@ export class HermesStore {
 
   constructor(dbPath: string) {
     fs.mkdirSync(path.dirname(dbPath), { recursive: true, mode: 0o700 });
-    this.db = new DatabaseSync(dbPath);
+    this.db = openNodeSqliteDatabase(dbPath);
     this.db.exec(SCHEMA);
   }
 
@@ -87,10 +123,14 @@ export class HermesStore {
   }
 
   recentErrors(limit = 10): { at: number; op: string; message: string }[] {
-    const rows = this.db
+    return this.db
       .prepare("SELECT at, op, message FROM memory_errors ORDER BY id DESC LIMIT ?")
-      .all(limit) as { at: number; op: string; message: string }[];
-    return rows;
+      .all(limit)
+      .map((row) => ({
+        at: numberField(row.at),
+        op: textField(row.op),
+        message: textField(row.message),
+      }));
   }
 
   usage(scope: string): Record<MemoryKind, { entries: number; chars: number }> {
@@ -103,10 +143,11 @@ export class HermesStore {
         `SELECT kind, COUNT(*) AS entries, COALESCE(SUM(LENGTH(text)), 0) AS chars
          FROM memories WHERE scope = ? AND status != 'rejected' GROUP BY kind`,
       )
-      .all(scope) as { kind: string; entries: number; chars: number }[];
+      .all(scope);
     for (const row of rows) {
-      if (row.kind === "user" || row.kind === "memory") {
-        out[row.kind] = { entries: Number(row.entries), chars: Number(row.chars) };
+      const kind = row.kind;
+      if (kind === "user" || kind === "memory") {
+        out[kind] = { entries: numberField(row.entries), chars: numberField(row.chars) };
       }
     }
     return out;
@@ -182,12 +223,15 @@ export class HermesStore {
     if (!row) {
       return { ok: false, error: "not found" };
     }
-    const prior = this.db
+    const priorRow = this.db
       .prepare(
         `SELECT version, text, status FROM memory_versions
          WHERE id = ? AND version < ? ORDER BY version DESC LIMIT 1`,
       )
-      .get(id, row.version) as { version: number; text: string; status: MemoryStatus } | undefined;
+      .get(id, row.version);
+    const prior = priorRow
+      ? { text: textField(priorRow.text), status: statusField(priorRow.status) }
+      : undefined;
     const now = Date.now();
     if (!prior) {
       this.db
@@ -205,36 +249,31 @@ export class HermesStore {
 
   list(scope: string, status?: MemoryStatus): MemoryRow[] {
     if (status) {
-      return (
-        this.db
-          .prepare("SELECT * FROM memories WHERE scope = ? AND status = ? ORDER BY updated_at DESC")
-          .all(scope, status) as Record<string, unknown>[]
-      ).map(rowFrom);
+      return this.db
+        .prepare("SELECT * FROM memories WHERE scope = ? AND status = ? ORDER BY updated_at DESC")
+        .all(scope, status)
+        .map(rowFrom);
     }
-    return (
-      this.db
-        .prepare("SELECT * FROM memories WHERE scope = ? ORDER BY updated_at DESC")
-        .all(scope) as Record<string, unknown>[]
-    ).map(rowFrom);
+    return this.db
+      .prepare("SELECT * FROM memories WHERE scope = ? ORDER BY updated_at DESC")
+      .all(scope)
+      .map(rowFrom);
   }
 
   get(id: string): MemoryRow | undefined {
-    const record = this.db.prepare("SELECT * FROM memories WHERE id = ?").get(id) as
-      | Record<string, unknown>
-      | undefined;
+    const record = this.db.prepare("SELECT * FROM memories WHERE id = ?").get(id);
     return record ? rowFrom(record) : undefined;
   }
 
   approvedForRecall(scope: string): MemoryRow[] {
-    return (
-      this.db
-        .prepare(
-          `SELECT * FROM memories
+    return this.db
+      .prepare(
+        `SELECT * FROM memories
            WHERE status = 'approved' AND (scope = ? OR scope = 'global')
            ORDER BY updated_at DESC`,
-        )
-        .all(scope) as Record<string, unknown>[]
-    ).map(rowFrom);
+      )
+      .all(scope)
+      .map(rowFrom);
   }
 
   private capBlock(scope: string, kind: MemoryKind, extraChars: number): string | null {
@@ -256,8 +295,4 @@ export class HermesStore {
       .prepare(`INSERT INTO memory_versions (id, version, text, status, at) VALUES (?, ?, ?, ?, ?)`)
       .run(id, version, text, status, at);
   }
-}
-
-export function openStore(dbPath: string): HermesStore {
-  return new HermesStore(dbPath);
 }

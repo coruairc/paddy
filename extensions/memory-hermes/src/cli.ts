@@ -1,17 +1,36 @@
 import { hermesDbPath } from "./paths.js";
 import { GLOBAL_SCOPE } from "./scope.js";
-import { HermesStore, type MemoryStatus } from "./store.js";
+import { HermesStore, isMemoryStatus } from "./store.js";
 
 type CommandChain = {
   command(name: string): CommandChain;
   description(text: string): CommandChain;
   argument(name: string, description?: string): CommandChain;
   option(flags: string, description?: string): CommandChain;
-  // Commander action callbacks are variadic; handlers are cast to an unknown-args signature.
+  // Commander passes positional arguments, then the parsed options; handlers narrow them below.
   action(fn: (...args: unknown[]) => void): CommandChain;
 };
 
 type ScopeOpts = { scope?: string; global?: boolean };
+
+function optionsFrom(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+  return Object.fromEntries(Object.entries(value));
+}
+
+function scopeOptsFrom(value: unknown): ScopeOpts {
+  const opts = optionsFrom(value);
+  return {
+    scope: typeof opts.scope === "string" ? opts.scope : undefined,
+    global: opts.global === true,
+  };
+}
+
+function stringArg(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
 
 function withStore(fn: (db: HermesStore) => void): void {
   const db = new HermesStore(hermesDbPath());
@@ -23,7 +42,7 @@ function withStore(fn: (db: HermesStore) => void): void {
 }
 
 /** Explicit only. No shared fallback identity. */
-export function resolveCliScope(opts: ScopeOpts): string | null {
+function resolveCliScope(opts: ScopeOpts): string | null {
   if (opts.global) {
     return GLOBAL_SCOPE;
   }
@@ -39,9 +58,9 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
     .description("Usage, caps, and recent fail-open errors")
     .option("--scope <scope>", "Scope key")
     .option("--global", "Instance-wide namespace")
-    .action(((opts: ScopeOpts) => {
+    .action((rawOpts) => {
       withStore((db) => {
-        const scope = resolveCliScope(opts);
+        const scope = resolveCliScope(scopeOptsFrom(rawOpts));
         process.stdout.write(
           `${JSON.stringify(
             {
@@ -55,7 +74,7 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
           )}\n`,
         );
       });
-    }) as (...args: unknown[]) => void);
+    });
 
   memory
     .command("list")
@@ -63,24 +82,31 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
     .option("--scope <scope>", "Scope key")
     .option("--global", "Instance-wide namespace")
     .option("--status <status>", "proposed | approved | rejected")
-    .action(((opts: ScopeOpts & { status?: MemoryStatus }) => {
-      const scope = resolveCliScope(opts);
+    .action((rawOpts) => {
+      const scope = resolveCliScope(scopeOptsFrom(rawOpts));
       if (!scope) {
         process.stderr.write("memory list needs --scope or --global\n");
         process.exitCode = 1;
         return;
       }
+      const rawStatus = optionsFrom(rawOpts).status;
+      if (rawStatus !== undefined && !isMemoryStatus(rawStatus)) {
+        process.stderr.write("memory list --status must be proposed, approved, or rejected\n");
+        process.exitCode = 1;
+        return;
+      }
       withStore((db) => {
-        process.stdout.write(`${JSON.stringify(db.list(scope, opts.status), null, 2)}\n`);
+        process.stdout.write(`${JSON.stringify(db.list(scope, rawStatus), null, 2)}\n`);
       });
-    }) as (...args: unknown[]) => void);
+    });
 
   for (const name of ["approve", "reject", "rollback"] as const) {
     memory
       .command(name)
       .description(`${name} one memory entry`)
       .argument("<id>", "Memory id")
-      .action(((id: string) => {
+      .action((rawId) => {
+        const id = stringArg(rawId);
         withStore((db) => {
           const result =
             name === "approve"
@@ -93,7 +119,7 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
             process.exitCode = 1;
           }
         });
-      }) as (...args: unknown[]) => void);
+      });
   }
 
   memory
@@ -102,8 +128,9 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
     .argument("<text>", "Fact to propose")
     .option("--global", "Instance-wide namespace. Never implied.")
     .option("--scope <scope>", "Explicit scope")
-    .action(((text: string, opts: ScopeOpts) => {
-      const scope = resolveCliScope(opts);
+    .action((rawText, rawOpts) => {
+      const text = stringArg(rawText);
+      const scope = resolveCliScope(scopeOptsFrom(rawOpts));
       if (!scope) {
         process.stderr.write("memory add needs --scope or --global\n");
         process.exitCode = 1;
@@ -116,5 +143,5 @@ export function registerMemoryCli(program: { command(name: string): CommandChain
           process.exitCode = 1;
         }
       });
-    }) as (...args: unknown[]) => void);
+    });
 }

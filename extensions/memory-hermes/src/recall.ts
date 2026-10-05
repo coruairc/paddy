@@ -8,7 +8,7 @@ function tokens(text: string): string[] {
     .filter((part) => part.length > 2);
 }
 
-export function rankMemories(query: string, rows: MemoryRow[], limit = RECALL_LIMIT): MemoryRow[] {
+function rankMemories(query: string, rows: MemoryRow[], limit = RECALL_LIMIT): MemoryRow[] {
   const wanted = new Set(tokens(query));
   const scored = rows.map((row) => {
     if (wanted.size === 0) {
@@ -28,7 +28,7 @@ export function rankMemories(query: string, rows: MemoryRow[], limit = RECALL_LI
   return relevant.slice(0, limit).map((item) => item.row);
 }
 
-export function renderRecall(query: string, rows: MemoryRow[]): string {
+function renderRecall(query: string, rows: MemoryRow[]): string {
   const ranked = rankMemories(query, rows);
   if (ranked.length === 0) {
     return "";

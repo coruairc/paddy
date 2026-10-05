@@ -10,7 +10,7 @@ import type { OpenClawConfig } from "./types.openclaw.js";
 import type { PluginEntryConfig } from "./types.plugins.js";
 
 /** Paddy's default memory slot owner (`memory-hermes`). */
-export const PADDY_MEMORY_PLUGIN_ID = defaultSlotIdForKey("memory");
+const PADDY_MEMORY_PLUGIN_ID = defaultSlotIdForKey("memory");
 
 // Upstream's dreaming engine (DEFAULT_MEMORY_DREAMING_PLUGIN_ID in memory-host-sdk/dreaming.ts).
 const DREAMING_ENGINE_PLUGIN_ID = "memory-core";

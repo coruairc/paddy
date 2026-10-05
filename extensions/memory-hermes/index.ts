@@ -10,16 +10,17 @@ function userTextFrom(messages: unknown, fallback: string): string {
     return fallback;
   }
   for (let i = messages.length - 1; i >= 0; i--) {
-    const message = messages[i];
+    const message: unknown = messages[i];
     if (!message || typeof message !== "object") {
       continue;
     }
-    const record = message as { role?: string; content?: unknown };
-    if (record.role && record.role !== "user") {
+    const role = "role" in message ? message.role : undefined;
+    if (role && role !== "user") {
       continue;
     }
-    if (typeof record.content === "string" && record.content.trim()) {
-      return record.content;
+    const content = "content" in message ? message.content : undefined;
+    if (typeof content === "string" && content.trim()) {
+      return content;
     }
   }
   return fallback;
@@ -38,6 +39,15 @@ function open(): HermesStore | null {
 
 function scopeFromTurn(input: ScopeInput): string {
   return scopeKey(input);
+}
+
+// Tool schemas declare these parameters as strings; anything else reads as absent.
+function stringParam(params: unknown, key: string): string {
+  if (!params || typeof params !== "object" || !(key in params)) {
+    return "";
+  }
+  const value: unknown = Reflect.get(params, key);
+  return typeof value === "string" ? value : "";
 }
 
 function textResult(text: string) {
@@ -77,10 +87,7 @@ export default definePluginEntry({
             return textResult("");
           }
           try {
-            const query =
-              params && typeof params === "object" && "query" in params
-                ? String(params.query ?? "")
-                : "";
+            const query = stringParam(params, "query");
             const text = safeRecall(
               db,
               scopeFromTurn({
@@ -119,10 +126,7 @@ export default definePluginEntry({
             return textResult("");
           }
           try {
-            const id =
-              params && typeof params === "object" && "id" in params && params.id != null
-                ? String(params.id)
-                : "";
+            const id = stringParam(params, "id");
             const scope = scopeFromTurn({
               senderId: ctx.requesterSenderId,
               channel: ctx.messageChannel,

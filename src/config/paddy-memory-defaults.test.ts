@@ -10,15 +10,14 @@ import {
   isMemoryDreamingSidecarExplicitlyEnabled,
   resolveMemoryDreamingConfig,
   resolveMemoryDreamingPluginConfig,
-  resolveMemoryDreamingPluginId,
 } from "../memory-host-sdk/dreaming.js";
 import { normalizePluginsConfig } from "../plugins/config-state.js";
 import { validateJsonSchemaValue } from "../plugins/schema-validator.js";
+import { defaultSlotIdForKey } from "../plugins/slots.js";
 import { createConfigIO } from "./io.factory.js";
 import {
   applyPaddyMemoryDefaults,
   collectPaddyMemoryDreamingOwnerWarnings,
-  PADDY_MEMORY_PLUGIN_ID,
 } from "./paddy-memory-defaults.js";
 import type { OpenClawConfig } from "./types.openclaw.js";
 import { validateConfigObjectWithPlugins } from "./validation.js";
@@ -27,7 +26,7 @@ const tempDirs = useAutoCleanupTempDirTracker(afterEach);
 
 // The memory slot owner the loader and gateway resolve (the written slot, else the default).
 function resolvedMemoryOwner(cfg: OpenClawConfig): string | null {
-  return normalizePluginsConfig(cfg.plugins).slots.memory;
+  return normalizePluginsConfig(cfg.plugins).slots.memory ?? null;
 }
 
 function sidecarExplicitlyEnabled(cfg: OpenClawConfig): boolean {
@@ -43,7 +42,10 @@ function expectDreamingSidecarOff(cfg: OpenClawConfig) {
   // Both keys: main's loader (patch A, plugins/loader-shared.ts) starts the sidecar only on an
   // explicit dreaming.enabled: true, and the inherited resolvers also read Hermes's false.
   expect(sidecarExplicitlyEnabled(cfg)).toBe(false);
-  expect(resolveMemoryDreamingPluginId(cfg)).toBe("memory-hermes");
+  // The inherited resolver reads the memory-hermes entry, not memory-core's.
+  expect(resolveMemoryDreamingPluginConfig(cfg)).toEqual(
+    cfg.plugins?.entries?.["memory-hermes"]?.config,
+  );
   expect(
     resolveMemoryDreamingConfig({ pluginConfig: resolveMemoryDreamingPluginConfig(cfg), cfg })
       .enabled,
@@ -90,7 +92,7 @@ describe("applyPaddyMemoryDefaults", () => {
   it("writes both keys into an empty config", () => {
     const next = applyPaddyMemoryDefaults({});
     expect(next).toEqual({ plugins: PADDY_DEFAULT_MEMORY_PLUGINS });
-    expect(PADDY_MEMORY_PLUGIN_ID).toBe("memory-hermes");
+    expect(defaultSlotIdForKey("memory")).toBe("memory-hermes");
     expectDreamingSidecarOff(next);
   });
 
@@ -99,7 +101,11 @@ describe("applyPaddyMemoryDefaults", () => {
     // Main's loader (patch A) already keeps the sidecar off here; the defaults are the second key
     // if that check regresses or another caller uses the inherited resolvers.
     expect(sidecarExplicitlyEnabled(unset)).toBe(false);
-    expect(resolveMemoryDreamingPluginId(unset)).toBe("memory-core");
+    expect(
+      resolveMemoryDreamingPluginConfig({
+        plugins: { entries: { "memory-core": { config: { dreaming: { enabled: true } } } } },
+      }),
+    ).toEqual({ dreaming: { enabled: true } });
     expect(
       resolveMemoryDreamingConfig({ pluginConfig: resolveMemoryDreamingPluginConfig(unset) })
         .enabled,

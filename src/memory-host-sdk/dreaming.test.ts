@@ -8,7 +8,6 @@ import {
   isMemoryDreamingSidecarExplicitlyEnabled,
   isSameMemoryDreamingDay,
   resolveMemoryDreamingPluginConfig,
-  resolveMemoryDreamingPluginId,
   resolveMemoryDreamingConfig,
   resolveMemoryDreamingWorkspace,
   resolveMemoryDreamingWorkspaces,
@@ -316,10 +315,15 @@ describe("memory dreaming host helpers", () => {
 
   it('falls back to memory-core when memory slot is "none" or blank', () => {
     expect(
-      resolveMemoryDreamingPluginId({
-        plugins: { slots: { memory: "none" } },
+      resolveMemoryDreamingPluginConfig({
+        plugins: {
+          slots: { memory: "none" },
+          entries: {
+            "memory-core": { config: { dreaming: { enabled: true } } },
+          },
+        },
       }),
-    ).toBe("memory-core");
+    ).toEqual({ dreaming: { enabled: true } });
 
     expect(
       resolveMemoryDreamingPluginConfig({

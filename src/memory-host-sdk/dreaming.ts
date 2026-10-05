@@ -347,7 +347,7 @@ function formatLocalIsoDay(epochMs: number): string {
   return `${year}-${month}-${day}`;
 }
 
-export function resolveMemoryDreamingPluginId(
+function resolveMemoryDreamingPluginId(
   cfg: OpenClawConfig | Record<string, unknown> | undefined,
 ): string {
   const root = asNullableRecord(cfg);
