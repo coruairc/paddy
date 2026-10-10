@@ -781,7 +781,9 @@ For conceptual behavior and slash commands, see [Dreaming](/concepts/dreaming).
 
 ### Dreaming with a different memory slot owner
 
-When another plugin owns `plugins.slots.memory` (for example `memory-hermes`), `memory-core` can still run dreaming alongside it as a sidecar. The sidecar only loads when the slot owner's own config sets `dreaming.enabled: true` explicitly. If `dreaming` is unset or `false` there, `memory-core` does not load at all, in both the plugin loader and gateway startup, even though the dreaming default is `true` when `memory-core` owns the slot.
+When another plugin owns the memory slot (for example `memory-hermes`), `memory-core` can still run dreaming alongside it as a sidecar. The sidecar only loads when the slot owner's own entry, `plugins.entries.<slot owner>.config.dreaming.enabled`, is explicitly `true`. The slot owner is the plugin named in `plugins.slots.memory`, or the default memory slot owner when that key is not written. If `dreaming` is unset or `false` on the slot owner's entry, `memory-core` does not load at all, in both the plugin loader and gateway startup, even though the dreaming default is `true` when `memory-core` owns the slot.
+
+`memory-core`'s own `plugins.entries.memory-core.config.dreaming` only applies while `memory-core` owns the slot. It never turns the sidecar on for another slot owner, including when `plugins.slots.memory` is not written.
 
 ```json5
 {
@@ -795,7 +797,7 @@ When another plugin owns `plugins.slots.memory` (for example `memory-hermes`), `
 ```
 
 <Warning>
-A dreaming sidecar never registers CLI commands. When you opt in as shown above, `memory-core`'s `memory` CLI command is not available; the slot owner's CLI is the only memory CLI. The loader records an info diagnostic, `dreaming sidecar; skipping cli registration`, for the skipped registration. To use the `memory-core` CLI, select `memory-core` as the memory slot owner instead.
+A dreaming sidecar never registers CLI commands. When you opt in as shown above, `memory-core`'s `memory` CLI command is not available; the slot owner's CLI is the only memory CLI. The loader records a warning diagnostic, `dreaming sidecar; skipping cli registration`, for the skipped registration. To use the `memory-core` CLI, select `memory-core` as the memory slot owner instead.
 </Warning>
 
 ## Related

@@ -13,7 +13,6 @@ import type { OpenClawConfig } from "../config/types.openclaw.js";
 import {
   DEFAULT_MEMORY_DREAMING_PLUGIN_ID,
   isMemoryDreamingSidecarExplicitlyEnabled,
-  resolveMemoryDreamingPluginId,
 } from "../memory-host-sdk/dreaming.js";
 import { readBundledDiscoveryMode } from "./bundled-discovery-state.js";
 import { listExplicitConfiguredChannelIdsForConfig } from "./channel-presence-policy.js";
@@ -98,21 +97,15 @@ function listPotentialEnabledChannelIds(
   return sortUniquePluginIds([...enabledSignals, ...persistedSignals]);
 }
 
-function resolveGatewayStartupDreamingEngineId(config: OpenClawConfig): string | undefined {
-  // Paddy: mirror the loader rule; a non-owner sidecar requires explicit opt-in.
-  if (!isMemoryDreamingSidecarExplicitlyEnabled(config)) {
-    return undefined;
-  }
-  if (!resolveGatewayStartupDreamingSelectedPluginId(config)) {
-    return undefined;
-  }
-  return DEFAULT_MEMORY_DREAMING_PLUGIN_ID;
-}
-
-function resolveGatewayStartupDreamingSelectedPluginId(config: OpenClawConfig): string | undefined {
-  const selectedPluginId = normalizeOptionalLowercaseString(resolveMemoryDreamingPluginId(config));
-  return selectedPluginId && selectedPluginId !== DEFAULT_MEMORY_DREAMING_PLUGIN_ID
-    ? selectedPluginId
+function resolveGatewayStartupDreamingEngineId(
+  config: OpenClawConfig,
+  selectedMemoryPluginId: string | undefined,
+): string | undefined {
+  // Paddy: mirror the loader rule. A non-owner sidecar requires an explicit
+  // `dreaming.enabled: true` on the resolved memory slot owner's entry, which is the
+  // explicitly written slot or the default slot when none is written.
+  return isMemoryDreamingSidecarExplicitlyEnabled(config, selectedMemoryPluginId)
+    ? DEFAULT_MEMORY_DREAMING_PLUGIN_ID
     : undefined;
 }
 
@@ -141,14 +134,15 @@ export function resolveAuthorizedGatewayStartupDreamingPluginIds(params: {
   index: { plugins: readonly InstalledPluginIndexRecord[] };
   platform?: NodeJS.Platform;
 }): Set<string> {
-  const engineId = resolveGatewayStartupDreamingEngineId(params.config);
-  const dreamingSelectedPluginId = resolveGatewayStartupDreamingSelectedPluginId(params.config);
+  const engineId = resolveGatewayStartupDreamingEngineId(
+    params.config,
+    params.selectedMemoryPluginId,
+  );
   if (!engineId || !params.pluginsConfig.enabled || !params.activationSourcePlugins.enabled) {
     return new Set();
   }
   if (
     !params.selectedMemoryPluginId ||
-    params.selectedMemoryPluginId !== dreamingSelectedPluginId ||
     params.selectedMemoryPluginId === engineId ||
     blocksPluginStartup({
       pluginId: engineId,

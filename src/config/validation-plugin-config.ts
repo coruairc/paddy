@@ -22,7 +22,7 @@ import {
   getOfficialExternalPluginCatalogEntry,
   resolveOfficialExternalPluginInstallSources,
 } from "../plugins/official-external-plugin-catalog.js";
-import { hasKind } from "../plugins/slots.js";
+import { defaultSlotIdForKey, hasKind } from "../plugins/slots.js";
 import { isRecord, resolveUserPath } from "../utils.js";
 import { GENERATED_BUNDLED_CHANNEL_CONFIG_METADATA } from "./bundled-channel-config-metadata.generated.js";
 import { shouldSuppressMissingCodexPluginDiagnostics } from "./codex-plugin-diagnostics.js";
@@ -327,8 +327,13 @@ export function validateExplicitPluginConfig(params: {
     });
     const isMissingOfficialExternalMemorySlot =
       memorySlot === "memory-lancedb" && Boolean(missingMessage);
+    // Paddy's default config writes the default owner (memory-hermes) into the slot. Naming the
+    // default explicitly must not block startup where the inferred default would not.
+    const isPaddyDefaultMemorySlot = memorySlot === defaultSlotIdForKey("memory");
     pushMissingPluginIssue("plugins.slots.memory", memorySlot, {
-      warnOnly: isMissingOfficialExternalMemorySlot && !findBlockedPluginDiagnostic(memorySlot),
+      warnOnly:
+        isPaddyDefaultMemorySlot ||
+        (isMissingOfficialExternalMemorySlot && !findBlockedPluginDiagnostic(memorySlot)),
       missingMessage,
     });
   }

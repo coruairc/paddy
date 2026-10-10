@@ -81,8 +81,9 @@ function resolveDreamingSidecarEngineId(params: {
   ) {
     return null;
   }
-  // Paddy: a non-owner sidecar requires an explicit `dreaming.enabled: true`.
-  return isMemoryDreamingSidecarExplicitlyEnabled(params.cfg)
+  // Paddy: a non-owner sidecar requires an explicit `dreaming.enabled: true` on the
+  // resolved slot owner's entry (never memory-core's own entry when no slot is written).
+  return isMemoryDreamingSidecarExplicitlyEnabled(params.cfg, normalizedMemorySlot)
     ? DEFAULT_MEMORY_DREAMING_PLUGIN_ID
     : null;
 }

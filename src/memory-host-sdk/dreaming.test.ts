@@ -8,7 +8,6 @@ import {
   isMemoryDreamingSidecarExplicitlyEnabled,
   isSameMemoryDreamingDay,
   resolveMemoryDreamingPluginConfig,
-  resolveMemoryDreamingPluginId,
   resolveMemoryDreamingConfig,
   resolveMemoryDreamingWorkspace,
   resolveMemoryDreamingWorkspaces,
@@ -316,10 +315,15 @@ describe("memory dreaming host helpers", () => {
 
   it('falls back to memory-core when memory slot is "none" or blank', () => {
     expect(
-      resolveMemoryDreamingPluginId({
-        plugins: { slots: { memory: "none" } },
+      resolveMemoryDreamingPluginConfig({
+        plugins: {
+          slots: { memory: "none" },
+          entries: {
+            "memory-core": { config: { dreaming: { enabled: true } } },
+          },
+        },
       }),
-    ).toBe("memory-core");
+    ).toEqual({ dreaming: { enabled: true } });
 
     expect(
       resolveMemoryDreamingPluginConfig({
@@ -335,47 +339,98 @@ describe("memory dreaming host helpers", () => {
 });
 
 describe("isMemoryDreamingSidecarExplicitlyEnabled (Paddy)", () => {
+  const OWNER = "memory-hermes";
   const withSlotOwnerConfig = (config: Record<string, unknown> | undefined) =>
     ({
       plugins: {
-        slots: { memory: "memory-hermes" },
-        entries: { "memory-hermes": config ? { enabled: true, config } : { enabled: true } },
+        slots: { memory: OWNER },
+        entries: { [OWNER]: config ? { enabled: true, config } : { enabled: true } },
       },
     }) as OpenClawConfig;
+  /** No `plugins.slots.memory` written: the resolved owner comes from the default slot. */
+  const withoutSlot = (entries: Record<string, unknown>) =>
+    ({ plugins: { entries } }) as OpenClawConfig;
 
-  it("is false when the slot owner leaves dreaming unset, even though the default is on", () => {
-    expect(isMemoryDreamingSidecarExplicitlyEnabled(undefined)).toBe(false);
-    expect(isMemoryDreamingSidecarExplicitlyEnabled(withSlotOwnerConfig(undefined))).toBe(false);
-    expect(isMemoryDreamingSidecarExplicitlyEnabled(withSlotOwnerConfig({ dreaming: {} }))).toBe(
+  it("is false when the slot owner's entry leaves dreaming unset, even though the default is on", () => {
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(undefined, OWNER)).toBe(false);
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(withSlotOwnerConfig(undefined), OWNER)).toBe(
       false,
     );
+    expect(
+      isMemoryDreamingSidecarExplicitlyEnabled(withSlotOwnerConfig({ dreaming: {} }), OWNER),
+    ).toBe(false);
     expect(resolveMemoryDreamingConfig({ pluginConfig: {} }).enabled).toBe(true);
   });
 
-  it("is false when dreaming is explicitly disabled", () => {
+  it("is false when the slot owner's entry explicitly disables dreaming", () => {
     expect(
       isMemoryDreamingSidecarExplicitlyEnabled(
         withSlotOwnerConfig({ dreaming: { enabled: false } }),
+        OWNER,
       ),
     ).toBe(false);
   });
 
-  it("is true only when the selected slot owner sets dreaming.enabled to true", () => {
+  it("is true only when the resolved slot owner's own entry sets dreaming.enabled to true", () => {
     expect(
       isMemoryDreamingSidecarExplicitlyEnabled(
         withSlotOwnerConfig({ dreaming: { enabled: true } }),
+        OWNER,
       ),
     ).toBe(true);
     expect(
-      isMemoryDreamingSidecarExplicitlyEnabled({
-        plugins: {
-          slots: { memory: "memory-hermes" },
-          entries: {
-            "memory-hermes": { enabled: true },
-            "memory-core": { enabled: true, config: { dreaming: { enabled: true } } },
+      isMemoryDreamingSidecarExplicitlyEnabled(
+        {
+          plugins: {
+            slots: { memory: OWNER },
+            entries: {
+              [OWNER]: { enabled: true },
+              "memory-core": { enabled: true, config: { dreaming: { enabled: true } } },
+            },
           },
-        },
-      } as OpenClawConfig),
+        } as OpenClawConfig,
+        OWNER,
+      ),
     ).toBe(false);
+  });
+
+  it("ignores memory-core's own entry when no slot is written and another plugin owns the slot", () => {
+    expect(
+      isMemoryDreamingSidecarExplicitlyEnabled(
+        withoutSlot({
+          [OWNER]: { enabled: true },
+          "memory-core": { enabled: true, config: { dreaming: { enabled: true } } },
+        }),
+        OWNER,
+      ),
+    ).toBe(false);
+  });
+
+  it("honours the default slot owner's own opt-in when no slot is written", () => {
+    expect(
+      isMemoryDreamingSidecarExplicitlyEnabled(
+        withoutSlot({ [OWNER]: { enabled: true, config: { dreaming: { enabled: true } } } }),
+        OWNER,
+      ),
+    ).toBe(true);
+  });
+
+  it("never allows a sidecar for memory-core, none, or a missing owner", () => {
+    const coreOptIn = withoutSlot({
+      "memory-core": { enabled: true, config: { dreaming: { enabled: true } } },
+    });
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(coreOptIn, "memory-core")).toBe(false);
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(coreOptIn, "none")).toBe(false);
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(coreOptIn, undefined)).toBe(false);
+    expect(isMemoryDreamingSidecarExplicitlyEnabled(coreOptIn, "")).toBe(false);
+  });
+
+  it("matches the owner's entry key case-insensitively", () => {
+    expect(
+      isMemoryDreamingSidecarExplicitlyEnabled(
+        withoutSlot({ "Memory-Hermes": { config: { dreaming: { enabled: true } } } }),
+        " MEMORY-HERMES ",
+      ),
+    ).toBe(true);
   });
 });

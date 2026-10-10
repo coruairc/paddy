@@ -150,8 +150,8 @@ describe("config io compatibility", () => {
       expect(logger.warn).toHaveBeenCalledWith(
         [
           `Your Paddy config was written by version 9999.1.1, but this command is running ${VERSION}.`,
-          "Check: `openclaw --version`, `which openclaw`, and `openclaw gateway status --deep`.",
-          "If unexpected, update PATH so `openclaw` points to the version you want, or reinstall the Gateway service from that same Paddy install.",
+          "Check: `paddy --version`, `which paddy`, and `paddy gateway status --deep`.",
+          "If unexpected, update PATH so `paddy` points to the version you want, or reinstall the Gateway service from that same Paddy install.",
         ].join("\n"),
       );
     }

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { OpenClawConfig } from "../config/config.js";
 import {
   applyExclusiveSlotSelection,
+  defaultSlotIdForKey,
   hasKind,
   kindsEqual,
   resetPluginSlotsToDefaults,
@@ -42,14 +43,14 @@ describe("applyExclusiveSlotSelection", () => {
 
   it("keeps the default memory selection implicit", () => {
     const config: OpenClawConfig = {
-      plugins: { entries: { "memory-core": { enabled: true } } },
+      plugins: { entries: { "memory-hermes": { enabled: true } } },
     };
 
     const result = applyExclusiveSlotSelection({
       config,
-      selectedId: "memory-core",
+      selectedId: "memory-hermes",
       selectedKind: "memory",
-      registry: { plugins: [{ id: "memory-core", kind: "memory" }] },
+      registry: { plugins: [{ id: "memory-hermes", kind: "memory" }] },
     });
 
     expect(result.changed).toBe(false);
@@ -57,22 +58,26 @@ describe("applyExclusiveSlotSelection", () => {
     expect(result.config).toBe(config);
   });
 
+  it("names memory-hermes as the implicit memory slot", () => {
+    expect(defaultSlotIdForKey("memory")).toBe("memory-hermes");
+  });
+
   it("removes an explicit override when selecting the default memory plugin", () => {
     const config: OpenClawConfig = {
       plugins: {
         slots: { memory: "memory" },
-        entries: { memory: { enabled: true }, "memory-core": { enabled: true } },
+        entries: { memory: { enabled: true }, "memory-hermes": { enabled: true } },
       },
     };
 
     const result = applyExclusiveSlotSelection({
       config,
-      selectedId: "memory-core",
+      selectedId: "memory-hermes",
       selectedKind: "memory",
       registry: {
         plugins: [
           { id: "memory", kind: "memory" },
-          { id: "memory-core", kind: "memory" },
+          { id: "memory-hermes", kind: "memory" },
         ],
       },
     });
